@@ -1,6 +1,248 @@
 {
-    "fromTag": "6.40.0",
+    "fromTag": "6.41.0",
     "changelog": {
+        "6.41.1": [
+            {
+                "pr": "14765",
+                "title": "Particle systems: add support for fog",
+                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/Shaders/particles.fragment.fx",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14768",
+                "title": "ShaderMaterial: add support for fog",
+                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815/4\r\n\r\n[EDIT] Example: https://babylonsnapshots.z22.web.core.windows.net/refs/pull/14768/merge/index.html#T90MQ4#16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Shaders/color.fragment.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14767",
+                "title": "Ray: use an epsilon when calculating ray/triangle intersections",
+                "description": "See https://forum.babylonjs.com/t/pickwithray-misses-front-surface-triangle-corner/47829/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "collisions"
+                ]
+            },
+            {
+                "pr": "14766",
+                "title": "Move core to es2020 as well",
+                "description": "The rest of the packages have already switched to ES2020",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/core/tsconfig.lts.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14764",
+                "title": "Camera: Add hasMoved property",
+                "description": "Knowing if the camera has moved since the last frame is something that comes regularly in the forum, and I also needed it in my [blog post](https://medium.com/@babylonjs/an-introduction-to-temporal-anti-aliasing-with-babylon-js-7aa29c2f8a0f).\r\n\r\nSo, I thought it would be nice to add a property in the `Camera` class for this purpose.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14763",
+                "title": "Morph targets: Add missing morph count uniforms to some renderers/materials",
+                "description": "MorphTarget optimizations added in #14734 were not being applied to some renderers.\r\n\r\nThis PullRequest will prevent some renderers or materials that do not use `MaterialHelper.PrepareDefinesForMorphTargets` from being recompiled by morph influence changes.\r\n\r\n@Popov72 ",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14762",
+                "title": "Misc updates for RSM & WebGPU timestamp queries",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14761",
+                "title": "Allow loading .ply with loadFileAsync",
+                "description": "Follow up https://forum.babylonjs.com/t/unable-to-load-gaussian-spalt-ply-file/47707",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14760",
+                "title": "Add the code inspection to enable unity toolkit",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14752",
+                "title": "Havok Heightmaps",
+                "description": "This PR adds support for the Heightfield shape in Havok. This shape requires that an array of heights is provided. This array can be optionally passed in the `CreateGroundFromHeightMap` callback, allowing for easy creation.\r\n\r\nExample PG in: #I37D8G#15",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14759",
+                "title": "Clear world scale observers correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14757",
+                "title": "Vision OS missing enabledFeatures",
+                "description": "Vision OS's WebXR session is missing a feature we are using. This causes some scenes to throw an exception and fail.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14755",
+                "title": "Use shader material written in wgsl as shadow depth wrapper",
+                "description": "## Allow ShaderMaterial written in WGSL to be used as shadow depth wrapper. \r\n\r\n[Original issue discussion](https://forum.babylonjs.com/t/shadowdepthwrapper-error-with-wgsl-shader-syntax)\r\n\r\n### Changes involved\r\n\r\n- Avoids GLSL specific shader includes to be called when using WGSL for shadow depth wrapper.\r\n- This PR does not implement shadow map specific shader includes in WGSL. When option `doNotInjectCode=false`, BJS will log error in dev tool console about missing shader includes by default. The reason is BJS does not yet have full support for StandardMaterial or PBRMaterial implemented in WGSL. It is a lot of work to setup WGSL shader from scratch with transparent shadows, self shadow, etc to test the missing shader includes for shadow map. The idea is: for now, if a developer has implement a complete WGSL shader that require these shader includes, this developer can create these shader includes in WGSL, and include them in ShaderStore.IncludesShadersStoreWGSL. [This example](https://github.com/shen-lin/Babylon.js/blob/wgls-dev/packages/tools/devHost/src/createScene.ts#L30) has been tested with some dumm WGSL code included into final runtime WGSL shader. If I later on need these shader includes and I have a test case, I will implement them and add to BJS WGSL shader include.\r\n\r\nThe shader includes that could be added in the future (WGSL version) mentioned above refers to:\r\n- shadowMapVertexExtraDeclaration\r\n- shadowMapVertexNormalBias\r\n- shadowMapVertexMetric\r\n- shadowMapFragmentSoftTransparentShadow\r\n- shadowMapFragment\r\n\r\n### Example outcome\r\n\r\nSee [dev branch](https://github.com/shen-lin/Babylon.js/tree/wgls-dev) for test scenario setup in dev host.\r\n\r\nScreenshot of local test result as shown below. A WGSL vertex shader is applied to animate both sphere and shadow vertex displacement.\r\n\r\n![Screenshot 2024-01-30 at 4 26 19 PM](https://github.com/BabylonJS/Babylon.js/assets/4505448/9fc6146b-2ee9-4be5-b15d-020115759512)\r\n\r\n",
+                "author": {
+                    "name": "shen-lin",
+                    "url": "https://github.com/shen-lin"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14754",
+                "title": "Unity Toolkit Workaround",
+                "description": "Workaround to temp disable the Unity Toolkit scripts loading from playground loadScriptAsync. But load from BABYLON.Tools.LoadScriptAsync while debugging the issue",
+                "author": {
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.41.0": [
             {
                 "pr": "14756",

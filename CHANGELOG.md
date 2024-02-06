@@ -1,5 +1,23 @@
 # Changelog
 
+## 6.41.1
+
+### Core
+
+- Particle systems: add support for fog - by [Popov72](https://github.com/Popov72) ([#14765](https://github.com/BabylonJS/Babylon.js/pull/14765))
+- ShaderMaterial: add support for fog - by [Popov72](https://github.com/Popov72) ([#14768](https://github.com/BabylonJS/Babylon.js/pull/14768))
+- Ray: use an epsilon when calculating ray/triangle intersections - by [Popov72](https://github.com/Popov72) ([#14767](https://github.com/BabylonJS/Babylon.js/pull/14767))
+- Camera: Add hasMoved property - by [Popov72](https://github.com/Popov72) ([#14764](https://github.com/BabylonJS/Babylon.js/pull/14764))
+- Morph targets: Add missing morph count uniforms to some renderers/materials - by [noname0310](https://github.com/noname0310) ([#14763](https://github.com/BabylonJS/Babylon.js/pull/14763))
+- Havok Heightmaps - [_New Feature_] by [carolhmj](https://github.com/carolhmj) ([#14752](https://github.com/BabylonJS/Babylon.js/pull/14752))
+- Use shader material written in wgsl as shadow depth wrapper - [_New Feature_] by [shen-lin](https://github.com/shen-lin) ([#14755](https://github.com/BabylonJS/Babylon.js/pull/14755))
+
+### Loaders
+
+
+### Playground
+
+
 ## 6.41.0
 
 ### Core
