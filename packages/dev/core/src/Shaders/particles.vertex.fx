@@ -39,6 +39,7 @@ varying vec4 remapRanges;
 uniform mat4 invView;
 #endif
 #include<clipPlaneVertexDeclaration>
+#include<fogVertexDeclaration>
 #include<logDepthDeclaration>
 
 #ifdef BILLBOARD
@@ -162,10 +163,11 @@ void main(void) {
 	#endif
 
 	// Clip plane
-#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6) || defined(FOG)
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
+	#include<fogVertex>
 	#include<logDepthVertex>
 	
 #define CUSTOM_VERTEX_MAIN_END
