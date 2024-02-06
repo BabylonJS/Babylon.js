@@ -9,6 +9,11 @@ attribute vec4 color;
 #include<bakedVertexAnimationDeclaration>
 
 #include<clipPlaneVertexDeclaration>
+#include<fogVertexDeclaration>
+
+#ifdef FOG
+	uniform mat4 view;
+#endif
 
 // Uniforms
 
@@ -46,6 +51,7 @@ void main(void) {
 #endif
 
 #include<clipPlaneVertex>
+#include<fogVertex>
 
 #include<vertexColorMixing>
 
