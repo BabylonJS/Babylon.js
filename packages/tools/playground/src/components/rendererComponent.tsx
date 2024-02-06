@@ -201,6 +201,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
             // Check for Unity Toolkit
             if (unityToolkit) {
                 await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.js");
+                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/unity.playground.js");
                 this._unityToolkitWasLoaded = true;
             }
             Utilities.StoreBoolToStore("unity-toolkit-used", unityToolkit);
