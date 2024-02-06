@@ -17,6 +17,11 @@
             "referenceImage": "nodeGeometry.png"
         },
         {
+            "title": "Node Geometry - Building generator",
+            "playgroundId": "#7RWIUU#27",
+            "referenceImage": "nodeGeometryBuildingGenerator.png"
+        },
+        {
             "title": "GreasedLine - non camera facing",
             "playgroundId": "#FJRQ8N#150",
             "referenceImage": "greased-line-non-camera-facing.png"
