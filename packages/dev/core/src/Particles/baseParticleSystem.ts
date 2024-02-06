@@ -203,6 +203,11 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      */
     public preventAutoStart: boolean = false;
 
+    /**
+     * Gets or sets a boolean indicating that this particle system will allow fog to be rendered on it (false by default)
+     */
+    public applyFog = false;
+
     /** @internal */
     _wasDispatched = false;
 
