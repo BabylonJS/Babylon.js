@@ -35,6 +35,7 @@ uniform mat4 invView;
 #endif
 
 #include<clipPlaneVertexDeclaration2>
+#include<fogVertexDeclaration>
 #include<logDepthDeclaration>
 
 #ifdef COLORGRADIENTS
@@ -171,9 +172,10 @@ void main() {
 	gl_Position = projection * viewPosition;
 
 	// Clip plane
-#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6)
+#if defined(CLIPPLANE) || defined(CLIPPLANE2) || defined(CLIPPLANE3) || defined(CLIPPLANE4) || defined(CLIPPLANE5) || defined(CLIPPLANE6) || defined(FOG)
     vec4 worldPos = vec4(vPositionW, 1.0);
 #endif
 	#include<clipPlaneVertex>
+	#include<fogVertex>
 	#include<logDepthVertex>
 }

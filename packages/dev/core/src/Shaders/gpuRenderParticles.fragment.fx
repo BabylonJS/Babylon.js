@@ -18,6 +18,8 @@ varying vec4 vColor;
 
 #include<imageProcessingFunctions>
 
+#include<fogFragmentDeclaration>
+
 void main() {
 	#include<clipPlaneFragment> 
 
@@ -30,6 +32,7 @@ void main() {
 	#endif	 
 	 
 	#include<logDepthFragment>
+	#include<fogFragment>(color,gl_FragColor)
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

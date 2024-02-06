@@ -26,6 +26,7 @@ export class Ray {
      * @param origin origin point
      * @param direction direction
      * @param length length of the ray
+     * @param epsilon The epsilon value to use when calculating the ray/triangle intersection (default: 0)
      */
     constructor(
         /** origin point */
@@ -33,7 +34,9 @@ export class Ray {
         /** direction */
         public direction: Vector3,
         /** length of the ray */
-        public length: number = Number.MAX_VALUE
+        public length: number = Number.MAX_VALUE,
+        /** The epsilon value to use when calculating the ray/triangle intersection (default: 0) */
+        public epsilon: number = 0
     ) {}
 
     // Methods
@@ -213,7 +216,7 @@ export class Ray {
 
         const bv = Vector3.Dot(tvec, pvec) * invdet;
 
-        if (bv < 0 || bv > 1.0) {
+        if (bv < -this.epsilon || bv > 1.0 + this.epsilon) {
             return null;
         }
 
@@ -221,7 +224,7 @@ export class Ray {
 
         const bw = Vector3.Dot(this.direction, qvec) * invdet;
 
-        if (bw < 0 || bv + bw > 1.0) {
+        if (bw < -this.epsilon || bv + bw > 1.0 + this.epsilon) {
             return null;
         }
 
@@ -583,6 +586,7 @@ export class Ray {
         Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
         Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
         result.length = ray.length;
+        result.epsilon = ray.epsilon;
 
         const dir = result.direction;
         const len = dir.length();

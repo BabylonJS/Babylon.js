@@ -30,7 +30,7 @@ import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 
@@ -1316,7 +1316,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * @internal
      */
-    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
+    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
         addClipPlaneUniforms(effectCreationOption);
 
@@ -1325,6 +1325,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         if (useLogarithmicDepth) {
             effectCreationOption.push("logarithmicDepthConstant");
+        }
+
+        if (applyFog) {
+            effectCreationOption.push("vFogInfos");
+            effectCreationOption.push("vFogColor");
         }
 
         return effectCreationOption;
@@ -1338,6 +1343,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public fillDefines(defines: Array<string>, blendMode: number = 0) {
         if (this._scene) {
             prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
+                defines.push("#define FOG");
+            }
         }
 
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
@@ -1400,7 +1408,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             )
         );
 
-        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth));
+        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth, this.applyFog));
 
         samplers.push("diffuseSampler", "colorGradientSampler");
 
@@ -1529,6 +1537,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this._scene) {
             bindClipPlane(effect, this, this._scene);
+
+            if (this.applyFog) {
+                MaterialHelper.BindFogParameters(this._scene, undefined, effect);
+            }
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
