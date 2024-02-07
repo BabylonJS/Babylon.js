@@ -12,6 +12,7 @@ import type { Plane } from "../Maths/math.plane";
 import { EngineStore } from "../Engines/engineStore";
 
 import type { Mesh } from "../Meshes/mesh";
+import { Epsilon } from "core/Maths/math.constants";
 
 /**
  * Class representing a ray with position and direction
@@ -35,8 +36,8 @@ export class Ray {
         public direction: Vector3,
         /** length of the ray */
         public length: number = Number.MAX_VALUE,
-        /** The epsilon value to use when calculating the ray/triangle intersection (default: 0) */
-        public epsilon: number = 0
+        /** The epsilon value to use when calculating the ray/triangle intersection (default: Epsilon from math constants) */
+        public epsilon: number = Epsilon
     ) {}
 
     // Methods
