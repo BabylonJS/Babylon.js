@@ -1,6 +1,36 @@
 {
-    "fromTag": "6.41.0",
+    "fromTag": "6.41.1",
     "changelog": {
+        "6.41.2": [
+            {
+                "pr": "14769",
+                "title": "Fixing an issue with NGE parsing",
+                "description": "Quick note - this might cause NGEs creted in the last 2-3 weeks to fail.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nodeGeometryBuildingGenerator.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14758",
+                "title": "Add back convertion to float for Matrix Indices",
+                "description": "We believe this change was made by accident. Babylon Native currently needs matrix index buffers to be converted to float in the JS side. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            }
+        ],
         "6.41.1": [
             {
                 "pr": "14765",

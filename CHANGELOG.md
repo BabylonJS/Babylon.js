@@ -1,5 +1,15 @@
 # Changelog
 
+## 6.41.2
+
+### Core
+
+- Fixing an issue with NGE parsing - by [RaananW](https://github.com/RaananW) ([#14769](https://github.com/BabylonJS/Babylon.js/pull/14769))
+
+### Loaders
+
+- Add back convertion to float for Matrix Indices - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#14758](https://github.com/BabylonJS/Babylon.js/pull/14758))
+
 ## 6.41.1
 
 ### Core
