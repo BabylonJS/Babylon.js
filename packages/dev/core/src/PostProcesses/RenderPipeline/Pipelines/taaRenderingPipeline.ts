@@ -32,7 +32,7 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
     public TAAPassEffect: string = "TAAPassEffect";
 
     @serialize("samples")
-    private _samples = 16;
+    private _samples = 8;
     /**
      * Number of accumulated samples (default: 16)
      */
