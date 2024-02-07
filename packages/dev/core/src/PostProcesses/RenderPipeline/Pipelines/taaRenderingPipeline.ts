@@ -11,7 +11,7 @@ import { Constants } from "../../../Engines/constants";
 import type { Nullable } from "../../../types";
 import { PassPostProcess } from "core/PostProcesses/passPostProcess";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { Halton2DSequence } from "core/Misc/halton2DSequence";
+import { Halton2DSequence } from "core/Maths/halton2DSequence";
 
 import "../postProcessRenderPipelineManagerSceneComponent";
 
