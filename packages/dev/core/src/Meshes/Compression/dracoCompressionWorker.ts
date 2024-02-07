@@ -225,36 +225,31 @@ export function workerFunction(): void {
  * @param moduleUrl The url to the draco decoder module (optional)
  * @returns A promise that resolves when the worker is initialized
  */
-export function initializeWebWorker(
-    worker: Worker,
-    decoderWasmBinary: ArrayBuffer,
-    moduleUrl?: string
-): Promise<Worker> {
+export function initializeWebWorker(worker: Worker, decoderWasmBinary: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
     return new Promise<Worker>((resolve, reject) => {
-    const onError = (error: ErrorEvent) => {
-        worker.removeEventListener("error", onError);
-        worker.removeEventListener("message", onMessage);
-        reject(error);
-    };
-
-    const onMessage = (event: MessageEvent<Message>) => {
-        if (event.data.id === "initDone") {
+        const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);
             worker.removeEventListener("message", onMessage);
-            resolve(worker);
-        }
-    };
+            reject(error);
+        };
 
-    worker.addEventListener("error", onError);
-    worker.addEventListener("message", onMessage);
+        const onMessage = (event: MessageEvent<Message>) => {
+            if (event.data.id === "initDone") {
+                worker.removeEventListener("error", onError);
+                worker.removeEventListener("message", onMessage);
+                resolve(worker);
+            }
+        };
 
-    worker.postMessage({
-        id: "init",
-        decoder: {
-            url: moduleUrl,
-            wasmBinary: decoderWasmBinary,
-        },
+        worker.addEventListener("error", onError);
+        worker.addEventListener("message", onMessage);
+
+        worker.postMessage({
+            id: "init",
+            decoder: {
+                url: moduleUrl,
+                wasmBinary: decoderWasmBinary,
+            },
+        });
     });
-});
 }
-

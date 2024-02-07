@@ -177,8 +177,7 @@ const _CreateWorkerAsync = () => {
                         }
                         const workerBlobUrl = URL.createObjectURL(new Blob([`(${workerFunction})()`], { type: "application/javascript" }));
                         _Worker = new Worker(workerBlobUrl);
-                        initializeWebWorker(_Worker, wasmBinary, BasisToolsOptions.JSModuleURL)
-                        
+                        initializeWebWorker(_Worker, wasmBinary, BasisToolsOptions.JSModuleURL);
                     })
                     .catch(reject);
             }

@@ -254,4 +254,3 @@ export function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, mod
         worker.postMessage({ action: "init", url: moduleUrl ? Tools.GetBabylonScriptURL(moduleUrl) : undefined, wasmBinary });
     });
 }
-
