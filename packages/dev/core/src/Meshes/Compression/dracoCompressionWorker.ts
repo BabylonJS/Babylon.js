@@ -251,5 +251,6 @@ export function initializeWebWorker(worker: Worker, decoderWasmBinary: ArrayBuff
                 wasmBinary: decoderWasmBinary,
             },
         });
+        // note: no transfer list as the ArrayBuffer is shared across main thread and pool workers
     });
 }

@@ -251,6 +251,7 @@ export function initializeWebWorker(worker: Worker, wasmBinary: ArrayBuffer, mod
             }
         };
         worker.addEventListener("message", initHandler);
-        worker.postMessage({ action: "init", url: moduleUrl ? Tools.GetBabylonScriptURL(moduleUrl) : undefined, wasmBinary });
+        // we can use transferable objects here because the worker will own the ArrayBuffer
+        worker.postMessage({ action: "init", url: moduleUrl ? Tools.GetBabylonScriptURL(moduleUrl) : undefined, wasmBinary }, [wasmBinary]);
     });
 }
