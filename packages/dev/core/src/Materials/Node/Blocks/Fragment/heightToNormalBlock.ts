@@ -125,9 +125,9 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
 
         const heightToNormal = `
             vec4 heightToNormal(in float height, in vec3 position, in vec3 tangent, in vec3 normal) {
-                ${startCode}
                 ${this.automaticNormalizationTangent ? "tangent = normalize(tangent);" : ""}
                 ${this.automaticNormalizationNormal ? "normal = normalize(normal);" : ""}
+                ${startCode}
                 vec3 worlddX = dFdx(position);
                 vec3 worlddY = dFdy(position);
                 vec3 crossX = cross(normal, worlddX);
