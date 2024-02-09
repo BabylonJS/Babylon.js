@@ -21,7 +21,8 @@
             "node-geometry-editor/*": ["tools/nodeGeometryEditor/src/*"],
             "gui-editor/*": ["tools/guiEditor/src/*"],
             "viewer/*": ["tools/viewer/src/*"],
-            "ktx2decoder/*": ["tools/ktx2Decoder/src/*"]
+            "ktx2decoder/*": ["tools/ktx2Decoder/src/*"],
+            "babylonjs-gltf2interface/*": ["public/glTF2Interface/babylon.glTF2Interface.d.ts"]
         }
     },
 

@@ -23,6 +23,7 @@
         "@dev/procedural-textures": "1.0.0",
         "@dev/serializers": "1.0.0",
         "@tools/accessibility": "1.0.0",
+        "babylonjs-gltf2interface": "^6.42.0",
         "html-webpack-plugin": "^5.5.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
@@ -34,3 +35,4 @@
     },
     "sideEffects": true
 }
+

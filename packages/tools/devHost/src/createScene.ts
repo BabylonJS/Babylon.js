@@ -7,15 +7,14 @@ import { Button } from "gui/2D/controls/button";
 import { Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
+import "core/Loading/loadingScreen";
+
+import "loaders/glTF/2.0";
 
 export const createScene = async function () {
     const scene = new Scene(engine);
     const camera = new ArcRotateCamera("camera1", Math.PI / 2, Math.PI / 4, 3, new Vector3(0, 1, 0), scene);
     camera.attachControl(canvas, true);
-
-    camera.lowerRadiusLimit = 2;
-    camera.upperRadiusLimit = 10;
-    camera.wheelDeltaPercentage = 0.01;
 
     const light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
     light.intensity = 0.6;
