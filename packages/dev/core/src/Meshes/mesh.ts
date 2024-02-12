@@ -2786,6 +2786,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesData(VertexBuffer.NormalKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
         }
 
+        // Tangents
+        if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+            data = <FloatArray>this.getVerticesData(VertexBuffer.TangentKind);
+            for (index = 0; index < data.length; index += 4) {
+                Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp)
+                    .normalize()
+                    .toArray(data, index);
+            }
+            this.setVerticesData(VertexBuffer.TangentKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.TangentKind)).isUpdatable());
+        }
+
         // flip faces?
         if (transform.determinant() < 0) {
             this.flipFaces();

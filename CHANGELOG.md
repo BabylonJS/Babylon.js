@@ -1,5 +1,22 @@
 # Changelog
 
+## 6.42.0
+
+### Core
+
+- PostProcess: Add a simple TAA rendering pipeline - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14771](https://github.com/BabylonJS/Babylon.js/pull/14771))
+- Ray: set non 0 epsilon - by [Popov72](https://github.com/Popov72) ([#14772](https://github.com/BabylonJS/Babylon.js/pull/14772))
+
+## 6.41.2
+
+### Core
+
+- Fixing an issue with NGE parsing - by [RaananW](https://github.com/RaananW) ([#14769](https://github.com/BabylonJS/Babylon.js/pull/14769))
+
+### Loaders
+
+- Add back convertion to float for Matrix Indices - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#14758](https://github.com/BabylonJS/Babylon.js/pull/14758))
+
 ## 6.41.1
 
 ### Core
