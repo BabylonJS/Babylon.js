@@ -289,7 +289,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     private _queryCollector: bigint;
     private _fixedTimeStep: number = 1 / 60;
-    private _timeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _shapes = new Map<bigint, PhysicsShape>();
@@ -385,7 +384,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this.setPhysicsBodyTransformation(physicsBody, physicsBody.transformNode);
         }
 
-        this._hknp.HP_World_Step(this.world, this._useDeltaForWorldStep ? delta : this._timeStep);
+        const deltaTime = this._useDeltaForWorldStep ? delta : this._fixedTimeStep;
+        this._hknp.HP_World_SetIdealStepTime(this.world, deltaTime);
+        this._hknp.HP_World_Step(this.world, deltaTime);
 
         this._bodyBuffer = this._hknp.HP_World_GetBodyBuffer(this.world)[1];
         for (const physicsBody of physicsBodies) {
