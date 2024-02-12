@@ -808,6 +808,7 @@ interface XRProjectionLayerInit {
     textureType?: XRTextureType | undefined;
     colorFormat?: GLenum | undefined;
     depthFormat?: GLenum | undefined;
+    clearOnAccess?: boolean | undefined;
 }
 
 interface XRProjectionLayer extends XRCompositionLayer {
@@ -829,6 +830,7 @@ interface XRLayerInit {
     depthFormat?: GLenum | undefined;
     space: XRSpace;
     layout?: XRLayerLayout | undefined;
+    clearOnAccess?: boolean | undefined;
 }
 
 interface XRMediaLayerInit {

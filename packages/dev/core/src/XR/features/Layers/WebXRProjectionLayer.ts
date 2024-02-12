@@ -72,4 +72,5 @@ export const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
     colorFormat: 0x1908 /* WebGLRenderingContext.RGBA */,
     depthFormat: 0x88f0 /* WebGLRenderingContext.DEPTH24_STENCIL8 */,
     scaleFactor: 1.0,
+    clearOnAccess: false,
 };
