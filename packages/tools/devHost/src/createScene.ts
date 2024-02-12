@@ -1,24 +1,28 @@
-/* eslint-disable-next-line import/no-internal-modules */
-import { canvas, engine } from "./index";
-import "@dev/loaders";
-import "@tools/node-editor";
-import "@tools/node-geometry-editor";
-import * as GUIEditor from "@tools/gui-editor";
-import { Inspector, InjectGUIEditor } from "@dev/inspector";
-import type { ArcRotateCamera } from "@dev/core";
-import { CubeTexture, Scene, SceneLoader } from "@dev/core";
-import { AdvancedDynamicTexture, Button } from "@dev/gui";
+import { Scene } from "core/scene";
+import { canvas, engine } from "./engine";
+import { SceneLoader } from "core/Loading/sceneLoader";
+import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
+import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
+import { Button } from "gui/2D/controls/button";
+import { Vector3 } from "core/Maths/math.vector";
+import { Color3 } from "core/Maths/math.color";
+import { HemisphericLight } from "core/Lights/hemisphericLight";
+import "core/Loading/loadingScreen";
+
+import "loaders/glTF/2.0";
 
 export const createScene = async function () {
     const scene = new Scene(engine);
-    scene.createDefaultCameraOrLight(true);
-    const hdrTexture = new CubeTexture("https://playground.babylonjs.com/textures/SpecularHDR.dds", scene);
-    scene.createDefaultSkybox(hdrTexture, true, 10000);
+    const camera = new ArcRotateCamera("camera1", Math.PI / 2, Math.PI / 4, 3, new Vector3(0, 1, 0), scene);
+    camera.attachControl(canvas, true);
+
+    const light = new HemisphericLight("light1", new Vector3(0, 1, 0), scene);
+    light.intensity = 0.6;
+    light.specular = Color3.Black();
 
     // The first parameter can be used to specify which mesh to import. Here we import all meshes
     SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/webp/", "webp.gltf", scene, function (_newMeshes) {
         scene.activeCamera!.attachControl(canvas, false);
-        // scene.activeCamera!.alpha += Math.PI; // camera +180°
         (scene.activeCamera as ArcRotateCamera).radius = 80;
     });
 
@@ -35,8 +39,9 @@ export const createScene = async function () {
         console.log("you did it!");
     });
     advancedTexture.addControl(button1);
-    InjectGUIEditor(GUIEditor);
-    Inspector.Show(scene, {});
+
+    // InjectGUIEditor(GUIEditor);
+    // Inspector.Show(scene, {});
 
     return scene;
 };
