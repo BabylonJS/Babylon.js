@@ -4171,8 +4171,8 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
     private _clearFrameBuffer(camera: Nullable<Camera>) {
         // we assume the framebuffer currently bound is the right one
-        if (camera && camera._multiviewTexture) {
-            // no clearing?
+        if (camera && (camera._multiviewTexture || (camera.outputRenderTarget && camera._renderingMultiview))) {
+            // no clearing
         } else if (camera && camera.outputRenderTarget && !camera._renderingMultiview) {
             const rtt = camera.outputRenderTarget;
             if (rtt.onClearObservable.hasObservers()) {
