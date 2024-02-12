@@ -190,7 +190,7 @@ const _CreateWorkerAsync = () => {
  * Set the worker to use for transcoding
  * @param worker The worker that will be used for transcoding
  */
-export const SetBasistTranscoderWorker = (worker: Worker) => {
+export const SetBasisTranscoderWorker = (worker: Worker) => {
     _Worker = worker;
 };
 

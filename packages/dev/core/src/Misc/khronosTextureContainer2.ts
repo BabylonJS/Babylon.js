@@ -169,9 +169,21 @@ export class DefaultKTX2DecoderOptions {
     }
 }
 
+/**
+ * Options for the KTX2 decoder
+ */
 export interface IKhronosTextureContainer2Options {
+    /**
+     * Number of workers to use for async operations. Specify `0` to disable web workers and run synchronously in the current context.
+     */
     numWorkers?: number;
+    /**
+     * Worker pool to use for async operations. If set, `numWorkers` will be ignored.
+     */
     workerPool?: AutoReleaseWorkerPool;
+    /**
+     * Optional container for the KTX2 decoder module and its dependencies. If set, the module will be used from this container and the URLs will be ignored.
+     */
     binariesAndModulesContainer?: { [key in AllowedKeys]?: ArrayBuffer | any };
 }
 
