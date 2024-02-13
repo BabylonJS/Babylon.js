@@ -333,7 +333,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                     this.inXRFrameLoop = true;
                     const framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
                     // equality can be tested as it should be the same object
-                    if(this._engine.framebufferDimensionsObject !== framebufferDimensionsObject) {
+                    if (this._engine.framebufferDimensionsObject !== framebufferDimensionsObject) {
                         this._engine.framebufferDimensionsObject = framebufferDimensionsObject;
                     }
                     this.onXRFrameObservable.notifyObservers(xrFrame);
