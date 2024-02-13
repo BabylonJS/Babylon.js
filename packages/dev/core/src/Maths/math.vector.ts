@@ -18,7 +18,7 @@ const _ExtractAsInt = (value: number) => {
 };
 
 /**
- * Reprents a vector of any dimension
+ * Represents a vector of any dimension
  */
 export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
     /**
