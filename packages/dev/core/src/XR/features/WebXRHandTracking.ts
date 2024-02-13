@@ -24,6 +24,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 import { EngineStore } from "../../Engines/engineStore";
 import { Constants } from "../../Engines/constants";
+import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 
 declare const XRHand: XRHand;
 
@@ -558,7 +559,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _GenerateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
+    private static _GenerateDefaultHandMeshesAsync(
+        scene: Scene,
+        xrSessionManager: WebXRSessionManager,
+        options?: IWebXRHandTrackingOptions
+    ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
@@ -611,7 +616,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             handNodes.fresnel.value = handColors.fresnel;
             handNodes.fingerColor.value = handColors.fingerColor;
             handNodes.tipFresnel.value = handColors.tipFresnel;
-
+            const isMultiview = (xrSessionManager._getBaseLayerWrapper() as WebXRCompositionLayerWrapper)?.isMultiview;
             ["left", "right"].forEach((handedness) => {
                 const handGLB = handedness == "left" ? WebXRHandTracking._LeftHandGLB : WebXRHandTracking._RightHandGLB;
                 if (!handGLB) {
@@ -620,7 +625,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
-                // handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                // if in multiview do not use the material
+                if (!isMultiview) {
+                    handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                }
                 handMesh.isVisible = false;
 
                 riggedMeshes[handedness] = handMesh;
@@ -798,7 +806,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
-            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
+            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this._xrSessionManager, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
                     left: WebXRHandTracking._GenerateDefaultHandMeshRigMapping("left"),
