@@ -153,15 +153,16 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @returns the quad layer
      */
     private _createQuadLayer(options: { params: Partial<XRQuadLayerInit> } = { params: {} }, babylonTexture?: ThinTexture): WebXRCompositionLayerWrapper {
-        this._extendXRLayerInit(options.params, this._isMultiviewEnabled);
+        this._extendXRLayerInit(options.params, false);
         const engine = this._xrSessionManager.scene.getEngine();
         const populatedParams: XRQuadLayerInit = {
             space: this._xrSessionManager.referenceSpace,
-            viewPixelWidth: engine.framebufferDimensionsObject?.framebufferWidth ?? engine.getRenderWidth(),
-            viewPixelHeight: engine.framebufferDimensionsObject?.framebufferHeight ?? engine.getRenderHeight(),
+            viewPixelWidth: babylonTexture?.getSize().width ?? engine.framebufferDimensionsObject?.framebufferWidth ?? engine.getRenderWidth(),
+            viewPixelHeight: babylonTexture?.getSize().height ?? engine.framebufferDimensionsObject?.framebufferHeight ?? engine.getRenderHeight(),
+            clearOnAccess: true,
             ...options.params,
         };
-        this._validateLayerInit(populatedParams, this._isMultiviewEnabled);
+        this._validateLayerInit(populatedParams, false);
         const quadLayer = this._xrWebGLBinding.createQuadLayer(populatedParams);
 
         quadLayer.width = 2;
@@ -172,7 +173,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             () => quadLayer.height,
             quadLayer,
             "XRQuadLayer",
-            this._isMultiviewEnabled,
+            false,
             (sessionManager) => new WebXRCompositionLayerRenderTargetTextureProvider(sessionManager, this._xrWebGLBinding, wrapper)
         );
 
@@ -352,16 +353,16 @@ export class WebXRLayers extends WebXRAbstractFeature {
                 if (!rttProvider) {
                     continue;
                 }
-                if (this._isMultiviewEnabled) {
+
+                if (rttProvider.layerWrapper.isMultiview) {
                     // get the views, if we are in multiview
                     const pose = _xrFrame.getViewerPose(this._xrSessionManager.referenceSpace);
-                    if (!pose) {
-                        continue;
-                    }
-                    const views = pose.views;
-                    for (let j = 0; j < views.length; ++j) {
-                        const view = views[j];
-                        rttProvider.getRenderTargetTextureForView(view);
+                    if (pose) {
+                        const views = pose.views;
+                        for (let j = 0; j < views.length; ++j) {
+                            const view = views[j];
+                            rttProvider.getRenderTargetTextureForView(view);
+                        }
                     }
                 } else {
                     rttProvider.getRenderTargetTextureForView();
