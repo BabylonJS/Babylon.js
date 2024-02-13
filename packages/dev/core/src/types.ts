@@ -145,7 +145,7 @@ export type DataArray = number[] | ArrayBuffer | ArrayBufferView;
 /**
  * A recursive array of T (i.e. T[], T[][], T[][][], ...)
  */
-export type RecrusiveArray<T> = (RecrusiveArray<T> | T)[];
+export type RecursiveArray<T> = (RecursiveArray<T> | T)[];
 
 /**
  * Multidimensional array
