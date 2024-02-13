@@ -335,12 +335,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @returns true if both colors are distant less than epsilon
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<Color3>, epsilon: number = Epsilon): boolean {
-        return (
-            otherColor &&
-            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
-            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
-            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon)
-        );
+        return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
     /**
@@ -1490,7 +1485,6 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<Color4>, epsilon: number = Epsilon): boolean {
         return (
-            otherColor &&
             Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
             Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
             Scalar.WithinEpsilon(this.b, otherColor.b, epsilon) &&

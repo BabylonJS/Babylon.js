@@ -1855,10 +1855,15 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @returns the current updated Vector3
      */
     public minimizeInPlaceFromFloats(x: number, y: number, z: number): this {
-        this._x = Math.min(x, this._x);
-        this._y = Math.min(y, this._y);
-        this._z = Math.min(z, this._z);
-        this._isDirty = true;
+        if (x < this._x) {
+            this.x = x;
+        }
+        if (y < this._y) {
+            this.y = y;
+        }
+        if (z < this._z) {
+            this.z = z;
+        }
         return this;
     }
 
@@ -1871,10 +1876,15 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @returns the current updated Vector3
      */
     public maximizeInPlaceFromFloats(x: number, y: number, z: number): this {
-        this._x = Math.max(x, this._x);
-        this._y = Math.max(y, this._y);
-        this._z = Math.max(z, this._z);
-        this._isDirty = true;
+        if (x > this._x) {
+            this.x = x;
+        }
+        if (y > this._y) {
+            this.y = y;
+        }
+        if (z > this._z) {
+            this.z = z;
+        }
         return this;
     }
 
@@ -1940,8 +1950,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @returns a new Vector3
      */
     public floor(): this {
-        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
-        return this.floorToRef(result);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
     }
 
     /**
@@ -1963,8 +1972,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @returns a new Vector3
      */
     public fract(): this {
-        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
-        return this.fractToRef(result);
+        return new (this.constructor as Constructor<typeof Vector3, this>)(this.x - Math.floor(this._x), this.y - Math.floor(this._y), this.z - Math.floor(this._z));
     }
 
     // Properties
@@ -6023,7 +6031,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public set(...values: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < Math.min(m.length, values.length, 16); i++) {
             m[i] = values[i];
         }
         this.markAsUpdated();

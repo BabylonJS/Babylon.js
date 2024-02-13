@@ -156,7 +156,7 @@ export type RecursiveArray<T> = (RecursiveArray<T> | T)[];
 export type MultidimensionalArray<T, D> = D extends 0
     ? T
     : number extends D
-      ? RecrusiveArray<T>
+      ? RecursiveArray<T>
       : D extends number
         ? T extends unknown[]
             ? T extends Array<infer U>
