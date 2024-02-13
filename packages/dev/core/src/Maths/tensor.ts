@@ -11,7 +11,7 @@ export type Dimension<T> = T extends Array<infer U> ? [Length<T>, ...Dimension<U
 export type TensorValue<T> = T extends Tensor<infer V> ? V : never;
 
 /**
- * Describes a mathimatical tensor.
+ * Describes a mathematical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
 export declare abstract class Tensor<V extends unknown[] = unknown[]> {
