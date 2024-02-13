@@ -32,7 +32,14 @@ function colorChannelToGammaSpaceExact(color: number): number {
  * Class used to hold a RGB color
  */
 export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: [3];
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /**
@@ -180,35 +187,19 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         return new (this.constructor as Constructor<typeof Color3, this>)(this.r * r, this.g * g, this.b * b);
     }
 
-    /**
-     * Returns a new Color3 set with the result of the division of the current Color3 coordinates by the given ones
-     * @param otherColor defines the second operand
-     * @returns the new Color3
-     */
-    public divide(otherColor: DeepImmutable<Color3>): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b);
+    /* Do not use */
+    public divide(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a color");
     }
 
-    /**
-     * Divides the current Color3 coordinates by the given ones and stores the result in the given color "result"
-     * @param otherColor defines the second operand
-     * @param result defines the Color3 object where to store the result
-     * @returns the result
-     */
-    public divideToRef<T extends Color3>(otherColor: DeepImmutable<Color3>, result: T): T {
-        return result.copyFromFloats(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b);
+    /* Do not use */
+    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+        throw new ReferenceError("Can not divide a color");
     }
 
-    /**
-     * Divides the current Color3 coordinates by the given ones.
-     * @param otherColor defines the second operand
-     * @returns the current updated Color3
-     */
-    public divideInPlace(otherColor: DeepImmutable<Color3>): this {
-        this.r = this.r / otherColor.r;
-        this.g = this.g / otherColor.g;
-        this.b = this.b / otherColor.b;
-        return this;
+    /* Do not use */
+    public divideInPlace(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a color");
     }
 
     /**
@@ -216,7 +207,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param other defines the second operand
      * @returns the current updated Color3
      */
-    public minimizeInPlace(other: DeepImmutable<Color3>): this {
+    public minimizeInPlace(other: DeepImmutable<this>): this {
         return this.minimizeInPlaceFromFloats(other.r, other.g, other.b);
     }
 
@@ -225,7 +216,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param other defines the second operand
      * @returns the current updated Color3
      */
-    public maximizeInPlace(other: DeepImmutable<Color3>): this {
+    public maximizeInPlace(other: DeepImmutable<this>): this {
         return this.maximizeInPlaceFromFloats(other.r, other.g, other.b);
     }
 
@@ -257,44 +248,24 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         return this;
     }
 
-    /**
-     * Gets the current Color3's floored values and stores them in result
-     * @param result the color to store the result in
-     * @returns the result color
-     */
-    public floorToRef<T extends this>(result: T): T {
-        result.r = Math.floor(this.r);
-        result.g = Math.floor(this.g);
-        result.b = Math.floor(this.b);
-        return result;
+    /* Do not use */
+    public floorToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not floor a color");
     }
 
-    /**
-     * Gets a new Color3 from current Color3 floored values
-     * @returns a new Color3
-     */
+    /* Do not use */
     public floor(): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b));
+        throw new ReferenceError("Can not floor a color");
     }
 
-    /**
-     * Gets the current Color3's fractional values and stores them in result
-     * @param result the color to store the result in
-     * @returns the result color
-     */
-    public fractToRef<T extends this>(result: T): T {
-        result.r = this.r - Math.floor(this.r);
-        result.g = this.g - Math.floor(this.g);
-        result.b = this.b - Math.floor(this.b);
-        return result;
+    /* Do not use */
+    public fractToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not fract a color");
     }
 
-    /**
-     * Gets a new Color3 from current Color3 fractional values
-     * @returns a new Color3
-     */
+    /* Do not use */
     public fract(): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - Math.floor(this.r), this.g - Math.floor(this.g), this.b - Math.floor(this.b));
+        throw new ReferenceError("Can not fract a color");
     }
 
     /**
@@ -334,36 +305,23 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param epsilon defines the minimal distance to define values as equals
      * @returns true if both colors are distant less than epsilon
      */
-    public equalsWithEpsilon(otherColor: DeepImmutable<Color3>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherColor: DeepImmutable<this>, epsilon: number = Epsilon): boolean {
         return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
-    /**
-     * Gets a new Color3 set with the current Color3 negated coordinates
-     * @returns a new Color3
-     */
+    /* Do not use */
     public negate(): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(-this.r, -this.g, -this.b);
+        throw new ReferenceError("Can not negate a color");
     }
 
-    /**
-     * Negate this color in place
-     * @returns this
-     */
+    /* Do not use */
     public negateInPlace(): this {
-        this.r *= -1;
-        this.g *= -1;
-        this.b *= -1;
-        return this;
+        throw new ReferenceError("Can not negate a color");
     }
 
-    /**
-     * Negate the current Color3 and stores the result in the given color "result" coordinates
-     * @param result defines the Color3 object where to store the result
-     * @returns the result
-     */
-    public negateToRef<T extends Color3 = Color3>(result: T): T {
-        return result.copyFromFloats(this.r * -1, this.g * -1, this.b * -1);
+    /* Do not use */
+    public negateToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not negate a color");
     }
 
     /**
@@ -441,7 +399,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public addInPlace(otherColor: DeepImmutable<Color3>): this {
+    public addInPlace(otherColor: DeepImmutable<this>): this {
         this.r += otherColor.r;
         this.g += otherColor.g;
         this.b += otherColor.b;
@@ -502,7 +460,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public subtractInPlace(otherColor: DeepImmutable<Color3>): this {
+    public subtractInPlace(otherColor: DeepImmutable<this>): this {
         this.r -= otherColor.r;
         this.g -= otherColor.g;
         this.b -= otherColor.b;
@@ -545,7 +503,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param source defines the source Color3 object
      * @returns the updated Color3 object
      */
-    public copyFrom(source: DeepImmutable<Color3>): this {
+    public copyFrom(source: DeepImmutable<this>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -806,7 +764,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
     }
 
     /**
-     * Creates a new Color3 from integer values (< 256)
+     * Creates a new Color3 from integer values (\< 256)
      * @param r defines the red component to read from (value between 0 and 255)
      * @param g defines the green component to read from (value between 0 and 255)
      * @param b defines the blue component to read from (value between 0 and 255)
@@ -1007,7 +965,14 @@ Object.defineProperties(Color3.prototype, {
  * Class used to hold a RBGA color
  */
 export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
+    /**
+     * @see Tensor.dimension
+     */
     public declare readonly dimension: [4];
+
+    /**
+     * @see Tensor.rank
+     */
     public declare readonly rank: 1;
 
     /**
@@ -1313,35 +1278,19 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
         return new (this.constructor as Constructor<typeof Color4, this>)(this.r * r, this.g * g, this.b * b, this.a * a);
     }
 
-    /**
-     * Returns a new Color4 set with the division result of the current Color4 by the given one.
-     * @param otherColor color to devide with
-     * @returns resulting new color
-     */
-    public divide(otherColor: DeepImmutable<Color4>): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r / otherColor.r, this.g / otherColor.g, this.b / otherColor.b, this.a / otherColor.a);
-    }
-    /**
-     * Updates the given color "result" with the division result of the current Color4 by the given one.
-     * @param otherColor color to devide with
-     * @param result color to store the result
-     * @returns result input
-     */
-    public divideToRef<T extends Color4>(otherColor: DeepImmutable<Color4>, result: T): T {
-        result.r = this.r / otherColor.r;
-        result.g = this.g / otherColor.g;
-        result.b = this.b / otherColor.b;
-        result.a = this.a / otherColor.a;
-        return result;
+    /* Do not use */
+    public divide(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a color");
     }
 
-    /**
-     * Divides the current Color3 coordinates by the given ones.
-     * @param otherColor color to devide with
-     * @returns the updated Color3.
-     */
-    public divideInPlace(otherColor: DeepImmutable<Color4>): this {
-        return this.divideToRef(otherColor, this);
+    /* Do not use */
+    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+        throw new ReferenceError("Can not divide a color");
+    }
+
+    /* Do not use */
+    public divideInPlace(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a color");
     }
 
     /**
@@ -1401,80 +1350,39 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
         return this;
     }
 
-    /**
-     * Gets the current Color4's floored values and stores them in result
-     * @param result the color to store the result in
-     * @returns the result color
-     */
-    public floorToRef<T extends this>(result: T): T {
-        result.r = Math.floor(this.r);
-        result.g = Math.floor(this.g);
-        result.b = Math.floor(this.b);
-        result.a = Math.floor(this.a);
-        return result;
+    /* Do not use */
+    public floorToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not floor a color");
     }
 
-    /**
-     * Gets a new Color4 from current Color4 floored values
-     * @returns a new Color4
-     */
+    /* Do not use */
     public floor(): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(Math.floor(this.r), Math.floor(this.g), Math.floor(this.b), Math.floor(this.a));
+        throw new ReferenceError("Can not floor a color");
     }
 
-    /**
-     * Gets the current Color4's fractional values and stores them in result
-     * @param result the color to store the result in
-     * @returns the result color
-     */
-    public fractToRef<T extends this>(result: T): T {
-        result.r = this.r - Math.floor(this.r);
-        result.g = this.g - Math.floor(this.g);
-        result.b = this.b - Math.floor(this.b);
-        result.a = this.a - Math.floor(this.a);
-        return result;
+    /* Do not use */
+    public fractToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not fract a color");
     }
 
-    /**
-     * Gets a new Color4 from current Color4 fractional values
-     * @returns a new Color4
-     */
+    /* Do not use */
     public fract(): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(
-            this.r - Math.floor(this.r),
-            this.g - Math.floor(this.g),
-            this.b - Math.floor(this.b),
-            this.a - Math.floor(this.a)
-        );
+        throw new ReferenceError("Can not fract a color");
     }
 
-    /**
-     * Returns a new Color4 set with the current Color4 negated coordinates.
-     * @returns a new color with the negated values
-     */
+    /* Do not use */
     public negate(): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(-this.r, -this.g, -this.b, -this.a);
+        throw new ReferenceError("Can not negate a color");
     }
 
-    /**
-     * Negate this color in place
-     * @returns this
-     */
+    /* Do not use */
     public negateInPlace(): this {
-        this.r *= -1;
-        this.g *= -1;
-        this.b *= -1;
-        this.a *= -1;
-        return this;
+        throw new ReferenceError("Can not negate a color");
     }
 
-    /**
-     * Negate the current Color4 and stores the result in the given color "result" coordinates
-     * @param result defines the Color3 object where to store the result
-     * @returns the result
-     */
-    public negateToRef<T extends Color4>(result: T): T {
-        return result.copyFromFloats(this.r * -1, this.g * -1, this.b * -1, this.a * -1);
+    /* Do not use */
+    public negateToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not negate a color");
     }
 
     /**

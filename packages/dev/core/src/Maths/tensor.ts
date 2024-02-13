@@ -205,7 +205,7 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
     public divide(other: DeepImmutable<this>): this;
 
     /**
-     * Sets the "result" coordinates with the instance divided by the given one coordinates
+     * Sets the "result" coordinates with the instance coordinates divided by the given one coordinates
      * @param other defines the other instance
      * @param result defines the target instance
      * @returns result input
