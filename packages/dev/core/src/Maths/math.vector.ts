@@ -6006,7 +6006,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
             return this._m;
         }
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             array[index + i] = m[i];
         }
         return this;
@@ -6031,7 +6031,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public set(...values: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < Math.min(m.length, values.length, 16); i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = values[i];
         }
         this.markAsUpdated();
@@ -6040,7 +6040,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public setAll(value: number): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = value;
         }
         this.markAsUpdated();
@@ -6115,7 +6115,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public addInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] += otherM[i];
         }
         this.markAsUpdated();
@@ -6124,7 +6124,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public addInPlaceFromFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] += floats[i];
         }
         this.markAsUpdated();
@@ -6134,7 +6134,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public subtract(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] -= otherM[i];
         }
         this.markAsUpdated();
@@ -6144,7 +6144,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         const m = this._m,
             otherM = other.m,
             resultM = result._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = m[i] - otherM[i];
         }
         result.markAsUpdated();
@@ -6153,7 +6153,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public subtractInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] -= otherM[i];
         }
         this.markAsUpdated();
@@ -6169,7 +6169,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
             m = this._m,
             resultM = result._m,
             values = args as unknown as Tuple<number, 16>;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = m[i] - values[i];
         }
         result.markAsUpdated();
@@ -6438,7 +6438,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public multiplyInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] *= otherM[i];
         }
         this.markAsUpdated();
@@ -6447,7 +6447,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public multiplyByFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = floats[i];
         }
         this.markAsUpdated();
@@ -6464,7 +6464,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
             m = this._m,
             resultM = result._m,
             values = args as unknown as Tuple<number, 16>;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = m[i] * values[i];
         }
         result.markAsUpdated();
@@ -6568,7 +6568,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         const m = this._m,
             otherM = other.m,
             resultM = result._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = m[i] / otherM[i];
         }
         result.markAsUpdated();
@@ -6578,7 +6578,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public divideInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] /= otherM[i];
         }
         this.markAsUpdated();
@@ -6588,7 +6588,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public minimizeInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = Math.min(m[i], otherM[i]);
         }
         this.markAsUpdated();
@@ -6597,7 +6597,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public minimizeInPlaceFromFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = Math.min(m[i], floats[i]);
         }
         this.markAsUpdated();
@@ -6607,7 +6607,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public maximizeInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = Math.min(m[i], otherM[i]);
         }
         this.markAsUpdated();
@@ -6616,7 +6616,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public maximizeInPlaceFromFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = Math.min(m[i], floats[i]);
         }
         this.markAsUpdated();
@@ -6629,7 +6629,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public negateInPlace(): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] = -m[i];
         }
         this.markAsUpdated();
@@ -6639,7 +6639,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public negateToRef<T extends this>(result: T): T {
         const m = this._m,
             resultM = result._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = -m[i];
         }
         result.markAsUpdated();
@@ -6688,7 +6688,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public equalsWithEpsilon(other: DeepImmutable<this>, epsilon: number = 0): boolean {
         const m = this._m,
             otherM = other.m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             if (!Scalar.WithinEpsilon(m[i], otherM[i], epsilon)) {
                 return false;
             }
@@ -6698,7 +6698,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public equalsToFloats(...floats: Tuple<number, 16>): boolean {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             if (m[i] != floats[i]) {
                 return false;
             }
@@ -6713,7 +6713,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public floorToRef<T extends this>(result: T): T {
         const m = this._m,
             resultM = result._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = Math.floor(m[i]);
         }
         result.markAsUpdated();
@@ -6727,7 +6727,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
     public fractToRef<T extends this>(result: T): T {
         const m = this._m,
             resultM = result._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             resultM[i] = m[i] - Math.floor(m[i]);
         }
         result.markAsUpdated();
@@ -6991,7 +6991,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
 
     public scaleInPlace(scale: number): this {
         const m = this._m;
-        for (let i = 0; i < m.length; i++) {
+        for (let i = 0; i < 16; i++) {
             m[i] *= scale;
         }
         this.markAsUpdated();
