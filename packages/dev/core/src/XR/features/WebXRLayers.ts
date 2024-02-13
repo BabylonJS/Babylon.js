@@ -95,6 +95,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
             layer.dispose();
         });
         this._existingLayers.length = 0;
+        this._projectionLayerInitialized = false;
         return true;
     }
 
@@ -154,18 +155,19 @@ export class WebXRLayers extends WebXRAbstractFeature {
      */
     private _createQuadLayer(options: { params: Partial<XRQuadLayerInit> } = { params: {} }, babylonTexture?: ThinTexture): WebXRCompositionLayerWrapper {
         this._extendXRLayerInit(options.params, false);
-        const engine = this._xrSessionManager.scene.getEngine();
+        const width = (this._existingLayers[0].layer as XRProjectionLayer).textureWidth;
+        const height = (this._existingLayers[0].layer as XRProjectionLayer).textureHeight;
         const populatedParams: XRQuadLayerInit = {
             space: this._xrSessionManager.referenceSpace,
-            viewPixelWidth: babylonTexture?.getSize().width ?? engine.framebufferDimensionsObject?.framebufferWidth ?? engine.getRenderWidth(),
-            viewPixelHeight: babylonTexture?.getSize().height ?? engine.framebufferDimensionsObject?.framebufferHeight ?? engine.getRenderHeight(),
+            viewPixelWidth: width,
+            viewPixelHeight: height,
             clearOnAccess: true,
             ...options.params,
         };
         this._validateLayerInit(populatedParams, false);
         const quadLayer = this._xrWebGLBinding.createQuadLayer(populatedParams);
 
-        quadLayer.width = 2;
+        quadLayer.width = this._isMultiviewEnabled ? 1 : 2;
         quadLayer.height = 1;
         // this wrapper is not really needed, but it's here for consistency
         const wrapper: WebXRCompositionLayerWrapper = new WebXRCompositionLayerWrapper(
@@ -194,7 +196,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      * @param options optional parameters for the layer
      * @returns a composition layer containing the texture
      */
-    public addFullscreenAdvancedDynamicTexture(texture: DynamicTexture, options: { distanceFromHeadset: number } = { distanceFromHeadset: 2 }): WebXRCompositionLayerWrapper {
+    public addFullscreenAdvancedDynamicTexture(texture: DynamicTexture, options: { distanceFromHeadset: number } = { distanceFromHeadset: 1.5 }): WebXRCompositionLayerWrapper {
         const wrapper = this._createQuadLayer(
             {
                 params: {
@@ -207,8 +209,6 @@ export class WebXRLayers extends WebXRAbstractFeature {
         );
 
         const layer = wrapper.layer as XRQuadLayer;
-        layer.width = 2;
-        layer.height = 1;
         const distance = Math.max(0.1, options.distanceFromHeadset);
         const pos = { x: 0, y: 0, z: -distance };
         const orient = { x: 0, y: 0, z: 0, w: 1 };

@@ -581,8 +581,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             WebXRHandTracking._RightHandGLB = handGLBs[0];
             WebXRHandTracking._LeftHandGLB = handGLBs[1];
 
-            const handShader = new NodeMaterial("handShader", scene, { emitComments: false });
-            await handShader.loadAsync(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
+            const handShader = await NodeMaterial.ParseFromFileAsync("handShader", WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL, scene);
 
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;
@@ -621,7 +620,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
-                handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                // handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
                 handMesh.isVisible = false;
 
                 riggedMeshes[handedness] = handMesh;

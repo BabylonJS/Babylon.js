@@ -64,6 +64,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Fires when the xr reference space has been initialized
      */
     public onXRReferenceSpaceInitialized: Observable<XRReferenceSpace> = new Observable<XRReferenceSpace>();
+
+    /**
+     * Fires when the session manager is rendering the first frame
+     */
+    public onXRReady: Observable<WebXRSessionManager> = new Observable<WebXRSessionManager>();
     /**
      * Underlying xr session
      */
@@ -326,7 +331,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.inXRFrameLoop = true;
-                    this._engine.framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+                    const framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+                    // equality can be tested as it should be the same object
+                    if(this._engine.framebufferDimensionsObject !== framebufferDimensionsObject) {
+                        this._engine.framebufferDimensionsObject = framebufferDimensionsObject;
+                    }
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     this._engine._renderLoop();
                     this._engine.framebufferDimensionsObject = null;
@@ -336,6 +345,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         };
 
         this._engine.framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+        this.onXRFrameObservable.addOnce(() => {
+            this.onXRReady.notifyObservers(this);
+        });
 
         // Stop window's animation frame and trigger sessions animation frame
         if (typeof window !== "undefined" && window.cancelAnimationFrame) {
