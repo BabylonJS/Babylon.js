@@ -963,6 +963,9 @@ export class ArcRotateCamera extends TargetCamera {
                         this._target.copyFrom(this._transformedDirection);
                     }
                 } else {
+                    if (this.parent) {
+                        Vector3.TransformCoordinatesToRef(this._transformedDirection, this.parent.getWorldMatrix().getRotationMatrix().transpose(), this._transformedDirection);
+                    }
                     this._target.addInPlace(this._transformedDirection);
                 }
             }
