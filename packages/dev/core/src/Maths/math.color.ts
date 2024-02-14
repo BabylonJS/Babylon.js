@@ -187,17 +187,26 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         return new (this.constructor as Constructor<typeof Color3, this>)(this.r * r, this.g * g, this.b * b);
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divide(_other: DeepImmutable<this>): this {
         throw new ReferenceError("Can not divide a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
         throw new ReferenceError("Can not divide a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divideInPlace(_other: DeepImmutable<this>): this {
         throw new ReferenceError("Can not divide a color");
     }
@@ -248,22 +257,34 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         return this;
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public floorToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not floor a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public floor(): this {
         throw new ReferenceError("Can not floor a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public fractToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not fract a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public fract(): this {
         throw new ReferenceError("Can not fract a color");
     }
@@ -309,17 +330,26 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negate(): this {
         throw new ReferenceError("Can not negate a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negateInPlace(): this {
         throw new ReferenceError("Can not negate a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negateToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not negate a color");
     }
@@ -1278,17 +1308,26 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
         return new (this.constructor as Constructor<typeof Color4, this>)(this.r * r, this.g * g, this.b * b, this.a * a);
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divide(_other: DeepImmutable<this>): this {
         throw new ReferenceError("Can not divide a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
         throw new ReferenceError("Can not divide a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public divideInPlace(_other: DeepImmutable<this>): this {
         throw new ReferenceError("Can not divide a color");
     }
@@ -1350,37 +1389,58 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
         return this;
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public floorToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not floor a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public floor(): this {
         throw new ReferenceError("Can not floor a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public fractToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not fract a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public fract(): this {
         throw new ReferenceError("Can not fract a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negate(): this {
         throw new ReferenceError("Can not negate a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negateInPlace(): this {
         throw new ReferenceError("Can not negate a color");
     }
 
-    /* Do not use */
+    /**
+     * @internal
+     * Do not use
+     */
     public negateToRef<T extends this>(_result: T): T {
         throw new ReferenceError("Can not negate a color");
     }
