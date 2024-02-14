@@ -40,20 +40,20 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @returns a string with the instance coordinates
      */
 
-    public toString(): string;
+    public abstract toString(): string;
 
     /**
      * Gets class name
      * @returns the class name
      */
 
-    public getClassName(): string;
+    public abstract getClassName(): string;
 
     /**
      * Gets current instance hash code
      * @returns the instance hash code as a number
      */
-    public getHashCode(): number;
+    public abstract getHashCode(): number;
 
     /**
      * Sets the instance coordinates in the given array from the given index.
@@ -61,7 +61,7 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in source array
      * @returns the current instance
      */
-    public toArray(array: FloatArray, index?: number): this;
+    public abstract toArray(array: FloatArray, index?: number): this;
 
     /**
      * Update the current instance from an array
@@ -69,46 +69,46 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in the destination array
      * @returns the current instance
      */
-    public fromArray(array: FloatArray, index?: number): this;
+    public abstract fromArray(array: FloatArray, index?: number): this;
 
     /**
      * Copy the current instance to an array
      * @returns a new array with the instance coordinates.
      */
-    public asArray(): Flatten<V>;
+    public abstract asArray(): Flatten<V>;
 
     /**
      * Sets the current instance coordinates with the given source coordinates
      * @param source defines the source instance
      * @returns the current updated instance
      */
-    public copyFrom(source: DeepImmutable<this>): this;
+    public abstract copyFrom(source: DeepImmutable<this>): this;
 
     /**
      * Sets the instance coordinates with the given floats
      * @returns the current updated instance
      */
 
-    public copyFromFloats(...floats: Flatten<V>): this;
+    public abstract copyFromFloats(...floats: Flatten<V>): this;
 
     /**
      * Sets the instance coordinates with the given floats
      * @returns the current updated instance
      */
-    public set(...values: Flatten<V>): this;
+    public abstract set(...values: Flatten<V>): this;
 
     /**
      * Sets the instance coordinates to the given value
      * @returns the current updated instance
      */
-    public setAll(value: number): this;
+    public abstract setAll(value: number): this;
 
     /**
      * Add another instance with the current one
      * @param other defines the other instance
      * @returns a new instance set with the addition of the current instance and the given one coordinates
      */
-    public add(other: DeepImmutable<this>): this;
+    public abstract add(other: DeepImmutable<this>): this;
 
     /**
      * Sets the "result" coordinates with the addition of the current instance and the given one coordinates
@@ -116,28 +116,28 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    public addToRef<T extends this>(other: DeepImmutable<T>, result: T): T;
+    public abstract addToRef<T extends this>(other: DeepImmutable<T>, result: T): T;
 
     /**
      * Set the instance coordinates by adding the given instance coordinates
      * @param other defines the other instance
      * @returns the current updated instance
      */
-    public addInPlace(other: DeepImmutable<this>): this;
+    public abstract addInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Adds the given coordinates to the current instance
      * @param floats the floats to add
      * @returns the current updated instance
      */
-    public addInPlaceFromFloats(...floats: Flatten<V>): this;
+    public abstract addInPlaceFromFloats(...floats: Flatten<V>): this;
 
     /**
      * Returns a new instance set with the subtracted coordinates of other's coordinates from the current coordinates.
      * @param other defines the other instance
      * @returns a new instance
      */
-    public subtract(other: DeepImmutable<this>): this;
+    public abstract subtract(other: DeepImmutable<this>): this;
 
     /**
      * Sets the "result" coordinates with the subtraction of the other's coordinates from the current coordinates.
@@ -145,21 +145,21 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    public subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    public abstract subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
 
     /**
      * Sets the current instance coordinates by subtracting from it the given one coordinates
      * @param other defines the other instance
      * @returns the current updated instance
      */
-    public subtractInPlace(other: DeepImmutable<this>): this;
+    public abstract subtractInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Returns a new instance set with the subtraction of the given floats from the current instance coordinates
      * @param floats the coordinates to subtract
      * @returns the resulting instance
      */
-    public subtractFromFloats(...floats: Flatten<V>): this;
+    public abstract subtractFromFloats(...floats: Flatten<V>): this;
 
     /**
      * Subtracts the given floats from the current instance coordinates and set the given instance "result" with this result
@@ -167,14 +167,14 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param args the coordinates to subtract with the last element as the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends this>(...args: [...Flatten<V>, T]): T;
+    public abstract subtractFromFloatsToRef<T extends this>(...args: [...Flatten<V>, T]): T;
 
     /**
      * Returns a new instance set with the multiplication of the current instance and the given one coordinates
      * @param other defines the other instance
      * @returns a new instance
      */
-    public multiply(other: DeepImmutable<this>): this;
+    public abstract multiply(other: DeepImmutable<this>): this;
 
     /**
      * Sets "result" coordinates with the multiplication of the current instance and the given one coordinates
@@ -182,27 +182,27 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    public multiplyToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    public abstract multiplyToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
 
     /**
      * Multiplies in place the current instance coordinates by the given ones
      * @param other defines the other instance
      * @returns the current updated instance
      */
-    public multiplyInPlace(other: DeepImmutable<this>): this;
+    public abstract multiplyInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Gets a new instance set with the instance coordinates multiplied by the given floats
      * @returns a new instance
      */
-    public multiplyByFloats(...floats: Flatten<V>): this;
+    public abstract multiplyByFloats(...floats: Flatten<V>): this;
 
     /**
      * Returns a new instance set with the instance coordinates divided by the given one coordinates
      * @param other defines the other instance
      * @returns a new instance
      */
-    public divide(other: DeepImmutable<this>): this;
+    public abstract divide(other: DeepImmutable<this>): this;
 
     /**
      * Sets the "result" coordinates with the instance coordinates divided by the given one coordinates
@@ -210,75 +210,75 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    public divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    public abstract divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
 
     /**
      * Divides the current instance coordinates by the given ones
      * @param other defines the other instance
      * @returns the current updated instance
      */
-    public divideInPlace(other: DeepImmutable<this>): this;
+    public abstract divideInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Updates the current instance with the minmal coordinate values between its and the given instance ones.
      * @param other defines the other instance
      * @returns this current updated instance
      */
-    public minimizeInPlace(other: DeepImmutable<this>): this;
+    public abstract minimizeInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Updates the current instance with the minmal coordinate values between its and the given floats.
      * @param floats defines the floats to compare against
      * @returns this current updated instance
      */
-    public minimizeInPlaceFromFloats(...floats: Flatten<V>): this;
+    public abstract minimizeInPlaceFromFloats(...floats: Flatten<V>): this;
 
     /**
      * Updates the current instance with the maximal coordinate values between its and the given instance ones.
      * @param other defines the other instance
      * @returns this current updated instance
      */
-    public maximizeInPlace(other: DeepImmutable<this>): this;
+    public abstract maximizeInPlace(other: DeepImmutable<this>): this;
 
     /**
      * Updates the current instance with the maximal coordinate values between its and the given floats.
      * @param floats defines the floats to compare against
      * @returns this current updated instance
      */
-    public maximizeInPlaceFromFloats(...floats: Flatten<V>): this;
+    public abstract maximizeInPlaceFromFloats(...floats: Flatten<V>): this;
 
     /**
      * Gets a new instance with current instance negated coordinates
      * @returns a new instance
      */
-    public negate(): this;
+    public abstract negate(): this;
 
     /**
      * Negate this instance in place
      * @returns this
      */
-    public negateInPlace(): this;
+    public abstract negateInPlace(): this;
 
     /**
      * Negate the current instance and stores the result in the given instance "result" coordinates
      * @param result defines the instance object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends this>(result: T): T;
+    public abstract negateToRef<T extends this>(result: T): T;
 
     /**
      * Multiply the instance coordinates by
      * @param scale defines the scaling factor
      * @returns the current updated instance
      */
-    public scaleInPlace(scale: number): this;
+    public abstract scaleInPlace(scale: number): this;
 
     /**
      * Returns a new instance scaled by "scale" from the current instance
      * @param scale defines the scaling factor
      * @returns a new instance
      */
-    public scale(scale: number): this;
+    public abstract scale(scale: number): this;
 
     /**
      * Scale the current instance values by a factor to a given instance
@@ -286,7 +286,7 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the instance object where to store the result
      * @returns result input
      */
-    public scaleToRef<T extends this>(scale: number, result: T): T;
+    public abstract scaleToRef<T extends this>(scale: number, result: T): T;
 
     /**
      * Scale the current instance values by a factor and add the result to a given instance
@@ -294,14 +294,14 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the instance object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends this>(scale: number, result: T): T;
+    public abstract scaleAndAddToRef<T extends this>(scale: number, result: T): T;
 
     /**
      * Gets a boolean if two instances are equals
      * @param other defines the other instance
      * @returns true if the given instance coordinates strictly equal the current instance ones
      */
-    public equals(other: DeepImmutable<this>): boolean;
+    public abstract equals(other: DeepImmutable<this>): boolean;
 
     /**
      * Gets a boolean if two instances are equals (using an epsilon value)
@@ -309,48 +309,48 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given instance coordinates are close to the current ones by a distance of epsilon.
      */
-    public equalsWithEpsilon(other: DeepImmutable<this>, epsilon?: number): boolean;
+    public abstract equalsWithEpsilon(other: DeepImmutable<this>, epsilon?: number): boolean;
 
     /**
      * Returns true if the current Vectoe coordinates equals the given floats
      * @param floats defines the coordinates to compare against
      * @returns true if both instances are equal
      */
-    public equalsToFloats(...floats: Flatten<V>): boolean;
+    public abstract equalsToFloats(...floats: Flatten<V>): boolean;
 
     /**
      * Gets a new instance from current instance floored values
      * eg (1.2, 2.31) returns (1, 2)
      * @returns a new instance
      */
-    public floor(): this;
+    public abstract floor(): this;
 
     /**
      * Gets the current instance's floored values and stores them in result
      * @param result the instance to store the result in
      * @returns the result instance
      */
-    public floorToRef<T extends this>(result: T): T;
+    public abstract floorToRef<T extends this>(result: T): T;
 
     /**
      * Gets a new instance from current instance fractional values
      * eg (1.2, 2.31) returns (0.2, 0.31)
      * @returns a new instance
      */
-    public fract(): this;
+    public abstract fract(): this;
 
     /**
      * Gets the current instance's fractional values and stores them in result
      * @param result the instance to store the result in
      * @returns the result instance
      */
-    public fractToRef<T extends this>(result: T): T;
+    public abstract fractToRef<T extends this>(result: T): T;
 
     /**
      * Gets a new instance copied from the instance
      * @returns a new instance
      */
-    public clone(): this;
+    public abstract clone(): this;
 
     /**
      * Returns a new instance with random values between min and max
