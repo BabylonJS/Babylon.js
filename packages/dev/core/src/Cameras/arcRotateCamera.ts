@@ -965,7 +965,9 @@ export class ArcRotateCamera extends TargetCamera {
                 } else {
                     if (this.parent) {
                         const m = TmpVectors.Matrix[0];
-                        Vector3.TransformCoordinatesToRef(this._transformedDirection, this.parent.getWorldMatrix().getRotationMatrix().invertToRef(m), this._transformedDirection);
+                        this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                        m.invert();
+                        Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
                     }
                     this._target.addInPlace(this._transformedDirection);
                 }
