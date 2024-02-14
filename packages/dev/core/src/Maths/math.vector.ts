@@ -206,7 +206,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements IVector2Like {
+export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     /**
