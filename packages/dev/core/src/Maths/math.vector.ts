@@ -4810,62 +4810,60 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this;
     }
 
-    public divide(other: DeepImmutable<this>): this {
-        return this.divideToRef(other, new (this.constructor as Constructor<typeof Quaternion, this>)());
+    /**
+     * @internal
+     * Do not use
+     */
+    public divide(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a quaternion");
     }
 
-    public divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
-        result._x = this._x / other._x;
-        result._y = this._y / other._y;
-        result._z = this._z / other._z;
-        result._w = this._w / other._w;
-        result._isDirty = true;
-        return result;
+    /**
+     * @internal
+     * Do not use
+     */
+    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+        throw new ReferenceError("Can not divide a quaternion");
     }
 
-    public divideInPlace(other: DeepImmutable<this>): this {
-        this._x /= other._x;
-        this._y /= other._y;
-        this._z /= other._z;
-        this._w /= other._w;
-        this._isDirty = true;
-        return this;
+    /**
+     * @internal
+     * Do not use
+     */
+    public divideInPlace(_other: DeepImmutable<this>): this {
+        throw new ReferenceError("Can not divide a quaternion");
     }
 
-    public minimizeInPlace(other: DeepImmutable<this>): this {
-        this._x = Math.min(this._x, other._x);
-        this._y = Math.min(this._y, other._y);
-        this._z = Math.min(this._z, other._z);
-        this._w = Math.min(this._w, other._w);
-        this._isDirty = true;
-        return this;
+    /**
+     * @internal
+     * Do not use
+     */
+    public minimizeInPlace(): this {
+        throw new ReferenceError("Can not minimize a quaternion");
     }
 
-    public minimizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
-        this._x = Math.min(this._x, x);
-        this._y = Math.min(this._y, y);
-        this._z = Math.min(this._z, z);
-        this._w = Math.min(this._w, w);
-        this._isDirty = true;
-        return this;
+    /**
+     * @internal
+     * Do not use
+     */
+    public minimizeInPlaceFromFloats(): this {
+        throw new ReferenceError("Can not minimize a quaternion");
     }
 
-    public maximizeInPlace(other: DeepImmutable<this>): this {
-        this._x = Math.max(this._x, other._x);
-        this._y = Math.max(this._y, other._y);
-        this._z = Math.max(this._z, other._z);
-        this._w = Math.max(this._w, other._w);
-        this._isDirty = true;
-        return this;
+    /**
+     * @internal
+     * Do not use
+     */
+    public maximizeInPlace(): this {
+        throw new ReferenceError("Can not maximize a quaternion");
     }
 
-    public maximizeInPlaceFromFloats(x: number, y: number, z: number, w: number): this {
-        this._x = Math.max(this._x, x);
-        this._y = Math.max(this._y, y);
-        this._z = Math.max(this._z, z);
-        this._w = Math.max(this._w, w);
-        this._isDirty = true;
-        return this;
+    /**
+     * @internal
+     * Do not use
+     */
+    public maximizeInPlaceFromFloats(): this {
+        throw new ReferenceError("Can not maximize a quaternion");
     }
 
     public negate(): this {
@@ -4894,30 +4892,36 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this._x === x && this._y === y && this._z === z && this._w === w;
     }
 
+    /**
+     * @internal
+     * Do not use
+     */
+    public floorToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not floor a quaternion");
+    }
+
+    /**
+     * @internal
+     * Do not use
+     */
     public floor(): this {
-        return this.floorToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
+        throw new ReferenceError("Can not floor a quaternion");
     }
 
-    public floorToRef<T extends this>(result: T): T {
-        result._x = Math.floor(this._x);
-        result._y = Math.floor(this._y);
-        result._z = Math.floor(this._z);
-        result._w = Math.floor(this._w);
-        result._isDirty = true;
-        return result;
+    /**
+     * @internal
+     * Do not use
+     */
+    public fractToRef<T extends this>(_result: T): T {
+        throw new ReferenceError("Can not fract a quaternion");
     }
 
+    /**
+     * @internal
+     * Do not use
+     */
     public fract(): this {
-        return this.fractToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
-    }
-
-    public fractToRef<T extends this>(result: T): T {
-        result._x = this._x - Math.floor(this._x);
-        result._y = this._y - Math.floor(this._y);
-        result._z = this._z - Math.floor(this._z);
-        result._w = this._w - Math.floor(this._w);
-        result._isDirty = true;
-        return result;
+        throw new ReferenceError("Can not fract a quaternion");
     }
 
     /**
