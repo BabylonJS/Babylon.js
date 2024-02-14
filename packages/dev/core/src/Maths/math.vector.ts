@@ -24,30 +24,30 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
     /**
      * @see Tensor.dimension
      */
-    public readonly dimension: Readonly<Dimension<N>>;
+    public abstract readonly dimension: Readonly<Dimension<N>>;
 
     /**
      * @see Tensor.rank
      */
-    public readonly rank: 1;
+    public abstract readonly rank: 1;
 
     /**
      * Gets the length of the vector
      * @returns the vector length (float)
      */
-    public length(): number;
+    public abstract length(): number;
 
     /**
      * Gets the vector squared length
      * @returns the vector squared length (float)
      */
-    public lengthSquared(): number;
+    public abstract lengthSquared(): number;
 
     /**
      * Normalize the vector
      * @returns the current updated Vector
      */
-    public normalize(): this;
+    public abstract normalize(): this;
 
     /**
      * Normalize the current Vector with the given input length.
@@ -55,20 +55,20 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param len the length of the vector
      * @returns the current updated Vector
      */
-    public normalizeFromLength(len: number): this;
+    public abstract normalizeFromLength(len: number): this;
 
     /**
      * Normalize the current Vector to a new vector
      * @returns the new Vector
      */
-    public normalizeToNew(): this;
+    public abstract normalizeToNew(): this;
 
     /**
      * Normalize the current Vector to the reference
      * @param reference define the Vector to update
      * @returns the updated Vector
      */
-    public normalizeToRef<T extends this>(reference: T): T;
+    public abstract normalizeToRef<T extends this>(reference: T): T;
 
     /**
      * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
