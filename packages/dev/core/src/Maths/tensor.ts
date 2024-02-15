@@ -36,13 +36,6 @@ export declare abstract class Tensor<V extends unknown[] = unknown[]> {
     constructor(...coords: Flatten<V>);
 
     /**
-     * Gets a string with the instance coordinates
-     * @returns a string with the instance coordinates
-     */
-
-    public abstract toString(): string;
-
-    /**
      * Gets class name
      * @returns the class name
      */
