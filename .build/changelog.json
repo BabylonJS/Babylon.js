@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.41.2",
+    "fromTag": "6.42.0",
     "changelog": {
         "6.42.0": [
             {
@@ -36,6 +36,138 @@
                 "tags": [
                     "enhancement",
                     "collisions"
+                ]
+            }
+        ],
+        "6.43.0": [
+            {
+                "pr": "14780",
+                "title": "Fix camera panning issue when camera is parented",
+                "description": "fix https://forum.babylonjs.com/t/camera-panning-issue-when-using-parenting/48014",
+                "author": {
+                    "name": "2315137135",
+                    "url": "https://github.com/2315137135"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14783",
+                "title": "TAA: Fix when using an orthographic camera",
+                "description": "PG: https://playground.babylonjs.com/#539X0P#42",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14781",
+                "title": "Gaussian Splatting: Fix incorrect name setting",
+                "description": "It was using `window.name` instead of `this.name`",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14779",
+                "title": "TrailMesh: Add texture coordinates to trail mesh",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14778",
+                "title": "TriPlanar material: Fix shader crash when using instances",
+                "description": "See https://forum.babylonjs.com/t/a-serialized-mesh-with-triplanarmateriel-does-not-create-an-instance-afterwards/47954",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14777",
+                "title": "fix Plugin V2 timestep",
+                "description": "Follow up https://forum.babylonjs.com/t/how-to-make-havok-physics-simulation-faster/47972/6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14775",
+                "title": "Dev Host improvements",
+                "description": "The dev host allows you to write code directly related to the typescript files in the dev packages instead of using the UMD pattern.\r\n\r\nThis allows you to better experiment with es6 modules.\r\n\r\nThis improves the dev host by doing the following:\r\n\r\n1) Module resolution using the module's name (without the @babylon part). \r\n2) Server is much quicker to reload\r\n3) Full sruppot for all of our modules.\r\n4) A new analyze script that allows you to show a report of the modules loaded with your current code.\r\n\r\nTo run the analyzer, do the following:\r\n\r\n`npm run analyze -w @tools/dev-host`\r\n\r\nThe HTML page will open automatically and will look roughly like this:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/48a63bab-de3d-402d-afdd-6901d9938b7c)\r\n\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/devHost/src/createSceneJS.js",
+                    "packages/tools/devHost/src/engine.ts",
+                    "packages/tools/devHost/src/index.ts",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/devHost/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14774",
+                "title": "NME: Fix preview for some of the pre-defined meshes",
+                "description": "See https://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5\r\n\r\nConcerned meshes: sphere, cube, plane\r\n\r\nThe problem was that we bake the current transformation but don't move the mesh to the top of the hierarchy (`parent=nullhttps://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5). So, the parent transformation is applied two times, one time during baking and another time when rendering the mesh.\r\n\r\nAlso, there was a bug in the baking method, because tangents were not transformed.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
                 ]
             }
         ],

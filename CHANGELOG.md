@@ -1,5 +1,24 @@
 # Changelog
 
+## 6.43.0
+
+### Core
+
+- Fix camera panning issue when camera is parented - by [2315137135](https://github.com/2315137135) ([#14780](https://github.com/BabylonJS/Babylon.js/pull/14780))
+- TAA: Fix when using an orthographic camera - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14783](https://github.com/BabylonJS/Babylon.js/pull/14783))
+- Gaussian Splatting: Fix incorrect name setting - [_Bug Fix_] by [noname0310](https://github.com/noname0310) ([#14781](https://github.com/BabylonJS/Babylon.js/pull/14781))
+- TrailMesh: Add texture coordinates to trail mesh - by [Popov72](https://github.com/Popov72) ([#14779](https://github.com/BabylonJS/Babylon.js/pull/14779))
+- fix Plugin V2 timestep - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14777](https://github.com/BabylonJS/Babylon.js/pull/14777))
+- NME: Fix preview for some of the pre-defined meshes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14774](https://github.com/BabylonJS/Babylon.js/pull/14774))
+
+### Materials
+
+- TriPlanar material: Fix shader crash when using instances - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14778](https://github.com/BabylonJS/Babylon.js/pull/14778))
+
+### Node Editor
+
+- NME: Fix preview for some of the pre-defined meshes - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14774](https://github.com/BabylonJS/Babylon.js/pull/14774))
+
 ## 6.42.0
 
 ### Core
