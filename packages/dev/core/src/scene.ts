@@ -4440,7 +4440,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /** @internal */
-    public _animate(): void {
+    public _animate(customDeltaTime?: number): void {
         // Nothing to do as long as Animatable have not been imported.
     }
 
