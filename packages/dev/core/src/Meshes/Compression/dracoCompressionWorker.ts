@@ -244,13 +244,18 @@ export function initializeWebWorker(worker: Worker, decoderWasmBinary: ArrayBuff
         worker.addEventListener("error", onError);
         worker.addEventListener("message", onMessage);
 
-        worker.postMessage({
-            id: "init",
-            decoder: {
-                url: moduleUrl,
-                wasmBinary: decoderWasmBinary,
+        // clone the array buffer to make it transferable
+        const clone = decoderWasmBinary.slice(0);
+        worker.postMessage(
+            {
+                id: "init",
+                decoder: {
+                    url: moduleUrl,
+                    wasmBinary: clone,
+                },
             },
-        });
+            [clone]
+        );
         // note: no transfer list as the ArrayBuffer is shared across main thread and pool workers
     });
 }
