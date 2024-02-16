@@ -105,6 +105,9 @@ export function workerFunction(KTX2DecoderModule: any = KTX2DECODER): void {
                     }
                     applyConfig(urls);
                 }
+                if (event.data.wasmBinaries) {
+                    applyConfig(undefined, event.data.wasmBinaries);
+                }
                 ktx2Decoder = new KTX2DecoderModule.KTX2Decoder();
                 postMessage({ action: "init" });
                 break;
