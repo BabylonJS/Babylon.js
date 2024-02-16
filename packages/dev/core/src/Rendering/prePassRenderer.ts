@@ -165,6 +165,12 @@ export class PrePassRenderer {
             name: "prePass_Normal",
         },
         {
+            purpose: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_WorldNormal",
+        },
+        {
             purpose: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             format: Constants.TEXTUREFORMAT_RGBA,
@@ -850,6 +856,11 @@ export class PrePassRenderer {
 
         if (this._scene._depthPeelingRenderer && this._scene.useOrderIndependentTransparency) {
             this._scene._depthPeelingRenderer.setPrePassRenderer(this);
+            enablePrePass = true;
+        }
+
+        if (this._scene._iblShadowsRenderer) {
+            this._scene._iblShadowsRenderer.setPrePassRenderer(this);
             enablePrePass = true;
         }
 

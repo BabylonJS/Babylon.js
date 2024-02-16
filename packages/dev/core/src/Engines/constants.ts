@@ -624,6 +624,12 @@ export class Constants {
      */
     public static readonly PREPASS_ALBEDO_SQRT_TEXTURE_TYPE = 7;
 
+    /**
+     * Constant used to retrieve world normal index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_WORLD_NORMAL_TEXTURE_TYPE = 8;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */

@@ -115,6 +115,10 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public PREPASS_NORMAL = false;
     /** Prepass normal index */
     public PREPASS_NORMAL_INDEX = -1;
+    /** Prepass world normal */
+    public PREPASS_WORLD_NORMAL = false;
+    /** Prepass world normal index */
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     /** Prepass position */
     public PREPASS_POSITION = false;
     /** Prepass position index */
@@ -989,6 +993,10 @@ export class NodeMaterial extends PushMaterial {
             result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
         }
 
+        if (prePassOutputBlock.worldNormal.isConnected) {
+            result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
+        }
+
         if (prePassOutputBlock.worldPosition.isConnected) {
             result.push(Constants.PREPASS_POSITION_TEXTURE_TYPE);
         }
@@ -1012,6 +1020,9 @@ export class NodeMaterial extends PushMaterial {
             }
             if (block.normal.isConnected && !result.includes(Constants.PREPASS_NORMAL_TEXTURE_TYPE)) {
                 result.push(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
+            }
+            if (block.worldNormal.isConnected && !result.includes(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)) {
+                result.push(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
             }
         }
 

@@ -206,6 +206,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
+    public PREPASS_WORLD_NORMAL = false;
+    public PREPASS_WORLD_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;

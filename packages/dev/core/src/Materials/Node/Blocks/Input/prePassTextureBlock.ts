@@ -18,6 +18,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     private _positionSamplerName: string;
     private _depthSamplerName: string;
     private _normalSamplerName: string;
+    private _worldNormalSamplerName: string;
 
     /**
      * The texture associated with the node is the prepass texture
@@ -76,6 +77,10 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             return this._normalSamplerName;
         }
 
+        if (output === this._outputs[3]) {
+            return this._worldNormalSamplerName;
+        }
+
         return "";
     }
 
@@ -101,6 +106,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the world normal texture
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._outputs[3];
+    }
+
+    /**
      * Gets the sampler name associated with this image source
      */
     public get positionSamplerName(): string {
@@ -113,6 +125,14 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     public get normalSamplerName(): string {
         return this._normalSamplerName;
     }
+
+    /**
+     * Gets the sampler name associated with this image source
+     */
+    public get worldNormalSamplerName(): string {
+        return this._worldNormalSamplerName;
+    }
+
     /**
      * Gets the sampler name associated with this image source
      */
@@ -138,11 +158,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         this._positionSamplerName = "prepassPositionSampler";
         this._depthSamplerName = "prepassDepthSampler";
         this._normalSamplerName = "prepassNormalSampler";
+        this._worldNormalSamplerName = "prepassWorldNormalSampler";
 
         // Unique sampler names for every prepasstexture block
         state.sharedData.variableNames.prepassPositionSampler = 0;
         state.sharedData.variableNames.prepassDepthSampler = 0;
         state.sharedData.variableNames.prepassNormalSampler = 0;
+        state.sharedData.variableNames.prepassWorldNormalSampler = 0;
 
         // Declarations
         state.sharedData.textureBlocks.push(this);
@@ -151,6 +173,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         state._emit2DSampler(this._positionSamplerName);
         state._emit2DSampler(this._depthSamplerName);
         state._emit2DSampler(this._normalSamplerName);
+        state._emit2DSampler(this._worldNormalSamplerName);
 
         return this;
     }
@@ -175,6 +198,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
+        }
+        if (this.worldNormal.isConnected) {
+            effect.setTexture(this._worldNormalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE)]);
         }
     }
 }

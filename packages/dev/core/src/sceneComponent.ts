@@ -28,6 +28,7 @@ export class SceneComponentConstants {
     public static readonly NAME_PREPASSRENDERER = "PrePassRenderer";
     public static readonly NAME_DEPTHRENDERER = "DepthRenderer";
     public static readonly NAME_DEPTHPEELINGRENDERER = "DepthPeelingRenderer";
+    public static readonly NAME_IBLSHADOWSRENDERER = "IblShadowsRenderer";
     public static readonly NAME_POSTPROCESSRENDERPIPELINEMANAGER = "PostProcessRenderPipelineManager";
     public static readonly NAME_SPRITE = "Sprite";
     public static readonly NAME_SUBSURFACE = "SubSurface";

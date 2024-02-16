@@ -689,6 +689,10 @@ void main(void) {
         #endif
     #endif
 
+    #ifdef PREPASS_WORLD_NORMAL
+        gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
+    #endif
+
     #ifdef PREPASS_ALBEDO_SQRT
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(sqAlbedo, writeGeometryInfo); // albedo, for pre and post scatter
     #endif
