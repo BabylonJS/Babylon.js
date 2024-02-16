@@ -25,7 +25,7 @@ import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
 import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import type { IPipelineContext } from "./IPipelineContext";
-import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { VertexBuffer } from "../Buffers/buffer";
 import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
@@ -54,6 +54,21 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
+import {
+    createPipelineContext,
+    createRawShaderProgram,
+    createShaderProgram,
+    _finalizePipelineContext,
+    _preparePipelineContext,
+    _ConcatenateShader,
+    _setProgram,
+    _activeRequests,
+    _loadFile,
+    EngineFunctionContext,
+    getHostDocument,
+    _getGlobalDefines,
+    _executeWhenRenderingStateIsCompiled,
+} from "./thinEngine.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -2860,42 +2875,7 @@ export class ThinEngine {
 
     /** @internal */
     public _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
-        if (defines) {
-            if (this.isNDCHalfZRange) {
-                defines["IS_NDC_HALF_ZRANGE"] = "";
-            } else {
-                delete defines["IS_NDC_HALF_ZRANGE"];
-            }
-            if (this.useReverseDepthBuffer) {
-                defines["USE_REVERSE_DEPTHBUFFER"] = "";
-            } else {
-                delete defines["USE_REVERSE_DEPTHBUFFER"];
-            }
-            if (this.useExactSrgbConversions) {
-                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
-            } else {
-                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
-            }
-            return;
-        } else {
-            let s = "";
-            if (this.isNDCHalfZRange) {
-                s += "#define IS_NDC_HALF_ZRANGE";
-            }
-            if (this.useReverseDepthBuffer) {
-                if (s) {
-                    s += "\n";
-                }
-                s += "#define USE_REVERSE_DEPTHBUFFER";
-            }
-            if (this.useExactSrgbConversions) {
-                if (s) {
-                    s += "\n";
-                }
-                s += "#define USE_EXACT_SRGB_CONVERSIONS";
-            }
-            return s;
-        }
+        return _getGlobalDefines(defines, this.isNDCHalfZRange, this.useReverseDepthBuffer, this.useExactSrgbConversions);
     }
 
     /**
@@ -2963,36 +2943,7 @@ export class ThinEngine {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
-        return shaderVersion + (defines ? defines + "\n" : "") + source;
-    }
-
-    private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
-        return this._compileRawShader(ThinEngine._ConcatenateShader(source, defines, shaderVersion), type);
-    }
-
-    private _compileRawShader(source: string, type: string): WebGLShader {
-        const gl = this._gl;
-
-        const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-
-        if (!shader) {
-            let error: GLenum = gl.NO_ERROR;
-            let tempError: GLenum = gl.NO_ERROR;
-            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
-                error = tempError;
-            }
-
-            throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
-            );
-        }
-
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        return shader;
-    }
+    protected static _ConcatenateShader = _ConcatenateShader;
 
     /**
      * @internal
@@ -3017,12 +2968,7 @@ export class ThinEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        context = context || this._gl;
-
-        const vertexShader = this._compileRawShader(vertexCode, "vertex");
-        const fragmentShader = this._compileRawShader(fragmentCode, "fragment");
-
-        return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+        return createRawShaderProgram(pipelineContext, vertexCode, fragmentCode, context || this._gl, transformFeedbackVaryings, this.validateShaderPrograms, this._contextWasLost);
     }
 
     /**
@@ -3043,13 +2989,17 @@ export class ThinEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        context = context || this._gl;
-
-        const shaderVersion = this._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-        const vertexShader = this._compileShader(vertexCode, "vertex", defines, shaderVersion);
-        const fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
-
-        return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+        return createShaderProgram(
+            pipelineContext,
+            vertexCode,
+            fragmentCode,
+            defines,
+            context || this._gl,
+            transformFeedbackVaryings,
+            this._webGLVersion,
+            this.validateShaderPrograms,
+            this._contextWasLost
+        );
     }
 
     /**
@@ -3068,14 +3018,9 @@ export class ThinEngine {
      * @returns the new pipeline
      */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        const pipelineContext = new WebGLPipelineContext();
-        pipelineContext.engine = this;
-
-        if (this._caps.parallelShaderCompile) {
-            pipelineContext.isParallelCompiled = true;
-        }
-
-        return pipelineContext;
+        const context = createPipelineContext(shaderProcessingContext, this._caps.parallelShaderCompile) as WebGLPipelineContext;
+        context.engine = this;
+        return context;
     }
 
     /**
@@ -3094,7 +3039,7 @@ export class ThinEngine {
         return undefined;
     }
 
-    protected _createShaderProgram(
+    /*protected _createShaderProgram(
         pipelineContext: WebGLPipelineContext,
         vertexShader: WebGLShader,
         fragmentShader: WebGLShader,
@@ -3122,65 +3067,10 @@ export class ThinEngine {
         }
 
         return shaderProgram;
-    }
+    }*/
 
     protected _finalizePipelineContext(pipelineContext: WebGLPipelineContext) {
-        const context = pipelineContext.context!;
-        const vertexShader = pipelineContext.vertexShader!;
-        const fragmentShader = pipelineContext.fragmentShader!;
-        const program = pipelineContext.program!;
-
-        const linked = context.getProgramParameter(program, context.LINK_STATUS);
-        if (!linked) {
-            // Get more info
-            // Vertex
-            if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
-                const log = this._gl.getShaderInfoLog(vertexShader);
-                if (log) {
-                    pipelineContext.vertexCompilationError = log;
-                    throw new Error("VERTEX SHADER " + log);
-                }
-            }
-
-            // Fragment
-            if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
-                const log = this._gl.getShaderInfoLog(fragmentShader);
-                if (log) {
-                    pipelineContext.fragmentCompilationError = log;
-                    throw new Error("FRAGMENT SHADER " + log);
-                }
-            }
-
-            const error = context.getProgramInfoLog(program);
-            if (error) {
-                pipelineContext.programLinkError = error;
-                throw new Error(error);
-            }
-        }
-
-        if (this.validateShaderPrograms) {
-            context.validateProgram(program);
-            const validated = context.getProgramParameter(program, context.VALIDATE_STATUS);
-
-            if (!validated) {
-                const error = context.getProgramInfoLog(program);
-                if (error) {
-                    pipelineContext.programValidationError = error;
-                    throw new Error(error);
-                }
-            }
-        }
-
-        context.deleteShader(vertexShader);
-        context.deleteShader(fragmentShader);
-
-        pipelineContext.vertexShader = undefined;
-        pipelineContext.fragmentShader = undefined;
-
-        if (pipelineContext.onCompiled) {
-            pipelineContext.onCompiled();
-            pipelineContext.onCompiled = undefined;
-        }
+        return _finalizePipelineContext(pipelineContext, this._gl, this.validateShaderPrograms);
     }
 
     /**
@@ -3198,14 +3088,21 @@ export class ThinEngine {
         transformFeedbackVaryings: Nullable<string[]>,
         key: string
     ) {
-        const webGLRenderingState = pipelineContext as WebGLPipelineContext;
-
-        if (createAsRaw) {
-            webGLRenderingState.program = this.createRawShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
-        } else {
-            webGLRenderingState.program = this.createShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
-        }
-        webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
+        return _preparePipelineContext(
+            pipelineContext as WebGLPipelineContext,
+            vertexSourceCode,
+            fragmentSourceCode,
+            createAsRaw,
+            rawVertexSourceCode,
+            rawFragmentSourceCode,
+            rebuildRebind,
+            defines,
+            transformFeedbackVaryings,
+            key,
+            this.validateShaderPrograms,
+            this._contextWasLost,
+            this._webGLVersion
+        );
     }
 
     /**
@@ -3228,23 +3125,7 @@ export class ThinEngine {
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-
-        if (!webGLPipelineContext.isParallelCompiled) {
-            action();
-            return;
-        }
-
-        const oldHandler = webGLPipelineContext.onCompiled;
-
-        if (oldHandler) {
-            webGLPipelineContext.onCompiled = () => {
-                oldHandler!();
-                action();
-            };
-        } else {
-            webGLPipelineContext.onCompiled = action;
-        }
+        _executeWhenRenderingStateIsCompiled(pipelineContext as WebGLPipelineContext, action);
     }
 
     /**
@@ -5167,7 +5048,7 @@ export class ThinEngine {
 
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._gl.useProgram(program);
+            _setProgram(program, this._gl);
             this._currentProgram = program;
         }
     }
@@ -5571,6 +5452,10 @@ export class ThinEngine {
             request.abort();
         }
 
+        for (const request of _activeRequests) {
+            request.abort();
+        }
+
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
 
@@ -5965,12 +5850,7 @@ export class ThinEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
-        const request = ThinEngine._FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
+        return _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
     }
 
     /**
@@ -5992,6 +5872,9 @@ export class ThinEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ): IFileRequest {
+        if (EngineFunctionContext.loadFile) {
+            return EngineFunctionContext.loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        }
         throw _WarnImport("FileTools");
     }
 
@@ -6179,11 +6062,7 @@ export class ThinEngine {
      * @returns the host document object
      */
     public getHostDocument(): Nullable<Document> {
-        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
-            return this._renderingCanvas.ownerDocument;
-        }
-
-        return IsDocumentAvailable() ? document : null;
+        return getHostDocument(this._renderingCanvas);
     }
 }
 

@@ -20,6 +20,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import { _processShaderCode } from "./effect.functions";
 
 /**
  * Options to be used when creating an effect.
@@ -198,14 +199,14 @@ export class Effect implements IDisposable {
     public _fragmentSourceCode: string = "";
 
     /** @internal */
-    private _vertexSourceCodeBeforeMigration: string = "";
+    public _vertexSourceCodeBeforeMigration: string = "";
     /** @internal */
-    private _fragmentSourceCodeBeforeMigration: string = "";
+    public _fragmentSourceCodeBeforeMigration: string = "";
 
     /** @internal */
-    private _rawVertexSourceCode: string = "";
+    public _rawVertexSourceCode: string = "";
     /** @internal */
-    private _rawFragmentSourceCode: string = "";
+    public _rawFragmentSourceCode: string = "";
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
@@ -303,39 +304,9 @@ export class Effect implements IDisposable {
 
     /** @internal */
     public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        let vertexSource: any;
-        let fragmentSource: any;
-
-        const baseName = this.name;
-        const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
-
-        if (baseName.vertexSource) {
-            vertexSource = "source:" + baseName.vertexSource;
-        } else if (baseName.vertexElement) {
-            vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
-
-            if (!vertexSource) {
-                vertexSource = baseName.vertexElement;
-            }
-        } else {
-            vertexSource = baseName.vertex || baseName;
-        }
-
-        if (baseName.fragmentSource) {
-            fragmentSource = "source:" + baseName.fragmentSource;
-        } else if (baseName.fragmentElement) {
-            fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
-
-            if (!fragmentSource) {
-                fragmentSource = baseName.fragmentElement;
-            }
-        } else {
-            fragmentSource = baseName.fragment || baseName;
-        }
-
         this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
 
-        let processorOptions: ProcessingOptions = {
+        const processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -352,63 +323,19 @@ export class Effect implements IDisposable {
             processCodeAfterIncludes: this._processCodeAfterIncludes,
         };
 
-        const shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
-        const shadersLoaded = () => {
-            if (shaderCodes[0] && shaderCodes[1]) {
-                processorOptions.isFragment = true;
-                const [migratedVertexCode, fragmentCode] = shaderCodes;
-                ShaderProcessor.Process(
-                    fragmentCode,
-                    processorOptions,
-                    (migratedFragmentCode, codeBeforeMigration) => {
-                        this._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
-                        if (this._processFinalCode) {
-                            migratedFragmentCode = this._processFinalCode("fragment", migratedFragmentCode);
-                        }
-                        const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
-                        processorOptions = null as any;
-                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, keepExistingPipelineContext);
-                    },
-                    this._engine
-                );
-            }
-        };
-        this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
-            ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.Process(
-                vertexCode,
-                processorOptions,
-                (migratedVertexCode, codeBeforeMigration) => {
-                    this._rawVertexSourceCode = vertexCode;
-                    this._vertexSourceCodeBeforeMigration = codeBeforeMigration;
-                    if (this._processFinalCode) {
-                        migratedVertexCode = this._processFinalCode("vertex", migratedVertexCode);
-                    }
-                    shaderCodes[0] = migratedVertexCode;
-                    shadersLoaded();
-                },
-                this._engine
-            );
-        });
-        this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
-            this._rawFragmentSourceCode = fragmentCode;
-            shaderCodes[1] = fragmentCode;
-            shadersLoaded();
-        });
-    }
-
-    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, keepExistingPipelineContext = false) {
-        if (baseName) {
-            const vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
-            const fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
-
-            this._vertexSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-            this._fragmentSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-        } else {
-            this._vertexSourceCode = migratedVertexCode;
-            this._fragmentSourceCode = migratedFragmentCode;
-        }
-        this._prepareEffect(keepExistingPipelineContext);
+        _processShaderCode(
+            processorOptions,
+            this._processFinalCode,
+            this.name,
+            (migratedVertexCode, migratedFragmentCode) => {
+                this._vertexSourceCode = migratedVertexCode;
+                this._fragmentSourceCode = migratedFragmentCode;
+                this._prepareEffect(keepExistingPipelineContext);
+            },
+            this._shaderLanguage,
+            this._engine,
+            this
+        );
     }
 
     /**
