@@ -997,7 +997,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 distance = tmp;
 
                 // ray between the sphere center and the point on the mesh
-                Ray.CreateNewFromToToRef(sphere.center, tmpVec, undefined, tmpRay);
+                Ray.CreateFromToToRef(sphere.center, tmpVec, undefined, tmpRay);
                 tmpRay.length = distance * 2;
                 intersectionInfo = tmpRay.intersectsMesh(mesh);
 
