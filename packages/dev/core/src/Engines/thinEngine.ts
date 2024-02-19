@@ -611,7 +611,7 @@ export class ThinEngine {
         return false;
     }
 
-    private _framebufferDimensionsObject: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
+    protected _framebufferDimensionsObject: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
 
     /**
      * sets the object from which width and height will be taken from when getting render width and height
