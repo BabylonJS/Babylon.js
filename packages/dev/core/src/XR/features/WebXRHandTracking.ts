@@ -114,6 +114,12 @@ export interface IWebXRHandTrackingOptions {
             fingerColor?: Color3;
             tipFresnel?: Color3;
         };
+
+        /**
+         * Define whether or not the hand meshes should be disposed on just invisible when the session ends.
+         * Not setting, or setting to false, will maintain the hand meshes in the scene after the session ends, which will allow q quicker re-entry into XR.
+         */
+        disposeOnSessionEnd?: boolean;
     };
 }
 
@@ -365,25 +371,12 @@ export class WebXRHand implements IDisposable {
         // hide the motion controller, if available/loaded
         if (this.xrController.motionController) {
             if (this.xrController.motionController.rootMesh) {
-                this.xrController.motionController.rootMesh.setEnabled(false);
-            } else {
-                this.xrController.motionController.onModelLoadedObservable.add((controller) => {
-                    if (controller.rootMesh) {
-                        controller.rootMesh.setEnabled(false);
-                    }
-                });
+                this.xrController.motionController.rootMesh.dispose(false, true);
             }
         }
 
         this.xrController.onMotionControllerInitObservable.add((motionController) => {
-            motionController.onModelLoadedObservable.add((controller) => {
-                if (controller.rootMesh) {
-                    controller.rootMesh.setEnabled(false);
-                }
-            });
-            if (motionController.rootMesh) {
-                motionController.rootMesh.setEnabled(false);
-            }
+            motionController._doNotLoadControllerMesh = true;
         });
     }
 
@@ -486,10 +479,16 @@ export class WebXRHand implements IDisposable {
 
     /**
      * Dispose this Hand object
+     * @param disposeMeshes Should the meshes be disposed as well
      */
-    public dispose() {
+    public dispose(disposeMeshes = false) {
         if (this._handMesh) {
-            this._handMesh.isVisible = false;
+            if (disposeMeshes) {
+                this._handMesh.skeleton?.dispose();
+                this._handMesh.dispose(false, true);
+            } else {
+                this._handMesh.isVisible = false;
+            }
         }
     }
 }
@@ -861,7 +860,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         this.onHandAddedObservable.notifyObservers(webxrHand);
     };
 
-    private _detachHandById(controllerId: string) {
+    private _detachHandById(controllerId: string, disposeMesh?: boolean) {
         const hand = this.getHandByControllerId(controllerId);
         if (hand) {
             const handedness = hand.xrController.inputSource.handedness == "left" ? "left" : "right";
@@ -869,7 +868,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 this._trackingHands[handedness] = null;
             }
             this.onHandRemovedObservable.notifyObservers(hand);
-            hand.dispose();
+            hand.dispose(disposeMesh);
             delete this._attachedHands[controllerId];
         }
     }
@@ -889,7 +888,13 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId));
+        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId, this.options.handMeshes?.disposeOnSessionEnd));
+        if (this.options.handMeshes?.disposeOnSessionEnd) {
+            if (this._handResources.jointMeshes) {
+                this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
+                this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
+            }
+        }
 
         // remove world scale observer
         if (this._worldScaleObserver) {
