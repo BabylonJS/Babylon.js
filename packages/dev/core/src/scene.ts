@@ -4464,7 +4464,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 // Animations
                 this._animationRatio = defaultFrameTime * defaultFPS;
-                this._animate();
+                this._animate(defaultFrameTime);
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics
