@@ -142,6 +142,8 @@ export class SceneTreeItemComponent extends React.Component<
                 return mesh;
             }
         }
+
+        return undefined;
     }
 
     componentWillUnmount() {
