@@ -558,7 +558,7 @@ export class Ray {
      */
     public static CreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
         const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
-        return Ray.CreateFromToToRef(origin, end, world, result);
+        return Ray.CreateFromToToRef(origin, end, result, world);
     }
 
     /**
@@ -570,7 +570,7 @@ export class Ray {
      * @param result the object to store the result
      * @returns the ref ray
      */
-    public static CreateFromToToRef(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly, result: Ray): Ray {
+    public static CreateFromToToRef(origin: Vector3, end: Vector3, result: Ray, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
         result.origin.copyFrom(origin);
         const direction = end.subtractToRef(origin, result.direction);
         const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
