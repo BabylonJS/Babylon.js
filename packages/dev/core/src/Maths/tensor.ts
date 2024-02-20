@@ -104,7 +104,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    addToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    addToRef(other: DeepImmutable<this>, result: this): this;
 
     /**
      * Set the instance coordinates by adding the given instance coordinates
@@ -133,7 +133,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    subtractToRef(other: DeepImmutable<this>, result: this): this;
 
     /**
      * Sets the current instance coordinates by subtracting from it the given one coordinates
@@ -155,7 +155,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param args the coordinates to subtract with the last element as the result
      * @returns the result
      */
-    subtractFromFloatsToRef<T extends this>(...args: [...Flatten<V>, T]): T;
+    subtractFromFloatsToRef(...args: [...Flatten<V>, this]): this;
 
     /**
      * Returns a new instance set with the multiplication of the current instance and the given one coordinates
@@ -170,7 +170,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    multiplyToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    multiplyToRef(other: DeepImmutable<this>, result: this): this;
 
     /**
      * Multiplies in place the current instance coordinates by the given ones
@@ -198,7 +198,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the target instance
      * @returns result input
      */
-    divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T;
+    divideToRef(other: DeepImmutable<this>, result: this): this;
 
     /**
      * Divides the current instance coordinates by the given ones
@@ -252,7 +252,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the instance object where to store the result
      * @returns the result
      */
-    negateToRef<T extends this>(result: T): T;
+    negateToRef(result: this): this;
 
     /**
      * Multiply the instance coordinates by
@@ -274,7 +274,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the instance object where to store the result
      * @returns result input
      */
-    scaleToRef<T extends this>(scale: number, result: T): T;
+    scaleToRef(scale: number, result: this): this;
 
     /**
      * Scale the current instance values by a factor and add the result to a given instance
@@ -282,7 +282,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result defines the instance object where to store the result
      * @returns result input
      */
-    scaleAndAddToRef<T extends this>(scale: number, result: T): T;
+    scaleAndAddToRef(scale: number, result: this): this;
 
     /**
      * Gets a boolean if two instances are equals
@@ -318,7 +318,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result the instance to store the result in
      * @returns the result instance
      */
-    floorToRef<T extends this>(result: T): T;
+    floorToRef(result: this): this;
 
     /**
      * Gets a new instance from current instance fractional values
@@ -332,7 +332,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param result the instance to store the result in
      * @returns the result instance
      */
-    fractToRef<T extends this>(result: T): T;
+    fractToRef(result: this): this;
 
     /**
      * Gets a new instance copied from the instance

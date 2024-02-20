@@ -68,7 +68,7 @@ export interface Vector<N extends number[] = number[]> extends Tensor<N> {
      * @param reference define the Vector to update
      * @returns the updated Vector
      */
-    normalizeToRef<T extends this>(reference: T): T;
+    normalizeToRef(reference: this): this;
 }
 
 /**
@@ -183,15 +183,6 @@ export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
      * @returns result input
      */
     NormalizeToRef(vector: DeepImmutable<T>, result: T): T;
-
-    /**
-     * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
-     * @param p defines the middle point
-     * @param segA defines one point of the segment
-     * @param segB defines the other point of the segment
-     * @returns the shortest distance
-     */
-    DistanceOfPointFromSegment(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
 }
 
 /**
@@ -847,6 +838,17 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
     }
 
     /**
+     * Sets a Vector2 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @param ref the ref to store the values in
+     * @returns the ref with random values between min and max
+     */
+    public static RandomToRef<T extends Vector2>(min: number = 0, max: number = 1, ref: T): T {
+        return ref.copyFromFloats(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
      * Gets a zero Vector2 that must not be updated
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector2> {
@@ -875,6 +877,18 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
     public static FromArrayToRef<T extends Vector2>(array: DeepImmutable<ArrayLike<number>>, offset: number, result: T): T {
         result.x = array[offset];
         result.y = array[offset + 1];
+        return result;
+    }
+
+    /**
+     * Sets the given vector "result" with the given floats.
+     * @param x defines the x coordinate of the source
+     * @param y defines the y coordinate of the source
+     * @param result defines the Vector2 where to store the result
+     * @returns the result vector
+     */
+    public static FromFloatsToRef<T extends Vector2>(x: number, y: number, result: T): T {
+        result.copyFromFloats(x, y);
         return result;
     }
 
@@ -1209,6 +1223,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
         return Vector2.Distance(p, proj);
     }
 }
+Vector2 satisfies TensorStatic<Vector2>;
 Object.defineProperties(Vector2.prototype, {
     dimension: { value: [2] },
     rank: { value: 1 },
@@ -2539,6 +2554,17 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
     }
 
     /**
+     * Sets a Vector3 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @param ref the ref to store the values in
+     * @returns the ref with random values between min and max
+     */
+    public static RandomToRef<T extends Vector3>(min: number = 0, max: number = 1, ref: T): T {
+        return ref.copyFromFloats(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
      * Returns a new Vector3 set with the result of the transformation by the given matrix of the given vector.
      * This method computes transformed coordinates only, not transformed direction vectors (ie. it takes translation in account)
      * Example Playground https://playground.babylonjs.com/#R1F8YU#111
@@ -3394,6 +3420,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
         return ref;
     }
 }
+Vector3 satisfies VectorStatic<Vector3>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
