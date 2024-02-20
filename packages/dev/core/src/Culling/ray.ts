@@ -566,8 +566,8 @@ export class Ray {
      * transformed to the given world matrix.
      * @param origin The origin point
      * @param end The end point
-     * @param world a matrix to transform the ray to. Default is the identity matrix.
      * @param result the object to store the result
+     * @param world a matrix to transform the ray to. Default is the identity matrix.
      * @returns the ref ray
      */
     public static CreateFromToToRef(origin: Vector3, end: Vector3, result: Ray, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
