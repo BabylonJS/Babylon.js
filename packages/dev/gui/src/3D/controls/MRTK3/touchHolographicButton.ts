@@ -590,7 +590,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._textPlate.parent = collisionMesh;
 
         this._backPlate = backPlateMesh;
-        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this.backPlateDepth / 2);
+        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this.backPlateDepth * 0.5);
         this._backPlate.isPickable = false;
 
         this._backPlate.addChild(collisionMesh);
@@ -651,7 +651,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this.backPlateDepth - this.frontPlateDepth) / 2);
+        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale((this.backPlateDepth - this.frontPlateDepth) * 0.5);
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.FRONTPLATE_MODEL_FILENAME, scene).then((result) => {
             const collisionPlate = CreateBox(
@@ -697,7 +697,7 @@ export class TouchHolographicButton extends TouchButton3D {
         innerQuadMesh.isPickable = false;
         innerQuadMesh.visibility = 0;
         innerQuadMesh.scaling.z = this.flatPlaneDepth;
-        innerQuadMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth;
+        innerQuadMesh.position.z += this.backPlateDepth * 0.5 - this.flatPlaneDepth;
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.INNERQUAD_MODEL_FILENAME, scene).then((result) => {
             const innerQuadModel = result.meshes[1];
@@ -726,7 +726,7 @@ export class TouchHolographicButton extends TouchButton3D {
         backGlowMesh.isPickable = false;
         backGlowMesh.visibility = 0;
         backGlowMesh.scaling.z = this.flatPlaneDepth;
-        backGlowMesh.position.z += this.backPlateDepth / 2 - this.flatPlaneDepth * 2;
+        backGlowMesh.position.z += this.backPlateDepth * 0.5 - this.flatPlaneDepth * 2;
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MRTK_ASSET_BASE_URL, TouchHolographicButton.BACKGLOW_MODEL_FILENAME, scene).then((result) => {
             const backGlowModel = result.meshes[1];
@@ -791,7 +791,7 @@ export class TouchHolographicButton extends TouchButton3D {
                     },
                     {
                         frame: 20,
-                        values: [Vector3.Forward(this._collisionPlate._scene.useRightHandedSystem).scale(this.frontPlateDepth / 2).z, 0.0, 0.0],
+                        values: [Vector3.Forward(this._collisionPlate._scene.useRightHandedSystem).scale(this.frontPlateDepth * 0.5).z, 0.0, 0.0],
                     },
                     {
                         frame: 40,

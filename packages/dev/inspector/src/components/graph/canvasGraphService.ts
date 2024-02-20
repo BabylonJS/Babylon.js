@@ -491,7 +491,7 @@ export class CanvasGraphService {
         let closestIndex = 0;
 
         while (low <= high) {
-            const middle = Math.trunc((low + high) / 2);
+            const middle = Math.trunc((low + high) * 0.5);
             const middleTimestamp = this.datasets.data.at(this.datasets.startingIndices.at(middle));
 
             if (Math.abs(middleTimestamp - targetTime) < Math.abs(this.datasets.data.at(this.datasets.startingIndices.at(closestIndex)) - targetTime)) {
@@ -1000,8 +1000,8 @@ export class CanvasGraphService {
         const yTriangle = drawableArea.bottom + trianglePaddingFromAxisLine;
         ctx.beginPath();
         ctx.moveTo(xForActualTimestamp, yTriangle);
-        ctx.lineTo(xForActualTimestamp + triangleWidth / 2, yTriangle + triangleHeight);
-        ctx.lineTo(xForActualTimestamp - triangleWidth / 2, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp + triangleWidth * 0.5, yTriangle + triangleHeight);
+        ctx.lineTo(xForActualTimestamp - triangleWidth * 0.5, yTriangle + triangleHeight);
         ctx.closePath();
         ctx.fill();
 
@@ -1024,7 +1024,7 @@ export class CanvasGraphService {
         ctx.textAlign = "left";
 
         const boxLength = this._addonFontLineHeight;
-        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding / 2);
+        const textHeight = this._addonFontLineHeight + Math.floor(tooltipHorizontalPadding * 0.5);
 
         // initialize width with cached value or measure width of longest text and update cache.
         let width: number;
@@ -1059,7 +1059,7 @@ export class CanvasGraphService {
             const tooltipItem = this._tooltipItems[i];
 
             ctx.fillStyle = tooltipItem.color;
-            ctx.fillRect(x, y - Math.floor(boxLength / 2), boxLength, boxLength);
+            ctx.fillRect(x, y - Math.floor(boxLength * 0.5), boxLength, boxLength);
             ctx.fillStyle = tooltipForegroundColor;
             ctx.fillText(tooltipItem.text, x + boxLength + spaceBetweenTextAndBox, y);
             y += textHeight;

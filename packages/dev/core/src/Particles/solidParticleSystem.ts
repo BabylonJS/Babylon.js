@@ -1789,7 +1789,7 @@ export class SolidParticleSystem implements IDisposable {
      * doc : https://doc.babylonjs.com/features/featuresDeepDive/particles/solid_particle_system/sps_visibility
      */
     public setVisibilityBox(size: number): void {
-        const vis = size / 2;
+        const vis = size * 0.5;
         this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 

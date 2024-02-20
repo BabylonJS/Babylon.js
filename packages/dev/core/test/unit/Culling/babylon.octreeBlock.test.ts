@@ -56,7 +56,7 @@ describe("OctreeBlock", function () {
         });
         scene = new Scene(engine);
 
-        new ArcRotateCamera("Camera", 0, Math.PI / 2, 5, new Vector3(0, 0, 0), scene);
+        new ArcRotateCamera("Camera", 0, Math.PI * 0.5, 5, new Vector3(0, 0, 0), scene);
 
         boxPositions.forEach((pos, i) => {
             MeshBuilder.CreateBox(`box_${i}`, { size: 1 }, scene).position.set(...pos);

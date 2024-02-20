@@ -322,7 +322,7 @@ export abstract class AbstractViewer {
                     if (typeof this.configuration.vr.modelHeightCorrection === "number") {
                         this._vrModelRepositioning = this.configuration.vr.modelHeightCorrection;
                     } else if (this.configuration.vr.modelHeightCorrection) {
-                        this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y / 2;
+                        this._vrModelRepositioning = this.sceneManager.vrHelper.currentVRCamera.position.y * 0.5;
                     } else {
                         this._vrModelRepositioning = 0;
                     }

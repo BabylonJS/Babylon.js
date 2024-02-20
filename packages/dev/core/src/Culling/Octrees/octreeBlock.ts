@@ -242,7 +242,7 @@ export class OctreeBlock<T> {
         creationFunc: (entry: T, block: OctreeBlock<T>) => void
     ): void {
         target.blocks = new Array<OctreeBlock<T>>();
-        const blockSize = new Vector3((worldMax.x - worldMin.x) / 2, (worldMax.y - worldMin.y) / 2, (worldMax.z - worldMin.z) / 2);
+        const blockSize = new Vector3((worldMax.x - worldMin.x) * 0.5, (worldMax.y - worldMin.y) * 0.5, (worldMax.z - worldMin.z) * 0.5);
 
         // Segmenting space
         for (let x = 0; x < 2; x++) {

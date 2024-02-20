@@ -525,7 +525,7 @@ export class SubMesh implements ICullable {
 
             if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
                 intersectInfo = new IntersectionInfo(null, null, length);
-                intersectInfo.faceId = index / 2;
+                intersectInfo.faceId = index * 0.5;
                 if (fastCheck) {
                     break;
                 }
@@ -552,7 +552,7 @@ export class SubMesh implements ICullable {
 
             if (fastCheck || !intersectInfo || length < intersectInfo.distance) {
                 intersectInfo = new IntersectionInfo(null, null, length);
-                intersectInfo.faceId = index / 2;
+                intersectInfo.faceId = index * 0.5;
                 if (fastCheck) {
                     break;
                 }

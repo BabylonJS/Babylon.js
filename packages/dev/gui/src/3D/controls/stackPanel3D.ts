@@ -73,9 +73,9 @@ export class StackPanel3D extends Container3D {
         }
 
         if (this._isVertical) {
-            height += ((controlCount - 1) * this.margin) / 2;
+            height += ((controlCount - 1) * this.margin) * 0.5;
         } else {
-            width += ((controlCount - 1) * this.margin) / 2;
+            width += ((controlCount - 1) * this.margin) * 0.5;
         }
 
         // Arrange

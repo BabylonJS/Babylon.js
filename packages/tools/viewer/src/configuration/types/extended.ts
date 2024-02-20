@@ -13,8 +13,8 @@ export const extendedConfiguration: ViewerConfiguration = {
         fov: 0.7853981633974483,
         contrast: 1.6,
         toneMappingEnabled: true,
-        upperBetaLimit: 1.3962634015954636 + Math.PI / 2,
-        lowerBetaLimit: -1.4835298641951802 + Math.PI / 2,
+        upperBetaLimit: 1.3962634015954636 + Math.PI * 0.5,
+        lowerBetaLimit: -1.4835298641951802 + Math.PI * 0.5,
         behaviors: {
             framing: {
                 type: 2,

@@ -789,7 +789,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
 
         if (this._depthOfFieldEnabled) {
             // Create gaussian blur used by depth-of-field
-            this._createBlurPostProcesses(scene, ratio / 2, 3, "depthOfFieldBlurWidth");
+            this._createBlurPostProcesses(scene, ratio * 0.5, 3, "depthOfFieldBlurWidth");
 
             // Create depth-of-field post-process
             this._createDepthOfFieldPostProcess(scene, ratio);
@@ -1306,7 +1306,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
             "standard",
             ["strength", "ghostDispersal", "haloWidth", "resolution", "distortionStrength"],
             ["lensColorSampler"],
-            ratio / 2,
+            ratio * 0.5,
             null,
             Texture.BILINEAR_SAMPLINGMODE,
             scene.getEngine(),

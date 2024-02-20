@@ -18,7 +18,7 @@ Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
  * Documentation: https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction
  */
 export class PointLight extends ShadowLight {
-    private _shadowAngle = Math.PI / 2;
+    private _shadowAngle = Math.PI * 0.5;
     /**
      * Getter: In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
      * This specifies what angle the shadow will use to be created.
@@ -135,7 +135,7 @@ export class PointLight extends ShadowLight {
 
     /**
      * Sets the passed matrix "matrix" as a left-handed perspective projection matrix with the following settings :
-     * - fov = PI / 2
+     * - fov = PI * 0.5
      * - aspect ratio : 1.0
      * - z-near and far equal to the active camera minZ and maxZ.
      * Returns the PointLight.

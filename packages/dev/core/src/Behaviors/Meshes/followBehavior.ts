@@ -177,7 +177,7 @@ export class FollowBehavior implements Behavior<TransformNode> {
         vector.normalize();
         normal.normalize();
 
-        return Math.PI / 2 - Math.acos(Vector3.Dot(vector, normal));
+        return Math.PI * 0.5 - Math.acos(Vector3.Dot(vector, normal));
     }
 
     private _length2D(vector: Vector3) {

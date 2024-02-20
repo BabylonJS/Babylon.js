@@ -3,8 +3,8 @@ export class Popup {
         const windowCreationOptionsList = {
             width: width,
             height: height,
-            top: (window.innerHeight - width) / 2 + window.screenY,
-            left: (window.innerWidth - height) / 2 + window.screenX,
+            top: (window.innerHeight - width) * 0.5 + window.screenY,
+            left: (window.innerWidth - height) * 0.5 + window.screenX,
         };
 
         const windowCreationOptions = Object.keys(windowCreationOptionsList)

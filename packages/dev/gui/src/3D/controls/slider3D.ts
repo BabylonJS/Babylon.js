@@ -138,18 +138,18 @@ export class Slider3D extends Control3D {
 
     protected get start(): number {
         if (!this.node) {
-            return -SLIDER_SCALING / 2;
+            return -SLIDER_SCALING * 0.5;
         }
 
-        return this._sliderBar.position.x - this._sliderBar.scaling.x / 2;
+        return this._sliderBar.position.x - this._sliderBar.scaling.x * 0.5;
     }
 
     protected get end(): number {
         if (!this.node) {
-            return SLIDER_SCALING / 2;
+            return SLIDER_SCALING * 0.5;
         }
 
-        return this._sliderBar.position.x + this._sliderBar.scaling.x / 2;
+        return this._sliderBar.position.x + this._sliderBar.scaling.x * 0.5;
     }
 
     /**

@@ -16,7 +16,7 @@ export const ToLinearSpace = 2.2;
  * Constant Golden Ratio value in Babylon.js
  * @ignorenaming
  */
-export const PHI = (1 + Math.sqrt(5)) / 2;
+export const PHI = (1 + Math.sqrt(5)) * 0.5;
 
 /**
  * Constant used to define the minimal number value in Babylon.js

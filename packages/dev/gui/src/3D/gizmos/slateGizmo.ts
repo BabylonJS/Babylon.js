@@ -132,7 +132,7 @@ export class SlateGizmo extends Gizmo {
         for (let i = 0; i < 4; i++) {
             const corner = new CornerHandle(this, this.gizmoLayer.utilityLayerScene);
             this._corners.push(corner);
-            corner.node.rotation.z = (Math.PI / 2) * i;
+            corner.node.rotation.z = (Math.PI * 0.5) * i;
 
             corner.node.parent = this._handlesParent;
             this._assignDragBehaviorCorners(
@@ -145,7 +145,7 @@ export class SlateGizmo extends Gizmo {
         for (let i = 0; i < 4; i++) {
             const side = new SideHandle(this, this.gizmoLayer.utilityLayerScene);
             this._sides.push(side);
-            side.node.rotation.z = (Math.PI / 2) * i;
+            side.node.rotation.z = (Math.PI * 0.5) * i;
             side.node.parent = this._handlesParent;
             this._assignDragBehaviorSides(side, i % 2 === 0 ? new Vector3(0, 1, 0) : new Vector3(1, 0, 0));
         }

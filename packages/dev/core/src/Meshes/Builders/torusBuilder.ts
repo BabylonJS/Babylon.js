@@ -38,9 +38,9 @@ export function CreateTorusVertexData(options: { diameter?: number; thickness?: 
     for (let i = 0; i <= tessellation; i++) {
         const u = i / tessellation;
 
-        const outerAngle = (i * Math.PI * 2.0) / tessellation - Math.PI / 2.0;
+        const outerAngle = (i * Math.PI * 2.0) / tessellation - Math.PI * 0.5;
 
-        const transform = Matrix.Translation(diameter / 2.0, 0, 0).multiply(Matrix.RotationY(outerAngle));
+        const transform = Matrix.Translation(diameter * 0.5, 0, 0).multiply(Matrix.RotationY(outerAngle));
 
         for (let j = 0; j <= tessellation; j++) {
             const v = 1 - j / tessellation;
@@ -51,7 +51,7 @@ export function CreateTorusVertexData(options: { diameter?: number; thickness?: 
 
             // Create a vertex.
             let normal = new Vector3(dx, dy, 0);
-            let position = normal.scale(thickness / 2);
+            let position = normal.scale(thickness * 0.5);
             const textureCoordinate = new Vector2(u, v);
 
             position = Vector3.TransformCoordinates(position, transform);

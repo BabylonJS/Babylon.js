@@ -254,7 +254,7 @@ describe("Babylon Vector tests", () => {
         describe("rotateToRef", () => {
             it("should rotate the vector by the given angle (in radians) and store the result in the given output vector", () => {
                 const result = new Vector2();
-                vector1.rotateToRef(Math.PI / 2, result);
+                vector1.rotateToRef(Math.PI * 0.5, result);
                 expect(result.x).toBeCloseTo(-2);
                 expect(result.y).toBeCloseTo(1);
                 shouldNotChange = true;
@@ -400,7 +400,7 @@ describe("Babylon Vector tests", () => {
                 const segmentStart = new Vector2(0, 0);
                 const segmentEnd = new Vector2(10, 10);
                 const distance = Vector2.DistanceOfPointFromSegment(point, segmentStart, segmentEnd);
-                expect(distance).toBeCloseTo(0.7071067811865476 /* sqrt(2) / 2 */);
+                expect(distance).toBeCloseTo(0.7071067811865476 /* sqrt(2) * 0.5 */);
                 shouldNotChange = true;
             });
         });
@@ -1588,8 +1588,8 @@ describe("Babylon Vector tests", () => {
                 const axis3 = new Vector3(1, 0, 0);
                 const result = Vector3.RotationFromAxis(axis1, axis2, axis3);
                 expect(result.x).toBeCloseTo(0);
-                expect(result.y).toBeCloseTo(Math.PI / 2);
-                expect(result.z).toBeCloseTo(Math.PI / 2);
+                expect(result.y).toBeCloseTo(Math.PI * 0.5);
+                expect(result.z).toBeCloseTo(Math.PI * 0.5);
                 shouldNotChange = true;
             });
         });
@@ -1602,8 +1602,8 @@ describe("Babylon Vector tests", () => {
                 const result = new Vector3();
                 Vector3.RotationFromAxisToRef(axis1, axis2, axis3, result);
                 expect(result.x).toBeCloseTo(0);
-                expect(result.y).toBeCloseTo(Math.PI / 2);
-                expect(result.z).toBeCloseTo(Math.PI / 2);
+                expect(result.y).toBeCloseTo(Math.PI * 0.5);
+                expect(result.z).toBeCloseTo(Math.PI * 0.5);
                 shouldNotChange = true;
             });
         });
@@ -1634,7 +1634,7 @@ describe("Babylon Vector tests", () => {
 
         describe("TransformCoordinates", () => {
             it("should transform vector coordinates by a given matrix", () => {
-                const transformation = Matrix.RotationX(Math.PI / 2);
+                const transformation = Matrix.RotationX(Math.PI * 0.5);
                 const result = Vector3.TransformCoordinates(vector1, transformation);
                 expect(result.x).toBeCloseTo(1);
                 expect(result.y).toBeCloseTo(-3);
@@ -1645,7 +1645,7 @@ describe("Babylon Vector tests", () => {
 
         describe("TransformCoordinatesToRef", () => {
             it("should transform vector coordinates by a given matrix and store result in target vector", () => {
-                const transformation = Matrix.RotationX(Math.PI / 2);
+                const transformation = Matrix.RotationX(Math.PI * 0.5);
                 const result = new Vector3();
                 Vector3.TransformCoordinatesToRef(vector1, transformation, result);
                 expect(result.x).toBeCloseTo(1);
@@ -1657,7 +1657,7 @@ describe("Babylon Vector tests", () => {
 
         describe("TransformNormal", () => {
             it("should transform vector normal by a given matrix", () => {
-                const transformation = Matrix.RotationX(Math.PI / 2);
+                const transformation = Matrix.RotationX(Math.PI * 0.5);
                 const result = Vector3.TransformNormal(vector1, transformation);
                 expect(result.x).toBeCloseTo(1);
                 expect(result.y).toBeCloseTo(-3);
@@ -1668,7 +1668,7 @@ describe("Babylon Vector tests", () => {
 
         describe("TransformNormalToRef", () => {
             it("should transform vector normal by a given matrix and store result in target vector", () => {
-                const transformation = Matrix.RotationX(Math.PI / 2);
+                const transformation = Matrix.RotationX(Math.PI * 0.5);
                 const result = new Vector3();
                 Vector3.TransformNormalToRef(vector1, transformation, result);
                 expect(result.x).toBeCloseTo(1);
@@ -1683,7 +1683,7 @@ describe("Babylon Vector tests", () => {
                 const width = 800;
                 const height = 600;
                 const view = Matrix.LookAtLH(new Vector3(0, 0, -10), Vector3.Zero(), Vector3.Up());
-                const projection = Matrix.PerspectiveFovLH(Math.PI / 2, width / height, 0.1, 100);
+                const projection = Matrix.PerspectiveFovLH(Math.PI * 0.5, width / height, 0.1, 100);
                 const result = Vector3.Unproject(vector1, width, height, Matrix.Identity(), view, projection);
                 expect(result.x).toBeCloseTo(0.06660001703257157);
                 expect(result.y).toBeCloseTo(-0.04974136462211895);
@@ -1697,7 +1697,7 @@ describe("Babylon Vector tests", () => {
                 const width = 800;
                 const height = 600;
                 const view = Matrix.LookAtLH(new Vector3(0, 0, -10), Vector3.Zero(), Vector3.Up());
-                const projection = Matrix.PerspectiveFovLH(Math.PI / 2, width / height, 0.1, 100);
+                const projection = Matrix.PerspectiveFovLH(Math.PI * 0.5, width / height, 0.1, 100);
                 const result = new Vector3();
                 Vector3.UnprojectFloatsToRef(1, 2, 3, width, height, Matrix.Identity(), view, projection, result);
                 expect(result.x).toBeCloseTo(0.06660001703257157);
@@ -1711,7 +1711,7 @@ describe("Babylon Vector tests", () => {
             it("should unproject vector coordinates from transformation matrix and viewport", () => {
                 const width = 800;
                 const height = 600;
-                const transform = Matrix.RotationX(Math.PI / 2);
+                const transform = Matrix.RotationX(Math.PI * 0.5);
                 const result = Vector3.UnprojectFromTransform(vector1, width, height, Matrix.Identity(), transform);
                 expect(result.x).toBeCloseTo(-0.9975);
                 expect(result.y).toBeCloseTo(5);
@@ -1725,7 +1725,7 @@ describe("Babylon Vector tests", () => {
                 const width = 800;
                 const height = 600;
                 const view = Matrix.LookAtLH(new Vector3(0, 0, -10), Vector3.Zero(), Vector3.Up());
-                const projection = Matrix.PerspectiveFovLH(Math.PI / 2, width / height, 0.1, 100);
+                const projection = Matrix.PerspectiveFovLH(Math.PI * 0.5, width / height, 0.1, 100);
                 const result = new Vector3();
                 Vector3.UnprojectToRef(vector1, width, height, Matrix.Identity(), view, projection, result);
                 expect(result.x).toBeCloseTo(0.06660001703257157);

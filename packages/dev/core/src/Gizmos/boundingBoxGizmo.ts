@@ -407,7 +407,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         );
         lines.forEach((l) => {
             l.color = color;
-            l.position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+            l.position.addInPlace(new Vector3(-this._boundingDimensions.x * 0.5, -this._boundingDimensions.y * 0.5, -this._boundingDimensions.z * 0.5));
             l.isPickable = false;
             this._lineBoundingBox.addChild(l);
         });
@@ -786,9 +786,9 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             // The position of the gizmo is then set to the attachedMesh in gizmo._update
             this._lineBoundingBox.scaling.copyFrom(this._boundingDimensions);
             this._lineBoundingBox.position.set(
-                (boundingMinMax.max.x + boundingMinMax.min.x) / 2,
-                (boundingMinMax.max.y + boundingMinMax.min.y) / 2,
-                (boundingMinMax.max.z + boundingMinMax.min.z) / 2
+                (boundingMinMax.max.x + boundingMinMax.min.x) * 0.5,
+                (boundingMinMax.max.y + boundingMinMax.min.y) * 0.5,
+                (boundingMinMax.max.z + boundingMinMax.min.z) * 0.5
             );
             this._rotateSpheresParent.position.copyFrom(this._lineBoundingBox.position);
             this._scaleBoxesParent.position.copyFrom(this._lineBoundingBox.position);
@@ -819,22 +819,22 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                 for (let k = 0; k < 2; k++) {
                     const index = i * 4 + j * 2 + k;
                     if (i == 0) {
-                        rotateSpheres[index].position.set(this._boundingDimensions.x / 2, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
-                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateSpheres[index].position.set(this._boundingDimensions.x * 0.5, this._boundingDimensions.y * j, this._boundingDimensions.z * k);
+                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x * 0.5, -this._boundingDimensions.y * 0.5, -this._boundingDimensions.z * 0.5));
                         rotateSpheres[index].lookAt(
                             Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Right()).normalizeToNew().add(rotateSpheres[index].position)
                         );
                     }
                     if (i == 1) {
-                        rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y / 2, this._boundingDimensions.z * k);
-                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * 0.5, this._boundingDimensions.z * k);
+                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x * 0.5, -this._boundingDimensions.y * 0.5, -this._boundingDimensions.z * 0.5));
                         rotateSpheres[index].lookAt(
                             Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Up()).normalizeToNew().add(rotateSpheres[index].position)
                         );
                     }
                     if (i == 2) {
-                        rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z / 2);
-                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        rotateSpheres[index].position.set(this._boundingDimensions.x * j, this._boundingDimensions.y * k, this._boundingDimensions.z * 0.5);
+                        rotateSpheres[index].position.addInPlace(new Vector3(-this._boundingDimensions.x * 0.5, -this._boundingDimensions.y * 0.5, -this._boundingDimensions.z * 0.5));
                         rotateSpheres[index].lookAt(
                             Vector3.Cross(rotateSpheres[index].position.normalizeToNew(), Vector3.Forward()).normalizeToNew().add(rotateSpheres[index].position)
                         );
@@ -868,8 +868,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
                         continue;
                     }
                     if (scaleBoxes[index]) {
-                        scaleBoxes[index].position.set(this._boundingDimensions.x * (i / 2), this._boundingDimensions.y * (j / 2), this._boundingDimensions.z * (k / 2));
-                        scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x / 2, -this._boundingDimensions.y / 2, -this._boundingDimensions.z / 2));
+                        scaleBoxes[index].position.set(this._boundingDimensions.x * (i * 0.5), this._boundingDimensions.y * (j * 0.5), this._boundingDimensions.z * (k * 0.5));
+                        scaleBoxes[index].position.addInPlace(new Vector3(-this._boundingDimensions.x * 0.5, -this._boundingDimensions.y * 0.5, -this._boundingDimensions.z * 0.5));
                         if (this.fixedDragMeshScreenSize && this.gizmoLayer.utilityLayerScene.activeCamera) {
                             scaleBoxes[index].absolutePosition.subtractToRef(this.gizmoLayer.utilityLayerScene.activeCamera.globalPosition, this._tmpVector);
                             const distanceFromCamera = (this.scaleBoxSize * this._tmpVector.length()) / this.fixedDragMeshScreenSizeDistanceFactor;
@@ -1004,7 +1004,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
             box.scaling.z = Epsilon;
         }
 
-        box.position.set((boundingMinMax.max.x + boundingMinMax.min.x) / 2, (boundingMinMax.max.y + boundingMinMax.min.y) / 2, (boundingMinMax.max.z + boundingMinMax.min.z) / 2);
+        box.position.set((boundingMinMax.max.x + boundingMinMax.min.x) * 0.5, (boundingMinMax.max.y + boundingMinMax.min.y) * 0.5, (boundingMinMax.max.z + boundingMinMax.min.z) * 0.5);
 
         // Restore original positions
         mesh.addChild(box);

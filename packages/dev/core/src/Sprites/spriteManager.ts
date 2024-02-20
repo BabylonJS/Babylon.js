@@ -478,8 +478,8 @@ export class SpriteManager implements ISpriteManager {
                 activeRay = ray;
             }
 
-            min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
-            max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+            min.copyFromFloats(cameraSpacePosition.x - sprite.width * 0.5, cameraSpacePosition.y - sprite.height * 0.5, cameraSpacePosition.z);
+            max.copyFromFloats(cameraSpacePosition.x + sprite.width * 0.5, cameraSpacePosition.y + sprite.height * 0.5, cameraSpacePosition.z);
 
             if (activeRay.intersectsBoxMinMax(min, max)) {
                 const currentDistance = Vector3.Distance(cameraSpacePosition, activeRay.origin);
@@ -556,8 +556,8 @@ export class SpriteManager implements ISpriteManager {
 
             Vector3.TransformCoordinatesToRef(sprite.position, cameraView, cameraSpacePosition);
 
-            min.copyFromFloats(cameraSpacePosition.x - sprite.width / 2, cameraSpacePosition.y - sprite.height / 2, cameraSpacePosition.z);
-            max.copyFromFloats(cameraSpacePosition.x + sprite.width / 2, cameraSpacePosition.y + sprite.height / 2, cameraSpacePosition.z);
+            min.copyFromFloats(cameraSpacePosition.x - sprite.width * 0.5, cameraSpacePosition.y - sprite.height * 0.5, cameraSpacePosition.z);
+            max.copyFromFloats(cameraSpacePosition.x + sprite.width * 0.5, cameraSpacePosition.y + sprite.height * 0.5, cameraSpacePosition.z);
 
             if (ray.intersectsBoxMinMax(min, max)) {
                 distance = Vector3.Distance(cameraSpacePosition, ray.origin);

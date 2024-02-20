@@ -156,13 +156,13 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
 
         switch (this.type) {
             case GeometryCurveBlockTypes.EaseInSine:
-                func = (v: float) => 1.0 - Math.cos((v * 3.1415) / 2.0);
+                func = (v: float) => 1.0 - Math.cos((v * 3.1415) * 0.5);
                 break;
             case GeometryCurveBlockTypes.EaseOutSine:
-                func = (v: float) => Math.sin((v * 3.1415) / 2.0);
+                func = (v: float) => Math.sin((v * 3.1415) * 0.5);
                 break;
             case GeometryCurveBlockTypes.EaseInOutSine:
-                func = (v: float) => -(Math.cos(v * 3.1415) - 1.0) / 2.0;
+                func = (v: float) => -(Math.cos(v * 3.1415) - 1.0) * 0.5;
                 break;
             case GeometryCurveBlockTypes.EaseInQuad:
                 func = (v: float) => v * v;
@@ -171,7 +171,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 func = (v: float) => (1.0 - v) * (1.0 - v);
                 break;
             case GeometryCurveBlockTypes.EaseInOutQuad: {
-                func = (v: float) => (v < 0.5 ? 2.0 * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 2.0) / 2.0);
+                func = (v: float) => (v < 0.5 ? 2.0 * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 2.0) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInCubic:
@@ -182,7 +182,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryCurveBlockTypes.EaseInOutCubic: {
-                func = (v: float) => (v < 0.5 ? 4.0 * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 3.0) / 2.0);
+                func = (v: float) => (v < 0.5 ? 4.0 * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 3.0) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInQuart:
@@ -193,7 +193,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryCurveBlockTypes.EaseInOutQuart: {
-                func = (v: float) => (v < 0.5 ? 8.0 * v * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 4.0) / 2.0);
+                func = (v: float) => (v < 0.5 ? 8.0 * v * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 4.0) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInQuint:
@@ -204,7 +204,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryCurveBlockTypes.EaseInOutQuint: {
-                func = (v: float) => (v < 0.5 ? 16.0 * v * v * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 5.0) / 2.0);
+                func = (v: float) => (v < 0.5 ? 16.0 * v * v * v * v * v : 1.0 - Math.pow(-2.0 * v + 2.0, 5.0) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInExpo: {
@@ -216,7 +216,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryCurveBlockTypes.EaseInOutExpo: {
-                func = (v: float) => (v === 0.0 ? 0.0 : v === 1.0 ? 1.0 : v < 0.5 ? Math.pow(2.0, 20.0 * v - 10.0) / 2.0 : (2.0 - Math.pow(2.0, -20.0 * v + 10.0)) / 2.0);
+                func = (v: float) => (v === 0.0 ? 0.0 : v === 1.0 ? 1.0 : v < 0.5 ? Math.pow(2.0, 20.0 * v - 10.0) * 0.5 : (2.0 - Math.pow(2.0, -20.0 * v + 10.0)) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInCirc: {
@@ -228,7 +228,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                 break;
             }
             case GeometryCurveBlockTypes.EaseInOutCirc: {
-                func = (v: float) => (v < 0.5 ? (1.0 - Math.sqrt(1.0 - Math.pow(2.0 * v, 2.0))) / 2.0 : (Math.sqrt(1.0 - Math.pow(-2.0 * v + 2.0, 2.0)) + 1.0) / 2.0);
+                func = (v: float) => (v < 0.5 ? (1.0 - Math.sqrt(1.0 - Math.pow(2.0 * v, 2.0))) * 0.5 : (Math.sqrt(1.0 - Math.pow(-2.0 * v + 2.0, 2.0)) + 1.0) * 0.5);
                 break;
             }
             case GeometryCurveBlockTypes.EaseInBack: {
@@ -242,8 +242,8 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
             case GeometryCurveBlockTypes.EaseInOutBack: {
                 func = (v: float) =>
                     v < 0.5
-                        ? (Math.pow(2.0 * v, 2.0) * (3.5949095 * 2.0 * v - 2.5949095)) / 2.0
-                        : (Math.pow(2.0 * v - 2.0, 2.0) * (3.5949095 * (v * 2.0 - 2.0) + 3.5949095) + 2.0) / 2.0;
+                        ? (Math.pow(2.0 * v, 2.0) * (3.5949095 * 2.0 * v - 2.5949095)) * 0.5
+                        : (Math.pow(2.0 * v - 2.0, 2.0) * (3.5949095 * (v * 2.0 - 2.0) + 3.5949095) + 2.0) * 0.5;
                 break;
             }
             case GeometryCurveBlockTypes.EaseInElastic: {
@@ -261,8 +261,8 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
                         : v == 1.0
                           ? 1.0
                           : v < 0.5
-                            ? -(Math.pow(2.0, 20.0 * v - 10.0) * Math.sin((20.0 * v - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0
-                            : (Math.pow(2.0, -20.0 * v + 10.0) * Math.sin((20.0 * v - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0 + 1.0;
+                            ? -(Math.pow(2.0, 20.0 * v - 10.0) * Math.sin((20.0 * v - 11.125) * ((2.0 * 3.1415) / 4.5))) * 0.5
+                            : (Math.pow(2.0, -20.0 * v + 10.0) * Math.sin((20.0 * v - 11.125) * ((2.0 * 3.1415) / 4.5))) * 0.5 + 1.0;
                 break;
             }
         }

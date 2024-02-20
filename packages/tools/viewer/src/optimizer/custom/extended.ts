@@ -32,7 +32,7 @@ export function extendedUpgrade(sceneManager: SceneManager): boolean {
         sceneManager.fxaaEnabled = true;
         return false;
     }
-    const hardwareScalingLevel = Math.max(1 / 2, 1 / (window.devicePixelRatio || 2));
+    const hardwareScalingLevel = Math.max(1 * 0.5, 1 / (window.devicePixelRatio || 2));
     if (sceneManager.scene.getEngine().getHardwareScalingLevel() > hardwareScalingLevel) {
         const scaling = Scalar.Clamp(sceneManager.scene.getEngine().getHardwareScalingLevel() - 0.25, 0, hardwareScalingLevel);
         sceneManager.scene.getEngine().setHardwareScalingLevel(scaling);

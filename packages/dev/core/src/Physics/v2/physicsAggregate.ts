@@ -207,15 +207,15 @@ export class PhysicsAggregate {
         switch (this.type) {
             case PhysicsShapeType.SPHERE:
                 if (!this._options.radius && Scalar.WithinEpsilon(extents.x, extents.y, 0.0001) && Scalar.WithinEpsilon(extents.x, extents.z, 0.0001)) {
-                    this._options.radius = extents.x / 2;
+                    this._options.radius = extents.x * 0.5;
                 } else if (!this._options.radius) {
                     Logger.Warn("Non uniform scaling is unsupported for sphere shapes. Setting the radius to the biggest bounding box extent.");
-                    this._options.radius = Math.max(extents.x, extents.y, extents.z) / 2;
+                    this._options.radius = Math.max(extents.x, extents.y, extents.z) * 0.5;
                 }
                 break;
             case PhysicsShapeType.CAPSULE:
                 {
-                    const capRadius = extents.x / 2;
+                    const capRadius = extents.x * 0.5;
                     this._options.radius = this._options.radius ?? capRadius;
                     this._options.pointA = this._options.pointA ?? new Vector3(0, min.y + capRadius, 0);
                     this._options.pointB = this._options.pointB ?? new Vector3(0, min.y + extents.y - capRadius, 0);
@@ -223,7 +223,7 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.CYLINDER:
                 {
-                    const capRadius = extents.x / 2;
+                    const capRadius = extents.x * 0.5;
                     this._options.radius = this._options.radius ?? capRadius;
                     this._options.pointA = this._options.pointA ?? new Vector3(0, min.y, 0);
                     this._options.pointB = this._options.pointB ?? new Vector3(0, min.y + extents.y, 0);

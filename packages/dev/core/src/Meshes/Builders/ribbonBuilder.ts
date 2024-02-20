@@ -39,7 +39,7 @@ export function CreateRibbonVertexData(options: {
     const closeArray: boolean = options.closeArray || false;
     const closePath: boolean = options.closePath || false;
     const invertUV: boolean = options.invertUV || false;
-    const defaultOffset: number = Math.floor(pathArray[0].length / 2);
+    const defaultOffset: number = Math.floor(pathArray[0].length * 0.5);
     let offset: number = options.offset || defaultOffset;
     offset = offset > defaultOffset ? defaultOffset : Math.floor(offset); // offset max allowed : defaultOffset
     const sideOrientation: number = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;

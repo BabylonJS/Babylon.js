@@ -113,13 +113,13 @@ export class AxisDragGizmo extends Gizmo implements IAxisDragGizmo {
         // Position arrow pointing in its drag axis
         cylinder.parent = arrow;
         cylinder.material = material;
-        cylinder.rotation.x = Math.PI / 2;
+        cylinder.rotation.x = Math.PI * 0.5;
         cylinder.position.z += 0.3;
 
         line.parent = arrow;
         line.material = material;
-        line.position.z += 0.275 / 2;
-        line.rotation.x = Math.PI / 2;
+        line.position.z += 0.275 * 0.5;
+        line.rotation.x = Math.PI * 0.5;
 
         if (isCollider) {
             line.visibility = 0;

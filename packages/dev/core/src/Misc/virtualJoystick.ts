@@ -180,7 +180,7 @@ export class VirtualJoystick {
                 VirtualJoystick.Canvas.width = VirtualJoystick._VJCanvasWidth;
                 VirtualJoystick.Canvas.height = VirtualJoystick._VJCanvasHeight;
             }
-            VirtualJoystick._HalfWidth = VirtualJoystick._VJCanvasWidth / 2;
+            VirtualJoystick._HalfWidth = VirtualJoystick._VJCanvasWidth * 0.5;
         };
 
         // injecting a canvas element on top of the canvas 3D game
@@ -212,7 +212,7 @@ export class VirtualJoystick {
             VirtualJoystick._VJCanvasContext.lineWidth = 2;
             document.body.appendChild(VirtualJoystick.Canvas);
         }
-        VirtualJoystick._HalfWidth = VirtualJoystick.Canvas.width / 2;
+        VirtualJoystick._HalfWidth = VirtualJoystick.Canvas.width * 0.5;
         this.pressed = false;
         this.limitToContainer = options.limitToContainer;
 
@@ -425,7 +425,7 @@ export class VirtualJoystick {
     public set containerSize(newSize: number) {
         this._joystickContainerSize = newSize;
         this._clearContainerSize = ~~(this._joystickContainerSize * 2.1);
-        this._clearContainerSizeOffset = ~~(this._clearContainerSize / 2);
+        this._clearContainerSizeOffset = ~~(this._clearContainerSize * 0.5);
     }
     public get containerSize() {
         return this._joystickContainerSize;
@@ -437,7 +437,7 @@ export class VirtualJoystick {
     public set puckSize(newSize: number) {
         this._joystickPuckSize = newSize;
         this._clearPuckSize = ~~(this._joystickPuckSize * 2.1);
-        this._clearPuckSizeOffset = ~~(this._clearPuckSize / 2);
+        this._clearPuckSizeOffset = ~~(this._clearPuckSize * 0.5);
     }
     public get puckSize() {
         return this._joystickPuckSize;

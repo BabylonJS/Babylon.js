@@ -136,10 +136,10 @@ export class RadioButton extends Control {
 
         // Outer
         Control.drawEllipse(
-            this._currentMeasure.left + this._currentMeasure.width / 2,
-            this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2 - this._thickness / 2,
-            this._currentMeasure.height / 2 - this._thickness / 2,
+            this._currentMeasure.left + this._currentMeasure.width * 0.5,
+            this._currentMeasure.top + this._currentMeasure.height * 0.5,
+            this._currentMeasure.width * 0.5 - this._thickness * 0.5,
+            this._currentMeasure.height * 0.5 - this._thickness * 0.5,
             context
         );
 
@@ -164,10 +164,10 @@ export class RadioButton extends Control {
             const offseHeight = actualHeight * this._checkSizeRatio;
 
             Control.drawEllipse(
-                this._currentMeasure.left + this._currentMeasure.width / 2,
-                this._currentMeasure.top + this._currentMeasure.height / 2,
-                offsetWidth / 2 - this._thickness / 2,
-                offseHeight / 2 - this._thickness / 2,
+                this._currentMeasure.left + this._currentMeasure.width * 0.5,
+                this._currentMeasure.top + this._currentMeasure.height * 0.5,
+                offsetWidth * 0.5 - this._thickness * 0.5,
+                offseHeight * 0.5 - this._thickness * 0.5,
                 context
             );
 

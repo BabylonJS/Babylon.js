@@ -148,7 +148,7 @@ export class Ragdoll {
                     if (currentBone.length === undefined) {
                         Logger.Log("The length property is not defined for bone " + currentBone.name);
                     }
-                    boxOffset = currentBone.length / 2;
+                    boxOffset = currentBone.length * 0.5;
                 } else if (config[i].boxOffset !== undefined) {
                     boxOffset = config[i].boxOffset;
                 }

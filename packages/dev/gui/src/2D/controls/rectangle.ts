@@ -116,7 +116,7 @@ export class Rectangle extends Container {
             additionalWidth += 1;
         }
         if (this.thickness) {
-            additionalWidth += this.thickness / 2;
+            additionalWidth += this.thickness * 0.5;
         }
         return additionalWidth;
     }
@@ -129,7 +129,7 @@ export class Rectangle extends Container {
             additionalHeight += 1;
         }
         if (this.thickness) {
-            additionalHeight += this.thickness / 2;
+            additionalHeight += this.thickness * 0.5;
         }
         return additionalHeight;
     }
@@ -152,7 +152,7 @@ export class Rectangle extends Container {
             context.fillStyle = this._getRectangleFill(context);
 
             if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
-                this._drawRoundedRect(context, this._thickness / 2);
+                this._drawRoundedRect(context, this._thickness * 0.5);
                 context.fill();
             } else {
                 context.fillRect(this._currentMeasure.left, this._currentMeasure.top, this._currentMeasure.width, this._currentMeasure.height);
@@ -172,12 +172,12 @@ export class Rectangle extends Container {
             context.lineWidth = this._thickness;
 
             if (this._cornerRadius[0] !== 0 || this._cornerRadius[1] !== 0 || this._cornerRadius[2] !== 0 || this._cornerRadius[3] !== 0) {
-                this._drawRoundedRect(context, this._thickness / 2);
+                this._drawRoundedRect(context, this._thickness * 0.5);
                 context.stroke();
             } else {
                 context.strokeRect(
-                    this._currentMeasure.left + this._thickness / 2,
-                    this._currentMeasure.top + this._thickness / 2,
+                    this._currentMeasure.left + this._thickness * 0.5,
+                    this._currentMeasure.top + this._thickness * 0.5,
                     this._currentMeasure.width - this._thickness,
                     this._currentMeasure.height - this._thickness
                 );
@@ -203,19 +203,19 @@ export class Rectangle extends Container {
         const height = this._currentMeasure.height - offset * 2;
 
         for (let index = 0; index < this._cornerRadius.length; index++) {
-            this._cachedRadius[index] = Math.abs(Math.min(height / 2, Math.min(width / 2, this._cornerRadius[index])));
+            this._cachedRadius[index] = Math.abs(Math.min(height * 0.5, Math.min(width * 0.5, this._cornerRadius[index])));
         }
 
         context.beginPath();
         context.moveTo(x + this._cachedRadius[0], y);
         context.lineTo(x + width - this._cachedRadius[1], y);
-        context.arc(x + width - this._cachedRadius[1], y + this._cachedRadius[1], this._cachedRadius[1], (3 * Math.PI) / 2, Math.PI * 2);
+        context.arc(x + width - this._cachedRadius[1], y + this._cachedRadius[1], this._cachedRadius[1], (3 * Math.PI) * 0.5, Math.PI * 2);
         context.lineTo(x + width, y + height - this._cachedRadius[2]);
-        context.arc(x + width - this._cachedRadius[2], y + height - this._cachedRadius[2], this._cachedRadius[2], 0, Math.PI / 2);
+        context.arc(x + width - this._cachedRadius[2], y + height - this._cachedRadius[2], this._cachedRadius[2], 0, Math.PI * 0.5);
         context.lineTo(x + this._cachedRadius[3], y + height);
-        context.arc(x + this._cachedRadius[3], y + height - this._cachedRadius[3], this._cachedRadius[3], Math.PI / 2, Math.PI);
+        context.arc(x + this._cachedRadius[3], y + height - this._cachedRadius[3], this._cachedRadius[3], Math.PI * 0.5, Math.PI);
         context.lineTo(x, y + this._cachedRadius[0]);
-        context.arc(x + this._cachedRadius[0], y + this._cachedRadius[0], this._cachedRadius[0], Math.PI, (3 * Math.PI) / 2);
+        context.arc(x + this._cachedRadius[0], y + this._cachedRadius[0], this._cachedRadius[0], Math.PI, (3 * Math.PI) * 0.5);
         context.closePath();
     }
 

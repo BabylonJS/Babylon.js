@@ -655,8 +655,8 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const targetX = Math.round(globalViewPort.width * (1 / this.rootContainer.scaleX));
         const targetY = Math.round(globalViewPort.height * (1 / this.rootContainer.scaleY));
 
-        globalViewPort.x += (globalViewPort.width - targetX) / 2;
-        globalViewPort.y += (globalViewPort.height - targetY) / 2;
+        globalViewPort.x += (globalViewPort.width - targetX) * 0.5;
+        globalViewPort.y += (globalViewPort.height - targetY) * 0.5;
 
         globalViewPort.width = targetX;
         globalViewPort.height = targetY;

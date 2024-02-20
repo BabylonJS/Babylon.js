@@ -2192,7 +2192,7 @@ export class VertexData {
                 frontUVs = frontUVs ? frontUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
                 backUVs = backUVs ? backUVs : new Vector4(0.0, 0.0, 1.0, 1.0);
                 u = 0;
-                for (i = 0; i < lu / 2; i++) {
+                for (i = 0; i < lu * 0.5; i++) {
                     uvs[u] = frontUVs.x + (frontUVs.z - frontUVs.x) * uvs[u];
                     uvs[u + 1] = frontUVs.y + (frontUVs.w - frontUVs.y) * uvs[u + 1];
                     uvs[u + lu] = backUVs.x + (backUVs.z - backUVs.x) * uvs[u + lu];

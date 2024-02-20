@@ -21,7 +21,7 @@ export enum PhysicsMaterialCombineMode {
      */
     MAXIMUM,
     /* The final value will be the arithmetic mean of the two values:
-     * (valueA + valueB) / 2
+     * (valueA + valueB) * 0.5
      */
     ARITHMETIC_MEAN,
     /**

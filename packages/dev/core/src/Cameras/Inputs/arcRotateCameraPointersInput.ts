@@ -135,7 +135,7 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
         } else {
             this.camera.inertialRadiusOffset +=
                 (pinchSquaredDistance - previousPinchSquaredDistance) /
-                ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
+                ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) * 0.5);
         }
     }
 

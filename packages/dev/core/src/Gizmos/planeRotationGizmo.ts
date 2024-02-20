@@ -354,12 +354,12 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
                 }
 
                 // Convert angle and axis to quaternion (http://www.euclideanspace.com/maths/geometry/rotations/conversions/angleToQuaternion/index.htm)
-                const quaternionCoefficient = Math.sin(angle / 2);
+                const quaternionCoefficient = Math.sin(angle * 0.5);
                 amountToRotate.set(
                     planeNormalTowardsCamera.x * quaternionCoefficient,
                     planeNormalTowardsCamera.y * quaternionCoefficient,
                     planeNormalTowardsCamera.z * quaternionCoefficient,
-                    Math.cos(angle / 2)
+                    Math.cos(angle * 0.5)
                 );
 
                 // If the meshes local scale is inverted (eg. loaded gltf file parent with z scale of -1) the rotation needs to be inverted on the y axis
@@ -458,8 +458,8 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         rotationMesh.material = this._coloredMaterial;
 
         // Position arrow pointing in its drag axis
-        rotationMesh.rotation.x = Math.PI / 2;
-        collider.rotation.x = Math.PI / 2;
+        rotationMesh.rotation.x = Math.PI * 0.5;
+        collider.rotation.x = Math.PI * 0.5;
 
         parentMesh.addChild(rotationMesh, Gizmo.PreserveScaling);
         parentMesh.addChild(collider, Gizmo.PreserveScaling);

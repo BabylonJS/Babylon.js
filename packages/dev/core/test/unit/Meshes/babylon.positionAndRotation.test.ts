@@ -51,7 +51,7 @@ describe("Babylon position and rotation", () => {
 
             //Rotate parent around child
             parent.rotationQuaternion = new Quaternion();
-            const eulerRotation = new Vector3(0, Math.PI / 2, 0);
+            const eulerRotation = new Vector3(0, Math.PI * 0.5, 0);
             const rotation = new Quaternion();
             Quaternion.RotationYawPitchRollToRef(eulerRotation.y, eulerRotation.x, eulerRotation.z, rotation);
             parent.rotationQuaternion.multiplyInPlace(rotation);

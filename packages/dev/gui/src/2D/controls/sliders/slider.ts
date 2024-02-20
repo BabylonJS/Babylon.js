@@ -137,14 +137,14 @@ export class Slider extends BaseSlider {
 
         if (this.isThumbClamped && this.isThumbCircle) {
             if (this.isVertical) {
-                top += this._effectiveThumbThickness / 2;
+                top += this._effectiveThumbThickness * 0.5;
             } else {
-                left += this._effectiveThumbThickness / 2;
+                left += this._effectiveThumbThickness * 0.5;
             }
 
-            radius = this._backgroundBoxThickness / 2;
+            radius = this._backgroundBoxThickness * 0.5;
         } else {
-            radius = (this._effectiveThumbThickness - this._effectiveBarOffset) / 2;
+            radius = (this._effectiveThumbThickness - this._effectiveBarOffset) * 0.5;
         }
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -161,7 +161,7 @@ export class Slider extends BaseSlider {
             if (this.isThumbClamped) {
                 if (this.isThumbCircle) {
                     context.beginPath();
-                    context.arc(left + this._backgroundBoxThickness / 2, top, radius, Math.PI, 2 * Math.PI);
+                    context.arc(left + this._backgroundBoxThickness * 0.5, top, radius, Math.PI, 2 * Math.PI);
                     context.fill();
                     context.fillRect(left, top, width, height);
                 } else {
@@ -174,7 +174,7 @@ export class Slider extends BaseSlider {
             if (this.isThumbClamped) {
                 if (this.isThumbCircle) {
                     context.beginPath();
-                    context.arc(left + this._backgroundBoxLength, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
+                    context.arc(left + this._backgroundBoxLength, top + this._backgroundBoxThickness * 0.5, radius, 0, 2 * Math.PI);
                     context.fill();
                     context.fillRect(left, top, width, height);
                 } else {
@@ -198,7 +198,7 @@ export class Slider extends BaseSlider {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left + this._backgroundBoxThickness / 2, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
+                        context.arc(left + this._backgroundBoxThickness * 0.5, top + this._backgroundBoxLength, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top + thumbPosition, width, height - thumbPosition);
                     } else {
@@ -211,7 +211,7 @@ export class Slider extends BaseSlider {
                 if (this.isThumbClamped) {
                     if (this.isThumbCircle) {
                         context.beginPath();
-                        context.arc(left, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
+                        context.arc(left, top + this._backgroundBoxThickness * 0.5, radius, 0, 2 * Math.PI);
                         context.fill();
                         context.fillRect(left, top, thumbPosition, height);
                     } else {
@@ -235,9 +235,9 @@ export class Slider extends BaseSlider {
             if (this._isThumbCircle) {
                 context.beginPath();
                 if (this.isVertical) {
-                    context.arc(left + this._backgroundBoxThickness / 2, top + thumbPosition, radius, 0, 2 * Math.PI);
+                    context.arc(left + this._backgroundBoxThickness * 0.5, top + thumbPosition, radius, 0, 2 * Math.PI);
                 } else {
-                    context.arc(left + thumbPosition, top + this._backgroundBoxThickness / 2, radius, 0, 2 * Math.PI);
+                    context.arc(left + thumbPosition, top + this._backgroundBoxThickness * 0.5, radius, 0, 2 * Math.PI);
                 }
                 context.fill();
                 if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {

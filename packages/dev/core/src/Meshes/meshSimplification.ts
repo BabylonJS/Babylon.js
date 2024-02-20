@@ -393,7 +393,7 @@ export class QuadraticErrorSimplification implements ISimplifier {
                 const threshold = 0.000000001 * Math.pow(iteration + 3, this.aggressiveness);
 
                 const trianglesIterator = (i: number) => {
-                    const tIdx = ~~((this._triangles.length / 2 + i) % this._triangles.length);
+                    const tIdx = ~~((this._triangles.length * 0.5 + i) % this._triangles.length);
                     const t = this._triangles[tIdx];
                     if (!t) {
                         return;
@@ -757,9 +757,9 @@ export class QuadraticErrorSimplification implements ISimplifier {
             }
             t._vertices[ref.vertexId] = origVertex;
             t.isDirty = true;
-            t.error[0] = this._calculateError(t._vertices[0], t._vertices[1]) + t.borderFactor / 2;
-            t.error[1] = this._calculateError(t._vertices[1], t._vertices[2]) + t.borderFactor / 2;
-            t.error[2] = this._calculateError(t._vertices[2], t._vertices[0]) + t.borderFactor / 2;
+            t.error[0] = this._calculateError(t._vertices[0], t._vertices[1]) + t.borderFactor * 0.5;
+            t.error[1] = this._calculateError(t._vertices[1], t._vertices[2]) + t.borderFactor * 0.5;
+            t.error[2] = this._calculateError(t._vertices[2], t._vertices[0]) + t.borderFactor * 0.5;
             t.error[3] = Math.min(t.error[0], t.error[1], t.error[2]);
             this._references.push(ref);
         }

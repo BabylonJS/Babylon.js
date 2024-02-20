@@ -85,7 +85,7 @@ export function CreateCylinderVertexData(options: {
     let angle: number;
     let h: number;
     let radius: number;
-    const tan = (diameterBottom - diameterTop) / 2 / height;
+    const tan = (diameterBottom - diameterTop) * 0.5 / height;
     const ringVertex: Vector3 = Vector3.Zero();
     const ringNormal: Vector3 = Vector3.Zero();
     const ringFirstVertex: Vector3 = Vector3.Zero();
@@ -104,7 +104,7 @@ export function CreateCylinderVertexData(options: {
 
     for (i = 0; i <= subdivisions; i++) {
         h = i / subdivisions;
-        radius = (h * (diameterTop - diameterBottom) + diameterBottom) / 2;
+        radius = (h * (diameterTop - diameterBottom) + diameterBottom) * 0.5;
         ringIdx = hasRings && i !== 0 && i !== subdivisions ? 2 : 1;
         for (r = 0; r < ringIdx; r++) {
             if (hasRings) {
@@ -118,7 +118,7 @@ export function CreateCylinderVertexData(options: {
 
                 // position
                 ringVertex.x = Math.cos(-angle) * radius;
-                ringVertex.y = -height / 2 + h * height;
+                ringVertex.y = -height * 0.5 + h * height;
                 ringVertex.z = Math.sin(-angle) * radius;
 
                 // normal
@@ -220,7 +220,7 @@ export function CreateCylinderVertexData(options: {
 
     // Caps
     const createCylinderCap = (isTop: boolean) => {
-        const radius = isTop ? diameterTop / 2 : diameterBottom / 2;
+        const radius = isTop ? diameterTop * 0.5 : diameterBottom * 0.5;
         if (radius === 0) {
             return;
         }
@@ -236,7 +236,7 @@ export function CreateCylinderVertexData(options: {
         }
         // cap center
         const vbase = positions.length / 3;
-        const offset = isTop ? height / 2 : -height / 2;
+        const offset = isTop ? height * 0.5 : -height * 0.5;
         const center = new Vector3(0, offset, 0);
         positions.push(center.x, center.y, center.z);
         normals.push(0, isTop ? 1 : -1, 0);

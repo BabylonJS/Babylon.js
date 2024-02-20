@@ -47,10 +47,10 @@ export class Ellipse extends Container {
         }
 
         Control.drawEllipse(
-            this._currentMeasure.left + this._currentMeasure.width / 2,
-            this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2 - this._thickness / 2,
-            this._currentMeasure.height / 2 - this._thickness / 2,
+            this._currentMeasure.left + this._currentMeasure.width * 0.5,
+            this._currentMeasure.top + this._currentMeasure.height * 0.5,
+            this._currentMeasure.width * 0.5 - this._thickness * 0.5,
+            this._currentMeasure.height * 0.5 - this._thickness * 0.5,
             context
         );
 
@@ -89,10 +89,10 @@ export class Ellipse extends Container {
 
     protected _clipForChildren(context: ICanvasRenderingContext) {
         Control.drawEllipse(
-            this._currentMeasure.left + this._currentMeasure.width / 2,
-            this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2,
-            this._currentMeasure.height / 2,
+            this._currentMeasure.left + this._currentMeasure.width * 0.5,
+            this._currentMeasure.top + this._currentMeasure.height * 0.5,
+            this._currentMeasure.width * 0.5,
+            this._currentMeasure.height * 0.5,
             context
         );
 
@@ -101,10 +101,10 @@ export class Ellipse extends Container {
 
     public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         Control.drawEllipse(
-            this._currentMeasure.left + this._currentMeasure.width / 2,
-            this._currentMeasure.top + this._currentMeasure.height / 2,
-            this._currentMeasure.width / 2 - this._highlightLineWidth / 2,
-            this._currentMeasure.height / 2 - this._highlightLineWidth / 2,
+            this._currentMeasure.left + this._currentMeasure.width * 0.5,
+            this._currentMeasure.top + this._currentMeasure.height * 0.5,
+            this._currentMeasure.width * 0.5 - this._highlightLineWidth * 0.5,
+            this._currentMeasure.height * 0.5 - this._highlightLineWidth * 0.5,
             context
         );
         context.stroke();

@@ -19,8 +19,8 @@ export function CreateHemisphere(name: string, options: { segments?: number; dia
     }
 
     const halfSphere = CreateSphere("", { slice: 0.5, diameter: options.diameter, segments: options.segments }, scene);
-    const disc = CreateDisc("", { radius: options.diameter / 2, tessellation: options.segments * 3 + (4 - options.segments) }, scene);
-    disc.rotation.x = -Math.PI / 2;
+    const disc = CreateDisc("", { radius: options.diameter * 0.5, tessellation: options.segments * 3 + (4 - options.segments) }, scene);
+    disc.rotation.x = -Math.PI * 0.5;
     disc.parent = halfSphere;
 
     const merged = <Mesh>Mesh.MergeMeshes([disc, halfSphere], true);

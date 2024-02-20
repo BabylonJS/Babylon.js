@@ -160,15 +160,15 @@ export class Camera extends Node {
         let y = 0;
         if (this.mode === Camera.PERSPECTIVE_CAMERA) {
             if (this.fovMode === Camera.FOVMODE_VERTICAL_FIXED) {
-                y = this.minZ * 2 * Math.tan(this.fov / 2);
+                y = this.minZ * 2 * Math.tan(this.fov * 0.5);
                 x = this.getEngine().getAspectRatio(this) * y;
             } else {
-                x = this.minZ * 2 * Math.tan(this.fov / 2);
+                x = this.minZ * 2 * Math.tan(this.fov * 0.5);
                 y = x / this.getEngine().getAspectRatio(this);
             }
         } else {
-            const halfWidth = this.getEngine().getRenderWidth() / 2.0;
-            const halfHeight = this.getEngine().getRenderHeight() / 2.0;
+            const halfWidth = this.getEngine().getRenderWidth() * 0.5;
+            const halfHeight = this.getEngine().getRenderHeight() * 0.5;
 
             x = (this.orthoRight ?? halfWidth) - (this.orthoLeft ?? -halfWidth);
             y = (this.orthoTop ?? halfHeight) - (this.orthoBottom ?? -halfHeight);
@@ -961,8 +961,8 @@ export class Camera extends Node {
                 reverseDepth
             );
         } else {
-            const halfWidth = engine.getRenderWidth() / 2.0;
-            const halfHeight = engine.getRenderHeight() / 2.0;
+            const halfWidth = engine.getRenderWidth() * 0.5;
+            const halfHeight = engine.getRenderHeight() * 0.5;
             if (scene.useRightHandedSystem) {
                 if (this.oblique) {
                     Matrix.ObliqueOffCenterRHToRef(

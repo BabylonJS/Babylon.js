@@ -575,8 +575,8 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsJoint.DistanceJoint: {
                 const distance = (<DistanceJointData>jointData).maxDistance;
                 if (distance) {
-                    jointData.mainPivot = new Vector3(0, -distance / 2, 0);
-                    jointData.connectedPivot = new Vector3(0, distance / 2, 0);
+                    jointData.mainPivot = new Vector3(0, -distance * 0.5, 0);
+                    jointData.connectedPivot = new Vector3(0, distance * 0.5, 0);
                 }
                 joint = new this.bjsAMMO.btPoint2PointConstraint(
                     mainBody,
@@ -1044,30 +1044,30 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             case PhysicsImpostor.SphereImpostor:
                 // Is there a better way to compare floats number? With an epsilon or with a Math function
                 if (Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.y, 0.0001) && Scalar.WithinEpsilon(impostorExtents.x, impostorExtents.z, 0.0001)) {
-                    returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
+                    returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x * 0.5);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
                     const positions = [new this.bjsAMMO.btVector3(0, 0, 0)];
                     const radii = [1];
                     returnValue = new this.bjsAMMO.btMultiSphereShape(positions, radii, 1);
-                    returnValue.setLocalScaling(new this.bjsAMMO.btVector3(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2));
+                    returnValue.setLocalScaling(new this.bjsAMMO.btVector3(impostorExtents.x * 0.5, impostorExtents.y * 0.5, impostorExtents.z * 0.5));
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
                 {
                     // https://pybullet.org/Bullet/BulletFull/classbtCapsuleShape.html#details
                     // Height is just the height between the center of each 'sphere' of the capsule caps
-                    const capRadius = impostorExtents.x / 2;
+                    const capRadius = impostorExtents.x * 0.5;
                     returnValue = new this.bjsAMMO.btCapsuleShape(capRadius, impostorExtents.y - capRadius * 2);
                 }
                 break;
             case PhysicsImpostor.CylinderImpostor:
-                this._tmpAmmoVectorA.setValue(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2);
+                this._tmpAmmoVectorA.setValue(impostorExtents.x * 0.5, impostorExtents.y * 0.5, impostorExtents.z * 0.5);
                 returnValue = new this.bjsAMMO.btCylinderShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.PlaneImpostor:
             case PhysicsImpostor.BoxImpostor:
-                this._tmpAmmoVectorA.setValue(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2);
+                this._tmpAmmoVectorA.setValue(impostorExtents.x * 0.5, impostorExtents.y * 0.5, impostorExtents.z * 0.5);
                 returnValue = new this.bjsAMMO.btBoxShape(this._tmpAmmoVectorA);
                 break;
             case PhysicsImpostor.MeshImpostor: {
@@ -1109,7 +1109,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             }
             case PhysicsImpostor.NoImpostor:
                 // Fill with sphere but collision is disabled on the rigid body in generatePhysicsBody, using an empty shape caused unexpected movement with joints
-                returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
+                returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x * 0.5);
                 break;
             case PhysicsImpostor.CustomImpostor:
                 // Only usable when the plugin's onCreateCustomShape is set
@@ -1567,7 +1567,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
      */
     public getRadius(impostor: PhysicsImpostor): number {
         const extents = impostor.getObjectExtents();
-        return extents.x / 2;
+        return extents.x * 0.5;
     }
 
     /**

@@ -200,8 +200,8 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                     const distY = this._pointA.y - this._pointB.y;
                     const pinchSquaredDistance = distX * distX + distY * distY;
                     const multiTouchPanPosition = {
-                        x: (this._pointA.x + this._pointB.x) / 2,
-                        y: (this._pointA.y + this._pointB.y) / 2,
+                        x: (this._pointA.x + this._pointB.x) * 0.5,
+                        y: (this._pointA.y + this._pointB.y) * 0.5,
                         pointerId: evt.pointerId,
                         type: p.type,
                     };

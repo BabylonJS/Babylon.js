@@ -102,7 +102,7 @@ export class Angle {
      */
     public static BetweenTwoVectors<Vec extends Vector2 | Vector3 | Vector4>(a: DeepImmutable<Vec>, b: DeepImmutable<Vec>): Angle {
         let product = a.lengthSquared() * b.lengthSquared();
-        if (product === 0) return new Angle(Math.PI / 2);
+        if (product === 0) return new Angle(Math.PI * 0.5);
         product = Math.sqrt(product);
         let cosVal = a.dot(b as any) / product;
         cosVal = Scalar.Clamp(cosVal, -1, 1);
@@ -168,8 +168,8 @@ export class Arc2 {
         public endPoint: Vector2
     ) {
         const temp = Math.pow(midPoint.x, 2) + Math.pow(midPoint.y, 2);
-        const startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) / 2;
-        const midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) / 2;
+        const startToMid = (Math.pow(startPoint.x, 2) + Math.pow(startPoint.y, 2) - temp) * 0.5;
+        const midToEnd = (temp - Math.pow(endPoint.x, 2) - Math.pow(endPoint.y, 2)) * 0.5;
         const det = (startPoint.x - midPoint.x) * (midPoint.y - endPoint.y) - (midPoint.x - endPoint.x) * (startPoint.y - midPoint.y);
 
         this.centerPoint = new Vector2(

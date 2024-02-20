@@ -183,7 +183,7 @@ export abstract class FluidRenderingObject {
         depthEffect.setMatrix("view", this._scene.getViewMatrix());
         depthEffect.setMatrix("projection", this._scene.getProjectionMatrix());
         depthEffect.setFloat2("size", this._particleSize, this._particleSize);
-        depthEffect.setFloat("particleRadius", this._particleSize / 2);
+        depthEffect.setFloat("particleRadius", this._particleSize * 0.5);
 
         if (this.useInstancing) {
             this._engine.drawArraysType(Constants.MATERIAL_TriangleStripDrawMode, 0, 4, numParticles);

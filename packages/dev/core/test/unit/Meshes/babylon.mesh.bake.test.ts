@@ -191,7 +191,7 @@ describe("Mesh Baking", () => {
         it("should bake transform into vertices", () => {
             box.scaling.z = 2;
             box.position.y = 5;
-            box.rotation.x = Math.PI / 2;
+            box.rotation.x = Math.PI * 0.5;
 
             box.bakeCurrentTransformIntoVertices();
 
@@ -216,7 +216,7 @@ describe("Mesh Baking", () => {
             // Set some transform to the box and children
             box.scaling.z = 2.5;
             box.position.y = 5;
-            box.rotation.x = Math.PI / 2;
+            box.rotation.x = Math.PI * 0.5;
 
             child.scaling.z = 1.5;
             child.position.y = -1;
@@ -231,11 +231,11 @@ describe("Mesh Baking", () => {
             // And children transforms should be set by parent
             expect(child.scaling.z).toEqual(2.5);
             expect(child.position.y).toEqual(5);
-            expect(child.rotation.x).toEqual(Math.PI / 2);
+            expect(child.rotation.x).toEqual(Math.PI * 0.5);
 
             expect(child2.scaling.z).toEqual(2.5);
             expect(child2.position.y).toEqual(5);
-            expect(child2.rotation.x).toEqual(Math.PI / 2);
+            expect(child2.rotation.x).toEqual(Math.PI * 0.5);
         });
 
         it("should save children transforms without affecting by parent", () => {
@@ -249,7 +249,7 @@ describe("Mesh Baking", () => {
             // Set some transform to the box and children
             box.scaling.z = 2;
             box.position.y = 5;
-            box.rotation.x = Math.PI / 2;
+            box.rotation.x = Math.PI * 0.5;
 
             child.scaling.z = 1.5;
             child.position.y = -2;

@@ -53,7 +53,7 @@ describe("OctreeSceneComponent", () => {
             });
             scene = new Scene(engine);
 
-            new ArcRotateCamera("Camera", 0, Math.PI / 2, 5, new Vector3(0, 0, 0), scene);
+            new ArcRotateCamera("Camera", 0, Math.PI * 0.5, 5, new Vector3(0, 0, 0), scene);
         });
 
         it("should return nothing if scene has no meshes", () => {

@@ -12,7 +12,7 @@
 // To create an object satisfying the Coroutine<T> contract with a generator function, it must not yield values, but rather only void via a plain "yield;" statement.
 // Coroutines can call other coroutines via:
 // 1. yield* someOtherCoroutine(); // If the called coroutine does not return a value
-// 2. const result = yield* someOtherCoroutine(); // If the called coroutine returns a value
+/* 0.5. const result = yield* someOtherCoroutine(); // If the called coroutine returns a value
 
 // Coroutines are run with the runCoroutine function, which takes a Coroutine<T>, a CoroutineScheduler<T>, and a success and error callback.
 // A scheduler is responsible for scheduling the next step of a coroutine, either synchronously or asynchronously.

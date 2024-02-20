@@ -487,8 +487,8 @@ describe("Babylon glTF Serializer", () => {
             expect(Object.keys(assertionData)).toHaveLength(6);
             expect(assertionData.extensions["KHR_lights_punctual"].lights).toHaveLength(1);
             expect(assertionData.extensions["KHR_lights_punctual"].lights[0].intensity).toEqual(intensity);
-            expect(assertionData.extensions["KHR_lights_punctual"].lights[0].spot.outerConeAngle).toEqual(angle / 2);
-            expect(assertionData.extensions["KHR_lights_punctual"].lights[0].spot.innerConeAngle).toEqual(innerAngle / 2);
+            expect(assertionData.extensions["KHR_lights_punctual"].lights[0].spot.outerConeAngle).toEqual(angle * 0.5);
+            expect(assertionData.extensions["KHR_lights_punctual"].lights[0].spot.innerConeAngle).toEqual(innerAngle * 0.5);
             expect(assertionData.extensions["KHR_lights_punctual"].lights[0].color).toEqual(red);
             expect(assertionData.nodes).toHaveLength(1);
             expect(assertionData.nodes[0].extensions["KHR_lights_punctual"]["light"]).toEqual(0);

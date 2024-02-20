@@ -1212,12 +1212,12 @@ export class Control implements IAnimatable {
 
     /** Gets the center coordinate on X axis */
     public get centerX(): number {
-        return this._currentMeasure.left + this._currentMeasure.width / 2;
+        return this._currentMeasure.left + this._currentMeasure.width * 0.5;
     }
 
     /** Gets the center coordinate on Y axis */
     public get centerY(): number {
-        return this._currentMeasure.top + this._currentMeasure.height / 2;
+        return this._currentMeasure.top + this._currentMeasure.height * 0.5;
     }
 
     /** Gets or sets if control is Enabled */
@@ -1541,8 +1541,8 @@ export class Control implements IAnimatable {
             this._processMeasures(parentMeasure, this._host.getContext());
         }
 
-        let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width / 2;
-        let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height / 2;
+        let newLeft = projectedPosition.x + this._linkOffsetX.getValue(this._host) - this._currentMeasure.width * 0.5;
+        let newTop = projectedPosition.y + this._linkOffsetY.getValue(this._host) - this._currentMeasure.height * 0.5;
 
         const leftAndTopIgnoreAdaptiveScaling = this._left.ignoreAdaptiveScaling && this._top.ignoreAdaptiveScaling;
         if (leftAndTopIgnoreAdaptiveScaling) {
@@ -1960,7 +1960,7 @@ export class Control implements IAnimatable {
                 x = parentWidth - width;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x = (parentWidth - width) / 2;
+                x = (parentWidth - width) * 0.5;
                 break;
         }
 
@@ -1972,7 +1972,7 @@ export class Control implements IAnimatable {
                 y = parentHeight - height;
                 break;
             case Control.VERTICAL_ALIGNMENT_CENTER:
-                y = (parentHeight - height) / 2;
+                y = (parentHeight - height) * 0.5;
                 break;
         }
 

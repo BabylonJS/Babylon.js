@@ -132,7 +132,7 @@ Scene.prototype.createDefaultCamera = function (createArcRotateCamera = false, r
             worldCenter.copyFromFloats(0, 0, 0);
         }
         if (createArcRotateCamera) {
-            const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this);
+            const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI * 0.5), Math.PI * 0.5, radius, worldCenter, this);
             arcRotateCamera.lowerRadiusLimit = radius * 0.01;
             arcRotateCamera.wheelPrecision = 100 / radius;
             camera = arcRotateCamera;

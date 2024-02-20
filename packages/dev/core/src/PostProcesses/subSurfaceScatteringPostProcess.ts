@@ -68,8 +68,8 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
             effect.setTexture("albedoSampler", scene.prePassRenderer.getRenderTarget().textures[scene.prePassRenderer.getIndex(Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE)]);
             effect.setFloat2(
                 "viewportSize",
-                Math.tan(scene.activeCamera!.fov / 2) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
-                Math.tan(scene.activeCamera!.fov / 2)
+                Math.tan(scene.activeCamera!.fov * 0.5) * scene.getEngine().getAspectRatio(scene.activeCamera!, true),
+                Math.tan(scene.activeCamera!.fov * 0.5)
             );
             effect.setArray3("diffusionS", scene.subSurfaceConfiguration.ssDiffusionS);
             effect.setArray("diffusionD", scene.subSurfaceConfiguration.ssDiffusionD);

@@ -165,7 +165,7 @@ export class BlurPostProcess extends PostProcess {
     protected _updateParameters(onCompiled?: (effect: Effect) => void, onError?: (effect: Effect, errors: string) => void): void {
         // Generate sampling offsets and weights
         const N = this._kernel;
-        const centerIndex = (N - 1) / 2;
+        const centerIndex = (N - 1) * 0.5;
 
         // Generate Gaussian sampling weights over kernel
         let offsets = [];
@@ -280,7 +280,7 @@ export class BlurPostProcess extends PostProcess {
     protected _nearestBestKernel(idealKernel: number): number {
         const v = Math.round(idealKernel);
         for (const k of [v, v - 1, v + 1, v - 2, v + 2]) {
-            if (k % 2 !== 0 && Math.floor(k / 2) % 2 === 0 && k > 0) {
+            if (k % 2 !== 0 && Math.floor(k * 0.5) % 2 === 0 && k > 0) {
                 return Math.max(k, 3);
             }
         }

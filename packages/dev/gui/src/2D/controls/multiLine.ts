@@ -277,8 +277,8 @@ export class MultiLine extends Control {
             return;
         }
 
-        this._currentMeasure.left = this._minX - this._lineWidth / 2;
-        this._currentMeasure.top = this._minY - this._lineWidth / 2;
+        this._currentMeasure.left = this._minX - this._lineWidth * 0.5;
+        this._currentMeasure.top = this._minY - this._lineWidth * 0.5;
     }
 
     public dispose(): void {

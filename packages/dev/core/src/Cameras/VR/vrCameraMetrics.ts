@@ -82,7 +82,7 @@ export class VRCameraMetrics {
      * @internal
      */
     public get leftHMatrix(): Matrix {
-        const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
+        const meters = this.hScreenSize / 4 - this.lensSeparationDistance * 0.5;
         const h = (4 * meters) / this.hScreenSize;
 
         return Matrix.Translation(h, 0, 0);
@@ -92,7 +92,7 @@ export class VRCameraMetrics {
      * @internal
      */
     public get rightHMatrix(): Matrix {
-        const meters = this.hScreenSize / 4 - this.lensSeparationDistance / 2;
+        const meters = this.hScreenSize / 4 - this.lensSeparationDistance * 0.5;
         const h = (4 * meters) / this.hScreenSize;
 
         return Matrix.Translation(-h, 0, 0);

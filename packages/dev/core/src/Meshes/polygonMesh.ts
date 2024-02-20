@@ -203,7 +203,7 @@ export class PolygonMeshBuilder {
         holepoints.add(hole);
         this._holes.push(holepoints);
 
-        this._eholes.push(this._epoints.length / 2);
+        this._eholes.push(this._epoints.length * 0.5);
         this._addToepoint(hole);
 
         return this;

@@ -516,7 +516,7 @@ export function CreatePolyhedronVertexData(options: {
         for (f = 0; f < nbfaces; f++) {
             const fl = data.face[f].length; // number of vertices of the current face
             ang = (2 * Math.PI) / fl;
-            x = 0.5 * Math.tan(ang / 2);
+            x = 0.5 * Math.tan(ang * 0.5);
             y = 0.5;
 
             // positions, uvs, colors

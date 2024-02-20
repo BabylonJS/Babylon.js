@@ -152,7 +152,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         if (this._rowThenColum) {
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < columns; c++) {
-                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
+                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth * 0.5, r * this._cellHeight - startOffsetY + this._cellHeight * 0.5, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
                         break;
@@ -162,7 +162,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         } else {
             for (let c = 0; c < columns; c++) {
                 for (let r = 0; r < rows; r++) {
-                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth / 2, r * this._cellHeight - startOffsetY + this._cellHeight / 2, 0));
+                    nodeGrid.push(new Vector3(c * this._cellWidth - startOffsetX + this._cellWidth * 0.5, r * this._cellHeight - startOffsetY + this._cellHeight * 0.5, 0));
                     cellCounter++;
                     if (cellCounter > controlCount) {
                         break;

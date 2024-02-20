@@ -378,7 +378,7 @@ export class GraphFrame {
             this.element.classList.remove(styles.expanded);
             this._headerElement.classList.add(styles.collapsedHeader);
 
-            this._moveFrame((this.width - this._collapsedWidth) / 2, 0);
+            this._moveFrame((this.width - this._collapsedWidth) * 0.5, 0);
 
             this._createFramePorts();
 
@@ -413,7 +413,7 @@ export class GraphFrame {
                 node.isVisible = true;
             }
 
-            this._moveFrame(-(this.width - this._collapsedWidth) / 2, 0);
+            this._moveFrame(-(this.width - this._collapsedWidth) * 0.5, 0);
         }
 
         this.cleanAccumulation();
@@ -1540,7 +1540,7 @@ export class GraphFrame {
         newFrame.isCollapsed = isCollapsed;
         if (isCollapsed) {
             canvas._frameIsMoving = true;
-            newFrame._moveFrame(-(newFrame.width - newFrame._collapsedWidth) / 2, 0);
+            newFrame._moveFrame(-(newFrame.width - newFrame._collapsedWidth) * 0.5, 0);
             const diff = serializationData.x - newFrame.x;
             newFrame._moveFrame(diff, 0);
             newFrame.cleanAccumulation();

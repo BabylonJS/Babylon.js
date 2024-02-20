@@ -76,7 +76,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * Limit in radians for how much Roll banking will add. (Default: 90°)
      */
-    public bankedTurnLimit: number = Math.PI / 2;
+    public bankedTurnLimit: number = Math.PI * 0.5;
 
     /**
      * Value of 0 disables the banked Roll.

@@ -92,7 +92,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
         this._particleSystem.updateInAnimate = true;
         this._particleSystem.render = () => 0;
 
-        this.particleSize = (ps.minSize + ps.maxSize) / 2;
+        this.particleSize = (ps.minSize + ps.maxSize) * 0.5;
 
         this.useTrueRenderingForDiffuseTexture = false;
     }

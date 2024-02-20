@@ -39,7 +39,7 @@ export function CreateIcoSphereVertexData(options: {
     const radiusY = options.radiusY || radius;
     const radiusZ = options.radiusZ || radius;
 
-    const t = (1 + Math.sqrt(5)) / 2;
+    const t = (1 + Math.sqrt(5)) * 0.5;
 
     // 12 vertex x,y,z
     const icoVertices = [

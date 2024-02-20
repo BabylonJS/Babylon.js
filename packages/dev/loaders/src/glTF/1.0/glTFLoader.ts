@@ -174,7 +174,7 @@ const normalizeUVs = (buffer: any) => {
         return;
     }
 
-    for (let i = 0; i < buffer.length / 2; i++) {
+    for (let i = 0; i < buffer.length * 0.5; i++) {
         buffer[i * 2 + 1] = 1.0 - buffer[i * 2 + 1];
     }
 };

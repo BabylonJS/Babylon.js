@@ -263,7 +263,7 @@ export class BaseSlider extends Control {
         if (this.isVertical) {
             this._renderLeft += this._effectiveBarOffset;
             if (!this.isThumbClamped && this.displayThumb) {
-                this._renderTop += this._effectiveThumbThickness / 2;
+                this._renderTop += this._effectiveThumbThickness * 0.5;
             }
 
             this._renderHeight = this._backgroundBoxLength;
@@ -271,7 +271,7 @@ export class BaseSlider extends Control {
         } else {
             this._renderTop += this._effectiveBarOffset;
             if (!this.isThumbClamped && this.displayThumb) {
-                this._renderLeft += this._effectiveThumbThickness / 2;
+                this._renderLeft += this._effectiveThumbThickness * 0.5;
             }
             this._renderHeight = this._backgroundBoxThickness;
             this._renderWidth = this._backgroundBoxLength;

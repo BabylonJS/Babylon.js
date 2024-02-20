@@ -332,7 +332,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.substring(0, lastClosingCurly);
             code += "gl_Position.y *= yFactor_;\n";
             if (!engine.isNDCHalfZRange) {
-                code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;\n";
+                code += "gl_Position.z = (gl_Position.z + gl_Position.w) * 0.5;\n";
             }
             code += "}";
         }

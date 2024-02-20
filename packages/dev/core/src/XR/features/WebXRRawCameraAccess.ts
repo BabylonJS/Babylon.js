@@ -133,15 +133,15 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         const p = view.projectionMatrix;
 
         // Principal point in pixels (typically at or near the center of the viewport)
-        const u0 = ((1 - p[8]) * cameraViewport.width) / 2 + cameraViewport.x;
-        const v0 = ((1 - p[9]) * cameraViewport.height) / 2 + cameraViewport.y;
+        const u0 = ((1 - p[8]) * cameraViewport.width) * 0.5 + cameraViewport.x;
+        const v0 = ((1 - p[9]) * cameraViewport.height) * 0.5 + cameraViewport.y;
 
         // Focal lengths in pixels (these are equal for square pixels)
-        const ax = (cameraViewport.width / 2) * p[0];
-        const ay = (cameraViewport.height / 2) * p[5];
+        const ax = (cameraViewport.width * 0.5) * p[0];
+        const ay = (cameraViewport.height * 0.5) * p[5];
 
         // Skew factor in pixels (nonzero for rhomboid pixels)
-        const gamma = (cameraViewport.width / 2) * p[4];
+        const gamma = (cameraViewport.width * 0.5) * p[4];
         this.cameraIntrinsics[index] = {
             u0,
             v0,

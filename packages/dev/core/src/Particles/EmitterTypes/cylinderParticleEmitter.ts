@@ -54,10 +54,10 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
 
         Vector3.TransformNormalToRef(this._tempVector, inverseWorldMatrix, this._tempVector);
 
-        const randY = Scalar.RandomRange(-this.directionRandomizer / 2, this.directionRandomizer / 2);
+        const randY = Scalar.RandomRange(-this.directionRandomizer * 0.5, this.directionRandomizer * 0.5);
 
         let angle = Math.atan2(this._tempVector.x, this._tempVector.z);
-        angle += Scalar.RandomRange(-Math.PI / 2, Math.PI / 2) * this.directionRandomizer;
+        angle += Scalar.RandomRange(-Math.PI * 0.5, Math.PI * 0.5) * this.directionRandomizer;
 
         this._tempVector.y = randY; // set direction y to rand y to mirror normal of cylinder surface
         this._tempVector.x = Math.sin(angle);
@@ -80,7 +80,7 @@ export class CylinderParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const yPos = Scalar.RandomRange(-this.height / 2, this.height / 2);
+        const yPos = Scalar.RandomRange(-this.height * 0.5, this.height * 0.5);
         const angle = Scalar.RandomRange(0, 2 * Math.PI);
 
         // Pick a properly distributed point within the circle https://programming.guide/random-point-within-circle.html

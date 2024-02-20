@@ -361,7 +361,7 @@ export class MeshUVSpaceRenderer {
     }
 
     private _createProjectionMatrix(position: Vector3, normal: Vector3, size: Vector3, angle = 0): Matrix {
-        const yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
+        const yaw = -Math.atan2(normal.z, normal.x) - Math.PI * 0.5;
         const len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
         const pitch = Math.atan2(normal.y, len);
 

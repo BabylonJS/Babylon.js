@@ -81,9 +81,9 @@ export function CreateTiledBoxVertexData(options: {
         }
     }
 
-    const halfWidth = width / 2;
-    const halfHeight = height / 2;
-    const halfDepth = depth / 2;
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
+    const halfDepth = depth * 0.5;
 
     const faceVertexData: Array<VertexData> = [];
 
@@ -198,7 +198,7 @@ export function CreateTiledBoxVertexData(options: {
     normals = normals.concat(faceNormals[1].map((entry) => [entry.x, entry.y, entry.z]).reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), []));
 
     const vec2 = new Vector3(halfWidth, 0, 0);
-    const mtrx2 = Matrix.RotationY(-Math.PI / 2);
+    const mtrx2 = Matrix.RotationY(-Math.PI * 0.5);
     positions = positions.concat(
         facePositions[2]
             .map((entry) => Vector3.TransformNormal(entry, mtrx2).add(vec2))
@@ -211,7 +211,7 @@ export function CreateTiledBoxVertexData(options: {
             .map((entry) => [entry.x, entry.y, entry.z])
             .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
     );
-    const mtrx3 = Matrix.RotationY(Math.PI / 2);
+    const mtrx3 = Matrix.RotationY(Math.PI * 0.5);
     positions = positions.concat(
         facePositions[3]
             .map((entry) => Vector3.TransformNormal(entry, mtrx3).subtract(vec2))
@@ -226,7 +226,7 @@ export function CreateTiledBoxVertexData(options: {
     );
 
     const vec4 = new Vector3(0, halfHeight, 0);
-    const mtrx4 = Matrix.RotationX(Math.PI / 2);
+    const mtrx4 = Matrix.RotationX(Math.PI * 0.5);
     positions = positions.concat(
         facePositions[4]
             .map((entry) => Vector3.TransformNormal(entry, mtrx4).add(vec4))
@@ -239,7 +239,7 @@ export function CreateTiledBoxVertexData(options: {
             .map((entry) => [entry.x, entry.y, entry.z])
             .reduce((accumulator: Array<number>, currentValue) => accumulator.concat(currentValue), [])
     );
-    const mtrx5 = Matrix.RotationX(-Math.PI / 2);
+    const mtrx5 = Matrix.RotationX(-Math.PI * 0.5);
     positions = positions.concat(
         facePositions[5]
             .map((entry) => Vector3.TransformNormal(entry, mtrx5).subtract(vec4))

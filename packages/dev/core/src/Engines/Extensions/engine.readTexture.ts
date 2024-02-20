@@ -60,7 +60,7 @@ export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number
             return buffer;
         }
         case Constants.TEXTURETYPE_SHORT: {
-            const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int16Array(sizeOrDstBuffer) : new Int16Array(sizeInBytes ? sizeOrDstBuffer / 2 : sizeOrDstBuffer);
+            const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Int16Array(sizeOrDstBuffer) : new Int16Array(sizeInBytes ? sizeOrDstBuffer * 0.5 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Int16Array(copyBuffer));
             }
@@ -71,7 +71,7 @@ export function allocateAndCopyTypedBuffer(type: number, sizeOrDstBuffer: number
         case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_5_5_1:
         case Constants.TEXTURETYPE_UNSIGNED_SHORT_5_6_5:
         case Constants.TEXTURETYPE_HALF_FLOAT: {
-            const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Uint16Array(sizeOrDstBuffer) : new Uint16Array(sizeInBytes ? sizeOrDstBuffer / 2 : sizeOrDstBuffer);
+            const buffer = sizeOrDstBuffer instanceof ArrayBuffer ? new Uint16Array(sizeOrDstBuffer) : new Uint16Array(sizeInBytes ? sizeOrDstBuffer * 0.5 : sizeOrDstBuffer);
             if (copyBuffer) {
                 buffer.set(new Uint16Array(copyBuffer));
             }

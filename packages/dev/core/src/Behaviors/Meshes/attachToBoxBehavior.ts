@@ -142,15 +142,15 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
             // Position the app bar on that face
             this._ui.position.copyFrom(target.position);
             if (facing.direction.x) {
-                facing.rotatedDirection.scaleToRef(target.scaling.x / 2 + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.x * 0.5 + this.distanceAwayFromFace, this._tmpVector);
                 this._ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.y) {
-                facing.rotatedDirection.scaleToRef(target.scaling.y / 2 + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.y * 0.5 + this.distanceAwayFromFace, this._tmpVector);
                 this._ui.position.addInPlace(this._tmpVector);
             }
             if (facing.direction.z) {
-                facing.rotatedDirection.scaleToRef(target.scaling.z / 2 + this.distanceAwayFromFace, this._tmpVector);
+                facing.rotatedDirection.scaleToRef(target.scaling.z * 0.5 + this.distanceAwayFromFace, this._tmpVector);
                 this._ui.position.addInPlace(this._tmpVector);
             }
 
@@ -163,13 +163,13 @@ export class AttachToBoxBehavior implements Behavior<Mesh> {
 
             // Place ui the correct distance from the bottom of the mesh
             if (facingUp.direction.x) {
-                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.x / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.x * 0.5, this._tmpVector);
             }
             if (facingUp.direction.y) {
-                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.y / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.y * 0.5, this._tmpVector);
             }
             if (facingUp.direction.z) {
-                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.z / 2, this._tmpVector);
+                this._ui.up.scaleToRef(this.distanceAwayFromBottomOfFace - target.scaling.z * 0.5, this._tmpVector);
             }
             this._ui.position.addInPlace(this._tmpVector);
         });

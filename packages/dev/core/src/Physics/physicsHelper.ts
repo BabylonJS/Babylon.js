@@ -664,7 +664,7 @@ class PhysicsUpdraftEvent {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsUpdraftEventOptions(), ...this._options };
 
-        this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
+        this._origin.addToRef(new Vector3(0, this._options.height * 0.5, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
 
         if (this._options.updraftMode === PhysicsUpdraftMode.Perpendicular) {
@@ -852,7 +852,7 @@ class PhysicsVortexEvent {
         this._physicsEngine = this._scene.getPhysicsEngine() as PhysicsEngineV1 | PhysicsEngineV2;
         this._options = { ...new PhysicsVortexEventOptions(), ...this._options };
 
-        this._origin.addToRef(new Vector3(0, this._options.height / 2, 0), this._cylinderPosition);
+        this._origin.addToRef(new Vector3(0, this._options.height * 0.5, 0), this._cylinderPosition);
         this._origin.addToRef(new Vector3(0, this._options.height, 0), this._originTop);
 
         this._tickCallback = () => this._tick();

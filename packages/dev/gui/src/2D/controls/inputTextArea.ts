@@ -729,7 +729,7 @@ export class InputTextArea extends InputText {
                 x += width - textWidth;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x += (width - textWidth) / 2;
+                x += (width - textWidth) * 0.5;
                 break;
         }
 
@@ -862,7 +862,7 @@ export class InputTextArea extends InputText {
                 rootY = height - this._fontOffset.height * (this._lines.length - 1) - this._fontOffset.descent;
                 break;
             case Control.VERTICAL_ALIGNMENT_CENTER:
-                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
+                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) * 0.5;
                 break;
         }
 
@@ -957,7 +957,7 @@ export class InputTextArea extends InputText {
                             highlightRootX += width - line.width;
                             break;
                         case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                            highlightRootX += (width - line.width) / 2;
+                            highlightRootX += (width - line.width) * 0.5;
                             break;
                     }
 
@@ -996,8 +996,8 @@ export class InputTextArea extends InputText {
             context.lineWidth = this._thickness;
 
             context.strokeRect(
-                this._currentMeasure.left + this._thickness / 2,
-                this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.left + this._thickness * 0.5,
+                this._currentMeasure.top + this._thickness * 0.5,
                 this._currentMeasure.width - this._thickness,
                 this._currentMeasure.height - this._thickness
             );

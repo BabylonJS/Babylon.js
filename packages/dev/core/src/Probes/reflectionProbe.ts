@@ -169,7 +169,7 @@ export class ReflectionProbe {
 
             if (scene.activeCamera) {
                 this._projectionMatrix = perspectiveFunction(
-                    Math.PI / 2,
+                    Math.PI * 0.5,
                     1,
                     useReverseDepthBuffer ? scene.activeCamera.maxZ : scene.activeCamera.minZ,
                     useReverseDepthBuffer ? scene.activeCamera.minZ : scene.activeCamera.maxZ,

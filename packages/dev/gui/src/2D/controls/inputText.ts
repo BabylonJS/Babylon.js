@@ -914,12 +914,12 @@ export class InputText extends Control implements IFocusableControl {
             this._autoStretchWidth = true; // setting the width will have reset _autoStretchWidth to false!
         }
 
-        const rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) / 2;
+        const rootY = this._fontOffset.ascent + (this._currentMeasure.height - this._fontOffset.height) * 0.5;
         const availableWidth = this._width.getValueInPixel(this._host, this._tempParentMeasure.width) - marginWidth;
 
         context.save();
         context.beginPath();
-        context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, availableWidth + 2, this._currentMeasure.height);
+        context.rect(clipTextLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) * 0.5, availableWidth + 2, this._currentMeasure.height);
         context.clip();
 
         if (this._isFocused && this._textWidth > availableWidth) {
@@ -975,7 +975,7 @@ export class InputText extends Control implements IFocusableControl {
                     this._markAsDirty();
                 }
                 if (!this.isTextHighlightOn) {
-                    context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, 2, this._fontOffset.height);
+                    context.fillRect(cursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) * 0.5, 2, this._fontOffset.height);
                 }
             }
 
@@ -1004,7 +1004,7 @@ export class InputText extends Control implements IFocusableControl {
                 //for transparancy
                 context.globalAlpha = this._highligherOpacity;
                 context.fillStyle = this._textHighlightColor;
-                context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) / 2, width, this._fontOffset.height);
+                context.fillRect(highlightCursorLeft, this._currentMeasure.top + (this._currentMeasure.height - this._fontOffset.height) * 0.5, width, this._fontOffset.height);
                 context.globalAlpha = 1.0;
             }
         }
@@ -1025,8 +1025,8 @@ export class InputText extends Control implements IFocusableControl {
             context.lineWidth = this._thickness;
 
             context.strokeRect(
-                this._currentMeasure.left + this._thickness / 2,
-                this._currentMeasure.top + this._thickness / 2,
+                this._currentMeasure.left + this._thickness * 0.5,
+                this._currentMeasure.top + this._thickness * 0.5,
                 this._currentMeasure.width - this._thickness,
                 this._currentMeasure.height - this._thickness
             );

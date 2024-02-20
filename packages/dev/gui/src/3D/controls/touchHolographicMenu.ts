@@ -109,8 +109,8 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
 
     private _updateMargins() {
         if (this._children.length > 0) {
-            this._currentMin!.addInPlaceFromFloats(-this._cellWidth / 2, -this._cellHeight / 2, 0);
-            this._currentMax!.addInPlaceFromFloats(this._cellWidth / 2, this._cellHeight / 2, 0);
+            this._currentMin!.addInPlaceFromFloats(-this._cellWidth * 0.5, -this._cellHeight * 0.5, 0);
+            this._currentMax!.addInPlaceFromFloats(this._cellWidth * 0.5, this._cellHeight * 0.5, 0);
             const extendSize = this._currentMax!.subtract(this._currentMin!);
 
             // Also add a % margin

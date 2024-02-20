@@ -140,7 +140,7 @@ export class ImageBasedSlider extends BaseSlider {
                 }
             } else {
                 if (this.isThumbClamped && this.displayThumb) {
-                    this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness / 2, height);
+                    this._tempMeasure.copyFromFloats(left, top, thumbPosition + this._effectiveThumbThickness * 0.5, height);
                 } else {
                     this._tempMeasure.copyFromFloats(left, top, thumbPosition, height);
                 }

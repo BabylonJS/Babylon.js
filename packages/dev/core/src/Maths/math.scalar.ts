@@ -96,7 +96,7 @@ export class Scalar {
         } else if (value > 1) {
             while (value > 1) {
                 n++;
-                value = Math.floor(value / 2);
+                value = Math.floor(value * 0.5);
             }
         }
 

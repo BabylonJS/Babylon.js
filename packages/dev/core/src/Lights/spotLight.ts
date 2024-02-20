@@ -327,7 +327,7 @@ export class SpotLight extends ShadowLight {
 
         const P = lightFar / (lightFar - lightNear);
         const Q = -P * lightNear;
-        const S = 1.0 / Math.tan(this._angle / 2.0);
+        const S = 1.0 / Math.tan(this._angle * 0.5);
         const A = 1.0;
 
         Matrix.FromValuesToRef(S / A, 0.0, 0.0, 0.0, 0.0, S, 0.0, 0.0, 0.0, 0.0, P, 1.0, 0.0, 0.0, Q, 0.0, this._projectionTextureProjectionLightMatrix);
@@ -341,8 +341,8 @@ export class SpotLight extends ShadowLight {
 
         this._projectionTextureViewLightMatrix.multiplyToRef(this._projectionTextureProjectionLightMatrix, this._projectionTextureMatrix);
         if (this._projectionTexture instanceof Texture) {
-            const u = this._projectionTexture.uScale / 2.0;
-            const v = this._projectionTexture.vScale / 2.0;
+            const u = this._projectionTexture.uScale * 0.5;
+            const v = this._projectionTexture.vScale * 0.5;
             Matrix.FromValuesToRef(u, 0.0, 0.0, 0.0, 0.0, v, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0, this._projectionTextureScalingMatrix);
         }
         this._projectionTextureMatrix.multiplyToRef(this._projectionTextureScalingMatrix, this._projectionTextureMatrix);

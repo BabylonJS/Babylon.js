@@ -722,7 +722,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         if (this.configuration.lab && this.configuration.lab.flashlight) {
             let lightTarget: Nullable<Vector3> | undefined;
             let angle = 0.5;
-            let exponent = Math.PI / 2;
+            let exponent = Math.PI * 0.5;
             if (typeof this.configuration.lab.flashlight === "object") {
                 exponent = this.configuration.lab.flashlight.exponent || exponent;
                 angle = this.configuration.lab.flashlight.angle || angle;

@@ -23,7 +23,7 @@ export const Eyedropper: IToolData = {
             const pixel = ctx!.getImageData(x, y, 1, 1).data;
             setMetadata({
                 color: Color3.FromInts(pixel[0], pixel[1], pixel[2]).toHexString(),
-                alpha: pixel[3] / 255,
+                alpha: pixel[3] * 0.555,
             });
         }
 

@@ -481,7 +481,7 @@ export class PointerDragBehavior implements Behavior<AbstractMesh> {
         // Calculate angle between plane normal and ray
         let angle = Math.acos(Vector3.Dot(this._dragPlane.forward, ray.direction));
         // Correct if ray is casted from oposite side
-        if (angle > Math.PI / 2) {
+        if (angle > Math.PI * 0.5) {
             angle = Math.PI - angle;
         }
 

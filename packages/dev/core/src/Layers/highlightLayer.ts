@@ -428,7 +428,7 @@ export class HighlightLayer extends EffectLayer {
             this._horizontalBlurPostprocess = new BlurPostProcess(
                 "HighlightLayerHBP",
                 new Vector2(1.0, 0),
-                this._options.blurHorizontalSize / 2,
+                this._options.blurHorizontalSize * 0.5,
                 {
                     width: blurTextureWidth,
                     height: blurTextureHeight,
@@ -449,7 +449,7 @@ export class HighlightLayer extends EffectLayer {
             this._verticalBlurPostprocess = new BlurPostProcess(
                 "HighlightLayerVBP",
                 new Vector2(0, 1.0),
-                this._options.blurVerticalSize / 2,
+                this._options.blurVerticalSize * 0.5,
                 {
                     width: blurTextureWidth,
                     height: blurTextureHeight,

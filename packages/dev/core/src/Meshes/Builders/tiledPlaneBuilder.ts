@@ -62,8 +62,8 @@ export function CreateTiledPlaneVertexData(options: {
     const tilesY = Math.floor(height / tileHeight);
     let offsetY = height - tilesY * tileHeight;
 
-    const halfWidth = (tileWidth * tilesX) / 2;
-    const halfHeight = (tileHeight * tilesY) / 2;
+    const halfWidth = (tileWidth * tilesX) * 0.5;
+    const halfHeight = (tileHeight * tilesY) * 0.5;
 
     let adjustX = 0;
     let adjustY = 0;
@@ -87,11 +87,11 @@ export function CreateTiledPlaneVertexData(options: {
                 break;
             case Mesh.LEFT:
                 endX += offsetX;
-                adjustX = -offsetX / 2;
+                adjustX = -offsetX * 0.5;
                 break;
             case Mesh.RIGHT:
                 startX -= offsetX;
-                adjustX = offsetX / 2;
+                adjustX = offsetX * 0.5;
                 break;
         }
 
@@ -103,11 +103,11 @@ export function CreateTiledPlaneVertexData(options: {
                 break;
             case Mesh.BOTTOM:
                 endY += offsetY;
-                adjustY = -offsetY / 2;
+                adjustY = -offsetY * 0.5;
                 break;
             case Mesh.TOP:
                 startY -= offsetY;
-                adjustY = offsetY / 2;
+                adjustY = offsetY * 0.5;
                 break;
         }
     }

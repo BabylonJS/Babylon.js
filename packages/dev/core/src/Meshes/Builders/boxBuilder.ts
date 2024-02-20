@@ -94,7 +94,7 @@ export function CreateBoxVertexData(options: {
         indices.push(topFaceOrder[0], topFaceOrder[2], topFaceOrder[3], topFaceOrder[0], topFaceOrder[1], topFaceOrder[2]);
         indices.push(bottomFaceOrder[0], bottomFaceOrder[2], bottomFaceOrder[3], bottomFaceOrder[0], bottomFaceOrder[1], bottomFaceOrder[2]);
     }
-    const scaleArray = [width / 2, height / 2, depth / 2];
+    const scaleArray = [width * 0.5, height * 0.5, depth * 0.5];
     positions = basePositions.reduce((accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]), []);
 
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
@@ -179,36 +179,36 @@ export function CreateSegmentedBoxVertexData(options: {
     const transformMatrix = new Matrix();
 
     const bottomPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(0, -height / 2, 0, translationMatrix);
+    Matrix.TranslationToRef(0, -height * 0.5, 0, translationMatrix);
     Matrix.RotationZToRef(Math.PI, rotationMatrix);
     rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
     bottomPlane.transform(transformMatrix);
 
     const topPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(0, height / 2, 0, transformMatrix);
+    Matrix.TranslationToRef(0, height * 0.5, 0, transformMatrix);
     topPlane.transform(transformMatrix);
 
     const negXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(-width / 2, 0, 0, translationMatrix);
-    Matrix.RotationZToRef(Math.PI / 2, rotationMatrix);
+    Matrix.TranslationToRef(-width * 0.5, 0, 0, translationMatrix);
+    Matrix.RotationZToRef(Math.PI * 0.5, rotationMatrix);
     rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
     negXPlane.transform(transformMatrix);
 
     const posXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(width / 2, 0, 0, translationMatrix);
-    Matrix.RotationZToRef(-Math.PI / 2, rotationMatrix);
+    Matrix.TranslationToRef(width * 0.5, 0, 0, translationMatrix);
+    Matrix.RotationZToRef(-Math.PI * 0.5, rotationMatrix);
     rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
     posXPlane.transform(transformMatrix);
 
     const negZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
-    Matrix.TranslationToRef(0, 0, -depth / 2, translationMatrix);
-    Matrix.RotationXToRef(-Math.PI / 2, rotationMatrix);
+    Matrix.TranslationToRef(0, 0, -depth * 0.5, translationMatrix);
+    Matrix.RotationXToRef(-Math.PI * 0.5, rotationMatrix);
     rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
     negZPlane.transform(transformMatrix);
 
     const posZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
-    Matrix.TranslationToRef(0, 0, depth / 2, translationMatrix);
-    Matrix.RotationXToRef(Math.PI / 2, rotationMatrix);
+    Matrix.TranslationToRef(0, 0, depth * 0.5, translationMatrix);
+    Matrix.RotationXToRef(Math.PI * 0.5, rotationMatrix);
     rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
     posZPlane.transform(transformMatrix);
 

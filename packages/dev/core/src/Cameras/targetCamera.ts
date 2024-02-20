@@ -270,9 +270,9 @@ export class TargetCamera extends Camera {
         const vDir = target.subtract(this.position);
 
         if (vDir.x >= 0.0) {
-            this.rotation.y = -Math.atan(vDir.z / vDir.x) + Math.PI / 2.0;
+            this.rotation.y = -Math.atan(vDir.z / vDir.x) + Math.PI * 0.5;
         } else {
-            this.rotation.y = -Math.atan(vDir.z / vDir.x) - Math.PI / 2.0;
+            this.rotation.y = -Math.atan(vDir.z / vDir.x) - Math.PI * 0.5;
         }
 
         this.rotation.z = 0;

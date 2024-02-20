@@ -57,7 +57,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
 
     private _buildHeight() {
         if (this._angle !== 0) {
-            this._height = this._radius / Math.tan(this._angle / 2);
+            this._height = this._radius / Math.tan(this._angle * 0.5);
         } else {
             this._height = 1;
         }

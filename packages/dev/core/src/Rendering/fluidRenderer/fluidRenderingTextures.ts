@@ -404,11 +404,11 @@ export class FluidRenderingTextures {
     }
 
     private _getProjectedParticleConstant() {
-        return (this.blurFilterSize * this.particleSize * 0.05 * (this._height / 2)) / Math.tan((this._camera?.fov ?? (45 * Math.PI) / 180) / 2);
+        return (this.blurFilterSize * this.particleSize * 0.05 * (this._height * 0.5)) / Math.tan((this._camera?.fov ?? (45 * Math.PI) / 180) * 0.5);
     }
 
     private _getDepthThreshold() {
-        return (this.particleSize / 2) * this.blurDepthScale;
+        return (this.particleSize * 0.5) * this.blurDepthScale;
     }
 
     public dispose(): void {

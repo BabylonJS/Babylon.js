@@ -66,8 +66,8 @@ export function CreateScreenshot(
         newWidth = newHeight * ratio;
     }
 
-    const offsetX = Math.max(0, width - newWidth) / 2;
-    const offsetY = Math.max(0, height - newHeight) / 2;
+    const offsetX = Math.max(0, width - newWidth) * 0.5;
+    const offsetY = Math.max(0, height - newHeight) * 0.5;
 
     const scene = camera.getScene();
     if (scene.activeCamera !== camera) {

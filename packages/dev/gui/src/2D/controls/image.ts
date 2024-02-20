@@ -343,10 +343,10 @@ export class Image extends Control {
 
         const context = canvas.getContext("2d")!;
 
-        context.translate(canvas.width / 2, canvas.height / 2);
-        context.rotate((n * Math.PI) / 2);
+        context.translate(canvas.width * 0.5, canvas.height * 0.5);
+        context.rotate((n * Math.PI) * 0.5);
 
-        context.drawImage(this._domImage, 0, 0, width, height, -width / 2, -height / 2, width, height);
+        context.drawImage(this._domImage, 0, 0, width, height, -width * 0.5, -height * 0.5, width, height);
 
         const dataUrl: string = canvas.toDataURL("image/jpg");
         const rotatedImage = new Image(this.name + "rotated", dataUrl);
@@ -397,8 +397,8 @@ export class Image extends Control {
             const mult = n < 0 ? -1 : 1;
             n = n % 4;
             for (let i = 0; i < Math.abs(n); ++i) {
-                dstLeft = -(srcTop - srcHeight / 2) * mult + srcHeight / 2;
-                dstTop = (srcLeft - srcWidth / 2) * mult + srcWidth / 2;
+                dstLeft = -(srcTop - srcHeight * 0.5) * mult + srcHeight * 0.5;
+                dstTop = (srcLeft - srcWidth * 0.5) * mult + srcWidth * 0.5;
                 [dstWidth, dstHeight] = [dstHeight, dstWidth];
                 if (n < 0) {
                     dstTop -= dstHeight;
@@ -867,8 +867,8 @@ export class Image extends Control {
         workingCanvasContext.save();
         const ttx = tx - this._currentMeasure.left;
         const tty = ty - this._currentMeasure.top;
-        workingCanvasContext.setTransform(transform.a, transform.b, transform.c, transform.d, (ttx + tw) / 2, (tty + th) / 2);
-        workingCanvasContext.translate(-(ttx + tw) / 2, -(tty + th) / 2);
+        workingCanvasContext.setTransform(transform.a, transform.b, transform.c, transform.d, (ttx + tw) * 0.5, (tty + th) * 0.5);
+        workingCanvasContext.translate(-(ttx + tw) * 0.5, -(tty + th) * 0.5);
 
         workingCanvasContext.drawImage(this._domImage, sx, sy, sw, sh, ttx, tty, tw, th);
         workingCanvasContext.restore();
@@ -917,8 +917,8 @@ export class Image extends Control {
                     const hRatio = this._currentMeasure.width / width;
                     const vRatio = this._currentMeasure.height / height;
                     const ratio = Math.min(hRatio, vRatio);
-                    const centerX = (this._currentMeasure.width - width * ratio) / 2;
-                    const centerY = (this._currentMeasure.height - height * ratio) / 2;
+                    const centerX = (this._currentMeasure.width - width * ratio) * 0.5;
+                    const centerY = (this._currentMeasure.height - height * ratio) * 0.5;
 
                     this._drawImage(context, x, y, width, height, this._currentMeasure.left + centerX, this._currentMeasure.top + centerY, width * ratio, height * ratio);
                     break;

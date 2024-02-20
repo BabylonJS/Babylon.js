@@ -131,7 +131,7 @@ describe("PickingInfo", () => {
             pickingInfo.bv = 0.5;
 
             box.scaling = new Vector3(1, 2, 3);
-            box.rotation = new Vector3(0, Math.PI / 2, 0);
+            box.rotation = new Vector3(0, Math.PI * 0.5, 0);
             box.computeWorldMatrix(true);
 
             const normalBox = pickingInfo.getNormal(true, true);
@@ -146,7 +146,7 @@ describe("PickingInfo", () => {
             pickingInfo.pickedMesh = torusKnot;
 
             torusKnot.scaling = new Vector3(1, 2, 3);
-            torusKnot.rotation = new Vector3(0, Math.PI / 2, 0);
+            torusKnot.rotation = new Vector3(0, Math.PI * 0.5, 0);
             torusKnot.computeWorldMatrix(true);
 
             const normal = pickingInfo.getNormal(true, true);

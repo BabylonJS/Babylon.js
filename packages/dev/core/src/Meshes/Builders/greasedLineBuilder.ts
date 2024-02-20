@@ -292,7 +292,7 @@ export function CompleteGreasedLineWidthTable(
     defaultWidthUpper = 1,
     defaultWidthLower = 1
 ): number[] {
-    const missingCount = pointCount - widths.length / 2;
+    const missingCount = pointCount - widths.length * 0.5;
 
     const widthsData: number[] = [];
     if (missingCount < 0) {
@@ -306,7 +306,7 @@ export function CompleteGreasedLineWidthTable(
         }
         // it is, fill in the missing elements
         if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
-            const halfCount = Math.floor(widths.length / 2);
+            const halfCount = Math.floor(widths.length * 0.5);
 
             // start sector
             for (let i = 0, j = 0; i < halfCount - 1; i++) {
@@ -315,8 +315,8 @@ export function CompleteGreasedLineWidthTable(
             }
 
             // middle sector
-            const widthL = widths[halfCount / 2];
-            const widthU = widths[halfCount / 2 + 1];
+            const widthL = widths[halfCount * 0.5];
+            const widthU = widths[halfCount * 0.5 + 1];
             for (let i = 0; i < missingCount; i++) {
                 widthsData.push(widthU);
                 widthsData.push(widthL);
@@ -410,7 +410,7 @@ export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3
     if (missingCount > 0) {
         // it is, fill in the missing elements
         if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START_END) {
-            const halfCount = Math.floor(colors.length / 2);
+            const halfCount = Math.floor(colors.length * 0.5);
 
             // start sector
             for (let i = 0; i < halfCount; i++) {

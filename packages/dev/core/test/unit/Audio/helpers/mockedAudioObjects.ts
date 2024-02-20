@@ -108,7 +108,7 @@ export class MockedAudioObjects {
                 createGain: jest.fn().mockName("createGain").mockImplementation(() => {
                     // Note that when creating a single Sound object, createGain() is called three times:
                     // 1) from AudioEngine._initializeAudioContext() to create the master gain.
-                    // 2) from Sound constructor.
+                    /* 0.5) from Sound constructor.
                     // 3) from main SoundTrack._initializeSoundTrackAudioGraph().
                     return new GainNodeMock;
                 }),

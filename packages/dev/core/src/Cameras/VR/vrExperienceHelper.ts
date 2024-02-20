@@ -1268,8 +1268,8 @@ export class VRExperienceHelper {
         dynamicTexture.hasAlpha = true;
         const context = dynamicTexture.getContext();
 
-        const centerX = length / 2;
-        const centerY = length / 2;
+        const centerX = length * 0.5;
+        const centerY = length * 0.5;
         const radius = 200;
 
         context.beginPath();
@@ -1488,7 +1488,7 @@ export class VRExperienceHelper {
         this._postProcessMove.animations = [];
 
         // Calculate the mid frame for vignette animations
-        const midFrame = Math.round(lastFrame / 2);
+        const midFrame = Math.round(lastFrame * 0.5);
 
         const animationPP = new Animation("animationPP", "vignetteWeight", FPS, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CONSTANT);
 

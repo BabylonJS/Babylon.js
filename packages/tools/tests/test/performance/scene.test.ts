@@ -25,7 +25,7 @@ describe("Performance - scene", () => {
             if (!window.scene) {
                 window.scene = new BABYLON.Scene(window.engine!);
             }
-            const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", -Math.PI / 2, Math.PI / 2.2, 10, new BABYLON.Vector3(0, 0, 0), window.scene);
+            const camera = new BABYLON.ArcRotateCamera("ArcRotateCamera", -Math.PI * 0.5, Math.PI * 0.5.2, 10, new BABYLON.Vector3(0, 0, 0), window.scene);
             camera.attachControl(window.scene.getEngine().getRenderingCanvas(), true);
             new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), window.scene);
             BABYLON.MeshBuilder.CreateGround("ground", { width: 25, height: 25 }, window.scene);
@@ -65,7 +65,7 @@ describe("Performance - scene", () => {
             const texture = new BABYLON.Texture("https://i.imgur.com/vxH5bCg.jpg", scene);
             mat.diffuseTexture = texture;
             const hSpriteNb = 3; // 3 sprites per row
-            const vSpriteNb = 2; // 2 sprite rows
+            const vSpriteNb = 2; /* 0.5 sprite rows
 
             const faceUV = new Array(6);
 

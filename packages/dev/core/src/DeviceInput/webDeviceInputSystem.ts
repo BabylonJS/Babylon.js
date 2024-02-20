@@ -11,7 +11,7 @@ import type { IDeviceInputSystem } from "./inputInterfaces";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const MAX_KEYCODES = 255;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const MAX_POINTER_INPUTS = Object.keys(PointerInput).length / 2;
+const MAX_POINTER_INPUTS = Object.keys(PointerInput).length * 0.5;
 
 /** @internal */
 export class WebDeviceInputSystem implements IDeviceInputSystem {

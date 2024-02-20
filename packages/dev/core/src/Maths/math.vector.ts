@@ -838,7 +838,7 @@ export class Vector2 {
      * @returns true if the point "p" is in the triangle defined by the vectors "p0", "p1", "p2"
      */
     public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>): boolean {
-        const a = (1 / 2) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
+        const a = (1 * 0.5) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
         const sign = a < 0 ? -1 : 1;
         const s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
         const t = (p0.x * p1.y - p0.y * p1.x + (p0.y - p1.y) * p.x + (p1.x - p0.x) * p.y) * sign;
@@ -892,7 +892,7 @@ export class Vector2 {
      * @returns ref
      */
     public static CenterToRef<T extends Vector2>(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: T): T {
-        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2);
+        return ref.copyFromFloats((value1.x + value2.x) * 0.5, (value1.y + value2.y) * 0.5);
     }
 
     /**
@@ -1262,10 +1262,10 @@ export class Vector3 {
         let theta: number = Math.acos(this.y / radius);
         const phi = Math.atan2(this.z, this.x);
         //makes angle 90 degs to current vector
-        if (theta > Math.PI / 2) {
-            theta -= Math.PI / 2;
+        if (theta > Math.PI * 0.5) {
+            theta -= Math.PI * 0.5;
         } else {
-            theta += Math.PI / 2;
+            theta += Math.PI * 0.5;
         }
         //Calculates resutant normal vector from spherical coordinate of perpendicular vector
         const x = radius * Math.sin(theta) * Math.cos(phi);
@@ -3016,7 +3016,7 @@ export class Vector3 {
      * @returns ref
      */
     public static CenterToRef<T extends Vector3>(value1: DeepImmutable<Vector3>, value2: DeepImmutable<Vector3>, ref: T): T {
-        return ref.copyFromFloats((value1._x + value2._x) / 2, (value1._y + value2._y) / 2, (value1._z + value2._z) / 2);
+        return ref.copyFromFloats((value1._x + value2._x) * 0.5, (value1._y + value2._y) * 0.5, (value1._z + value2._z) * 0.5);
     }
 
     /**
@@ -3818,7 +3818,7 @@ export class Vector4 {
      * @returns ref
      */
     public static CenterToRef<T extends Vector4>(value1: DeepImmutable<Vector4>, value2: DeepImmutable<Vector4>, ref: T): T {
-        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
+        return ref.copyFromFloats((value1.x + value2.x) * 0.5, (value1.y + value2.y) * 0.5, (value1.z + value2.z) * 0.5, (value1.w + value2.w) * 0.5);
     }
 
     /**
@@ -4468,12 +4468,12 @@ export class Quaternion {
 
         if (zAxisY < -limit) {
             result._y = 2 * Math.atan2(qy, qw);
-            result._x = Math.PI / 2;
+            result._x = Math.PI * 0.5;
             result._z = 0;
             result._isDirty = true;
         } else if (zAxisY > limit) {
             result._y = 2 * Math.atan2(qy, qw);
-            result._x = -Math.PI / 2;
+            result._x = -Math.PI * 0.5;
             result._z = 0;
             result._isDirty = true;
         } else {
@@ -4702,9 +4702,9 @@ export class Quaternion {
      * @returns the target quaternion
      */
     public static RotationAxisToRef<T extends Quaternion>(axis: DeepImmutable<Vector3>, angle: number, result: T): T {
-        const sin = Math.sin(angle / 2);
+        const sin = Math.sin(angle * 0.5);
         axis.normalize();
-        result._w = Math.cos(angle / 2);
+        result._w = Math.cos(angle * 0.5);
         result._x = axis._x * sin;
         result._y = axis._y * sin;
         result._z = axis._z * sin;
@@ -7515,7 +7515,7 @@ export class Matrix {
         const cx = viewport.x;
         const cy = viewport.y;
 
-        const viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0, 0.0, -ch / 2.0, 0.0, 0.0, 0.0, 0.0, zmax - zmin, 0.0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
+        const viewportMatrix = Matrix.FromValues(cw * 0.5, 0.0, 0.0, 0.0, 0.0, -ch * 0.5, 0.0, 0.0, 0.0, 0.0, zmax - zmin, 0.0, cx + cw * 0.5, ch * 0.5 + cy, zmin, 1.0);
 
         const matrix = new (world.constructor as MatrixConstructor<T>)();
         world.multiplyToRef(view, matrix);

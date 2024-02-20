@@ -583,11 +583,11 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setFloat("near", this._scene.activeCamera.minZ);
             if (this._scene.activeCamera.mode === Camera.PERSPECTIVE_CAMERA) {
                 effect.setMatrix3x3("depthProjection", SSAO2RenderingPipeline.PERSPECTIVE_DEPTH_PROJECTION);
-                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov / 2) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
-                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov / 2));
+                effect.setFloat("xViewport", Math.tan(this._scene.activeCamera.fov * 0.5) * this._scene.getEngine().getAspectRatio(this._scene.activeCamera, true));
+                effect.setFloat("yViewport", Math.tan(this._scene.activeCamera.fov * 0.5));
             } else {
-                const halfWidth = this._scene.getEngine().getRenderWidth() / 2.0;
-                const halfHeight = this._scene.getEngine().getRenderHeight() / 2.0;
+                const halfWidth = this._scene.getEngine().getRenderWidth() * 0.5;
+                const halfHeight = this._scene.getEngine().getRenderHeight() * 0.5;
                 const orthoLeft = this._scene.activeCamera.orthoLeft ?? -halfWidth;
                 const orthoRight = this._scene.activeCamera.orthoRight ?? halfWidth;
                 const orthoBottom = this._scene.activeCamera.orthoBottom ?? -halfHeight;

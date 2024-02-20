@@ -709,7 +709,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
         if (normal) {
             const angle = Math.acos(Vector3.Dot(normal, ray.direction));
-            if (angle < Math.PI / 2) {
+            if (angle < Math.PI * 0.5) {
                 normal.scaleInPlace(-1);
             }
         }
@@ -792,7 +792,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         laserPointerMaterial.emissiveColor = this.laserPointerDefaultColor;
         laserPointerMaterial.alpha = 0.7;
         laserPointer.material = laserPointerMaterial;
-        laserPointer.rotation.x = Math.PI / 2;
+        laserPointer.rotation.x = Math.PI * 0.5;
         this._updatePointerDistance(laserPointer, 1);
         laserPointer.isPickable = false;
         laserPointer.isVisible = false;
@@ -855,7 +855,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         if (this._scene.useRightHandedSystem) {
             distance *= -1;
         }
-        _laserPointer.position.z = distance / 2 + 0.05;
+        _laserPointer.position.z = distance * 0.5 + 0.05;
     }
 
     private _augmentPointerInit(pointerEventInit: PointerEventInit, id: number, screenCoordinates?: { x: number; y: number }): void {

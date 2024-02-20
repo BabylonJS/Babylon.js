@@ -633,13 +633,13 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
 
         indices = Array.from(mesh.getIndices()!);
         const newIndices2 = [];
-        for (let i = indices.length / 2; i < indices.length; i += 3) {
+        for (let i = indices.length * 0.5; i < indices.length; i += 3) {
             newIndices2.push(indices[i + 1], indices[i + 2], indices[i + 0]);
         }
         mesh.setIndices(indices.concat(newIndices2));
 
         const num = mesh.getTotalVertices();
-        const mid = num / 2;
+        const mid = num * 0.5;
         const pass = new Array(num).fill(1, 0, mid).fill(0, mid, num);
         mesh.setVerticesData("dbg_initialPass", pass, false, 1);
 

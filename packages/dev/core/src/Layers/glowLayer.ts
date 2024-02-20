@@ -286,8 +286,8 @@ export class GlowLayer extends EffectLayer {
         this._blurTexture1.renderParticles = false;
         this._blurTexture1.ignoreCameraViewport = true;
 
-        const blurTextureWidth2 = Math.floor(blurTextureWidth / 2);
-        const blurTextureHeight2 = Math.floor(blurTextureHeight / 2);
+        const blurTextureWidth2 = Math.floor(blurTextureWidth * 0.5);
+        const blurTextureHeight2 = Math.floor(blurTextureHeight * 0.5);
 
         this._blurTexture2 = new RenderTargetTexture(
             "GlowLayerBlurRTT2",
@@ -410,7 +410,7 @@ export class GlowLayer extends EffectLayer {
      * Note: The value passed in the options is divided by 2 for back compatibility.
      */
     private _getEffectiveBlurKernelSize() {
-        return this._options.blurKernelSize / 2;
+        return this._options.blurKernelSize * 0.5;
     }
 
     /**

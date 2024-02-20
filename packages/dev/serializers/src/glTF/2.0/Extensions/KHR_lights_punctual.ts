@@ -83,7 +83,7 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
                     }
                     if (lightType !== KHRLightsPunctual_LightType.POINT) {
                         const localAxis = babylonNode.direction;
-                        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
+                        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI * 0.5;
                         const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
                         const pitch = -Math.atan2(localAxis.y, len);
                         const lightRotationQuaternion = Quaternion.RotationYawPitchRoll(yaw + Math.PI, pitch, 0);
@@ -110,17 +110,17 @@ export class KHR_lights_punctual implements IGLTFExporterExtensionV2 {
 
                     if (lightType === KHRLightsPunctual_LightType.SPOT) {
                         const babylonSpotLight = babylonNode as SpotLight;
-                        if (babylonSpotLight.angle !== Math.PI / 2.0) {
+                        if (babylonSpotLight.angle !== Math.PI * 0.5) {
                             if (light.spot == null) {
                                 light.spot = {};
                             }
-                            light.spot.outerConeAngle = babylonSpotLight.angle / 2.0;
+                            light.spot.outerConeAngle = babylonSpotLight.angle * 0.5;
                         }
                         if (babylonSpotLight.innerAngle !== 0) {
                             if (light.spot == null) {
                                 light.spot = {};
                             }
-                            light.spot.innerConeAngle = babylonSpotLight.innerAngle / 2.0;
+                            light.spot.innerConeAngle = babylonSpotLight.innerAngle * 0.5;
                         }
                     }
 

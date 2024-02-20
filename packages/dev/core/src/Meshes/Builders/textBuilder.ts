@@ -360,14 +360,14 @@ export function CreateText(
     if (newMesh) {
         // Move pivot to desired center / bottom / center position
         const bbox = newMesh.getBoundingInfo().boundingBox;
-        newMesh.position.x += -(bbox.minimumWorld.x + bbox.maximumWorld.x) / 2; // Mid X
-        newMesh.position.y += -(bbox.minimumWorld.y + bbox.maximumWorld.y) / 2; // Mid Z as it will rotate
-        newMesh.position.z += -(bbox.minimumWorld.z + bbox.maximumWorld.z) / 2 + bbox.extendSize.z; // Bottom Y as it will rotate
+        newMesh.position.x += -(bbox.minimumWorld.x + bbox.maximumWorld.x) * 0.5; // Mid X
+        newMesh.position.y += -(bbox.minimumWorld.y + bbox.maximumWorld.y) * 0.5; // Mid Z as it will rotate
+        newMesh.position.z += -(bbox.minimumWorld.z + bbox.maximumWorld.z) * 0.5 + bbox.extendSize.z; // Bottom Y as it will rotate
         newMesh.name = name;
 
         // Rotate 90° Up
         const pivot = new TransformNode("pivot", scene);
-        pivot.rotation.x = -Math.PI / 2;
+        pivot.rotation.x = -Math.PI * 0.5;
         newMesh.parent = pivot;
 
         newMesh.bakeCurrentTransformIntoVertices();

@@ -849,7 +849,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize).scaleInPlace(worldScale);
         const touchHoverTransitionSize = this._controllerPickRadius * (4 / 5);
         const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize).scaleInPlace(worldScale);
-        const hoverTouchTransitionSize = this._controllerPickRadius * (3 / 2);
+        const hoverTouchTransitionSize = this._controllerPickRadius * (3 * 0.5);
         const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize).scaleInPlace(worldScale);
 
         const touchKeys = [

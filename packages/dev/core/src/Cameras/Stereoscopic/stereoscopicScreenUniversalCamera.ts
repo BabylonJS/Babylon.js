@@ -96,7 +96,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     }
 
     private _updateCamera(camera: TargetCamera, cameraIndex: number) {
-        const b = this.distanceBetweenEyes / 2;
+        const b = this.distanceBetweenEyes * 0.5;
         const z = b / this.distanceToProjectionPlane;
         camera.position.copyFrom(this.position);
         camera.position.addInPlaceFromFloats(cameraIndex === 0 ? -b : b, 0, -this._distanceToProjectionPlane);

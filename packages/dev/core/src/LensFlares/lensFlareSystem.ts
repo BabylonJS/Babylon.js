@@ -301,8 +301,8 @@ export class LensFlareSystem {
         }
 
         // Position
-        const centerX = globalViewport.x + globalViewport.width / 2;
-        const centerY = globalViewport.y + globalViewport.height / 2;
+        const centerX = globalViewport.x + globalViewport.width * 0.5;
+        const centerY = globalViewport.y + globalViewport.height * 0.5;
         const distX = centerX - this._positionX;
         const distY = centerY - this._positionY;
 
@@ -331,7 +331,7 @@ export class LensFlareSystem {
             const cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
             const cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
 
-            const viewportMatrix = Matrix.FromValues(cw / 2, 0, 0, 0, 0, ch / 2, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);
+            const viewportMatrix = Matrix.FromValues(cw * 0.5, 0, 0, 0, 0, ch * 0.5, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);
 
             flare._drawWrapper.effect!.setMatrix("viewportMatrix", viewportMatrix);
 

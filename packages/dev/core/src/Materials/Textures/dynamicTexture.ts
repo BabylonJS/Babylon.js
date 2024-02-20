@@ -195,11 +195,11 @@ export class DynamicTexture extends Texture {
         this._context.font = font;
         if (x === null || x === undefined) {
             const textSize = this._context.measureText(text);
-            x = (size.width - textSize.width) / 2;
+            x = (size.width - textSize.width) * 0.5;
         }
         if (y === null || y === undefined) {
             const fontSize = parseInt(font.replace(/\D/g, ""));
-            y = size.height / 2 + fontSize / 3.65;
+            y = size.height * 0.5 + fontSize / 3.65;
         }
 
         this._context.fillStyle = color || "";

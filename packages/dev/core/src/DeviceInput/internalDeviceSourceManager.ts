@@ -47,7 +47,7 @@ export class InternalDeviceSourceManager implements IDisposable {
     public _refCount = 0;
 
     public constructor(engine: Engine) {
-        const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
+        const numberOfDeviceTypes = Object.keys(DeviceType).length * 0.5;
         this._devices = new Array<Array<number>>(numberOfDeviceTypes);
 
         const onDeviceConnected = (deviceType: DeviceType, deviceSlot: number) => {

@@ -256,15 +256,15 @@ export class TouchHolographicButton extends TouchButton3D {
         this.pointerDownAnimation = () => {
             if (this._frontPlate && !this.isActiveNearInteraction) {
                 this._frontPlate.scaling.z = this._frontPlateDepth * 0.2;
-                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - 0.2 * this._frontPlateDepth) / 2);
-                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + 0.2 * this._frontPlateDepth) / 2);
+                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - 0.2 * this._frontPlateDepth) * 0.5);
+                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + 0.2 * this._frontPlateDepth) * 0.5);
             }
         };
         this.pointerUpAnimation = () => {
             if (this._frontPlate) {
                 this._frontPlate.scaling.z = this._frontPlateDepth;
-                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - this._frontPlateDepth) / 2);
-                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + this._frontPlateDepth) / 2);
+                this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - this._frontPlateDepth) * 0.5);
+                this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + this._frontPlateDepth) * 0.5);
             }
         };
 
@@ -273,11 +273,11 @@ export class TouchHolographicButton extends TouchButton3D {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
                     let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
-                    interactionHeight = Scalar.Clamp(interactionHeight - this._backPlateDepth / 2, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
+                    interactionHeight = Scalar.Clamp(interactionHeight - this._backPlateDepth * 0.5, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
-                    this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - interactionHeight) / 2);
-                    this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + interactionHeight) / 2);
+                    this._frontPlate.position = Vector3.Forward(this._frontPlate._scene.useRightHandedSystem).scale((this._frontPlateDepth - interactionHeight) * 0.5);
+                    this._textPlate.position = Vector3.Forward(this._textPlate._scene.useRightHandedSystem).scale(-(this._backPlateDepth + interactionHeight) * 0.5);
                 }
             }
         });
@@ -336,7 +336,7 @@ export class TouchHolographicButton extends TouchButton3D {
         collisionMesh.isPickable = true;
         collisionMesh.isNearPickable = true;
         collisionMesh.visibility = 0;
-        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
+        collisionMesh.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth * 0.5);
 
         SceneLoader.ImportMeshAsync(undefined, TouchHolographicButton.MODEL_BASE_URL, TouchHolographicButton.MODEL_FILENAME, scene).then((result) => {
             const alphaMesh = CreateBox(
@@ -374,13 +374,13 @@ export class TouchHolographicButton extends TouchButton3D {
             scene
         );
 
-        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth / 2);
+        this._backPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(this._backPlateDepth * 0.5);
         this._backPlate.isPickable = false;
 
         this._textPlate = <Mesh>super._createNode(scene);
         this._textPlate.name = `${this.name}_textPlate`;
         this._textPlate.isPickable = false;
-        this._textPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth / 2);
+        this._textPlate.position = Vector3.Forward(scene.useRightHandedSystem).scale(-this._frontPlateDepth * 0.5);
 
         this._backPlate.addChild(collisionMesh);
         this._backPlate.addChild(this._textPlate);

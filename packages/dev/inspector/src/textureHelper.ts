@@ -114,7 +114,7 @@ export class TextureHelper {
             //To flip image on Y axis.
             if ((texture as Texture).invertY || texture.isCube) {
                 const numberOfChannelsByLine = width * 4;
-                const halfHeight = height / 2;
+                const halfHeight = height * 0.5;
                 for (let i = 0; i < halfHeight; i++) {
                     for (let j = 0; j < numberOfChannelsByLine; j++) {
                         const currentCell = j + i * numberOfChannelsByLine;

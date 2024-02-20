@@ -169,7 +169,7 @@ describe("ArcRotateCameraMouseInput", () => {
             // Set angles such that the box's mix/max points are not technically
             // the farthest points in screen/camera space
             camera.alpha = Math.PI / 3;
-            camera.beta = Math.PI / 2.5;
+            camera.beta = Math.PI * 0.5.5;
             camera.radius = 0.01;
             box.position = new Vector3(0, 0.5, 0);
             scene.render();

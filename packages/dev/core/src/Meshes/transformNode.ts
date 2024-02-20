@@ -667,7 +667,7 @@ export class TransformNode extends Node {
      * @returns this TransformNode
      */
     public setDirection(localAxis: Vector3, yawCor: number = 0, pitchCor: number = 0, rollCor: number = 0): TransformNode {
-        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI / 2;
+        const yaw = -Math.atan2(localAxis.z, localAxis.x) + Math.PI * 0.5;
         const len = Math.sqrt(localAxis.x * localAxis.x + localAxis.z * localAxis.z);
         const pitch = -Math.atan2(localAxis.y, len);
         if (this.rotationQuaternion) {
@@ -1232,7 +1232,7 @@ export class TransformNode extends Node {
             camInObjSpace.normalize();
 
             // Find the lookAt info in local space
-            const yaw = -Math.atan2(camInObjSpace.z, camInObjSpace.x) + Math.PI / 2;
+            const yaw = -Math.atan2(camInObjSpace.z, camInObjSpace.x) + Math.PI * 0.5;
             const len = Math.sqrt(camInObjSpace.x * camInObjSpace.x + camInObjSpace.z * camInObjSpace.z);
             const pitch = -Math.atan2(camInObjSpace.y, len);
             Quaternion.RotationYawPitchRollToRef(yaw, pitch, 0, TmpVectors.Quaternion[0]);

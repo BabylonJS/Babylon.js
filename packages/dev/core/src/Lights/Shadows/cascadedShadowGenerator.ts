@@ -610,7 +610,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             // Create the rounding matrix, by projecting the world-space origin and determining
             // the fractional offset in texel space
             Vector3.TransformCoordinatesToRef(ZeroVec, this._transformMatrices[cascadeIndex], tmpv1); // tmpv1 = shadowOrigin
-            tmpv1.scaleInPlace(this._mapSize / 2);
+            tmpv1.scaleInPlace(this._mapSize * 0.5);
 
             tmpv2.copyFromFloats(Math.round(tmpv1.x), Math.round(tmpv1.y), Math.round(tmpv1.z)); // tmpv2 = roundedOrigin
             tmpv2.subtractInPlace(tmpv1).scaleInPlace(2 / this._mapSize); // tmpv2 = roundOffset
@@ -663,7 +663,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         }
 
         // Get the corners of the current cascade slice of the view frustum
-        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length / 2; ++cornerIndex) {
+        for (let cornerIndex = 0; cornerIndex < CascadedShadowGenerator._FrustumCornersNDCSpace.length * 0.5; ++cornerIndex) {
             tmpv1.copyFrom(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex + 4]).subtractInPlace(this._frustumCornersWorldSpace[cascadeIndex][cornerIndex]);
             tmpv2.copyFrom(tmpv1).scaleInPlace(prevSplitDist); // near corner ray
             tmpv1.scaleInPlace(splitDist); // far corner ray

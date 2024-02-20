@@ -529,7 +529,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 if (this.parabolicRayEnabled && !hitPossible) {
                     // radius compensation according to pointer rotation around X
                     const xRotation = controllerData.xrController.pointer.rotationQuaternion!.toEulerAngles().x;
-                    const compensation = 1 + (Math.PI / 2 - Math.abs(xRotation));
+                    const compensation = 1 + (Math.PI * 0.5 - Math.abs(xRotation));
                     // check parabolic ray
                     const radius = this.parabolicCheckRadius * compensation;
                     this._tmpRay.origin.addToRef(this._tmpRay.direction.scale(radius * 2), this._tmpVector);
@@ -772,8 +772,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             const dynamicTexture = new DynamicTexture("teleportationPlaneDynamicTexture", length, sceneToRenderTo, true);
             dynamicTexture.hasAlpha = true;
             const context = dynamicTexture.getContext();
-            const centerX = length / 2;
-            const centerY = length / 2;
+            const centerX = length * 0.5;
+            const centerY = length * 0.5;
             const radius = 200;
             context.beginPath();
             context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
@@ -828,7 +828,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         cone.isPickable = false;
         cone.scaling.set(0.5, 0.12, 0.2);
 
-        cone.rotate(Axis.X, Math.PI / 2);
+        cone.rotate(Axis.X, Math.PI * 0.5);
 
         cone.position.z = 0.6;
         cone.parent = torus;

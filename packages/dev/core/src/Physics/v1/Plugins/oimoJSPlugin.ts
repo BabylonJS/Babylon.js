@@ -204,7 +204,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         const radiusY = impostorExtents.y;
                         const radiusZ = impostorExtents.z;
 
-                        const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) / 2;
+                        const size = Math.max(checkWithEpsilon(radiusX), checkWithEpsilon(radiusY), checkWithEpsilon(radiusZ)) * 0.5;
 
                         bodyConfig.type.push("sphere");
                         //due to the way oimo works with compounds, add 3 times
@@ -214,7 +214,7 @@ export class OimoJSPlugin implements IPhysicsEnginePlugin {
                         break;
                     }
                     case PhysicsImpostor.CylinderImpostor: {
-                        const sizeX = checkWithEpsilon(impostorExtents.x) / 2;
+                        const sizeX = checkWithEpsilon(impostorExtents.x) * 0.5;
                         const sizeY = checkWithEpsilon(impostorExtents.y);
                         bodyConfig.type.push("cylinder");
                         bodyConfig.size.push(sizeX);

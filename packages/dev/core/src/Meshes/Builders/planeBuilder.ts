@@ -28,8 +28,8 @@ export function CreatePlaneVertexData(options: { size?: number; width?: number; 
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
     // Vertices
-    const halfWidth = width / 2.0;
-    const halfHeight = height / 2.0;
+    const halfWidth = width * 0.5;
+    const halfHeight = height * 0.5;
 
     positions.push(-halfWidth, -halfHeight, 0);
     normals.push(0, 0, -1.0);

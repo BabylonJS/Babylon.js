@@ -170,13 +170,13 @@ export class CurveBlock extends NodeMaterialBlock {
 
         switch (this.type) {
             case CurveBlockTypes.EaseInSine:
-                registeredFunction = `return 1.0 - cos((v * 3.1415) / 2.0)`;
+                registeredFunction = `return 1.0 - cos((v * 3.1415) * 0.5)`;
                 break;
             case CurveBlockTypes.EaseOutSine:
-                registeredFunction = `return sin((v * 3.1415) / 2.0)`;
+                registeredFunction = `return sin((v * 3.1415) * 0.5)`;
                 break;
             case CurveBlockTypes.EaseInOutSine:
-                registeredFunction = `return -(cos(v * 3.1415) - 1.0) / 2.0`;
+                registeredFunction = `return -(cos(v * 3.1415) - 1.0) * 0.5`;
                 break;
             case CurveBlockTypes.EaseInQuad:
                 registeredFunction = `return v * v`;
@@ -185,7 +185,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 registeredFunction = `return (1.0 - v) * (1.0 - v)`;
                 break;
             case CurveBlockTypes.EaseInOutQuad: {
-                const entry = "VAL < 0.5 ? 2.0 * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 2.0) / 2.0";
+                const entry = "VAL < 0.5 ? 2.0 * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 2.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -198,7 +198,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutCubic: {
-                const entry = "VAL < 0.5 ? 4.0 * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 3.0) / 2.0";
+                const entry = "VAL < 0.5 ? 4.0 * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 3.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -211,7 +211,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutQuart: {
-                const entry = "VAL < 0.5 ? 8.0 * VAL * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 4.0) / 2.0";
+                const entry = "VAL < 0.5 ? 8.0 * VAL * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 4.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -224,7 +224,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutQuint: {
-                const entry = "VAL < 0.5 ? 16.0 * VAL * VAL * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 5.0) / 2.0";
+                const entry = "VAL < 0.5 ? 16.0 * VAL * VAL * VAL * VAL * VAL : 1.0 - pow(-2.0 * VAL + 2.0, 5.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -239,7 +239,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutExpo: {
-                const entry = "VAL == 0.0 ? 0.0 : VAL == 1.0 ? 1.0 : VAL < 0.5 ? pow(2.0, 20.0 * VAL - 10.0) / 2.0 : (2.0 - pow(2.0, -20.0 * VAL + 10.0)) / 2.0";
+                const entry = "VAL == 0.0 ? 0.0 : VAL == 1.0 ? 1.0 : VAL < 0.5 ? pow(2.0, 20.0 * VAL - 10.0) * 0.5 : (2.0 - pow(2.0, -20.0 * VAL + 10.0)) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -254,7 +254,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutCirc: {
-                const entry = "VAL < 0.5 ? (1.0 - sqrt(1.0 - pow(2.0 * VAL, 2.0))) / 2.0 : (sqrt(1.0 - pow(-2.0 * VAL + 2.0, 2.0)) + 1.0) / 2.0";
+                const entry = "VAL < 0.5 ? (1.0 - sqrt(1.0 - pow(2.0 * VAL, 2.0))) * 0.5 : (sqrt(1.0 - pow(-2.0 * VAL + 2.0, 2.0)) + 1.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -269,7 +269,7 @@ export class CurveBlock extends NodeMaterialBlock {
             }
             case CurveBlockTypes.EaseInOutBack: {
                 const entry =
-                    "VAL < 0.5 ? (pow(2.0 * VAL, 2.0) * ((3.5949095) * 2.0 * VAL - 2.5949095)) / 2.0 : (pow(2.0 * VAL - 2.0, 2.0) * (3.5949095 * (VAL * 2.0 - 2.0) + 3.5949095) + 2.0) / 2.0";
+                    "VAL < 0.5 ? (pow(2.0 * VAL, 2.0) * ((3.5949095) * 2.0 * VAL - 2.5949095)) * 0.5 : (pow(2.0 * VAL - 2.0, 2.0) * (3.5949095 * (VAL * 2.0 - 2.0) + 3.5949095) + 2.0) * 0.5";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }
@@ -285,7 +285,7 @@ export class CurveBlock extends NodeMaterialBlock {
             }
             case CurveBlockTypes.EaseInOutElastic: {
                 const entry =
-                    "VAL == 0.0 ? 0.0 : VAL == 1.0 ? 1.0 : VAL < 0.5 ? -(pow(2.0, 20.0 * VAL - 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0 : (pow(2.0, -20.0 * VAL + 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0 + 1.0";
+                    "VAL == 0.0 ? 0.0 : VAL == 1.0 ? 1.0 : VAL < 0.5 ? -(pow(2.0, 20.0 * VAL - 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) * 0.5 : (pow(2.0, -20.0 * VAL + 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) * 0.5 + 1.0";
                 registeredFunction = this._duplicateVector(entry, inputType);
                 break;
             }

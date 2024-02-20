@@ -155,7 +155,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
             // Last time this method is called at the end of a pinch.
             return;
         }
-        let pinchDelta = (pinchSquaredDistance - previousPinchSquaredDistance) / ((this.pinchPrecision * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
+        let pinchDelta = (pinchSquaredDistance - previousPinchSquaredDistance) / ((this.pinchPrecision * (this.angularSensibilityX + this.angularSensibilityY)) * 0.5);
 
         if (this.pinchDeltaPercentage) {
             pinchDelta *= 0.01 * this.pinchDeltaPercentage;

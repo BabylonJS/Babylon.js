@@ -408,7 +408,7 @@ export class PointsCloudSystem implements IDisposable {
                     biNorm = Vector3.Cross(norm, tang);
                     angle = Scalar.RandomRange(0, 2 * Math.PI);
                     facetPlaneVec = tang.scale(Math.cos(angle)).add(biNorm.scale(Math.sin(angle)));
-                    angle = Scalar.RandomRange(0.1, Math.PI / 2);
+                    angle = Scalar.RandomRange(0.1, Math.PI * 0.5);
                     direction = facetPlaneVec.scale(Math.cos(angle)).add(norm.scale(Math.sin(angle)));
 
                     ray.origin = facetPoint.add(direction.scale(0.00001));
@@ -593,7 +593,7 @@ export class PointsCloudSystem implements IDisposable {
             a = vec0.length();
             b = vec1.length();
             c = vec2.length();
-            p = (a + b + c) / 2;
+            p = (a + b + c) * 0.5;
             area = Math.sqrt(p * (p - a) * (p - b) * (p - c));
             surfaceArea += area;
             areas[index] = area;
@@ -981,7 +981,7 @@ export class PointsCloudSystem implements IDisposable {
             return;
         }
 
-        const vis = size / 2;
+        const vis = size * 0.5;
         this.mesh.buildBoundingInfo(new Vector3(-vis, -vis, -vis), new Vector3(vis, vis, vis));
     }
 

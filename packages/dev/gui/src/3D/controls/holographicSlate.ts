@@ -218,8 +218,8 @@ export class HolographicSlate extends ContentDisplay3D {
         if (followButton && closeButton && titleBar) {
             closeButton.scaling.setAll(this.titleBarHeight);
             followButton.scaling.setAll(this.titleBarHeight);
-            closeButton.position.copyFromFloats(this.dimensions.x - this.titleBarHeight / 2, -this.titleBarHeight / 2, 0).addInPlace(this.origin);
-            followButton.position.copyFromFloats(this.dimensions.x - (3 * this.titleBarHeight) / 2, -this.titleBarHeight / 2, 0).addInPlace(this.origin);
+            closeButton.position.copyFromFloats(this.dimensions.x - this.titleBarHeight * 0.5, -this.titleBarHeight * 0.5, 0).addInPlace(this.origin);
+            followButton.position.copyFromFloats(this.dimensions.x - (3 * this.titleBarHeight) * 0.5, -this.titleBarHeight * 0.5, 0).addInPlace(this.origin);
 
             const contentPlateHeight = this.dimensions.y - this.titleBarHeight - this.titleBarMargin;
             const rightHandScene = contentPlate.getScene().useRightHandedSystem;
@@ -229,13 +229,13 @@ export class HolographicSlate extends ContentDisplay3D {
             contentPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
             backPlate.scaling.copyFromFloats(this.dimensions.x, contentPlateHeight, Epsilon);
 
-            titleBar.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight / 2), 0).addInPlace(this.origin);
+            titleBar.position.copyFromFloats(this.dimensions.x * 0.5, -(this.titleBarHeight * 0.5), 0).addInPlace(this.origin);
             titleBarTitle.position
-                .copyFromFloats(this.dimensions.x / 2 - this.titleBarHeight, -(this.titleBarHeight / 2), rightHandScene ? Epsilon : -Epsilon)
+                .copyFromFloats(this.dimensions.x * 0.5 - this.titleBarHeight, -(this.titleBarHeight * 0.5), rightHandScene ? Epsilon : -Epsilon)
                 .addInPlace(this.origin);
-            contentPlate.position.copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), 0).addInPlace(this.origin);
+            contentPlate.position.copyFromFloats(this.dimensions.x * 0.5, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight * 0.5), 0).addInPlace(this.origin);
             backPlate.position
-                .copyFromFloats(this.dimensions.x / 2, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight / 2), rightHandScene ? -Epsilon : Epsilon)
+                .copyFromFloats(this.dimensions.x * 0.5, -(this.titleBarHeight + this.titleBarMargin + contentPlateHeight * 0.5), rightHandScene ? -Epsilon : Epsilon)
                 .addInPlace(this.origin);
 
             // Update the title's AdvancedDynamicTexture scale to avoid visual stretching
@@ -307,7 +307,7 @@ export class HolographicSlate extends ContentDisplay3D {
         this._titleTextComponent.textWrapping = TextWrapping.Ellipsis;
         this._titleTextComponent.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
         this._titleTextComponent.color = "white";
-        this._titleTextComponent.fontSize = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 2;
+        this._titleTextComponent.fontSize = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y * 0.5;
         this._titleTextComponent.paddingLeft = HolographicSlate._DEFAULT_TEXT_RESOLUTION_Y / 4;
         adt.addControl(this._titleTextComponent);
 

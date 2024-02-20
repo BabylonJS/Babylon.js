@@ -73,7 +73,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * @param engine - Used to get canvas (if applicable)
      */
     constructor(engine: Engine) {
-        const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
+        const numberOfDeviceTypes = Object.keys(DeviceType).length * 0.5;
         this._devices = new Array(numberOfDeviceTypes);
         this._firstDevice = new Array(numberOfDeviceTypes);
         this._engine = engine;

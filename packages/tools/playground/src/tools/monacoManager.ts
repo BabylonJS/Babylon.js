@@ -131,7 +131,7 @@ export class MonacoManager {
 var createScene = function() {
     var scene = new BABYLON.Scene(engine);
 
-    //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+    //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.5, Math.PI * 0.5, 12, BABYLON.Vector3.Zero(), scene);
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
     // This targets the camera to scene origin
@@ -151,7 +151,7 @@ class Playground {
     public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {
         var scene = new BABYLON.Scene(engine);
 
-        //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2, 12, BABYLON.Vector3.Zero(), scene);
+        //var camera = new BABYLON.ArcRotateCamera("Camera", -Math.PI * 0.5, Math.PI * 0.5, 12, BABYLON.Vector3.Zero(), scene);
         var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
 
         // This targets the camera to scene origin

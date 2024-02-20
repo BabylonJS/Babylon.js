@@ -152,10 +152,10 @@ export class WebXRCamera extends FreeCamera {
         // Create initial camera rigs
         this._updateNumberOfRigCameras(2);
         this.rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1.0);
-        // this.rigCameras[0].position.x = -pupilDistance / 2;
+        // this.rigCameras[0].position.x = -pupilDistance * 0.5;
         this.rigCameras[0].outputRenderTarget = null;
         this.rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
-        // this.rigCameras[1].position.x = pupilDistance / 2;
+        // this.rigCameras[1].position.x = pupilDistance * 0.5;
         this.rigCameras[1].outputRenderTarget = null;
     }
 

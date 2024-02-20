@@ -10,7 +10,7 @@ import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLi
 import type { Engine } from "../../Engines/engine";
 
 /**
- * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
+ * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width * 0.5` to `+direction` and `-direction` as well.
  * In POINTS_MODE_PATHS every array of points specifies an edge. These will be used to build one ribbon.
  */
 export enum GreasedLineRibbonPointsMode {

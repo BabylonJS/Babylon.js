@@ -45,8 +45,8 @@ export function CreateDiscVertexData(options: {
     for (let t = 0; t < tessellation; t++) {
         const x = Math.cos(a);
         const y = Math.sin(a);
-        const u = (x + 1) / 2;
-        const v = (1 - y) / 2;
+        const u = (x + 1) * 0.5;
+        const v = (1 - y) * 0.5;
         positions.push(radius * x, radius * y, 0);
         uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
         a += step;

@@ -1048,7 +1048,7 @@ export class ArcRotateCamera extends TargetCamera {
         // Alpha
         const previousAlpha = this.alpha;
         if (this._computationVector.x === 0 && this._computationVector.z === 0) {
-            this.alpha = Math.PI / 2; // avoid division by zero when looking along up axis, and set to acos(0)
+            this.alpha = Math.PI * 0.5; // avoid division by zero when looking along up axis, and set to acos(0)
         } else {
             this.alpha = Math.acos(this._computationVector.x / Math.sqrt(Math.pow(this._computationVector.x, 2) + Math.pow(this._computationVector.z, 2)));
         }
@@ -1330,7 +1330,7 @@ export class ArcRotateCamera extends TargetCamera {
         // Get aspect ratio in order to calculate frustum slope
         const engine = this.getScene().getEngine();
         const aspectRatio = engine.getAspectRatio(this);
-        const frustumSlopeY = Math.tan(this.fov / 2);
+        const frustumSlopeY = Math.tan(this.fov * 0.5);
         const frustumSlopeX = frustumSlopeY * aspectRatio;
 
         // Formula for setting distance

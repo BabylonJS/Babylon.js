@@ -207,14 +207,14 @@ export class Particle {
             if (subEmitter.inheritDirection) {
                 const temp = TmpVectors.Vector3[0];
                 this.direction.normalizeToRef(temp);
-                emitterMesh.setDirection(temp, 0, Math.PI / 2);
+                emitterMesh.setDirection(temp, 0, Math.PI * 0.5);
             }
         } else {
             const emitterPosition = <Vector3>subEmitter.particleSystem.emitter;
             emitterPosition.copyFrom(this.position);
         }
         // Set inheritedVelocityOffset to be used when new particles are created
-        this.direction.scaleToRef(subEmitter.inheritedVelocityAmount / 2, TmpVectors.Vector3[0]);
+        this.direction.scaleToRef(subEmitter.inheritedVelocityAmount * 0.5, TmpVectors.Vector3[0]);
         subEmitter.particleSystem._inheritedVelocityOffset.copyFrom(TmpVectors.Vector3[0]);
     }
 

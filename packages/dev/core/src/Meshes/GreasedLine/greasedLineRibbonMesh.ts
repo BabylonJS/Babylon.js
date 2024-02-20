@@ -24,9 +24,9 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      */
     public static DEFAULT_WIDTH = 0.1;
 
-    private static _RightHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI / 2);
-    private static _LeftHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI / 2);
-    private static _LeftReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI / 2);
+    private static _RightHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.RightHandedForwardReadOnly, Math.PI * 0.5);
+    private static _LeftHandedForwardReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftHandedForwardReadOnly, Math.PI * 0.5);
+    private static _LeftReadOnlyQuaternion = Quaternion.RotationAxis(Vector3.LeftReadOnly, Math.PI * 0.5);
 
     /**
      * Direction which the line segment will be thickened if drawn on the XY plane
@@ -331,8 +331,8 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         }
 
         for (let i = 0, c = 0; i < pathArrayCopy[0].length; i++) {
-            const widthLower = this._uSegmentLengths[i][0] / 2;
-            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 1] / 2;
+            const widthLower = this._uSegmentLengths[i][0] * 0.5;
+            const widthUpper = this._uSegmentLengths[i][pathArrayLength - 1] * 0.5;
             this._ribbonWidths.push(((this._widths[c++] ?? 1) - 1) * widthLower);
             for (let pi = 0; pi < pathArrayLength - 2; pi++) {
                 this._ribbonWidths.push(0);
@@ -366,7 +366,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         const path1 = [];
         const path2 = [];
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            const width = ribbonInfo.width! / 2;
+            const width = ribbonInfo.width! * 0.5;
             const pointVectors = GreasedLineTools.ToVector3Array(points) as Vector3[];
             let direction: Nullable<Vector3> = null;
             let fatDirection: Nullable<Vector3> = null;

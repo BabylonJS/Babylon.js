@@ -575,7 +575,7 @@ class TrajectoryDescriptor {
         targetResolution: number = TrajectoryDescriptor._FINEST_DESCRIPTOR_RESOLUTION
     ): number[][] {
         const pyramid: number[][] = [];
-        for (let res = targetResolution; res > 4; res = Math.floor(res / 2)) {
+        for (let res = targetResolution; res > 4; res = Math.floor(res * 0.5)) {
             pyramid.push(trajectory.resampleAtTargetResolution(res).tokenize(alphabet.chars));
         }
         return pyramid;

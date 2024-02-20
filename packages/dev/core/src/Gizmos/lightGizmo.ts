@@ -231,7 +231,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         const distFromSphere = 1.2;
 
         const root = new Mesh("root", scene);
-        root.rotation.x = Math.PI / 2;
+        root.rotation.x = Math.PI * 0.5;
 
         // Create the top line, this will be cloned for all other lines
         const linePivot = new Mesh("linePivot", scene);
@@ -248,7 +248,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
             },
             scene
         );
-        line.position.y = line.scaling.y / 2 + distFromSphere;
+        line.position.y = line.scaling.y * 0.5 + distFromSphere;
         line.parent = linePivot;
 
         if (levels < 2) {
@@ -257,11 +257,11 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         for (let i = 0; i < 4; i++) {
             const l = linePivot.clone("lineParentClone")!;
             l.rotation.z = Math.PI / 4;
-            l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
+            l.rotation.y = Math.PI * 0.5 + (Math.PI * 0.5) * i;
 
             l.getChildMeshes()[0].scaling.y = 0.5;
             l.getChildMeshes()[0].scaling.x = l.getChildMeshes()[0].scaling.z = 0.8;
-            l.getChildMeshes()[0].position.y = l.getChildMeshes()[0].scaling.y / 2 + distFromSphere;
+            l.getChildMeshes()[0].position.y = l.getChildMeshes()[0].scaling.y * 0.5 + distFromSphere;
         }
 
         if (levels < 3) {
@@ -269,8 +269,8 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         }
         for (let i = 0; i < 4; i++) {
             const l = linePivot.clone("linePivotClone");
-            l.rotation.z = Math.PI / 2;
-            l.rotation.y = (Math.PI / 2) * i;
+            l.rotation.z = Math.PI * 0.5;
+            l.rotation.y = (Math.PI * 0.5) * i;
         }
 
         if (levels < 4) {
@@ -279,11 +279,11 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         for (let i = 0; i < 4; i++) {
             const l = linePivot.clone("linePivotClone");
             l.rotation.z = Math.PI + Math.PI / 4;
-            l.rotation.y = Math.PI / 2 + (Math.PI / 2) * i;
+            l.rotation.y = Math.PI * 0.5 + (Math.PI * 0.5) * i;
 
             l.getChildMeshes()[0].scaling.y = 0.5;
             l.getChildMeshes()[0].scaling.x = l.getChildMeshes()[0].scaling.z = 0.8;
-            l.getChildMeshes()[0].position.y = l.getChildMeshes()[0].scaling.y / 2 + distFromSphere;
+            l.getChildMeshes()[0].position.y = l.getChildMeshes()[0].scaling.y * 0.5 + distFromSphere;
         }
 
         if (levels < 5) {
@@ -310,14 +310,14 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         const root = new Mesh("hemisphereLight", scene);
         const hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 1 }, scene);
         hemisphere.position.z = -0.15;
-        hemisphere.rotation.x = Math.PI / 2;
+        hemisphere.rotation.x = Math.PI * 0.5;
         hemisphere.parent = root;
 
         const lines = this._CreateLightLines(3, scene);
         lines.parent = root;
 
         root.scaling.scaleInPlace(LightGizmo._Scale);
-        root.rotation.x = Math.PI / 2;
+        root.rotation.x = Math.PI * 0.5;
 
         return root;
     }
@@ -325,13 +325,13 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
     private static _CreatePointLightMesh(scene: Scene) {
         const root = new Mesh("pointLight", scene);
         const sphere = CreateSphere(root.name, { segments: 10, diameter: 1 }, scene);
-        sphere.rotation.x = Math.PI / 2;
+        sphere.rotation.x = Math.PI * 0.5;
         sphere.parent = root;
 
         const lines = this._CreateLightLines(5, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
-        root.rotation.x = Math.PI / 2;
+        root.rotation.x = Math.PI * 0.5;
 
         return root;
     }
@@ -343,12 +343,12 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
 
         const hemisphere = CreateHemisphere(root.name, { segments: 10, diameter: 2 }, scene);
         hemisphere.parent = root;
-        hemisphere.rotation.x = -Math.PI / 2;
+        hemisphere.rotation.x = -Math.PI * 0.5;
 
         const lines = this._CreateLightLines(2, scene);
         lines.parent = root;
         root.scaling.scaleInPlace(LightGizmo._Scale);
-        root.rotation.x = Math.PI / 2;
+        root.rotation.x = Math.PI * 0.5;
 
         return root;
     }
@@ -407,8 +407,8 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
         right.position.x += -1.25;
 
         mesh.scaling.scaleInPlace(LightGizmo._Scale);
-        mesh.rotation.z = Math.PI / 2;
-        mesh.rotation.y = Math.PI / 2;
+        mesh.rotation.z = Math.PI * 0.5;
+        mesh.rotation.y = Math.PI * 0.5;
         return root;
     }
 }

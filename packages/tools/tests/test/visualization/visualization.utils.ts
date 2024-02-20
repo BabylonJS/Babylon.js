@@ -49,7 +49,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
         return !(externallyExcluded || test.excludeFromAutomaticTesting || (test.excludedEngines && test.excludedEngines.includes(engineType)));
     });
 
-    // 2% error rate
+    /* 0.5% error rate
 
     let engineFlags: {
         forceUseReverseDepthBuffer: boolean;

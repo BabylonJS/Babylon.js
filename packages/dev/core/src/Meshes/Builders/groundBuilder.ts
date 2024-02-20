@@ -34,7 +34,7 @@ export function CreateGroundVertexData(options: { width?: number; height?: numbe
 
     for (row = 0; row <= subdivisionsY; row++) {
         for (col = 0; col <= subdivisionsX; col++) {
-            const position = new Vector3((col * width) / subdivisionsX - width / 2.0, 0, ((subdivisionsY - row) * height) / subdivisionsY - height / 2.0);
+            const position = new Vector3((col * width) / subdivisionsX - width * 0.5, 0, ((subdivisionsY - row) * height) / subdivisionsY - height * 0.5);
             const normal = new Vector3(0, 1.0, 0);
 
             positions.push(position.x, position.y, position.z);
@@ -211,14 +211,14 @@ export function CreateGroundFromHeightMapVertexData(options: {
     for (row = 0; row <= options.subdivisions; row++) {
         for (col = 0; col <= options.subdivisions; col++) {
             const position = new Vector3(
-                (col * options.width) / options.subdivisions - options.width / 2.0,
+                (col * options.width) / options.subdivisions - options.width * 0.5,
                 0,
-                ((options.subdivisions - row) * options.height) / options.subdivisions - options.height / 2.0
+                ((options.subdivisions - row) * options.height) / options.subdivisions - options.height * 0.5
             );
 
             // Compute height
-            const heightMapX = (((position.x + options.width / 2) / options.width) * (options.bufferWidth - 1)) | 0;
-            const heightMapY = ((1.0 - (position.z + options.height / 2) / options.height) * (options.bufferHeight - 1)) | 0;
+            const heightMapX = (((position.x + options.width * 0.5) / options.width) * (options.bufferWidth - 1)) | 0;
+            const heightMapY = ((1.0 - (position.z + options.height * 0.5) / options.height) * (options.bufferHeight - 1)) | 0;
             const pos = (heightMapX + heightMapY * options.bufferWidth) * 4;
             let r = options.buffer[pos] / 255.0;
             let g = options.buffer[pos + 1] / 255.0;
@@ -321,8 +321,8 @@ export function CreateGround(
     ground._subdivisionsY = options.subdivisionsY || options.subdivisions || 1;
     ground._width = options.width || 1;
     ground._height = options.height || 1;
-    ground._maxX = ground._width / 2;
-    ground._maxZ = ground._height / 2;
+    ground._maxX = ground._width * 0.5;
+    ground._maxZ = ground._height * 0.5;
     ground._minX = -ground._maxX;
     ground._minZ = -ground._maxZ;
 
@@ -426,8 +426,8 @@ export function CreateGroundFromHeightMap(
     ground._subdivisionsY = subdivisions;
     ground._width = width;
     ground._height = height;
-    ground._maxX = ground._width / 2.0;
-    ground._maxZ = ground._height / 2.0;
+    ground._maxX = ground._width * 0.5;
+    ground._maxZ = ground._height * 0.5;
     ground._minX = -ground._maxX;
     ground._minZ = -ground._maxZ;
 

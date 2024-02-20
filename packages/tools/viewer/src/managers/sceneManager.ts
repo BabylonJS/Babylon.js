@@ -916,7 +916,7 @@ export class SceneManager {
                     worldCenter.copyFromFloats(0, 0, 0);
                 }
 
-                const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI / 2), Math.PI / 2, radius, worldCenter, this.scene);
+                const arcRotateCamera = new ArcRotateCamera("default camera", -(Math.PI * 0.5), Math.PI * 0.5, radius, worldCenter, this.scene);
                 arcRotateCamera.lowerRadiusLimit = radius * 0.01;
                 arcRotateCamera.wheelPrecision = 100 / radius;
                 const camera = arcRotateCamera;

@@ -95,7 +95,7 @@ export function CreateDecal(
         normal = camera.globalPosition.subtract(cameraWorldTarget);
     }
 
-    const yaw = -Math.atan2(normal.z, normal.x) - Math.PI / 2;
+    const yaw = -Math.atan2(normal.z, normal.x) - Math.PI * 0.5;
     const len = Math.sqrt(normal.x * normal.x + normal.z * normal.z);
     const pitch = Math.atan2(normal.y, len);
 

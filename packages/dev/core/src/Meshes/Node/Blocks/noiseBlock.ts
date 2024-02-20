@@ -155,7 +155,7 @@ export class NoiseBlock extends NodeGeometryBlock {
     }
 
     private _perlin(position: Vector3) {
-        return this._perlinSigned(position) / 2.0 + 0.5;
+        return this._perlinSigned(position) * 0.5 + 0.5;
     }
 
     /**

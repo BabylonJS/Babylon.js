@@ -118,7 +118,7 @@ export class Checkbox extends Control {
         }
 
         context.fillStyle = this._isEnabled ? this._background : this._disabledColor;
-        context.fillRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+        context.fillRect(this._currentMeasure.left + this._thickness * 0.5, this._currentMeasure.top + this._thickness * 0.5, actualWidth, actualHeight);
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
             context.shadowBlur = 0;
@@ -133,8 +133,8 @@ export class Checkbox extends Control {
             const offsetHeight = actualHeight * this._checkSizeRatio;
 
             context.fillRect(
-                this._currentMeasure.left + this._thickness / 2 + (actualWidth - offsetWidth) / 2,
-                this._currentMeasure.top + this._thickness / 2 + (actualHeight - offsetHeight) / 2,
+                this._currentMeasure.left + this._thickness * 0.5 + (actualWidth - offsetWidth) * 0.5,
+                this._currentMeasure.top + this._thickness * 0.5 + (actualHeight - offsetHeight) * 0.5,
                 offsetWidth,
                 offsetHeight
             );
@@ -143,7 +143,7 @@ export class Checkbox extends Control {
         context.strokeStyle = this.color;
         context.lineWidth = this._thickness;
 
-        context.strokeRect(this._currentMeasure.left + this._thickness / 2, this._currentMeasure.top + this._thickness / 2, actualWidth, actualHeight);
+        context.strokeRect(this._currentMeasure.left + this._thickness * 0.5, this._currentMeasure.top + this._thickness * 0.5, actualWidth, actualHeight);
 
         context.restore();
     }

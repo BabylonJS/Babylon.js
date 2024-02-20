@@ -340,7 +340,7 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 const radiusY = impostorExtents.y;
                 const radiusZ = impostorExtents.z;
 
-                returnValue = new this.BJSCANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) / 2);
+                returnValue = new this.BJSCANNON.Sphere(Math.max(this._checkWithEpsilon(radiusX), this._checkWithEpsilon(radiusY), this._checkWithEpsilon(radiusZ)) * 0.5);
 
                 break;
             }
@@ -350,15 +350,15 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
                 if (!nativeParams) {
                     nativeParams = {};
                 }
-                const radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(impostorExtents.x) / 2;
-                const radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(impostorExtents.x) / 2;
+                const radiusTop = nativeParams.radiusTop !== undefined ? nativeParams.radiusTop : this._checkWithEpsilon(impostorExtents.x) * 0.5;
+                const radiusBottom = nativeParams.radiusBottom !== undefined ? nativeParams.radiusBottom : this._checkWithEpsilon(impostorExtents.x) * 0.5;
                 const height = nativeParams.height !== undefined ? nativeParams.height : this._checkWithEpsilon(impostorExtents.y);
                 const numSegments = nativeParams.numSegments !== undefined ? nativeParams.numSegments : 16;
                 returnValue = new this.BJSCANNON.Cylinder(radiusTop, radiusBottom, height, numSegments);
 
                 // Rotate 90 degrees as this shape is horizontal in cannon
                 const quat = new this.BJSCANNON.Quaternion();
-                quat.setFromAxisAngle(new this.BJSCANNON.Vec3(1, 0, 0), -Math.PI / 2);
+                quat.setFromAxisAngle(new this.BJSCANNON.Vec3(1, 0, 0), -Math.PI * 0.5);
                 const translation = new this.BJSCANNON.Vec3(0, 0, 0);
                 returnValue.transformAllPoints(translation, quat);
                 break;
@@ -456,8 +456,8 @@ export class CannonJSPlugin implements IPhysicsEnginePlugin {
         const elementSize = (dim * 2) / arraySize;
 
         for (let i = 0; i < pos.length; i = i + 3) {
-            const x = Math.round(pos[i + 0] / elementSize + arraySize / 2);
-            const z = Math.round((pos[i + 1] / elementSize - arraySize / 2) * -1);
+            const x = Math.round(pos[i + 0] / elementSize + arraySize * 0.5);
+            const z = Math.round((pos[i + 1] / elementSize - arraySize * 0.5) * -1);
             const y = -pos[i + 2] + minY;
             if (!matrix[x]) {
                 matrix[x] = [];

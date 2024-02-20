@@ -1,13 +1,13 @@
 /**
  * Array of test cases for GetAngleBetweenVectorsOnPlane function based on possible values:
  * - Number.MIN_SAFE_INTEGER,
- * - Number.MIN_SAFE_INTEGER / 2,
+ * - Number.MIN_SAFE_INTEGER * 0.5,
  * - -Math.PI,
  * - -0.0000000001,
  * - 0
  * - 0.0000000001,
  * - Math.PI,
- * - Number.MAX_SAFE_INTEGER / 2,
+ * - Number.MAX_SAFE_INTEGER * 0.5,
  * - Number.MAX_SAFE_INTEGER,
  */
 export const BabylonMathVectorGetAngleBetweenVectorsOnPlaneTestCases: {

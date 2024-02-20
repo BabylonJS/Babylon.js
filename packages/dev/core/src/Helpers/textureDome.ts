@@ -260,7 +260,7 @@ export abstract class TextureDome<T extends Texture> extends TransformNode {
 
         // create a (disabled until needed) mask to cover unneeded segments of 180 texture.
         this._halfDomeMask = CreateSphere("", { slice: 0.5, diameter: options.size * 0.98, segments: options.resolution * 2, sideOrientation: Mesh.BACKSIDE }, scene);
-        this._halfDomeMask.rotate(Axis.X, -Math.PI / 2);
+        this._halfDomeMask.rotate(Axis.X, -Math.PI * 0.5);
         // set the parent, so it will always be positioned correctly AND will be disposed when the main sphere is disposed
         this._halfDomeMask.parent = this._mesh;
         this._halfDome = !!options.halfDomeMode;

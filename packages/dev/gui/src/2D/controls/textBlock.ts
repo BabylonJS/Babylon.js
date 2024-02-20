@@ -408,7 +408,7 @@ export class TextBlock extends Control {
                 x = width - textWidth;
                 break;
             case Control.HORIZONTAL_ALIGNMENT_CENTER:
-                x = (width - textWidth) / 2;
+                x = (width - textWidth) * 0.5;
                 break;
         }
 
@@ -607,7 +607,7 @@ export class TextBlock extends Control {
                 rootY = height - this._fontOffset.height * (this._lines.length - 1) - this._fontOffset.descent;
                 break;
             case Control.VERTICAL_ALIGNMENT_CENTER:
-                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) / 2;
+                rootY = this._fontOffset.ascent + (height - this._fontOffset.height * this._lines.length) * 0.5;
                 break;
         }
 

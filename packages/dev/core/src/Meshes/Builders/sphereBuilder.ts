@@ -43,7 +43,7 @@ export function CreateSphereVertexData(options: {
     const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
     const dedupTopBottomIndices = !!options.dedupTopBottomIndices;
 
-    const radius = new Vector3(diameterX / 2, diameterY / 2, diameterZ / 2);
+    const radius = new Vector3(diameterX * 0.5, diameterY * 0.5, diameterZ * 0.5);
 
     const totalZRotationSteps = 2 + segments;
     const totalYRotationSteps = 2 * totalZRotationSteps;
