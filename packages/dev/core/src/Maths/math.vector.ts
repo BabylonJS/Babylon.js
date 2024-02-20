@@ -2592,11 +2592,18 @@ export class Vector3 {
      * @param world defines the world matrix to use
      * @param transform defines the transform (view x projection) matrix to use
      * @param viewport defines the screen viewport to use
+     * @param rightHanded defines if the used system is right-handed
      * @returns the new Vector3
      */
-    public static Project<T extends Vector3>(vector: DeepImmutable<T>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): T {
+    public static Project<T extends Vector3>(
+        vector: DeepImmutable<T>,
+        world: DeepImmutable<Matrix>,
+        transform: DeepImmutable<Matrix>,
+        viewport: DeepImmutable<Viewport>,
+        rightHanded?: boolean
+    ): T {
         const result = new (vector.constructor as Vector3Constructor<T>)();
-        Vector3.ProjectToRef(vector, world, transform, viewport, result);
+        Vector3.ProjectToRef(vector, world, transform, viewport, result, rightHanded);
         return result;
     }
 
@@ -2608,6 +2615,7 @@ export class Vector3 {
      * @param transform defines the transform (view x projection) matrix to use
      * @param viewport defines the screen viewport to use
      * @param result the vector in which the screen space will be stored
+     * @param rightHanded defines if the used system is right-handed
      * @returns result input
      */
     public static ProjectToRef<T extends Vector3>(
@@ -2615,7 +2623,8 @@ export class Vector3 {
         world: DeepImmutable<Matrix>,
         transform: DeepImmutable<Matrix>,
         viewport: DeepImmutable<Viewport>,
-        result: T
+        result: T,
+        rightHanded?: boolean
     ): T {
         const cw = viewport.width;
         const ch = viewport.height;
@@ -2623,8 +2632,9 @@ export class Vector3 {
         const cy = viewport.y;
 
         const viewportMatrix = MathTmp.Matrix[1];
+        const multiplier = rightHanded ? 0.5 : -0.5;
 
-        Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 0.5, 0, cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
+        Matrix.FromValuesToRef(cw * 0.5, 0, 0, 0, 0, ch * multiplier, 0, 0, 0, 0, 0.5, 0, cx + cw * 0.5, ch * 0.5 + cy, -multiplier, 1, viewportMatrix);
 
         const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(transform, matrix);

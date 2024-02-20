@@ -689,6 +689,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const projectedPosition = Vector3.Project(position, worldMatrix, scene.getTransformMatrix(), globalViewport);
         return new Vector3(projectedPosition.x, projectedPosition.y, projectedPosition.z);
     }
+    
 
     private _checkUpdate(camera: Camera, skipUpdate?: boolean): void {
         if (this._layerToDispose) {
@@ -713,8 +714,9 @@ export class AdvancedDynamicTexture extends DynamicTexture {
                     });
                     continue;
                 }
+                const projectedPosition = TmpVectors.Vector3[0];
                 const position = mesh.getBoundingInfo ? mesh.getBoundingInfo().boundingSphere.center : (Vector3.ZeroReadOnly as Vector3);
-                const projectedPosition = Vector3.Project(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport);
+                Vector3.ProjectToRef(position, mesh.getWorldMatrix(), scene.getTransformMatrix(), globalViewport, projectedPosition, scene.useRightHandedSystem);
                 if (projectedPosition.z < 0 || projectedPosition.z > 1) {
                     control.notRenderable = true;
                     continue;

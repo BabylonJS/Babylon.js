@@ -417,7 +417,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 const camera = this._options.xrInput.xrCamera;
                 if (camera) {
                     camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
-                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef, scene.useRightHandedSystem);
                     // stay safe
                     if (
                         typeof this._screenCoordinatesRef.x === "number" &&
