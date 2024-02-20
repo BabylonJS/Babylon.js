@@ -1,12 +1,11 @@
 import { Observable } from "../Misc/observable";
 import type { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
+import { GetDOMTextContent } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import type { IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
@@ -14,7 +13,6 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
-
 import type { Engine } from "../Engines/engine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
