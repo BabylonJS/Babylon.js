@@ -76,17 +76,6 @@ export interface Vector<N extends number[] = number[]> extends Tensor<N> {
  */
 export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
     /**
-     * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
-     * @param value1 defines 1st point of control
-     * @param value2 defines 2nd point of control
-     * @param value3 defines 3rd point of control
-     * @param value4 defines 4th point of control
-     * @param amount defines the interpolation factor
-     * @returns a new Vector
-     */
-    CatmullRom(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T;
-
-    /**
      * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
      * If a coordinate of "value" is lower than "min" coordinates, the returned Vector is given this "min" coordinate.
      * If a coordinate of "value" is greater than "max" coordinates, the returned Vector is given this "max" coordinate
@@ -116,58 +105,6 @@ export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
      * @param max defines the maximum range
      */
     CheckExtends(v: T, min: T, max: T): void;
-
-    /**
-     * Returns a new Vector located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
-     * @param value1 defines the 1st control point
-     * @param tangent1 defines the outgoing tangent
-     * @param value2 defines the 2nd control point
-     * @param tangent2 defines the incoming tangent
-     * @param amount defines the interpolation factor
-     * @returns a new Vector
-     */
-    Hermite(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T;
-
-    /**
-     * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
-     * @param value1 defines the first control point
-     * @param tangent1 defines the first tangent
-     * @param value2 defines the second control point
-     * @param tangent2 defines the second tangent
-     * @param time define where the derivative must be done
-     * @returns 1st derivative
-     */
-    Hermite1stDerivative(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number): T;
-
-    /**
-     * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
-     * @param value1 defines the first control point
-     * @param tangent1 defines the first tangent
-     * @param value2 defines the second control point
-     * @param tangent2 defines the second tangent
-     * @param time define where the derivative must be done
-     * @param result define where the derivative will be stored
-     * @returns result input
-     */
-    Hermite1stDerivativeToRef(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number, result: T): T;
-
-    /**
-     * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
-     * @param start defines the start vector
-     * @param end defines the end vector
-     * @param amount defines the interpolation factor
-     * @returns a new Vector
-     */
-    Lerp(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T;
-
-    /**
-     * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
-     * @param start defines the start vector
-     * @param end defines the end vector
-     * @param amount defines the interpolation factor
-     * @returns a new Vector
-     */
-    LerpToRef(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
 
     /**
      * Returns a new Vector equal to the normalized given vector
@@ -2724,6 +2661,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
         Vector3.ClampToRef(value, min, max, result);
         return result;
     }
+
     /**
      * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
      * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
@@ -4175,6 +4113,63 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
     }
 
     /**
+     * Sets a Vector4 with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @param ref the ref to store the values in
+     * @returns the ref with random values between min and max
+     */
+    public static RandomToRef<T extends Vector4>(min: number = 0, max: number = 1, ref: T): T {
+        return ref.copyFromFloats(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
+     * Returns a new Vector4 set with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+     * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+     * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+     * @param value defines the current value
+     * @param min defines the lower range value
+     * @param max defines the upper range value
+     * @returns the new Vector4
+     */
+    public static Clamp<T extends Vector4>(value: DeepImmutable<T>, min: DeepImmutable<Vector4>, max: DeepImmutable<Vector4>): T {
+        const result = new (value.constructor as Constructor<typeof Vector4, T>)();
+        Vector4.ClampToRef(value, min, max, result);
+        return result;
+    }
+
+    /**
+     * Sets the given vector "result" with the coordinates of "value", if the vector "value" is in the cube defined by the vectors "min" and "max"
+     * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+     * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+     * @param value defines the current value
+     * @param min defines the lower range value
+     * @param max defines the upper range value
+     * @param result defines the Vector4 where to store the result
+     * @returns result input
+     */
+    public static ClampToRef<T extends Vector4>(value: DeepImmutable<Vector4>, min: DeepImmutable<Vector4>, max: DeepImmutable<Vector4>, result: T): T {
+        return result.copyFromFloats(
+            Scalar.Clamp(value.x, min.x, max.x),
+            Scalar.Clamp(value.y, min.y, max.y),
+            Scalar.Clamp(value.z, min.z, max.z),
+            Scalar.Clamp(value.w, min.w, max.w)
+        );
+    }
+
+    /**
+     * Checks if a given vector is inside a specific range
+     * Example Playground https://playground.babylonjs.com/#R1F8YU#75
+     * @param v defines the vector to test
+     * @param min defines the minimum range
+     * @param max defines the maximum range
+     */
+    public static CheckExtends(v: Vector4, min: Vector4, max: Vector4): void {
+        min.minimizeInPlace(v);
+        max.maximizeInPlace(v);
+    }
+
+    /**
      * Gets a zero Vector4 that must not be updated
      */
     public static get ZeroReadOnly(): DeepImmutable<Vector4> {
@@ -4396,6 +4391,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
         return left.dot(right);
     }
 }
+Vector4 satisfies VectorStatic<Vector4>;
 Object.defineProperties(Vector4.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
