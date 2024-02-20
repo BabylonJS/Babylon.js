@@ -352,6 +352,11 @@ export interface TensorStatic<T extends Tensor> {
     new (...coords: Flatten<TensorValue<T>>): T;
 
     /**
+     * So [[static]].prototype has typings, instead of just any
+     */
+    prototype: T;
+
+    /**
      * Returns a new instance with random values between min and max
      * @param min the minimum random value
      * @param max the maximum random value
