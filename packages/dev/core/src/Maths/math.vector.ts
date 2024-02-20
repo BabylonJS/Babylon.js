@@ -9,7 +9,7 @@ import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
-import { Tensor, type Dimension } from "./tensor";
+import type { Dimension, Tensor, TensorStatic } from "./tensor";
 import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike } from "./math.like";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -20,34 +20,34 @@ const _ExtractAsInt = (value: number) => {
 /**
  * Represents a vector of any dimension
  */
-export declare abstract class Vector<N extends number[] = number[]> extends Tensor<N> {
+export interface Vector<N extends number[] = number[]> extends Tensor<N> {
     /**
      * @see Tensor.dimension
      */
-    public abstract readonly dimension: Readonly<Dimension<N>>;
+    readonly dimension: Readonly<Dimension<N>>;
 
     /**
      * @see Tensor.rank
      */
-    public abstract readonly rank: 1;
+    readonly rank: 1;
 
     /**
      * Gets the length of the vector
      * @returns the vector length (float)
      */
-    public abstract length(): number;
+    length(): number;
 
     /**
      * Gets the vector squared length
      * @returns the vector squared length (float)
      */
-    public abstract lengthSquared(): number;
+    lengthSquared(): number;
 
     /**
      * Normalize the vector
      * @returns the current updated Vector
      */
-    public abstract normalize(): this;
+    normalize(): this;
 
     /**
      * Normalize the current Vector with the given input length.
@@ -55,21 +55,26 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param len the length of the vector
      * @returns the current updated Vector
      */
-    public abstract normalizeFromLength(len: number): this;
+    normalizeFromLength(len: number): this;
 
     /**
      * Normalize the current Vector to a new vector
      * @returns the new Vector
      */
-    public abstract normalizeToNew(): this;
+    normalizeToNew(): this;
 
     /**
      * Normalize the current Vector to the reference
      * @param reference define the Vector to update
      * @returns the updated Vector
      */
-    public abstract normalizeToRef<T extends this>(reference: T): T;
+    normalizeToRef<T extends this>(reference: T): T;
+}
 
+/**
+ * Static side of Vector
+ */
+export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
     /**
      * Gets a new Vector located for "amount" (float) on the CatmullRom spline defined by the given four Vector
      * @param value1 defines 1st point of control
@@ -79,7 +84,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static CatmullRom<T extends Vector>(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T;
+    CatmullRom(value1: DeepImmutable<T>, value2: DeepImmutable<T>, value3: DeepImmutable<T>, value4: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
@@ -90,7 +95,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param max defines the upper limit
      * @returns a new Vector
      */
-    public static Clamp<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
+    Clamp(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
 
     /**
      * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
@@ -102,7 +107,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result defines the vector where to store the result
      * @returns the updated result Vector
      */
-    public static ClampToRef<T extends Vector>(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
+    ClampToRef(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
 
     /**
      * Checks if a given vector is inside a specific range
@@ -110,7 +115,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param min defines the minimum range
      * @param max defines the maximum range
      */
-    public static CheckExtends(v: Vector, min: Vector, max: Vector): void;
+    CheckExtends(v: T, min: T, max: T): void;
 
     /**
      * Returns a new Vector located for "amount" (float) on the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2"
@@ -121,7 +126,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static Hermite<T extends Vector>(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T;
+    Hermite(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
@@ -132,13 +137,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative<T extends Vector>(
-        value1: DeepImmutable<T>,
-        tangent1: DeepImmutable<T>,
-        value2: DeepImmutable<T>,
-        tangent2: DeepImmutable<T>,
-        time: number
-    ): T;
+    Hermite1stDerivative(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number): T;
 
     /**
      * Returns a new Vector which is the 1st derivative of the Hermite spline defined by the vectors "value1", "value2", "tangent1", "tangent2".
@@ -150,14 +149,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result define where the derivative will be stored
      * @returns result input
      */
-    public static Hermite1stDerivativeToRef<T extends Vector>(
-        value1: DeepImmutable<T>,
-        tangent1: DeepImmutable<T>,
-        value2: DeepImmutable<T>,
-        tangent2: DeepImmutable<T>,
-        time: number,
-        result: T
-    ): T;
+    Hermite1stDerivativeToRef(value1: DeepImmutable<T>, tangent1: DeepImmutable<T>, value2: DeepImmutable<T>, tangent2: DeepImmutable<T>, time: number, result: T): T;
 
     /**
      * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
@@ -166,7 +158,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static Lerp<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T;
+    Lerp(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number): T;
 
     /**
      * Returns a new Vector located for "amount" (float) on the linear interpolation between the vector "start" adn the vector "end".
@@ -175,14 +167,14 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param amount defines the interpolation factor
      * @returns a new Vector
      */
-    public static LerpToRef<T extends Vector>(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
+    LerpToRef(start: DeepImmutable<T>, end: DeepImmutable<T>, amount: number, result: T): T;
 
     /**
      * Returns a new Vector equal to the normalized given vector
      * @param vector defines the vector to normalize
      * @returns a new Vector
      */
-    public static Normalize<T extends Vector>(vector: DeepImmutable<T>): T;
+    Normalize(vector: DeepImmutable<T>): T;
 
     /**
      * Normalize a given vector into a second one
@@ -190,7 +182,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param result defines the vector where to store the result
      * @returns result input
      */
-    public static NormalizeToRef<T extends Vector>(vector: DeepImmutable<T>, result: T): T;
+    NormalizeToRef(vector: DeepImmutable<T>, result: T): T;
 
     /**
      * Gets the shortest distance (float) between the point "p" and the segment defined by the two points "segA" and "segB".
@@ -199,7 +191,7 @@ export declare abstract class Vector<N extends number[] = number[]> extends Tens
      * @param segB defines the other point of the segment
      * @returns the shortest distance
      */
-    public static DistanceOfPointFromSegment<T extends Vector>(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
+    DistanceOfPointFromSegment(p: DeepImmutable<T>, segA: DeepImmutable<T>, segB: DeepImmutable<T>): number;
 }
 
 /**
@@ -301,7 +293,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param source defines the source Vector2
      * @returns the current updated Vector2
      */
-    public copyFrom(source: DeepImmutable<Vector2>): this {
+    public copyFrom(source: DeepImmutable<this>): this {
         this.x = source.x;
         this.y = source.y;
         return this;
@@ -346,7 +338,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
-    public add(otherVector: DeepImmutable<Vector2>): this {
+    public add(otherVector: DeepImmutable<this>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x + otherVector.x, this.y + otherVector.y);
     }
 
@@ -357,7 +349,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public addToRef<T extends Vector2>(otherVector: DeepImmutable<Vector2>, result: T): T {
+    public addToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
         result.x = this.x + otherVector.x;
         result.y = this.y + otherVector.y;
         return result;
@@ -369,7 +361,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public addInPlace(otherVector: DeepImmutable<Vector2>): this {
+    public addInPlace(otherVector: DeepImmutable<this>): this {
         this.x += otherVector.x;
         this.y += otherVector.y;
         return this;
@@ -403,7 +395,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public subtract(otherVector: DeepImmutable<Vector2>): this {
+    public subtract(otherVector: DeepImmutable<this>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - otherVector.x, this.y - otherVector.y);
     }
 
@@ -414,7 +406,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public subtractToRef<T extends Vector2>(otherVector: DeepImmutable<Vector2>, result: T): T {
+    public subtractToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
         result.x = this.x - otherVector.x;
         result.y = this.y - otherVector.y;
         return result;
@@ -425,7 +417,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public subtractInPlace(otherVector: DeepImmutable<Vector2>): this {
+    public subtractInPlace(otherVector: DeepImmutable<this>): this {
         this.x -= otherVector.x;
         this.y -= otherVector.y;
         return this;
@@ -437,7 +429,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public multiplyInPlace(otherVector: DeepImmutable<Vector2>): this {
+    public multiplyInPlace(otherVector: DeepImmutable<this>): this {
         this.x *= otherVector.x;
         this.y *= otherVector.y;
         return this;
@@ -449,7 +441,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public multiply(otherVector: DeepImmutable<Vector2>): this {
+    public multiply(otherVector: DeepImmutable<this>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * otherVector.x, this.y * otherVector.y);
     }
 
@@ -460,7 +452,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public multiplyToRef<T extends Vector2>(otherVector: DeepImmutable<Vector2>, result: T): T {
+    public multiplyToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
         result.x = this.x * otherVector.x;
         result.y = this.y * otherVector.y;
         return result;
@@ -483,7 +475,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public divide(otherVector: DeepImmutable<Vector2>): this {
+    public divide(otherVector: DeepImmutable<this>): this {
         return new (this.constructor as Constructor<typeof Vector2, this>)(this.x / otherVector.x, this.y / otherVector.y);
     }
 
@@ -494,7 +486,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public divideToRef<T extends Vector2>(otherVector: DeepImmutable<Vector2>, result: T): T {
+    public divideToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
         result.x = this.x / otherVector.x;
         result.y = this.y / otherVector.y;
         return result;
@@ -506,7 +498,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public divideInPlace(otherVector: DeepImmutable<Vector2>): this {
+    public divideInPlace(otherVector: DeepImmutable<this>): this {
         this.x = this.x / otherVector.x;
         this.y = this.y / otherVector.y;
         return this;
@@ -517,7 +509,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param other defines the second operand
      * @returns the current updated Vector2
      */
-    public minimizeInPlace(other: DeepImmutable<Vector2>): this {
+    public minimizeInPlace(other: DeepImmutable<this>): this {
         return this.minimizeInPlaceFromFloats(other.x, other.y);
     }
 
@@ -526,7 +518,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param other defines the second operand
      * @returns the current updated Vector2
      */
-    public maximizeInPlace(other: DeepImmutable<Vector2>): this {
+    public maximizeInPlace(other: DeepImmutable<this>): this {
         return this.maximizeInPlaceFromFloats(other.x, other.y);
     }
 
@@ -600,7 +592,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends Vector2>(result: T): T {
+    public negateToRef<T extends this>(result: T): T {
         return result.copyFromFloats(this.x * -1, this.y * -1);
     }
 
@@ -633,7 +625,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector2 object where to store the result
      * @returns result input
      */
-    public scaleToRef<T extends Vector2>(scale: number, result: T): T {
+    public scaleToRef<T extends this>(scale: number, result: T): T {
         result.x = this.x * scale;
         result.y = this.y * scale;
         return result;
@@ -646,7 +638,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector2 object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends Vector2>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
         result.x += this.x * scale;
         result.y += this.y * scale;
         return result;
@@ -658,7 +650,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns true if the given vector coordinates strictly equal the current Vector2 ones
      */
-    public equals(otherVector: DeepImmutable<Vector2>): boolean {
+    public equals(otherVector: DeepImmutable<this>): boolean {
         return otherVector && this.x === otherVector.x && this.y === otherVector.y;
     }
 
@@ -669,7 +661,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
      */
-    public equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherVector: DeepImmutable<this>, epsilon: number = Epsilon): boolean {
         return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
     }
 
@@ -732,7 +724,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the result vector where to store the rotated vector
      * @returns result input
      */
-    public rotateToRef<T extends Vector2>(angle: number, result: T): T {
+    public rotateToRef<T extends this>(angle: number, result: T): T {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
         const x = cos * this.x - sin * this.y;
@@ -4640,7 +4632,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this;
     }
 
-    public addToRef<T extends this>(other: DeepImmutable<T>, result: T): T {
+    public addToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
         result._x = this._x + other._x;
         result._y = this._y + other._y;
         result._z = this._z + other._z;

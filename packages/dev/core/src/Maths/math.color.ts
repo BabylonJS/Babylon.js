@@ -1802,7 +1802,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
     }
 
     /**
-     * Creates a new Color3 from integer values (< 256)
+     * Creates a new Color3 from integer values (less than 256)
      * @param r defines the red component to read from (value between 0 and 255)
      * @param g defines the green component to read from (value between 0 and 255)
      * @param b defines the blue component to read from (value between 0 and 255)
