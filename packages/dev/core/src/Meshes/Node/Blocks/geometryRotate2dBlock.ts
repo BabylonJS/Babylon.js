@@ -1,4 +1,4 @@
-import { Vector2 } from "core/Maths";
+import { Vector2 } from "core/Maths/math.vector";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
