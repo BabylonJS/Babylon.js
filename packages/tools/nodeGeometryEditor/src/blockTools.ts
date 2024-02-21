@@ -68,6 +68,8 @@ import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
 import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesaturateBlock";
 import { GeometryPosterizeBlock } from "core/Meshes/Node/Blocks/geometryPosterizeBlock";
+import { GeometryDistanceBlock } from "core/Meshes/Node/Blocks/geometryDistanceBlock";
+import { GeometryDotBlock } from "core/Meshes/Node/Blocks/geometryDotBlock";
 import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
 
 /**
@@ -76,6 +78,10 @@ import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryRepla
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "DistanceBlock":
+                return new GeometryDistanceBlock("Distance");
+            case "DotBlock":
+                return new GeometryDotBlock("Dot");
             case "PosterizeBlock":
                 return new GeometryPosterizeBlock("Posterize");
             case "ReplaceColorBlock":

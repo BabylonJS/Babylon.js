@@ -74,3 +74,5 @@ export * from "./Blocks/geometryCurveBlock";
 export * from "./Blocks/geometryDesaturateBlock";
 export * from "./Blocks/geometryPosterizeBlock";
 export * from "./Blocks/geometryReplaceColorBlock";
+export * from "./Blocks/geometryDistanceBlock";
+export * from "./Blocks/geometryDotBlock";
