@@ -76,3 +76,5 @@ export * from "./Blocks/geometryPosterizeBlock";
 export * from "./Blocks/geometryReplaceColorBlock";
 export * from "./Blocks/geometryDistanceBlock";
 export * from "./Blocks/geometryDotBlock";
+export * from "./Blocks/geometryLengthBlock";
+export * from "./Blocks/geometryRotate2dBlock";
