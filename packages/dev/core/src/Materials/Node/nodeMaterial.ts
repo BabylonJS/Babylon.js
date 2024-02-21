@@ -88,66 +88,116 @@ export interface INodeMaterialEditorOptions {
 
 /** @internal */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    /** Normal */
     public NORMAL = false;
+    /** Tangent */
     public TANGENT = false;
+    /** Vertex color */
     public VERTEXCOLOR_NME = false;
+    /**  Uv1 **/
     public UV1 = false;
+    /** Uv2 **/
     public UV2 = false;
+    /** Uv3 **/
     public UV3 = false;
+    /** Uv4 **/
     public UV4 = false;
+    /** Uv5 **/
     public UV5 = false;
+    /** Uv6 **/
     public UV6 = false;
 
+    /** Prepass **/
     public PREPASS = false;
+    /** Prepass normal */
     public PREPASS_NORMAL = false;
+    /** Prepass normal index */
     public PREPASS_NORMAL_INDEX = -1;
+    /** Prepass position */
     public PREPASS_POSITION = false;
+    /** Prepass position index */
     public PREPASS_POSITION_INDEX = -1;
+    /** Prepass depth */
     public PREPASS_DEPTH = false;
+    /** Prepass depth index */
     public PREPASS_DEPTH_INDEX = -1;
+    /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
+    /** Bones per mesh */
     public BonesPerMesh = 0;
+    /** Using texture for bone storage */
     public BONETEXTURE = false;
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
+    /** Morph target tangent */
     public MORPHTARGETS_TANGENT = false;
+    /** Morph target uv */
     public MORPHTARGETS_UV = false;
+    /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
+    /** Using a texture to store morph target data */
     public MORPHTARGETS_TEXTURE = false;
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
+    /** Vignette */
     public VIGNETTE = false;
+    /** Multiply blend mode for vignette */
     public VIGNETTEBLENDMODEMULTIPLY = false;
+    /** Opaque blend mode for vignette */
     public VIGNETTEBLENDMODEOPAQUE = false;
+    /** Tone mapping */
     public TONEMAPPING = false;
+    /** ACES tone mapping mode */
     public TONEMAPPING_ACES = false;
+    /** Contrast */
     public CONTRAST = false;
+    /** Exposure */
     public EXPOSURE = false;
+    /** Color curves */
     public COLORCURVES = false;
+    /** Color grading */
     public COLORGRADING = false;
+    /** 3D color grading */
     public COLORGRADING3D = false;
+    /** Sampler green depth */
     public SAMPLER3DGREENDEPTH = false;
+    /** Sampler for BGR map */
     public SAMPLER3DBGRMAP = false;
+    /** Dithering */
     public DITHER = false;
+    /** Using post process for image processing */
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    /** Skip color clamp */
     public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
+    /** Camera is orthographic */
     public CAMERA_ORTHOGRAPHIC = false;
+    /** Camera is perspective */
     public CAMERA_PERSPECTIVE = false;
 
+    /**
+     * Creates a new NodeMaterialDefines
+     */
     constructor() {
         super();
         this.rebuild();
     }
 
+    /**
+     * Set the value of a specific key
+     * @param name defines the name of the key to set
+     * @param value defines the value to set
+     * @param markAsUnprocessedIfDirty Flag to indicate to the cache that this value needs processing
+     */
     public setValue(name: string, value: any, markAsUnprocessedIfDirty = false) {
         if (this[name] === undefined) {
             this._keys.push(name);
