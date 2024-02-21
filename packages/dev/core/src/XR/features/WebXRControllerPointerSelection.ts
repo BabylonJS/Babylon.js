@@ -167,6 +167,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             case "gaze":
                 return this._attachGazeMode(xrController);
             case "screen":
+            case "transient-pointer":
                 return this._attachScreenRayMode(xrController);
         }
     };
