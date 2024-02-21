@@ -138,6 +138,8 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         CrossBlock: "Outputs a vector that is perpendicular to two input vectors",
         CurveBlock: "Apply a curve function",
         DesaturateBlock: "Convert a color input into a grayscale representation.",
+        DotBlock: "Outputs the cos of the angle between two vectors",
+        DistanceBlock: "Provides a distance vector based on the left and right input vectors",
     };
 
     private _customFrameList: { [key: string]: string };
@@ -277,7 +279,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "FractBlock",
                 "PowBlock",
             ],
-            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock", "CrossBlock", "CurveBlock"],
+            Math__Vector: ["TransformBlock", "VectorConverterBlock", "NormalizeBlock", "BoundingBlock", "CrossBlock", "CurveBlock", "DistanceBlock", "DotBlock"],
             Matrices: ["RotationXBlock", "RotationYBlock", "RotationZBlock", "ScalingBlock", "TranslationBlock", "AlignBlock", "MatrixComposeBlock"],
             Instances: [
                 "InstantiateOnVerticesBlock",
