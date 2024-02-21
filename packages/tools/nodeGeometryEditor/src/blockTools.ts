@@ -67,6 +67,8 @@ import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
 import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesaturateBlock";
+import { GeometryPosterizeBlock } from "core/Meshes/Node/Blocks/geometryPosterizeBlock";
+import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
 
 /**
  * Static class for BlockTools
@@ -74,6 +76,10 @@ import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesatur
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "PosterizeBlock":
+                return new GeometryPosterizeBlock("Posterize");
+            case "ReplaceColorBlock":
+                return new GeometryReplaceColorBlock("Replace Color");
             case "DesaturateBlock":
                 return new GeometryDesaturateBlock("Desaturate");
             case "CurveBlock":
