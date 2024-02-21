@@ -76,29 +76,6 @@ export interface Vector<N extends number[] = number[]> extends Tensor<N> {
  */
 export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
     /**
-     * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
-     * If a coordinate of "value" is lower than "min" coordinates, the returned Vector is given this "min" coordinate.
-     * If a coordinate of "value" is greater than "max" coordinates, the returned Vector is given this "max" coordinate
-     * @param value defines the value to clamp
-     * @param min defines the lower limit
-     * @param max defines the upper limit
-     * @returns a new Vector
-     */
-    Clamp(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
-
-    /**
-     * Returns a new Vector set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
-     * If a coordinate of "value" is lower than "min" coordinates, the returned Vector is given this "min" coordinate.
-     * If a coordinate of "value" is greater than "max" coordinates, the returned Vector is given this "max" coordinate
-     * @param value defines the value to clamp
-     * @param min defines the lower limit
-     * @param max defines the upper limit
-     * @param result defines the vector where to store the result
-     * @returns the updated result Vector
-     */
-    ClampToRef(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
-
-    /**
      * Checks if a given vector is inside a specific range
      * @param v defines the vector to test
      * @param min defines the minimum range
@@ -867,6 +844,22 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
     }
 
     /**
+     * Sets reference with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
+     * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
+     * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate
+     * @param value defines the value to clamp
+     * @param min defines the lower limit
+     * @param max defines the upper limit
+     * @param ref the reference
+     * @returns the reference
+     */
+    public static ClampToRef<T extends Vector2>(value: DeepImmutable<T>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>, ref: T): T {
+        ref.x = Scalar.Clamp(value.x, min.x, max.x);
+        ref.y = Scalar.Clamp(value.y, min.y, max.y);
+        return ref;
+    }
+
+    /**
      * Returns a new Vector2 set with same the coordinates than "value" ones if the vector "value" is in the square defined by "min" and "max".
      * If a coordinate of "value" is lower than "min" coordinates, the returned Vector2 is given this "min" coordinate.
      * If a coordinate of "value" is greater than "max" coordinates, the returned Vector2 is given this "max" coordinate
@@ -877,14 +870,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @returns a new Vector2
      */
     public static Clamp<T extends Vector2>(value: DeepImmutable<T>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): T {
-        let x = value.x;
-        x = x > max.x ? max.x : x;
-        x = x < min.x ? min.x : x;
-
-        let y = value.y;
-        y = y > max.y ? max.y : y;
-        y = y < min.y ? min.y : y;
-
+        const x = Scalar.Clamp(value.x, min.x, max.x);
+        const y = Scalar.Clamp(value.y, min.y, max.y);
         return new (value.constructor as Constructor<typeof Vector2, T>)(x, y);
     }
 
@@ -5374,6 +5361,20 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
     }
 
     /**
+     * Sets the given quaternion "result" with the given floats.
+     * @param x defines the x coordinate of the source
+     * @param y defines the y coordinate of the source
+     * @param z defines the z coordinate of the source
+     * @param w defines the w coordinate of the source
+     * @param result defines the quaternion where to store the result
+     * @returns the result quaternion
+     */
+    public static FromFloatsToRef<T extends Quaternion = Quaternion>(x: number, y: number, z: number, w: number, result: T): T {
+        result.copyFromFloats(x, y, z, w);
+        return result;
+    }
+
+    /**
      * Create a quaternion from Euler rotation angles
      * Example Playground https://playground.babylonjs.com/#L49EJ7#33
      * @param x Pitch
@@ -5781,7 +5782,124 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         quat.normalizeToRef(result);
         return result;
     }
+
+    /**
+     * Returns a new Quaternion set with the coordinates of "value", if the quaternion "value" is in the cube defined by the quaternions "min" and "max"
+     * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+     * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+     * @param value defines the current value
+     * @param min defines the lower range value
+     * @param max defines the upper range value
+     * @returns the new Quaternion
+     */
+    public static Clamp<T extends Quaternion>(value: DeepImmutable<T>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>): T {
+        const result = new (value.constructor as Constructor<typeof Quaternion, T>)();
+        Quaternion.ClampToRef(value, min, max, result);
+        return result;
+    }
+
+    /**
+     * Sets the given quaternion "result" with the coordinates of "value", if the quaternion "value" is in the cube defined by the quaternions "min" and "max"
+     * If a coordinate value of "value" is lower than one of the "min" coordinate, then this "value" coordinate is set with the "min" one
+     * If a coordinate value of "value" is greater than one of the "max" coordinate, then this "value" coordinate is set with the "max" one
+     * @param value defines the current value
+     * @param min defines the lower range value
+     * @param max defines the upper range value
+     * @param result defines the Quaternion where to store the result
+     * @returns result input
+     */
+    public static ClampToRef<T extends Quaternion>(value: DeepImmutable<Quaternion>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>, result: T): T {
+        return result.copyFromFloats(
+            Scalar.Clamp(value.x, min.x, max.x),
+            Scalar.Clamp(value.y, min.y, max.y),
+            Scalar.Clamp(value.z, min.z, max.z),
+            Scalar.Clamp(value.w, min.w, max.w)
+        );
+    }
+
+    /**
+     * Returns a new Quaternion with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @returns a Quaternion with random values between min and max
+     */
+    public static Random(min: number = 0, max: number = 1): Quaternion {
+        return new Quaternion(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
+     * Sets a Quaternion with random values between min and max
+     * @param min the minimum random value
+     * @param max the maximum random value
+     * @param ref the ref to store the values in
+     * @returns the ref with random values between min and max
+     */
+    public static RandomToRef<T extends Quaternion>(min: number = 0, max: number = 1, ref: T): T {
+        return ref.copyFromFloats(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+    }
+
+    /**
+     * Do not use
+     * @internal
+     */
+    public static Minimize(): Quaternion {
+        throw new ReferenceError("Quaternion.Minimize does not make sense");
+    }
+
+    /**
+     * Do not use
+     * @internal
+     */
+    public static Maximize(): Quaternion {
+        throw new ReferenceError("Quaternion.Maximize does not make sense");
+    }
+
+    /**
+     * Returns the distance (float) between the quaternions "value1" and "value2".
+     * @param value1 value to calulate the distance between
+     * @param value2 value to calulate the distance between
+     * @returns the distance between the two quaternions
+     */
+    public static Distance(value1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>): number {
+        return Math.sqrt(Quaternion.DistanceSquared(value1, value2));
+    }
+    /**
+     * Returns the squared distance (float) between the quaternions "value1" and "value2".
+     * @param value1 value to calulate the distance between
+     * @param value2 value to calulate the distance between
+     * @returns the distance between the two quaternions squared
+     */
+    public static DistanceSquared(value1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>): number {
+        const x = value1.x - value2.x;
+        const y = value1.y - value2.y;
+        const z = value1.z - value2.z;
+        const w = value1.w - value2.w;
+
+        return x * x + y * y + z * z + w * w;
+    }
+
+    /**
+     * Returns a new Quaternion located at the center between the quaternions "value1" and "value2".
+     * @param value1 value to calulate the center between
+     * @param value2 value to calulate the center between
+     * @returns the center between the two quaternions
+     */
+    public static Center(value1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>): Quaternion {
+        return Quaternion.CenterToRef(value1, value2, Quaternion.Zero());
+    }
+
+    /**
+     * Gets the center of the quaternions "value1" and "value2" and stores the result in the quaternion "ref"
+     * @param value1 defines first quaternion
+     * @param value2 defines second quaternion
+     * @param ref defines third quaternion
+     * @returns ref
+     */
+    public static CenterToRef<T extends Quaternion>(value1: DeepImmutable<Quaternion>, value2: DeepImmutable<Quaternion>, ref: T): T {
+        return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
+    }
 }
+Quaternion satisfies TensorStatic<Quaternion>;
 Object.defineProperties(Quaternion.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },

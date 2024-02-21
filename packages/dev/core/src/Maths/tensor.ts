@@ -452,5 +452,28 @@ export interface TensorStatic<T extends Tensor> {
      * @returns ref
      */
     CenterToRef(value1: DeepImmutable<T>, value2: DeepImmutable<T>, ref: T): T;
+
+    /**
+     * Returns a new instance set with same the coordinates than "value" ones if the instance "value" is in the square defined by "min" and "max".
+     * If a coordinate of "value" is lower than "min" coordinates, the returned instance is given this "min" coordinate.
+     * If a coordinate of "value" is greater than "max" coordinates, the returned instance is given this "max" coordinate
+     * @param value defines the value to clamp
+     * @param min defines the lower limit
+     * @param max defines the upper limit
+     * @returns a new instance
+     */
+    Clamp(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>): T;
+
+    /**
+     * Returns a new instance set with same the coordinates than "value" ones if the instance "value" is in the square defined by "min" and "max".
+     * If a coordinate of "value" is lower than "min" coordinates, the returned instance is given this "min" coordinate.
+     * If a coordinate of "value" is greater than "max" coordinates, the returned instance is given this "max" coordinate
+     * @param value defines the value to clamp
+     * @param min defines the lower limit
+     * @param max defines the upper limit
+     * @param result defines the instance where to store the result
+     * @returns the updated result instance
+     */
+    ClampToRef(value: DeepImmutable<T>, min: DeepImmutable<T>, max: DeepImmutable<T>, result: T): T;
 }
 /* eslint-enable @typescript-eslint/naming-convention */
