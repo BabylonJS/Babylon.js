@@ -177,12 +177,13 @@ export class Camera extends Node {
         return x * y;
     }
 
+
+    private _orthoLeft: Nullable<number> = null;
+    
     /**
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
-    private _orthoLeft: Nullable<number> = null;
-
     public set orthoLeft(value: Nullable<number>) {
         this._orthoLeft = value;
 
@@ -196,12 +197,12 @@ export class Camera extends Node {
         return this._orthoLeft;
     }
 
+    private _orthoRight: Nullable<number> = null;
+
     /**
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
-    private _orthoRight: Nullable<number> = null;
-
     public set orthoRight(value: Nullable<number>) {
         this._orthoRight = value;
 
@@ -215,12 +216,12 @@ export class Camera extends Node {
         return this._orthoRight;
     }
 
+    private _orthoBottom: Nullable<number> = null;
+
     /**
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
-    private _orthoBottom: Nullable<number> = null;
-
     public set orthoBottom(value: Nullable<number>) {
         this._orthoBottom = value;
 
@@ -234,12 +235,13 @@ export class Camera extends Node {
         return this._orthoBottom;
     }
 
+
+    private _orthoTop: Nullable<number> = null;
+
     /**
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
-    private _orthoTop: Nullable<number> = null;
-
     public set orthoTop(value: Nullable<number>) {
         this._orthoTop = value;
 
@@ -290,10 +292,11 @@ export class Camera extends Node {
     @serialize()
     public inertia = 0.9;
 
+    private _mode = Camera.PERSPECTIVE_CAMERA;
+
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
-    private _mode = Camera.PERSPECTIVE_CAMERA;
     set mode(mode: number) {
         this._mode = mode;
 

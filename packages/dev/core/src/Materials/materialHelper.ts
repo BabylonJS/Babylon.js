@@ -16,10 +16,10 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { MaterialDefines } from "./materialDefines";
-import { Color3 } from "../Maths/math.color";
 import type { EffectFallbacks } from "./effectFallbacks";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { Material } from "./material";
+import { BindFogParameters, BindLogDepth } from "./materialHelper.function";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
@@ -920,7 +920,6 @@ export class MaterialHelper {
         }
     }
 
-    private static _TempFogColor = Color3.Black();
     /**
      * Binds the fog information from the scene to the effect for the given mesh.
      * @param scene The scene the lights belongs to
@@ -929,16 +928,6 @@ export class MaterialHelper {
      * @param linearSpace Defines if the fog effect is applied in linear space
      */
     public static BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
-        if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Scene.FOGMODE_NONE) {
-            effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-            // Convert fog color to linear space if used in a linear space computed shader.
-            if (linearSpace) {
-                scene.fogColor.toLinearSpaceToRef(this._TempFogColor, scene.getEngine().useExactSrgbConversions);
-                effect.setColor3("vFogColor", this._TempFogColor);
-            } else {
-                effect.setColor3("vFogColor", scene.fogColor);
-            }
-        }
     }
 
     /**
@@ -1007,12 +996,8 @@ export class MaterialHelper {
      * @param scene The scene we are willing to render with logarithmic scale for
      */
     public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-        if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
-            const camera = <Camera>scene.activeCamera;
-            if (camera.mode === Camera.ORTHOGRAPHIC_CAMERA) {
-                Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
-            }
-            effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
-        }
     }
 }
+
+MaterialHelper.BindLogDepth = BindLogDepth;
+MaterialHelper.BindFogParameters = BindFogParameters;
