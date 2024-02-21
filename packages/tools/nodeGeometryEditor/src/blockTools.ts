@@ -71,6 +71,8 @@ import { GeometryPosterizeBlock } from "core/Meshes/Node/Blocks/geometryPosteriz
 import { GeometryDistanceBlock } from "core/Meshes/Node/Blocks/geometryDistanceBlock";
 import { GeometryDotBlock } from "core/Meshes/Node/Blocks/geometryDotBlock";
 import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
+import { GeometryRotate2dBlock } from "core/Meshes/Node/Blocks/geometryRotate2dBlock";
+import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock";
 
 /**
  * Static class for BlockTools
@@ -78,6 +80,10 @@ import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryRepla
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "Rotate2dBlock":
+                return new GeometryRotate2dBlock("Rotate 2D");
+            case "LengthBlock":
+                return new GeometryLengthBlock("Length");
             case "DistanceBlock":
                 return new GeometryDistanceBlock("Distance");
             case "DotBlock":
