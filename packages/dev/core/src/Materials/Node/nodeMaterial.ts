@@ -37,7 +37,6 @@ import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradien
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
-
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { Constants } from "../../Engines/constants";
