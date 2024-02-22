@@ -2334,6 +2334,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
         serializationObject.textureMask = this.textureMask.asArray();
         serializationObject.customShader = this.customShader;
         serializationObject.preventAutoStart = this.preventAutoStart;
+        serializationObject.worldOffset = this.worldOffset.asArray();
 
         // SubEmitters
         if (this.subEmitters) {
@@ -3018,6 +3019,10 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         if (parsedParticleSystem.textureMask) {
             particleSystem.textureMask = Color4.FromArray(parsedParticleSystem.textureMask);
+        }
+
+        if (parsedParticleSystem.worldOffset) {
+            particleSystem.worldOffset = Vector3.FromArray(parsedParticleSystem.worldOffset);
         }
 
         // Auto start
