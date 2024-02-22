@@ -90,7 +90,6 @@ import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
-import { SceneConstants } from "./scene.constants";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -144,13 +143,13 @@ export enum ScenePerformancePriority {
  */
 export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
-    public static readonly FOGMODE_NONE = SceneConstants.FOGMODE_NONE;
+    public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
     /** The fog density is following an exponential function */
-    public static readonly FOGMODE_EXP = SceneConstants.FOGMODE_EXP;
+    public static readonly FOGMODE_EXP = Constants.FOGMODE_EXP;
     /** The fog density is following an exponential function faster than FOGMODE_EXP */
-    public static readonly FOGMODE_EXP2 = SceneConstants.FOGMODE_EXP2;
+    public static readonly FOGMODE_EXP2 = Constants.FOGMODE_EXP2;
     /** The fog density is following a linear function. */
-    public static readonly FOGMODE_LINEAR = SceneConstants.FOGMODE_LINEAR;
+    public static readonly FOGMODE_LINEAR = Constants.FOGMODE_LINEAR;
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled

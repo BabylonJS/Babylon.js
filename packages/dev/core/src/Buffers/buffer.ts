@@ -3,7 +3,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
-import { BufferConstants } from "./buffer.constants";
+import { Constants } from "../Engines/constants";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -356,37 +356,37 @@ export class VertexBuffer {
     /**
      * The byte type.
      */
-    public static readonly BYTE = BufferConstants.BYTE;
+    public static readonly BYTE = Constants.BYTE;
 
     /**
      * The unsigned byte type.
      */
-    public static readonly UNSIGNED_BYTE = BufferConstants.UNSIGNED_BYTE;
+    public static readonly UNSIGNED_BYTE = Constants.UNSIGNED_BYTE;
 
     /**
      * The short type.
      */
-    public static readonly SHORT = BufferConstants.SHORT;
+    public static readonly SHORT = Constants.SHORT;
 
     /**
      * The unsigned short type.
      */
-    public static readonly UNSIGNED_SHORT = BufferConstants.UNSIGNED_SHORT;
+    public static readonly UNSIGNED_SHORT = Constants.UNSIGNED_SHORT;
 
     /**
      * The integer type.
      */
-    public static readonly INT = BufferConstants.INT;
+    public static readonly INT = Constants.INT;
 
     /**
      * The unsigned integer type.
      */
-    public static readonly UNSIGNED_INT = BufferConstants.UNSIGNED_INT;
+    public static readonly UNSIGNED_INT = Constants.UNSIGNED_INT;
 
     /**
      * The float type.
      */
-    public static readonly FLOAT = BufferConstants.FLOAT;
+    public static readonly FLOAT = Constants.FLOAT;
 
     /**
      * Gets a boolean indicating if the Buffer is disposed
@@ -764,63 +764,63 @@ export class VertexBuffer {
     /**
      * Positions
      */
-    public static readonly PositionKind = BufferConstants.PositionKind;
+    public static readonly PositionKind = Constants.PositionKind;
     /**
      * Normals
      */
-    public static readonly NormalKind = BufferConstants.NormalKind;
+    public static readonly NormalKind = Constants.NormalKind;
     /**
      * Tangents
      */
-    public static readonly TangentKind = BufferConstants.TangentKind;
+    public static readonly TangentKind = Constants.TangentKind;
     /**
      * Texture coordinates
      */
-    public static readonly UVKind = BufferConstants.UVKind;
+    public static readonly UVKind = Constants.UVKind;
     /**
      * Texture coordinates 2
      */
-    public static readonly UV2Kind = BufferConstants.UV2Kind;
+    public static readonly UV2Kind = Constants.UV2Kind;
     /**
      * Texture coordinates 3
      */
-    public static readonly UV3Kind = BufferConstants.UV3Kind;
+    public static readonly UV3Kind = Constants.UV3Kind;
     /**
      * Texture coordinates 4
      */
-    public static readonly UV4Kind = BufferConstants.UV4Kind;
+    public static readonly UV4Kind = Constants.UV4Kind;
     /**
      * Texture coordinates 5
      */
-    public static readonly UV5Kind = BufferConstants.UV5Kind;
+    public static readonly UV5Kind = Constants.UV5Kind;
     /**
      * Texture coordinates 6
      */
-    public static readonly UV6Kind = BufferConstants.UV6Kind;
+    public static readonly UV6Kind = Constants.UV6Kind;
     /**
      * Colors
      */
-    public static readonly ColorKind = BufferConstants.ColorKind;
+    public static readonly ColorKind = Constants.ColorKind;
     /**
      * Instance Colors
      */
-    public static readonly ColorInstanceKind = BufferConstants.ColorInstanceKind;
+    public static readonly ColorInstanceKind = Constants.ColorInstanceKind;
     /**
      * Matrix indices (for bones)
      */
-    public static readonly MatricesIndicesKind = BufferConstants.MatricesIndicesKind;
+    public static readonly MatricesIndicesKind = Constants.MatricesIndicesKind;
     /**
      * Matrix weights (for bones)
      */
-    public static readonly MatricesWeightsKind = BufferConstants.MatricesWeightsKind;
+    public static readonly MatricesWeightsKind = Constants.MatricesWeightsKind;
     /**
      * Additional matrix indices (for bones)
      */
-    public static readonly MatricesIndicesExtraKind = BufferConstants.MatricesIndicesExtraKind;
+    public static readonly MatricesIndicesExtraKind = Constants.MatricesIndicesExtraKind;
     /**
      * Additional matrix weights (for bones)
      */
-    public static readonly MatricesWeightsExtraKind = BufferConstants.MatricesWeightsExtraKind;
+    public static readonly MatricesWeightsExtraKind = Constants.MatricesWeightsExtraKind;
 
     /**
      * Deduces the stride given a kind.

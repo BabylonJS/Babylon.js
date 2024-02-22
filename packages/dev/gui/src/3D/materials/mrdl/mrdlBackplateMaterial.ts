@@ -7,7 +7,6 @@ import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -22,6 +21,7 @@ import { Constants } from "core/Engines/constants";
 
 import "./shaders/mrdlBackplate.fragment";
 import "./shaders/mrdlBackplate.vertex";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
 
 /** @internal */
 class MRDLBackplateMaterialDefines extends MaterialDefines {
@@ -255,7 +255,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
+        PrepareDefinesForAttributes(mesh, defines, false, false);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -269,7 +269,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                 fallbacks.addFallback(1, "FOG");
             }
 
-            MaterialHelper.HandleFallbacksForShadows(defines, fallbacks);
+            HandleFallbacksForShadows(defines, fallbacks);
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
@@ -296,7 +296,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.TangentKind);
             }
 
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForInstances(attribs, defines);
 
             // Legacy browser patch
             const shaderName = "mrdlBackplate";
@@ -342,7 +342,7 @@ export class MRDLBackplateMaterial extends PushMaterial {
             const samplers: string[] = ["_Iridescent_Map_"];
             const uniformBuffers: string[] = [];
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
