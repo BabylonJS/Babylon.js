@@ -1,13 +1,14 @@
-import type { ProcessingOptions, ShaderCustomProcessingFunction } from "core/Engines/Processors/shaderProcessingOptions";
+import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
 import { ShaderProcessor } from "core/Engines/Processors/shaderProcessor";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _executeWhenRenderingStateIsCompiled, _loadFile, _preparePipelineContext, bindSamplers, createPipelineContext, getHostDocument } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _loadFile, _preparePipelineContext, createPipelineContext, getHostDocument } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Effect } from "./effect";
-import { IPipelineContext } from "core/Engines/IPipelineContext";
+import type { IPipelineContext } from "core/Engines/IPipelineContext";
+import { Logger } from "core/Misc/logger";
 
 /** @internal */
 export function _processShaderCode(
@@ -178,101 +179,37 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
 }
 
 /**
- * Prepares the effect
+ * Creates and prepares a pipeline context
  * @internal
  */
-export function _prepareEffect(
-    keepExistingPipelineContext = false,
-    attributesNames,
-    defines,
-    previousPipelineContext,
-    key,
-    processingContext,
-    rebuildRebind: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void,
-    onRenderingStateIsCompiled: () => void,
-    onError?: (error: any) => void
-) {
-    this._isReady = false;
-
+export const createAndPreparePipelineContext = (options: {
+    parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
+    shaderProcessingContext: Nullable<ShaderProcessingContext>;
+    existingPipelineContext?: Nullable<IPipelineContext>;
+    name?: string;
+    rebuildRebind: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
+    onRenderingStateCompiled?: () => void;
+    // preparePipeline options
+    createAsRaw: boolean;
+    vertex: string;
+    fragment: string;
+    defines: Nullable<string>;
+    transformFeedbackVaryings: Nullable<string[]>;
+}) => {
     try {
-        const pipelineContext: IPipelineContext = (keepExistingPipelineContext ? previousPipelineContext : undefined) ?? createPipelineContext(processingContext, parallelShaderCompile);
-        pipelineContext._name = key.replace(/\r/g, "").replace(/\n/g, "|");
+        const pipelineContext: IPipelineContext =
+            options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext, options.parallelShaderCompile, options.name);
 
-        rebuildRebind = rebuildRebind || (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) =>
-            _rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError);
-        if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-            _preparePipelineContext(
-                pipelineContext,
-                this._vertexSourceCodeOverride,
-                this._fragmentSourceCodeOverride,
-                true,
-                this._rawVertexSourceCode,
-                this._rawFragmentSourceCode,
-                rebuildRebind,
-                null,
-                this._transformFeedbackVaryings,
-                this._key
-            );
-        } else {
-            _preparePipelineContext(
-                pipelineContext,
-                this._vertexSourceCode,
-                this._fragmentSourceCode,
-                false,
-                this._rawVertexSourceCode,
-                this._rawFragmentSourceCode,
-                rebuildRebind,
-                defines,
-                this._transformFeedbackVaryings,
-                this._key
-            );
-        }
+        _preparePipelineContext(pipelineContext, options.vertex, options.fragment, options.createAsRaw, options.rebuildRebind, options.defines, options.transformFeedbackVaryings);
 
         _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
-            this._attributes = [];
-            pipelineContext!._fillEffectInformation(
-                this,
-                this._uniformBuffersNames,
-                this._uniformsNames,
-                this._uniforms,
-                this._samplerList,
-                this._samplers,
-                attributesNames,
-                this._attributes
-            );
-
-            // Caches attribute locations.
-            if (attributesNames) {
-                for (let i = 0; i < attributesNames.length; i++) {
-                    const name = attributesNames[i];
-                    this._attributeLocationByName[name] = this._attributes[i];
-                }
-            }
-
-            bindSamplers(pipelineContext, this._samplers, this._uniforms);
-
-            this._compilationError = "";
-            this._isReady = true;
-            if (this.onCompiled) {
-                this.onCompiled(this);
-            }
-            this.onCompileObservable.notifyObservers(this);
-            this.onCompileObservable.clear();
-
-            // Unbind mesh reference in fallbacks
-            if (this._fallbacks) {
-                this._fallbacks.unBindMesh();
-            }
-
-            if (previousPipelineContext && !keepExistingPipelineContext) {
-                this.getEngine()._deletePipelineContext(previousPipelineContext);
-            }
+            options.onRenderingStateCompiled?.();
         });
 
-        if (pipelineContext.isAsync) {
-            this._checkIsReady(previousPipelineContext);
-        }
+        return pipelineContext;
     } catch (e) {
-        this._processCompilationErrors(e, previousPipelineContext);
+        Logger.Error("Erro compiling effect");
+        throw e;
     }
-}
+};
+

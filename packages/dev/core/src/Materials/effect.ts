@@ -1,7 +1,6 @@
 import { Observable } from "../Misc/observable";
 import type { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GetDOMTextContent } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
@@ -18,7 +17,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
-import { _processShaderCode } from "./effect.functions";
+import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 
 /**
  * Options to be used when creating an effect.
@@ -84,6 +83,11 @@ export interface IEffectCreationOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Provide an existing pipeline context to avoid creating a new one
+     */
+    existingPipelineContext?: Nullable<IPipelineContext>;
 }
 
 /**
@@ -277,6 +281,11 @@ export class Effect implements IDisposable {
 
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
+
+            this._pipelineContext = options.existingPipelineContext ?? null;
+            if (this._pipelineContext) {
+                this._pipelineContext.setEngine(this._engine);
+            }
         } else {
             this._engine = <Engine>engine;
             this.defines = defines == null ? "" : defines;
@@ -521,54 +530,6 @@ export class Effect implements IDisposable {
         }, 16);
     }
 
-    private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
-        if (typeof HTMLElement !== "undefined") {
-            // DOM element ?
-            if (shader instanceof HTMLElement) {
-                const shaderCode = GetDOMTextContent(shader);
-                callback(shaderCode);
-                return;
-            }
-        }
-
-        // Direct source ?
-        if (shader.substr(0, 7) === "source:") {
-            callback(shader.substr(7));
-            return;
-        }
-
-        // Base64 encoded ?
-        if (shader.substr(0, 7) === "base64:") {
-            const shaderBinary = window.atob(shader.substr(7));
-            callback(shaderBinary);
-            return;
-        }
-
-        const shaderStore = EngineShaderStore.GetShadersStore(this._shaderLanguage);
-
-        // Is in local store ?
-        if (shaderStore[shader + key + "Shader"]) {
-            callback(shaderStore[shader + key + "Shader"]);
-            return;
-        }
-
-        if (optionalKey && shaderStore[shader + optionalKey + "Shader"]) {
-            callback(shaderStore[shader + optionalKey + "Shader"]);
-            return;
-        }
-
-        let shaderUrl;
-
-        if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
-            shaderUrl = shader;
-        } else {
-            shaderUrl = EngineShaderStore.GetShadersRepository(this._shaderLanguage) + shader;
-        }
-
-        // Vertex shader
-        this._engine._loadFile(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
-    }
-
     /**
      * Gets the vertex shader source code of this effect
      * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
@@ -659,91 +620,73 @@ export class Effect implements IDisposable {
      */
     public _prepareEffect(keepExistingPipelineContext = false) {
         const attributesNames = this._attributesNames;
-        const defines = this.defines;
 
         const previousPipelineContext = this._pipelineContext;
 
         this._isReady = false;
 
         try {
+            const overrides = !!(this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride);
+            const defines = overrides ? null : this.defines;
+            const vertex = overrides ? this._vertexSourceCodeOverride : this._vertexSourceCode;
+            const fragment = overrides ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
             const engine = this._engine;
+            this._pipelineContext = createAndPreparePipelineContext({
+                existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
+                vertex,
+                fragment,
+                rebuildRebind: (
+                    vertexSourceCode: string,
+                    fragmentSourceCode: string,
+                    onCompiled: (pipelineContext: IPipelineContext) => void,
+                    onError: (message: string) => void
+                ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
+                defines,
+                transformFeedbackVaryings: this._transformFeedbackVaryings,
+                name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
+                createAsRaw: overrides,
+                parallelShaderCompile: engine._caps.parallelShaderCompile,
+                shaderProcessingContext: this._processingContext,
+                onRenderingStateCompiled: () => {
+                    this._attributes = [];
+                    this._pipelineContext!._fillEffectInformation(
+                        this,
+                        this._uniformBuffersNames,
+                        this._uniformsNames,
+                        this._uniforms,
+                        this._samplerList,
+                        this._samplers,
+                        attributesNames,
+                        this._attributes
+                    );
 
-            this._pipelineContext = (keepExistingPipelineContext ? previousPipelineContext : undefined) ?? engine.createPipelineContext(this._processingContext);
-            this._pipelineContext._name = this._key.replace(/\r/g, "").replace(/\n/g, "|");
-
-            const rebuildRebind = (
-                vertexSourceCode: string,
-                fragmentSourceCode: string,
-                onCompiled: (pipelineContext: IPipelineContext) => void,
-                onError: (message: string) => void
-            ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError);
-            if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                engine._preparePipelineContext(
-                    this._pipelineContext,
-                    this._vertexSourceCodeOverride,
-                    this._fragmentSourceCodeOverride,
-                    true,
-                    this._rawVertexSourceCode,
-                    this._rawFragmentSourceCode,
-                    rebuildRebind,
-                    null,
-                    this._transformFeedbackVaryings,
-                    this._key
-                );
-            } else {
-                engine._preparePipelineContext(
-                    this._pipelineContext,
-                    this._vertexSourceCode,
-                    this._fragmentSourceCode,
-                    false,
-                    this._rawVertexSourceCode,
-                    this._rawFragmentSourceCode,
-                    rebuildRebind,
-                    defines,
-                    this._transformFeedbackVaryings,
-                    this._key
-                );
-            }
-
-            engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
-                this._attributes = [];
-                this._pipelineContext!._fillEffectInformation(
-                    this,
-                    this._uniformBuffersNames,
-                    this._uniformsNames,
-                    this._uniforms,
-                    this._samplerList,
-                    this._samplers,
-                    attributesNames,
-                    this._attributes
-                );
-
-                // Caches attribute locations.
-                if (attributesNames) {
-                    for (let i = 0; i < attributesNames.length; i++) {
-                        const name = attributesNames[i];
-                        this._attributeLocationByName[name] = this._attributes[i];
+                    // Caches attribute locations.
+                    if (attributesNames) {
+                        for (let i = 0; i < attributesNames.length; i++) {
+                            const name = attributesNames[i];
+                            this._attributeLocationByName[name] = this._attributes[i];
+                        }
                     }
-                }
 
-                engine.bindSamplers(this);
+                    engine.bindSamplers(this);
 
-                this._compilationError = "";
-                this._isReady = true;
-                if (this.onCompiled) {
-                    this.onCompiled(this);
-                }
-                this.onCompileObservable.notifyObservers(this);
-                this.onCompileObservable.clear();
+                    this._compilationError = "";
+                    this._isReady = true;
+                    if (this.onCompiled) {
+                        this.onCompiled(this);
+                    }
+                    this.onCompileObservable.notifyObservers(this);
+                    this.onCompileObservable.clear();
 
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
-                }
+                    // Unbind mesh reference in fallbacks
+                    if (this._fallbacks) {
+                        this._fallbacks.unBindMesh();
+                    }
 
-                if (previousPipelineContext && !keepExistingPipelineContext) {
-                    this.getEngine()._deletePipelineContext(previousPipelineContext);
-                }
+                    if (previousPipelineContext && !keepExistingPipelineContext) {
+                        this.getEngine()._deletePipelineContext(previousPipelineContext);
+                    }
+                },
             });
 
             if (this._pipelineContext.isAsync) {

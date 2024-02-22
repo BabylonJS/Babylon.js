@@ -52,8 +52,8 @@ export function createRawShaderProgram(
     fragmentCode: string,
     context: WebGLRenderingContext,
     transformFeedbackVaryings: Nullable<string[]>,
-    validateShaderPrograms: boolean,
-    _contextWasLost: boolean
+    validateShaderPrograms?: boolean,
+    _contextWasLost?: boolean
 ): WebGLProgram {
     // context = context || gl;
 
@@ -83,9 +83,9 @@ export function createShaderProgram(
     defines: Nullable<string>,
     context: WebGLContext,
     transformFeedbackVaryings: Nullable<string[]> = null,
-    _webGLVersion: number,
-    validateShaderPrograms: boolean,
-    _contextWasLost: boolean
+    _webGLVersion: number = 2,
+    validateShaderPrograms?: boolean,
+    _contextWasLost?: boolean
 ): WebGLProgram {
     const shaderVersion = _webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
     const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, _contextWasLost);
@@ -96,17 +96,23 @@ export function createShaderProgram(
 
 /**
  * Creates a new pipeline context. Note, make sure to attach an engine instance to the created context
- * @param shaderProcessingContext defines the shader processing context used during the processing if available
+ * @param _shaderProcessingContext defines the shader processing context used during the processing if available
  * @param parallelShaderCompile defines whether to compile shaders in parallel
+ * @param name defines the name of the pipeline context
  * @returns the new pipeline
  */
-export function createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>, parallelShaderCompile?: { COMPLETION_STATUS_KHR: number }): IPipelineContext {
+export function createPipelineContext(
+    _shaderProcessingContext: Nullable<ShaderProcessingContext>,
+    parallelShaderCompile?: { COMPLETION_STATUS_KHR: number },
+    name: string = ""
+): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
     // pipelineContext.engine = this;
 
     if (/*this._caps.*/ parallelShaderCompile) {
         pipelineContext.isParallelCompiled = true;
     }
+    (pipelineContext as IPipelineContext)._name = name;
 
     return pipelineContext;
 }
@@ -120,7 +126,7 @@ export function _createShaderProgram(
     fragmentShader: WebGLShader,
     context: WebGLContext,
     _transformFeedbackVaryings: Nullable<string[]> = null,
-    validateShaderPrograms: boolean
+    validateShaderPrograms?: boolean
 ): WebGLProgram {
     const shaderProgram = context.createProgram();
     pipelineContext.program = shaderProgram;
@@ -148,7 +154,7 @@ export function _createShaderProgram(
 /**
  * @internal
  */
-export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, gl: WebGLContext, validateShaderPrograms: boolean) {
+export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, gl: WebGLContext, validateShaderPrograms?: boolean) {
     const context = pipelineContext.context!;
     const vertexShader = pipelineContext.vertexShader!;
     const fragmentShader = pipelineContext.fragmentShader!;
@@ -215,15 +221,13 @@ export function _preparePipelineContext(
     vertexSourceCode: string,
     fragmentSourceCode: string,
     createAsRaw: boolean,
-    rawVertexSourceCode: string,
-    rawFragmentSourceCode: string,
     rebuildRebind: any,
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
-    key: string,
-    validateShaderPrograms: boolean,
-    _contextWasLost: boolean,
-    _webGLVersion: number
+    // key: string = "",
+    validateShaderPrograms?: boolean,
+    _contextWasLost?: boolean,
+    _webGLVersion?: number
 ) {
     const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
@@ -253,11 +257,11 @@ export function _preparePipelineContext(
     webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
 }
 
-function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost: boolean): WebGLShader {
+function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
     return _compileRawShader(_ConcatenateShader(source, defines, shaderVersion), type, gl, _contextWasLost);
 }
 
-function _compileRawShader(source: string, type: string, gl: WebGLContext, _contextWasLost: boolean): WebGLShader {
+function _compileRawShader(source: string, type: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {
     const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
 
     if (!shader) {
@@ -408,6 +412,9 @@ export function _getGlobalDefines(
     }
 }
 
+/**
+ * @internal
+ */
 export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
 

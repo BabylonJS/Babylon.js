@@ -3039,36 +3039,6 @@ export class ThinEngine {
         return undefined;
     }
 
-    /*protected _createShaderProgram(
-        pipelineContext: WebGLPipelineContext,
-        vertexShader: WebGLShader,
-        fragmentShader: WebGLShader,
-        context: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): WebGLProgram {
-        const shaderProgram = context.createProgram();
-        pipelineContext.program = shaderProgram;
-
-        if (!shaderProgram) {
-            throw new Error("Unable to create program");
-        }
-
-        context.attachShader(shaderProgram, vertexShader);
-        context.attachShader(shaderProgram, fragmentShader);
-
-        context.linkProgram(shaderProgram);
-
-        pipelineContext.context = context;
-        pipelineContext.vertexShader = vertexShader;
-        pipelineContext.fragmentShader = fragmentShader;
-
-        if (!pipelineContext.isParallelCompiled) {
-            this._finalizePipelineContext(pipelineContext);
-        }
-
-        return shaderProgram;
-    }*/
-
     protected _finalizePipelineContext(pipelineContext: WebGLPipelineContext) {
         return _finalizePipelineContext(pipelineContext, this._gl, this.validateShaderPrograms);
     }
@@ -3081,8 +3051,8 @@ export class ThinEngine {
         vertexSourceCode: string,
         fragmentSourceCode: string,
         createAsRaw: boolean,
-        rawVertexSourceCode: string,
-        rawFragmentSourceCode: string,
+        _rawVertexSourceCode: string,
+        _rawFragmentSourceCode: string,
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
@@ -3093,12 +3063,9 @@ export class ThinEngine {
             vertexSourceCode,
             fragmentSourceCode,
             createAsRaw,
-            rawVertexSourceCode,
-            rawFragmentSourceCode,
             rebuildRebind,
             defines,
             transformFeedbackVaryings,
-            key,
             this.validateShaderPrograms,
             this._contextWasLost,
             this._webGLVersion

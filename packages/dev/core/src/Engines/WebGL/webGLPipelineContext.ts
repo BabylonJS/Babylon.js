@@ -47,6 +47,10 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
     }
 
+    public setEngine(engine: ThinEngine): void {
+        this.engine = engine;
+    }
+
     public _fillEffectInformation(
         effect: Effect,
         uniformBuffersNames: { [key: string]: number },

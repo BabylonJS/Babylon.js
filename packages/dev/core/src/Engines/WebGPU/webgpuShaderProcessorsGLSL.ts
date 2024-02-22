@@ -275,7 +275,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return uniformBuffer;
     }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine?: ThinEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions
@@ -331,7 +331,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             const lastClosingCurly = code.lastIndexOf("}");
             code = code.substring(0, lastClosingCurly);
             code += "gl_Position.y *= yFactor_;\n";
-            if (!engine.isNDCHalfZRange) {
+            if (engine && !engine.isNDCHalfZRange) {
                 code += "gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;\n";
             }
             code += "}";
