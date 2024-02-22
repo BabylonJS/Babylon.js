@@ -48,6 +48,7 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import { PrepareAttributesForMorphTargets } from "../materialHelper.function";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1348,7 +1349,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-        MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+        PrepareAttributesForMorphTargets(attribs, mesh, defines);
         MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
         let shaderName = "pbr";

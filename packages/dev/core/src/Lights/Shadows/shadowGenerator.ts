@@ -33,6 +33,7 @@ import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import { PrepareAttributesForMorphTargetsInfluencers } from "../../Materials/materialHelper.function";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1554,7 +1555,7 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (manager.isUsingTextureForTargets) {
                         defines.push("#define MORPHTARGETS_TEXTURE");
                     }
-                    MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                    PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
                 }
             }
 

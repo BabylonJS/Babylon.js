@@ -18,6 +18,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { PrepareAttributesForMorphTargetsInfluencers } from "../Materials/materialHelper.function";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -416,7 +417,7 @@ export class DepthRenderer {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
 
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
 

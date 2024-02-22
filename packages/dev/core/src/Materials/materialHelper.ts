@@ -1,9 +1,7 @@
-import { Logger } from "../Misc/logger";
 import type { Nullable } from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
-import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -19,7 +17,14 @@ import type { MaterialDefines } from "./materialDefines";
 import type { EffectFallbacks } from "./effectFallbacks";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 import type { Material } from "./material";
-import { BindFogParameters, BindLogDepth } from "./materialHelper.function";
+import {
+    BindFogParameters,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    PrepareAttributesForMorphTargets,
+    PrepareAttributesForMorphTargetsInfluencers,
+    PushAttributesForInstances,
+} from "./materialHelper.function";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.
@@ -759,19 +764,13 @@ export class MaterialHelper {
         }
         return lightFallbackRank++;
     }
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private static _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
      * @param attribs The current list of supported attribs
      * @param mesh The mesh to prepare the morph targets attributes for
      * @param influencers The number of influencers
      */
-    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
-        this._TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
-        this.PrepareAttributesForMorphTargets(attribs, mesh, this._TmpMorphInfluencers);
-    }
+    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {}
 
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
@@ -779,39 +778,7 @@ export class MaterialHelper {
      * @param mesh The mesh to prepare the morph targets attributes for
      * @param defines The current Defines of the effect
      */
-    public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
-        const influencers = defines["NUM_MORPH_INFLUENCERS"];
-
-        if (influencers > 0 && EngineStore.LastCreatedEngine) {
-            const maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
-            const manager = (<Mesh>mesh).morphTargetManager;
-            if (manager?.isUsingTextureForTargets) {
-                return;
-            }
-            const normal = manager && manager.supportsNormals && defines["NORMAL"];
-            const tangent = manager && manager.supportsTangents && defines["TANGENT"];
-            const uv = manager && manager.supportsUVs && defines["UV1"];
-            for (let index = 0; index < influencers; index++) {
-                attribs.push(VertexBuffer.PositionKind + index);
-
-                if (normal) {
-                    attribs.push(VertexBuffer.NormalKind + index);
-                }
-
-                if (tangent) {
-                    attribs.push(VertexBuffer.TangentKind + index);
-                }
-
-                if (uv) {
-                    attribs.push(VertexBuffer.UVKind + "_" + index);
-                }
-
-                if (attribs.length > maxAttributesCount) {
-                    Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
-                }
-            }
-        }
-    }
+    public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {}
 
     /**
      * Prepares the list of attributes required for baked vertex animations according to the effect defines.
@@ -867,18 +834,7 @@ export class MaterialHelper {
      * @param attribs The current list of supported attribs
      * @param needsPreviousMatrices If the shader needs previous matrices
      */
-    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
-        attribs.push("world0");
-        attribs.push("world1");
-        attribs.push("world2");
-        attribs.push("world3");
-        if (needsPreviousMatrices) {
-            attribs.push("previousWorld0");
-            attribs.push("previousWorld1");
-            attribs.push("previousWorld2");
-            attribs.push("previousWorld3");
-        }
-    }
+    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {}
 
     /**
      * Binds the light information to the effect.
@@ -927,8 +883,7 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param linearSpace Defines if the fog effect is applied in linear space
      */
-    public static BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
-    }
+    public static BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {}
 
     /**
      * Binds the bones information from the mesh to the effect.
@@ -980,14 +935,7 @@ export class MaterialHelper {
      * @param abstractMesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      */
-    public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
-        const manager = (<Mesh>abstractMesh).morphTargetManager;
-        if (!abstractMesh || !manager) {
-            return;
-        }
-
-        effect.setFloatArray("morphTargetInfluences", manager.influences);
-    }
+    public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {}
 
     /**
      * Binds the logarithmic depth information from the scene to the effect for the given defines.
@@ -995,9 +943,12 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param scene The scene we are willing to render with logarithmic scale for
      */
-    public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-    }
+    public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {}
 }
 
 MaterialHelper.BindLogDepth = BindLogDepth;
 MaterialHelper.BindFogParameters = BindFogParameters;
+MaterialHelper.PrepareAttributesForMorphTargetsInfluencers = PrepareAttributesForMorphTargetsInfluencers;
+MaterialHelper.PrepareAttributesForMorphTargets = PrepareAttributesForMorphTargets;
+MaterialHelper.PushAttributesForInstances = PushAttributesForInstances;
+MaterialHelper.BindMorphTargetParameters = BindMorphTargetParameters;

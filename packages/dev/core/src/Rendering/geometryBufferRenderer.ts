@@ -22,6 +22,7 @@ import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { PrepareAttributesForMorphTargetsInfluencers } from "../Materials/materialHelper.function";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -621,7 +622,7 @@ export class GeometryBufferRenderer {
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
 

@@ -177,9 +177,8 @@ export class Camera extends Node {
         return x * y;
     }
 
-
     private _orthoLeft: Nullable<number> = null;
-    
+
     /**
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
@@ -234,7 +233,6 @@ export class Camera extends Node {
     public get orthoBottom(): Nullable<number> {
         return this._orthoBottom;
     }
-
 
     private _orthoTop: Nullable<number> = null;
 

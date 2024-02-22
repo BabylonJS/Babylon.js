@@ -39,6 +39,7 @@ import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
+import { PrepareAttributesForMorphTargets } from "./materialHelper.function";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1298,7 +1299,7 @@ export class StandardMaterial extends PushMaterial {
 
             MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-            MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            PrepareAttributesForMorphTargets(attribs, mesh, defines);
             MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             let shaderName = "default";
