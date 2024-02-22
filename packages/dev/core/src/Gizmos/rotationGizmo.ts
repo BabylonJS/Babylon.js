@@ -85,6 +85,12 @@ export interface RotationGizmoOptions {
      * Specific options for zGizmo
      */
     zOptions?: PlaneRotationGizmoOptions;
+
+    /**
+     * Additional transform applied to the gizmo.
+     * @See Gizmo.additionalTransformNode for more detail
+     */
+    additionalTransformNode?: TransformNode;
 }
 
 /**
@@ -186,6 +192,16 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         return this.xGizmo.dragBehavior.dragging || this.yGizmo.dragBehavior.dragging || this.zGizmo.dragBehavior.dragging;
     }
 
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
+    }
+
+    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+        [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
+            gizmo.additionalTransformNode = transformNode;
+        });
+    }
+
     /**
      * Creates a RotationGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
@@ -210,6 +226,9 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         this.xGizmo = new PlaneRotationGizmo(new Vector3(1, 0, 0), xColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.yGizmo = new PlaneRotationGizmo(new Vector3(0, 1, 0), yColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
         this.zGizmo = new PlaneRotationGizmo(new Vector3(0, 0, 1), zColor, gizmoLayer, tessellation, this, useEulerRotation, thickness);
+
+        this.additionalTransformNode = options?.additionalTransformNode;
+
         // Relay drag events and set update scale
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             //must set updateScale on each gizmo, as setting it on root RotationGizmo doesnt prevent individual gizmos from updating
