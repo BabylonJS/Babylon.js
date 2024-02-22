@@ -107,5 +107,8 @@
     "nextVersion": "Unreleased",
     "ignoreCommitters": [],
     "feature": "New Feature"
+  },
+  "dependencies": {
+    "lerna": "^7.0.2"
   }
 }

@@ -1,5 +1,26 @@
 # Changelog
 
+## 6.44.0
+
+### Core
+
+- SkeletonViewer: Try to display a spur for the last bone of a chain - by [Popov72](https://github.com/Popov72) ([#14802](https://github.com/BabylonJS/Babylon.js/pull/14802))
+- Add timeStep option to NullEngine - [_New Feature_] by [pjoe](https://github.com/pjoe) ([#14799](https://github.com/BabylonJS/Babylon.js/pull/14799))
+- AnimationGroup: Add setters for "from" and "to" properties - by [Popov72](https://github.com/Popov72) ([#14797](https://github.com/BabylonJS/Babylon.js/pull/14797))
+- Rendering custom render targets in XR - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#14796](https://github.com/BabylonJS/Babylon.js/pull/14796))
+- Add triangle predicates to pointer down and up events. - by [f-rooom](https://github.com/f-rooom) ([#14789](https://github.com/BabylonJS/Babylon.js/pull/14789))
+- Fix declaration issue - by [RaananW](https://github.com/RaananW) ([#14792](https://github.com/BabylonJS/Babylon.js/pull/14792))
+- Added the option to dispose hand meshes on XR session ending - by [RaananW](https://github.com/RaananW) ([#14788](https://github.com/BabylonJS/Babylon.js/pull/14788))
+- Animation: Fix animation delta time in deterministic mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14785](https://github.com/BabylonJS/Babylon.js/pull/14785))
+- Allow XR near interaction to interact with all meshes and GUI - by [RaananW](https://github.com/RaananW) ([#14787](https://github.com/BabylonJS/Babylon.js/pull/14787))
+- GreasedLines: Fix material not disposed - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14786](https://github.com/BabylonJS/Babylon.js/pull/14786))
+- WebXR improvements - by [RaananW](https://github.com/RaananW) ([#14753](https://github.com/BabylonJS/Babylon.js/pull/14753))
+- Animation: Allow to pass a custom delta time to the scene animate method - by [Popov72](https://github.com/Popov72) ([#14784](https://github.com/BabylonJS/Babylon.js/pull/14784))
+
+### GUI
+
+- WebXR improvements - by [RaananW](https://github.com/RaananW) ([#14753](https://github.com/BabylonJS/Babylon.js/pull/14753))
+
 ## 6.43.0
 
 ### Core
