@@ -190,17 +190,43 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Gets the first frame
+     * Gets or sets the first frame
      */
     public get from(): number {
         return this._from;
     }
 
+    public set from(value: number) {
+        if (this._from === value) {
+            return;
+        }
+
+        this._from = value;
+
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
+            animatable.fromFrame = this._from;
+        }
+    }
+
     /**
-     * Gets the last frame
+     * Gets or sets the last frame
      */
     public get to(): number {
         return this._to;
+    }
+
+    public set to(value: number) {
+        if (this._to === value) {
+            return;
+        }
+
+        this._to = value;
+
+        for (let index = 0; index < this._animatables.length; index++) {
+            const animatable = this._animatables[index];
+            animatable.toFrame = this._to;
+        }
     }
 
     /**

@@ -308,7 +308,10 @@ export class WebXRFeaturesManager implements IDisposable {
     public attachFeature(featureName: string) {
         const feature = this._features[featureName];
         if (feature && feature.enabled && !feature.featureImplementation.attached) {
-            feature.featureImplementation.attach();
+            const attached = feature.featureImplementation.attach();
+            if (!attached) {
+                Tools.Warn(`Feature ${featureName} failed to attach`);
+            }
         }
     }
 
@@ -319,7 +322,10 @@ export class WebXRFeaturesManager implements IDisposable {
     public detachFeature(featureName: string) {
         const feature = this._features[featureName];
         if (feature && feature.featureImplementation.attached) {
-            feature.featureImplementation.detach();
+            const detached = feature.featureImplementation.detach();
+            if (!detached) {
+                Tools.Warn(`Feature ${featureName} failed to detach`);
+            }
         }
     }
 
