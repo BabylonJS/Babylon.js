@@ -1,13 +1,8 @@
 import type { Nullable } from "../types";
-import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import type { Mesh } from "../Meshes/mesh";
-import { VertexBuffer } from "../Buffers/buffer";
 import type { Light } from "../Lights/light";
-import { LightConstants } from "../Lights/lightConstants";
-import { Constants } from "../Engines/constants";
 import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
 
 import type { UniformBuffer } from "./uniformBuffer";
