@@ -88,7 +88,7 @@ export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAnd
 }
 
 export function workerFunction(KTX2DecoderModule: any): void {
-    if(!KTX2DecoderModule && typeof KTX2DECODER !== "undefined") {
+    if (!KTX2DecoderModule && typeof KTX2DECODER !== "undefined") {
         KTX2DecoderModule = KTX2DECODER;
     }
     let ktx2Decoder: any;
