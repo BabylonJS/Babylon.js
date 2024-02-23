@@ -9,6 +9,17 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Effect } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
+import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+
+/**
+ * If pipelines were created prior to the effect, they can be cached here and be used when creating the effect
+ * They will be used automatically.
+ */
+const cachedPiplines: { [name: string]: IPipelineContext } = {};
+
+export function getCachedPipeline(name: string): IPipelineContext | undefined {
+    return cachedPiplines[name];
+}
 
 /** @internal */
 export function _processShaderCode(
@@ -187,10 +198,11 @@ export const createAndPreparePipelineContext = (options: {
     shaderProcessingContext: Nullable<ShaderProcessingContext>;
     existingPipelineContext?: Nullable<IPipelineContext>;
     name?: string;
-    rebuildRebind: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
-    onRenderingStateCompiled?: () => void;
+    rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
+    onRenderingStateCompiled?: (pipelineContext?: IPipelineContext) => void;
+    context?: WebGL2RenderingContext | WebGLRenderingContext;
     // preparePipeline options
-    createAsRaw: boolean;
+    createAsRaw?: boolean;
     vertex: string;
     fragment: string;
     defines: Nullable<string>;
@@ -199,11 +211,23 @@ export const createAndPreparePipelineContext = (options: {
     try {
         const pipelineContext: IPipelineContext =
             options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext, options.parallelShaderCompile, options.name);
+        (pipelineContext as WebGLPipelineContext).context = options.context;
+        if (options.name) {
+            cachedPiplines[options.name] = pipelineContext;
+        }
 
-        _preparePipelineContext(pipelineContext, options.vertex, options.fragment, options.createAsRaw, options.rebuildRebind, options.defines, options.transformFeedbackVaryings);
+        _preparePipelineContext(
+            pipelineContext,
+            options.vertex,
+            options.fragment,
+            !!options.createAsRaw,
+            options.rebuildRebind,
+            options.defines,
+            options.transformFeedbackVaryings
+        );
 
-        _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
-            options.onRenderingStateCompiled?.();
+        _executeWhenRenderingStateIsCompiled(pipelineContext, (pipelineContext) => {
+            options.onRenderingStateCompiled?.(pipelineContext);
         });
 
         return pipelineContext;

@@ -17,7 +17,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
-import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
+import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext } from "./effect.functions";
 
 /**
  * Options to be used when creating an effect.
@@ -87,7 +87,7 @@ export interface IEffectCreationOptions {
     /**
      * Provide an existing pipeline context to avoid creating a new one
      */
-    existingPipelineContext?: Nullable<IPipelineContext>;
+    existingPipelineContext?: IPipelineContext;
 }
 
 /**
@@ -255,6 +255,8 @@ export class Effect implements IDisposable {
     ) {
         this.name = baseName;
         this._key = key;
+        const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
+        let cachedPipline = getCachedPipeline(pipelineName);
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -282,10 +284,7 @@ export class Effect implements IDisposable {
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
 
-            this._pipelineContext = options.existingPipelineContext ?? null;
-            if (this._pipelineContext) {
-                this._pipelineContext.setEngine(this._engine);
-            }
+            cachedPipline = cachedPipline || options.existingPipelineContext;
         } else {
             this._engine = <Engine>engine;
             this.defines = defines == null ? "" : defines;
@@ -305,8 +304,17 @@ export class Effect implements IDisposable {
         this._attributeLocationByName = {};
 
         this.uniqueId = Effect._UniqueIdSeed++;
-
-        this._processShaderCode();
+        if (!cachedPipline) {
+            this._processShaderCode();
+        } else {
+            this._pipelineContext = cachedPipline;
+            this._pipelineContext.setEngine(this._engine);
+            this._onRenderingStateCompiled(this._pipelineContext);
+            // rebuildRebind for spector
+            if((this._pipelineContext as any).program) {
+                (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
+            }
+        }
     }
 
     /** @internal */
@@ -614,13 +622,50 @@ export class Effect implements IDisposable {
         this._prepareEffect();
     }
 
+    private _onRenderingStateCompiled(pipelineContext: IPipelineContext) {
+        this._pipelineContext = pipelineContext;
+        this._pipelineContext.setEngine(this._engine);
+        this._attributes = [];
+        this._pipelineContext!._fillEffectInformation(
+            this,
+            this._uniformBuffersNames,
+            this._uniformsNames,
+            this._uniforms,
+            this._samplerList,
+            this._samplers,
+            this._attributesNames,
+            this._attributes
+        );
+
+        // Caches attribute locations.
+        if (this._attributesNames) {
+            for (let i = 0; i < this._attributesNames.length; i++) {
+                const name = this._attributesNames[i];
+                this._attributeLocationByName[name] = this._attributes[i];
+            }
+        }
+
+        this._engine.bindSamplers(this);
+
+        this._compilationError = "";
+        this._isReady = true;
+        if (this.onCompiled) {
+            this.onCompiled(this);
+        }
+        this.onCompileObservable.notifyObservers(this);
+        this.onCompileObservable.clear();
+
+        // Unbind mesh reference in fallbacks
+        if (this._fallbacks) {
+            this._fallbacks.unBindMesh();
+        }
+    }
+
     /**
      * Prepares the effect
      * @internal
      */
     public _prepareEffect(keepExistingPipelineContext = false) {
-        const attributesNames = this._attributesNames;
-
         const previousPipelineContext = this._pipelineContext;
 
         this._isReady = false;
@@ -635,6 +680,7 @@ export class Effect implements IDisposable {
                 existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
                 vertex,
                 fragment,
+                context: engine._gl,
                 rebuildRebind: (
                     vertexSourceCode: string,
                     fragmentSourceCode: string,
@@ -647,44 +693,12 @@ export class Effect implements IDisposable {
                 createAsRaw: overrides,
                 parallelShaderCompile: engine._caps.parallelShaderCompile,
                 shaderProcessingContext: this._processingContext,
-                onRenderingStateCompiled: () => {
-                    this._attributes = [];
-                    this._pipelineContext!._fillEffectInformation(
-                        this,
-                        this._uniformBuffersNames,
-                        this._uniformsNames,
-                        this._uniforms,
-                        this._samplerList,
-                        this._samplers,
-                        attributesNames,
-                        this._attributes
-                    );
-
-                    // Caches attribute locations.
-                    if (attributesNames) {
-                        for (let i = 0; i < attributesNames.length; i++) {
-                            const name = attributesNames[i];
-                            this._attributeLocationByName[name] = this._attributes[i];
-                        }
-                    }
-
-                    engine.bindSamplers(this);
-
-                    this._compilationError = "";
-                    this._isReady = true;
-                    if (this.onCompiled) {
-                        this.onCompiled(this);
-                    }
-                    this.onCompileObservable.notifyObservers(this);
-                    this.onCompileObservable.clear();
-
-                    // Unbind mesh reference in fallbacks
-                    if (this._fallbacks) {
-                        this._fallbacks.unBindMesh();
-                    }
-
+                onRenderingStateCompiled: (pipelineContext) => {
                     if (previousPipelineContext && !keepExistingPipelineContext) {
-                        this.getEngine()._deletePipelineContext(previousPipelineContext);
+                        this._engine._deletePipelineContext(previousPipelineContext);
+                    }
+                    if (pipelineContext) {
+                        this._onRenderingStateCompiled(pipelineContext);
                     }
                 },
             });

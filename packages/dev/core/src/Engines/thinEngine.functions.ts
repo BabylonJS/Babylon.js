@@ -415,11 +415,11 @@ export function _getGlobalDefines(
 /**
  * @internal
  */
-export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: (pipelineContext?: IPipelineContext) => void) {
     const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
 
     if (!webGLPipelineContext.isParallelCompiled) {
-        action();
+        action(pipelineContext);
         return;
     }
 
@@ -428,7 +428,7 @@ export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineC
     if (oldHandler) {
         webGLPipelineContext.onCompiled = () => {
             oldHandler!();
-            action();
+            action(pipelineContext);
         };
     } else {
         webGLPipelineContext.onCompiled = action;
