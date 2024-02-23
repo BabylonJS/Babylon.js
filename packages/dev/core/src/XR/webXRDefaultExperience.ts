@@ -12,6 +12,7 @@ import { WebXREnterExitUI } from "./webXREnterExitUI";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { WebXRManagedOutputCanvasOptions } from "./webXRManagedOutputCanvas";
 import type { IWebXRTeleportationOptions } from "./features/WebXRControllerTeleportation";
+import { WebXRHandTracking, type IWebXRHandTrackingOptions } from "./features/WebXRHandTracking";
 import { WebXRMotionControllerTeleportation } from "./features/WebXRControllerTeleportation";
 import { Logger } from "../Misc/logger";
 
@@ -37,6 +38,11 @@ export class WebXRDefaultExperienceOptions {
      * Should nearInteraction not initialize. Defaults to false.
      */
     public disableNearInteraction?: boolean;
+
+    /**
+     * Should hand tracking be disabled. Defaults to false.
+     */
+    public disableHandTracking?: boolean;
     /**
      * Floor meshes that will be used for teleport
      */
@@ -59,6 +65,11 @@ export class WebXRDefaultExperienceOptions {
      * optional configuration for near interaction
      */
     public nearInteractionOptions?: Partial<IWebXRNearInteractionOptions>;
+
+    /**
+     * optional configuration for hand tracking
+     */
+    public handSupportOptions?: Partial<IWebXRHandTrackingOptions>;
     /**
      * optional configuration for teleportation
      */
@@ -213,6 +224,20 @@ export class WebXRDefaultExperience {
                             enableNearInteractionOnAllControllers: true,
                             ...options.nearInteractionOptions,
                         }
+                    );
+                }
+
+                if (!options.disableHandTracking) {
+                    // Add default hand tracking
+                    result.baseExperience.featuresManager.enableFeature(
+                        WebXRHandTracking.Name,
+                        options.useStablePlugins ? "stable" : "latest",
+                        <IWebXRHandTrackingOptions>{
+                            xrInput: result.input,
+                            ...options.handSupportOptions,
+                        },
+                        undefined,
+                        false
                     );
                 }
 

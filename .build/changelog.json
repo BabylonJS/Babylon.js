@@ -1,6 +1,470 @@
 {
-    "fromTag": "6.41.1",
+    "fromTag": "6.43.0",
     "changelog": {
+        "6.43.0": [
+            {
+                "pr": "14780",
+                "title": "Fix camera panning issue when camera is parented",
+                "description": "fix https://forum.babylonjs.com/t/camera-panning-issue-when-using-parenting/48014",
+                "author": {
+                    "name": "2315137135",
+                    "url": "https://github.com/2315137135"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14783",
+                "title": "TAA: Fix when using an orthographic camera",
+                "description": "PG: https://playground.babylonjs.com/#539X0P#42",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14781",
+                "title": "Gaussian Splatting: Fix incorrect name setting",
+                "description": "It was using `window.name` instead of `this.name`",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14779",
+                "title": "TrailMesh: Add texture coordinates to trail mesh",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14778",
+                "title": "TriPlanar material: Fix shader crash when using instances",
+                "description": "See https://forum.babylonjs.com/t/a-serialized-mesh-with-triplanarmateriel-does-not-create-an-instance-afterwards/47954",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14777",
+                "title": "fix Plugin V2 timestep",
+                "description": "Follow up https://forum.babylonjs.com/t/how-to-make-havok-physics-simulation-faster/47972/6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14775",
+                "title": "Dev Host improvements",
+                "description": "The dev host allows you to write code directly related to the typescript files in the dev packages instead of using the UMD pattern.\r\n\r\nThis allows you to better experiment with es6 modules.\r\n\r\nThis improves the dev host by doing the following:\r\n\r\n1) Module resolution using the module's name (without the @babylon part). \r\n2) Server is much quicker to reload\r\n3) Full sruppot for all of our modules.\r\n4) A new analyze script that allows you to show a report of the modules loaded with your current code.\r\n\r\nTo run the analyzer, do the following:\r\n\r\n`npm run analyze -w @tools/dev-host`\r\n\r\nThe HTML page will open automatically and will look roughly like this:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/48a63bab-de3d-402d-afdd-6901d9938b7c)\r\n\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/devHost/src/createSceneJS.js",
+                    "packages/tools/devHost/src/engine.ts",
+                    "packages/tools/devHost/src/index.ts",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/devHost/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14774",
+                "title": "NME: Fix preview for some of the pre-defined meshes",
+                "description": "See https://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5\r\n\r\nConcerned meshes: sphere, cube, plane\r\n\r\nThe problem was that we bake the current transformation but don't move the mesh to the top of the hierarchy (`parent=nullhttps://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5). So, the parent transformation is applied two times, one time during baking and another time when rendering the mesh.\r\n\r\nAlso, there was a bug in the baking method, because tangents were not transformed.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            }
+        ],
+        "6.44.0": [
+            {
+                "pr": "14803",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLengthBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryRotate2dBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14800",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14801",
+                "title": "Nge nodes2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDistanceBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDotBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryPosterizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryReplaceColorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14802",
+                "title": "SkeletonViewer: Try to display a spur for the last bone of a chain",
+                "description": "In the \"spur\" or \"sphere/spur\" mode, a spur is drawn from the current bone to its child(ren). But for the last bone of a chain, there's no next, so we can't draw the \"spur\".\r\n\r\nThis PR attempts to draw a \"spur\" in this case, calculating the bounding sphere of the vertices affected by the bone and using the center of this sphere to calculate the length of the spur.\r\n\r\nPG: https://playground.babylonjs.com/#HFWCMJ#30\r\n\r\n|Without PR|With PR|\r\n|------------|-|\r\n|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/6045372e-49e8-48fb-b354-4bf4e9ea81c3\" height=\"300px\">|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/901952f0-2b3d-4de9-b6b5-ce680a1b74c2\" height=\"300px\">|\r\n|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/e844b111-3c44-4953-956a-f940245a9303\" width=\"400px\">|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/5dc33a70-2b3f-458d-8960-7ab7d0d3ad24)\" width=\"400px\">|\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations",
+                    "debug tool"
+                ]
+            },
+            {
+                "pr": "14799",
+                "title": "Add timeStep option to NullEngine",
+                "description": "This allows specifying `timeStep` when creating a `NullEngine`\r\n\r\nRef. https://forum.babylonjs.com/t/how-to-set-nullengine-timestep-missing-from-options/48082\r\n\r\nAlso adds simple unit test for `NullEngine` and it's options.",
+                "author": {
+                    "name": "pjoe",
+                    "url": "https://github.com/pjoe"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/Engines/nullEngine.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14798",
+                "title": "make vision OS emulator work",
+                "description": "Vision OS emulator 1.1 delivers transient pointer input events, which were not supported until this PR.\n\nNote - this is for the emulator only, the real device should have proper hand support.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14797",
+                "title": "AnimationGroup: Add setters for \"from\" and \"to\" properties",
+                "description": "See https://forum.babylonjs.com/t/the-correct-way-to-extend-an-animation-group/48181",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14796",
+                "title": "Rendering custom render targets in XR",
+                "description": "Initially I have added this loop during the creation of the camera, but this way we are guaranteeing that even if the scene changes while in XR, or after leaving XR, the XR cameras will still render custom render targets correctly.\n\nThis will also allow adding RTTs direcly to the camera's custom render target, so the arrays stay independent.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14793",
+                "title": "Update and cleanup dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".gitignore",
+                    "nx.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/test-tools/package.json",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14789",
+                "title": "Add triangle predicates to pointer down and up events.",
+                "description": "This PR adds `scene.pointerDownTrianglePredicate` and `scene.pointerUpTrianglePredicate`, which function analogous to the already implemented `scene.pointerMoveTrianglePredicate`. This allows to set triangle predicates for use with `ActionManager` or Behaviors like `PointerDragBehavior`, which currently is not possible.\r\n\r\nThere should be no performance impact when not setting the predicates, as is with `pointerMoveTrianglePredicate`.\r\n\r\nRelevant forum post: https://forum.babylonjs.com/t/triangle-predicate-for-picking-triggers-in-actionmanager-and-pointerdragbehaviour/47761\r\n\r\nI hope this fits all the guidelines. :)\r\nOpen for review!",
+                "author": {
+                    "name": "f-rooom",
+                    "url": "https://github.com/f-rooom"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14792",
+                "title": "Fix declaration issue",
+                "description": "The issue (that typescript has not detected, interesting enough) is that an optional parameter cannot come before a required variable. The declaration was generated incorrectly, and the playground has no proper typings.\n\nAs this was never released (only available in the playground so far), this is not a breaking change",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14788",
+                "title": "Added the option to dispose hand meshes on XR session ending",
+                "description": "Hand meshes were only disposed when the feature was disabled (and not detached). This was done to allow better caching of the hand meshes, and a faster re-enter to the scene.\nThis adds the option to dispose the meshes on session ended, to have a better resource management for your desktop scene after leaving XR.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14785",
+                "title": "Animation: Fix animation delta time in deterministic mode",
+                "description": "See https://forum.babylonjs.com/t/how-can-i-step-physics-and-animations-manually-when-lockstep-is-active/47689/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14787",
+                "title": "Allow XR near interaction to interact with all meshes and GUI",
+                "description": "This PR generates the needed data for full interaction with any object using near interaction.\nbu and bv were missing, which prevented elements like the GUI from working correctly with near interaction.\n\nPG used for testing: #9K3MRA#1484",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14786",
+                "title": "GreasedLines: Fix material not disposed",
+                "description": "See https://forum.babylonjs.com/t/potential-memory-leak-when-disposing-greasedline/48098",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14753",
+                "title": "WebXR improvements",
+                "description": "* It is now possible to add a fullscreen GUI ADT to WebXR using the XR Layers feature. This reuses the same API that is used on desktop, so the experience can work on both desktop and XR. Note - no interaction is possible in XR (as this is a layer that is rendered on top of the XR environment)\n* Added the ability to add a quad XR layer. At the moment only internally, as I want to change the API and make sure we can easily support all other XR layer types.\n* Firefox reality is no longer a thing - removed code directly related to it.\n* Added hand tracking as an optional feature - this will allow devs to use the hand meshes directly instead of seeing the static default hand models.\n* Fix an issue where the baseLayer will be created twice when using XR Layers\n* Added a warning when attaching or detaching a feature didn't work as expected\n* Remodelled the internal architecture of WebXR layers, imrp\n* Small fixes for the webxr declaration\n* Moved WebXR composition layer implementation(s) to a new directory for structure. These are internal classes so it's not a breaking change.\n* Fixed an issue that is apparent when using the webxr emulator\n* made small changes to the session manager's architecture.\n* fixed an issue with clearing when in multiview mode and in layers\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/Layers/WebXRCompositionLayer.ts",
+                    "packages/dev/core/src/XR/features/Layers/WebXRProjectionLayer.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRLayers.ts",
+                    "packages/dev/core/src/XR/webXRDefaultExperience.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/src/XR/webXRLayerWrapper.ts",
+                    "packages/dev/core/src/XR/webXRRenderTargetTextureProvider.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14784",
+                "title": "Animation: Allow to pass a custom delta time to the scene animate method",
+                "description": "See https://forum.babylonjs.com/t/how-can-i-step-physics-and-animations-manually-when-lockstep-is-active/47689/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            }
+        ],
+        "6.42.0": [
+            {
+                "pr": "14771",
+                "title": "PostProcess: Add a simple TAA rendering pipeline",
+                "description": "This rendering pipeline is a simple implementation of Temporal Anti-Aliasing, which can be used to enhance static rendering / screenshots.\r\n\r\nSee https://medium.com/@babylonjs/an-introduction-to-temporal-anti-aliasing-with-babylon-js-7aa29c2f8a0f\r\n\r\nPG: https://playground.babylonjs.com/#539X0P#39\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/halton2DSequence.ts",
+                    "packages/dev/core/src/Maths/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
+                    "packages/dev/core/src/Shaders/taa.fragment.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14772",
+                "title": "Ray: set non 0 epsilon",
+                "description": "See https://forum.babylonjs.com/t/pickwithray-misses-front-surface-triangle-corner/47829/13",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "collisions"
+                ]
+            }
+        ],
         "6.41.2": [
             {
                 "pr": "14769",

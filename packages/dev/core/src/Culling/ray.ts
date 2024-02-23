@@ -557,11 +557,27 @@ export class Ray {
      * @returns the new ray
      */
     public static CreateNewFromTo(origin: Vector3, end: Vector3, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
-        const direction = end.subtract(origin);
-        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
-        direction.normalize();
+        const result = new Ray(new Vector3(0, 0, 0), new Vector3(0, 0, 0));
+        return Ray.CreateFromToToRef(origin, end, result, world);
+    }
 
-        return Ray.Transform(new Ray(origin, direction, length), world);
+    /**
+     * Function will update a transformed ray starting from origin and ending at the end point. Ray's length will be set, and ray will be
+     * transformed to the given world matrix.
+     * @param origin The origin point
+     * @param end The end point
+     * @param result the object to store the result
+     * @param world a matrix to transform the ray to. Default is the identity matrix.
+     * @returns the ref ray
+     */
+    public static CreateFromToToRef(origin: Vector3, end: Vector3, result: Ray, world: DeepImmutable<Matrix> = Matrix.IdentityReadOnly): Ray {
+        result.origin.copyFrom(origin);
+        const direction = end.subtractToRef(origin, result.direction);
+        const length = Math.sqrt(direction.x * direction.x + direction.y * direction.y + direction.z * direction.z);
+        result.length = length;
+        result.direction.normalize();
+
+        return Ray.TransformToRef(result, world, result);
     }
 
     /**
@@ -582,8 +598,9 @@ export class Ray {
      * @param ray ray to transform
      * @param matrix matrix to apply
      * @param result ray to store result in
+     * @returns the updated result ray
      */
-    public static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): void {
+    public static TransformToRef(ray: DeepImmutable<Ray>, matrix: DeepImmutable<Matrix>, result: Ray): Ray {
         Vector3.TransformCoordinatesToRef(ray.origin, matrix, result.origin);
         Vector3.TransformNormalToRef(ray.direction, matrix, result.direction);
         result.length = ray.length;
@@ -599,6 +616,8 @@ export class Ray {
             dir.z *= num;
             result.length *= len;
         }
+
+        return result;
     }
 
     /**

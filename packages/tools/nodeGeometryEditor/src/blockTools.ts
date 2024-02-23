@@ -67,6 +67,12 @@ import { GeometryClampBlock } from "core/Meshes/Node/Blocks/geometryClampBlock";
 import { GeometryCrossBlock } from "core/Meshes/Node/Blocks/geometryCrossBlock";
 import { GeometryCurveBlock } from "core/Meshes/Node/Blocks/geometryCurveBlock";
 import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesaturateBlock";
+import { GeometryPosterizeBlock } from "core/Meshes/Node/Blocks/geometryPosterizeBlock";
+import { GeometryDistanceBlock } from "core/Meshes/Node/Blocks/geometryDistanceBlock";
+import { GeometryDotBlock } from "core/Meshes/Node/Blocks/geometryDotBlock";
+import { GeometryReplaceColorBlock } from "core/Meshes/Node/Blocks/geometryReplaceColorBlock";
+import { GeometryRotate2dBlock } from "core/Meshes/Node/Blocks/geometryRotate2dBlock";
+import { GeometryLengthBlock } from "core/Meshes/Node/Blocks/geometryLengthBlock";
 
 /**
  * Static class for BlockTools
@@ -74,6 +80,18 @@ import { GeometryDesaturateBlock } from "core/Meshes/Node/Blocks/geometryDesatur
 export class BlockTools {
     public static GetBlockFromString(data: string) {
         switch (data) {
+            case "Rotate2dBlock":
+                return new GeometryRotate2dBlock("Rotate 2D");
+            case "LengthBlock":
+                return new GeometryLengthBlock("Length");
+            case "DistanceBlock":
+                return new GeometryDistanceBlock("Distance");
+            case "DotBlock":
+                return new GeometryDotBlock("Dot");
+            case "PosterizeBlock":
+                return new GeometryPosterizeBlock("Posterize");
+            case "ReplaceColorBlock":
+                return new GeometryReplaceColorBlock("Replace Color");
             case "DesaturateBlock":
                 return new GeometryDesaturateBlock("Desaturate");
             case "CurveBlock":

@@ -586,7 +586,14 @@ export class InputManager {
                 const pickResult =
                     scene.skipPointerUpPicking || (scene._registeredActions === 0 && !this._checkForPicking() && !scene.onPointerUp)
                         ? null
-                        : scene.pick(this._unTranslatedPointerX, this._unTranslatedPointerY, scene.pointerUpPredicate, scene.pointerUpFastCheck, scene.cameraToUseForPointers);
+                        : scene.pick(
+                              this._unTranslatedPointerX,
+                              this._unTranslatedPointerY,
+                              scene.pointerUpPredicate,
+                              scene.pointerUpFastCheck,
+                              scene.cameraToUseForPointers,
+                              scene.pointerUpTrianglePredicate
+                          );
                 this._currentPickResult = pickResult;
                 if (pickResult) {
                     act = pickResult.hit && pickResult.pickedMesh ? pickResult.pickedMesh._getActionManagerForTrigger() : null;
@@ -881,7 +888,8 @@ export class InputManager {
                     this._unTranslatedPointerY,
                     scene.pointerDownPredicate,
                     scene.pointerDownFastCheck,
-                    scene.cameraToUseForPointers
+                    scene.cameraToUseForPointers,
+                    scene.pointerDownTrianglePredicate
                 );
             }
 

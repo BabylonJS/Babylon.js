@@ -16,12 +16,12 @@
         "compile": "tsc -b tsconfig.build.json --verbose"
     },
     "devDependencies": {
-        "puppeteer": "^20.5.0",
+        "puppeteer": "^22.1.0",
         "@alex_neo/jest-expect-message": "~1.0.5"
     },
     "dependencies": {
-        "jest": "^27.0.0",
-        "jest-puppeteer": "^6.0.3"
+        "jest": "^29.7.0",
+        "jest-puppeteer": "^10.0.1"
     },
     "peerDependencies": {
         "puppeteer": ">20.0.0"
