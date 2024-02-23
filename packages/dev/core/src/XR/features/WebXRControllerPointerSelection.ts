@@ -107,6 +107,11 @@ export interface IWebXRControllerPointerSelectionOptions {
     maxPointerDistance?: number;
 
     /**
+     * Should the native webxr event(s) (select) be used for the pointer selection feature. Defaults to false.
+     */
+    shouldUseNativeEvents?: boolean;
+
+    /**
      * A function that will be called when a new selection mesh is generated.
      * This function should return a mesh that will be used as the selection mesh.
      * The default is a torus with a 0.01 diameter and 0.0075 thickness .
@@ -159,6 +164,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             if (!this._options.enablePointerSelectionOnAllControllers) {
                 this._attachedController = xrController.uniqueId;
             }
+        }
+
+        if (this._options.shouldUseNativeEvents) {
+            // force tracked pointer, but use only webxr events
+            return this._attachTrackedPointerRayMode(xrController);
         }
 
         switch (xrController.inputSource.targetRayMode) {
@@ -637,7 +647,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 this._scene.simulatePointerMove(controllerData.pick, pointerEventInit);
             }
         });
-        if (xrController.inputSource.gamepad) {
+        if (xrController.inputSource.gamepad && !this._options.shouldUseNativeEvents) {
             const init = (motionController: WebXRAbstractMotionController) => {
                 if (this._options.overrideButtonId) {
                     controllerData.selectionComponent = motionController.getComponent(this._options.overrideButtonId);
@@ -677,8 +687,19 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 xrController.onMotionControllerInitObservable.add(init);
             }
         } else {
-            // use the select and squeeze events
-            const selectStartListener = (event: XRInputSourceEvent) => {
+            this._useBasicWebXREvents(xrController);
+        }
+    }
+
+    private _useBasicWebXREvents(xrController: WebXRInputSource) {
+        const controllerData = this._controllers[xrController.uniqueId];
+        const pointerEventInit: PointerEventInit = {
+            pointerId: controllerData.id,
+            pointerType: "xr",
+        };
+        // use the select and squeeze events
+        const selectStartListener = (event: XRInputSourceEvent) => {
+            this._xrSessionManager.onXRFrameObservable.addOnce(() => {
                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
@@ -686,25 +707,27 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
-            };
+            });
+        };
 
-            const selectEndListener = (event: XRInputSourceEvent) => {
+        const selectEndListener = (event: XRInputSourceEvent) => {
+            this._xrSessionManager.onXRFrameObservable.addOnce(() => {
                 this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
                 if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
                     (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                 }
-            };
+            });
+        };
 
-            controllerData.eventListeners = {
-                selectend: selectEndListener,
-                selectstart: selectStartListener,
-            };
+        controllerData.eventListeners = {
+            selectend: selectEndListener,
+            selectstart: selectStartListener,
+        };
 
-            this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
-            this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
-        }
+        this._xrSessionManager.session.addEventListener("selectstart", selectStartListener);
+        this._xrSessionManager.session.addEventListener("selectend", selectEndListener);
     }
 
     private _convertNormalToDirectionOfRay(normal: Nullable<Vector3>, ray: Ray) {
