@@ -509,6 +509,11 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             this._attachedCamera.inertialRadiusOffset !== 0 ||
             this._attachedCamera.inertialPanningX !== 0 ||
             this._attachedCamera.inertialPanningY !== 0 ||
+            this._attachedCamera._pendingAlphaOffset !== 0 ||
+            this._attachedCamera._pendingBetaOffset !== 0 ||
+            this._attachedCamera._pendingRadiusOffset !== 0 ||
+            this._attachedCamera._pendingPanningX !== 0 ||
+            this._attachedCamera._pendingPanningY !== 0 ||
             this._isPointerDown
         );
     }

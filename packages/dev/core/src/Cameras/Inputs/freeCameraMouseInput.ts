@@ -146,8 +146,8 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
                         const offsetY = evt.clientY - this._previousPosition.y;
 
                         if (this._allowCameraRotation) {
-                            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
-                            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+                            this.camera.pendingCameraRotation.y += offsetX / this.angularSensibility;
+                            this.camera.pendingCameraRotation.x += offsetY / this.angularSensibility;
                         }
                         this.onPointerMovedObservable.notifyObservers({ offsetX: offsetX, offsetY: offsetY });
 
@@ -172,10 +172,10 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
             const handednessMultiplier = this.camera._calculateHandednessMultiplier();
             const offsetX = evt.movementX * handednessMultiplier;
 
-            this.camera.cameraRotation.y += offsetX / this.angularSensibility;
+            this.camera.pendingCameraRotation.y += offsetX / this.angularSensibility;
 
             const offsetY = evt.movementY;
-            this.camera.cameraRotation.x += offsetY / this.angularSensibility;
+            this.camera.pendingCameraRotation.x += offsetY / this.angularSensibility;
 
             this._previousPosition = null;
 

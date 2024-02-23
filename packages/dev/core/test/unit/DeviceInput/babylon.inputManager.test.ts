@@ -18,6 +18,8 @@ import type { Nullable } from "core/types";
 import type { ITestDeviceInputSystem } from "./testDeviceInputSystem";
 import { TestDeviceInputSystem } from "./testDeviceInputSystem";
 import { SpriteManager } from "core/Sprites";
+import { Epsilon } from "core/Maths/math.constants";
+import "core/Collisions/collisionCoordinator";
 
 // Add function to NullEngine to allow for getting the canvas rect properties
 NullEngine.prototype.getInputElementClientRect = function (): Nullable<DOMRect> {
@@ -291,7 +293,8 @@ describe("InputManager", () => {
 
         expect(lazyPickCt).toBe(2);
         expect(lazyPickHitCt).toBe(1);
-        expect(pickSpy).toBeCalledTimes(6);
+        //expect(pickSpy).toBeCalledTimes(6);
+        expect(pickSpy).toHaveBeenCalledTimes(6);
     });
 
     it("onPointerObservable returns correct PointerEventTypes", () => {
@@ -627,6 +630,11 @@ describe("InputManager", () => {
             camera.onViewMatrixChangedObservable.add(() => {
                 viewMatrixChangedCt++;
             });
+
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
             // Perform basic mouse move (should trigger observable because of down pick)
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Horizontal, 64, false);
@@ -679,6 +687,397 @@ describe("InputManager", () => {
         expect(viewMatrixChangedCt).toBe(4);
     });
 
+    it("takes the same time to move ArcRotateCamera with different frame rates", () => {
+        let frame30FPS = 0;
+        let finalRadius30FPS = 0;
+        let finalAlpha30FPS = 0;
+        let finalBeta30FPS = 0;
+        let finalPanX30FPS = 0;
+        let finalPanY30FPS = 0;
+        let frame60FPS = 0;
+        let finalRadius60FPS = 0;
+        let finalAlpha60FPS = 0;
+        let finalBeta60FPS = 0;
+        let finalPanX60FPS = 0;
+        let finalPanY60FPS = 0;
+        let frame120FPS = 0;
+        let finalRadius120FPS = 0;
+        let finalAlpha120FPS = 0;
+        let finalBeta120FPS = 0;
+        let finalPanX120FPS = 0;
+        let finalPanY120FPS = 0;
+
+        if (deviceInputSystem && camera && scene) {
+            // We're not using the FreeCamera to let's dispose of it
+            camera.dispose();
+            // Instead, let's use an ArcRotateCamera
+            const arcRotateCamera = new ArcRotateCamera("arcRotateCamera", 0, Math.PI / 2, 10, Vector3.Zero(), scene);
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 1000 / 60;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera._pendingRadiusOffset = 1;
+            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+                frame60FPS++;
+                scene.render();
+            }
+            finalRadius60FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera._pendingAlphaOffset = 1;
+            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha60FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera._pendingBetaOffset = 1;
+            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta60FPS = arcRotateCamera.beta;
+            // Panning on X
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningX = 1;
+            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+                scene.render();
+            }
+            finalPanX60FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+            // Panning on Y
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningY = 1;
+            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+                scene.render();
+            }
+            finalPanY60FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 1000 / 30;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera._pendingRadiusOffset = 1;
+            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+                frame30FPS++;
+                scene.render();
+            }
+            finalRadius30FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera._pendingAlphaOffset = 1;
+            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha30FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera._pendingBetaOffset = 1;
+            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta30FPS = arcRotateCamera.beta;
+            // Panning on X
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningX = 1;
+            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+                scene.render();
+            }
+            finalPanX30FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+            // Panning on Y
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningY = 1;
+            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+                scene.render();
+            }
+            finalPanY30FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 1000 / 120;
+            // Radius
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            arcRotateCamera._pendingRadiusOffset = 1;
+            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+                frame120FPS++;
+                scene.render();
+            }
+            finalRadius120FPS = arcRotateCamera.radius;
+            // Alpha
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera._pendingAlphaOffset = 1;
+            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+                scene.render();
+            }
+            finalAlpha120FPS = arcRotateCamera.alpha;
+            // Beta
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera._pendingBetaOffset = 1;
+            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+                scene.render();
+            }
+            finalBeta120FPS = arcRotateCamera.beta;
+            // Panning on X
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningX = 1;
+            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+                scene.render();
+            }
+            finalPanX120FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+            // Panning on Y
+            arcRotateCamera.setTarget(Vector3.Zero());
+            arcRotateCamera.alpha = 0;
+            arcRotateCamera.beta = Math.PI / 2;
+            arcRotateCamera.radius = 10;
+            // Run a single render to ensure the camera is in the correct state
+            scene.render();
+            arcRotateCamera._pendingPanningY = 1;
+            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+                scene.render();
+            }
+            finalPanY120FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
+        }
+
+        // The number of frames should be the within +/- 1 frame of each other
+        const diffFrames30FPS = Math.abs(frame30FPS - frame60FPS * 0.5);
+        const diffFrames120FPS = Math.abs(frame120FPS - frame60FPS * 2);
+        expect(diffFrames30FPS).toBeLessThanOrEqual(1);
+        expect(diffFrames120FPS).toBeLessThanOrEqual(1);
+
+        // The final radius should be within camera.speed (Default: 2) * Epsilon of each other
+        const radiusMarginOfError = 2 * Epsilon;
+        const diffRadius30FPS = Math.abs(finalRadius30FPS - finalRadius60FPS);
+        const diffRadius120FPS = Math.abs(finalRadius120FPS - finalRadius60FPS);
+        expect(diffRadius30FPS).toBeLessThanOrEqual(radiusMarginOfError);
+        expect(diffRadius120FPS).toBeLessThanOrEqual(radiusMarginOfError);
+
+        // For alpha and beta, the final values should be within Epsilon of each other
+        const angleMarginOfError = Epsilon * 2;
+        const diffAlpha30FPS = Math.abs(finalAlpha30FPS - finalAlpha60FPS);
+        const diffAlpha120FPS = Math.abs(finalAlpha120FPS - finalAlpha60FPS);
+        expect(diffAlpha30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffAlpha120FPS).toBeLessThanOrEqual(angleMarginOfError);
+
+        const diffBeta30FPS = Math.abs(finalBeta30FPS - finalBeta60FPS);
+        const diffBeta120FPS = Math.abs(finalBeta120FPS - finalBeta60FPS);
+        expect(diffBeta30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffBeta120FPS).toBeLessThanOrEqual(angleMarginOfError);
+
+        const diffPanX30FPS = Math.abs(finalPanX30FPS - finalPanX60FPS);
+        const diffPanX120FPS = Math.abs(finalPanX120FPS - finalPanX60FPS);
+        expect(diffPanX30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffPanX120FPS).toBeLessThanOrEqual(angleMarginOfError);
+
+        const diffPanY30FPS = Math.abs(finalPanY30FPS - finalPanY60FPS);
+        const diffPanY120FPS = Math.abs(finalPanY120FPS - finalPanY60FPS);
+        expect(diffPanY30FPS).toBeLessThanOrEqual(angleMarginOfError);
+        expect(diffPanY120FPS).toBeLessThanOrEqual(angleMarginOfError);
+    });
+
+    it("takes the same time to move FreeCamera with different frame rates", () => {
+        let frame30FPS = 0;
+        const finalPosition30FPS: Vector3 = Vector3.Zero();
+        const finalRotation30FPS: Vector3 = Vector3.Zero();
+        let frame60FPS = 0;
+        const finalPosition60FPS: Vector3 = Vector3.Zero();
+        const finalRotation60FPS: Vector3 = Vector3.Zero();
+        let frame120FPS = 0;
+        const finalPosition120FPS: Vector3 = Vector3.Zero();
+        const finalRotation120FPS: Vector3 = Vector3.Zero();
+
+        if (deviceInputSystem && camera && scene) {
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            /** Check cameraDirection */
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 1000 / 60;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.pendingCameraDirection.x = 10;
+            camera.pendingCameraDirection.y = 10;
+            camera.pendingCameraDirection.z = 10;
+            while (!camera.pendingCameraDirection.equalsToFloats(0, 0, 0) || !camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame60FPS++;
+                scene.render();
+            }
+            finalPosition60FPS.copyFrom(camera.position);
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 1000 / 30;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.pendingCameraDirection.x = 10;
+            camera.pendingCameraDirection.y = 10;
+            camera.pendingCameraDirection.z = 10;
+            while (!camera.pendingCameraDirection.equalsToFloats(0, 0, 0) || !camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame30FPS++;
+                scene.render();
+            }
+            finalPosition30FPS.copyFrom(camera.position);
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 1000 / 120;
+            camera.position.copyFromFloats(0, 0, 0);
+            camera.pendingCameraDirection.x = 10;
+            camera.pendingCameraDirection.y = 10;
+            camera.pendingCameraDirection.z = 10;
+            while (!camera.pendingCameraDirection.equalsToFloats(0, 0, 0) || !camera.cameraDirection.equalsToFloats(0, 0, 0)) {
+                frame120FPS++;
+                scene.render();
+            }
+            finalPosition120FPS.copyFrom(camera.position);
+
+            // Reset position for next set of tests
+            camera.position.copyFromFloats(0, 0, 0);
+
+            /** Check cameraRotation */
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 1000 / 60;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.pendingCameraRotation.x = 1;
+            camera.pendingCameraRotation.y = 1;
+            while ((camera.pendingCameraRotation.x !== 0 && camera.pendingCameraRotation.y !== 0) || (camera.cameraRotation.x !== 0 && camera.cameraRotation.y !== 0)) {
+                scene.render();
+            }
+            finalRotation60FPS.copyFrom(camera.rotation);
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 1000 / 30;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.pendingCameraRotation.x = 1;
+            camera.pendingCameraRotation.y = 1;
+            while ((camera.pendingCameraRotation.x !== 0 && camera.pendingCameraRotation.y !== 0) || (camera.cameraRotation.x !== 0 && camera.cameraRotation.y !== 0)) {
+                scene.render();
+            }
+            finalRotation30FPS.copyFrom(camera.rotation);
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 1000 / 120;
+            camera.rotation.copyFromFloats(0, 0, 0);
+            camera.pendingCameraRotation.x = 1;
+            camera.pendingCameraRotation.y = 1;
+            while ((camera.pendingCameraRotation.x !== 0 && camera.pendingCameraRotation.y !== 0) || (camera.cameraRotation.x !== 0 && camera.cameraRotation.y !== 0)) {
+                scene.render();
+            }
+            finalRotation120FPS.copyFrom(camera.rotation);
+        }
+
+        // The number of frames should be the within +/- 1 frame of each other
+        const diff30FPS = Math.abs(frame30FPS - frame60FPS * 0.5);
+        const diff120FPS = Math.abs(frame120FPS - frame60FPS * 2);
+        expect(diff30FPS).toBeLessThanOrEqual(1);
+        expect(diff120FPS).toBeLessThanOrEqual(1);
+
+        // Since the cutoff for all inertial values is equal to speed (default: 2) * Epsilon, we can use that to
+        // determine the margin of error for our tests
+        const marginOfError = (camera?.speed ?? 2) * Epsilon;
+        const distanceMatch30FPS = finalPosition30FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);
+        const distanceMatch120FPS = finalPosition120FPS.equalsWithEpsilon(finalPosition60FPS, marginOfError);
+        const rotationMatch30FPS = finalRotation30FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
+        const rotationMatch120FPS = finalRotation120FPS.equalsWithEpsilon(finalRotation60FPS, marginOfError);
+        expect(distanceMatch30FPS).toBe(true);
+        expect(distanceMatch120FPS).toBe(true);
+        expect(rotationMatch30FPS).toBe(true);
+        expect(rotationMatch120FPS).toBe(true);
+    });
+
+    it("is still frame rate independent with apply gravity enabled", () => {
+        const gravity = 0.08;
+        let finalY60FPS = 2;
+        let finalY30FPS = 2;
+        let finalY120FPS = 2;
+
+        if (deviceInputSystem && camera && scene) {
+            scene.gravity.y = -gravity;
+            scene.collisionsEnabled = true;
+            camera.checkCollisions = true;
+            camera.applyGravity = true;
+            camera.position = new Vector3(0, 2, 0);
+            camera.speed = 0.3;
+
+            // Need to set constant animation delta time to true because we're not using the default render loop
+            // which will result in an unusable delta time
+            scene.useConstantAnimationDeltaTime = true;
+
+            // Test at 60 FPS
+            scene.constantAnimationDeltaTime = 16;
+            camera.position.y = 2;
+            camera.pendingCameraDirection.y = 0.1;
+
+            while (camera.pendingCameraDirection.y !== 0 || camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY60FPS = camera.position.y;
+
+            // Test at 30 FPS
+            scene.constantAnimationDeltaTime = 32;
+            camera.position.y = 2;
+            camera.pendingCameraDirection.y = 0.1;
+
+            while (camera.pendingCameraDirection.y !== 0 || camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY30FPS = camera.position.y;
+
+            // Test at 120 FPS
+            scene.constantAnimationDeltaTime = 8;
+            camera.position.y = 2;
+            camera.pendingCameraDirection.y = 0.1;
+
+            while (camera.pendingCameraDirection.y !== 0 || camera.cameraDirection.y !== 0) {
+                scene.render();
+            }
+
+            finalY120FPS = camera.position.y;
+        }
+
+        expect(finalY60FPS).toBeLessThan(2);
+        expect(finalY30FPS).toBeLessThan(2);
+        expect(finalY120FPS).toBeLessThan(2);
+
+        // Margin of error is equal to our gravity y-value (a single frame of error)
+        const marginOfError30FPS = gravity * 2;
+        const marginOfError120FPS = gravity * 0.5;
+        const diff30FPS = Math.abs(finalY30FPS - finalY60FPS);
+        const diff120FPS = Math.abs(finalY120FPS - finalY60FPS);
+        expect(diff30FPS).toBeLessThanOrEqual(marginOfError30FPS);
+        expect(diff120FPS).toBeLessThanOrEqual(marginOfError120FPS);
+    });
+
     it("can fire onProjectionMatrixObservable on camera.update", () => {
         let projectionMatrixChangedCt = 0;
 
@@ -729,6 +1128,8 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
+            arcCamera._pendingAlphaOffset = 0;
+            arcCamera._pendingBetaOffset = 0;
             arcCamera.inertialAlphaOffset = 0;
             arcCamera.inertialBetaOffset = 0;
 
@@ -756,7 +1157,7 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, 10, 64, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             // Check that the offset has changed
-            const testOffset = arcCamera.inertialAlphaOffset;
+            const testOffset = arcCamera._pendingAlphaOffset;
             passedTest = testOffset !== 0;
 
             // Remove the element to disable pointerlock
@@ -777,7 +1178,7 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
 
             // If we passed the previous test and there was no change, this should pass too.
-            passedTest = passedTest && !engine.isPointerLock && arcCamera.inertialAlphaOffset === testOffset;
+            passedTest = passedTest && !engine.isPointerLock && arcCamera._pendingAlphaOffset === testOffset;
 
             // Get rid of the ArcRotateCamera
             arcCamera.detachControl();
@@ -806,7 +1207,8 @@ describe("InputManager", () => {
                     pickedTestMesh = pointerInfo.pickInfo.pickedMesh;
                 }
                 // We expect this to not be called at all as the picking should already be done by this point
-                expect(generateSpy).toBeCalledTimes(0);
+                // eslint-disable-next-line jest/no-conditional-expect
+                expect(generateSpy).toHaveBeenCalledTimes(0);
             });
 
             // Set initial point
@@ -836,6 +1238,8 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Vertical, 64, false);
             deviceInputSystem.changeInput(DeviceType.Touch, 1, PointerInput.Move, 1);
 
+            scene.render();
+
             // Both should be positive values based on movement
             deltaX1 = camera.cameraRotation.x;
             deltaY1 = camera.cameraRotation.y;
@@ -860,6 +1264,8 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Vertical, 64, false);
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Touch, 2, PointerInput.LeftClick, 0);
+
+            scene.render();
 
             // Both should be positive values based on movement
             deltaX2 = camera.cameraRotation.x;

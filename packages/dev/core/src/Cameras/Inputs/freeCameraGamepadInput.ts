@@ -131,9 +131,9 @@ export class FreeCameraGamepadInput implements ICameraInput<FreeCamera> {
             this._vector3.copyFromFloats(lsValues.x * speed, 0, -lsValues.y * speed);
 
             Vector3.TransformCoordinatesToRef(this._vector3, this._cameraTransform, this._deltaTransform);
-            camera.cameraDirection.addInPlace(this._deltaTransform);
+            camera.pendingCameraDirection.addInPlace(this._deltaTransform);
             this._vector2.copyFromFloats(rsValues.y, rsValues.x);
-            camera.cameraRotation.addInPlace(this._vector2);
+            camera.pendingCameraRotation.addInPlace(this._vector2);
         }
     }
 

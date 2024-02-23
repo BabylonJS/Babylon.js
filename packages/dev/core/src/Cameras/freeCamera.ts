@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import { serializeAsVector3, serialize } from "../Misc/decorators";
-import { Vector3, Vector2 } from "../Maths/math.vector";
+import { Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Scene } from "../scene";
 import { Engine } from "../Engines/engine";
@@ -11,6 +11,7 @@ import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKe
 import { Tools } from "../Misc/tools";
 
 import type { Collider } from "../Collisions/collider";
+import { Constants } from "core/Engines/constants";
 
 /**
  * This represents a free type of camera. It can be useful in First Person Shooter game for instance.
@@ -347,7 +348,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _collideWithWorld(displacement: Vector3): void {
+    public _collideWithWorld(displacement: Vector3, relativeInertia: number, scaleFactor: number): void {
         let globalPosition: Vector3;
 
         if (this.parent) {
@@ -367,16 +368,22 @@ export class FreeCamera extends TargetCamera {
         this._collider._radius = this.ellipsoid;
         this._collider.collisionMask = this._collisionMask;
 
-        //no need for clone, as long as gravity is not on.
-        let actualDisplacement = displacement;
+        // Copy and scale displacement vector (scaled in _updatePosition) into temporary to manipulate it
+        const scaledDisplacement = TmpVectors.Vector3[0].copyFrom(displacement).scaleInPlace(scaleFactor);
 
-        //add gravity to the direction to prevent the dual-collision checking
+        // Add gravity to the direction to prevent the dual-collision checking
         if (this.applyGravity) {
-            //this prevents mending with cameraDirection, a global variable of the free camera class.
-            actualDisplacement = displacement.add(this.getScene().gravity);
+            // Apply gravity to current displacement, then scale by relative inertia (if applicable)
+            const relativeGravity = TmpVectors.Vector3[1].copyFrom(this.getScene().gravity);
+            // Since gravity is a constant and we don't need to scale by the scale factor
+            // but instead by the ratio of the frame's delta time to the standard
+            const deltaRatio = this._currentDeltaTime / Constants.STANDARD_TIME_STEP;
+            relativeGravity.scaleInPlace(deltaRatio);
+            // Take relative gravity and add to scaled displacement
+            scaledDisplacement.addInPlace(relativeGravity);
         }
 
-        coordinator.getNewPosition(this._oldPosition, actualDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
+        coordinator.getNewPosition(this._oldPosition, scaledDisplacement, this._collider, 3, null, this._onCollisionPositionChange, this.uniqueId);
     }
 
     private _onCollisionPositionChange = (collisionId: number, newPosition: Vector3, collidedMesh: Nullable<AbstractMesh> = null) => {
@@ -426,15 +433,15 @@ export class FreeCamera extends TargetCamera {
 
     /** @internal */
     public _decideIfNeedsToMove(): boolean {
-        return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
+        return this._needMoveForGravity || super._decideIfNeedsToMove();
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public _updatePosition(relativeInertia: number, scaleFactor: number): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
-            this._collideWithWorld(this.cameraDirection);
+            this._collideWithWorld(this.cameraDirection, relativeInertia, scaleFactor);
         } else {
-            super._updatePosition();
+            super._updatePosition(relativeInertia, scaleFactor);
         }
     }
 

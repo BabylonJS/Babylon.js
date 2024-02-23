@@ -150,6 +150,9 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialAlphaOffset = 0;
 
+    /** @internal */
+    public _pendingAlphaOffset: number = 0;
+
     /**
      * Current inertia value on the latitudinal axis.
      * The bigger this number the longer it will take for the camera to stop.
@@ -157,12 +160,18 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialBetaOffset = 0;
 
+    /** @internal */
+    public _pendingBetaOffset: number = 0;
+
     /**
      * Current inertia value on the radius axis.
      * The bigger this number the longer it will take for the camera to stop.
      */
     @serialize()
     public inertialRadiusOffset = 0;
+
+    /** @internal */
+    public _pendingRadiusOffset: number = 0;
 
     /**
      * Minimum allowed angle on the longitudinal axis.
@@ -212,11 +221,17 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialPanningX: number = 0;
 
+    /** @internal */
+    public _pendingPanningX: number = 0;
+
     /**
      * Defines the current inertia value used during panning of the camera along the Y axis.
      */
     @serialize()
     public inertialPanningY: number = 0;
+
+    /** @internal */
+    public _pendingPanningY: number = 0;
 
     /**
      * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
@@ -799,6 +814,12 @@ export class ArcRotateCamera extends TargetCamera {
         this.radius = this._storedRadius;
         this.targetScreenOffset = this._storedTargetScreenOffset.clone();
 
+        this._pendingAlphaOffset = 0;
+        this._pendingBetaOffset = 0;
+        this._pendingRadiusOffset = 0;
+        this._pendingPanningX = 0;
+        this._pendingPanningY = 0;
+
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
         this.inertialRadiusOffset = 0;
@@ -882,6 +903,11 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.attachElement(noPreventDefault);
 
         this._reset = () => {
+            this._pendingAlphaOffset = 0;
+            this._pendingBetaOffset = 0;
+            this._pendingRadiusOffset = 0;
+            this._pendingPanningX = 0;
+            this._pendingPanningY = 0;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -909,37 +935,101 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         this.inputs.checkInputs();
-        // Inertia
-        if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
-            const directionModifier = this.invertRotation ? -1 : 1;
-            const handednessMultiplier = this._calculateHandednessMultiplier();
-            let inertialAlphaOffset = this.inertialAlphaOffset * handednessMultiplier;
 
-            if (this.beta < 0) {
-                inertialAlphaOffset *= -1;
-            }
+        const directionModifier = this.invertRotation ? -1 : 1;
+        const handednessMultiplier = this._calculateHandednessMultiplier();
 
-            this.alpha += inertialAlphaOffset * directionModifier;
-            this.beta += this.inertialBetaOffset * directionModifier;
+        // If we have no inertia, pull all values and then zero out the offsets
+        if (this.inertia === 0) {
+            let alphaOffset = (this.inertialAlphaOffset + this._pendingAlphaOffset) * directionModifier * handednessMultiplier;
+            alphaOffset *= this.beta < 0 ? -1 : 1;
+            this.alpha += alphaOffset;
+            this.inertialAlphaOffset = 0;
+            this._pendingAlphaOffset = 0;
+
+            this.beta += (this.inertialBetaOffset + this._pendingBetaOffset) * directionModifier;
+            this.inertialBetaOffset = 0;
+            this._pendingBetaOffset = 0;
 
             this.radius -= this.inertialRadiusOffset;
-            this.inertialAlphaOffset *= this.inertia;
-            this.inertialBetaOffset *= this.inertia;
-            this.inertialRadiusOffset *= this.inertia;
-            if (Math.abs(this.inertialAlphaOffset) < Epsilon) {
+            this.inertialRadiusOffset = 0;
+            this._pendingRadiusOffset = 0;
+        } else if (
+            this._pendingAlphaOffset !== 0 ||
+            this._pendingBetaOffset !== 0 ||
+            this._pendingRadiusOffset !== 0 ||
+            this.inertialAlphaOffset !== 0 ||
+            this.inertialBetaOffset !== 0 ||
+            this.inertialRadiusOffset !== 0
+        ) {
+            // First, take all pending values, divide by inertia, and add to the inertial values
+            // We are dividing by inertia to allow the full initial value to be added because
+            // the value is going to be multiplied by inertia when added to the current camera values
+            this.inertialAlphaOffset += this._pendingAlphaOffset / this.inertia;
+            this.inertialBetaOffset += this._pendingBetaOffset / this.inertia;
+            this.inertialRadiusOffset += this._pendingRadiusOffset / this.inertia;
+            this._pendingAlphaOffset = 0;
+            this._pendingBetaOffset = 0;
+            this._pendingRadiusOffset = 0;
+
+            // Calculate the inertia relative to the frame time
+            const relativeInertia = this._getInertiaRelativeToTime();
+            // This scale factor is used to define the speed of the camera's movement based on frame time
+            const scaleFactor = this._getRelativeScaleFactor(relativeInertia);
+
+            // Alpha
+            let inertialAlphaOffset = this.inertialAlphaOffset * directionModifier * handednessMultiplier;
+            inertialAlphaOffset *= this.beta < 0 ? -1 : 1;
+            this.alpha += inertialAlphaOffset * relativeInertia * scaleFactor;
+            this.inertialAlphaOffset *= relativeInertia;
+
+            if (Math.abs(this.inertialAlphaOffset * this.inertia) < Epsilon) {
                 this.inertialAlphaOffset = 0;
             }
-            if (Math.abs(this.inertialBetaOffset) < Epsilon) {
+
+            // Beta
+            this.beta += this.inertialBetaOffset * directionModifier * relativeInertia * scaleFactor;
+            this.inertialBetaOffset *= relativeInertia;
+
+            if (Math.abs(this.inertialBetaOffset * this.inertia) < Epsilon) {
                 this.inertialBetaOffset = 0;
             }
-            if (Math.abs(this.inertialRadiusOffset) < this.speed * Epsilon) {
+
+            // Radius
+            this.radius -= this.inertialRadiusOffset * relativeInertia * scaleFactor;
+            this.inertialRadiusOffset *= relativeInertia;
+
+            if (Math.abs(this.inertialRadiusOffset * this.inertia) < this.speed * Epsilon) {
                 this.inertialRadiusOffset = 0;
             }
+        }
+
+        if (this._pendingPanningX !== 0) {
+            this.inertialPanningX += this._pendingPanningX / (this.panningInertia || 1);
+            this._pendingPanningX = 0;
+        }
+
+        if (this._pendingPanningY !== 0) {
+            this.inertialPanningY += this._pendingPanningY / (this.panningInertia || 1);
+            this._pendingPanningY = 0;
         }
 
         // Panning inertia
         if (this.inertialPanningX !== 0 || this.inertialPanningY !== 0) {
             const localDirection = new Vector3(this.inertialPanningX, this.inertialPanningY, this.inertialPanningY);
+
+            if (this.panningInertia === 0) {
+                this.inertialPanningX = 0;
+                this.inertialPanningY = 0;
+            } else {
+                const relativeInertia = this._getInertiaRelativeToTime(this.panningInertia);
+                const scaleFactor = this._getRelativeScaleFactor(relativeInertia, this.panningInertia);
+
+                this.inertialPanningX *= relativeInertia;
+                this.inertialPanningY *= relativeInertia;
+
+                localDirection.scaleInPlace(scaleFactor * relativeInertia);
+            }
 
             this._viewMatrix.invertToRef(this._cameraTransformMatrix);
             localDirection.multiplyInPlace(this.panningAxis);
@@ -967,13 +1057,10 @@ export class ArcRotateCamera extends TargetCamera {
                 }
             }
 
-            this.inertialPanningX *= this.panningInertia;
-            this.inertialPanningY *= this.panningInertia;
-
-            if (Math.abs(this.inertialPanningX) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningX * this.panningInertia) < this.speed * Epsilon) {
                 this.inertialPanningX = 0;
             }
-            if (Math.abs(this.inertialPanningY) < this.speed * Epsilon) {
+            if (Math.abs(this.inertialPanningY * this.panningInertia) < this.speed * Epsilon) {
                 this.inertialPanningY = 0;
             }
         }

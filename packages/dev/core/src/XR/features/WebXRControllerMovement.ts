@@ -386,7 +386,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             const rotationY = deltaMillis * 0.001 * this._featureContext.rotationSpeed * this._movementState.rotateX * (this._xrSessionManager.scene.useRightHandedSystem ? -1 : 1);
 
             if (this._featureContext.movementOrientationFollowsViewerPose) {
-                this._xrInput.xrCamera.cameraRotation.y += rotationY;
+                this._xrInput.xrCamera.pendingCameraRotation.y += rotationY;
                 Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
                 this._xrInput.xrCamera.rotationQuaternion.multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
             } else {
@@ -407,7 +407,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             Vector3.TransformCoordinatesToRef(this._tmpTranslationDirection, this._tmpRotationMatrix, this._tmpMovementTranslation);
             this._tmpMovementTranslation.scaleInPlace(this._xrInput.xrCamera._computeLocalCameraSpeed() * this._featureContext.movementSpeed);
 
-            this._xrInput.xrCamera.cameraDirection.addInPlace(this._tmpMovementTranslation);
+            this._xrInput.xrCamera.pendingCameraDirection.addInPlace(this._tmpMovementTranslation);
         }
     }
 

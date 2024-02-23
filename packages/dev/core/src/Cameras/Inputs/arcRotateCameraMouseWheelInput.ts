@@ -126,7 +126,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
 
                     this._zoomToMouse(delta);
                 } else {
-                    this.camera.inertialRadiusOffset += delta;
+                    this.camera._pendingRadiusOffset += delta;
                 }
             }
 
@@ -165,7 +165,13 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         }
 
         const camera = this.camera;
-        const motion = 0.0 + camera.inertialAlphaOffset + camera.inertialBetaOffset + camera.inertialRadiusOffset;
+        const motion =
+            camera.inertialAlphaOffset !== 0 ||
+            camera.inertialBetaOffset !== 0 ||
+            camera.inertialRadiusOffset !== 0 ||
+            camera._pendingAlphaOffset !== 0 ||
+            camera._pendingBetaOffset !== 0 ||
+            camera._pendingRadiusOffset !== 0;
         if (motion) {
             // if zooming is still happening as a result of inertia, then we also need to update
             // the hit plane.
@@ -236,14 +242,14 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         const inertiaComp = 1 - camera.inertia;
         if (camera.lowerRadiusLimit) {
             const lowerLimit = camera.lowerRadiusLimit ?? 0;
-            if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp < lowerLimit) {
-                delta = (camera.radius - lowerLimit) * inertiaComp - camera.inertialRadiusOffset;
+            if (camera.radius - (camera.inertialRadiusOffset + camera._pendingRadiusOffset + delta) / inertiaComp < lowerLimit) {
+                delta = (camera.radius - lowerLimit) * inertiaComp - camera.inertialRadiusOffset - camera._pendingRadiusOffset;
             }
         }
         if (camera.upperRadiusLimit) {
             const upperLimit = camera.upperRadiusLimit ?? 0;
-            if (camera.radius - (camera.inertialRadiusOffset + delta) / inertiaComp > upperLimit) {
-                delta = (camera.radius - upperLimit) * inertiaComp - camera.inertialRadiusOffset;
+            if (camera.radius - (camera.inertialRadiusOffset + camera._pendingRadiusOffset + delta) / inertiaComp > upperLimit) {
+                delta = (camera.radius - upperLimit) * inertiaComp - camera.inertialRadiusOffset - camera._pendingRadiusOffset;
             }
         }
 
@@ -260,7 +266,7 @@ export class ArcRotateCameraMouseWheelInput implements ICameraInput<ArcRotateCam
         directionToZoomLocation.scaleInPlace(inertiaComp);
         this._inertialPanning.addInPlace(directionToZoomLocation);
 
-        camera.inertialRadiusOffset += delta;
+        camera._pendingRadiusOffset += delta;
     }
 
     // Sets x y or z of passed in vector to zero if less than Epsilon.
