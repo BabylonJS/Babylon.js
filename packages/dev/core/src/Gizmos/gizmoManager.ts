@@ -20,6 +20,7 @@ import type { IScaleGizmo } from "./scaleGizmo";
 import { ScaleGizmo } from "./scaleGizmo";
 import type { IBoundingBoxGizmo } from "./boundingBoxGizmo";
 import { BoundingBoxGizmo } from "./boundingBoxGizmo";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Helps setup gizmo's in the scene to rotate/scale/position nodes
@@ -57,6 +58,7 @@ export class GizmoManager implements IDisposable {
     protected _thickness: number = 1;
     protected _scaleRatio: number = 1;
     protected _coordinatesMode = GizmoCoordinatesMode.Local;
+    protected _additionalTransformNode?: TransformNode;
 
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
@@ -166,6 +168,13 @@ export class GizmoManager implements IDisposable {
      */
     public get attachedNode() {
         return this._attachedNode;
+    }
+
+    /**
+     * Additional transform node that will be used to transform all the gizmos
+     */
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
     }
 
     /**
@@ -313,6 +322,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.positionGizmo.attachedNode = null;
         }
         this._gizmosEnabled.positionGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get positionGizmoEnabled(): boolean {
         return this._gizmosEnabled.positionGizmo;
@@ -334,6 +344,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.rotationGizmo.attachedNode = null;
         }
         this._gizmosEnabled.rotationGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get rotationGizmoEnabled(): boolean {
         return this._gizmosEnabled.rotationGizmo;
@@ -353,6 +364,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.scaleGizmo.attachedNode = null;
         }
         this._gizmosEnabled.scaleGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get scaleGizmoEnabled(): boolean {
         return this._gizmosEnabled.scaleGizmo;
@@ -385,9 +397,28 @@ export class GizmoManager implements IDisposable {
             this.gizmos.boundingBoxGizmo.attachedNode = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get boundingBoxGizmoEnabled(): boolean {
         return this._gizmosEnabled.boundingBoxGizmo;
+    }
+
+    /**
+     * Sets the additional transform applied to all the gizmos.
+     * @See Gizmo.additionalTransformNode for more detail
+     */
+    public set additionalTransformNode(node: TransformNode | undefined) {
+        this._additionalTransformNode = node;
+        this._setAdditionalTransformNode();
+    }
+
+    private _setAdditionalTransformNode() {
+        for (const key in this.gizmos) {
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
+            if (gizmo && (<any>this._gizmosEnabled)[key]) {
+                gizmo.additionalTransformNode = this._additionalTransformNode;
+            }
+        }
     }
 
     /**

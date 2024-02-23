@@ -931,6 +931,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.gripTransform = controllerData.xrController.grip || null;
                     pickingInfo.originMesh = controllerData.touchCollisionMesh;
                     pickingInfo.distance = result.distance;
+                    pickingInfo.bu = result.bu;
+                    pickingInfo.bv = result.bv;
+                    pickingInfo.faceId = result.faceId;
+                    pickingInfo.subMeshId = result.subMeshId;
                 }
             }
         }
@@ -963,9 +967,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         const result = TmpVectors.Vector3[0];
         const tmpVec = TmpVectors.Vector3[1];
+        const tmpRay = new Ray(Vector3.Zero(), Vector3.Zero(), 1);
 
         let distance = +Infinity;
-        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter;
+        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;
         const center = TmpVectors.Vector3[2];
         const worldToMesh = TmpVectors.Matrix[0];
         worldToMesh.copyFrom(mesh.getWorldMatrix());
@@ -990,6 +995,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             if (tmp !== -1 && tmp < distance) {
                 distance = tmp;
+
+                // ray between the sphere center and the point on the mesh
+                Ray.CreateFromToToRef(sphere.center, tmpVec, tmpRay);
+                tmpRay.length = distance * 2;
+                intersectionInfo = tmpRay.intersectsMesh(mesh);
+
                 result.copyFrom(tmpVec);
             }
         }
@@ -999,6 +1010,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pi.distance = distance;
             pi.pickedMesh = mesh;
             pi.pickedPoint = result.clone();
+            if (intersectionInfo && intersectionInfo.bu !== null && intersectionInfo.bv !== null) {
+                pi.faceId = intersectionInfo.faceId;
+                pi.subMeshId = intersectionInfo.subMeshId;
+                pi.bu = intersectionInfo.bu;
+                pi.bv = intersectionInfo.bv;
+            }
         }
 
         return pi;

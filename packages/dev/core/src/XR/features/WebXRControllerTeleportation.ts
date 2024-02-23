@@ -497,6 +497,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 // set the ray and position
 
                 let hitPossible = false;
+                const controlSelectionFeature = controllerData.xrController.inputSource.targetRayMode !== "transient-pointer";
                 controllerData.xrController.getWorldPointerRayToRef(this._tmpRay);
                 if (this.straightRayEnabled) {
                     // first check if direct ray possible
@@ -514,14 +515,14 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     });
                     if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
                         controllerData.teleportationState.blocked = true;
-                        this._setTargetMeshVisibility(false);
+                        this._setTargetMeshVisibility(false, false, controlSelectionFeature);
                         this._showParabolicPath(pick);
                         return;
                     } else if (pick && pick.pickedPoint) {
                         controllerData.teleportationState.blocked = false;
                         hitPossible = true;
                         this._setTargetMeshPosition(pick);
-                        this._setTargetMeshVisibility(true);
+                        this._setTargetMeshVisibility(true, false, controlSelectionFeature);
                         this._showParabolicPath(pick);
                     }
                 }
@@ -547,26 +548,26 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     });
                     if (pick && pick.pickedMesh && this._options.pickBlockerMeshes && this._options.pickBlockerMeshes.indexOf(pick.pickedMesh) !== -1) {
                         controllerData.teleportationState.blocked = true;
-                        this._setTargetMeshVisibility(false);
+                        this._setTargetMeshVisibility(false, false, controlSelectionFeature);
                         this._showParabolicPath(pick);
                         return;
                     } else if (pick && pick.pickedPoint) {
                         controllerData.teleportationState.blocked = false;
                         hitPossible = true;
                         this._setTargetMeshPosition(pick);
-                        this._setTargetMeshVisibility(true);
+                        this._setTargetMeshVisibility(true, false, controlSelectionFeature);
                         this._showParabolicPath(pick);
                     }
                 }
 
                 // if needed, set visible:
-                this._setTargetMeshVisibility(hitPossible);
+                this._setTargetMeshVisibility(hitPossible, false, controlSelectionFeature);
             } else {
-                this._setTargetMeshVisibility(false);
+                this._setTargetMeshVisibility(false, false, true);
             }
         } else {
             this._disposeBezierCurve();
-            this._setTargetMeshVisibility(false);
+            this._setTargetMeshVisibility(false, false, true);
         }
     }
 
@@ -912,7 +913,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this.onTargetMeshPositionUpdatedObservable.notifyObservers(pickInfo);
     }
 
-    private _setTargetMeshVisibility(visible: boolean, force?: boolean) {
+    private _setTargetMeshVisibility(visible: boolean, force?: boolean, controlSelectionFeature?: boolean) {
         if (!this._options.teleportationTargetMesh) {
             return;
         }
@@ -929,11 +930,11 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 this._quadraticBezierCurve.dispose();
                 this._quadraticBezierCurve = null;
             }
-            if (this._selectionFeature) {
+            if (this._selectionFeature && controlSelectionFeature) {
                 this._selectionFeature.attach();
             }
         } else {
-            if (this._selectionFeature) {
+            if (this._selectionFeature && controlSelectionFeature) {
                 this._selectionFeature.detach();
             }
         }

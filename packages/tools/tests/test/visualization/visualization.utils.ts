@@ -72,7 +72,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
             // serialize my args the way I want
             const args = await Promise.all(
                 msg.args().map((arg) =>
-                    arg.executionContext().evaluate((argument: string | Error) => {
+                    arg.evaluate((argument) => {
                         // I'm in a page context now. If my arg is an error - get me its message.
                         if (argument instanceof Error) return argument.message;
                         //Return null if the arg is not a error
@@ -90,7 +90,7 @@ export const evaluateTests = async (engineType = "webgl2", testFileName = "confi
                 log(`${msg.type().substring(0, 3).toUpperCase()} ${msg.text()}`);
             }
         });
-        page.on("pageerror", ({ message }) => log(message)).on("requestfailed", (request) => log(`${request.failure().errorText} ${request.url()}`));
+        page.on("pageerror", ({ message }) => log(message)).on("requestfailed", (request) => log(`${request?.failure()?.errorText} ${request.url()}`));
         log("preparing page");
         await page.setViewport({ width: 600, height: 400 });
         page.setDefaultTimeout(0);

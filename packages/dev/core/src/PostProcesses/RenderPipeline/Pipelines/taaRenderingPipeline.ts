@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, SerializationHelper } from "../../../Misc/decorators";
-import type { Camera } from "../../../Cameras/camera";
+import { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { PostProcess } from "../../postProcess";
 import { PostProcessRenderPipeline } from "../postProcessRenderPipeline";
@@ -326,8 +326,14 @@ export class TAARenderingPipeline extends PostProcessRenderPipeline {
             }
 
             if (camera && !camera.hasMoved) {
-                const projMat = camera.getProjectionMatrix();
-                projMat.setRowFromFloats(2, this._hs.x, this._hs.y, projMat.m[10], projMat.m[11]);
+                if (camera.mode === Camera.PERSPECTIVE_CAMERA) {
+                    const projMat = camera.getProjectionMatrix();
+                    projMat.setRowFromFloats(2, this._hs.x, this._hs.y, projMat.m[10], projMat.m[11]);
+                } else {
+                    // We must force the update of the projection matrix so that m[12] and m[13] are recomputed, as we modified them the previous frame
+                    const projMat = camera.getProjectionMatrix(true);
+                    projMat.setRowFromFloats(3, this._hs.x + projMat.m[12], this._hs.y + projMat.m[13], projMat.m[14], projMat.m[15]);
+                }
             }
 
             if (this._passPostProcess) {

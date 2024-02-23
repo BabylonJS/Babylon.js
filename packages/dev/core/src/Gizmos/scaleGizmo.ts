@@ -17,6 +17,7 @@ import type { Node } from "../node";
 import type { PointerInfo } from "../Events/pointerEvents";
 import { StandardMaterial } from "../Materials/standardMaterial";
 import type { GizmoManager } from "./gizmoManager";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for scale gizmo
@@ -61,6 +62,17 @@ export interface IScaleGizmo extends IGizmo {
     hoverMaterial: StandardMaterial;
     /** Material used to render when gizmo is disabled. typically grey.*/
     disableMaterial: StandardMaterial;
+}
+
+/**
+ * Additional options for the scale gizmo
+ */
+export interface ScaleGizmoOptions {
+    /**
+     * Additional transform applied to the gizmo.
+     * @See Gizmo.additionalTransformNode for more detail
+     */
+    additionalTransformNode?: TransformNode;
 }
 
 /**
@@ -175,18 +187,31 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return this.xGizmo.dragBehavior.dragging || this.yGizmo.dragBehavior.dragging || this.zGizmo.dragBehavior.dragging || this.uniformScaleGizmo.dragBehavior.dragging;
     }
 
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
+    }
+
+    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
+            gizmo.additionalTransformNode = transformNode;
+        });
+    }
+
     /**
      * Creates a ScaleGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
      * @param thickness display gizmo axis thickness
      * @param gizmoManager
+     * @param options More options
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager, options?: ScaleGizmoOptions) {
         super(gizmoLayer);
         this.uniformScaleGizmo = this._createUniformScaleMesh();
         this.xGizmo = new AxisScaleGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
         this.yGizmo = new AxisScaleGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
         this.zGizmo = new AxisScaleGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), gizmoLayer, this, thickness);
+
+        this.additionalTransformNode = options?.additionalTransformNode;
 
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
