@@ -116,8 +116,8 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
         if (this.panningSensibility !== 0 && previousMultiTouchPanPosition && multiTouchPanPosition) {
             const moveDeltaX = multiTouchPanPosition.x - previousMultiTouchPanPosition.x;
             const moveDeltaY = multiTouchPanPosition.y - previousMultiTouchPanPosition.y;
-            this.camera._pendingPanningX += -moveDeltaX / this.panningSensibility;
-            this.camera._pendingPanningY += moveDeltaY / this.panningSensibility;
+            this.camera.pendingPanningX += -moveDeltaX / this.panningSensibility;
+            this.camera.pendingPanningY += moveDeltaY / this.panningSensibility;
         }
     }
 
@@ -131,9 +131,9 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
         if (this.useNaturalPinchZoom) {
             this.camera.radius = (radius * Math.sqrt(previousPinchSquaredDistance)) / Math.sqrt(pinchSquaredDistance);
         } else if (this.pinchDeltaPercentage) {
-            this.camera._pendingRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 * radius * this.pinchDeltaPercentage;
+            this.camera.pendingRadiusOffset += (pinchSquaredDistance - previousPinchSquaredDistance) * 0.001 * radius * this.pinchDeltaPercentage;
         } else {
-            this.camera._pendingRadiusOffset +=
+            this.camera.pendingRadiusOffset +=
                 (pinchSquaredDistance - previousPinchSquaredDistance) /
                 ((this.pinchPrecision * (this.pinchInwards ? 1 : -1) * (this.angularSensibilityX + this.angularSensibilityY)) / 2);
         }
@@ -147,11 +147,11 @@ export class ArcRotateCameraPointersInput extends BaseCameraPointersInput {
      */
     public onTouch(point: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         if (this.panningSensibility !== 0 && ((this._ctrlKey && this.camera._useCtrlForPanning) || this._isPanClick)) {
-            this.camera._pendingPanningX += -offsetX / this.panningSensibility;
-            this.camera._pendingPanningY += offsetY / this.panningSensibility;
+            this.camera.pendingPanningX += -offsetX / this.panningSensibility;
+            this.camera.pendingPanningY += offsetY / this.panningSensibility;
         } else {
-            this.camera._pendingAlphaOffset -= offsetX / this.angularSensibilityX;
-            this.camera._pendingBetaOffset -= offsetY / this.angularSensibilityY;
+            this.camera.pendingAlphaOffset -= offsetX / this.angularSensibilityX;
+            this.camera.pendingBetaOffset -= offsetY / this.angularSensibilityY;
         }
     }
 

@@ -99,14 +99,14 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
                 if (rsValues.x != 0) {
                     const normalizedRX = rsValues.x / this.gamepadRotationSensibility;
                     if (normalizedRX != 0 && Math.abs(normalizedRX) > 0.005) {
-                        camera._pendingAlphaOffset += normalizedRX;
+                        camera.pendingAlphaOffset += normalizedRX;
                     }
                 }
 
                 if (rsValues.y != 0) {
                     const normalizedRY = (rsValues.y / this.gamepadRotationSensibility) * this._yAxisScale;
                     if (normalizedRY != 0 && Math.abs(normalizedRY) > 0.005) {
-                        camera._pendingBetaOffset += normalizedRY;
+                        camera.pendingBetaOffset += normalizedRY;
                     }
                 }
             }
@@ -115,7 +115,7 @@ export class ArcRotateCameraGamepadInput implements ICameraInput<ArcRotateCamera
             if (lsValues && lsValues.y != 0) {
                 const normalizedLY = lsValues.y / this.gamepadMoveSensibility;
                 if (normalizedLY != 0 && Math.abs(normalizedLY) > 0.005) {
-                    this.camera._pendingRadiusOffset -= normalizedLY;
+                    this.camera.pendingRadiusOffset -= normalizedLY;
                 }
             }
         }

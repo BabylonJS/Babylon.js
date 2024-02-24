@@ -150,8 +150,14 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialAlphaOffset = 0;
 
-    /** @internal */
-    public _pendingAlphaOffset: number = 0;
+    /**
+     * Value to move camera along the longitudinal axis during a single frame at 60 FPS.
+     * Any value provided here will be added to the inertialAlphaOffset.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
+    public pendingAlphaOffset: number = 0;
 
     /**
      * Current inertia value on the latitudinal axis.
@@ -160,8 +166,14 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialBetaOffset = 0;
 
-    /** @internal */
-    public _pendingBetaOffset: number = 0;
+    /**
+     * Value to move camera along the latitudinal axis during a single frame at 60 FPS.
+     * Any value provided here will be added to the inertialBetaOffset.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
+    public pendingBetaOffset: number = 0;
 
     /**
      * Current inertia value on the radius axis.
@@ -170,8 +182,14 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialRadiusOffset = 0;
 
-    /** @internal */
-    public _pendingRadiusOffset: number = 0;
+    /**
+     * Value to move camera along the radius axis during a single frame at 60 FPS.
+     * Any value provided here will be added to the inertialRadiusOffset.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
+    public pendingRadiusOffset: number = 0;
 
     /**
      * Minimum allowed angle on the longitudinal axis.
@@ -221,8 +239,14 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialPanningX: number = 0;
 
-    /** @internal */
-    public _pendingPanningX: number = 0;
+    /**
+     * Value to move camera with respect to the panning axis (x only) during a single frame at 60 FPS.
+     * Any value provided here will be added to the inertialPanningX.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
+    public pendingPanningX: number = 0;
 
     /**
      * Defines the current inertia value used during panning of the camera along the Y axis.
@@ -230,8 +254,14 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public inertialPanningY: number = 0;
 
-    /** @internal */
-    public _pendingPanningY: number = 0;
+    /**
+     * Value to move camera with respect to the panning axis (y only) during a single frame at 60 FPS.
+     * Any value provided here will be added to the inertialPanningY.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
+    public pendingPanningY: number = 0;
 
     /**
      * Defines the distance used to consider the camera in pan mode vs pinch/zoom.
@@ -814,11 +844,11 @@ export class ArcRotateCamera extends TargetCamera {
         this.radius = this._storedRadius;
         this.targetScreenOffset = this._storedTargetScreenOffset.clone();
 
-        this._pendingAlphaOffset = 0;
-        this._pendingBetaOffset = 0;
-        this._pendingRadiusOffset = 0;
-        this._pendingPanningX = 0;
-        this._pendingPanningY = 0;
+        this.pendingAlphaOffset = 0;
+        this.pendingBetaOffset = 0;
+        this.pendingRadiusOffset = 0;
+        this.pendingPanningX = 0;
+        this.pendingPanningY = 0;
 
         this.inertialAlphaOffset = 0;
         this.inertialBetaOffset = 0;
@@ -903,11 +933,11 @@ export class ArcRotateCamera extends TargetCamera {
         this.inputs.attachElement(noPreventDefault);
 
         this._reset = () => {
-            this._pendingAlphaOffset = 0;
-            this._pendingBetaOffset = 0;
-            this._pendingRadiusOffset = 0;
-            this._pendingPanningX = 0;
-            this._pendingPanningY = 0;
+            this.pendingAlphaOffset = 0;
+            this.pendingBetaOffset = 0;
+            this.pendingRadiusOffset = 0;
+            this.pendingPanningX = 0;
+            this.pendingPanningY = 0;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
             this.inertialRadiusOffset = 0;
@@ -941,23 +971,23 @@ export class ArcRotateCamera extends TargetCamera {
 
         // If we have no inertia, pull all values and then zero out the offsets
         if (this.inertia === 0) {
-            let alphaOffset = (this.inertialAlphaOffset + this._pendingAlphaOffset) * directionModifier * handednessMultiplier;
+            let alphaOffset = (this.inertialAlphaOffset + this.pendingAlphaOffset) * directionModifier * handednessMultiplier;
             alphaOffset *= this.beta < 0 ? -1 : 1;
             this.alpha += alphaOffset;
             this.inertialAlphaOffset = 0;
-            this._pendingAlphaOffset = 0;
+            this.pendingAlphaOffset = 0;
 
-            this.beta += (this.inertialBetaOffset + this._pendingBetaOffset) * directionModifier;
+            this.beta += (this.inertialBetaOffset + this.pendingBetaOffset) * directionModifier;
             this.inertialBetaOffset = 0;
-            this._pendingBetaOffset = 0;
+            this.pendingBetaOffset = 0;
 
             this.radius -= this.inertialRadiusOffset;
             this.inertialRadiusOffset = 0;
-            this._pendingRadiusOffset = 0;
+            this.pendingRadiusOffset = 0;
         } else if (
-            this._pendingAlphaOffset !== 0 ||
-            this._pendingBetaOffset !== 0 ||
-            this._pendingRadiusOffset !== 0 ||
+            this.pendingAlphaOffset !== 0 ||
+            this.pendingBetaOffset !== 0 ||
+            this.pendingRadiusOffset !== 0 ||
             this.inertialAlphaOffset !== 0 ||
             this.inertialBetaOffset !== 0 ||
             this.inertialRadiusOffset !== 0
@@ -965,12 +995,12 @@ export class ArcRotateCamera extends TargetCamera {
             // First, take all pending values, divide by inertia, and add to the inertial values
             // We are dividing by inertia to allow the full initial value to be added because
             // the value is going to be multiplied by inertia when added to the current camera values
-            this.inertialAlphaOffset += this._pendingAlphaOffset / this.inertia;
-            this.inertialBetaOffset += this._pendingBetaOffset / this.inertia;
-            this.inertialRadiusOffset += this._pendingRadiusOffset / this.inertia;
-            this._pendingAlphaOffset = 0;
-            this._pendingBetaOffset = 0;
-            this._pendingRadiusOffset = 0;
+            this.inertialAlphaOffset += this.pendingAlphaOffset / this.inertia;
+            this.inertialBetaOffset += this.pendingBetaOffset / this.inertia;
+            this.inertialRadiusOffset += this.pendingRadiusOffset / this.inertia;
+            this.pendingAlphaOffset = 0;
+            this.pendingBetaOffset = 0;
+            this.pendingRadiusOffset = 0;
 
             // Calculate the inertia relative to the frame time
             const relativeInertia = this._getInertiaRelativeToTime();
@@ -1004,14 +1034,14 @@ export class ArcRotateCamera extends TargetCamera {
             }
         }
 
-        if (this._pendingPanningX !== 0) {
-            this.inertialPanningX += this._pendingPanningX / (this.panningInertia || 1);
-            this._pendingPanningX = 0;
+        if (this.pendingPanningX !== 0) {
+            this.inertialPanningX += this.pendingPanningX / (this.panningInertia || 1);
+            this.pendingPanningX = 0;
         }
 
-        if (this._pendingPanningY !== 0) {
-            this.inertialPanningY += this._pendingPanningY / (this.panningInertia || 1);
-            this._pendingPanningY = 0;
+        if (this.pendingPanningY !== 0) {
+            this.inertialPanningY += this.pendingPanningY / (this.panningInertia || 1);
+            this.pendingPanningY = 0;
         }
 
         // Panning inertia

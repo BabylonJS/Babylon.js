@@ -722,23 +722,23 @@ describe("InputManager", () => {
             arcRotateCamera.alpha = 0;
             arcRotateCamera.beta = Math.PI / 2;
             arcRotateCamera.radius = 10;
-            arcRotateCamera._pendingRadiusOffset = 1;
-            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+            arcRotateCamera.pendingRadiusOffset = 1;
+            while (arcRotateCamera.pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
                 frame60FPS++;
                 scene.render();
             }
             finalRadius60FPS = arcRotateCamera.radius;
             // Alpha
             arcRotateCamera.alpha = 0;
-            arcRotateCamera._pendingAlphaOffset = 1;
-            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+            arcRotateCamera.pendingAlphaOffset = 1;
+            while (arcRotateCamera.pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
                 scene.render();
             }
             finalAlpha60FPS = arcRotateCamera.alpha;
             // Beta
             arcRotateCamera.beta = Math.PI / 2;
-            arcRotateCamera._pendingBetaOffset = 1;
-            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+            arcRotateCamera.pendingBetaOffset = 1;
+            while (arcRotateCamera.pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
                 scene.render();
             }
             finalBeta60FPS = arcRotateCamera.beta;
@@ -749,8 +749,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningX = 1;
-            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+            arcRotateCamera.pendingPanningX = 1;
+            while (arcRotateCamera.pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
                 scene.render();
             }
             finalPanX60FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -761,8 +761,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningY = 1;
-            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+            arcRotateCamera.pendingPanningY = 1;
+            while (arcRotateCamera.pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
                 scene.render();
             }
             finalPanY60FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -773,23 +773,23 @@ describe("InputManager", () => {
             arcRotateCamera.alpha = 0;
             arcRotateCamera.beta = Math.PI / 2;
             arcRotateCamera.radius = 10;
-            arcRotateCamera._pendingRadiusOffset = 1;
-            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+            arcRotateCamera.pendingRadiusOffset = 1;
+            while (arcRotateCamera.pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
                 frame30FPS++;
                 scene.render();
             }
             finalRadius30FPS = arcRotateCamera.radius;
             // Alpha
             arcRotateCamera.alpha = 0;
-            arcRotateCamera._pendingAlphaOffset = 1;
-            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+            arcRotateCamera.pendingAlphaOffset = 1;
+            while (arcRotateCamera.pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
                 scene.render();
             }
             finalAlpha30FPS = arcRotateCamera.alpha;
             // Beta
             arcRotateCamera.beta = Math.PI / 2;
-            arcRotateCamera._pendingBetaOffset = 1;
-            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+            arcRotateCamera.pendingBetaOffset = 1;
+            while (arcRotateCamera.pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
                 scene.render();
             }
             finalBeta30FPS = arcRotateCamera.beta;
@@ -800,8 +800,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningX = 1;
-            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+            arcRotateCamera.pendingPanningX = 1;
+            while (arcRotateCamera.pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
                 scene.render();
             }
             finalPanX30FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -812,8 +812,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningY = 1;
-            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+            arcRotateCamera.pendingPanningY = 1;
+            while (arcRotateCamera.pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
                 scene.render();
             }
             finalPanY30FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -824,23 +824,23 @@ describe("InputManager", () => {
             arcRotateCamera.alpha = 0;
             arcRotateCamera.beta = Math.PI / 2;
             arcRotateCamera.radius = 10;
-            arcRotateCamera._pendingRadiusOffset = 1;
-            while (arcRotateCamera._pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
+            arcRotateCamera.pendingRadiusOffset = 1;
+            while (arcRotateCamera.pendingRadiusOffset != 0 || arcRotateCamera.inertialRadiusOffset != 0) {
                 frame120FPS++;
                 scene.render();
             }
             finalRadius120FPS = arcRotateCamera.radius;
             // Alpha
             arcRotateCamera.alpha = 0;
-            arcRotateCamera._pendingAlphaOffset = 1;
-            while (arcRotateCamera._pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
+            arcRotateCamera.pendingAlphaOffset = 1;
+            while (arcRotateCamera.pendingAlphaOffset != 0 || arcRotateCamera.inertialAlphaOffset != 0) {
                 scene.render();
             }
             finalAlpha120FPS = arcRotateCamera.alpha;
             // Beta
             arcRotateCamera.beta = Math.PI / 2;
-            arcRotateCamera._pendingBetaOffset = 1;
-            while (arcRotateCamera._pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
+            arcRotateCamera.pendingBetaOffset = 1;
+            while (arcRotateCamera.pendingBetaOffset != 0 || arcRotateCamera.inertialBetaOffset != 0) {
                 scene.render();
             }
             finalBeta120FPS = arcRotateCamera.beta;
@@ -851,8 +851,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningX = 1;
-            while (arcRotateCamera._pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
+            arcRotateCamera.pendingPanningX = 1;
+            while (arcRotateCamera.pendingPanningX != 0 || arcRotateCamera.inertialPanningX != 0) {
                 scene.render();
             }
             finalPanX120FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -863,8 +863,8 @@ describe("InputManager", () => {
             arcRotateCamera.radius = 10;
             // Run a single render to ensure the camera is in the correct state
             scene.render();
-            arcRotateCamera._pendingPanningY = 1;
-            while (arcRotateCamera._pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
+            arcRotateCamera.pendingPanningY = 1;
+            while (arcRotateCamera.pendingPanningY != 0 || arcRotateCamera.inertialPanningY != 0) {
                 scene.render();
             }
             finalPanY120FPS = Vector3.Distance(arcRotateCamera.target, Vector3.ZeroReadOnly);
@@ -1128,8 +1128,8 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Vertical, 64, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.LeftClick, 0);
-            arcCamera._pendingAlphaOffset = 0;
-            arcCamera._pendingBetaOffset = 0;
+            arcCamera.pendingAlphaOffset = 0;
+            arcCamera.pendingBetaOffset = 0;
             arcCamera.inertialAlphaOffset = 0;
             arcCamera.inertialBetaOffset = 0;
 
@@ -1157,7 +1157,7 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, 10, 64, false);
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
             // Check that the offset has changed
-            const testOffset = arcCamera._pendingAlphaOffset;
+            const testOffset = arcCamera.pendingAlphaOffset;
             passedTest = testOffset !== 0;
 
             // Remove the element to disable pointerlock
@@ -1178,7 +1178,7 @@ describe("InputManager", () => {
             deviceInputSystem.changeInput(DeviceType.Mouse, 0, PointerInput.Move, 1);
 
             // If we passed the previous test and there was no change, this should pass too.
-            passedTest = passedTest && !engine.isPointerLock && arcCamera._pendingAlphaOffset === testOffset;
+            passedTest = passedTest && !engine.isPointerLock && arcCamera.pendingAlphaOffset === testOffset;
 
             // Get rid of the ArcRotateCamera
             arcCamera.detachControl();

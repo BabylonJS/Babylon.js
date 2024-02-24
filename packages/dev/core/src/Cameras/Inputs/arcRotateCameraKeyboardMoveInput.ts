@@ -187,31 +187,31 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
                 const keyCode = this._keys[index];
                 if (this.keysLeft.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera._pendingPanningX -= 1 / this.panningSensibility;
+                        camera.pendingPanningX -= 1 / this.panningSensibility;
                     } else {
-                        camera._pendingAlphaOffset -= this.angularSpeed;
+                        camera.pendingAlphaOffset -= this.angularSpeed;
                     }
                 } else if (this.keysUp.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera._pendingPanningY += 1 / this.panningSensibility;
+                        camera.pendingPanningY += 1 / this.panningSensibility;
                     } else if (this._altPressed && this.useAltToZoom) {
-                        camera._pendingRadiusOffset += 1 / this.zoomingSensibility;
+                        camera.pendingRadiusOffset += 1 / this.zoomingSensibility;
                     } else {
-                        camera._pendingBetaOffset -= this.angularSpeed;
+                        camera.pendingBetaOffset -= this.angularSpeed;
                     }
                 } else if (this.keysRight.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera._pendingPanningX += 1 / this.panningSensibility;
+                        camera.pendingPanningX += 1 / this.panningSensibility;
                     } else {
-                        camera._pendingAlphaOffset += this.angularSpeed;
+                        camera.pendingAlphaOffset += this.angularSpeed;
                     }
                 } else if (this.keysDown.indexOf(keyCode) !== -1) {
                     if (this._ctrlPressed && this.camera._useCtrlForPanning) {
-                        camera._pendingPanningY -= 1 / this.panningSensibility;
+                        camera.pendingPanningY -= 1 / this.panningSensibility;
                     } else if (this._altPressed && this.useAltToZoom) {
-                        camera._pendingRadiusOffset -= 1 / this.zoomingSensibility;
+                        camera.pendingRadiusOffset -= 1 / this.zoomingSensibility;
                     } else {
-                        camera._pendingBetaOffset += this.angularSpeed;
+                        camera.pendingBetaOffset += this.angularSpeed;
                     }
                 } else if (this.keysReset.indexOf(keyCode) !== -1) {
                     if (camera.useInputToRestoreState) {

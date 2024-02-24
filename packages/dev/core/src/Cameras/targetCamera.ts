@@ -20,17 +20,29 @@ export class TargetCamera extends Camera {
     private _tmpTargetVector = Vector3.Zero();
 
     /**
-     * Define the current direction the camera is moving to
+     * Define the current inertial direction the camera is moving to
      */
     public cameraDirection = new Vector3(0, 0, 0);
-    /** @internal */
+    /**
+     * Value of camera movement during a single frame at 60 FPS.
+     * Any value provided here will be added to the cameraDirection.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
     public pendingCameraDirection = new Vector3(0, 0, 0);
 
     /**
-     * Define the current rotation the camera is rotating to
+     * Define the current inertial rotation the camera is rotating to
      */
     public cameraRotation = new Vector2(0, 0);
-    /** @internal */
+    /**
+     * Value of camera rotation during a single frame at 60 FPS.
+     * Any value provided here will be added to the cameraRotation.
+     * This will then be set to zero at the end of its current frame, regardless of FPS.
+     *
+     * Use this variable to ensure consistent camera movement speed across different framerates.
+     */
     public pendingCameraRotation = new Vector2(0, 0);
 
     /** Gets or sets a boolean indicating that the scaling of the parent hierarchy will not be taken in account by the camera */
