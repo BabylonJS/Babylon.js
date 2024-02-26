@@ -135,6 +135,12 @@ export class PrePassRenderer {
             name: "prePass_Position",
         },
         {
+            purpose: Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_Position",
+        },
+        {
             purpose: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             format: Constants.TEXTUREFORMAT_RGBA,

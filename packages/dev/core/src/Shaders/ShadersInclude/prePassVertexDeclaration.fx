@@ -1,4 +1,7 @@
 #ifdef PREPASS
+#ifdef PREPASS_LOCAL_POSITION
+    varying vec3 vPosition;
+#endif
 #ifdef PREPASS_DEPTH
     varying vec3 vViewPos;
 #endif

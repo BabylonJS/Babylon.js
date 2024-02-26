@@ -642,6 +642,10 @@ void main(void) {
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
+    #ifdef PREPASS_LOCAL_POSITION
+    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition, writeGeometryInfo);
+    #endif
+
     #ifdef PREPASS_VELOCITY
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
     vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
