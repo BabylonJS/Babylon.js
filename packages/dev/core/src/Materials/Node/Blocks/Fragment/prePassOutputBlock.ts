@@ -74,11 +74,20 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[4];
     }
 
+    /**
+     * Gets the world normal component
+     */
+    public get localPosition(): NodeMaterialConnectionPoint {
+        return this._inputs[5];
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const worldPosition = this.worldPosition;
+        const localPosition = this.localPosition;
         const viewNormal = this.viewNormal;
+        const worldNormal = this.worldNormal;
         const viewDepth = this.viewDepth;
         const reflectivity = this.reflectivity;
 
@@ -106,6 +115,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
             state.compilationString += ` gl_FragData[PREPASS_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_LOCAL_POSITION\r\n`;
+        if (localPosition.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(${localPosition.associatedVariableName}.rgb, ${
+                localPosition.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? localPosition.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the position output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
         if (viewNormal.connectedPoint) {
             state.compilationString += ` gl_FragData[PREPASS_NORMAL_INDEX] = vec4(${viewNormal.associatedVariableName}.rgb, ${
@@ -117,9 +136,9 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_WORLD_NORMAL\r\n`;
-        if (viewNormal.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(${viewNormal.associatedVariableName}.rgb, ${
-                viewNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? viewNormal.associatedVariableName + ".a" : "1.0"
+        if (worldNormal.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(${worldNormal.associatedVariableName}.rgb, ${
+                worldNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? worldNormal.associatedVariableName + ".a" : "1.0"
             });\r\n`;
         } else {
             // We have to write something on the normal output or it will raise a gl error

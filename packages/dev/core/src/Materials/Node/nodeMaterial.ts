@@ -123,6 +123,10 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     public PREPASS_POSITION = false;
     /** Prepass position index */
     public PREPASS_POSITION_INDEX = -1;
+    /** Prepass local position */
+    public PREPASS_LOCAL_POSITION = false;
+    /** Prepass local position index */
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     /** Prepass depth */
     public PREPASS_DEPTH = false;
     /** Prepass depth index */
