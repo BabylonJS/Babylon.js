@@ -2,6 +2,10 @@
     vViewPos = (view * worldPos).rgb;
 #endif
 
+#ifdef PREPASS_LOCAL_POSITION
+    vPosition = gl_Position;
+#endif
+
 #if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED)
     vCurrentPosition = viewProjection * worldPos;
 

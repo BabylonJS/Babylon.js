@@ -630,6 +630,12 @@ export class Constants {
      */
     public static readonly PREPASS_WORLD_NORMAL_TEXTURE_TYPE = 8;
 
+    /**
+     * Constant used to retrieve the local position texture index in the textures array in the prepass
+     * using getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_LOCAL_POSITION_TEXTURE_TYPE = 9;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */
