@@ -88,7 +88,7 @@ export function applyConfig(urls?: { [key in AllowedKeys]: string }, binariesAnd
 }
 
 export function workerFunction(KTX2DecoderModule: any): void {
-    if (!KTX2DecoderModule && typeof KTX2DECODER !== "undefined") {
+    if (typeof KTX2DecoderModule === "undefined" && typeof KTX2DECODER !== "undefined") {
         KTX2DecoderModule = KTX2DECODER;
     }
     let ktx2Decoder: any;
@@ -101,7 +101,7 @@ export function workerFunction(KTX2DecoderModule: any): void {
             case "init": {
                 const urls = event.data.urls;
                 if (urls) {
-                    if (urls.jsDecoderModule && !KTX2DecoderModule) {
+                    if (urls.jsDecoderModule && typeof KTX2DecoderModule === "undefined") {
                         importScripts(urls.jsDecoderModule);
                         // assuming global namespace populated by the script (UMD pattern)
                         KTX2DecoderModule = KTX2DECODER;
