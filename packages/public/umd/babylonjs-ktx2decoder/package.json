@@ -18,7 +18,6 @@
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@lts/gui": "1.0.0",
         "@tools/ktx2decoder": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
@@ -44,3 +43,4 @@
         "url": "https://github.com/BabylonJS/Babylon.js/issues"
     }
 }
+
