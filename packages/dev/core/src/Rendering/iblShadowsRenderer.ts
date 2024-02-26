@@ -8,8 +8,8 @@ import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
-// import { ThinTexture } from "../Materials/Textures/thinTexture";
-// import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import { ThinTexture } from "../Materials/Textures/thinTexture";
+import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import type { PrePassRenderer } from "./prePassRenderer";
 // import type { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -18,9 +18,10 @@ import { Logger } from "../Misc/logger";
 // import type { IMaterialContext } from "../Engines/IMaterialContext";
 // import type { DrawWrapper } from "../Materials/drawWrapper";
 // import { Material } from "../Materials/material";
+// import type { Nullable } from "../types";
 
-// import "../Shaders/postprocess.vertex";
-// import "../Shaders/oitFinal.fragment";
+import "../Shaders/postprocess.vertex";
+import "../Shaders/iblShadowDebug.fragment";
 // import "../Shaders/oitBackBlend.fragment";
 
 class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
@@ -51,22 +52,22 @@ class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
  * This should not be instanciated directly, as it is part of a scene component
  */
 export class IblShadowsRenderer {
-    // private _scene: Scene;
+    private _scene: Scene;
     private _engine: Engine;
 
     /**
      * We're going to need 
      */
     // private _depthMrts: MultiRenderTarget[];
-    // private _thinTextures: ThinTexture[] = [];
+    private _thinTextures: ThinTexture[] = [];
     // private _colorMrts: MultiRenderTarget[];
     // private _blendBackMrt: MultiRenderTarget;
     // private _outputRT: RenderTargetTexture;
 
     // private _blendBackEffectWrapper: EffectWrapper;
     // private _blendBackEffectWrapperPingPong: EffectWrapper;
-    // private _finalEffectWrapper: EffectWrapper;
-    // private _effectRenderer: EffectRenderer;
+    private _finalEffectWrapper: EffectWrapper;
+    private _effectRenderer: EffectRenderer;
 
     // private _currentPingPongState: number = 0;
     private _prePassEffectConfiguration: IblShadowsEffectConfiguration;
@@ -149,7 +150,7 @@ export class IblShadowsRenderer {
      * @returns The depth peeling renderer
      */
     constructor(scene: Scene, passCount: number = 5) {
-        // this._scene = scene;
+        this._scene = scene;
         this._engine = scene.getEngine();
         this._passCount = passCount;
 
@@ -171,7 +172,7 @@ export class IblShadowsRenderer {
 
         this._prePassEffectConfiguration = new IblShadowsEffectConfiguration();
         // this._createTextures();
-        // this._createEffects();
+        this._createEffects();
     }
 
     private _createRenderPassIds(): void {
@@ -287,45 +288,50 @@ export class IblShadowsRenderer {
     //     this._depthMrts = [];
     // }
 
-    // private _updateTextures() {
-    //     if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
-    //         this._disposeTextures();
-    //         this._createTextures();
-    //     }
-    //     return this._updateTextureReferences();
-    // }
+    private _updateTextures() {
+        // if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
+        //     this._disposeTextures();
+        //     this._createTextures();
+        // }
+        return this._updateTextureReferences();
+    }
 
-    // private _updateTextureReferences() {
-    //     const prePassRenderer = this._scene.prePassRenderer;
+    private _updateTextureReferences() {
+        const prePassRenderer = this._scene!.prePassRenderer;
+        if (!prePassRenderer) {
+            return false;
+        }
 
-    //     if (!prePassRenderer) {
-    //         return false;
-    //     }
+        // Retrieve opaque color texture
+        this._prePassEffectConfiguration.texturesRequired.forEach( (type) => {
+            const textureIndex = prePassRenderer.getIndex(type);
+            const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
+    
+            if (!prePassTexture) {
+                return;
+            }
+            if (!this._thinTextures[textureIndex]) {
+                this._thinTextures[textureIndex] = new ThinTexture(prePassTexture);
+            }    
+        });
+    
+        
+        // if (this._blendBackTexture !== prePassTexture) {
+        //     this._blendBackTexture = prePassTexture;
+        //     this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
 
-    //     // Retrieve opaque color texture
-    //     const textureIndex = prePassRenderer.getIndex(Constants.PREPASS_COLOR_TEXTURE_TYPE);
-    //     const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
+        //     if (this._thinTextures[6]) {
+        //         this._thinTextures[6].dispose();
+        //     }
+        //     this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
-    //     if (!prePassTexture) {
-    //         return false;
-    //     }
+        //     prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
+        // }
 
-    //     // if (this._blendBackTexture !== prePassTexture) {
-    //     //     this._blendBackTexture = prePassTexture;
-    //     //     this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
+        return true;
+    }
 
-    //     //     if (this._thinTextures[6]) {
-    //     //         this._thinTextures[6].dispose();
-    //     //     }
-    //     //     this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
-
-    //     //     prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
-    //     // }
-
-    //     return true;
-    // }
-
-    // private _createEffects() {
+    private _createEffects() {
     //     this._blendBackEffectWrapper = new EffectWrapper({
     //         fragmentShader: "oitBackBlend",
     //         useShaderStore: true,
@@ -341,16 +347,16 @@ export class IblShadowsRenderer {
     //         uniformNames: [],
     //     });
 
-    //     this._finalEffectWrapper = new EffectWrapper({
-    //         fragmentShader: "oitFinal",
-    //         useShaderStore: true,
-    //         engine: this._engine,
-    //         samplerNames: ["uFrontColor", "uBackColor"],
-    //         uniformNames: [],
-    //     });
+        this._finalEffectWrapper = new EffectWrapper({
+            fragmentShader: "iblShadowDebug",
+            useShaderStore: true,
+            engine: this._engine,
+            samplerNames: ["worldNormalSampler", "worldPositionSampler", "velocitySampler", "depthSampler"],
+            uniformNames: [],
+        });
 
-    //     this._effectRenderer = new EffectRenderer(this._engine);
-    // }
+        this._effectRenderer = new EffectRenderer(this._engine);
+    }
 
     /**
      * Links to the prepass renderer
@@ -360,10 +366,10 @@ export class IblShadowsRenderer {
         prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
-    /**
-     * Binds depth peeling textures on an effect
-     * @param effect The effect to bind textures on
-     */
+    // /**
+    //  * Binds depth peeling textures on an effect
+    //  * @param effect The effect to bind textures on
+    //  */
     // public bind(effect: Effect) {
     //     effect.setTexture("oitDepthSampler", this._thinTextures[this._currentPingPongState * 3]);
     //     effect.setTexture("oitFrontColorSampler", this._thinTextures[this._currentPingPongState * 3 + 1]);
@@ -416,55 +422,66 @@ export class IblShadowsRenderer {
     //     }
     // }
 
-    // private _finalCompose(writeId: number) {
-    //     const output = this._scene.prePassRenderer?.setCustomOutput(this._outputRT);
-    //     if (output) {
-    //         this._engine.bindFramebuffer(this._outputRT.renderTarget!);
-    //     } else {
-    //         this._engine.restoreDefaultFramebuffer();
-    //     }
+    private _finalCompose() {
+        // const output = this._scene.prePassRenderer?.setCustomOutput(this._outputRT);
+        // if (output) {
+        //     this._engine.bindFramebuffer(this._outputRT.renderTarget!);
+        // } else {
+            this._engine.restoreDefaultFramebuffer();
+        // }
 
-    //     this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
-    //     this._engine.applyStates();
+        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.applyStates();
 
-    //     this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
-    //     this._finalEffectWrapper.effect.setTexture("uFrontColor", this._thinTextures[writeId * 3 + 1]);
-    //     this._finalEffectWrapper.effect.setTexture("uBackColor", this._thinTextures[6]);
-    //     this._effectRenderer.render(this._finalEffectWrapper);
-    // }
+        this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
+        
+        const prePassRenderer = this._scene.prePassRenderer;
+        if (!prePassRenderer) {
+            return;
+        }
+
+        // Retrieve opaque color texture
+        const normalTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
+        const positionTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+        const velocityTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+        const depthTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
+        this._finalEffectWrapper.effect.setTexture("worldNormalSampler", this._thinTextures[normalTextureIndex]);
+        this._finalEffectWrapper.effect.setTexture("worldPositionSampler", this._thinTextures[positionTextureIndex]);
+        this._finalEffectWrapper.effect.setTexture("velocitySampler", this._thinTextures[velocityTextureIndex]);
+        this._finalEffectWrapper.effect.setTexture("depthSampler", this._thinTextures[depthTextureIndex]);
+        this._effectRenderer.render(this._finalEffectWrapper);
+    }
 
     /**
      * Checks if the depth peeling renderer is ready to render transparent meshes
      * @returns true if the depth peeling renderer is ready to render the transparent meshes
      */
     public isReady() {
-        return true;
-        // (
+        return (
         //     this._blendBackEffectWrapper.effect.isReady() &&
         //     this._blendBackEffectWrapperPingPong.effect.isReady() &&
-        //     this._finalEffectWrapper.effect.isReady() &&
-        //     this._updateTextures()
-        // );
+            this._finalEffectWrapper.effect.isReady() &&
+            this._updateTextures()
+        );
     }
 
     /**
      * Renders accumulated shadows for IBL
-     * @param transparentSubMeshes List of transparent meshes to render
      * @returns The array of submeshes that could not be handled by this renderer
      */
-    public render(transparentSubMeshes: SmartArray<SubMesh>): SmartArray<SubMesh> {
+    public render(): SmartArray<SubMesh> {
 
         // If update is needed, render voxels
 
         // this._candidateSubMeshes.length = 0;
-        // this._excludedSubMeshes.length = 0;
-        // if (!this.isReady()) {
-        //     return this._excludedSubMeshes;
-        // }
+        this._excludedSubMeshes.length = 0;
+        if (!this.isReady()) {
+            return this._excludedSubMeshes;
+        }
 
-        // if (this._scene.activeCamera) {
-        //     this._engine.setViewport(this._scene.activeCamera.viewport);
-        // }
+        if (this._scene.activeCamera) {
+            this._engine.setViewport(this._scene.activeCamera.viewport);
+        }
 
         // for (let i = 0; i < transparentSubMeshes.length; i++) {
         //     const subMesh = transparentSubMeshes.data[i];
@@ -494,7 +511,7 @@ export class IblShadowsRenderer {
 
         // const currentRenderPassId = this._engine.currentRenderPassId;
 
-        // (this._scene.prePassRenderer! as any)._enabled = false;
+        (this._scene.prePassRenderer! as any)._enabled = false;
 
         // if (this._useRenderPasses) {
         //     this._engine.currentRenderPassId = this._renderPassIds[0];
@@ -597,9 +614,9 @@ export class IblShadowsRenderer {
         // this._engine.currentRenderPassId = currentRenderPassId;
 
         // // Final composition on default FB
-        // this._finalCompose(writeId);
+        this._finalCompose();
 
-        // (this._scene.prePassRenderer! as any)._enabled = true;
+        (this._scene.prePassRenderer! as any)._enabled = true;
         // this._engine.depthCullingState.depthMask = true;
         // this._engine.depthCullingState.depthTest = true;
 
@@ -612,8 +629,8 @@ export class IblShadowsRenderer {
     public dispose() {
         // this._disposeTextures();
         // this._blendBackEffectWrapper.dispose();
-        // this._finalEffectWrapper.dispose();
-        // this._effectRenderer.dispose();
+        this._finalEffectWrapper.dispose();
+        this._effectRenderer.dispose();
         this._releaseRenderPassIds();
     }
 }

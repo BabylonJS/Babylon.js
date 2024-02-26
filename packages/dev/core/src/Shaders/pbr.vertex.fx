@@ -74,6 +74,7 @@ varying vec3 vPositionW;
 #if DEBUGMODE > 0
     varying vec4 vClipSpacePosition;
 #endif
+
 #ifdef NORMAL
     varying vec3 vNormalW;
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
