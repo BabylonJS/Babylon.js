@@ -699,26 +699,34 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         };
         // use the select and squeeze events
         const selectStartListener = (event: XRInputSourceEvent) => {
-            this._xrSessionManager.onXRFrameObservable.addOnce(() => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                    controllerData.pointerDownTriggered = true;
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+            // this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+            if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource /* && controllerData.pick*/) {
+                // take the first tracked-pointer controller
+                const controller = Object.values(this._controllers).find((c) => c.xrController && c.xrController.inputSource.targetRayMode === "tracked-pointer");
+                if (controller && controller.pick) {
+                    this._augmentPointerInit(pointerEventInit, controller.id, controller.screenCoordinates);
+                    this._scene.simulatePointerDown(controller.pick, pointerEventInit);
+                    controller.pointerDownTriggered = true;
+                    (<StandardMaterial>controller.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                    (<StandardMaterial>controller.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
                 }
-            });
+            }
+            // });
         };
 
         const selectEndListener = (event: XRInputSourceEvent) => {
-            this._xrSessionManager.onXRFrameObservable.addOnce(() => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+            // this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+            if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource /* && controllerData.pick*/) {
+                const controller = Object.values(this._controllers).find((c) => c.xrController && c.xrController.inputSource.targetRayMode === "tracked-pointer");
+                if (controller && controller.pick) {
+                    this._augmentPointerInit(pointerEventInit, controller.id, controller.screenCoordinates);
+                    this._scene.simulatePointerUp(controller.pick, pointerEventInit);
+                    controller.pointerDownTriggered = false;
+                    (<StandardMaterial>controller.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                    (<StandardMaterial>controller.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
                 }
-            });
+            }
+            // });
         };
 
         controllerData.eventListeners = {
