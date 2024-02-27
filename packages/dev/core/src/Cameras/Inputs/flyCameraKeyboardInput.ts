@@ -197,7 +197,7 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
 
                 camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera.cameraDirection.addInPlace(camera._transformedDirection);
+                camera.pendingCameraDirection.addInPlace(camera._transformedDirection);
             }
         }
     }

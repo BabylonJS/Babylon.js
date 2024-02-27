@@ -205,16 +205,16 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
                     camera._localDirection.copyFromFloats(0, -speed, 0);
                 } else if (this.keysRotateLeft.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y -= this._getLocalRotation();
+                    camera.pendingCameraRotation.y -= this._getLocalRotation();
                 } else if (this.keysRotateRight.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.y += this._getLocalRotation();
+                    camera.pendingCameraRotation.y += this._getLocalRotation();
                 } else if (this.keysRotateUp.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x -= this._getLocalRotation();
+                    camera.pendingCameraRotation.x -= this._getLocalRotation();
                 } else if (this.keysRotateDown.indexOf(keyCode) !== -1) {
                     camera._localDirection.copyFromFloats(0, 0, 0);
-                    camera.cameraRotation.x += this._getLocalRotation();
+                    camera.pendingCameraRotation.x += this._getLocalRotation();
                 }
 
                 if (camera.getScene().useRightHandedSystem) {
@@ -223,7 +223,7 @@ export class FreeCameraKeyboardMoveInput implements ICameraInput<FreeCamera> {
 
                 camera.getViewMatrix().invertToRef(camera._cameraTransformMatrix);
                 Vector3.TransformNormalToRef(camera._localDirection, camera._cameraTransformMatrix, camera._transformedDirection);
-                camera.cameraDirection.addInPlace(camera._transformedDirection);
+                camera.pendingCameraDirection.addInPlace(camera._transformedDirection);
             }
         }
     }

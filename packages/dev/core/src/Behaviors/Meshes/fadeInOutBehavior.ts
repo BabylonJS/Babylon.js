@@ -4,6 +4,7 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "../../types";
 import type { Observer } from "core/Misc/observable";
 import type { Scene } from "core/scene";
+import { Constants } from "core/Engines/constants";
 
 /**
  * A behavior that when attached to a mesh will allow the mesh to fade in and out
@@ -42,7 +43,7 @@ export class FadeInOutBehavior implements Behavior<Mesh> {
         this.fadeOutDelay = value;
     }
 
-    private _millisecondsPerFrame = 1000 / 60;
+    private _millisecondsPerFrame = Constants.STANDARD_TIME_STEP;
     private _hovered = false;
     private _hoverValue = 0;
     private _ownerNode: Nullable<Mesh> = null;
