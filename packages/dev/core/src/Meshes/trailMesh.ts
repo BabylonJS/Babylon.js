@@ -74,7 +74,7 @@ export class TrailMesh extends Mesh {
         if (this._generator instanceof AbstractMesh && this._generator.hasBoundingInfo) {
             meshCenter = this._generator.getBoundingInfo().boundingBox.centerWorld;
         } else {
-            meshCenter = this._generator.position;
+            meshCenter = this._generator.absolutePosition;
         }
         const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
         for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
