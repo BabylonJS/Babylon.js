@@ -43,7 +43,6 @@ import { Color4, Color3, TmpColors } from "../Maths/math.color";
 import type { ISize } from "../Maths/math.size";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { ThinEngine } from "../Engines/thinEngine";
-import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Engines/Extensions/engine.alpha";
 import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
@@ -51,6 +50,7 @@ import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Engine } from "../Engines/engine";
+import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 
 /**
  * This represents a particle system in Babylon.
@@ -2071,7 +2071,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
             bindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
-                MaterialHelper.BindFogParameters(this._scene, undefined, effect);
+                BindFogParameters(this._scene, undefined, effect);
             }
         }
 
@@ -2101,7 +2101,7 @@ export class ParticleSystem extends BaseParticleSystem implements IDisposable, I
 
         // Log. depth
         if (this.useLogarithmicDepth && this._scene) {
-            MaterialHelper.BindLogDepth(defines, effect, this._scene);
+            BindLogDepth(defines, effect, this._scene);
         }
 
         // image processing

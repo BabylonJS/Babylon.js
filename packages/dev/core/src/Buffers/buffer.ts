@@ -3,6 +3,7 @@ import type { ThinEngine } from "../Engines/thinEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
+import { Constants } from "../Engines/constants";
 
 /**
  * Class used to store data that will be store in GPU memory
@@ -355,37 +356,37 @@ export class VertexBuffer {
     /**
      * The byte type.
      */
-    public static readonly BYTE = 5120;
+    public static readonly BYTE = Constants.BYTE;
 
     /**
      * The unsigned byte type.
      */
-    public static readonly UNSIGNED_BYTE = 5121;
+    public static readonly UNSIGNED_BYTE = Constants.UNSIGNED_BYTE;
 
     /**
      * The short type.
      */
-    public static readonly SHORT = 5122;
+    public static readonly SHORT = Constants.SHORT;
 
     /**
      * The unsigned short type.
      */
-    public static readonly UNSIGNED_SHORT = 5123;
+    public static readonly UNSIGNED_SHORT = Constants.UNSIGNED_SHORT;
 
     /**
      * The integer type.
      */
-    public static readonly INT = 5124;
+    public static readonly INT = Constants.INT;
 
     /**
      * The unsigned integer type.
      */
-    public static readonly UNSIGNED_INT = 5125;
+    public static readonly UNSIGNED_INT = Constants.UNSIGNED_INT;
 
     /**
      * The float type.
      */
-    public static readonly FLOAT = 5126;
+    public static readonly FLOAT = Constants.FLOAT;
 
     /**
      * Gets a boolean indicating if the Buffer is disposed
@@ -763,63 +764,63 @@ export class VertexBuffer {
     /**
      * Positions
      */
-    public static readonly PositionKind = "position";
+    public static readonly PositionKind = Constants.PositionKind;
     /**
      * Normals
      */
-    public static readonly NormalKind = "normal";
+    public static readonly NormalKind = Constants.NormalKind;
     /**
      * Tangents
      */
-    public static readonly TangentKind = "tangent";
+    public static readonly TangentKind = Constants.TangentKind;
     /**
      * Texture coordinates
      */
-    public static readonly UVKind = "uv";
+    public static readonly UVKind = Constants.UVKind;
     /**
      * Texture coordinates 2
      */
-    public static readonly UV2Kind = "uv2";
+    public static readonly UV2Kind = Constants.UV2Kind;
     /**
      * Texture coordinates 3
      */
-    public static readonly UV3Kind = "uv3";
+    public static readonly UV3Kind = Constants.UV3Kind;
     /**
      * Texture coordinates 4
      */
-    public static readonly UV4Kind = "uv4";
+    public static readonly UV4Kind = Constants.UV4Kind;
     /**
      * Texture coordinates 5
      */
-    public static readonly UV5Kind = "uv5";
+    public static readonly UV5Kind = Constants.UV5Kind;
     /**
      * Texture coordinates 6
      */
-    public static readonly UV6Kind = "uv6";
+    public static readonly UV6Kind = Constants.UV6Kind;
     /**
      * Colors
      */
-    public static readonly ColorKind = "color";
+    public static readonly ColorKind = Constants.ColorKind;
     /**
      * Instance Colors
      */
-    public static readonly ColorInstanceKind = "instanceColor";
+    public static readonly ColorInstanceKind = Constants.ColorInstanceKind;
     /**
      * Matrix indices (for bones)
      */
-    public static readonly MatricesIndicesKind = "matricesIndices";
+    public static readonly MatricesIndicesKind = Constants.MatricesIndicesKind;
     /**
      * Matrix weights (for bones)
      */
-    public static readonly MatricesWeightsKind = "matricesWeights";
+    public static readonly MatricesWeightsKind = Constants.MatricesWeightsKind;
     /**
      * Additional matrix indices (for bones)
      */
-    public static readonly MatricesIndicesExtraKind = "matricesIndicesExtra";
+    public static readonly MatricesIndicesExtraKind = Constants.MatricesIndicesExtraKind;
     /**
      * Additional matrix weights (for bones)
      */
-    public static readonly MatricesWeightsExtraKind = "matricesWeightsExtra";
+    public static readonly MatricesWeightsExtraKind = Constants.MatricesWeightsExtraKind;
 
     /**
      * Deduces the stride given a kind.

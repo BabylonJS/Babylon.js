@@ -6,7 +6,6 @@ import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import type { IEffectCreationOptions } from "core/Materials/effect";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -18,6 +17,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
+import { PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 export class FluentMaterialDefines extends MaterialDefines {
@@ -201,7 +201,7 @@ export class FluentMaterial extends PushMaterial {
             const samplers = ["albedoSampler"];
             const uniformBuffers: string[] = [];
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,

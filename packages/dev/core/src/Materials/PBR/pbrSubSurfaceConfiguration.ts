@@ -8,7 +8,6 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Scalar } from "../../Maths/math.scalar";
 import type { CubeTexture } from "../Textures/cubeTexture";
@@ -21,6 +20,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Engine } from "../../Engines/engine";
 import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
@@ -445,15 +445,15 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
                     if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
+                        PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
                     }
 
                     if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
+                        PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
                     }
 
                     if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
+                        PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
                     }
                 }
             }
@@ -525,17 +525,17 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.updateFloat2("vThicknessInfos", this._thicknessTexture.coordinatesIndex, this._thicknessTexture.level);
-                MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
+                BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
             if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && defines.SS_REFRACTIONINTENSITY_TEXTURE) {
                 uniformBuffer.updateFloat2("vRefractionIntensityInfos", this._refractionIntensityTexture.coordinatesIndex, this._refractionIntensityTexture.level);
-                MaterialHelper.BindTextureMatrix(this._refractionIntensityTexture, uniformBuffer, "refractionIntensity");
+                BindTextureMatrix(this._refractionIntensityTexture, uniformBuffer, "refractionIntensity");
             }
 
             if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && defines.SS_TRANSLUCENCYINTENSITY_TEXTURE) {
                 uniformBuffer.updateFloat2("vTranslucencyIntensityInfos", this._translucencyIntensityTexture.coordinatesIndex, this._translucencyIntensityTexture.level);
-                MaterialHelper.BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
+                BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {

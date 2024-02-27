@@ -7,7 +7,6 @@ import type { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { MaterialHelper } from "../Materials/materialHelper";
 import { Camera } from "../Cameras/camera";
 import { Constants } from "../Engines/constants";
 
@@ -18,6 +17,7 @@ import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes 
 
 import type { Material } from "../Materials/material";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 /**
  * This represents a depth renderer in Babylon.
@@ -292,7 +292,7 @@ export class DepthRenderer {
                     bindClipPlane(effect, material, scene);
 
                     // Morph targets
-                    MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                    BindMorphTargetParameters(renderingMesh, effect);
                     if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                         renderingMesh.morphTargetManager._bind(effect);
                     }
@@ -416,7 +416,7 @@ export class DepthRenderer {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
 
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
 
@@ -428,7 +428,7 @@ export class DepthRenderer {
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            PushAttributesForInstances(attribs);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }

@@ -7,11 +7,11 @@ import type { Scene } from "core/scene";
 import type { Engine } from "core/Engines/engine";
 import type { SubMesh } from "core/Meshes/subMesh";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
-import { MaterialHelper } from "./materialHelper";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "core/Misc/typeStore";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
 
 /**
  * @internal
@@ -93,7 +93,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
             defines.DECAL = true;
             defines.GAMMADECAL = decalMap.texture.gammaSpace;
             defines.DECAL_SMOOTHALPHA = this._smoothAlpha;
-            MaterialHelper.PrepareDefinesForMergedUV(decalMap.texture, defines, "DECAL");
+            PrepareDefinesForMergedUV(decalMap.texture, defines, "DECAL");
         }
     }
 
@@ -114,7 +114,7 @@ export class DecalMapConfiguration extends MaterialPluginBase {
 
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             uniformBuffer.updateFloat4("vDecalInfos", texture.coordinatesIndex, 0, 0, 0);
-            MaterialHelper.BindTextureMatrix(texture, uniformBuffer, "decal");
+            BindTextureMatrix(texture, uniformBuffer, "decal");
         }
 
         uniformBuffer.setTexture("decalSampler", texture);

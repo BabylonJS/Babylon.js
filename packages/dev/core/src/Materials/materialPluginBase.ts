@@ -180,7 +180,7 @@ export class MaterialPluginBase {
     }
 
     /**
-     * Sets the defines for the next rendering. Called before MaterialHelper.PrepareDefinesForAttributes is called.
+     * Sets the defines for the next rendering. Called before PrepareDefinesForAttributes is called.
      * @param defines the list of "defines" to update.
      * @param scene defines the scene to the material belongs to.
      * @param mesh the mesh being rendered

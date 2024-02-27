@@ -4,7 +4,6 @@ import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Vector2 } from "../../Maths/math.vector";
 import { MaterialFlags } from "../../Materials/materialFlags";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { Nullable } from "../../types";
 import type { IAnimatable } from "../../Animations/animatable.interface";
@@ -16,6 +15,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Scene } from "../../scene";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
@@ -141,7 +141,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
                     if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "ANISOTROPIC_TEXTURE");
+                        PrepareDefinesForMergedUV(this._texture, defines, "ANISOTROPIC_TEXTURE");
                     } else {
                         defines.ANISOTROPIC_TEXTURE = false;
                     }
@@ -169,7 +169,7 @@ export class PBRAnisotropicConfiguration extends MaterialPluginBase {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.AnisotropicTextureEnabled) {
                 uniformBuffer.updateFloat2("vAnisotropyInfos", this._texture.coordinatesIndex, this._texture.level);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "anisotropy");
+                BindTextureMatrix(this._texture, uniformBuffer, "anisotropy");
             }
 
             // Anisotropy

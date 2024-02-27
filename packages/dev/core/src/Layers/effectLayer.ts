@@ -19,7 +19,6 @@ import { Texture } from "../Materials/Textures/texture";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { Effect } from "../Materials/effect";
 import { Material } from "../Materials/material";
-import { MaterialHelper } from "../Materials/materialHelper";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/glowMapGeneration.fragment";
@@ -29,6 +28,7 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import { EffectFallbacks } from "../Materials/effectFallbacks";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 /**
  * Effect layer options. This helps customizing the behaviour
@@ -666,14 +666,14 @@ export abstract class EffectLayer {
                 if (manager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
             }
         }
 
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            PushAttributesForInstances(attribs);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -986,7 +986,7 @@ export abstract class EffectLayer {
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                BindMorphTargetParameters(renderingMesh, effect);
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
                 }

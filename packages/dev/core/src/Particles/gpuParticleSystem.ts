@@ -15,7 +15,6 @@ import { ParticleSystem } from "./particleSystem";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import type { IDisposable } from "../scene";
 import type { Effect } from "../Materials/effect";
-import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
@@ -38,6 +37,7 @@ import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
+import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -1539,7 +1539,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             bindClipPlane(effect, this, this._scene);
 
             if (this.applyFog) {
-                MaterialHelper.BindFogParameters(this._scene, undefined, effect);
+                BindFogParameters(this._scene, undefined, effect);
             }
         }
 
@@ -1551,7 +1551,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Log. depth
         if (this.useLogarithmicDepth && this._scene) {
-            MaterialHelper.BindLogDepth(defines, effect, this._scene);
+            BindLogDepth(defines, effect, this._scene);
         }
 
         // image processing

@@ -767,7 +767,7 @@ export class Texture extends BaseTexture {
 
         if (this.optimizeUVAllocation) {
             // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
-            // will get different values (see MaterialHelper.PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
+            // will get different values (see PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
                 return mat.hasTexture(this);
             });
