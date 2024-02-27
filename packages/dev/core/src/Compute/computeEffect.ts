@@ -3,7 +3,7 @@ import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import type { IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { Finalize, Initialize, PreProcess } from "../Engines/Processors/shaderProcessor";
 import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -159,8 +159,8 @@ export class ComputeEffect {
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {
-            ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.PreProcess(
+            Initialize(processorOptions);
+            PreProcess(
                 computeCode,
                 processorOptions,
                 (migratedCommputeCode) => {
@@ -168,7 +168,7 @@ export class ComputeEffect {
                     if (options.processFinalCode) {
                         migratedCommputeCode = options.processFinalCode(migratedCommputeCode);
                     }
-                    const finalShaders = ShaderProcessor.Finalize(migratedCommputeCode, "", processorOptions);
+                    const finalShaders = Finalize(migratedCommputeCode, "", processorOptions);
                     this._useFinalCode(finalShaders.vertexCode, baseName);
                 },
                 this._engine

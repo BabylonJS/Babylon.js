@@ -9,7 +9,7 @@ import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { _functionContainer } from "../Engines/Processors/shaderProcessor";
 import { ThinEngine } from "../Engines/thinEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
@@ -776,7 +776,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
 const initSideEffects = () => {
     ThinEngine._FileToolsLoadImage = LoadImage;
     EngineFunctionContext.loadFile = LoadFile;
-    ShaderProcessor._FileToolsLoadFile = LoadFile;
+    _functionContainer.loadFile = LoadFile;
 };
 
 initSideEffects();
