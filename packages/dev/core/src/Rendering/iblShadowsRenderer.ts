@@ -13,7 +13,7 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import type { PrePassRenderer } from "./prePassRenderer";
 // import type { InternalTexture } from "../Materials/Textures/internalTexture";
-// import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Logger } from "../Misc/logger";
 // import type { IMaterialContext } from "../Engines/IMaterialContext";
 // import type { DrawWrapper } from "../Materials/drawWrapper";
@@ -22,6 +22,7 @@ import { Logger } from "../Misc/logger";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
+import { MultiRenderTarget } from "..";
 // import "../Shaders/oitBackBlend.fragment";
 
 class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
@@ -64,7 +65,7 @@ export class IblShadowsRenderer {
     private _thinTextures: ThinTexture[] = [];
     // private _colorMrts: MultiRenderTarget[];
     // private _blendBackMrt: MultiRenderTarget;
-    // private _outputRT: RenderTargetTexture;
+    private _voxelGridRT: RenderTargetTexture;
 
     // private _blendBackEffectWrapper: EffectWrapper;
     // private _blendBackEffectWrapperPingPong: EffectWrapper;
@@ -173,7 +174,7 @@ export class IblShadowsRenderer {
         this.useRenderPasses = false;
 
         this._prePassEffectConfiguration = new IblShadowsEffectConfiguration();
-        // this._createTextures();
+        this._createTextures();
         this._createEffects();
     }
 
@@ -195,7 +196,18 @@ export class IblShadowsRenderer {
         this._renderPassIds = [];
     }
 
-    // private _createTextures() {
+    private _createTextures() {
+        this._voxelGridRT = new MultiRenderTarget("stuff", {width: 256, height: 256, layers: 256}, 1, this._scene, {
+            targetTypes: [Constants.TEXTURE_3D],
+            generateMipMaps: false,
+            generateDepthBuffer: false,
+            generateStencilBuffer: false,
+            types: [Constants.TEXTURETYPE_FLOAT],
+            formats: [Constants.TEXTUREFORMAT_R]});
+        this._voxelGridRT = new RenderTargetTexture("iblShadowVoxelGridRTT", {width: 256, height: 256, layers: 256}, this._scene, true, true, Constants.TEXTURETYPE_FLOAT, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE, false, false, false, Constants.TEXTUREFORMAT_R);
+        // if (this._voxelGridRT.getInternalTexture()) {
+            // this._voxelGridRT.getInternalTexture()!.is3D = true;
+        // }
     //     const size = {
     //         width: this._engine.getRenderWidth(),
     //         height: this._engine.getRenderHeight(),
@@ -257,7 +269,7 @@ export class IblShadowsRenderer {
 
     //         this._thinTextures.push(new ThinTexture(depthTexture), new ThinTexture(frontColorTexture), new ThinTexture(backColorTexture));
     //     }
-    // }
+    }
 
     // TODO : explore again MSAA with depth peeling when
     // we are able to fetch individual samples in a multisampled renderbuffer
