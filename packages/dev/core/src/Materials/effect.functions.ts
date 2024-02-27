@@ -1,21 +1,162 @@
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "core/Engines/Processors/shaderProcessingOptions";
-import { ShaderProcessor } from "core/Engines/Processors/shaderProcessor";
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _executeWhenRenderingStateIsCompiled, _loadFile, _preparePipelineContext, createPipelineContext, getHostDocument } from "core/Engines/thinEngine.functions";
+import {
+    _executeWhenRenderingStateIsCompiled,
+    _getGlobalDefines,
+    _loadFile,
+    _preparePipelineContext,
+    createPipelineContext,
+    getHostDocument,
+} from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { ThinEngine } from "core/Engines/thinEngine";
 import type { Effect } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
+import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
 
 /**
  * If pipelines were created prior to the effect, they can be cached here and be used when creating the effect
  * They will be used automatically.
  */
 const cachedPiplines: { [name: string]: IPipelineContext } = {};
+
+/**
+ * Options to be used when creating a pipeline
+ */
+export interface IPipelineGenerationOptions {
+    /**
+     * The definition of the shader content.
+     * Can be either a unified name, name per vertex and frament or the shader code content itself
+     */
+    shaderNameOrContent: string | { vertex: string; fragment: string } | { vertexSource: string; fragmentSource: string };
+    /**
+     * Unique key to identify the pipeline.
+     * Note that though not mandatory, it's recommended to provide a key to be able to use the automated pipeline loading system.
+     */
+    key?: string;
+    /**
+     * The list of defines to be used in the shader
+     */
+    defines?: string[];
+
+    /**
+     * If true, the global defines will be added to the defines array
+     */
+    addGlobalDefines?: boolean;
+    /**
+     * The shader language.
+     * Defaults to the language suiting the platform name (GLSL for WEBGL2, WGSL for WEBGPU)
+     */
+    shaderLanguage?: ShaderLanguage;
+
+    /**
+     * The name of the platform to be used when processing the shader
+     * defaults to WEBGL2
+     */
+    platformName?: string /* "WEBGL2" | "WEBGL1" | "WEBGPU" */;
+
+    /**
+     * extend the processing options when running code processing
+     */
+    extendedProcessingOptions?: Partial<ProcessingOptions>;
+
+    /**
+     * extend the pipeline generation options
+     */
+    extendedCreatePipelineOptions?: Partial<Parameters<typeof createAndPreparePipelineContext>[0]>;
+}
+
+/**
+ * Generate a pipeline context from the provided options
+ * Note - at the moment only WebGL is supported
+ * @param options the options to be used when generating the pipeline
+ * @param context the context to be used when creating the pipeline
+ * @returns a promise that resolves to the pipeline context
+ */
+export async function generatePipelineContext(
+    options: IPipelineGenerationOptions,
+    context: WebGL2RenderingContext | WebGLRenderingContext /* | GPUCanvasContext*/
+): Promise<IPipelineContext> {
+    const platformName = options.platformName || "WEBGL2";
+    let processor = options.extendedProcessingOptions?.processor;
+    const language = options.shaderLanguage || ShaderLanguage.GLSL;
+    // auto-populate the processor if not provided
+    // Note - async but can be synchronous if we load all dependenceis at the start
+    if (!processor) {
+        switch (platformName) {
+            case "WEBGL1":
+                processor = new (await import("core/Engines/WebGL/webGLShaderProcessors")).WebGLShaderProcessor();
+                break;
+            /*case "WEBGPU":
+                if (language !== ShaderLanguage.WGSL) {
+                    processor = new (await import("core/Engines/WebGPU/webgpuShaderProcessorsWGSL")).WebGPUShaderProcessorWGSL();
+                } else {
+                    processor = new (await import("core/Engines/WebGPU/webgpuShaderProcessorsGLSL")).WebGPUShaderProcessorGLSL();
+                }
+                break;*/
+            case "WEBGL2":
+            default:
+                processor = new (await import("core/Engines/WebGL/webGL2ShaderProcessors")).WebGL2ShaderProcessor();
+                break;
+        }
+    }
+    const shaderDef: any = options.shaderNameOrContent;
+    const vertex = shaderDef.vertex || shaderDef.vertexSource || shaderDef;
+    const fragment = shaderDef.fragment || shaderDef.fragmentSource || shaderDef;
+    const globalDefines = _getGlobalDefines()?.split("\n") || [];
+    const defines = [...(options.defines || []), ...(options.addGlobalDefines ? globalDefines : [])];
+    const key = options.key?.replace(/\r/g, "").replace(/\n/g, "|") || vertex + "+" + fragment + "@" + defines.join("|");
+    // defaults, extended with optionally provided options
+    const processorOptions: ProcessingOptions = {
+        defines,
+        indexParameters: undefined,
+        isFragment: false,
+        shouldUseHighPrecisionShader: true,
+        processor,
+        supportsUniformBuffers: false,
+        shadersRepository: ShaderStore.GetShadersRepository(language),
+        includesShadersStore: ShaderStore.GetIncludesShadersStore(language),
+        version: platformName === "WEBGL2" ? "200" : "100",
+        platformName,
+        processingContext: null,
+        isNDCHalfZRange: false,
+        useReverseDepthBuffer: false,
+        ...options.extendedProcessingOptions,
+    };
+    return new Promise((resolve, reject) => {
+        try {
+            _processShaderCode(
+                processorOptions,
+                shaderDef,
+                undefined,
+                function (vertexCode, fragmentCode) {
+                    try {
+                        const pipeline = createAndPreparePipelineContext({
+                            name: key,
+                            vertex: vertexCode,
+                            fragment: fragmentCode,
+                            context,
+                            defines: defines.length ? defines.join("\n") : null,
+                            shaderProcessingContext: options.extendedProcessingOptions?.processingContext || null,
+                            transformFeedbackVaryings: null,
+                            ...options.extendedCreatePipelineOptions,
+                        });
+                        resolve(pipeline);
+                    } catch (e) {
+                        reject(e);
+                    }
+                },
+                language
+            );
+        } catch (e) {
+            reject(e);
+        }
+    });
+}
 
 export function getCachedPipeline(name: string): IPipelineContext | undefined {
     return cachedPiplines[name];
@@ -24,9 +165,9 @@ export function getCachedPipeline(name: string): IPipelineContext | undefined {
 /** @internal */
 export function _processShaderCode(
     processorOptions: ProcessingOptions,
-    processFinalCode: Nullable<ShaderCustomProcessingFunction>,
     baseName: any,
-    onFinalCodeReady: (vertexCode: string, fragmentCode: string) => void,
+    processFinalCode?: Nullable<ShaderCustomProcessingFunction>,
+    onFinalCodeReady?: (vertexCode: string, fragmentCode: string) => void,
     shaderLanguage?: ShaderLanguage,
     engine?: ThinEngine,
     effectContext?: Effect
@@ -65,7 +206,7 @@ export function _processShaderCode(
         if (shaderCodes[0] && shaderCodes[1]) {
             processorOptions.isFragment = true;
             const [migratedVertexCode, fragmentCode] = shaderCodes;
-            ShaderProcessor.Process(
+            Process(
                 fragmentCode,
                 processorOptions,
                 (migratedFragmentCode, codeBeforeMigration) => {
@@ -75,10 +216,10 @@ export function _processShaderCode(
                     if (processFinalCode) {
                         migratedFragmentCode = processFinalCode("fragment", migratedFragmentCode);
                     }
-                    const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
+                    const finalShaders = Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
                     processorOptions = null as any;
                     const finalCode = _useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, shaderLanguage);
-                    onFinalCodeReady(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
+                    onFinalCodeReady?.(finalCode.vertexSourceCode, finalCode.fragmentSourceCode);
                 },
                 engine
             );
@@ -89,8 +230,8 @@ export function _processShaderCode(
         "Vertex",
         "",
         (vertexCode) => {
-            ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.Process(
+            Initialize(processorOptions);
+            Process(
                 vertexCode,
                 processorOptions,
                 (migratedVertexCode, codeBeforeMigration) => {
@@ -200,7 +341,7 @@ export const createAndPreparePipelineContext = (options: {
     name?: string;
     rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
     onRenderingStateCompiled?: (pipelineContext?: IPipelineContext) => void;
-    context?: WebGL2RenderingContext | WebGLRenderingContext;
+    context?: WebGL2RenderingContext | WebGLRenderingContext /* | GPUCanvasContext*/;
     // preparePipeline options
     createAsRaw?: boolean;
     vertex: string;

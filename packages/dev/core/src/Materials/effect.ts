@@ -17,6 +17,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext } from "./effect.functions";
 
 /**
@@ -311,7 +312,7 @@ export class Effect implements IDisposable {
             this._pipelineContext.setEngine(this._engine);
             this._onRenderingStateCompiled(this._pipelineContext);
             // rebuildRebind for spector
-            if((this._pipelineContext as any).program) {
+            if ((this._pipelineContext as any).program) {
                 (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
             }
         }
@@ -340,8 +341,8 @@ export class Effect implements IDisposable {
 
         _processShaderCode(
             processorOptions,
-            this._processFinalCode,
             this.name,
+            this._processFinalCode,
             (migratedVertexCode, migratedFragmentCode) => {
                 this._vertexSourceCode = migratedVertexCode;
                 this._fragmentSourceCode = migratedFragmentCode;
@@ -588,6 +589,27 @@ export class Effect implements IDisposable {
      */
     public get rawFragmentSourceCode(): string {
         return this._rawFragmentSourceCode;
+    }
+
+    public getPipelineGenerationOptions(): IPipelineGenerationOptions {
+        return {
+            platformName: this._engine.shaderPlatformName,
+            shaderLanguage: this._shaderLanguage,
+            shaderNameOrContent: this.name,
+            key: this._key,
+            defines: this.defines.split("\n"),
+            addGlobalDefines: false,
+            extendedProcessingOptions: {
+                indexParameters: this._indexParameters,
+                isNDCHalfZRange: this._engine.isNDCHalfZRange,
+                useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+                supportsUniformBuffers: this._engine.supportsUniformBuffers,
+            },
+            extendedCreatePipelineOptions: {
+                transformFeedbackVaryings: this._transformFeedbackVaryings,
+                createAsRaw: !!(this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride),
+            },
+        };
     }
 
     /**
