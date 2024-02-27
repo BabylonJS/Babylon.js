@@ -28,7 +28,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
 
 import type { Engine } from "../Engines/engine";
-import { PushAttributesForInstances } from "../Materials/materialHelper.function";
+import { PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process

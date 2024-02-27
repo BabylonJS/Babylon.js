@@ -17,7 +17,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
-import { PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 export class FluentMaterialDefines extends MaterialDefines {

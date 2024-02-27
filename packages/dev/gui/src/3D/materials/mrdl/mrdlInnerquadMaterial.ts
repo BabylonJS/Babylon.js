@@ -19,7 +19,7 @@ import { VertexBuffer } from "core/Buffers/buffer";
 
 import "./shaders/mrdlInnerquad.fragment";
 import "./shaders/mrdlInnerquad.vertex";
-import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 class MRDLInnerquadMaterialDefines extends MaterialDefines {
     constructor() {

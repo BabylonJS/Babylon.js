@@ -19,7 +19,7 @@ import { VertexBuffer } from "core/Buffers/buffer";
 
 import "./shaders/mrdlBackglow.fragment";
 import "./shaders/mrdlBackglow.vertex";
-import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @hidden */
 class MRDLBackglowMaterialDefines extends MaterialDefines {

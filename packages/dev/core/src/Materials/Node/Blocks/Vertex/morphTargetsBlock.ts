@@ -13,7 +13,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
-import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../../Materials/materialHelper.function";
+import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 
 /**
  * Block used to add morph targets support to vertex shader

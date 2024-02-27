@@ -44,7 +44,7 @@ import {
     PrepareUniformsAndSamplersForLight,
     PrepareUniformsAndSamplersList,
     PushAttributesForInstances,
-} from "./materialHelper.function";
+} from "./materialHelper.functions";
 
 /**
  * "Static Class" containing the most commonly used helper while dealing with material for rendering purpose.

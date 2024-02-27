@@ -50,7 +50,7 @@ import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Engine } from "../Engines/engine";
-import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.function";
+import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 
 /**
  * This represents a particle system in Babylon.

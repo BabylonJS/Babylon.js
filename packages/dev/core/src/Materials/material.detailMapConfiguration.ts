@@ -14,7 +14,7 @@ import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
 import type { StandardMaterial } from "./standardMaterial";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
-import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.function";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
 
 /**
  * @internal

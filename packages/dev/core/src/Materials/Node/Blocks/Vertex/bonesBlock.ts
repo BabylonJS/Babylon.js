@@ -14,7 +14,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
 import type { EffectFallbacks } from "../../../effectFallbacks";
-import { BindBonesParameters, PrepareDefinesForBones } from "../../../../Materials/materialHelper.function";
+import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
 
 /**
  * Block used to add support for vertex skinning (bones)

@@ -21,7 +21,7 @@ import { Constants } from "core/Engines/constants";
 
 import "./shaders/fluentButton.fragment";
 import "./shaders/fluentButton.vertex";
-import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 class FluentButtonMaterialDefines extends MaterialDefines {

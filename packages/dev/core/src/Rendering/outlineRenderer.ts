@@ -12,7 +12,7 @@ import { DrawWrapper } from "../Materials/drawWrapper";
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
-import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.function";
+import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 declare module "../scene" {
     export interface Scene {

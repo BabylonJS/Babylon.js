@@ -12,7 +12,7 @@ import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
-import { GetFogState } from "core/Materials/materialHelper.function";
+import { GetFogState } from "core/Materials/materialHelper.functions";
 
 /**
  * Block used to add support for scene fog

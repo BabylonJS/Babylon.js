@@ -37,7 +37,7 @@ import {
     BindSceneUniformBuffer,
     PrepareAttributesForMorphTargetsInfluencers,
     PushAttributesForInstances,
-} from "../../Materials/materialHelper.function";
+} from "../../Materials/materialHelper.functions";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.

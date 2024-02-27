@@ -11,7 +11,7 @@ import type { UniformBuffer } from "./uniformBuffer";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
 import type { StandardMaterial } from "./standardMaterial";
 import { RegisterClass } from "core/Misc/typeStore";
-import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.function";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
 
 /**
  * @internal

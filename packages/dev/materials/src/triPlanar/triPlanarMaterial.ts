@@ -34,7 +34,7 @@ import {
     PrepareDefinesForLights,
     PrepareDefinesForMisc,
     PrepareUniformsAndSamplersList,
-} from "core/Materials/materialHelper.function";
+} from "core/Materials/materialHelper.functions";
 
 class TriPlanarMaterialDefines extends MaterialDefines {
     public DIFFUSEX = false;

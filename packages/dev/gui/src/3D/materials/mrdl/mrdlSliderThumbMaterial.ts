@@ -21,7 +21,7 @@ import { Constants } from "core/Engines/constants";
 
 import "./shaders/mrdlSliderThumb.fragment";
 import "./shaders/mrdlSliderThumb.vertex";
-import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 class MRDLSliderThumbMaterialDefines extends MaterialDefines {

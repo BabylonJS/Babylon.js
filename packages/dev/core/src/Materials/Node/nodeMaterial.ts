@@ -66,7 +66,7 @@ import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
-import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.function";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

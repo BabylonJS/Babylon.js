@@ -68,7 +68,7 @@ import {
     PrepareDefinesForOIT,
     PrepareDefinesForPrePass,
     PrepareUniformsAndSamplersList,
-} from "../materialHelper.function";
+} from "../materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

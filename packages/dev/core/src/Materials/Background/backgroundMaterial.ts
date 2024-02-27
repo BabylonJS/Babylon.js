@@ -54,7 +54,7 @@ import {
     PrepareDefinesForMisc,
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersList,
-} from "../materialHelper.function";
+} from "../materialHelper.functions";
 
 /**
  * Background material defines definition.

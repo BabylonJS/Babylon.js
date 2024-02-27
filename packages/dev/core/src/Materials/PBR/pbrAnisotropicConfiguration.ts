@@ -15,7 +15,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Scene } from "../../scene";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
-import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.function";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal

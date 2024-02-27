@@ -23,7 +23,7 @@ import {
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForMisc,
     PrepareUniformsAndSamplersList,
-} from "../materialHelper.function";
+} from "../materialHelper.functions";
 
 /**
  * @internal

@@ -37,7 +37,7 @@ import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
-import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.function";
+import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 
 /**
  * This represents a GPU particle system in Babylon

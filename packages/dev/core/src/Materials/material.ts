@@ -49,7 +49,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { Mesh } from "../Meshes/mesh";
 import type { Animation } from "../Animations/animation";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
-import { BindSceneUniformBuffer } from "./materialHelper.function";
+import { BindSceneUniformBuffer } from "./materialHelper.functions";
 
 declare let BABYLON: any;
 

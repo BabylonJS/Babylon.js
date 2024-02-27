@@ -22,7 +22,7 @@ import { Texture } from "core/Materials/Textures/texture";
 
 import "./shaders/mrdlFrontplate.fragment";
 import "./shaders/mrdlFrontplate.vertex";
-import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.function";
+import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @hidden */
 class MRDLFrontplateMaterialDefines extends MaterialDefines {

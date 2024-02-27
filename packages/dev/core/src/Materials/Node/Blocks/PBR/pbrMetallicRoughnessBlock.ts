@@ -38,7 +38,7 @@ import {
     PrepareDefinesForLights,
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersForLight,
-} from "../../../../Materials/materialHelper.function";
+} from "../../../materialHelper.functions";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],

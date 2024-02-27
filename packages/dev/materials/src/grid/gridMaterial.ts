@@ -23,7 +23,7 @@ import {
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
     PrepareDefinesForMisc,
-} from "core/Materials/materialHelper.function";
+} from "core/Materials/materialHelper.functions";
 
 class GridMaterialDefines extends MaterialDefines {
     public OPACITY = false;

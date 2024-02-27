@@ -29,7 +29,7 @@ import {
     PrepareAttributesForInstances,
     PrepareDefinesForAttributes,
     PrepareDefinesForFrameBoundValues,
-} from "core/Materials/materialHelper.function";
+} from "core/Materials/materialHelper.functions";
 
 class FireMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;

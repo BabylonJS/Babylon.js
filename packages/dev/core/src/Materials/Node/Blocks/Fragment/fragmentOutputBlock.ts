@@ -10,7 +10,7 @@ import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
-import { BindLogDepth } from "../../../../Materials/materialHelper.function";
+import { BindLogDepth } from "../../../materialHelper.functions";
 
 /**
  * Block used to output the final color
