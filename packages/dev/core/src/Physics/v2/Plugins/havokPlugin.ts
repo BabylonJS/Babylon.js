@@ -15,6 +15,7 @@ import type {
     IPhysicsCollisionEvent,
     IBasePhysicsCollisionEvent,
     ConstrainedBodyPair,
+    PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
@@ -807,6 +808,15 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 return PhysicsMotionType.DYNAMIC;
         }
         throw new Error("Unknown motion type: " + type);
+    }
+
+    /**
+     * sets the activation control mode of a physics body, for instance if you need the body to never sleep.
+     * @param body - The physics body to set the activation control mode.
+     * @param controlMode - The activation control mode.
+     */
+    public setActivationControl(body: PhysicsBody, controlMode: PhysicsActivationControl): void {
+        this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, controlMode);
     }
 
     private _internalComputeMassProperties(pluginData: BodyPluginData): any[] {
