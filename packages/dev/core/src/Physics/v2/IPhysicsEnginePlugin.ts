@@ -352,7 +352,7 @@ export enum PhysicsMotionType {
 export enum PhysicsActivationControl {
     SIMULATION_CONTROLLED,
     ALWAYS_ACTIVE,
-    ALWAYS_INACTIVE
+    ALWAYS_INACTIVE,
 }
 
 /**
