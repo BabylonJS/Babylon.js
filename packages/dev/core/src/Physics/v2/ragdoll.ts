@@ -1,9 +1,8 @@
 import type { Skeleton } from "../../Bones/skeleton";
-import { Vector3, Matrix, TmpVectors } from "../../Maths/math.vector";
-import { Quaternion } from "../../Maths/math.vector";
+import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
-import { BallAndSocketConstraint } from "./physicsConstraint";
+import { PhysicsConstraint } from "./physicsConstraint";
 import type { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "core/Maths/math.axis";
 import { PhysicsShapeType, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
@@ -66,10 +65,10 @@ export class RagdollBoneProperties {
 export class Ragdoll {
     private _skeleton: Skeleton;
     private _scene: Scene;
-    private _mesh: Mesh;
+    private _rootTransformNode: Mesh | TransformNode;
     private _config: any;
     private _boxConfigs: Array<RagdollBoneProperties> = new Array<RagdollBoneProperties>();
-
+    private _joints: Array<PhysicsConstraint> = new Array<PhysicsConstraint>();
     private _bones: Array<Bone> = new Array<Bone>();
     private _initialRotation: Array<Quaternion> = new Array<Quaternion>();
     private _boneNames: string[] = [];
@@ -96,22 +95,24 @@ export class Ragdoll {
     /**
      * Construct a new Ragdoll object. Once ready, it can be made dynamic by calling `Ragdoll` method
      * @param skeleton The skeleton containing bones to be physicalized
-     * @param mesh The mesh used by the skeleton
+     * @param rootTransformNode The mesh or its transform used by the skeleton
      * @param config an array of `RagdollBoneProperties` corresponding to bones and their properties used to instanciate physics bodies
      */
-    constructor(skeleton: Skeleton, mesh: Mesh, config: RagdollBoneProperties[]) {
+    constructor(skeleton: Skeleton, rootTransformNode: Mesh | TransformNode, config: RagdollBoneProperties[]) {
         this._skeleton = skeleton;
         this._scene = skeleton.getScene();
-        this._mesh = mesh;
+        this._rootTransformNode = rootTransformNode;
         this._config = config; // initial, user defined box configs. May have several box configs jammed into 1 index.
         this._boxConfigs = []; // final box configs. Every element is a separate box config (this.config may have several configs jammed into 1 index).
         this._putBoxesInBoneCenter = false;
         this._defaultJoint = PhysicsConstraintType.HINGE;
         this._boneOffsetAxis = Axis.Y;
+
+        this._init();
     }
 
     private _createColliders(): void {
-        this._mesh.computeWorldMatrix();
+        this._rootTransformNode.computeWorldMatrix();
 
         const config = this._config;
         for (let i = 0; i < config.length; i++) {
@@ -156,10 +157,10 @@ export class Ragdoll {
 
                 // Offset axis.
                 const boneOffsetAxis = config[i].boneOffsetAxis !== undefined ? config[i].boneOffsetAxis : this._boneOffsetAxis;
-                const boneDir = currentBone.getDirection(boneOffsetAxis, this._mesh);
+                const boneDir = currentBone.getDirection(boneOffsetAxis, this._rootTransformNode);
                 currentRagdollBoneProperties.boneOffsetAxis = boneOffsetAxis;
 
-                transform.position = currentBone.getAbsolutePosition(this._mesh).add(boneDir.scale(boxOffset));
+                transform.position = currentBone.getAbsolutePosition(this._rootTransformNode).add(boneDir.scale(boxOffset));
 
                 const mass = config[i].mass !== undefined ? config[i].mass : this._mass;
                 const restitution = config[i].restitution !== undefined ? config[i].restitution : this._restitution;
@@ -187,7 +188,7 @@ export class Ragdoll {
     }
 
     private _initJoints(): void {
-        this._mesh.computeWorldMatrix();
+        this._rootTransformNode.computeWorldMatrix();
         for (let i = 0; i < this._bones.length; i++) {
             // The root bone has no joints.
             if (i == this._rootBoneIndex) continue;
@@ -201,24 +202,50 @@ export class Ragdoll {
 
             const boneParentIndex = this._boneNames.indexOf(nearestParent.name);
 
-            let distanceFromParentBoxToBone = this._bones[i].getAbsolutePosition(this._mesh).subtract(this._transforms[boneParentIndex].position);
+            let distanceFromParentBoxToBone = this._bones[i].getAbsolutePosition(this._rootTransformNode).subtract(this._transforms[boneParentIndex].position);
 
             const wmat = this._transforms[boneParentIndex].computeWorldMatrix();
             const invertedWorldMat = Matrix.Invert(wmat);
-            distanceFromParentBoxToBone = Vector3.TransformCoordinates(this._bones[i].getAbsolutePosition(this._mesh), invertedWorldMat);
+            distanceFromParentBoxToBone = Vector3.TransformCoordinates(this._bones[i].getAbsolutePosition(this._rootTransformNode), invertedWorldMat);
 
-            const boneAbsPos = this._bones[i].getAbsolutePosition(this._mesh);
+            const boneAbsPos = this._bones[i].getAbsolutePosition(this._rootTransformNode);
             const boxAbsPos = this._transforms[i].position.clone();
             const myConnectedPivot = boneAbsPos.subtract(boxAbsPos);
 
-            const joint = new BallAndSocketConstraint(
-                distanceFromParentBoxToBone,
-                myConnectedPivot,
-                this._boxConfigs[i].rotationAxis!,
-                this._boxConfigs[i].rotationAxis!,
+            const joint = new PhysicsConstraint(
+                PhysicsConstraintType.BALL_AND_SOCKET,
+                {
+                    pivotA: distanceFromParentBoxToBone,
+                    pivotB: myConnectedPivot,
+                    axisA: this._boxConfigs[i].rotationAxis!,
+                    axisB: this._boxConfigs[i].rotationAxis!,
+                    collision: false,
+                },
                 this._scene
             );
+
             this._aggregates[boneParentIndex].body.addConstraint(this._aggregates[i].body, joint);
+            joint.isEnabled = false;
+            this._joints.push(joint);
+        }
+    }
+
+    private _syncBonesToPhysics(): void {
+        for (let i = 0; i < this._bones.length; i++) {
+            const rotationAdjust = Quaternion.Inverse(this._initialRotation[i]);
+            this._aggregates[i].body.syncWithBone(
+                this._bones[i],
+                this._rootTransformNode,
+                Vector3.Zero(),
+                this._boxConfigs[i].boxOffset,
+                rotationAdjust,
+                this._boxConfigs[i].boneOffsetAxis
+            );
+            const bodyToSet = this._aggregates[i].body;
+
+            // _this doesn't 100% need to be here, but I think it makes sense - the impostor boxes don't need velocities - they're not going anywhere (at least for now).
+            bodyToSet.setAngularVelocity(new Vector3());
+            bodyToSet.setLinearVelocity(new Vector3());
         }
     }
 
@@ -228,29 +255,27 @@ export class Ragdoll {
         }
 
         if (this._ragdollMode) {
-            this._bones[this._rootBoneIndex].getDirectionToRef(this._boxConfigs[this._rootBoneIndex].boneOffsetAxis!, this._mesh, TmpVectors.Vector3[0]);
-            TmpVectors.Vector3[0].scaleInPlace(this._boxConfigs[this._rootBoneIndex].boxOffset!);
-            this._bones[this._rootBoneIndex].getAbsolutePositionToRef(this._mesh, TmpVectors.Vector3[1]);
-            TmpVectors.Vector3[1].addInPlace(TmpVectors.Vector3[0]);
-
-            this._bones[this._rootBoneIndex].setAbsolutePosition(this._transforms[this._rootBoneIndex].position, this._mesh);
             this._addImpostorRotationToBone(this._rootBoneIndex);
 
             const rootPos = this._aggregates[this._rootBoneIndex].body.transformNode.position;
+            this._rootTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
 
-            // Move the mesh, to guarantee alignment between root bone and impostor box position
-            TmpVectors.Vector3[1].subtractToRef(rootPos, TmpVectors.Vector3[0]);
-            this._mesh.position.subtractToRef(TmpVectors.Vector3[0], this._mesh.position);
+            Vector3.TransformCoordinatesToRef(rootPos, TmpVectors.Matrix[0], TmpVectors.Vector3[0]);
+            this._bones[this._rootBoneIndex].setAbsolutePosition(TmpVectors.Vector3[0]);
 
             for (let i = 0; i < this._bones.length; i++) {
                 if (i == this._rootBoneIndex) continue;
                 this._addImpostorRotationToBone(i);
             }
+        } else {
+            this._syncBonesToPhysics();
         }
     }
 
     private _addImpostorRotationToBone(boneIndex: number): void {
-        const qmesh = this._mesh.rotationQuaternion ?? Quaternion.FromEulerAngles(this._mesh.rotation.x, this._mesh.rotation.y, this._mesh.rotation.z);
+        const qmesh =
+            this._rootTransformNode.rotationQuaternion ??
+            Quaternion.FromEulerAngles(this._rootTransformNode.rotation.x, this._rootTransformNode.rotation.y, this._rootTransformNode.rotation.z);
         const qbind = this._initialRotation[boneIndex];
         const qphys = this._aggregates[boneIndex].body?.transformNode?.rotationQuaternion!;
 
@@ -259,7 +284,7 @@ export class Ragdoll {
         qmesh.multiplyToRef(qbind, TmpVectors.Quaternion[1]);
         qphys.multiplyToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0]);
 
-        this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._mesh);
+        this._bones[boneIndex].setRotationQuaternion(TmpVectors.Quaternion[0], Space.WORLD, this._rootTransformNode);
     }
 
     // Return true if root bone is valid/exists in this.bonesNames. false otherwise.
@@ -294,11 +319,6 @@ export class Ragdoll {
     }
 
     private _init() {
-        // detach bones with link transform to let physics have control
-        this._skeleton.bones.forEach((bone) => {
-            bone.linkTransformNode(null);
-        });
-
         this._createColliders();
 
         // If this.defineRootBone() returns false... there is not root bone.
@@ -310,15 +330,20 @@ export class Ragdoll {
         this._scene.registerBeforeRender(() => {
             this._syncBonesAndBoxes();
         });
+        this._syncBonesToPhysics();
     }
 
     /**
      * Enable ragdoll mode. Create physics objects and make them dynamic.
      */
     public ragdoll(): void {
-        if (!this._ragdollMode) {
-            this._ragdollMode = true;
-            this._init();
+        this._ragdollMode = true;
+        // detach bones with link transform to let physics have control
+        this._skeleton.bones.forEach((bone) => {
+            bone.linkTransformNode(null);
+        });
+        for (let i = 0; i < this._joints.length; i++) {
+            this._joints[i].isEnabled = true;
         }
     }
 

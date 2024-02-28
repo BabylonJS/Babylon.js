@@ -542,7 +542,7 @@ export class PhysicsBody {
      * @param adjustRotation Optional quaternion for adjusting the local rotation of the bone.
      * @param boneAxis Optional vector3 axis the bone is aligned with
      */
-    public syncWithBone(bone: Bone, boneMesh: AbstractMesh, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
+    public syncWithBone(bone: Bone, boneMesh: AbstractMesh | TransformNode, jointPivot: Vector3, distToJoint?: number, adjustRotation?: Quaternion, boneAxis?: Vector3) {
         const mesh = this.transformNode;
 
         if (mesh.rotationQuaternion) {
