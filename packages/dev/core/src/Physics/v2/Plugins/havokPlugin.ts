@@ -7,6 +7,7 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
+    PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type {
     PhysicsShapeParameters,
@@ -15,7 +16,6 @@ import type {
     IPhysicsCollisionEvent,
     IBasePhysicsCollisionEvent,
     ConstrainedBodyPair,
-    PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type { IRaycastQuery, PhysicsRaycastResult } from "../../physicsRaycastResult";
 import { Logger } from "../../../Misc/logger";
@@ -816,7 +816,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * @param controlMode - The activation control mode.
      */
     public setActivationControl(body: PhysicsBody, controlMode: PhysicsActivationControl): void {
-        this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, controlMode);
+        switch (controlMode) {
+            case PhysicsActivationControl.ALWAYS_ACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_ACTIVE);
+                break;
+            case PhysicsActivationControl.ALWAYS_INACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_INACTIVE);
+                break;
+            case PhysicsActivationControl.SIMULATION_CONTROLLED:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.SIMULATION_CONTROLLED);
+                break;
+        }
     }
 
     private _internalComputeMassProperties(pluginData: BodyPluginData): any[] {
