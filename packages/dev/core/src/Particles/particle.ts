@@ -2,11 +2,11 @@ import type { Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
-import type { ParticleSystem } from "./particleSystem";
 import type { SubEmitter } from "./subEmitter";
 import type { ColorGradient, FactorGradient } from "../Misc/gradients";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ThinParticleSystem } from "./thinParticleSystem";
 
 /**
  * A particle represents one of the element emitted by a particle system.
@@ -152,7 +152,7 @@ export class Particle {
         /**
          * The particle system the particle belongs to.
          */
-        public particleSystem: ParticleSystem
+        public particleSystem: ThinParticleSystem
     ) {
         this.id = Particle._Count++;
         if (!this.particleSystem.isAnimationSheetEnabled) {

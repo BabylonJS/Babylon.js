@@ -27,6 +27,7 @@ import type { IScreenshotSize } from "./interfaces/screenshotSize";
 import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
 import type { IColor4Like } from "../Maths/math.like";
+import { IsExponentOfTwo, Mix } from "./tools.functions";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -217,7 +218,7 @@ export class Tools {
      * @returns The mixed value
      */
     public static Mix(a: number, b: number, alpha: number): number {
-        return a * (1 - alpha) + b * alpha;
+        return 0;
     }
 
     /**
@@ -243,13 +244,7 @@ export class Tools {
      * @returns true if the value is an exponent of 2
      */
     public static IsExponentOfTwo(value: number): boolean {
-        let count = 1;
-
-        do {
-            count *= 2;
-        } while (count < value);
-
-        return count === value;
+        return true;
     }
 
     /**
@@ -1602,6 +1597,9 @@ export class AsyncLoop {
         );
     }
 }
+
+Tools.Mix = Mix;
+Tools.IsExponentOfTwo = IsExponentOfTwo;
 
 // Will only be define if Tools is imported freeing up some space when only engine is required
 EngineStore.FallbackTexture =
