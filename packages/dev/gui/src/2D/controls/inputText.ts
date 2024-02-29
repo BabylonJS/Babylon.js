@@ -74,9 +74,6 @@ export class InputText extends Control implements IFocusableControl {
         return this._outlineWidth;
     }
 
-    /**
-     * Gets or sets outlineWidth of the text to display
-     */
     public set outlineWidth(value: number) {
         if (this._outlineWidth === value) {
             return;
@@ -92,9 +89,6 @@ export class InputText extends Control implements IFocusableControl {
         return this._outlineColor;
     }
 
-    /**
-     * Gets or sets outlineColor of the text to display
-     */
     public set outlineColor(value: string) {
         if (this._outlineColor === value) {
             return;
