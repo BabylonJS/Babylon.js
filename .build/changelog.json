@@ -1,55 +1,129 @@
 {
-    "fromTag": "6.43.0",
+    "fromTag": "6.44.0",
     "changelog": {
-        "6.43.0": [
+        "6.45.0": [
             {
-                "pr": "14780",
-                "title": "Fix camera panning issue when camera is parented",
-                "description": "fix https://forum.babylonjs.com/t/camera-panning-issue-when-using-parenting/48014",
+                "pr": "14773",
+                "title": "Preparation for the external dependencies package",
+                "description": "The changes in the code are up for review. \r\n\r\n* This architecture allows a developer to create their own workers or worker pool instead of using our default worker creation\r\n* This allows overriding using the CDN. For example, using vite, this will work:\r\n\r\n```javascript\r\n// index.js\r\n\r\nimport wasm from \"@babylonjs/dependencies/draco/draco_decoder_gltf.wasm?arraybuffer\"; // also works from \"draco3dgltf\" package\r\nimport { AutoReleaseWorkerPool } from \"@babylonjs/core/Misc/workerPool.js\";\r\nimport { DracoCompression } from \"@babylonjs/core/Meshes/Compression/dracoCompression.js\";\r\nimport { initializeWebWorker } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\r\nimport { Tools } from \"@babylonjs/core/Misc/tools.js\";\r\nimport { VertexBuffer } from \"@babylonjs/core/Meshes/buffer.js\";\r\n\r\nconst workerPool = new AutoReleaseWorkerPool(4, () => {\r\n  const worker = new Worker(new URL(\"./worker.js\", import.meta.url), {\r\n    type: \"module\",\r\n  });\r\n  return initializeWebWorker(worker, wasm);\r\n});\r\n\r\nconst dracoCompression = new DracoCompression({\r\n  workerPool,\r\n});\r\n\r\n// worker.js\r\nimport { workerFunction } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\r\nimport \"@babylonjs/dependencies/draco/draco_decoder_gltf.js\";\r\n\r\nworkerFunction();\r\n\r\n```\r\n\r\nThis allows each build system to decide the architecture they want to use, as long as they provide the correct data.\r\n* Providing URLs is still possible, and is the simplest way to override the default babylon behavior. This method will also be present if it is impossible\r\n* The ***Worker.ts files are not exported to UMD! So they will only be available to be used in @babylonjs/core . They will be available in UMD, but not exported.\r\n* This maintains back-compat and makes the least amount of changes\r\n* Only worker-enabled modules were changed. The rest can use the URL configuration instead of injecting, as every build system will provide a URL of an asset which can be used on the main thread. As workers work a bit differently it is required to provide this way of injecting them directly as well.\r\n\r\nWaiting for reviews!",
                 "author": {
-                    "name": "2315137135",
-                    "url": "https://github.com/2315137135"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/basisWorker.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2Worker.ts",
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts",
+                    "packages/tools/babylonServer/public/basisTranscoder/1/basis_transcoder.js",
+                    "packages/tools/babylonServer/public/draco_decoder_gltf.js",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14783",
-                "title": "TAA: Fix when using an orthographic camera",
-                "description": "PG: https://playground.babylonjs.com/#539X0P#42",
+                "pr": "14816",
+                "title": "Add function to control sleep activation mode for havok physics",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/14810",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "FlorentMasson",
+                    "url": "https://github.com/FlorentMasson"
                 },
                 "files": [
-                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14804",
+                "title": "Unplugging MaterialHelper",
+                "description": "Overall idea is to move big contenders out of ParticleSystem and create a ThinParticleSystem with the minimum rendering loop in it\r\n\r\nThis is first step with MaterialHelper",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrClearCoatConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrIridescenceConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSheenConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.detailMapConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "rendering engine"
+                    "modules"
                 ]
             },
             {
-                "pr": "14781",
-                "title": "Gaussian Splatting: Fix incorrect name setting",
-                "description": "It was using `window.name` instead of `this.name`",
-                "author": {
-                    "name": "noname0310",
-                    "url": "https://github.com/noname0310"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
-                ],
-                "tags": [
-                    "bug"
-                ]
-            },
-            {
-                "pr": "14779",
-                "title": "TrailMesh: Add texture coordinates to trail mesh",
-                "description": "See https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965/4",
+                "pr": "14813",
+                "title": "TrailMesh: Fix wrong starting position when the generator is a TransformNode",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-always-starts-from-0-0-0-when-generator-is-a-child-node/48317",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
@@ -58,78 +132,62 @@
                     "packages/dev/core/src/Meshes/trailMesh.ts"
                 ],
                 "tags": [
-                    "enhancement",
+                    "bug",
                     "rendering engine"
                 ]
             },
             {
-                "pr": "14778",
-                "title": "TriPlanar material: Fix shader crash when using instances",
-                "description": "See https://forum.babylonjs.com/t/a-serialized-mesh-with-triplanarmateriel-does-not-create-an-instance-afterwards/47954",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
-                ],
-                "tags": [
-                    "bug",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "14777",
-                "title": "fix Plugin V2 timestep",
-                "description": "Follow up https://forum.babylonjs.com/t/how-to-make-havok-physics-simulation-faster/47972/6",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14775",
-                "title": "Dev Host improvements",
-                "description": "The dev host allows you to write code directly related to the typescript files in the dev packages instead of using the UMD pattern.\r\n\r\nThis allows you to better experiment with es6 modules.\r\n\r\nThis improves the dev host by doing the following:\r\n\r\n1) Module resolution using the module's name (without the @babylon part). \r\n2) Server is much quicker to reload\r\n3) Full sruppot for all of our modules.\r\n4) A new analyze script that allows you to show a report of the modules loaded with your current code.\r\n\r\nTo run the analyzer, do the following:\r\n\r\n`npm run analyze -w @tools/dev-host`\r\n\r\nThe HTML page will open automatically and will look roughly like this:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/48a63bab-de3d-402d-afdd-6901d9938b7c)\r\n\r\n",
+                "pr": "14807",
+                "title": "OffscreenCanvas doesn't have the remove function",
+                "description": "This will make sure the function is available before executing it.",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "package-lock.json",
-                    "packages/tools/babylonServer/webpack.config.js",
-                    "packages/tools/devHost/package.json",
-                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
-                    "packages/tools/devHost/src/createScene.ts",
-                    "packages/tools/devHost/src/createSceneJS.js",
-                    "packages/tools/devHost/src/engine.ts",
-                    "packages/tools/devHost/src/index.ts",
-                    "packages/tools/devHost/tsconfig.build.json",
-                    "packages/tools/devHost/webpack.config.js"
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "bug"
+                ]
             },
             {
-                "pr": "14774",
-                "title": "NME: Fix preview for some of the pre-defined meshes",
-                "description": "See https://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5\r\n\r\nConcerned meshes: sphere, cube, plane\r\n\r\nThe problem was that we bake the current transformation but don't move the mesh to the top of the hierarchy (`parent=nullhttps://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5). So, the parent transformation is applied two times, one time during baking and another time when rendering the mesh.\r\n\r\nAlso, there was a bug in the baking method, because tangents were not transformed.",
+                "pr": "14806",
+                "title": "Particle systems: serialize worldOffset",
+                "description": "See https://forum.babylonjs.com/t/particularsystems-worldoffset-bug/48204",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
-                    "packages/dev/core/src/Meshes/mesh.ts",
-                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                    "packages/dev/core/src/Particles/particleSystem.ts"
                 ],
                 "tags": [
                     "bug",
-                    "nme"
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14795",
+                "title": "Gizmos: add additional transform property",
+                "description": "This PR adds a new `additionalTransformNode` property to the `Gizmo` class. The name can be changed! I had first thought of `rootTransformNode`, but there's already a `_rootMesh` in the `Gizmo` class...\r\n\r\nIt is used primarily when a gizmo is attached to a bone. Currently, the gizmo is not displayed at the right location/orientation because it does not take into account the mesh on which the skeleton is attached (the gizmo is relative to the root of the skeleton). By setting `additionalTransformNode` to the mesh, the gizmo will be correctly displayed because we will multiply the final transform with the mesh transform.\r\n\r\nI also updated the inspector to use the new feature.\r\n\r\nTest PG (the gizmos should be at the location of the upper bone): https://playground.babylonjs.com/#HFWCMJ#26",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "gizmos"
                 ]
             }
         ],
@@ -424,6 +482,138 @@
                 "tags": [
                     "enhancement",
                     "animations"
+                ]
+            }
+        ],
+        "6.43.0": [
+            {
+                "pr": "14780",
+                "title": "Fix camera panning issue when camera is parented",
+                "description": "fix https://forum.babylonjs.com/t/camera-panning-issue-when-using-parenting/48014",
+                "author": {
+                    "name": "2315137135",
+                    "url": "https://github.com/2315137135"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14783",
+                "title": "TAA: Fix when using an orthographic camera",
+                "description": "PG: https://playground.babylonjs.com/#539X0P#42",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14781",
+                "title": "Gaussian Splatting: Fix incorrect name setting",
+                "description": "It was using `window.name` instead of `this.name`",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14779",
+                "title": "TrailMesh: Add texture coordinates to trail mesh",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14778",
+                "title": "TriPlanar material: Fix shader crash when using instances",
+                "description": "See https://forum.babylonjs.com/t/a-serialized-mesh-with-triplanarmateriel-does-not-create-an-instance-afterwards/47954",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14777",
+                "title": "fix Plugin V2 timestep",
+                "description": "Follow up https://forum.babylonjs.com/t/how-to-make-havok-physics-simulation-faster/47972/6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14775",
+                "title": "Dev Host improvements",
+                "description": "The dev host allows you to write code directly related to the typescript files in the dev packages instead of using the UMD pattern.\r\n\r\nThis allows you to better experiment with es6 modules.\r\n\r\nThis improves the dev host by doing the following:\r\n\r\n1) Module resolution using the module's name (without the @babylon part). \r\n2) Server is much quicker to reload\r\n3) Full sruppot for all of our modules.\r\n4) A new analyze script that allows you to show a report of the modules loaded with your current code.\r\n\r\nTo run the analyzer, do the following:\r\n\r\n`npm run analyze -w @tools/dev-host`\r\n\r\nThe HTML page will open automatically and will look roughly like this:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/48a63bab-de3d-402d-afdd-6901d9938b7c)\r\n\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/devHost/src/createSceneJS.js",
+                    "packages/tools/devHost/src/engine.ts",
+                    "packages/tools/devHost/src/index.ts",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/devHost/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14774",
+                "title": "NME: Fix preview for some of the pre-defined meshes",
+                "description": "See https://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5\r\n\r\nConcerned meshes: sphere, cube, plane\r\n\r\nThe problem was that we bake the current transformation but don't move the mesh to the top of the hierarchy (`parent=nullhttps://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5). So, the parent transformation is applied two times, one time during baking and another time when rendering the mesh.\r\n\r\nAlso, there was a bug in the baking method, because tangents were not transformed.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
                 ]
             }
         ],
