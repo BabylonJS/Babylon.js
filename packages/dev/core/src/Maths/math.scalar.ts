@@ -1,3 +1,5 @@
+import { Clamp, Lerp, NormalizeRadians, RandomRange, ToHex, WithinEpsilon } from "./math.scalar.functions";
+
 /**
  * Scalar computation library
  */
@@ -15,7 +17,7 @@ export class Scalar {
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
     public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
-        return Math.abs(a - b) <= epsilon;
+        return true;
     }
 
     /**
@@ -24,13 +26,7 @@ export class Scalar {
      * @returns the upper case translation of the number i to hexadecimal.
      */
     public static ToHex(i: number): string {
-        const str = i.toString(16);
-
-        if (i <= 15) {
-            return ("0" + str).toUpperCase();
-        }
-
-        return str.toUpperCase();
+        return "";
     }
 
     /**
@@ -58,7 +54,7 @@ export class Scalar {
      * @returns the clamped value
      */
     public static Clamp(value: number, min = 0, max = 1): number {
-        return Math.min(max, Math.max(min, value));
+        return 0;
     }
 
     /**
@@ -231,7 +227,7 @@ export class Scalar {
      * @returns the lerped value
      */
     public static Lerp(start: number, end: number, amount: number): number {
-        return start + (end - start) * amount;
+        return 0;
     }
 
     /**
@@ -309,10 +305,7 @@ export class Scalar {
      * @returns random value
      */
     public static RandomRange(min: number, max: number): number {
-        if (min === max) {
-            return min;
-        }
-        return Math.random() * (max - min) + min;
+        return 0;
     }
 
     /**
@@ -348,17 +341,7 @@ export class Scalar {
      * @returns The converted angle.
      */
     public static NormalizeRadians(angle: number): number {
-        // More precise but slower version kept for reference.
-        // angle = angle % Tools.TwoPi;
-        // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
-
-        //if (angle > Math.PI) {
-        //	angle -= Tools.TwoPi;
-        //}
-
-        angle -= Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi);
-
-        return angle;
+        return 0;
     }
 
     /**
@@ -375,3 +358,10 @@ export class Scalar {
         return Scalar.HCF(b, r);
     }
 }
+
+Scalar.WithinEpsilon = WithinEpsilon;
+Scalar.RandomRange = RandomRange;
+Scalar.Lerp = Lerp;
+Scalar.Clamp = Clamp;
+Scalar.NormalizeRadians = NormalizeRadians;
+Scalar.ToHex = ToHex;

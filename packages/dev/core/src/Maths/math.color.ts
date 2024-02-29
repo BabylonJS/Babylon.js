@@ -1,8 +1,8 @@
 import type { DeepImmutable, FloatArray } from "../types";
-import { Scalar } from "./math.scalar";
 import { ToLinearSpace, ToGammaSpace } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
+import { Clamp, ToHex } from "./math.scalar.functions";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -227,9 +227,9 @@ export class Color3 {
      * @returns the original Color3
      */
     public clampToRef(min: number = 0, max: number = 1, result: Color3): Color3 {
-        result.r = Scalar.Clamp(this.r, min, max);
-        result.g = Scalar.Clamp(this.g, min, max);
-        result.b = Scalar.Clamp(this.b, min, max);
+        result.r = Clamp(this.r, min, max);
+        result.g = Clamp(this.g, min, max);
+        result.b = Clamp(this.b, min, max);
         return this;
     }
 
@@ -330,7 +330,7 @@ export class Color3 {
         const intR = Math.round(this.r * 255);
         const intG = Math.round(this.g * 255);
         const intB = Math.round(this.b * 255);
-        return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
+        return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
     }
 
     /**
@@ -911,10 +911,10 @@ export class Color4 {
      * @returns the current Color4
      */
     public clampToRef(min: number = 0, max: number = 1, result: Color4): Color4 {
-        result.r = Scalar.Clamp(this.r, min, max);
-        result.g = Scalar.Clamp(this.g, min, max);
-        result.b = Scalar.Clamp(this.b, min, max);
-        result.a = Scalar.Clamp(this.a, min, max);
+        result.r = Clamp(this.r, min, max);
+        result.g = Clamp(this.g, min, max);
+        result.b = Clamp(this.b, min, max);
+        result.a = Clamp(this.a, min, max);
         return this;
     }
 
@@ -1029,11 +1029,11 @@ export class Color4 {
         const intB = Math.round(this.b * 255);
 
         if (returnAsColor3) {
-            return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB);
+            return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
         }
 
         const intA = Math.round(this.a * 255);
-        return "#" + Scalar.ToHex(intR) + Scalar.ToHex(intG) + Scalar.ToHex(intB) + Scalar.ToHex(intA);
+        return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB) + ToHex(intA);
     }
 
     /**

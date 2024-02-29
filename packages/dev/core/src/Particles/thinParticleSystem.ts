@@ -3,8 +3,7 @@ import type { Immutable, Nullable } from "../types";
 import { FactorGradient, ColorGradient, Color3Gradient, GradientHelper } from "../Misc/gradients";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
-import { Vector3, Matrix, TmpVectors, Vector4 } from "../Maths/math.vector";
-import { Scalar } from "../Maths/math.scalar";
+import { Vector3, Matrix, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
 import type { Effect } from "../Materials/effect";
@@ -35,6 +34,7 @@ import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proced
 import type { Engine } from "../Engines/engine";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
+import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -379,7 +379,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             particle._currentAngularSpeed2 = (<FactorGradient>nextGradient).getFactor();
                             particle._currentAngularSpeedGradient = <FactorGradient>currentGradient;
                         }
-                        particle.angularSpeed = Scalar.Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
+                        particle.angularSpeed = Lerp(particle._currentAngularSpeed1, particle._currentAngularSpeed2, scale);
                     });
                 }
                 particle.angle += particle.angularSpeed * scaledUpdateSpeed;
@@ -395,7 +395,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             particle._currentVelocity2 = (<FactorGradient>nextGradient).getFactor();
                             particle._currentVelocityGradient = <FactorGradient>currentGradient;
                         }
-                        directionScale *= Scalar.Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
+                        directionScale *= Lerp(particle._currentVelocity1, particle._currentVelocity2, scale);
                     });
                 }
 
@@ -410,7 +410,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             particle._currentLimitVelocityGradient = <FactorGradient>currentGradient;
                         }
 
-                        const limitVelocity = Scalar.Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
+                        const limitVelocity = Lerp(particle._currentLimitVelocity1, particle._currentLimitVelocity2, scale);
                         const currentVelocity = particle.direction.length();
 
                         if (currentVelocity > limitVelocity) {
@@ -428,7 +428,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             particle._currentDragGradient = <FactorGradient>currentGradient;
                         }
 
-                        const drag = Scalar.Lerp(particle._currentDrag1, particle._currentDrag2, scale);
+                        const drag = Lerp(particle._currentDrag1, particle._currentDrag2, scale);
 
                         this._scaledDirection.scaleInPlace(1.0 - drag);
                     });
@@ -490,7 +490,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                             particle._currentSize2 = (<FactorGradient>nextGradient).getFactor();
                             particle._currentSizeGradient = <FactorGradient>currentGradient;
                         }
-                        particle.size = Scalar.Lerp(particle._currentSize1, particle._currentSize2, scale);
+                        particle.size = Lerp(particle._currentSize1, particle._currentSize2, scale);
                     });
                 }
 
@@ -498,8 +498,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 if (this._useRampGradients) {
                     if (this._colorRemapGradients && this._colorRemapGradients.length > 0) {
                         GradientHelper.GetCurrentGradient(ratio, this._colorRemapGradients, (currentGradient, nextGradient, scale) => {
-                            const min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            const max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+                            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
                             particle.remapData.x = min;
                             particle.remapData.y = max - min;
@@ -508,8 +508,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
                     if (this._alphaRemapGradients && this._alphaRemapGradients.length > 0) {
                         GradientHelper.GetCurrentGradient(ratio, this._alphaRemapGradients, (currentGradient, nextGradient, scale) => {
-                            const min = Scalar.Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
-                            const max = Scalar.Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
+                            const min = Lerp((<FactorGradient>currentGradient).factor1, (<FactorGradient>nextGradient).factor1, scale);
+                            const max = Lerp((<FactorGradient>currentGradient).factor2!, (<FactorGradient>nextGradient).factor2!, scale);
 
                             particle.remapData.z = min;
                             particle.remapData.w = max - min;
@@ -1442,21 +1442,21 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             // Life time
             if (this.targetStopDuration && this._lifeTimeGradients && this._lifeTimeGradients.length > 0) {
-                const ratio = Scalar.Clamp(this._actualFrame / this.targetStopDuration);
+                const ratio = Clamp(this._actualFrame / this.targetStopDuration);
                 GradientHelper.GetCurrentGradient(ratio, this._lifeTimeGradients, (currentGradient, nextGradient) => {
                     const factorGradient1 = <FactorGradient>currentGradient;
                     const factorGradient2 = <FactorGradient>nextGradient;
                     const lifeTime1 = factorGradient1.getFactor();
                     const lifeTime2 = factorGradient2.getFactor();
                     const gradient = (ratio - factorGradient1.gradient) / (factorGradient2.gradient - factorGradient1.gradient);
-                    particle.lifeTime = Scalar.Lerp(lifeTime1, lifeTime2, gradient);
+                    particle.lifeTime = Lerp(lifeTime1, lifeTime2, gradient);
                 });
             } else {
-                particle.lifeTime = Scalar.RandomRange(this.minLifeTime, this.maxLifeTime);
+                particle.lifeTime = RandomRange(this.minLifeTime, this.maxLifeTime);
             }
 
             // Emitter
-            const emitPower = Scalar.RandomRange(this.minEmitPower, this.maxEmitPower);
+            const emitPower = RandomRange(this.minEmitPower, this.maxEmitPower);
 
             if (this.startPositionFunction) {
                 this.startPositionFunction(this._emitterWorldMatrix, particle.position, particle, this.isLocal);
@@ -1493,7 +1493,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             // Size
             if (!this._sizeGradients || this._sizeGradients.length === 0) {
-                particle.size = Scalar.RandomRange(this.minSize, this.maxSize);
+                particle.size = RandomRange(this.minSize, this.maxSize);
             } else {
                 particle._currentSizeGradient = this._sizeGradients[0];
                 particle._currentSize1 = particle._currentSizeGradient.getFactor();
@@ -1506,7 +1506,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 }
             }
             // Size and scale
-            particle.scale.copyFromFloats(Scalar.RandomRange(this.minScaleX, this.maxScaleX), Scalar.RandomRange(this.minScaleY, this.maxScaleY));
+            particle.scale.copyFromFloats(RandomRange(this.minScaleX, this.maxScaleX), RandomRange(this.minScaleY, this.maxScaleY));
 
             // Adjust scale by start size
             if (this._startSizeGradients && this._startSizeGradients[0] && this.targetStopDuration) {
@@ -1518,14 +1518,14 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                         this._currentStartSizeGradient = <FactorGradient>currentGradient;
                     }
 
-                    const value = Scalar.Lerp(this._currentStartSize1, this._currentStartSize2, scale);
+                    const value = Lerp(this._currentStartSize1, this._currentStartSize2, scale);
                     particle.scale.scaleInPlace(value);
                 });
             }
 
             // Angle
             if (!this._angularSpeedGradients || this._angularSpeedGradients.length === 0) {
-                particle.angularSpeed = Scalar.RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
+                particle.angularSpeed = RandomRange(this.minAngularSpeed, this.maxAngularSpeed);
             } else {
                 particle._currentAngularSpeedGradient = this._angularSpeedGradients[0];
                 particle.angularSpeed = particle._currentAngularSpeedGradient.getFactor();
@@ -1537,7 +1537,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                     particle._currentAngularSpeed2 = particle._currentAngularSpeed1;
                 }
             }
-            particle.angle = Scalar.RandomRange(this.minInitialRotation, this.maxInitialRotation);
+            particle.angle = RandomRange(this.minInitialRotation, this.maxInitialRotation);
 
             // Velocity
             if (this._velocityGradients && this._velocityGradients.length > 0) {
@@ -1577,7 +1577,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
             // Color
             if (!this._colorGradients || this._colorGradients.length === 0) {
-                const step = Scalar.RandomRange(0, 1.0);
+                const step = RandomRange(0, 1.0);
 
                 Color4.LerpToRef(this.color1, this.color2, step, particle.color);
 
@@ -1839,7 +1839,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                         this._currentEmitRateGradient = <FactorGradient>currentGradient;
                     }
 
-                    rate = Scalar.Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
+                    rate = Lerp(this._currentEmitRate1, this._currentEmitRate2, scale);
                 });
             }
 
