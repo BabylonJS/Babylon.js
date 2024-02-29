@@ -5,7 +5,7 @@ import { PhysicsAggregate } from "./physicsAggregate";
 import { PhysicsConstraint } from "./physicsConstraint";
 import type { Mesh } from "../../Meshes/mesh";
 import { Axis, Space } from "core/Maths/math.axis";
-import { PhysicsShapeType, PhysicsConstraintType } from "./IPhysicsEnginePlugin";
+import { PhysicsShapeType, PhysicsConstraintType, PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { Nullable } from "../../types";
 import type { Bone } from "../../Bones/bone";
 import { Logger } from "../../Misc/logger";
@@ -177,6 +177,7 @@ export class Ragdoll {
                 );
                 aggregate.body.setCollisionCallbackEnabled(true);
                 aggregate.body.disablePreStep = false;
+                aggregate.body.setMotionType(PhysicsMotionType.ANIMATED);
                 this._aggregates.push(aggregate);
                 this._bones.push(currentBone);
                 this._boneNames.push(currentBone.name);
@@ -231,22 +232,36 @@ export class Ragdoll {
     }
 
     private _syncBonesToPhysics(): void {
-        for (let i = 0; i < this._bones.length; i++) {
-            const rotationAdjust = Quaternion.Inverse(this._initialRotation[i]);
-            this._aggregates[i].body.syncWithBone(
-                this._bones[i],
-                this._rootTransformNode,
-                Vector3.Zero(),
-                this._boxConfigs[i].boxOffset,
-                rotationAdjust,
-                this._boxConfigs[i].boneOffsetAxis
-            );
-            const bodyToSet = this._aggregates[i].body;
 
-            // _this doesn't 100% need to be here, but I think it makes sense - the impostor boxes don't need velocities - they're not going anywhere (at least for now).
-            bodyToSet.setAngularVelocity(new Vector3());
-            bodyToSet.setLinearVelocity(new Vector3());
+        const rootMatrix = this._rootTransformNode.getWorldMatrix();
+        for (let i = 0; i < this._bones.length; i++) {
+
+            // position
+            const transform = this._aggregates[i].transformNode;
+            const rootPos =  this._bones[i].getAbsolutePosition();
+            Vector3.TransformCoordinatesToRef(rootPos, rootMatrix, transform.position);
+
+            // added offset
+            this._bones[i].getDirectionToRef(this._boneOffsetAxis, this._rootTransformNode, TmpVectors.Vector3[0]);
+            TmpVectors.Vector3[0].scaleInPlace(this._boxConfigs[i].boxOffset ?? 0);
+            transform.position.addInPlace(TmpVectors.Vector3[0]);
+
+
+            this._setBoneOrientationToBody(i);
         }
+    }
+    
+    private _setBoneOrientationToBody(boneIndex: number): void {
+        const qmesh =
+            this._rootTransformNode.rotationQuaternion ??
+            Quaternion.FromEulerAngles(this._rootTransformNode.rotation.x, this._rootTransformNode.rotation.y, this._rootTransformNode.rotation.z);
+        const qbind = this._initialRotation[boneIndex];
+        qmesh.multiplyToRef(qbind, TmpVectors.Quaternion[1]);
+        TmpVectors.Quaternion[1].invertInPlace();
+
+        const transform = this._aggregates[boneIndex].transformNode;
+        this._bones[boneIndex].getRotationQuaternionToRef(Space.WORLD, this._rootTransformNode, TmpVectors.Quaternion[0]);
+        TmpVectors.Quaternion[0].multiplyToRef(TmpVectors.Quaternion[1], transform.rotationQuaternion!);
     }
 
     private _syncBonesAndBoxes(): void {
@@ -255,7 +270,7 @@ export class Ragdoll {
         }
 
         if (this._ragdollMode) {
-            this._addImpostorRotationToBone(this._rootBoneIndex);
+            this._setBodyOrientationToBone(this._rootBoneIndex);
 
             const rootPos = this._aggregates[this._rootBoneIndex].body.transformNode.position;
             this._rootTransformNode.getWorldMatrix().invertToRef(TmpVectors.Matrix[0]);
@@ -265,14 +280,14 @@ export class Ragdoll {
 
             for (let i = 0; i < this._bones.length; i++) {
                 if (i == this._rootBoneIndex) continue;
-                this._addImpostorRotationToBone(i);
+                this._setBodyOrientationToBone(i);
             }
         } else {
             this._syncBonesToPhysics();
         }
     }
 
-    private _addImpostorRotationToBone(boneIndex: number): void {
+    private _setBodyOrientationToBone(boneIndex: number): void {
         const qmesh =
             this._rootTransformNode.rotationQuaternion ??
             Quaternion.FromEulerAngles(this._rootTransformNode.rotation.x, this._rootTransformNode.rotation.y, this._rootTransformNode.rotation.z);
@@ -344,6 +359,9 @@ export class Ragdoll {
         });
         for (let i = 0; i < this._joints.length; i++) {
             this._joints[i].isEnabled = true;
+        }
+        for (let i = 0;i < this._aggregates.length; i++) {
+            this._aggregates[i].body.setMotionType(PhysicsMotionType.DYNAMIC);
         }
     }
 
