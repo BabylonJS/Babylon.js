@@ -710,7 +710,7 @@ interface XRHand extends Map<XRHandJoint, XRJointSpace> {
     readonly LITTLE_PHALANX_TIP: number;
 }
 
-declare abstract class XRHand extends Map<string, XRJointSpace> implements XRHand {}
+declare abstract class XRHand extends Map<XRHandJoint, XRJointSpace> implements XRHand {}
 
 // WebXR Layers
 
