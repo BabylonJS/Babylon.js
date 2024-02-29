@@ -111,6 +111,18 @@ export class Ragdoll {
         this._init();
     }
 
+    /**
+     * Returns the aggregate corresponding to the ragdoll bone index
+     * @param index ragdoll bone aggregate index
+     * @returns the aggregate for the bone index for the root aggregate if index is invalid
+     */
+    public getAggregate(index: number): PhysicsAggregate {
+        if (index < 0 || index >= this._aggregates.length) {
+            return this._aggregates[this._rootBoneIndex];
+        }
+        return this._aggregates[index];
+    }
+
     private _createColliders(): void {
         this._rootTransformNode.computeWorldMatrix();
 
@@ -232,13 +244,11 @@ export class Ragdoll {
     }
 
     private _syncBonesToPhysics(): void {
-
         const rootMatrix = this._rootTransformNode.getWorldMatrix();
         for (let i = 0; i < this._bones.length; i++) {
-
             // position
             const transform = this._aggregates[i].transformNode;
-            const rootPos =  this._bones[i].getAbsolutePosition();
+            const rootPos = this._bones[i].getAbsolutePosition();
             Vector3.TransformCoordinatesToRef(rootPos, rootMatrix, transform.position);
 
             // added offset
@@ -246,11 +256,10 @@ export class Ragdoll {
             TmpVectors.Vector3[0].scaleInPlace(this._boxConfigs[i].boxOffset ?? 0);
             transform.position.addInPlace(TmpVectors.Vector3[0]);
 
-
             this._setBoneOrientationToBody(i);
         }
     }
-    
+
     private _setBoneOrientationToBody(boneIndex: number): void {
         const qmesh =
             this._rootTransformNode.rotationQuaternion ??
@@ -360,7 +369,7 @@ export class Ragdoll {
         for (let i = 0; i < this._joints.length; i++) {
             this._joints[i].isEnabled = true;
         }
-        for (let i = 0;i < this._aggregates.length; i++) {
+        for (let i = 0; i < this._aggregates.length; i++) {
             this._aggregates[i].body.setMotionType(PhysicsMotionType.DYNAMIC);
         }
     }
