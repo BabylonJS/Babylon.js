@@ -69,7 +69,7 @@ export function NormalizeRadians(angle: number): number {
     //	angle -= Tools.TwoPi;
     //}
 
-    angle -= Math.PI * 2 * Math.floor(((angle + Math.PI) / Math.PI) * 2);
+    angle -= Math.PI * 2 * Math.floor((angle + Math.PI) / (Math.PI * 2));
 
     return angle;
 }
