@@ -2290,6 +2290,10 @@ export class NodeMaterial extends PushMaterial {
             this.forceAlphaBlending = source.forceAlphaBlending;
         }
 
+        if (source.alphaMode !== undefined) {
+            this.alphaMode = source.alphaMode;
+        }
+
         if (!merge) {
             this._mode = source.mode ?? NodeMaterialModes.Material;
         }
