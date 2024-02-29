@@ -90,8 +90,6 @@ export class Ragdoll {
     private _defaultJointMin: number = -90;
     private _defaultJointMax: number = 90;
 
-    private _boneOffsetAxis: Vector3;
-
     /**
      * Construct a new Ragdoll object. Once ready, it can be made dynamic by calling `Ragdoll` method
      * @param skeleton The skeleton containing bones to be physicalized
@@ -106,7 +104,6 @@ export class Ragdoll {
         this._boxConfigs = []; // final box configs. Every element is a separate box config (this.config may have several configs jammed into 1 index).
         this._putBoxesInBoneCenter = false;
         this._defaultJoint = PhysicsConstraintType.HINGE;
-        this._boneOffsetAxis = Axis.Y;
 
         this._init();
     }
@@ -168,7 +165,7 @@ export class Ragdoll {
                 currentRagdollBoneProperties.boxOffset = boxOffset;
 
                 // Offset axis.
-                const boneOffsetAxis = config[i].boneOffsetAxis !== undefined ? config[i].boneOffsetAxis : this._boneOffsetAxis;
+                const boneOffsetAxis = config[i].boneOffsetAxis !== undefined ? config[i].boneOffsetAxis : Axis.Y;
                 const boneDir = currentBone.getDirection(boneOffsetAxis, this._rootTransformNode);
                 currentRagdollBoneProperties.boneOffsetAxis = boneOffsetAxis;
 
@@ -243,6 +240,7 @@ export class Ragdoll {
         }
     }
 
+    // set physics body orientation/position from bones
     private _syncBonesToPhysics(): void {
         const rootMatrix = this._rootTransformNode.getWorldMatrix();
         for (let i = 0; i < this._bones.length; i++) {
@@ -252,7 +250,7 @@ export class Ragdoll {
             Vector3.TransformCoordinatesToRef(rootPos, rootMatrix, transform.position);
 
             // added offset
-            this._bones[i].getDirectionToRef(this._boneOffsetAxis, this._rootTransformNode, TmpVectors.Vector3[0]);
+            this._bones[i].getDirectionToRef(this._boxConfigs[i].boneOffsetAxis!, this._rootTransformNode, TmpVectors.Vector3[0]);
             TmpVectors.Vector3[0].scaleInPlace(this._boxConfigs[i].boxOffset ?? 0);
             transform.position.addInPlace(TmpVectors.Vector3[0]);
 
