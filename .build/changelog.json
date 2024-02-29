@@ -1,6 +1,72 @@
 {
-    "fromTag": "6.44.0",
+    "fromTag": "6.45.0",
     "changelog": {
+        "6.45.1": [
+            {
+                "pr": "14821",
+                "title": "Type change to XRHand",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14819",
+                "title": "GUI - Allow InputText text outline",
+                "description": "See https://forum.babylonjs.com/t/inputtextarea-onfocusselectall-does-not-work/48351",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14818",
+                "title": "NME: Fix missing alphaMode property parsing",
+                "description": "See https://forum.babylonjs.com/t/node-materiel-editor-does-not-load-alpha-mode/48396",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14815",
+                "title": "WebGPU: Simplify error handling during engine creation/initialization",
+                "description": "See https://forum.babylonjs.com/t/webgpu-cannot-allocate-wasm-memory-for-new-instance/48321/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            }
+        ],
         "6.45.0": [
             {
                 "pr": "14773",
