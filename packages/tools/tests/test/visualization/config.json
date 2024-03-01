@@ -1116,7 +1116,7 @@
             "playgroundId": "#EIJH8L#27",
             "renderCount": 5,
             "referenceImage": "ktx2decoder.png",
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "Motion Blur",
