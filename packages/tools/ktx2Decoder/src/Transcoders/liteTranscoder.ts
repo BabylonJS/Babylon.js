@@ -21,7 +21,11 @@ export class LiteTranscoder extends Transcoder {
     }
 
     protected _loadModule(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
-        this._modulePromise = this._modulePromise || (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then(this._instantiateWebAssembly);
+        this._modulePromise =
+            this._modulePromise ||
+            (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then((wasmBinary) => {
+                return this._instantiateWebAssembly(wasmBinary);
+            });
         return this._modulePromise;
     }
 
