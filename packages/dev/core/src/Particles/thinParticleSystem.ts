@@ -34,7 +34,7 @@ import type { Engine } from "../Engines/engine";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
-import { PrepareSamplers, PrepareUniforms } from "../Materials/imageProcessingConfiguration.functions";
+import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -1749,8 +1749,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         samplers.push("diffuseSampler", "rampSampler");
 
         if (this._imageProcessingConfiguration) {
-            PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
-            PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+            PrepareUniformsForImageProcessing(uniforms, this._imageProcessingConfigurationDefines);
+            PrepareSamplersForImageProcessing(samplers, this._imageProcessingConfigurationDefines);
         }
     }
 
