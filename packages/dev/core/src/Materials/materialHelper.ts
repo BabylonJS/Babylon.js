@@ -59,7 +59,7 @@ export class MaterialHelper {
      * @param effect defines the effect to bind to the scene uniform buffer
      * @param sceneUbo defines the uniform buffer storing scene data
      */
-    public static BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {}
+    public static BindSceneUniformBuffer: (effect: Effect, sceneUbo: UniformBuffer) => void = BindSceneUniformBuffer;
 
     /**
      * Helps preparing the defines values about the UVs in used in the effect.
@@ -68,7 +68,7 @@ export class MaterialHelper {
      * @param defines The defines to update
      * @param key The channel key "diffuse", "specular"... used in the shader
      */
-    public static PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {}
+    public static PrepareDefinesForMergedUV: (texture: BaseTexture, defines: any, key: string) => void = PrepareDefinesForMergedUV;
 
     /**
      * Binds a texture matrix value to its corresponding uniform
@@ -76,7 +76,7 @@ export class MaterialHelper {
      * @param uniformBuffer The uniform buffer receiving the data
      * @param key The channel key "diffuse", "specular"... used in the shader
      */
-    public static BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {}
+    public static BindTextureMatrix: (texture: BaseTexture, uniformBuffer: UniformBuffer, key: string) => void = BindTextureMatrix;
 
     /**
      * Gets the current status of the fog (should it be enabled?)
@@ -84,9 +84,7 @@ export class MaterialHelper {
      * @param scene defines the hosting scene
      * @returns true if fog must be enabled
      */
-    public static GetFogState(mesh: AbstractMesh, scene: Scene) {
-        return true;
-    }
+    public static GetFogState:(mesh: AbstractMesh, scene: Scene) => boolean = GetFogState;
 
     /**
      * Helper used to prepare the list of defines associated with misc. values for shader compilation
@@ -99,7 +97,7 @@ export class MaterialHelper {
      * @param defines defines the current list of defines
      * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
      */
-    public static PrepareDefinesForMisc(
+    public static PrepareDefinesForMisc:(
         mesh: AbstractMesh,
         scene: Scene,
         useLogarithmicDepth: boolean,
@@ -107,8 +105,8 @@ export class MaterialHelper {
         fogEnabled: boolean,
         alphaTest: boolean,
         defines: any,
-        applyDecalAfterDetail: boolean = false
-    ): void {}
+        applyDecalAfterDetail?: boolean
+    ) => void = PrepareDefinesForMisc;
 
     /**
      * Helper used to prepare the defines relative to the active camera
@@ -116,9 +114,7 @@ export class MaterialHelper {
      * @param defines specifies the list of active defines
      * @returns true if the defines have been updated, else false
      */
-    public static PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
-        return true;
-    }
+    public static PrepareDefinesForCamera:(scene: Scene, defines: any) => boolean = PrepareDefinesForCamera;
 
     /**
      * Helper used to prepare the list of defines associated with frame values for shader compilation
@@ -130,36 +126,36 @@ export class MaterialHelper {
      * @param useClipPlane defines if clip plane have to be turned on
      * @param useThinInstances defines if thin instances have to be turned on
      */
-    public static PrepareDefinesForFrameBoundValues(
+    public static PrepareDefinesForFrameBoundValues:(
         scene: Scene,
         engine: Engine,
         material: Material,
         defines: any,
         useInstances: boolean,
-        useClipPlane: Nullable<boolean> = null,
-        useThinInstances: boolean = false
-    ): void {}
+        useClipPlane?: Nullable<boolean>,
+        useThinInstances?: boolean
+    ) => void = PrepareDefinesForFrameBoundValues;
 
     /**
      * Prepares the defines for bones
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
      */
-    public static PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {}
+    public static PrepareDefinesForBones:(mesh: AbstractMesh, defines: any) => void = PrepareDefinesForBones;
 
     /**
      * Prepares the defines for morph targets
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
      */
-    public static PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {}
+    public static PrepareDefinesForMorphTargets:(mesh: AbstractMesh, defines: any) => void = PrepareDefinesForMorphTargets;
 
     /**
      * Prepares the defines for baked vertex animation
      * @param mesh The mesh containing the geometry data we will draw
      * @param defines The defines to update
      */
-    public static PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {}
+    public static PrepareDefinesForBakedVertexAnimation:(mesh: AbstractMesh, defines: any) => void = PrepareDefinesForBakedVertexAnimation;
 
     /**
      * Prepares the defines used in the shader depending on the attributes data available in the mesh
@@ -172,24 +168,22 @@ export class MaterialHelper {
      * @param useBakedVertexAnimation Precise whether baked vertex animation should be used or not (override mesh info)
      * @returns false if defines are considered not dirty and have not been checked
      */
-    public static PrepareDefinesForAttributes(
+    public static PrepareDefinesForAttributes:(
         mesh: AbstractMesh,
         defines: any,
         useVertexColor: boolean,
         useBones: boolean,
-        useMorphTargets = false,
-        useVertexAlpha = true,
-        useBakedVertexAnimation = true
-    ): boolean {
-        return true;
-    }
+        useMorphTargets?: boolean,
+        useVertexAlpha?: boolean,
+        useBakedVertexAnimation?: boolean
+    ) => boolean = PrepareDefinesForAttributes;
 
     /**
      * Prepares the defines related to multiview
      * @param scene The scene we are intending to draw
      * @param defines The defines to update
      */
-    public static PrepareDefinesForMultiview(scene: Scene, defines: any) {}
+    public static PrepareDefinesForMultiview:(scene: Scene, defines: any) => void = PrepareDefinesForMultiview;
 
     /**
      * Prepares the defines related to order independant transparency
@@ -197,7 +191,7 @@ export class MaterialHelper {
      * @param defines The defines to update
      * @param needAlphaBlending Determines if the material needs alpha blending
      */
-    public static PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {}
+    public static PrepareDefinesForOIT:(scene: Scene, defines: any, needAlphaBlending: boolean) => void = PrepareDefinesForOIT;
 
     /**
      * Prepares the defines related to the prepass
@@ -205,7 +199,7 @@ export class MaterialHelper {
      * @param defines The defines to update
      * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
      */
-    public static PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {}
+    public static PrepareDefinesForPrePass:(scene: Scene, defines: any, canRenderToMRT: boolean) => void = PrepareDefinesForPrePass;
 
     /**
      * Prepares the defines related to the light information passed in parameter
@@ -222,7 +216,7 @@ export class MaterialHelper {
      * @param state.specularEnabled
      * @param state.lightmapMode
      */
-    public static PrepareDefinesForLight(
+    public static PrepareDefinesForLight:(
         scene: Scene,
         mesh: AbstractMesh,
         light: Light,
@@ -236,7 +230,7 @@ export class MaterialHelper {
             specularEnabled: boolean;
             lightmapMode: boolean;
         }
-    ) {}
+    ) => void = PrepareDefinesForLight;
 
     /**
      * Prepares the defines related to the light information passed in parameter
@@ -248,9 +242,7 @@ export class MaterialHelper {
      * @param disableLighting Specifies whether the lighting is disabled (override scene and light)
      * @returns true if normals will be required for the rest of the effect
      */
-    public static PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
-        return true;
-    }
+    public static PrepareDefinesForLights:(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights?: number, disableLighting?: boolean) => boolean = PrepareDefinesForLights;
 
     /**
      * Prepares the uniforms and samplers list to be used in the effect (for a specific light)
@@ -261,14 +253,14 @@ export class MaterialHelper {
      * @param uniformBuffersList defines an optional list of uniform buffers
      * @param updateOnlyBuffersList True to only update the uniformBuffersList array
      */
-    public static PrepareUniformsAndSamplersForLight(
+    public static PrepareUniformsAndSamplersForLight:(
         lightIndex: number,
         uniformsList: string[],
         samplersList: string[],
         projectedLightTexture?: any,
-        uniformBuffersList: Nullable<string[]> = null,
-        updateOnlyBuffersList = false
-    ) {}
+        uniformBuffersList?: Nullable<string[]>,
+        updateOnlyBuffersList?: boolean
+    ) => void = PrepareUniformsAndSamplersForLight;
 
     /**
      * Prepares the uniforms and samplers list to be used in the effect
@@ -277,12 +269,12 @@ export class MaterialHelper {
      * @param defines The defines helping in the list generation
      * @param maxSimultaneousLights The maximum number of simultaneous light allowed in the effect
      */
-    public static PrepareUniformsAndSamplersList(
+    public static PrepareUniformsAndSamplersList:(
         uniformsListOrOptions: string[] | IEffectCreationOptions,
         samplersList?: string[],
         defines?: any,
-        maxSimultaneousLights = 4
-    ): void {}
+        maxSimultaneousLights?: number
+    ) => void = PrepareUniformsAndSamplersList;
 
     /**
      * This helps decreasing rank by rank the shadow quality (0 being the highest rank and quality)
@@ -292,9 +284,7 @@ export class MaterialHelper {
      * @param rank the current rank of the Effect
      * @returns The newly affected rank
      */
-    public static HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4, rank = 0): number {
-        return 0;
-    }
+    public static HandleFallbacksForShadows:(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights?: number, rank?: number) => number = HandleFallbacksForShadows;
 
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
@@ -302,7 +292,7 @@ export class MaterialHelper {
      * @param mesh The mesh to prepare the morph targets attributes for
      * @param influencers The number of influencers
      */
-    public static PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {}
+    public static PrepareAttributesForMorphTargetsInfluencers:(attribs: string[], mesh: AbstractMesh, influencers: number) => void = PrepareAttributesForMorphTargetsInfluencers;
 
     /**
      * Prepares the list of attributes required for morph targets according to the effect defines.
@@ -310,7 +300,7 @@ export class MaterialHelper {
      * @param mesh The mesh to prepare the morph targets attributes for
      * @param defines The current Defines of the effect
      */
-    public static PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {}
+    public static PrepareAttributesForMorphTargets:(attribs: string[], mesh: AbstractMesh, defines: any) => void = PrepareAttributesForMorphTargets;
 
     /**
      * Prepares the list of attributes required for baked vertex animations according to the effect defines.
@@ -318,7 +308,7 @@ export class MaterialHelper {
      * @param mesh The mesh to prepare for baked vertex animations
      * @param defines The current Defines of the effect
      */
-    public static PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {}
+    public static PrepareAttributesForBakedVertexAnimation:(attribs: string[], mesh: AbstractMesh, defines: any) => void = PrepareAttributesForBakedVertexAnimation;
 
     /**
      * Prepares the list of attributes required for bones according to the effect defines.
@@ -327,21 +317,21 @@ export class MaterialHelper {
      * @param defines The current Defines of the effect
      * @param fallbacks The current effect fallback strategy
      */
-    public static PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {}
+    public static PrepareAttributesForBones:(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks) => void = PrepareAttributesForBones;
 
     /**
      * Check and prepare the list of attributes required for instances according to the effect defines.
      * @param attribs The current list of supported attribs
      * @param defines The current MaterialDefines of the effect
      */
-    public static PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {}
+    public static PrepareAttributesForInstances:(attribs: string[], defines: MaterialDefines) => void = PrepareAttributesForInstances;
 
     /**
      * Add the list of attributes required for instances to the attribs array.
      * @param attribs The current list of supported attribs
      * @param needsPreviousMatrices If the shader needs previous matrices
      */
-    public static PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {}
+    public static PushAttributesForInstances:(attribs: string[], needsPreviousMatrices?: boolean) => void = PushAttributesForInstances;
 
     /**
      * Binds the light information to the effect.
@@ -349,7 +339,7 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param lightIndex The light index in the effect used to render
      */
-    public static BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {}
+    public static BindLightProperties:(light: Light, effect: Effect, lightIndex: number) => void = BindLightProperties;
 
     /**
      * Binds the lights information from the scene to the effect for the given mesh.
@@ -360,7 +350,7 @@ export class MaterialHelper {
      * @param useSpecular Defines if specular is supported
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
      */
-    public static BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {}
+    public static BindLight:(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows?: boolean) => void = BindLight;
 
     /**
      * Binds the lights information from the scene to the effect for the given mesh.
@@ -370,7 +360,7 @@ export class MaterialHelper {
      * @param defines The generated defines for the effect
      * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
      */
-    public static BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {}
+    public static BindLights:(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights?: number) => void = BindLights;
 
     /**
      * Binds the fog information from the scene to the effect for the given mesh.
@@ -379,7 +369,7 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param linearSpace Defines if the fog effect is applied in linear space
      */
-    public static BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {}
+    public static BindFogParameters:(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace?: boolean) => void = BindFogParameters;
 
     /**
      * Binds the bones information from the mesh to the effect.
@@ -387,14 +377,14 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
      */
-    public static BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {}
+    public static BindBonesParameters:(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration) => void = BindBonesParameters;
 
     /**
      * Binds the morph targets information from the mesh to the effect.
      * @param abstractMesh The mesh we are binding the information to render
      * @param effect The effect we are binding the data to
      */
-    public static BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {}
+    public static BindMorphTargetParameters:(abstractMesh: AbstractMesh, effect: Effect) => void = BindMorphTargetParameters;
 
     /**
      * Binds the logarithmic depth information from the scene to the effect for the given defines.
@@ -402,38 +392,5 @@ export class MaterialHelper {
      * @param effect The effect we are binding the data to
      * @param scene The scene we are willing to render with logarithmic scale for
      */
-    public static BindLogDepth(defines: any, effect: Effect, scene: Scene): void {}
+    public static BindLogDepth:(defines: any, effect: Effect, scene: Scene) => void = BindLogDepth;
 }
-
-MaterialHelper.BindLogDepth = BindLogDepth;
-MaterialHelper.BindFogParameters = BindFogParameters;
-MaterialHelper.PrepareAttributesForMorphTargetsInfluencers = PrepareAttributesForMorphTargetsInfluencers;
-MaterialHelper.PrepareAttributesForMorphTargets = PrepareAttributesForMorphTargets;
-MaterialHelper.PushAttributesForInstances = PushAttributesForInstances;
-MaterialHelper.BindMorphTargetParameters = BindMorphTargetParameters;
-MaterialHelper.BindSceneUniformBuffer = BindSceneUniformBuffer;
-MaterialHelper.PrepareDefinesForMergedUV = PrepareDefinesForMergedUV;
-MaterialHelper.BindTextureMatrix = BindTextureMatrix;
-MaterialHelper.PrepareAttributesForBakedVertexAnimation = PrepareAttributesForBakedVertexAnimation;
-MaterialHelper.BindBonesParameters = BindBonesParameters;
-MaterialHelper.BindLightProperties = BindLightProperties;
-MaterialHelper.BindLights = BindLights;
-MaterialHelper.BindLight = BindLight;
-MaterialHelper.PrepareAttributesForBones = PrepareAttributesForBones;
-MaterialHelper.PrepareAttributesForInstances = PrepareAttributesForInstances;
-MaterialHelper.HandleFallbacksForShadows = HandleFallbacksForShadows;
-MaterialHelper.PrepareDefinesForMisc = PrepareDefinesForMisc;
-MaterialHelper.GetFogState = GetFogState;
-MaterialHelper.PrepareDefinesForLights = PrepareDefinesForLights;
-MaterialHelper.PrepareDefinesForLight = PrepareDefinesForLight;
-MaterialHelper.PrepareDefinesForFrameBoundValues = PrepareDefinesForFrameBoundValues;
-MaterialHelper.PrepareDefinesForBones = PrepareDefinesForBones;
-MaterialHelper.PrepareDefinesForMorphTargets = PrepareDefinesForMorphTargets;
-MaterialHelper.PrepareDefinesForBakedVertexAnimation = PrepareDefinesForBakedVertexAnimation;
-MaterialHelper.PrepareDefinesForAttributes = PrepareDefinesForAttributes;
-MaterialHelper.PrepareDefinesForMultiview = PrepareDefinesForMultiview;
-MaterialHelper.PrepareDefinesForOIT = PrepareDefinesForOIT;
-MaterialHelper.PrepareDefinesForPrePass = PrepareDefinesForPrePass;
-MaterialHelper.PrepareDefinesForCamera = PrepareDefinesForCamera;
-MaterialHelper.PrepareUniformsAndSamplersList = PrepareUniformsAndSamplersList;
-MaterialHelper.PrepareUniformsAndSamplersForLight = PrepareUniformsAndSamplersForLight;
