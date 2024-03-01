@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize } from "../../Misc/decorators";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import { Matrix, TmpVectors, Vector3 } from "../../Maths/math.vector";
@@ -21,6 +21,8 @@ import type { MirrorTexture } from "../../Materials/Textures/mirrorTexture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { Scene } from "../../scene";
 import type { VideoTexture, VideoTextureSettings } from "./videoTexture";
+
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * Defines the available options when creating a texture

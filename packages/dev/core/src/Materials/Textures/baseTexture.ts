@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsTexture } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
@@ -16,6 +16,7 @@ import { ThinTexture } from "./thinTexture";
 import type { AbstractScene } from "../../abstractScene";
 
 import type { Animation } from "../../Animations/animation";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * Base class of all the textures in babylon.

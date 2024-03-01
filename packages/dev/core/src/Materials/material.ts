@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import type { SmartArray } from "../Misc/smartArray";
@@ -50,6 +50,7 @@ import type { Mesh } from "../Meshes/mesh";
 import type { Animation } from "../Animations/animation";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare let BABYLON: any;
 

@@ -1,10 +1,11 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import type { Scene } from "../../scene";
 import type { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseSimpleMaterial } from "./pbrBaseSimpleMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { Nullable } from "../../types";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * The PBR material of BJS following the specular glossiness convention.

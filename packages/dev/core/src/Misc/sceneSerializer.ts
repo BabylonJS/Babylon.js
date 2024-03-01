@@ -5,7 +5,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import type { Material } from "../Materials/material";
 import type { Scene } from "../scene";
 import type { Light } from "../Lights/light";
-import { SerializationHelper } from "./decorators";
+import { SerializationHelper } from "./decorators.serialization";
 import { Texture } from "../Materials/Textures/texture";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import type { Node } from "../node";

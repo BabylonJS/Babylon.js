@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture } from "../../Misc/decorators";
 import { GetEnvironmentBRDFTexture } from "../../Misc/brdfTextureTools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
@@ -9,6 +9,7 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
 import { Material } from "../material";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * The Physically based material of BJS.

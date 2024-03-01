@@ -3,7 +3,7 @@ import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
-import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
 import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";

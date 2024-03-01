@@ -4,7 +4,7 @@ import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
 import type { Engine } from "./Engines/engine";
 import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
-import { SerializationHelper, serialize } from "./Misc/decorators";
+import { serialize } from "./Misc/decorators";
 import type { Observer } from "./Misc/observable";
 import { Observable } from "./Misc/observable";
 import { EngineStore } from "./Engines/engineStore";
@@ -18,6 +18,7 @@ import type { AnimationPropertiesOverride } from "./Animations/animationProperti
 import type { AbstractMesh } from "./Meshes/abstractMesh";
 import type { Animation } from "./Animations/animation";
 import type { Animatable } from "./Animations/animatable";
+import { SerializationHelper } from "./Misc/decorators.serialization";
 
 /**
  * Defines how a node can be built from a string name.

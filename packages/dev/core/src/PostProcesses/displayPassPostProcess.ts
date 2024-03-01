@@ -6,7 +6,7 @@ import type { Engine } from "../Engines/engine";
 
 import "../Shaders/displayPass.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 

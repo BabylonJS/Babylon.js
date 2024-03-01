@@ -1,4 +1,4 @@
-import { SerializationHelper, serialize } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import { MaterialPluginManager } from "./materialPluginManager";
 import type { SmartArray } from "../Misc/smartArray";
@@ -15,6 +15,7 @@ import type { MaterialDefines } from "./materialDefines";
 import type { Material } from "./material";
 import type { BaseTexture } from "./Textures/baseTexture";
 import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
  * Base class for material plugins.

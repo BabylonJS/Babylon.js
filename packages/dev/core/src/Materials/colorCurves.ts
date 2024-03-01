@@ -1,6 +1,8 @@
-import { SerializationHelper, serialize } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import { Color4 } from "../Maths/math.color";
 import type { Effect } from "../Materials/effect";
+import { SerializationHelper } from "../Misc/decorators.serialization";
+import { PrepareUniformsForColorCurves } from "./colorCurves.functions";
 
 /**
  * The color grading curves provide additional color adjustment that is applied after any color grading transform (3D LUT).
@@ -396,9 +398,7 @@ export class ColorCurves {
      * Prepare the list of uniforms associated with the ColorCurves effects.
      * @param uniformsList The list of uniforms used in the effect
      */
-    public static PrepareUniforms(uniformsList: string[]): void {
-        uniformsList.push("vCameraColorCurveNeutral", "vCameraColorCurvePositive", "vCameraColorCurveNegative");
-    }
+    public static PrepareUniforms: (uniformsList: string[]) => void = PrepareUniformsForColorCurves;
 
     /**
      * Returns color grading data based on a hue, density, saturation and exposure value.

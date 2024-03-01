@@ -14,7 +14,8 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/motionBlur.fragment";
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { Engine } from "../Engines/engine";

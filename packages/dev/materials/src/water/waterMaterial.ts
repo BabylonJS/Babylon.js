@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { serializeAsVector2, serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Matrix, Vector2, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import { Plane } from "core/Maths/math.plane";
@@ -12,7 +13,7 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import type { IImageProcessingConfigurationDefines } from "core/Materials/imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "core/Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
