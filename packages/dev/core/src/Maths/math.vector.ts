@@ -4131,12 +4131,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @returns result input
      */
     public static ClampToRef<T extends Vector4>(value: DeepImmutable<Vector4>, min: DeepImmutable<Vector4>, max: DeepImmutable<Vector4>, result: T): T {
-        return result.copyFromFloats(
-            Clamp(value.x, min.x, max.x),
-            Clamp(value.y, min.y, max.y),
-            Clamp(value.z, min.z, max.z),
-            Clamp(value.w, min.w, max.w)
-        );
+        return result.copyFromFloats(Clamp(value.x, min.x, max.x), Clamp(value.y, min.y, max.y), Clamp(value.z, min.z, max.z), Clamp(value.w, min.w, max.w));
     }
 
     /**
@@ -5804,12 +5799,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @returns result input
      */
     public static ClampToRef<T extends Quaternion>(value: DeepImmutable<Quaternion>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>, result: T): T {
-        return result.copyFromFloats(
-            Clamp(value.x, min.x, max.x),
-            Clamp(value.y, min.y, max.y),
-            Clamp(value.z, min.z, max.z),
-            Clamp(value.w, min.w, max.w)
-        );
+        return result.copyFromFloats(Clamp(value.x, min.x, max.x), Clamp(value.y, min.y, max.y), Clamp(value.z, min.z, max.z), Clamp(value.w, min.w, max.w));
     }
 
     /**
