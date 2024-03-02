@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVec
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -963,6 +963,12 @@ export class ArcRotateCamera extends TargetCamera {
                         this._target.copyFrom(this._transformedDirection);
                     }
                 } else {
+                    if (this.parent) {
+                        const m = TmpVectors.Matrix[0];
+                        this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                        m.transposeToRef(m);
+                        Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+                    }
                     this._target.addInPlace(this._transformedDirection);
                 }
             }

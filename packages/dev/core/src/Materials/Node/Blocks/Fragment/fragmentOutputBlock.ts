@@ -8,9 +8,9 @@ import type { Scene } from "../../../../scene";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
-import { MaterialHelper } from "../../../materialHelper";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
+import { BindLogDepth } from "../../../materialHelper.functions";
 
 /**
  * Block used to output the final color
@@ -91,7 +91,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
-            MaterialHelper.BindLogDepth(undefined, effect, mesh.getScene());
+            BindLogDepth(undefined, effect, mesh.getScene());
         }
     }
 

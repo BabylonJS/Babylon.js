@@ -6,7 +6,6 @@ import { Vector3, Quaternion } from "core/Maths/math.vector";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -19,6 +18,7 @@ import "./sky.fragment";
 import "./sky.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import { BindFogParameters, BindLogDepth, PrepareDefinesForAttributes, PrepareDefinesForMisc } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 class SkyMaterialDefines extends MaterialDefines {
@@ -198,10 +198,10 @@ export class SkyMaterial extends PushMaterial {
             return true;
         }
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, false);
+        PrepareDefinesForAttributes(mesh, defines, true, false);
 
         if (defines.IMAGEPROCESSINGPOSTPROCESS !== scene.imageProcessingConfiguration.applyByPostProcess) {
             defines.markAsMiscDirty();
@@ -302,7 +302,7 @@ export class SkyMaterial extends PushMaterial {
 
             // Log. depth
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(defines, effect, scene);
+                BindLogDepth(defines, effect, scene);
             }
         }
 
@@ -312,7 +312,7 @@ export class SkyMaterial extends PushMaterial {
         }
 
         // Fog
-        MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+        BindFogParameters(scene, mesh, this._activeEffect);
 
         // Sky
         const camera = scene.activeCamera;

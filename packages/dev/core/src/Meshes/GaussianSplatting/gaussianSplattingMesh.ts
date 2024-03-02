@@ -110,7 +110,7 @@ export class GaussianSplattingMesh extends Mesh {
      */
     public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         if (!this.material) {
-            this._material = new GaussianSplattingMaterial(name + "_material", this._scene);
+            this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
             this.material = this._material;
         }
 

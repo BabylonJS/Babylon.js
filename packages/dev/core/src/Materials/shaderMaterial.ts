@@ -1,6 +1,6 @@
 import { SerializationHelper } from "../Misc/decorators";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
@@ -8,7 +8,6 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { MaterialHelper } from "./materialHelper";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
@@ -24,6 +23,15 @@ import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareAttributesForBakedVertexAnimation,
+    PushAttributesForInstances,
+} from "./materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -679,8 +687,8 @@ export class ShaderMaterial extends PushMaterial {
         if (engine.getCaps().multiview && scene.activeCamera && scene.activeCamera.outputRenderTarget && scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
             this._multiview = true;
             defines.push("#define MULTIVIEW");
-            if (this._options.uniforms.indexOf("viewProjection") !== -1 && this._options.uniforms.indexOf("viewProjectionR") === -1) {
-                this._options.uniforms.push("viewProjectionR");
+            if (uniforms.indexOf("viewProjection") !== -1 && uniforms.indexOf("viewProjectionR") === -1) {
+                uniforms.push("viewProjectionR");
             }
         }
 
@@ -702,7 +710,7 @@ export class ShaderMaterial extends PushMaterial {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
+            PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
                 if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
@@ -729,8 +737,8 @@ export class ShaderMaterial extends PushMaterial {
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
 
-                if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
-                    this._options.uniforms.push("boneTextureWidth");
+                if (uniforms.indexOf("boneTextureWidth") === -1) {
+                    uniforms.push("boneTextureWidth");
                 }
 
                 if (this._options.samplers.indexOf("boneSampler") === -1) {
@@ -739,8 +747,8 @@ export class ShaderMaterial extends PushMaterial {
             } else {
                 defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
 
-                if (this._options.uniforms.indexOf("mBones") === -1) {
-                    this._options.uniforms.push("mBones");
+                if (uniforms.indexOf("mBones") === -1) {
+                    uniforms.push("mBones");
                 }
             }
         } else {
@@ -770,8 +778,8 @@ export class ShaderMaterial extends PushMaterial {
             if (manager.isUsingTextureForTargets) {
                 defines.push("#define MORPHTARGETS_TEXTURE");
 
-                if (this._options.uniforms.indexOf("morphTargetTextureIndices") === -1) {
-                    this._options.uniforms.push("morphTargetTextureIndices");
+                if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                    uniforms.push("morphTargetTextureIndices");
                 }
 
                 if (this._options.samplers.indexOf("morphTargets") === -1) {
@@ -811,14 +819,14 @@ export class ShaderMaterial extends PushMaterial {
 
             if (bvaManager && bvaManager.isEnabled) {
                 defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-                if (this._options.uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationSettings");
+                if (uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
+                    uniforms.push("bakedVertexAnimationSettings");
                 }
-                if (this._options.uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationTextureSizeInverted");
+                if (uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
+                    uniforms.push("bakedVertexAnimationTextureSizeInverted");
                 }
-                if (this._options.uniforms.indexOf("bakedVertexAnimationTime") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationTime");
+                if (uniforms.indexOf("bakedVertexAnimationTime") === -1) {
+                    uniforms.push("bakedVertexAnimationTime");
                 }
 
                 if (this._options.samplers.indexOf("bakedVertexAnimationTexture") === -1) {
@@ -826,7 +834,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
-            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
         }
 
         // Textures
@@ -848,11 +856,25 @@ export class ShaderMaterial extends PushMaterial {
             prepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
+        // Fog
+        if (scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
+            defines.push("#define FOG");
+            if (uniforms.indexOf("view") === -1) {
+                uniforms.push("view");
+            }
+            if (uniforms.indexOf("vFogInfos") === -1) {
+                uniforms.push("vFogInfos");
+            }
+            if (uniforms.indexOf("vFogColor") === -1) {
+                uniforms.push("vFogColor");
+            }
+        }
+
         // Misc
         if (this._useLogarithmicDepth) {
             defines.push("#define LOGARITHMICDEPTH");
-            if (this._options.uniforms.indexOf("logarithmicDepthConstant") === -1) {
-                this._options.uniforms.push("logarithmicDepthConstant");
+            if (uniforms.indexOf("logarithmicDepthConstant") === -1) {
+                uniforms.push("logarithmicDepthConstant");
             }
         }
 
@@ -942,6 +964,10 @@ export class ShaderMaterial extends PushMaterial {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
             effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
         }
+
+        if (this._options.uniforms.indexOf("view") !== -1) {
+            effect.setMatrix("view", scene.getViewMatrix());
+        }
     }
 
     /**
@@ -991,7 +1017,7 @@ export class ShaderMaterial extends PushMaterial {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                        BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
                         scene.finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
@@ -1022,14 +1048,19 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, effect);
+            BindBonesParameters(mesh, effect);
 
             // Clip plane
             bindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+                BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+            }
+
+            // Fog
+            if (mesh) {
+                BindFogParameters(scene, mesh, effect);
             }
 
             let name: string;
@@ -1172,7 +1203,7 @@ export class ShaderMaterial extends PushMaterial {
             // Morph targets
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
-                MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
+                BindMorphTargetParameters(<Mesh>mesh, effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;

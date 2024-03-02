@@ -8,7 +8,6 @@ import { Texture } from "../Materials/Textures/texture";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
-import { MaterialHelper } from "../Materials/materialHelper";
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from "../Maths/math.color";
@@ -22,6 +21,7 @@ import "../Shaders/geometry.fragment";
 import "../Shaders/geometry.vertex";
 import { MaterialFlags } from "../Materials/materialFlags";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
+import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 /** @internal */
 interface ISavedTransformationMatrix {
@@ -621,14 +621,14 @@ export class GeometryBufferRenderer {
                 if (morphTargetManager.isUsingTextureForTargets) {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
 
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs, this._enableVelocity);
+            PushAttributesForInstances(attribs, this._enableVelocity);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -883,7 +883,7 @@ export class GeometryBufferRenderer {
                     effect.setMatrix("viewProjection", scene.getTransformMatrix());
                     effect.setMatrix("view", scene.getViewMatrix());
                 } else {
-                    MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+                    BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
                     this._scene.finalizeSceneUbo();
                 }
 
@@ -1025,7 +1025,7 @@ export class GeometryBufferRenderer {
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                BindMorphTargetParameters(renderingMesh, effect);
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
                 }

@@ -17,6 +17,7 @@ import { PlaneDragGizmo } from "./planeDragGizmo";
 import { UtilityLayerRenderer } from "../Rendering/utilityLayerRenderer";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { GizmoManager } from "./gizmoManager";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for position gizmo
@@ -59,6 +60,17 @@ export interface IPositionGizmo extends IGizmo {
      * Force release the drag action by code
      */
     releaseDrag(): void;
+}
+
+/**
+ * Additional options for the position gizmo
+ */
+export interface PositionGizmoOptions {
+    /**
+     * Additional transform applied to the gizmo.
+     * @See Gizmo.additionalTransformNode for more detail
+     */
+    additionalTransformNode?: TransformNode;
 }
 
 /**
@@ -161,13 +173,24 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         );
     }
 
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
+    }
+
+    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+        [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
+            gizmo.additionalTransformNode = transformNode;
+        });
+    }
+
     /**
      * Creates a PositionGizmo
      * @param gizmoLayer The utility layer the gizmo will be added to
-      @param thickness display gizmo axis thickness
+     * @param thickness display gizmo axis thickness
      * @param gizmoManager
+     * @param options More options
      */
-    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager) {
+    constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer, thickness: number = 1, gizmoManager?: GizmoManager, options?: PositionGizmoOptions) {
         super(gizmoLayer);
         this.xGizmo = new AxisDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), gizmoLayer, this, thickness);
         this.yGizmo = new AxisDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), gizmoLayer, this, thickness);
@@ -176,6 +199,9 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         this.xPlaneGizmo = new PlaneDragGizmo(new Vector3(1, 0, 0), Color3.Red().scale(0.5), this.gizmoLayer, this);
         this.yPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 1, 0), Color3.Green().scale(0.5), this.gizmoLayer, this);
         this.zPlaneGizmo = new PlaneDragGizmo(new Vector3(0, 0, 1), Color3.Blue().scale(0.5), this.gizmoLayer, this);
+
+        this.additionalTransformNode = options?.additionalTransformNode;
+
         // Relay drag events
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             gizmo.dragBehavior.onDragStartObservable.add(() => {

@@ -5,7 +5,6 @@ import { Vector4, Vector3 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -17,6 +16,14 @@ import { RegisterClass } from "core/Misc/typeStore";
 
 import "./grid.fragment";
 import "./grid.vertex";
+import {
+    BindFogParameters,
+    BindLogDepth,
+    PrepareAttributesForInstances,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForMisc,
+} from "core/Materials/materialHelper.functions";
 
 class GridMaterialDefines extends MaterialDefines {
     public OPACITY = false;
@@ -189,10 +196,10 @@ export class GridMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, false, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, false, this.fogEnabled, false, defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), this, defines, !!useInstances);
+        PrepareDefinesForFrameBoundValues(scene, scene.getEngine(), this, defines, !!useInstances);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -200,7 +207,7 @@ export class GridMaterial extends PushMaterial {
             scene.resetCachedMaterial();
 
             // Attributes
-            MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
+            PrepareDefinesForAttributes(mesh, defines, false, false);
             const attribs = [VertexBuffer.PositionKind, VertexBuffer.NormalKind];
 
             if (defines.UV1) {
@@ -212,7 +219,7 @@ export class GridMaterial extends PushMaterial {
 
             defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForInstances(attribs, defines);
 
             // Defines
             const join = defines.toString();
@@ -303,11 +310,11 @@ export class GridMaterial extends PushMaterial {
 
             // Log. depth
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(defines, effect, scene);
+                BindLogDepth(defines, effect, scene);
             }
         }
         // Fog
-        MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+        BindFogParameters(scene, mesh, this._activeEffect);
 
         this._afterBind(mesh, this._activeEffect, subMesh);
     }

@@ -29,10 +29,10 @@
         "@types/jest-image-snapshot": "^4.3.1",
         "@types/react": "^17.0.30",
         "@types/react-dom": "^17.0.10",
-        "jest": "^27.4.7",
-        "jest-puppeteer": "^6.0.3",
+        "jest": "^29.7.0",
+        "jest-puppeteer": "^10.0.1",
         "sass": "^1.62.1",
-        "puppeteer": "^20.5.0"
+        "puppeteer": "^22.1.0"
     },
     "optionalDependencies": {
         "jest-image-snapshot": "^6.1.0"

@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
 import { MaterialDefines } from "../Materials/materialDefines";
@@ -9,6 +8,7 @@ import { ColorCurves } from "../Materials/colorCurves";
 
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
+import { Mix } from "../Misc/tools.functions";
 
 /**
  * Interface to follow in your material defines to integrate easily the
@@ -621,8 +621,8 @@ export class ImageProcessingConfiguration {
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-                vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-                vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleX = Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleY = Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
                 effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCenterX, -vignetteScaleY * this.vignetteCenterY);
 

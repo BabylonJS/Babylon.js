@@ -3,7 +3,7 @@ import type { Immutable, Nullable, float, DataArray } from "../types";
 import type { Color3Gradient, IValueGradient } from "../Misc/gradients";
 import { FactorGradient, ColorGradient, GradientHelper } from "../Misc/gradients";
 import { Observable } from "../Misc/observable";
-import type { Vector3 } from "../Maths/math.vector";
+import { Vector3 } from "../Maths/math.vector";
 import { Matrix, TmpVectors } from "../Maths/math.vector";
 import { Color4, TmpColors } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
@@ -15,7 +15,6 @@ import { ParticleSystem } from "./particleSystem";
 import { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import type { IDisposable } from "../scene";
 import type { Effect } from "../Materials/effect";
-import { MaterialHelper } from "../Materials/materialHelper";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { Constants } from "../Engines/constants";
@@ -30,7 +29,7 @@ import type { IGPUParticleSystemPlatform } from "./IGPUParticleSystemPlatform";
 import { GetClass } from "../Misc/typeStore";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import type { Engine } from "../Engines/engine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 
@@ -38,6 +37,21 @@ import "../Engines/Extensions/engine.transformFeedback";
 
 import "../Shaders/gpuRenderParticles.fragment";
 import "../Shaders/gpuRenderParticles.vertex";
+import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
+import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
+import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
+import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
+import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
+import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import {
+    CreateConeEmitter,
+    CreateCylinderEmitter,
+    CreateDirectedCylinderEmitter,
+    CreateDirectedSphereEmitter,
+    CreateHemisphericEmitter,
+    CreatePointEmitter,
+    CreateSphereEmitter,
+} from "./particleSystem.functions";
 
 /**
  * This represents a GPU particle system in Babylon
@@ -169,6 +183,120 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
     /** Gets or sets a matrix to use to compute projection */
     public defaultProjectionMatrix: Matrix;
+
+    /**
+     * Creates a Point Emitter for the particle system (emits directly from the emitter position)
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+     * @returns the emitter
+     */
+    public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
+        const particleEmitter = CreatePointEmitter(direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
+     * @param radius The radius of the hemisphere to emit from
+     * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+     * @returns the emitter
+     */
+    public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
+        const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
+     * @param radius The radius of the sphere to emit from
+     * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
+     * @returns the emitter
+     */
+    public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
+        const particleEmitter = CreateSphereEmitter(radius, radiusRange);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Directed Sphere Emitter for the particle system (emits between direction1 and direction2)
+     * @param radius The radius of the sphere to emit from
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
+     * @returns the emitter
+     */
+    public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
+        const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Cylinder Emitter for the particle system (emits from the cylinder to the particle position)
+     * @param radius The radius of the emission cylinder
+     * @param height The height of the emission cylinder
+     * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
+     * @param directionRandomizer How much to randomize the particle direction [0-1]
+     * @returns the emitter
+     */
+    public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
+        const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Directed Cylinder Emitter for the particle system (emits between direction1 and direction2)
+     * @param radius The radius of the cylinder to emit from
+     * @param height The height of the emission cylinder
+     * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
+     * @returns the emitter
+     */
+    public createDirectedCylinderEmitter(
+        radius = 1,
+        height = 1,
+        radiusRange = 1,
+        direction1 = new Vector3(0, 1.0, 0),
+        direction2 = new Vector3(0, 1.0, 0)
+    ): CylinderDirectedParticleEmitter {
+        const particleEmitter = CreateDirectedCylinderEmitter(radius, height, radiusRange, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
+     * @param radius The radius of the cone to emit from
+     * @param angle The base angle of the cone
+     * @returns the emitter
+     */
+    public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+        const particleEmitter = CreateConeEmitter(radius, angle);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    /**
+     * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
+     * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
+     * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
+     * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
+     * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
+     * @returns the emitter
+     */
+    public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
+        const particleEmitter = new BoxParticleEmitter();
+        this.particleEmitterType = particleEmitter;
+        this.direction1 = direction1;
+        this.direction2 = direction2;
+        this.minEmitBox = minEmitBox;
+        this.maxEmitBox = maxEmitBox;
+        return particleEmitter;
+    }
 
     /**
      * Is this system ready to be used/rendered
@@ -1316,7 +1444,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * @internal
      */
-    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false): string[] {
+    public static _GetEffectCreationOptions(isAnimationSheetEnabled = false, useLogarithmicDepth = false, applyFog = false): string[] {
         const effectCreationOption = ["emitterWM", "worldOffset", "view", "projection", "colorDead", "invView", "translationPivot", "eyePosition"];
         addClipPlaneUniforms(effectCreationOption);
 
@@ -1325,6 +1453,11 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         }
         if (useLogarithmicDepth) {
             effectCreationOption.push("logarithmicDepthConstant");
+        }
+
+        if (applyFog) {
+            effectCreationOption.push("vFogInfos");
+            effectCreationOption.push("vFogColor");
         }
 
         return effectCreationOption;
@@ -1338,6 +1471,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     public fillDefines(defines: Array<string>, blendMode: number = 0) {
         if (this._scene) {
             prepareStringDefinesForClipPlanes(this, this._scene, defines);
+            if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
+                defines.push("#define FOG");
+            }
         }
 
         if (blendMode === ParticleSystem.BLENDMODE_MULTIPLY) {
@@ -1400,7 +1536,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             )
         );
 
-        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth));
+        uniforms.push(...GPUParticleSystem._GetEffectCreationOptions(this._isAnimationSheetEnabled, this.useLogarithmicDepth, this.applyFog));
 
         samplers.push("diffuseSampler", "colorGradientSampler");
 
@@ -1529,6 +1665,10 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         if (this._scene) {
             bindClipPlane(effect, this, this._scene);
+
+            if (this.applyFog) {
+                BindFogParameters(this._scene, undefined, effect);
+            }
         }
 
         if (defines.indexOf("#define BILLBOARDMODE_ALL") >= 0) {
@@ -1539,7 +1679,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
 
         // Log. depth
         if (this.useLogarithmicDepth && this._scene) {
-            MaterialHelper.BindLogDepth(defines, effect, this._scene);
+            BindLogDepth(defines, effect, this._scene);
         }
 
         // image processing

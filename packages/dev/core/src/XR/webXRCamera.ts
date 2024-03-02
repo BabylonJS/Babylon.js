@@ -288,6 +288,16 @@ export class WebXRCamera extends FreeCamera {
                     currentRig._isLeftCamera = true;
                 }
             }
+            // add any custom render targets to this camera, if available in the scene
+            const customRenderTargets = this.getScene().customRenderTargets;
+            // use a for loop
+            for (let i = 0; i < customRenderTargets.length; i++) {
+                const rt = customRenderTargets[i];
+                // make sure we don't add the same render target twice
+                if (currentRig.customRenderTargets.indexOf(rt) === -1) {
+                    currentRig.customRenderTargets.push(rt);
+                }
+            }
             // Update view/projection matrix
             const pos = view.transform.position;
             const orientation = view.transform.orientation;

@@ -101,7 +101,7 @@ void main(void)
 	vec3 worldBinormal = normalize(xbin * normalizedNormal.x + ybin * normalizedNormal.y + zbin * normalizedNormal.z);
    	vec3 worldTangent = normalize(xtan * normalizedNormal.x + ytan * normalizedNormal.y + ztan * normalizedNormal.z);
 	   
-	mat3 normalWorld = mat3(world);
+	mat3 normalWorld = mat3(finalWorld);
 
 	#ifdef NONUNIFORMSCALING
 		normalWorld = transposeMat3(inverseMat3(normalWorld));
