@@ -210,7 +210,7 @@ export class VertexData {
     /**
      * Gets or sets a value indicating that the mesh must be flagged with hasVertexAlpha = true
      */
-    public hasVertexAlpha = true;
+    public hasVertexAlpha: boolean;
 
     /**
      * Creates a new VertexData
@@ -1082,7 +1082,9 @@ export class VertexData {
                 transform,
                 vertexDatas.map((other) => [other.vertexData.colors, other.transform])
             );
-            this.hasVertexAlpha = root.hasVertexAlpha || vertexDatas.some((other) => other.vertexData.hasVertexAlpha);
+            if (root.hasVertexAlpha !== undefined || vertexDatas.some((other) => other.vertexData.hasVertexAlpha !== undefined)) {
+                this.hasVertexAlpha = root.hasVertexAlpha || vertexDatas.some((other) => other.vertexData.hasVertexAlpha);
+            }
             if (isAsync) {
                 yield;
             }
