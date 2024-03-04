@@ -33,6 +33,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
 
     shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
         if (this._localChange) {
+            this._localChange = false;
             return true;
         }
 
