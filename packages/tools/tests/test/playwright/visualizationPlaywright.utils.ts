@@ -175,12 +175,12 @@ export const evaluateInitEngineForVisualization = async ({
 
     (BABYLON.KhronosTextureContainer2.URLConfig as any) = {
         jsDecoderModule: baseUrl + "/babylon.ktx2Decoder.js",
-        wasmUASTCToASTC: baseUrl + "/ktx2Transcoders/uastc_astc.wasm",
-        wasmUASTCToBC7: baseUrl + "/ktx2Transcoders/uastc_bc7.wasm",
-        wasmUASTCToRGBA_UNORM: baseUrl + "/ktx2Transcoders/uastc_rgba32_unorm.wasm",
-        wasmUASTCToRGBA_SRGB: baseUrl + "/ktx2Transcoders/uastc_rgba32_srgb.wasm",
-        jsMSCTranscoder: baseUrl + "/ktx2Transcoders/msc_basis_transcoder.js",
-        wasmMSCTranscoder: baseUrl + "/ktx2Transcoders/msc_basis_transcoder.wasm",
+        wasmUASTCToASTC: baseUrl + "/ktx2Transcoders/1/uastc_astc.wasm",
+        wasmUASTCToBC7: baseUrl + "/ktx2Transcoders/1/uastc_bc7.wasm",
+        wasmUASTCToRGBA_UNORM: baseUrl + "/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm",
+        wasmUASTCToRGBA_SRGB: baseUrl + "/ktx2Transcoders/1/uastc_rgba8_srgb_v2.wasm",
+        jsMSCTranscoder: baseUrl + "/ktx2Transcoders/1/msc_basis_transcoder.js",
+        wasmMSCTranscoder: baseUrl + "/ktx2Transcoders/1/msc_basis_transcoder.wasm",
         wasmZSTDDecoder: baseUrl + "/zstddec.wasm",
     };
 

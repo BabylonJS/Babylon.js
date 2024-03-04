@@ -9,23 +9,23 @@ import type { KTX2FileReader, IKTX2_ImageDesc } from "../ktx2FileReader";
  */
 export class LiteTranscoder extends Transcoder {
     private _modulePath: string;
+    private _wasmBinary: ArrayBuffer | null = null;
     private _modulePromise: Promise<{ module: any }>;
     private _memoryManager: WASMMemoryManager;
     protected _transcodeInPlace: boolean;
 
-    protected _loadModule(): Promise<{ module: any }> {
-        if (this._modulePromise) {
-            return this._modulePromise;
-        }
-
-        this._modulePromise = WASMMemoryManager.LoadWASM(this._modulePath).then((wasmBinary) => {
-            return new Promise((resolve) => {
-                WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
-                    resolve({ module: moduleWrapper.instance.exports });
-                });
-            });
+    private _instantiateWebAssembly(wasmBinary: ArrayBuffer): Promise<{ module: any }> {
+        return WebAssembly.instantiate(wasmBinary as ArrayBuffer, { env: { memory: this._memoryManager.wasmMemory } }).then((moduleWrapper) => {
+            return { module: moduleWrapper.instance.exports };
         });
+    }
 
+    protected _loadModule(wasmBinary: ArrayBuffer | null = this._wasmBinary): Promise<{ module: any }> {
+        this._modulePromise =
+            this._modulePromise ||
+            (wasmBinary ? Promise.resolve(wasmBinary) : WASMMemoryManager.LoadWASM(this._modulePath)).then((wasmBinary) => {
+                return this._instantiateWebAssembly(wasmBinary);
+            });
         return this._modulePromise;
     }
 
@@ -35,8 +35,9 @@ export class LiteTranscoder extends Transcoder {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected setModulePath(modulePath: string): void {
+    protected setModulePath(modulePath: string, wasmBinary: ArrayBuffer | null): void {
         this._modulePath = Transcoder.GetWasmUrl(modulePath);
+        this._wasmBinary = wasmBinary;
     }
 
     public initialize(): void {

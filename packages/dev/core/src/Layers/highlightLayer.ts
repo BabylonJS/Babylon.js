@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
@@ -30,6 +30,7 @@ import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
 import "../Layers/effectLayerSceneComponent";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare module "../abstractScene" {
     export interface AbstractScene {

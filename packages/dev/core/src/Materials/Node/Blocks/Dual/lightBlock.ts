@@ -3,7 +3,6 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { MaterialHelper } from "../../../materialHelper";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
@@ -26,6 +25,7 @@ import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
 import { Logger } from "core/Misc/logger";
+import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 
 /**
  * Block used to add light in the fragment shader
@@ -191,7 +191,7 @@ export class LightBlock extends NodeMaterialBlock {
         const scene = mesh.getScene();
 
         if (!this.light) {
-            MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
+            PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
         } else {
             const state = {
                 needNormals: false,
@@ -201,7 +201,7 @@ export class LightBlock extends NodeMaterialBlock {
                 specularEnabled: false,
             };
 
-            MaterialHelper.PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
+            PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
 
             if (state.needRebuild) {
                 defines.rebuild();
@@ -215,14 +215,7 @@ export class LightBlock extends NodeMaterialBlock {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            MaterialHelper.PrepareUniformsAndSamplersForLight(
-                lightIndex,
-                state.uniforms,
-                state.samplers,
-                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
-                uniformBuffers,
-                onlyUpdateBuffersList
-            );
+            PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -234,9 +227,9 @@ export class LightBlock extends NodeMaterialBlock {
         const scene = mesh.getScene();
 
         if (!this.light) {
-            MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
+            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
         } else {
-            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true);
+            BindLight(this.light, this._lightId, scene, effect, true);
         }
     }
 

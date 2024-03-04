@@ -1,4 +1,4 @@
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
@@ -8,7 +8,6 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { MaterialHelper } from "./materialHelper";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
@@ -24,6 +23,15 @@ import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareAttributesForBakedVertexAnimation,
+    PushAttributesForInstances,
+} from "./materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -702,7 +710,7 @@ export class ShaderMaterial extends PushMaterial {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
+            PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
                 if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
@@ -826,7 +834,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
-            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
         }
 
         // Textures
@@ -1009,7 +1017,7 @@ export class ShaderMaterial extends PushMaterial {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                        BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
                         scene.finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
@@ -1040,19 +1048,19 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, effect);
+            BindBonesParameters(mesh, effect);
 
             // Clip plane
             bindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+                BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
             }
 
             // Fog
             if (mesh) {
-                MaterialHelper.BindFogParameters(scene, mesh, effect);
+                BindFogParameters(scene, mesh, effect);
             }
 
             let name: string;
@@ -1195,7 +1203,7 @@ export class ShaderMaterial extends PushMaterial {
             // Morph targets
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
-                MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
+                BindMorphTargetParameters(<Mesh>mesh, effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;

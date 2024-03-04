@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { Scalar } from "./math.scalar";
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
 import type { DeepImmutable, Nullable, FloatArray, float } from "../types";
@@ -10,6 +9,7 @@ import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
+import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 
 export type Vector2Constructor<T extends Vector2> = new (...args: ConstructorParameters<typeof Vector2>) => T;
 export type Vector3Constructor<T extends Vector3> = new (...args: ConstructorParameters<typeof Vector3>) => T;
@@ -398,7 +398,7 @@ export class Vector2 {
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector2>, epsilon: number = Epsilon): boolean {
-        return otherVector && Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) && Scalar.WithinEpsilon(this.y, otherVector.y, epsilon);
+        return otherVector && WithinEpsilon(this.x, otherVector.x, epsilon) && WithinEpsilon(this.y, otherVector.y, epsilon);
     }
 
     /**
@@ -548,7 +548,7 @@ export class Vector2 {
      * @returns a Vector2 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector2 {
-        return new Vector2(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+        return new Vector2(RandomRange(min, max), RandomRange(min, max));
     }
 
     /**
@@ -1405,12 +1405,7 @@ export class Vector3 {
      * @returns true if both vectors are distant less than epsilon
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
-        return (
-            otherVector &&
-            Scalar.WithinEpsilon(this._x, otherVector._x, epsilon) &&
-            Scalar.WithinEpsilon(this._y, otherVector._y, epsilon) &&
-            Scalar.WithinEpsilon(this._z, otherVector._z, epsilon)
-        );
+        return otherVector && WithinEpsilon(this._x, otherVector._x, epsilon) && WithinEpsilon(this._y, otherVector._y, epsilon) && WithinEpsilon(this._z, otherVector._z, epsilon);
     }
 
     /**
@@ -1574,16 +1569,16 @@ export class Vector3 {
     public isNonUniformWithinEpsilon(epsilon: number) {
         const absX = Math.abs(this._x);
         const absY = Math.abs(this._y);
-        if (!Scalar.WithinEpsilon(absX, absY, epsilon)) {
+        if (!WithinEpsilon(absX, absY, epsilon)) {
             return true;
         }
 
         const absZ = Math.abs(this._z);
-        if (!Scalar.WithinEpsilon(absX, absZ, epsilon)) {
+        if (!WithinEpsilon(absX, absZ, epsilon)) {
             return true;
         }
 
-        if (!Scalar.WithinEpsilon(absY, absZ, epsilon)) {
+        if (!WithinEpsilon(absY, absZ, epsilon)) {
             return true;
         }
 
@@ -1852,7 +1847,7 @@ export class Vector3 {
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         let dot: number = Vector3.Dot(v0, v1);
         // Vectors are normalized so dot will be in [-1, 1] (aside precision issues enough to break the result which explains the below clamp)
-        dot = Scalar.Clamp(dot, -1, 1);
+        dot = Clamp(dot, -1, 1);
 
         const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
@@ -1891,7 +1886,7 @@ export class Vector3 {
 
         const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
 
-        return Scalar.NormalizeRadians(angle);
+        return NormalizeRadians(angle);
     }
 
     /**
@@ -1937,7 +1932,7 @@ export class Vector3 {
      * @returns The slerped vector
      */
     public static SlerpToRef<T extends Vector3 = Vector3>(vector0: Vector3, vector1: Vector3, slerp: number, result: T): T {
-        slerp = Scalar.Clamp(slerp, 0, 1);
+        slerp = Clamp(slerp, 0, 1);
         const vector0Dir = MathTmp.Vector3[0];
         const vector1Dir = MathTmp.Vector3[1];
 
@@ -1968,7 +1963,7 @@ export class Vector3 {
         vector0Dir.scaleInPlace(scale0);
         vector1Dir.scaleInPlace(scale1);
         result.copyFrom(vector0Dir).addInPlace(vector1Dir);
-        result.scaleInPlace(Scalar.Lerp(vector0Length, vector1Length, slerp));
+        result.scaleInPlace(Lerp(vector0Length, vector1Length, slerp));
         return result;
     }
 
@@ -2194,7 +2189,7 @@ export class Vector3 {
      * @returns a Vector3 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector3 {
-        return new Vector3(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+        return new Vector3(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
     }
 
     /**
@@ -2665,7 +2660,7 @@ export class Vector3 {
         Vector3.TransformCoordinatesToRef(source, matrix, result);
         const m = matrix.m;
         const num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
-        if (Scalar.WithinEpsilon(num, 1.0)) {
+        if (WithinEpsilon(num, 1.0)) {
             result.scaleInPlace(1.0 / num);
         }
         return result;
@@ -2989,7 +2984,7 @@ export class Vector3 {
         l = edge.length();
         edge.normalizeFromLength(l);
         let t = Vector3.Dot(tmp, edge) / Math.max(l, Epsilon);
-        t = Scalar.Clamp(t, 0, 1);
+        t = Clamp(t, 0, 1);
         triProj.copyFrom(e0).addInPlace(edge.scaleInPlace(t * l));
         ref.copyFrom(triProj);
 
@@ -3353,10 +3348,10 @@ export class Vector4 {
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector4>, epsilon: number = Epsilon): boolean {
         return (
             otherVector &&
-            Scalar.WithinEpsilon(this.x, otherVector.x, epsilon) &&
-            Scalar.WithinEpsilon(this.y, otherVector.y, epsilon) &&
-            Scalar.WithinEpsilon(this.z, otherVector.z, epsilon) &&
-            Scalar.WithinEpsilon(this.w, otherVector.w, epsilon)
+            WithinEpsilon(this.x, otherVector.x, epsilon) &&
+            WithinEpsilon(this.y, otherVector.y, epsilon) &&
+            WithinEpsilon(this.z, otherVector.z, epsilon) &&
+            WithinEpsilon(this.w, otherVector.w, epsilon)
         );
     }
 
@@ -3722,7 +3717,7 @@ export class Vector4 {
      * @returns a Vector4 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector4 {
-        return new Vector4(Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max), Scalar.RandomRange(min, max));
+        return new Vector4(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
     }
 
     /**
@@ -4100,10 +4095,10 @@ export class Quaternion {
     public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
         return (
             otherQuaternion &&
-            Scalar.WithinEpsilon(this._x, otherQuaternion._x, epsilon) &&
-            Scalar.WithinEpsilon(this._y, otherQuaternion._y, epsilon) &&
-            Scalar.WithinEpsilon(this._z, otherQuaternion._z, epsilon) &&
-            Scalar.WithinEpsilon(this._w, otherQuaternion._w, epsilon)
+            WithinEpsilon(this._x, otherQuaternion._x, epsilon) &&
+            WithinEpsilon(this._y, otherQuaternion._y, epsilon) &&
+            WithinEpsilon(this._z, otherQuaternion._z, epsilon) &&
+            WithinEpsilon(this._w, otherQuaternion._w, epsilon)
         );
     }
 
@@ -4629,7 +4624,7 @@ export class Quaternion {
      */
     public static SmoothToRef<T extends Quaternion>(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: T): T {
         let slerp = lerpTime === 0 ? 1 : deltaTime / lerpTime;
-        slerp = Scalar.Clamp(slerp, 0, 1);
+        slerp = Clamp(slerp, 0, 1);
 
         Quaternion.SlerpToRef(source, goal, slerp, result);
         return result;

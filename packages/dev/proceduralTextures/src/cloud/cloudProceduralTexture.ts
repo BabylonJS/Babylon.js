@@ -1,4 +1,5 @@
-import { serialize, serializeAsColor4, SerializationHelper } from "core/Misc/decorators";
+import { serialize, serializeAsColor4 } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Color4 } from "core/Maths/math.color";
 import type { Texture } from "core/Materials/Textures/texture";
 import { ProceduralTexture } from "core/Materials/Textures/Procedurals/proceduralTexture";
