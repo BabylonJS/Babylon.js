@@ -1,4 +1,4 @@
-import { serialize, serializeAsMatrix, SerializationHelper, serializeAsVector3 } from "../../Misc/decorators";
+import { serialize, serializeAsMatrix, serializeAsVector3 } from "../../Misc/decorators";
 import { Tools } from "../../Misc/tools";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
@@ -11,6 +11,8 @@ import type { ThinEngine } from "../../Engines/thinEngine";
 
 import "../../Engines/Extensions/engine.cubeTexture";
 import { Observable } from "../../Misc/observable";
+
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * Class for creating a cube texture

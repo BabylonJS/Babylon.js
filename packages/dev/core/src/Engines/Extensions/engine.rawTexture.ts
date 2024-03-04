@@ -1,11 +1,11 @@
 import type { Nullable } from "../../types";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import { Logger } from "../../Misc/logger";
-import { Tools } from "../../Misc/tools";
 import type { Scene } from "../../scene";
 import { Constants } from "../constants";
 import { ThinEngine } from "../thinEngine";
 import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
+import { IsExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -438,7 +438,7 @@ ThinEngine.prototype.createRawCubeTexture = function (
     texture._compression = compression;
 
     // Double check on POT to generate Mips.
-    const isPot = !this.needPOTTextures || (Tools.IsExponentOfTwo(texture.width) && Tools.IsExponentOfTwo(texture.height));
+    const isPot = !this.needPOTTextures || (IsExponentOfTwo(texture.width) && IsExponentOfTwo(texture.height));
     if (!isPot) {
         generateMipMaps = false;
     }
@@ -548,7 +548,7 @@ ThinEngine.prototype.updateRawCubeTexture = function (
         }
     }
 
-    const isPot = !this.needPOTTextures || (Tools.IsExponentOfTwo(texture.width) && Tools.IsExponentOfTwo(texture.height));
+    const isPot = !this.needPOTTextures || (IsExponentOfTwo(texture.width) && IsExponentOfTwo(texture.height));
     if (isPot && texture.generateMipMaps && level === 0) {
         this._gl.generateMipmap(this._gl.TEXTURE_CUBE_MAP);
     }

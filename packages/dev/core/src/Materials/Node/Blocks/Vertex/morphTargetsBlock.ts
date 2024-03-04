@@ -7,13 +7,13 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Effect } from "../../../effect";
 import type { Mesh } from "../../../../Meshes/mesh";
-import { MaterialHelper } from "../../../materialHelper";
 import { VertexBuffer } from "../../../../Buffers/buffer";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
+import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 
 /**
  * Block used to add morph targets support to vertex shader
@@ -161,12 +161,12 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             return;
         }
 
-        MaterialHelper.PrepareDefinesForMorphTargets(mesh, defines);
+        PrepareDefinesForMorphTargets(mesh, defines);
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (mesh && mesh.morphTargetManager && mesh.morphTargetManager.numInfluencers > 0) {
-            MaterialHelper.BindMorphTargetParameters(mesh, effect);
+            BindMorphTargetParameters(mesh, effect);
 
             if (mesh.morphTargetManager.isUsingTextureForTargets) {
                 mesh.morphTargetManager._bind(effect);

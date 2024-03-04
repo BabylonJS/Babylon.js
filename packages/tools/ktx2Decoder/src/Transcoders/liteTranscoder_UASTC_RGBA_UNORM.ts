@@ -13,6 +13,11 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
      */
     public static WasmModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/uastc_rgba8_unorm_v2.wasm";
 
+    /**
+     * Binary data of the wasm module
+     */
+    public static WasmBinary: ArrayBuffer | null = null;
+
     public static CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
         return src === KTX2.SourceTextureFormat.UASTC4x4 && dst === KTX2.TranscodeTarget.RGBA32 && !isInGammaSpace;
     }
@@ -26,7 +31,7 @@ export class LiteTranscoder_UASTC_RGBA_UNORM extends LiteTranscoder {
     public initialize(): void {
         super.initialize();
         this._transcodeInPlace = false;
-        this.setModulePath(LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL);
+        this.setModulePath(LiteTranscoder_UASTC_RGBA_UNORM.WasmModuleURL, LiteTranscoder_UASTC_RGBA_UNORM.WasmBinary);
     }
 
     public transcode(

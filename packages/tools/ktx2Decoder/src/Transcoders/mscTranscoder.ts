@@ -21,6 +21,16 @@ export class MSCTranscoder extends Transcoder {
      */
     public static WasmModuleURL = "https://cdn.babylonjs.com/ktx2Transcoders/1/msc_basis_transcoder.wasm";
 
+    /**
+     * Binary data of the wasm module
+     */
+    public static WasmBinary: ArrayBuffer | null = null;
+
+    /**
+     * MSC transcoder module, if provided externally
+     */
+    public static JSModule: any = null;
+
     public static UseFromWorkerThread = true;
 
     public static Name = "MSCTranscoder";
@@ -37,32 +47,38 @@ export class MSCTranscoder extends Transcoder {
             return this._mscBasisTranscoderPromise;
         }
 
-        this._mscBasisTranscoderPromise = WASMMemoryManager.LoadWASM(Transcoder.GetWasmUrl(MSCTranscoder.WasmModuleURL)).then((wasmBinary) => {
-            if (MSCTranscoder.UseFromWorkerThread) {
-                importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
-            }
-            // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
-            else if (typeof MSC_TRANSCODER === "undefined") {
-                return new Promise((resolve, reject) => {
-                    const head = document.getElementsByTagName("head")[0];
-                    const script = document.createElement("script");
-                    script.setAttribute("type", "text/javascript");
-                    script.setAttribute("src", Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
+        this._mscBasisTranscoderPromise = (
+            MSCTranscoder.WasmBinary ? Promise.resolve(MSCTranscoder.WasmBinary) : WASMMemoryManager.LoadWASM(Transcoder.GetWasmUrl(MSCTranscoder.WasmModuleURL))
+        ).then((wasmBinary) => {
+            if (MSCTranscoder.JSModule) {
+                MSC_TRANSCODER = MSCTranscoder.JSModule;
+            } else {
+                if (MSCTranscoder.UseFromWorkerThread) {
+                    importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
+                }
+                // Worker Number = 0 and MSC_TRANSCODER has not been loaded yet.
+                else if (typeof MSC_TRANSCODER === "undefined") {
+                    return new Promise((resolve, reject) => {
+                        const head = document.getElementsByTagName("head")[0];
+                        const script = document.createElement("script");
+                        script.setAttribute("type", "text/javascript");
+                        script.setAttribute("src", Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
 
-                    script.onload = () => {
-                        MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
-                            basisModule.initTranscoders();
-                            this._mscBasisModule = basisModule;
-                            resolve();
-                        });
-                    };
+                        script.onload = () => {
+                            MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                                basisModule.initTranscoders();
+                                this._mscBasisModule = basisModule;
+                                resolve();
+                            });
+                        };
 
-                    script.onerror = () => {
-                        reject("Can not load MSC_TRANSCODER script.");
-                    };
+                        script.onerror = () => {
+                            reject("Can not load MSC_TRANSCODER script.");
+                        };
 
-                    head.appendChild(script);
-                });
+                        head.appendChild(script);
+                    });
+                }
             }
 
             return new Promise((resolve) => {

@@ -67,7 +67,7 @@ export class RecastJSPlugin implements INavigationEnginePlugin {
      * @param workerURL url string
      * @returns boolean indicating if worker is created
      */
-    public setWorkerURL(workerURL: string): boolean {
+    public setWorkerURL(workerURL: string | URL): boolean {
         if (window && window.Worker) {
             this._worker = new Worker(workerURL);
             return true;

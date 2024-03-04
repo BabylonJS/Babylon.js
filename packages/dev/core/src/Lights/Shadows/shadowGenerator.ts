@@ -11,7 +11,6 @@ import type { Mesh } from "../../Meshes/mesh";
 import type { IShadowLight } from "../../Lights/shadowLight";
 import { Light } from "../../Lights/light";
 import type { MaterialDefines } from "../../Materials/materialDefines";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import { Texture } from "../../Materials/Textures/texture";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
@@ -33,6 +32,12 @@ import "../../Shaders/depthBoxBlur.fragment";
 import "../../Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../../Materials/clipPlaneMaterialHelper";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
+import {
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareAttributesForMorphTargetsInfluencers,
+    PushAttributesForInstances,
+} from "../../Materials/materialHelper.functions";
 
 /**
  * Defines the options associated with the creation of a custom shader for a shadow generator.
@@ -1263,7 +1268,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
 
                 // Morph targets
-                MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+                BindMorphTargetParameters(renderingMesh, effect);
 
                 if (renderingMesh.morphTargetManager && renderingMesh.morphTargetManager.isUsingTextureForTargets) {
                     renderingMesh.morphTargetManager._bind(effect);
@@ -1277,7 +1282,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 this._bindCustomEffectForRenderSubMeshForShadowMap(subMesh, effect, effectiveMesh);
             }
 
-            MaterialHelper.BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
+            BindSceneUniformBuffer(effect, this._scene.getSceneUniformBuffer());
             this._scene.getSceneUniformBuffer().bindUniformBuffer();
 
             const world = effectiveMesh.getWorldMatrix();
@@ -1554,7 +1559,7 @@ export class ShadowGenerator implements IShadowGenerator {
                     if (manager.isUsingTextureForTargets) {
                         defines.push("#define MORPHTARGETS_TEXTURE");
                     }
-                    MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
+                    PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, morphInfluencers);
                 }
             }
 
@@ -1564,7 +1569,7 @@ export class ShadowGenerator implements IShadowGenerator {
             // Instances
             if (useInstances) {
                 defines.push("#define INSTANCES");
-                MaterialHelper.PushAttributesForInstances(attribs);
+                PushAttributesForInstances(attribs);
                 if (subMesh.getRenderingMesh().hasThinInstances) {
                     defines.push("#define THIN_INSTANCES");
                 }

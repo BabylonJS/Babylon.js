@@ -3,7 +3,6 @@ import type { Nullable } from "../types";
 import { Material } from "./material";
 import { serialize, expandToProperty, serializeAsTexture } from "../Misc/decorators";
 import { MaterialFlags } from "./materialFlags";
-import { MaterialHelper } from "./materialHelper";
 import type { BaseTexture } from "./Textures/baseTexture";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { IAnimatable } from "../Animations/animatable.interface";
@@ -15,6 +14,7 @@ import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
 import type { StandardMaterial } from "./standardMaterial";
 import type { PBRBaseMaterial } from "./PBR/pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "./materialHelper.functions";
 
 /**
  * @internal
@@ -119,7 +119,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
 
             if (defines._areTexturesDirty) {
                 if (engine.getCaps().standardDerivatives && this._texture && MaterialFlags.DetailTextureEnabled && this._isEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "DETAIL");
+                    PrepareDefinesForMergedUV(this._texture, defines, "DETAIL");
                     defines.DETAIL_NORMALBLENDMETHOD = this._normalBlendMethod;
                 } else {
                     defines.DETAIL = false;
@@ -140,7 +140,7 @@ export class DetailMapConfiguration extends MaterialPluginBase {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._texture && MaterialFlags.DetailTextureEnabled) {
                 uniformBuffer.updateFloat4("vDetailInfos", this._texture.coordinatesIndex, this.diffuseBlendLevel, this.bumpLevel, this.roughnessBlendLevel);
-                MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "detail");
+                BindTextureMatrix(this._texture, uniformBuffer, "detail");
             }
         }
 

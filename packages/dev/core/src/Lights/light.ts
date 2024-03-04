@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty } from "../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import type { Matrix } from "../Maths/math.vector";
@@ -13,6 +13,7 @@ import { GetClass } from "../Misc/typeStore";
 import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
 import type { Camera } from "../Cameras/camera";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.

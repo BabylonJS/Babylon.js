@@ -3,19 +3,9 @@ import type { Nullable } from "../types";
 import { Vector2, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
-import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import { ImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import type { ColorGradient, FactorGradient, Color3Gradient, IValueGradient } from "../Misc/gradients";
-import type { IParticleEmitterType } from "../Particles/EmitterTypes/index";
-import {
-    BoxParticleEmitter,
-    PointParticleEmitter,
-    HemisphericParticleEmitter,
-    SphereParticleEmitter,
-    SphereDirectedParticleEmitter,
-    CylinderParticleEmitter,
-    CylinderDirectedParticleEmitter,
-    ConeParticleEmitter,
-} from "../Particles/EmitterTypes/index";
+import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEmitter";
 import { Constants } from "../Engines/constants";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
@@ -28,6 +18,12 @@ import type { Animation } from "../Animations/animation";
 import type { Scene } from "../scene";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { RawTexture } from "../Materials/Textures/rawTexture";
+import type { IParticleEmitterType } from "./EmitterTypes/IParticleEmitterType";
+import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
+import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
+import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
+import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
+import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -746,39 +742,27 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * Creates a Point Emitter for the particle system (emits directly from the emitter position)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
-     * @returns the emitter
      */
     public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-        const particleEmitter = new PointParticleEmitter();
-        particleEmitter.direction1 = direction1;
-        particleEmitter.direction2 = direction2;
-
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
      * Creates a Hemisphere Emitter for the particle system (emits along the hemisphere radius)
      * @param radius The radius of the hemisphere to emit from
      * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
      */
     public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-        const particleEmitter = new HemisphericParticleEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
      * Creates a Sphere Emitter for the particle system (emits along the sphere radius)
      * @param radius The radius of the sphere to emit from
      * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
-     * @returns the emitter
      */
     public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-        const particleEmitter = new SphereParticleEmitter(radius, radiusRange);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -786,12 +770,9 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param radius The radius of the sphere to emit from
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the sphere
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
-     * @returns the emitter
      */
     public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-        const particleEmitter = new SphereDirectedParticleEmitter(radius, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -800,12 +781,9 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param height The height of the emission cylinder
      * @param radiusRange The range of emission [0-1] 0 Surface only, 1 Entire Radius
      * @param directionRandomizer How much to randomize the particle direction [0-1]
-     * @returns the emitter
      */
     public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-        const particleEmitter = new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -815,7 +793,6 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param radiusRange the range of the emission cylinder [0-1] 0 Surface only, 1 Entire Radius (1 by default)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
-     * @returns the emitter
      */
     public createDirectedCylinderEmitter(
         radius = 1,
@@ -824,21 +801,16 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         direction1 = new Vector3(0, 1.0, 0),
         direction2 = new Vector3(0, 1.0, 0)
     ): CylinderDirectedParticleEmitter {
-        const particleEmitter = new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
      * Creates a Cone Emitter for the particle system (emits from the cone to the particle position)
      * @param radius The radius of the cone to emit from
      * @param angle The base angle of the cone
-     * @returns the emitter
      */
     public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-        const particleEmitter = new ConeParticleEmitter(radius, angle);
-        this.particleEmitterType = particleEmitter;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 
     /**
@@ -847,15 +819,8 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
      * @param minEmitBox Particles are emitted from the box between minEmitBox and maxEmitBox
      * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
-     * @returns the emitter
      */
     public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
-        const particleEmitter = new BoxParticleEmitter();
-        this.particleEmitterType = particleEmitter;
-        this.direction1 = direction1;
-        this.direction2 = direction2;
-        this.minEmitBox = minEmitBox;
-        this.maxEmitBox = maxEmitBox;
-        return particleEmitter;
+        throw new Error("Method not implemented.");
     }
 }

@@ -4,7 +4,6 @@ import { serialize, serializeAsTexture, expandToProperty } from "../../Misc/deco
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -15,6 +14,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Engine } from "../../Engines/engine";
 import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
@@ -151,13 +151,13 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
                     if (this._texture && MaterialFlags.IridescenceTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "IRIDESCENCE_TEXTURE");
+                        PrepareDefinesForMergedUV(this._texture, defines, "IRIDESCENCE_TEXTURE");
                     } else {
                         defines.IRIDESCENCE_TEXTURE = false;
                     }
 
                     if (!defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE && this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "IRIDESCENCE_THICKNESS_TEXTURE");
+                        PrepareDefinesForMergedUV(this._thicknessTexture, defines, "IRIDESCENCE_THICKNESS_TEXTURE");
                     } else {
                         defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
                     }
@@ -187,7 +187,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (identicalTextures && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.updateFloat4("vIridescenceInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "iridescence");
+                BindTextureMatrix(this._texture!, uniformBuffer, "iridescence");
             } else if ((this._texture || this._thicknessTexture) && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vIridescenceInfos",
@@ -197,10 +197,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                     this._thicknessTexture?.level ?? 0
                 );
                 if (this._texture) {
-                    MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "iridescence");
+                    BindTextureMatrix(this._texture, uniformBuffer, "iridescence");
                 }
                 if (this._thicknessTexture && !identicalTextures && !defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE) {
-                    MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "iridescenceThickness");
+                    BindTextureMatrix(this._thicknessTexture, uniformBuffer, "iridescenceThickness");
                 }
             }
 

@@ -6,7 +6,8 @@ import type { Engine } from "../Engines/engine";
 
 import "../Shaders/blackAndWhite.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 
 import type { Scene } from "../scene";

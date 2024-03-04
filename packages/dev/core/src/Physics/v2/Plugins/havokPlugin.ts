@@ -7,6 +7,7 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
+    PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type {
     PhysicsShapeParameters,
@@ -807,6 +808,25 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 return PhysicsMotionType.DYNAMIC;
         }
         throw new Error("Unknown motion type: " + type);
+    }
+
+    /**
+     * sets the activation control mode of a physics body, for instance if you need the body to never sleep.
+     * @param body - The physics body to set the activation control mode.
+     * @param controlMode - The activation control mode.
+     */
+    public setActivationControl(body: PhysicsBody, controlMode: PhysicsActivationControl): void {
+        switch (controlMode) {
+            case PhysicsActivationControl.ALWAYS_ACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_ACTIVE);
+                break;
+            case PhysicsActivationControl.ALWAYS_INACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_INACTIVE);
+                break;
+            case PhysicsActivationControl.SIMULATION_CONTROLLED:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.SIMULATION_CONTROLLED);
+                break;
+        }
     }
 
     private _internalComputeMassProperties(pluginData: BodyPluginData): any[] {
