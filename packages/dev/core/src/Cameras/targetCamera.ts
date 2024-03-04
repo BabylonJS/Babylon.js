@@ -6,6 +6,12 @@ import { Quaternion, Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.
 import { Epsilon } from "../Maths/math.constants";
 import { Axis } from "../Maths/math.axis";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { Node } from "../node";
+
+Node.AddNodeConstructor("TargetCamera", (name, scene) => {
+    return () => new TargetCamera(name, Vector3.Zero(), scene);
+});
+
 /**
  * A target camera takes a mesh or position as a target and continues to look at it while it moves.
  * This is the base of the follow, arc rotate cameras and Free camera
