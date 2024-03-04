@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper } from "../../../Misc/decorators";
+import { serialize } from "../../../Misc/decorators";
+import { SerializationHelper } from "../../../Misc/decorators.serialization";
 import { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
 import { PostProcess } from "../../postProcess";

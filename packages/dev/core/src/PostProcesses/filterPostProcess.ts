@@ -8,7 +8,8 @@ import type { Engine } from "../Engines/engine";
 
 import "../Shaders/filter.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { serializeAsMatrix, SerializationHelper } from "../Misc/decorators";
+import { serializeAsMatrix } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 

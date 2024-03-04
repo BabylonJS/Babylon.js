@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { serializeAsColor4, serializeAsVector3, serialize, SerializationHelper } from "core/Misc/decorators";
+import { serializeAsColor4, serializeAsVector3, serialize } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { Matrix } from "core/Maths/math.vector";
 import { Vector3, Vector4 } from "core/Maths/math.vector";
 import type { IAnimatable } from "core/Animations/animatable.interface";

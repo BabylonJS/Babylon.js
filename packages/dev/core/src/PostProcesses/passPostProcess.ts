@@ -8,7 +8,7 @@ import { Engine } from "../Engines/engine";
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 

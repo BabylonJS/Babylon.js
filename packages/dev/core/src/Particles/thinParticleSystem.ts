@@ -7,7 +7,6 @@ import { Vector3, Matrix, Vector4, TmpVectors } from "../Maths/math.vector";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 
 import type { Effect } from "../Materials/effect";
-import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import { RawTexture } from "../Materials/Textures/rawTexture";
 import { EngineStore } from "../Engines/engineStore";
 import type { IDisposable, Scene } from "../scene";
@@ -35,6 +34,7 @@ import type { Engine } from "../Engines/engine";
 import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.functions";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
+import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -1749,8 +1749,8 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         samplers.push("diffuseSampler", "rampSampler");
 
         if (this._imageProcessingConfiguration) {
-            ImageProcessingConfiguration.PrepareUniforms(uniforms, this._imageProcessingConfigurationDefines);
-            ImageProcessingConfiguration.PrepareSamplers(samplers, this._imageProcessingConfigurationDefines);
+            PrepareUniformsForImageProcessing(uniforms, this._imageProcessingConfigurationDefines);
+            PrepareSamplersForImageProcessing(samplers, this._imageProcessingConfigurationDefines);
         }
     }
 

@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/decorators";
+import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
@@ -24,6 +24,7 @@ import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
  * Oblique projection values

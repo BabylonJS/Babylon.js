@@ -1,13 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {
-    SerializationHelper,
-    serialize,
-    serializeAsColor3,
-    expandToProperty,
-    serializeAsTexture,
-    serializeAsVector3,
-    serializeAsImageProcessingConfiguration,
-} from "../../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsTexture, serializeAsVector3, serializeAsImageProcessingConfiguration } from "../../Misc/decorators";
 import { SmartArray } from "../../Misc/smartArray";
 import type { Observer } from "../../Misc/observable";
 import { Logger } from "../../Misc/logger";
@@ -23,7 +15,7 @@ import type { IEffectCreationOptions } from "../../Materials/effect";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import type { ColorCurves } from "../../Materials/colorCurves";
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -55,6 +47,7 @@ import {
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * Background material defines definition.

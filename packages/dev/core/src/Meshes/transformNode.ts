@@ -1,5 +1,6 @@
 import type { DeepImmutable, Nullable } from "../types";
-import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "../Misc/decorators";
+import { serialize, serializeAsVector3, serializeAsQuaternion } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Observable } from "../Misc/observable";
 
 import type { Camera } from "../Cameras/camera";

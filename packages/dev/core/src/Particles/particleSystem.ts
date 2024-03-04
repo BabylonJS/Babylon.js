@@ -13,7 +13,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
 import type { Particle } from "./particle";
 import { Constants } from "../Engines/constants";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { MeshParticleEmitter } from "./EmitterTypes/meshParticleEmitter";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";

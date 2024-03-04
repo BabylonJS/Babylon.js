@@ -7,7 +7,7 @@ import type { Camera } from "../Cameras/camera";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
 import type { ColorCurves } from "../Materials/colorCurves";
-import type { IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";

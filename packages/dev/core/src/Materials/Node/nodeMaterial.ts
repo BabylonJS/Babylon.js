@@ -18,7 +18,7 @@ import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateShared
 import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import type { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration";
+import type { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
@@ -27,7 +27,8 @@ import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "./Blocks/Input/inputBlock";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 import type { TextureBlock } from "./Blocks/Dual/textureBlock";
 import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
 import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
@@ -66,6 +67,7 @@ import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOut
 import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
