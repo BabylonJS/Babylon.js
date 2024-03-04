@@ -208,6 +208,11 @@ export class VertexData {
     public metadata: any = {};
 
     /**
+     * Gets or sets a value indicating that the mesh must be flagged with hasVertexAlpha = true
+     */
+    public hasVertexAlpha: boolean;
+
+    /**
      * Creates a new VertexData
      */
     public constructor() {
@@ -386,6 +391,10 @@ export class VertexData {
 
         if (this.colors) {
             meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
+            if (this.hasVertexAlpha && (meshOrGeometry as any).hasVertexAlpha !== undefined) {
+                (meshOrGeometry as any).hasVertexAlpha = true;
+            }
+
             if (isAsync) {
                 yield;
             }
@@ -1073,6 +1082,9 @@ export class VertexData {
                 transform,
                 vertexDatas.map((other) => [other.vertexData.colors, other.transform])
             );
+            if (root.hasVertexAlpha !== undefined || vertexDatas.some((other) => other.vertexData.hasVertexAlpha !== undefined)) {
+                this.hasVertexAlpha = root.hasVertexAlpha || vertexDatas.some((other) => other.vertexData.hasVertexAlpha);
+            }
             if (isAsync) {
                 yield;
             }
@@ -1301,6 +1313,7 @@ export class VertexData {
 
         if (this.colors) {
             serializationObject.colors = Array.from(this.colors);
+            serializationObject.hasVertexAlpha = this.hasVertexAlpha;
         }
 
         if (this.matricesIndices) {
@@ -2270,6 +2283,9 @@ export class VertexData {
         const colors = parsedVertexData.colors;
         if (colors) {
             vertexData.set(Color4.CheckColors4(colors, positions.length / 3), VertexBuffer.ColorKind);
+            if (parsedVertexData.hasVertexAlpha !== undefined) {
+                vertexData.hasVertexAlpha = parsedVertexData.hasVertexAlpha;
+            }
         }
 
         // matricesIndices
