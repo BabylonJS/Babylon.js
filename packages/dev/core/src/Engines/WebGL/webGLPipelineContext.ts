@@ -458,7 +458,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.toArray() as Float32Array)) {
+            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.asArray() as Float32Array)) {
                 this._valueCache[uniformName] = null;
             }
         }
