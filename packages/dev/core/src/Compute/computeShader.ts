@@ -230,13 +230,13 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setUniformBuffer(name: string, buffer: UniformBuffer): void {
+    public setUniformBuffer(name: string, buffer: UniformBuffer | DataBuffer): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
         this._bindings[name] = {
-            type: ComputeBindingType.UniformBuffer,
+            type: ComputeShader._BufferIsDataBuffer(buffer) ? ComputeBindingType.DataBuffer : ComputeBindingType.UniformBuffer,
             object: buffer,
             indexInGroupEntries: current?.indexInGroupEntries,
         };
@@ -247,13 +247,13 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setStorageBuffer(name: string, buffer: StorageBuffer): void {
+    public setStorageBuffer(name: string, buffer: StorageBuffer | DataBuffer): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
         this._bindings[name] = {
-            type: ComputeBindingType.StorageBuffer,
+            type: ComputeShader._BufferIsDataBuffer(buffer) ? ComputeBindingType.DataBuffer : ComputeBindingType.StorageBuffer,
             object: buffer,
             indexInGroupEntries: current?.indexInGroupEntries,
         };
@@ -497,6 +497,10 @@ export class ComputeShader {
         }
 
         return compute;
+    }
+
+    protected static _BufferIsDataBuffer(buffer: UniformBuffer | StorageBuffer | DataBuffer): buffer is DataBuffer {
+        return (buffer as DataBuffer).underlyingResource !== undefined;
     }
 }
 
