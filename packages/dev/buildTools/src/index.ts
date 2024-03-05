@@ -4,7 +4,7 @@ import { addJsExtensionsToCompiledFilesCommand } from "./addJSToCompiledFiles.js
 import { generateDeclaration } from "./generateDeclaration.js";
 import { transformLtsCommand } from "./ltsTransformer.js";
 import { prepareES6Build } from "./prepareEs6Build.js";
-import { checkArgs, populateEnvironment } from "./utils.js";
+import { checkArgs, copyFolder, populateEnvironment } from "./utils.js";
 import { devWatch } from "./devWatcher.js";
 import { processAssets } from "./copyAssets.js";
 import { prepareSnapshot } from "./prepareSnapshot.js";
@@ -65,6 +65,10 @@ function runCommand() {
             case "declarations-es6":
             case "des6":
                 declarationsEs6();
+                break;
+            case "copy":
+            case "cp":
+                copyFolder(checkArgs(["-f", "--from"], false, true) as string, checkArgs(["-t", "--to"], false, true) as string);
                 break;
             default:
                 console.log(`Unknown command: ${command}`);
