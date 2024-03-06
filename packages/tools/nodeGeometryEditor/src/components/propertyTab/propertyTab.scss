@@ -781,7 +781,7 @@
 
         .textLine {
             padding-left: $line-padding-left;
-            height: 30px;
+            min-height: 30px;
             display: grid;
             grid-template-columns: 1fr auto;
 

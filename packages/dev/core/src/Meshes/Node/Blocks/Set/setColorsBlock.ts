@@ -30,11 +30,15 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.Vector4);
+        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.AutoDetect);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
 
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector3);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector2);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
