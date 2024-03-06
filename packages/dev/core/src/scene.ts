@@ -91,6 +91,12 @@ import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
 
+// NOTE - this should not be done and is only here for testing purposes!!
+import "./Helpers/sceneHelpers";
+import "./Helpers/environmentHelper";
+import "./Helpers/photoDome";
+import "./Helpers/videoDome";
+
 /**
  * Define an interface for all classes that will hold resources
  */
