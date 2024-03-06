@@ -795,6 +795,11 @@
                 justify-items: center;
             }
 
+            &.bold {
+                font-weight: bold;
+                text-decoration: underline;
+            }
+
             .link-value {
                 grid-column: 2;
                 white-space: nowrap;
