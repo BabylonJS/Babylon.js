@@ -162,6 +162,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
                 transformNodes: [],
                 geometries: [],
                 lights: [],
+                spriteManagers: [],
             };
         });
     }

@@ -30,6 +30,7 @@ import { ReflectionProbe } from "../../Probes/reflectionProbe";
 import { GetClass } from "../../Misc/typeStore";
 import { Tools } from "../../Misc/tools";
 import { PostProcess } from "../../PostProcesses/postProcess";
+import { SpriteManager } from "core/Sprites/spriteManager";
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention, no-var
@@ -424,6 +425,15 @@ const loadAssetContainer = (scene: Scene, data: string, rootUrl: string, onError
                 animationGroup._parentContainer = container;
                 log += index === 0 ? "\n\tAnimationGroups:" : "";
                 log += "\n\t\t" + animationGroup.toString(fullDetails);
+            }
+        }
+
+        // Sprites
+        if (parsedData.spriteManagers) {
+            for (let index = 0, cache = parsedData.spriteManagers.length; index < cache; index++) {
+                const parsedSpriteManager = parsedData.spriteManagers[index];
+                const spriteManager = SpriteManager.Parse(parsedSpriteManager, scene, rootUrl);
+                log += "\n\t\tSpriteManager " + spriteManager.name;
             }
         }
 
