@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.45.0",
+    "fromTag": "6.45.1",
     "changelog": {
         "6.45.1": [
             {
@@ -65,6 +65,390 @@
                     "enhancement",
                     "WebGPU"
                 ]
+            }
+        ],
+        "6.46.0": [
+            {
+                "pr": "14845",
+                "title": "Formatting issue in NGE inspector",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14846",
+                "title": "Execution count and call count displaying too many times on vector converter block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14838",
+                "title": "Fix Scene sprites serialize/parse",
+                "description": "https://forum.babylonjs.com/t/spritemanager-and-sprite-cant-to-serialize-or-load/48387/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "14844",
+                "title": "Fix vertexAlpha",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14840",
+                "title": "Adding two new parameters to teleportation",
+                "description": "* Time to teleport start - if using the mainn component only, it is possible to delay the start of the teleportation ray, so a standard press won't automatically trigger it. \n* blockAllPickableMeshes - If enabled this will allow all pickable meshes in the scene to be teleportation blockers. This is off per default for performance reasons.\n\nPartly from https://forum.babylonjs.com/t/teleportation-activates-when-pinching-a-non-floor-mesh-with-a-hand/48443",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14235",
+                "title": "Tensor: Standardize Vector2, Vector3, Vector4, Color3, Color4, Quaternion, and Matrix",
+                "description": "Discussion of this PR is available on the Babylon.js forum in [this](https://forum.babylonjs.com/t/43521) thread.\r\nResolves #14201\r\n\r\n## TL;DR:\r\n\r\n`Tensor` would be added, which provides a standardized API for interacting with vectors, colors, matrices, quaternions, etc.\r\n\r\n## Rational\r\n\r\nThis PR aims to create a standard interface from which various math constructs are defined.\r\n\r\nTake the current difference in behavior between vectors and colors:\r\n```js\r\nconst c1 = Color3.Random(),\r\n\tc2 = Color3.Random(),\r\n\tc3 = new Color3(),\r\n\tv1 = Vector3.Random(),\r\n\tv2 = Vector3.Random(),\r\n\tv3 = new Vector3();\r\n\r\nc1.addToRef(c2, c3) === c3 // false\r\nv1.addToRef(v2, v3) === v3 // true\r\n```\r\n\r\nAnd the lack of a method that should exist in Color3:\r\n\r\n```js\r\nconst v1 = Vector3.Random(),\r\n\tv2 = Vector3.Random(),\r\n\tc1 = Color3.Random(),\r\n\tc2 = Color3.Random();\r\n\r\n\r\nv1.addInPlace(v2) // ok\r\nc1.addInPlace(c2) // ReferenceError! addInPlace does not exist\r\n```\r\n`Tensor` provides a single interface for tensor-like objects which users can depend on. By having tensor-like classes implement `Tensor`, it ensures that all the methods exist and have the same and correct behavior. It is meant for organization and standardization.\r\n \r\n## Semantics\r\n\r\n#### *Note:*\r\n- `CurrentClass` is a placeholder for a class that implements `Tensor`. In fields, it is the current class.\r\n- `Tensor` and its related types will be defined in `src/Maths/tensor.ts` unless otherwise noted\r\n- Signatures are shown, not implementation. \r\n- The shown signatures are not necessarily the same as implementation (e.g. `Signature<T extends number>` may be shown when it is implemented as `Signature<T> = T extends number ? ... : never`\r\n\r\n#### Status\r\n\r\n- [x] [`Vector`](#user-content-Vector)\r\n- [x] [Tuple manipulation and math types](#user-content-math-types)\r\n- [x] [`Constructor`](#user-content-Constructor)\r\n- [x] [`MultidimensionalArray`](#user-content-MultidimensionalArray)\r\n- [x] [`TensorValue`](#user-content-TensorValue)\r\n- [x] [`Tensor`](#user-content-Tensor)\r\n    - [x] Methods from `Vector`\r\n    - [x] [`Tensor.dimension`](#user-content-Tensor-dimension)\r\n    - [ ] [`Tensor.From`](#user-content-Tensor-From)\r\n    - [ ] [`Tensor.as`](#user-content-Tensor-as)\r\n    - [ ] [`Tensor.sum`](#user-content-Tensor-sum)\r\n    - [x] [`Tensor.rank`](#user-content-Tensor-rank)\r\n    - [ ] [`Tensor.value`](#user-content-Tensor-value)\r\n- [ ] [`isTensor`](#user-content-isTensor)\r\n- [ ] [`isTensorValue`](#user-content-isTensorValue)\r\n- [ ] [`getTensorDimension`](#user-content-getTensorDimension)\r\n- [ ] [`convertTensor`](#user-content-convertTensor)[*](#user-content-note-optional)\r\n\r\n<a href=\"#user-content-note-optional\" id=\"note-optional\">*</a> May not be included in the proposal\r\n\r\n### <a href=\"#user-content-Vector\" id=\"Vector\">Vector</a>\r\n\r\nDefined in `src/Maths/math.vector.ts`\r\n\r\nThis PR includes `Vector` from #13699. `Vector` extends `Tensor` and adds normalization methods, `length`, and `lengthSquared`. It is implemented by `Vector2`, `Vector3`, and `Vector4`.\r\n\r\n### <a href=\"#user-content-math-types\" id=\"math-types\">Tuple manipulation and math types</a>\r\n\r\nDefined in `src/types.ts`\r\nThe following types are being added for compile-time math and tuple manipulation, which is necessary for `MultidimensionalArray`. They are included as a single block for brevity.\r\n\r\n```ts\r\ntype Empty = [];\r\ntype Shift<T extends unknown[]>;\r\ntype First<T extends unknown[]>;\r\ntype Unshift<T extends unknown[], A>;\r\ntype Pop<T extends unknown[]>;\r\ntype Last<T extends unknown[]>;\r\ntype Push<T extends unknown[], A>;\r\ntype Concat<A extends unknown[], B extends unknown[]>;\r\ntype Remove<A extends unknown[], B extends unknown[]>;\r\ntype Length<T extends unknown[]>;\r\ntype FromLength<N extends number>;\r\ntype Increment<N extends number>;\r\ntype Decrement<N extends number>;\r\ntype Add<A extends number, B extends number>;\r\ntype Subtract<A extends number, B extends number>;\r\ntype Member<T, D>;\r\ntype Flatten<A extends unknown[], D>;\r\ntype MultidimensionalArray<T, D extends number>\r\ntype Tuple<T, N extends number>;\r\ntype FlattenTuple<T>;\r\ntype IsTuple<T>;\r\n```\r\n\r\n### <a href=\"#user-content-Constructor\" id=\"Constructor\">Constructor</a>\r\n\r\nDefined in `src/types.ts`\r\n```ts\r\ntype Constructor<C extends new (...args: any[]) => any, I extends InstanceType<C>>\r\n```\r\nDefines a single type for constructors. This replaces `Vector2Constructor`, `Vector3Constructor`, `Vector4Constructor`, `QuaternionConstructor`, and `MatrixConstructor`.\r\n\r\nInstead of using `Vector3Constructor<this>`, you would instead use `Constructor<typeof Vector3, this>`. The `typeof` is needed to get the type for the class instead of the instance, and can't be done inside the type since Typescript prohibits taking the `typeof` a type.\r\n\r\n### <a href=\"#user-content-MultidimensionalArray\" id=\"MultidimensionalArray\">MultidimensionalArray</a>\r\n\r\nDefined in `src/types.ts`\r\n\r\n```ts\r\ntype MultidimensionalArray<T, D extends number>\r\n```\r\n\r\nRepresents a multidimensional array of `T` with depth `D`.\r\n\r\n### <a href=\"#user-content-TensorValue\" id=\"TensorValue\">TensorValue</a>\r\n\r\n```ts\r\ntype TensorValue<T> = T extends Tensor<infer V> ? V : never;\r\n```\r\n\r\n### <a href=\"#user-content-Tensor\" id=\"Tensor\">Tensor</a>\r\n\r\n```ts\r\ndeclare class Tensor<V>\r\n```\r\n\r\n`Tensor` is a `declare class` for tensor-like classes to implement.\r\n\r\n`Tensor` includes all of the methods in `Vector` from #13699. This includes\r\n- Math operations (`add`, `subtract`, `multiply`, `divide`, `scale`, ...)\r\n- Array conversion (`fromArray`, `toArray`, `asArray`, ...)\r\n\t- Since the type parameter is no longer assignable to `number[]`, the return type for array-related methods is `number[]`. See `Tensor.value`\r\n- Transferring (`clone`, `copyFrom`, `copyFromFloats`, ...)\r\n- The above methods' `InPlace`, `ToRef`, `FromFloats`, etc.\r\n\r\nIt adds or changes the following methods:\r\n\r\n#### <a href=\"#user-content-Tensor-dimension\" id=\"Tensor-dimension\">Tensor.dimension</a>\r\n\r\n```ts\r\npublic abstract dimension: number[];\r\n```\r\n`dimension` is the mathematical dimension<sup>[2](#user-content-footnote-2)</sup> of the tensor. In dynamic tensor types, it can be defined as a getter.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tvec4 = new Vector4(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.dimension // [3]\r\nvec4.dimension // [4]\r\nmatrix.dimension // [4, 4]\r\n``` \r\n\r\n#### <a href=\"#user-content-Tensor-From\" id=\"Tensor-From\">Tensor.From</a>\r\n\r\n```ts\r\npublic static From(source: Tensor, fillValue: number = 0): CurrentClass;\r\n```\r\n`From` creates a new instance of `CurrentClass` from `source`.\r\n`source`: The tensor to copy data from.\r\n`fillValue`: The value to use for filling empty parts of the resulting `CurrentClass`.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3);\r\nconst vec4 = Vector4.From(vec3, 4); // { 1, 2, 3, 4 }\r\nconst matrix = Matrix.From(vec3, 0); // this is possible!\r\n```\r\n\r\nAdditionally, `From` could be changed to `From(...args: [...Tensor[], number]): CurrentClass` to allow multiple inputs. This is better understood by this **invalid** Typescript signature (since rest parameters must be last):\r\n```ts\r\npublic static From(...source: Tensor[], fillValue: number = 0): CurrentClass;\r\n```\r\n\r\n> 🛈 Implementations may write their own conversion code or use `convertTensor`.\r\n\r\n#### <a href=\"#user-content-Tensor-as\" id=\"Tensor-as\">Tensor.as</a>\r\n```ts\r\npublic as<T extends typeof Tensor>(type: T, fillValue: number = 0): InstanceType<T>;\r\n```\r\n`as` creates an instance of `type` from an instance of `CurrentClass`.\r\n`type`: The class to create an instance of.\r\n`fillValue`: The value to use for filling empty parts of the resulting instance.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3);\r\nconst vec4 = vec3.as(Vector4, 4); // { 1, 2, 3, 4 }\r\nconst matrix = vec3.as(Matrix, 0);\r\n```\r\n\r\n> 🛈 Implementations may write their own conversion code or use `convertTensor`.\r\n\r\n#### <a href=\"#user-content-Tensor-sum\" id=\"Tensor-sum\">Tensor.sum</a>\r\n```ts\r\npublic sum(): number;\r\n```\r\n`sum` return the sum of the components of the `Tensor`.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3),\r\n\tvec4 = new Vector4(4, 5, 6, 7),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.sum() // 6\r\nvec4.sum() // 22\r\nmatrix.sum() // 0\r\n```\r\n\r\n> ⚠ The return value of the `lengthSquared` or `length` method of vectors is **not** the same as the return value of `sum`.\r\n\r\n#### <a href=\"#user-content-Tensor-rank\" id=\"Tensor-rank\">Tensor.rank</a>\r\n\r\n```\r\npublic abstract rank: number;\r\n```\r\nThe `rank` of a tensor is the number of indices required to uniquely select each element of the tensor.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.rank // 1\r\nmatrix.rank // 2\r\n```\r\n> 🛈 The `rank` of a `Tensor` is the same as its `dimension.length`.\r\n\r\n#### <a href=\"#user-content-Tensor-value\" id=\"Tensor-value\">Tensor.value</a>\r\n```\r\npublic get value(): V;\r\npublic set value(value: V): void;\r\n```\r\n\r\n`value` is the values of the tensor in a multidimensional array with the type `V` (the type parameter of the class). Unlike `dimension`, this *must* be implemented as a getter and setter.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.value\r\n// [0, 0, 0]\r\n\r\nmatrix.value\r\n// [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ] ]\r\n\r\nvec3.value = [ 1, 2, 3 ];\r\nvec3.x // 1\r\n```\r\n\r\n### <a href=\"#user-content-isTensor\" id=\"isTensor\">isTensor</a>\r\n\r\n```ts\r\nfunction isTensor<V>(value: unknown): value is Tensor<V>;\r\n```\r\nChecks if a value is a `Tensor`.\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3();\r\nisTensor(vec3) // true\r\nisTensor(vec3.value) // false\r\nisTensor([1, 2, 3]) // false\r\nisTensor(0) // false\r\nisTensor(null) // false\r\n```\r\n\r\n### <a href=\"#user-content-isTensorValue\" id=\"isTensorValue\">isTensorValue</a>\r\n\r\n```ts\r\nfunction isTensorValue<T>(value: unknown): value is TensorValue<T>;\r\n```\r\nChecks if a value is a `TensorValue`.\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3();\r\nisTensorValue<1>(vec3) // false\r\nisTensorValue<Vector3>(vec3.value) // true\r\nisTensorValue<1>([1, 2, 3]) // true\r\nisTensorValue<0>([1, 2, 3]) // false\r\nisTensorValue<1>(0) // false\r\nisTensorValue<0>(0) // true\r\nisTensorValue<1>(null) // false\r\n```\r\n### <a href=\"#user-content-getTensorDimension\" id=\"getTensorDimension\">getTensorDimension</a>\r\n```ts\r\nfunction getTensorDimension(value: Tensor | TensorValue): number[];\r\n```\r\n\r\n`getTensorDimension` returns the mathimatical dimension<sup>[2](#user-content-footnote-2)</sup> of `value`, similar to `Tensor.dimension`. If `value` is not a `Tensor` or `TensorValue`, it will throw a `TypeError`\r\n\r\n> 🛈  Dynamic `Tensor` based classes should use `getTensorDimension` for their `dimension` implementations. Fixed-dimension `Tensor` sub-classes need not use `getTensorDimension`.\r\n\r\n### *(optional)* <a href=\"#user-content-convertTensor\" id=\"convertTensor\">convertTensor</a>\r\n\r\n```ts\r\nfunction convertTensor<T extends  typeof Tensor>(TensorClass: T, tensor: Tensor, fillValue: number = 0): InstanceType<T>;\r\n```\r\n\r\nCreates a new `T` with the values of `tensor`. Unlike `Tensor.as`, it performs more error checking and does not need a starting instance (and therefore avoids the dreaded `'methodName' does not exist on undefined` error).\r\n\r\n### <a href=\"#user-content-behavior\" id=\"behavior\">Behavior changes</a>\r\n\r\n- The `Color3` and `Color4` methods  `multiplyToRef`, `scaleToRef`, `scaleAndAddToRef`, `clampToRef`, `addToRef`, and `subtractToRef` have had their return types changed from `this` to the reference instance.\r\n\r\n## Considerations\r\n\r\n1. Static methods related to data manipulation (e.g. `Add`, `Normalize`, `Lerp`) and non-static normalization methods are outside the scope of this PR. While `Tensor` may include them in the future, this PR does not\r\n2. This PR does not include a dimensionally dynamic `Tensor`.\r\n3. Performance: Since `Tensor` is defined using the `declare class` and classes that follow `Tensor` do so using the `implements` keyword, there are no runtime changes to `Tensor`-based classes.\r\n4. Bundle size: The JS bundle size will increase only by the size of the added functions (`isTensor`, `getTensorDimension`, etc.). The TS declaration size will also increase slightly due to `Tensor` and the added utility types.\r\n5. Maintenance: Since there is no implementation (just a class declaration), the extra maintenance is minimized to member signatures.\r\n\r\n## Questions\r\n*For the BabylonJS team concerning the PR*\r\n\r\n1. What other classes (e.g. `Size`) would be included and standardized?\r\n\r\n## FAQs\r\n\r\n#### What use cases does this proposal have?\r\n\r\n`Tensor` is not intended to be used by users. It is meant for internal organization and standardization. The functions (`isTensor`, `getTensorDimension`, etc.) are intended to be public and may be used by users. Their use cases may be inferred from their descriptions.\r\n\r\n#### What is the difference between this and #13699?\r\n\r\nThe capabilities of the type. `Vector` supports any **rank 1** tensor. `Tensor` generalizes `Vector`, and supports *any* rank tensor. A mathematical vector can be represented as `number[]`. A mathematical tensor can be represented as a `number`, `number[]`, `number[][]`, and so on. This table highlights the capability:\r\n\r\n | tensor rank | TS representation | BJS class (if exists) |\r\n| ---- | ---- | ---- |\r\n| 1 | `number[]` | `Vector` |\r\n| 1 | `[number, number]` | `Vector2` |\r\n| 1 | `[number, number, number]` | `Vector3`, `Color3` |\r\n| 1 | `[number, number, number, number]` | `Vector4`, `Color4`, `Quaternion` |\r\n| 2 | `number[][]` | `Matrix` |\r\n| 3 | `number[][][]` | |\r\n| 4 | `number[][][][]` | |\r\n| N | `TensorValue` | |\r\n\r\n####  How is incompatibility managed? Are incompatible classes dropped or are they modified to follow `Tensor`?\r\n\r\nAny classes included will be modified to follow the standard. In many cases, the diverging behavior makes the engine difficult to use, and changing the claseses to follow the `Tensor` standard benefits end users.\r\n\r\n## Further reading\r\n\r\n<a href=\"#user-content-footnote-1\" id=\"footnote-1\">1</a>. https://en.wikipedia.org/wiki/Tensor \r\n<a href=\"#user-content-footnote-2\" id=\"footnote-2\">2</a>. https://en.wikipedia.org/wiki/Dimension",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Debug/directionalLightFrustumViewer.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.plane.ts",
+                    "packages/dev/core/src/Maths/math.polar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/math.viewport.ts",
+                    "packages/dev/core/src/Maths/tensor.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.transformNode.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14833",
+                "title": "ComputeShader: Allow DataBuffer to be passed for uniform / storage buffer",
+                "description": "See https://forum.babylonjs.com/t/computeshader-compilation-error-callback/48508",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuComputeContext.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14811",
+                "title": "Added @babylonjs/ktx2decoder public package",
+                "description": "This PR adds a new publich package - @babylonjs/ktx2decoder, which can be used instead of our ktx2decoder on the CDN.\n\nThis package will include the compiled wasm files, created by the khronos group. License file(s) and a notice file was added to the package, including the Khronos group and all licenses that were used to create the wasm directory.\n\nNote - the wasm directory will be populated during build.\n\nThis PR is directly related to #14773, but both can be merged independently.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/ktx2decoder/NOTICE.md",
+                    "packages/public/@babylonjs/ktx2decoder/license.md",
+                    "packages/public/@babylonjs/ktx2decoder/package.json",
+                    "packages/public/@babylonjs/ktx2decoder/readme.md",
+                    "packages/public/@babylonjs/ktx2decoder/tsconfig.build.json",
+                    "packages/public/@babylonjs/ktx2decoder/tsconfig.json",
+                    "packages/public/@babylonjs/ktx2decoder/wasm/license.md",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14832",
+                "title": "Mesh: Fix setPivotMatrix when cloning mesh",
+                "description": "See https://forum.babylonjs.com/t/pivot-matrix-are-not-being-copied-while-cloning-the-mesh-bug-or-feature/48478",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14831",
+                "title": "- UI Value Copy Bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14830",
+                "title": "- Allow the Set Colors node to accept Vector 3s as an input",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14827",
+                "title": "TargetCamera: Add Node Constructor code for TargetCamera",
+                "description": "This PR contains a simple fix for an issue found in a [forum post](https://forum.babylonjs.com/t/targetcamera-bug/48257).  When a `.babylon` file is created with a `TargetCamera` and reimported, the camera will imported using the default behavior (creating a `UniversalCamera`).  The fix here is to add a NodeConstructor to handle instances of `TargetCameras`",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14826",
+                "title": "Decoupling SerializationHelper and ImageProcessing",
+                "description": "What a drag :) But this is for the greater good :D",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/BakedVertexAnimation/bakedVertexAnimationManager.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/cameraInputsManager.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/colorCurves.functions.ts",
+                    "packages/dev/core/src/Materials/colorCurves.ts",
+                    "packages/dev/core/src/Materials/fresnelParameters.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.defines.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.functions.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialStencilState.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Misc/decorators.functions.ts",
+                    "packages/dev/core/src/Misc/decorators.serialization.ts",
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/sceneRecorder.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/blackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/chromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/colorCorrectionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/convolutionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/displayPassPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/filterPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/fxaaPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/grainPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/refractionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceCurvaturePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/sharpenPostProcess.ts",
+                    "packages/dev/core/src/Probes/reflectionProbe.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts",
+                    "packages/dev/postProcesses/src/asciiArt/asciiArtPostProcess.ts",
+                    "packages/dev/postProcesses/src/digitalRain/digitalRainPostProcess.ts",
+                    "packages/dev/proceduralTextures/src/brick/brickProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/cloud/cloudProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/fire/fireProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/grass/grassProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/marble/marbleProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/normalMap/normalMapProceduralTexture.ts"
+                ],
+                "tags": [
+                    "modules",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14824",
+                "title": "New ThinParticleSystem",
+                "description": "Reduced size (uncompressed) of an app using ParticleSystem to ThinParticleSystem by 600KB (from 1.8MB to 1.2MB)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.scalar.functions.ts",
+                    "packages/dev/core/src/Maths/math.scalar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Misc/tools.functions.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/boxParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particle.ts",
+                    "packages/dev/core/src/Particles/particleSystem.functions.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "modules",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14825",
+                "title": "KTX2 - Fixing context issue and vis tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ktx2decoder.png"
+                ],
+                "tags": []
             }
         ],
         "6.45.0": [
