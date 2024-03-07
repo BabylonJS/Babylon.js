@@ -5,6 +5,8 @@ import type { Mesh } from "../Meshes/mesh";
 import { EncodeArrayBufferToBase64, DecodeBase64ToBinary } from "../Misc/stringTools";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
+import { Skeleton } from "core/Bones/skeleton";
+import type { Nullable } from "core/types";
 
 /**
  * Class to bake vertex animation textures.
@@ -12,16 +14,23 @@ import { Constants } from "../Engines/constants";
  */
 export class VertexAnimationBaker {
     private _scene: Scene;
-    private _mesh: Mesh;
+    private _mesh: Nullable<Mesh>;
+    private _skeleton: Nullable<Skeleton>;
 
     /**
      * Create a new VertexAnimationBaker object which can help baking animations into a texture.
      * @param scene Defines the scene the VAT belongs to
-     * @param mesh Defines the mesh the VAT belongs to
+     * @param meshOrSkeleton Defines the skeleton or the mesh from which to retrieve the skeleton from.
      */
-    constructor(scene: Scene, mesh: Mesh) {
+    constructor(scene: Scene, meshOrSkeleton: Mesh | Skeleton) {
         this._scene = scene;
-        this._mesh = mesh;
+        if (meshOrSkeleton instanceof Skeleton) {
+            this._skeleton = meshOrSkeleton;
+            this._mesh = null;
+        } else {
+            this._mesh = meshOrSkeleton;
+            this._skeleton = meshOrSkeleton.skeleton;
+        }
     }
 
     /**
@@ -31,10 +40,10 @@ export class VertexAnimationBaker {
      * @returns The array of matrix transforms for each vertex (columns) and frame (rows), as a Float32Array.
      */
     public async bakeVertexData(ranges: AnimationRange[]): Promise<Float32Array> {
-        if (!this._mesh.skeleton) {
-            throw new Error("No skeleton in this mesh.");
+        if (!this._skeleton) {
+            throw new Error("No skeleton provided.");
         }
-        const boneCount = this._mesh.skeleton.bones.length;
+        const boneCount = this._skeleton.bones.length;
 
         /** total number of frames in our animations */
         const frameCount = ranges.reduce((previous: number, current: AnimationRange) => previous + current.to - current.from + 1, 0);
@@ -47,8 +56,8 @@ export class VertexAnimationBaker {
         let textureIndex = 0;
         const textureSize = (boneCount + 1) * 4 * 4 * frameCount;
         const vertexData = new Float32Array(textureSize);
-        this._scene.stopAnimation(this._mesh);
-        this._mesh.skeleton.returnToRest();
+        this._scene.stopAnimation(this._skeleton);
+        this._skeleton.returnToRest();
 
         // render all frames from our slices
         for (const range of ranges) {
@@ -69,9 +78,9 @@ export class VertexAnimationBaker {
      */
     private async _executeAnimationFrame(vertexData: Float32Array, frameIndex: number, textureIndex: number): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
-            this._scene.beginAnimation(this._mesh.skeleton, frameIndex, frameIndex, false, 1.0, () => {
+            this._scene.beginAnimation(this._skeleton, frameIndex, frameIndex, false, 1.0, () => {
                 // generate matrices
-                const skeletonMatrices = this._mesh.skeleton!.getTransformMatrices(this._mesh);
+                const skeletonMatrices = this._skeleton!.getTransformMatrices(this._mesh);
                 vertexData.set(skeletonMatrices, textureIndex * skeletonMatrices.length);
 
                 resolve();
@@ -84,10 +93,10 @@ export class VertexAnimationBaker {
      * @returns The vertex animation texture to be used with BakedVertexAnimationManager.
      */
     public textureFromBakedVertexData(vertexData: Float32Array): RawTexture {
-        if (!this._mesh.skeleton) {
-            throw new Error("No skeleton in this mesh.");
+        if (!this._skeleton) {
+            throw new Error("No skeleton provided.");
         }
-        const boneCount = this._mesh.skeleton.bones.length;
+        const boneCount = this._skeleton.bones.length;
 
         const texture = RawTexture.CreateRGBATexture(
             vertexData,
@@ -99,7 +108,7 @@ export class VertexAnimationBaker {
             Texture.NEAREST_NEAREST,
             Constants.TEXTURETYPE_FLOAT
         );
-        texture.name = "VAT" + this._mesh.skeleton.name;
+        texture.name = "VAT" + this._skeleton.name;
         return texture;
     }
     /**
@@ -108,13 +117,13 @@ export class VertexAnimationBaker {
      * @returns This object serialized to a JS dict.
      */
     public serializeBakedVertexDataToObject(vertexData: Float32Array): Record<string, any> {
-        if (!this._mesh.skeleton) {
-            throw new Error("No skeleton in this mesh.");
+        if (!this._skeleton) {
+            throw new Error("No skeleton provided.");
         }
 
         // this converts the float array to a serialized base64 string, ~1.3x larger
         // than the original.
-        const boneCount = this._mesh.skeleton.bones.length;
+        const boneCount = this._skeleton.bones.length;
         const width = (boneCount + 1) * 4;
         const height = vertexData.length / ((boneCount + 1) * 4 * 4);
         const data = {
