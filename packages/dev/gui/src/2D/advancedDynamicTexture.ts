@@ -1293,8 +1293,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         const size = this.getSize();
         const data = this.serializeContent();
         let clone;
-        if (attachToMesh) {
-            clone = AdvancedDynamicTexture.CreateForMesh(attachToMesh, size.width, size.height);
+        if (!this._isFullscreen) {
+            if (attachToMesh) {
+                clone = AdvancedDynamicTexture.CreateForMesh(attachToMesh, size.width, size.height);
+            } else {
+                clone = new AdvancedDynamicTexture(newName ?? "Clone of " + this.name, size.width, size.height, scene, !this.noMipmap, this.samplingMode);
+            }
         } else {
             clone = AdvancedDynamicTexture.CreateFullscreenUI(newName ?? "Clone of " + this.name);
         }
