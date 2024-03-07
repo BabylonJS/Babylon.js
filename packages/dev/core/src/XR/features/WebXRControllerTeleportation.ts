@@ -129,6 +129,11 @@ export interface IWebXRTeleportationOptions {
     pickBlockerMeshes?: AbstractMesh[];
 
     /**
+     * define an optional predicate to select which meshes should block the teleportation ray
+     */
+    blockerMeshesPredicate?: (mesh: AbstractMesh) => boolean;
+
+    /**
      * Should the teleportation ray be blocked by all of the scene's pickable meshes?
      * Defaults to false
      */
@@ -514,6 +519,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     // first check if direct ray possible
                     // pick grounds that are LOWER only. upper will use parabolic path
                     const pick = scene.pickWithRay(this._tmpRay, (o) => {
+                        if (this._options.blockerMeshesPredicate && this._options.blockerMeshesPredicate(o)) {
+                            return true;
+                        }
                         if (this._options.blockAllPickableMeshes && o.isPickable) {
                             return true;
                         }
@@ -555,6 +563,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                     this._tmpRay.direction.normalize();
 
                     const pick = scene.pickWithRay(this._tmpRay, (o) => {
+                        if (this._options.blockerMeshesPredicate && this._options.blockerMeshesPredicate(o)) {
+                            return true;
+                        }
                         if (this._options.blockAllPickableMeshes && o.isPickable) {
                             return true;
                         }
@@ -581,6 +592,16 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
                 // if needed, set visible:
                 this._setTargetMeshVisibility(hitPossible, false, controlSelectionFeature);
+                // if hit not possible, mark forward to be false
+                if (!hitPossible) {
+                    // but only if main component is used
+                    if (
+                        !(controllerData.xrController.inputSource.targetRayMode === "tracked-pointer" && controllerData.xrController.inputSource.gamepad) ||
+                        this._options.useMainComponentOnly
+                    ) {
+                        controllerData.teleportationState.forward = false;
+                    }
+                }
             } else {
                 this._setTargetMeshVisibility(false, false, true);
             }
@@ -770,7 +791,9 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                 });
             }
         } else {
+            let breakObserver = false;
             const teleportLocal = () => {
+                this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
                 controllerData.teleportationState.forward = true;
                 controllerData.teleportationState.baseRotation = this._options.xrInput.xrCamera.rotationQuaternion.toEulerAngles().y;
                 controllerData.teleportationState.currentRotation = 0;
@@ -787,7 +810,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
             };
             this._xrSessionManager.scene.onPointerObservable.add((pointerInfo) => {
                 if (pointerInfo.type === PointerEventTypes.POINTERDOWN) {
-                    this._currentTeleportationControllerId = controllerData.xrController.uniqueId;
+                    breakObserver = false;
                     // check if start time is defined
                     if (this._options.timeToTeleportStart) {
                         setAndStartTimer({
@@ -799,11 +822,19 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
                                     teleportLocal();
                                 }
                             },
+                            breakCondition: () => {
+                                if (breakObserver) {
+                                    breakObserver = false;
+                                    return true;
+                                }
+                                return false;
+                            },
                         });
                     } else {
                         teleportLocal();
                     }
                 } else if (pointerInfo.type === PointerEventTypes.POINTERUP) {
+                    breakObserver = true;
                     controllerData.teleportationState.forward = false;
                     this._currentTeleportationControllerId = "";
                 }
