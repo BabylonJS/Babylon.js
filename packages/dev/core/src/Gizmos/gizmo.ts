@@ -117,7 +117,7 @@ export interface IGizmo extends IDisposable {
      * It's useful when the gizmo is attached to a bone: if the bone is part of a skeleton attached to a mesh, you should define the mesh as additionalTransformNode if you want the gizmo to be displayed at the bone's correct location.
      * Otherwise, as the gizmo is relative to the skeleton root, the mesh transformation will not be taken into account.
      */
-    additionalTransformNode?: TransformNode;
+    additionalTransformNode?: TransformNode | undefined;
 }
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
