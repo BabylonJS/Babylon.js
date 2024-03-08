@@ -1,4 +1,11 @@
-import type { ISceneLoaderPluginAsync, ISceneLoaderPluginFactory, ISceneLoaderPlugin, ISceneLoaderAsyncResult, ISceneLoaderPluginExtensions } from "core/Loading/sceneLoader";
+import type {
+    ISceneLoaderPluginAsync,
+    ISceneLoaderPluginFactory,
+    ISceneLoaderPlugin,
+    ISceneLoaderAsyncResult,
+    ISceneLoaderPluginExtensions,
+    ISceneLoaderProgressEvent,
+} from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSplattingMesh";
 import type { AssetContainer } from "core/assetContainer";
@@ -54,11 +61,20 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
      * @param scene the scene the meshes should be added to
      * @param data the gaussian splatting data to load
      * @param rootUrl root url to load from
+     * @param onProgress callback called while file is loading
+     * @param fileName Defines the name of the file to load
      * @returns a promise containing the loaded meshes, particles, skeletons and animations
      */
-    public async importMeshAsync(_meshesNames: any, scene: Scene, data: any, rootUrl: string): Promise<ISceneLoaderAsyncResult> {
+    public async importMeshAsync(
+        _meshesNames: any,
+        scene: Scene,
+        data: any,
+        rootUrl: string,
+        onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        fileName?: string
+    ): Promise<ISceneLoaderAsyncResult> {
         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
-        await gaussianSplatting.loadFileAsync(rootUrl);
+        await gaussianSplatting.loadFileAsync(rootUrl + (fileName ?? ""));
         return {
             meshes: [gaussianSplatting],
             particleSystems: [],

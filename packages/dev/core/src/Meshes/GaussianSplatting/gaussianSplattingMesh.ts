@@ -171,7 +171,12 @@ export class GaussianSplattingMesh extends Mesh {
         for (const prop of filtered) {
             const [, type, name] = prop.split(" ");
             properties.push({ name, type, offset: rowOffset });
-            if (!offsets[type]) throw new Error(`Unsupported property type: ${type}`);
+            if (offsets[type]) {
+                rowOffset += offsets[type];
+            } else {
+                Logger.Error(`Unsupported property type: ${type}. Are you sure it's a valid Gaussian Splatting file?`);
+                return new ArrayBuffer(0);
+            }
             rowOffset += offsets[type];
         }
 
@@ -363,6 +368,9 @@ export class GaussianSplattingMesh extends Mesh {
     };
 
     private _loadData(data: ArrayBuffer): void {
+        if (!data.byteLength) {
+            return;
+        }
         // Parse the data
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
