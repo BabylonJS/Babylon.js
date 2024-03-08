@@ -368,6 +368,9 @@ export class GaussianSplattingMesh extends Mesh {
     };
 
     private _loadData(data: ArrayBuffer): void {
+        if (!data.byteLength) {
+            return;
+        }
         // Parse the data
         const uBuffer = new Uint8Array(data);
         const fBuffer = new Float32Array(uBuffer.buffer);
