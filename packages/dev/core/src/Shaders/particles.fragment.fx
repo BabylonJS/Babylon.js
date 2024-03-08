@@ -22,6 +22,7 @@ varying vec4 remapRanges;
 uniform sampler2D rampSampler;
 #endif
 
+#include<fogFragmentDeclaration>
 
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
@@ -53,6 +54,7 @@ void main(void) {
 	#endif
 
 	#include<logDepthFragment>
+	#include<fogFragment>(color,baseColor)
 
 // Apply image processing if relevant. As this applies in linear space, 
 // We first move from gamma to linear.

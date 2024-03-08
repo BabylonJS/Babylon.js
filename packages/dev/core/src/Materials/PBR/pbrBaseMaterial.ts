@@ -17,7 +17,7 @@ import { PrePassConfiguration } from "../prePassConfiguration";
 import { Color3, TmpColors } from "../../Maths/math.color";
 import { Scalar } from "../../Maths/math.scalar";
 
-import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "../../Materials/imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "../../Materials/imageProcessingConfiguration";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
 import type { IMaterialCompilationOptions, ICustomShaderNameResolveOptions } from "../../Materials/material";
@@ -25,7 +25,6 @@ import { Material } from "../../Materials/material";
 import { MaterialPluginEvent } from "../materialPluginEvent";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
-import { MaterialHelper } from "../../Materials/materialHelper";
 
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
@@ -48,6 +47,28 @@ import { PBRSheenConfiguration } from "./pbrSheenConfiguration";
 import { PBRSubSurfaceConfiguration } from "./pbrSubSurfaceConfiguration";
 import { DetailMapConfiguration } from "../material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLights,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindTextureMatrix,
+    HandleFallbacksForShadows,
+    PrepareAttributesForBakedVertexAnimation,
+    PrepareAttributesForBones,
+    PrepareAttributesForInstances,
+    PrepareAttributesForMorphTargets,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForLights,
+    PrepareDefinesForMergedUV,
+    PrepareDefinesForMisc,
+    PrepareDefinesForMultiview,
+    PrepareDefinesForOIT,
+    PrepareDefinesForPrePass,
+    PrepareUniformsAndSamplersList,
+} from "../materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -1283,7 +1304,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             fallbacks.addFallback(fallbackRank++, "BUMP");
         }
 
-        fallbackRank = MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
+        fallbackRank = HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights, fallbackRank++);
 
         if (defines.SPECULARTERM) {
             fallbacks.addFallback(fallbackRank++, "SPECULARTERM");
@@ -1346,10 +1367,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             attribs.push(VertexBuffer.ColorKind);
         }
 
-        MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-        MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-        MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-        MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+        PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+        PrepareAttributesForInstances(attribs, defines);
+        PrepareAttributesForMorphTargets(attribs, mesh, defines);
+        PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
         let shaderName = "pbr";
 
@@ -1471,7 +1492,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
         }
 
-        MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+        PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
             uniformsNames: uniforms,
             uniformBuffersNames: uniformBuffers,
             samplers: samplers,
@@ -1521,18 +1542,18 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         // Lights
-        MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+        PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
         defines._needNormals = true;
 
         // Multiview
-        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+        PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+        PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
         // Order independant transparency
-        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
+        PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         defines.METALLICWORKFLOW = this.isMetallicWorkflow();
@@ -1558,21 +1579,21 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
+                    PrepareDefinesForMergedUV(this._albedoTexture, defines, "ALBEDO");
                     defines.GAMMAALBEDO = this._albedoTexture.gammaSpace;
                 } else {
                     defines.ALBEDO = false;
                 }
 
                 if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
+                    PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                     defines.AMBIENTINGRAYSCALE = this._useAmbientInGrayScale;
                 } else {
                     defines.AMBIENT = false;
                 }
 
                 if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
+                    PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                     defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                 } else {
                     defines.OPACITY = false;
@@ -1685,7 +1706,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
+                    PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                     defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                     defines.GAMMALIGHTMAP = this._lightmapTexture.gammaSpace;
                     defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
@@ -1694,7 +1715,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
+                    PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
                     defines.GAMMAEMISSIVE = this._emissiveTexture.gammaSpace;
                 } else {
                     defines.EMISSIVE = false;
@@ -1702,14 +1723,14 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                 if (MaterialFlags.SpecularTextureEnabled) {
                     if (this._metallicTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
+                        PrepareDefinesForMergedUV(this._metallicTexture, defines, "REFLECTIVITY");
                         defines.ROUGHNESSSTOREINMETALMAPALPHA = this._useRoughnessFromMetallicTextureAlpha;
                         defines.ROUGHNESSSTOREINMETALMAPGREEN = !this._useRoughnessFromMetallicTextureAlpha && this._useRoughnessFromMetallicTextureGreen;
                         defines.METALLNESSSTOREINMETALMAPBLUE = this._useMetallnessFromMetallicTextureBlue;
                         defines.AOSTOREINMETALMAPRED = this._useAmbientOcclusionFromMetallicTextureRed;
                         defines.REFLECTIVITY_GAMMA = false;
                     } else if (this._reflectivityTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
+                        PrepareDefinesForMergedUV(this._reflectivityTexture, defines, "REFLECTIVITY");
                         defines.MICROSURFACEFROMREFLECTIVITYMAP = this._useMicroSurfaceFromReflectivityMapAlpha;
                         defines.MICROSURFACEAUTOMATIC = this._useAutoMicroSurfaceFromReflectivityMap;
                         defines.REFLECTIVITY_GAMMA = this._reflectivityTexture.gammaSpace;
@@ -1725,7 +1746,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                         defines.METALLIC_REFLECTANCE_USE_ALPHA_ONLY = this._useOnlyMetallicFromMetallicReflectanceTexture && !identicalTextures;
                         if (this._metallicReflectanceTexture) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._metallicReflectanceTexture, defines, "METALLIC_REFLECTANCE");
+                            PrepareDefinesForMergedUV(this._metallicReflectanceTexture, defines, "METALLIC_REFLECTANCE");
                             defines.METALLIC_REFLECTANCE_GAMMA = this._metallicReflectanceTexture.gammaSpace;
                         } else {
                             defines.METALLIC_REFLECTANCE = false;
@@ -1735,7 +1756,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             !identicalTextures &&
                             (!this._metallicReflectanceTexture || (this._metallicReflectanceTexture && this._useOnlyMetallicFromMetallicReflectanceTexture))
                         ) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._reflectanceTexture, defines, "REFLECTANCE");
+                            PrepareDefinesForMergedUV(this._reflectanceTexture, defines, "REFLECTANCE");
                             defines.REFLECTANCE_GAMMA = this._reflectanceTexture.gammaSpace;
                         } else {
                             defines.REFLECTANCE = false;
@@ -1746,7 +1767,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
 
                     if (this._microSurfaceTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._microSurfaceTexture, defines, "MICROSURFACEMAP");
+                        PrepareDefinesForMergedUV(this._microSurfaceTexture, defines, "MICROSURFACEMAP");
                     } else {
                         defines.MICROSURFACEMAP = false;
                     }
@@ -1756,7 +1777,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 }
 
                 if (engine.getCaps().standardDerivatives && this._bumpTexture && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
-                    MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
+                    PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                     if (this._useParallax && this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         defines.PARALLAX = true;
@@ -1834,7 +1855,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         // Misc.
         if (defines._areMiscDirty) {
-            MaterialHelper.PrepareDefinesForMisc(
+            PrepareDefinesForMisc(
                 mesh,
                 scene,
                 this._useLogarithmicDepth,
@@ -1849,7 +1870,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false, useClipPlane, useThinInstances);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false, useClipPlane, useThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
@@ -1857,7 +1878,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
+        PrepareDefinesForAttributes(mesh, defines, true, true, true, this._transparencyMode !== PBRBaseMaterial.PBRMATERIAL_OPAQUE);
 
         // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
@@ -2016,7 +2037,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
+        BindBonesParameters(mesh, this._activeEffect, this.prePassConfiguration);
 
         let reflectionTexture: Nullable<BaseTexture> = null;
         const ubo = this._uniformBuffer;
@@ -2029,7 +2050,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 if (scene.texturesEnabled) {
                     if (this._albedoTexture && MaterialFlags.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vAlbedoInfos", this._albedoTexture.coordinatesIndex, this._albedoTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._albedoTexture, ubo, "albedo");
+                        BindTextureMatrix(this._albedoTexture, ubo, "albedo");
                     }
 
                     if (this._ambientTexture && MaterialFlags.AmbientTextureEnabled) {
@@ -2040,12 +2061,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                             this._ambientTextureStrength,
                             this._ambientTextureImpactOnAnalyticalLights
                         );
-                        MaterialHelper.BindTextureMatrix(this._ambientTexture, ubo, "ambient");
+                        BindTextureMatrix(this._ambientTexture, ubo, "ambient");
                     }
 
                     if (this._opacityTexture && MaterialFlags.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
+                        BindTextureMatrix(this._opacityTexture, ubo, "opacity");
                     }
 
                     if (reflectionTexture && MaterialFlags.ReflectionTextureEnabled) {
@@ -2112,42 +2133,42 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
                     if (this._emissiveTexture && MaterialFlags.EmissiveTextureEnabled) {
                         ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
+                        BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
                     }
 
                     if (this._lightmapTexture && MaterialFlags.LightmapTextureEnabled) {
                         ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
+                        BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
                     if (MaterialFlags.SpecularTextureEnabled) {
                         if (this._metallicTexture) {
                             ubo.updateFloat3("vReflectivityInfos", this._metallicTexture.coordinatesIndex, this._metallicTexture.level, this._ambientTextureStrength);
-                            MaterialHelper.BindTextureMatrix(this._metallicTexture, ubo, "reflectivity");
+                            BindTextureMatrix(this._metallicTexture, ubo, "reflectivity");
                         } else if (this._reflectivityTexture) {
                             ubo.updateFloat3("vReflectivityInfos", this._reflectivityTexture.coordinatesIndex, this._reflectivityTexture.level, 1.0);
-                            MaterialHelper.BindTextureMatrix(this._reflectivityTexture, ubo, "reflectivity");
+                            BindTextureMatrix(this._reflectivityTexture, ubo, "reflectivity");
                         }
 
                         if (this._metallicReflectanceTexture) {
                             ubo.updateFloat2("vMetallicReflectanceInfos", this._metallicReflectanceTexture.coordinatesIndex, this._metallicReflectanceTexture.level);
-                            MaterialHelper.BindTextureMatrix(this._metallicReflectanceTexture, ubo, "metallicReflectance");
+                            BindTextureMatrix(this._metallicReflectanceTexture, ubo, "metallicReflectance");
                         }
 
                         if (this._reflectanceTexture && defines.REFLECTANCE) {
                             ubo.updateFloat2("vReflectanceInfos", this._reflectanceTexture.coordinatesIndex, this._reflectanceTexture.level);
-                            MaterialHelper.BindTextureMatrix(this._reflectanceTexture, ubo, "reflectance");
+                            BindTextureMatrix(this._reflectanceTexture, ubo, "reflectance");
                         }
 
                         if (this._microSurfaceTexture) {
                             ubo.updateFloat2("vMicroSurfaceSamplerInfos", this._microSurfaceTexture.coordinatesIndex, this._microSurfaceTexture.level);
-                            MaterialHelper.BindTextureMatrix(this._microSurfaceTexture, ubo, "microSurfaceSampler");
+                            BindTextureMatrix(this._microSurfaceTexture, ubo, "microSurfaceSampler");
                         }
                     }
 
                     if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.BumpTextureEnabled && !this._disableBumpMap) {
                         ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level, this._parallaxScaleBias);
-                        MaterialHelper.BindTextureMatrix(this._bumpTexture, ubo, "bump");
+                        BindTextureMatrix(this._bumpTexture, ubo, "bump");
 
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
@@ -2293,7 +2314,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+                BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
             }
 
             // View
@@ -2308,11 +2329,11 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
 
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect, true);
+            BindFogParameters(scene, mesh, this._activeEffect, true);
 
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
-                MaterialHelper.BindMorphTargetParameters(mesh, this._activeEffect);
+                BindMorphTargetParameters(mesh, this._activeEffect);
             }
 
             if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
@@ -2323,7 +2344,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._imageProcessingConfiguration!.bind(this._activeEffect);
 
             // Log. depth
-            MaterialHelper.BindLogDepth(defines, this._activeEffect, scene);
+            BindLogDepth(defines, this._activeEffect, scene);
         }
 
         this._afterBind(mesh, this._activeEffect, subMesh);

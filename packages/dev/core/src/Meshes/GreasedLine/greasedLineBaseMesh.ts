@@ -222,9 +222,11 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     /**
      * Dispose the line and it's resources
+     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose() {
-        super.dispose();
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false) {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
     /**

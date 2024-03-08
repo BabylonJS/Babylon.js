@@ -142,10 +142,12 @@ export class ReflectiveShadowMap {
                 this._addMeshToMRT(mesh);
             });
         }
+        this._recomputeLightTransformationMatrix();
     }
 
     /**
      * Recomputes the light transformation matrix. Call this method if you manually changed the light position / direction / etc. and you want to update the RSM textures accordingly.
+     * You should also call this method if you add/remove meshes to/from the render list.
      */
     public updateLightParameters() {
         this._recomputeLightTransformationMatrix();

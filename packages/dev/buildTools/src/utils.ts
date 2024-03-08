@@ -94,6 +94,27 @@ export function copyFile(from: string, to: string, silent?: boolean, checkHash?:
     }
 }
 
+/**
+ * This function will copy a folder from one location to another, independent of the OS.
+ * @param from directory to copy from
+ * @param to directory to copy to
+ * @param silent if true, will not log anything
+ */
+export function copyFolder(from: string, to: string, silent?: boolean) {
+    checkDirectorySync(to);
+    const files = fs.readdirSync(from);
+    for (const file of files) {
+        const current = fs.lstatSync(path.join(from, file));
+        if (current.isDirectory()) {
+            copyFolder(path.join(from, file), path.join(to, file), silent);
+        } else if (current.isSymbolicLink()) {
+            const symlink = fs.readlinkSync(path.join(from, file));
+            fs.symlinkSync(symlink, path.join(to, file));
+        }
+        copyFile(path.join(from, file), path.join(to, file), silent);
+    }
+}
+
 export const kebabize = (str: string) => str.replace(/[A-Z]+(?![a-z])|[A-Z]/g, ($, ofs) => (ofs ? "-" : "") + $.toLowerCase());
 
 export const camelize = (s: string) => s.replace(/-./g, (x: string) => x[1].toUpperCase());

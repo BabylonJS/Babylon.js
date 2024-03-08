@@ -9,6 +9,7 @@
     ],
     "scripts": {
         "build": "webpack",
+        "analyze": "webpack --env analyze=true",
         "serve": "webpack serve",
         "serve-https": "webpack serve --server-type https --open",
         "serve-https-public": "webpack serve --server-type https --host ::"
@@ -22,13 +23,16 @@
         "@dev/procedural-textures": "1.0.0",
         "@dev/serializers": "1.0.0",
         "@tools/accessibility": "1.0.0",
+        "babylonjs-gltf2interface": "^6.42.0",
         "html-webpack-plugin": "^5.5.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",
         "webpack": "^5.73.0",
+        "webpack-bundle-analyzer": "^4.10.1",
         "webpack-cli": "^5.1.0",
         "webpack-dev-server": "^4.7.4",
         "webpack-merge": "^5.8.0"
     },
     "sideEffects": true
 }
+

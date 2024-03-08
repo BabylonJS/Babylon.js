@@ -1,10 +1,11 @@
 import type { DeepImmutable } from "../types";
 import { Vector3, Matrix } from "./math.vector";
+import type { IPlaneLike } from "./math.like";
 
 /**
  * Represents a plane by the equation ax + by + cz + d = 0
  */
-export class Plane {
+export class Plane implements IPlaneLike {
     private static _TmpMatrix = Matrix.Identity();
 
     /**

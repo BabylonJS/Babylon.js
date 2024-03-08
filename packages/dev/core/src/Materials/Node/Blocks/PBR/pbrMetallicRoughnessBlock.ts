@@ -3,7 +3,6 @@ import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialB
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
-import { MaterialHelper } from "../../../materialHelper";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
@@ -32,6 +31,14 @@ import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { Constants } from "../../../../Engines/constants";
 import { Color3, TmpColors } from "../../../../Maths/math.color";
 import { Logger } from "core/Misc/logger";
+import {
+    BindLight,
+    BindLights,
+    PrepareDefinesForLight,
+    PrepareDefinesForLights,
+    PrepareDefinesForMultiview,
+    PrepareUniformsAndSamplersForLight,
+} from "../../../materialHelper.functions";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
@@ -760,11 +767,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         if (!this.light) {
             // Lights
-            MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
+            PrepareDefinesForLights(scene, mesh, defines, true, nodeMaterial.maxSimultaneousLights);
             defines._needNormals = true;
 
             // Multiview
-            MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+            PrepareDefinesForMultiview(scene, defines);
         } else {
             const state = {
                 needNormals: false,
@@ -774,7 +781,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 specularEnabled: false,
             };
 
-            MaterialHelper.PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
+            PrepareDefinesForLight(scene, mesh, this.light, this._lightId, defines, true, state);
 
             if (state.needRebuild) {
                 defines.rebuild();
@@ -788,14 +795,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            MaterialHelper.PrepareUniformsAndSamplersForLight(
-                lightIndex,
-                state.uniforms,
-                state.samplers,
-                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
-                uniformBuffers,
-                onlyUpdateBuffersList
-            );
+            PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -821,9 +821,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const scene = mesh.getScene();
 
         if (!this.light) {
-            MaterialHelper.BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
+            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
         } else {
-            MaterialHelper.BindLight(this.light, this._lightId, scene, effect, true);
+            BindLight(this.light, this._lightId, scene, effect, true);
         }
 
         effect.setTexture(this._environmentBrdfSamplerName, this._environmentBRDFTexture);

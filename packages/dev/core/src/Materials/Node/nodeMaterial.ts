@@ -18,7 +18,7 @@ import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateShared
 import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import type { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration";
+import type { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
@@ -27,7 +27,8 @@ import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "./Blocks/Input/inputBlock";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 import type { TextureBlock } from "./Blocks/Dual/textureBlock";
 import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
 import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
@@ -37,7 +38,6 @@ import { ParticleRampGradientBlock } from "./Blocks/Particle/particleRampGradien
 import { ParticleBlendMultiplyBlock } from "./Blocks/Particle/particleBlendMultiplyBlock";
 import { EffectFallbacks } from "../effectFallbacks";
 import { WebRequest } from "../../Misc/webRequest";
-
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { Constants } from "../../Engines/constants";
@@ -58,7 +58,6 @@ import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Material } from "../material";
-import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
 import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
@@ -67,6 +66,8 @@ import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -88,66 +89,116 @@ export interface INodeMaterialEditorOptions {
 
 /** @internal */
 export class NodeMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
+    /** Normal */
     public NORMAL = false;
+    /** Tangent */
     public TANGENT = false;
+    /** Vertex color */
     public VERTEXCOLOR_NME = false;
+    /**  Uv1 **/
     public UV1 = false;
+    /** Uv2 **/
     public UV2 = false;
+    /** Uv3 **/
     public UV3 = false;
+    /** Uv4 **/
     public UV4 = false;
+    /** Uv5 **/
     public UV5 = false;
+    /** Uv6 **/
     public UV6 = false;
 
+    /** Prepass **/
     public PREPASS = false;
+    /** Prepass normal */
     public PREPASS_NORMAL = false;
+    /** Prepass normal index */
     public PREPASS_NORMAL_INDEX = -1;
+    /** Prepass position */
     public PREPASS_POSITION = false;
+    /** Prepass position index */
     public PREPASS_POSITION_INDEX = -1;
+    /** Prepass depth */
     public PREPASS_DEPTH = false;
+    /** Prepass depth index */
     public PREPASS_DEPTH_INDEX = -1;
+    /** Scene MRT count */
     public SCENE_MRT_COUNT = 0;
 
     /** BONES */
     public NUM_BONE_INFLUENCERS = 0;
+    /** Bones per mesh */
     public BonesPerMesh = 0;
+    /** Using texture for bone storage */
     public BONETEXTURE = false;
 
     /** MORPH TARGETS */
     public MORPHTARGETS = false;
+    /** Morph target normal */
     public MORPHTARGETS_NORMAL = false;
+    /** Morph target tangent */
     public MORPHTARGETS_TANGENT = false;
+    /** Morph target uv */
     public MORPHTARGETS_UV = false;
+    /** Number of morph influencers */
     public NUM_MORPH_INFLUENCERS = 0;
+    /** Using a texture to store morph target data */
     public MORPHTARGETS_TEXTURE = false;
 
     /** IMAGE PROCESSING */
     public IMAGEPROCESSING = false;
+    /** Vignette */
     public VIGNETTE = false;
+    /** Multiply blend mode for vignette */
     public VIGNETTEBLENDMODEMULTIPLY = false;
+    /** Opaque blend mode for vignette */
     public VIGNETTEBLENDMODEOPAQUE = false;
+    /** Tone mapping */
     public TONEMAPPING = false;
+    /** ACES tone mapping mode */
     public TONEMAPPING_ACES = false;
+    /** Contrast */
     public CONTRAST = false;
+    /** Exposure */
     public EXPOSURE = false;
+    /** Color curves */
     public COLORCURVES = false;
+    /** Color grading */
     public COLORGRADING = false;
+    /** 3D color grading */
     public COLORGRADING3D = false;
+    /** Sampler green depth */
     public SAMPLER3DGREENDEPTH = false;
+    /** Sampler for BGR map */
     public SAMPLER3DBGRMAP = false;
+    /** Dithering */
     public DITHER = false;
+    /** Using post process for image processing */
     public IMAGEPROCESSINGPOSTPROCESS = false;
+    /** Skip color clamp */
     public SKIPFINALCOLORCLAMP = false;
 
     /** MISC. */
     public BUMPDIRECTUV = 0;
+    /** Camera is orthographic */
     public CAMERA_ORTHOGRAPHIC = false;
+    /** Camera is perspective */
     public CAMERA_PERSPECTIVE = false;
 
+    /**
+     * Creates a new NodeMaterialDefines
+     */
     constructor() {
         super();
         this.rebuild();
     }
 
+    /**
+     * Set the value of a specific key
+     * @param name defines the name of the key to set
+     * @param value defines the value to set
+     * @param markAsUnprocessedIfDirty Flag to indicate to the cache that this value needs processing
+     */
     public setValue(name: string, value: any, markAsUnprocessedIfDirty = false) {
         if (this[name] === undefined) {
             this._keys.push(name);
@@ -886,7 +937,7 @@ export class NodeMaterial extends PushMaterial {
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit);
+        PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
@@ -1368,7 +1419,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Global defines
         const scene = this.getScene();
-        if (MaterialHelper.PrepareDefinesForCamera(scene, defines)) {
+        if (PrepareDefinesForCamera(scene, defines)) {
             defines.markAsMiscDirty();
         }
 
@@ -2239,6 +2290,10 @@ export class NodeMaterial extends PushMaterial {
 
         if (source.forceAlphaBlending !== undefined) {
             this.forceAlphaBlending = source.forceAlphaBlending;
+        }
+
+        if (source.alphaMode !== undefined) {
+            this.alphaMode = source.alphaMode;
         }
 
         if (!merge) {

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import type { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
@@ -14,7 +14,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
-import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { ColorCurves } from "./colorCurves";
 import type { FresnelParameters } from "./fresnelParameters";
@@ -23,7 +23,6 @@ import { Material } from "../Materials/material";
 import { MaterialPluginEvent } from "./materialPluginEvent";
 import { MaterialDefines } from "../Materials/materialDefines";
 import { PushMaterial } from "./pushMaterial";
-import { MaterialHelper } from "./materialHelper";
 
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
@@ -39,6 +38,29 @@ import { EffectFallbacks } from "./effectFallbacks";
 import type { Effect, IEffectCreationOptions } from "./effect";
 import { DetailMapConfiguration } from "./material.detailMapConfiguration";
 import { addClipPlaneUniforms, bindClipPlane } from "./clipPlaneMaterialHelper";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLights,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindTextureMatrix,
+    HandleFallbacksForShadows,
+    PrepareAttributesForBakedVertexAnimation,
+    PrepareAttributesForBones,
+    PrepareAttributesForInstances,
+    PrepareAttributesForMorphTargets,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForLights,
+    PrepareDefinesForMergedUV,
+    PrepareDefinesForMisc,
+    PrepareDefinesForMultiview,
+    PrepareDefinesForOIT,
+    PrepareDefinesForPrePass,
+    PrepareUniformsAndSamplersList,
+} from "./materialHelper.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -910,17 +932,17 @@ export class StandardMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         // Lights
-        defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
+        defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, true, this._maxSimultaneousLights, this._disableLighting);
 
         // Multiview
-        MaterialHelper.PrepareDefinesForMultiview(scene, defines);
+        PrepareDefinesForMultiview(scene, defines);
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
+        PrepareDefinesForPrePass(scene, defines, this.canRenderToMRT && !oit);
 
         // Order independant transparency
-        MaterialHelper.PrepareDefinesForOIT(scene, defines, oit);
+        PrepareDefinesForOIT(scene, defines, oit);
 
         // Textures
         if (defines._areTexturesDirty) {
@@ -944,7 +966,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._diffuseTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
+                        PrepareDefinesForMergedUV(this._diffuseTexture, defines, "DIFFUSE");
                     }
                 } else {
                     defines.DIFFUSE = false;
@@ -954,7 +976,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._ambientTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
+                        PrepareDefinesForMergedUV(this._ambientTexture, defines, "AMBIENT");
                     }
                 } else {
                     defines.AMBIENT = false;
@@ -964,7 +986,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._opacityTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
+                        PrepareDefinesForMergedUV(this._opacityTexture, defines, "OPACITY");
                         defines.OPACITYRGB = this._opacityTexture.getAlphaFromRGB;
                     }
                 } else {
@@ -1029,7 +1051,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._emissiveTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
+                        PrepareDefinesForMergedUV(this._emissiveTexture, defines, "EMISSIVE");
                     }
                 } else {
                     defines.EMISSIVE = false;
@@ -1039,7 +1061,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._lightmapTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
+                        PrepareDefinesForMergedUV(this._lightmapTexture, defines, "LIGHTMAP");
                         defines.USELIGHTMAPASSHADOWMAP = this._useLightmapAsShadowmap;
                         defines.RGBDLIGHTMAP = this._lightmapTexture.isRGBD;
                     }
@@ -1051,7 +1073,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._specularTexture.isReadyOrNotBlocking()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._specularTexture, defines, "SPECULAR");
+                        PrepareDefinesForMergedUV(this._specularTexture, defines, "SPECULAR");
                         defines.GLOSSINESS = this._useGlossinessFromSpecularMapAlpha;
                     }
                 } else {
@@ -1063,7 +1085,7 @@ export class StandardMaterial extends PushMaterial {
                     if (!this._bumpTexture.isReady()) {
                         return false;
                     } else {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
+                        PrepareDefinesForMergedUV(this._bumpTexture, defines, "BUMP");
 
                         defines.PARALLAX = this._useParallax;
                         defines.PARALLAX_RHS = scene.useRightHandedSystem;
@@ -1171,7 +1193,7 @@ export class StandardMaterial extends PushMaterial {
         }
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(
+        PrepareDefinesForMisc(
             mesh,
             scene,
             this._useLogarithmicDepth,
@@ -1183,7 +1205,7 @@ export class StandardMaterial extends PushMaterial {
         );
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, subMesh.getRenderingMesh().hasThinInstances);
 
         // External config
         this._eventInfo.defines = defines;
@@ -1191,7 +1213,7 @@ export class StandardMaterial extends PushMaterial {
         this._callbackPluginEventPrepareDefinesBeforeAttributes(this._eventInfo);
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true, true);
+        PrepareDefinesForAttributes(mesh, defines, true, true, true);
 
         // External config
         this._callbackPluginEventPrepareDefines(this._eventInfo);
@@ -1245,7 +1267,7 @@ export class StandardMaterial extends PushMaterial {
                 fallbacks.addFallback(0, "LOGARITHMICDEPTH");
             }
 
-            MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
+            HandleFallbacksForShadows(defines, fallbacks, this._maxSimultaneousLights);
 
             if (defines.SPECULARTERM) {
                 fallbacks.addFallback(0, "SPECULARTERM");
@@ -1296,10 +1318,10 @@ export class StandardMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
-            MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
-            MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+            PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+            PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForMorphTargets(attribs, mesh, defines);
+            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
 
             let shaderName = "default";
 
@@ -1400,7 +1422,7 @@ export class StandardMaterial extends PushMaterial {
                 ImageProcessingConfiguration.PrepareSamplers(samplers, defines);
             }
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -1571,7 +1593,7 @@ export class StandardMaterial extends PushMaterial {
         const mustRebind = this._mustRebind(scene, effect, subMesh, mesh.visibility);
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, effect);
+        BindBonesParameters(mesh, effect);
         const ubo = this._uniformBuffer;
         if (mustRebind) {
             this.bindViewProjection(effect);
@@ -1615,17 +1637,17 @@ export class StandardMaterial extends PushMaterial {
                 if (scene.texturesEnabled) {
                     if (this._diffuseTexture && StandardMaterial.DiffuseTextureEnabled) {
                         ubo.updateFloat2("vDiffuseInfos", this._diffuseTexture.coordinatesIndex, this._diffuseTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
+                        BindTextureMatrix(this._diffuseTexture, ubo, "diffuse");
                     }
 
                     if (this._ambientTexture && StandardMaterial.AmbientTextureEnabled) {
                         ubo.updateFloat2("vAmbientInfos", this._ambientTexture.coordinatesIndex, this._ambientTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._ambientTexture, ubo, "ambient");
+                        BindTextureMatrix(this._ambientTexture, ubo, "ambient");
                     }
 
                     if (this._opacityTexture && StandardMaterial.OpacityTextureEnabled) {
                         ubo.updateFloat2("vOpacityInfos", this._opacityTexture.coordinatesIndex, this._opacityTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._opacityTexture, ubo, "opacity");
+                        BindTextureMatrix(this._opacityTexture, ubo, "opacity");
                     }
 
                     if (this._hasAlphaChannel()) {
@@ -1646,22 +1668,22 @@ export class StandardMaterial extends PushMaterial {
 
                     if (this._emissiveTexture && StandardMaterial.EmissiveTextureEnabled) {
                         ubo.updateFloat2("vEmissiveInfos", this._emissiveTexture.coordinatesIndex, this._emissiveTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
+                        BindTextureMatrix(this._emissiveTexture, ubo, "emissive");
                     }
 
                     if (this._lightmapTexture && StandardMaterial.LightmapTextureEnabled) {
                         ubo.updateFloat2("vLightmapInfos", this._lightmapTexture.coordinatesIndex, this._lightmapTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
+                        BindTextureMatrix(this._lightmapTexture, ubo, "lightmap");
                     }
 
                     if (this._specularTexture && StandardMaterial.SpecularTextureEnabled) {
                         ubo.updateFloat2("vSpecularInfos", this._specularTexture.coordinatesIndex, this._specularTexture.level);
-                        MaterialHelper.BindTextureMatrix(this._specularTexture, ubo, "specular");
+                        BindTextureMatrix(this._specularTexture, ubo, "specular");
                     }
 
                     if (this._bumpTexture && scene.getEngine().getCaps().standardDerivatives && StandardMaterial.BumpTextureEnabled) {
                         ubo.updateFloat3("vBumpInfos", this._bumpTexture.coordinatesIndex, 1.0 / this._bumpTexture.level, this.parallaxScaleBias);
-                        MaterialHelper.BindTextureMatrix(this._bumpTexture, ubo, "bump");
+                        BindTextureMatrix(this._bumpTexture, ubo, "bump");
 
                         if (scene._mirroredCameraPosition) {
                             ubo.updateFloat2("vTangentSpaceParams", this._invertNormalMapX ? 1.0 : -1.0, this._invertNormalMapY ? 1.0 : -1.0);
@@ -1773,7 +1795,7 @@ export class StandardMaterial extends PushMaterial {
         if (mustRebind || !this.isFrozen) {
             // Lights
             if (scene.lightsEnabled && !this._disableLighting) {
-                MaterialHelper.BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
+                BindLights(scene, mesh, effect, defines, this._maxSimultaneousLights);
             }
 
             // View
@@ -1788,11 +1810,11 @@ export class StandardMaterial extends PushMaterial {
             }
 
             // Fog
-            MaterialHelper.BindFogParameters(scene, mesh, effect);
+            BindFogParameters(scene, mesh, effect);
 
             // Morph targets
             if (defines.NUM_MORPH_INFLUENCERS) {
-                MaterialHelper.BindMorphTargetParameters(mesh, effect);
+                BindMorphTargetParameters(mesh, effect);
             }
 
             if (defines.BAKED_VERTEX_ANIMATION_TEXTURE) {
@@ -1801,7 +1823,7 @@ export class StandardMaterial extends PushMaterial {
 
             // Log. depth
             if (this.useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(defines, effect, scene);
+                BindLogDepth(defines, effect, scene);
             }
 
             // image processing

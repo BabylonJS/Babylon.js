@@ -7,7 +7,6 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-
 import "../Engines/Extensions/engine.uniformBuffer";
 
 /**
@@ -466,7 +465,7 @@ export class UniformBuffer {
      * @param mat A 4x4 matrix.
      */
     public addMatrix(name: string, mat: IMatrixLike) {
-        this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
+        this.addUniform(name, Array.prototype.slice.call(mat.asArray()));
     }
 
     /**
@@ -941,7 +940,7 @@ export class UniformBuffer {
 
     private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
         if (this._cacheMatrix(name, mat)) {
-            this.updateUniform(name, <any>mat.toArray(), 16);
+            this.updateUniform(name, <any>mat.asArray(), 16);
         }
     }
 

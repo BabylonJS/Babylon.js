@@ -1,3 +1,5 @@
+import { Clamp, Lerp, NormalizeRadians, RandomRange, ToHex, WithinEpsilon } from "./math.scalar.functions";
+
 /**
  * Scalar computation library
  */
@@ -14,24 +16,14 @@ export class Scalar {
      * @param epsilon (default = 1.401298E-45)
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
-    public static WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
-        return Math.abs(a - b) <= epsilon;
-    }
+    public static WithinEpsilon: (a: number, b: number, epsilon?: number) => boolean = WithinEpsilon;
 
     /**
      * Returns a string : the upper case translation of the number i to hexadecimal.
      * @param i number
      * @returns the upper case translation of the number i to hexadecimal.
      */
-    public static ToHex(i: number): string {
-        const str = i.toString(16);
-
-        if (i <= 15) {
-            return ("0" + str).toUpperCase();
-        }
-
-        return str.toUpperCase();
-    }
+    public static ToHex: (i: number) => string = ToHex;
 
     /**
      * Returns -1 if value is negative and +1 is value is positive.
@@ -57,9 +49,7 @@ export class Scalar {
      * @param max the max value to clamp to (default: 1)
      * @returns the clamped value
      */
-    public static Clamp(value: number, min = 0, max = 1): number {
-        return Math.min(max, Math.max(min, value));
-    }
+    public static Clamp: (value: number, min?: number, max?: number) => number = Clamp;
 
     /**
      * the log2 of value.
@@ -230,9 +220,7 @@ export class Scalar {
      * @param amount amount to lerp between
      * @returns the lerped value
      */
-    public static Lerp(start: number, end: number, amount: number): number {
-        return start + (end - start) * amount;
-    }
+    public static Lerp: (start: number, end: number, amount: number) => number = Lerp;
 
     /**
      * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
@@ -247,7 +235,7 @@ export class Scalar {
         if (num > 180.0) {
             num -= 360.0;
         }
-        return start + num * Scalar.Clamp(amount);
+        return start + num * Clamp(amount);
     }
 
     /**
@@ -260,7 +248,7 @@ export class Scalar {
     public static InverseLerp(a: number, b: number, value: number): number {
         let result: number = 0;
         if (a != b) {
-            result = Scalar.Clamp((value - a) / (b - a));
+            result = Clamp((value - a) / (b - a));
         } else {
             result = 0.0;
         }
@@ -308,12 +296,7 @@ export class Scalar {
      * @param max max value of random
      * @returns random value
      */
-    public static RandomRange(min: number, max: number): number {
-        if (min === max) {
-            return min;
-        }
-        return Math.random() * (max - min) + min;
-    }
+    public static RandomRange: (min: number, max: number) => number = RandomRange;
 
     /**
      * This function returns percentage of a number in a given range.
@@ -347,19 +330,7 @@ export class Scalar {
      * @param angle The angle to normalize in radian.
      * @returns The converted angle.
      */
-    public static NormalizeRadians(angle: number): number {
-        // More precise but slower version kept for reference.
-        // angle = angle % Tools.TwoPi;
-        // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
-
-        //if (angle > Math.PI) {
-        //	angle -= Tools.TwoPi;
-        //}
-
-        angle -= Scalar.TwoPi * Math.floor((angle + Math.PI) / Scalar.TwoPi);
-
-        return angle;
-    }
+    public static NormalizeRadians: (angle: number) => number = NormalizeRadians;
 
     /**
      * Returns the highest common factor of two integers.

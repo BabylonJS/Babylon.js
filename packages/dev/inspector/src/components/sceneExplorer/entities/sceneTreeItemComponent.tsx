@@ -19,6 +19,7 @@ import type { CameraGizmo } from "core/Gizmos/cameraGizmo";
 import type { Camera } from "core/Cameras/camera";
 import { TmpVectors, Vector3 } from "core/Maths/math";
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
+import type { Bone } from "core/Bones/bone";
 
 interface ISceneTreeItemComponentProps {
     scene: Scene;
@@ -116,11 +117,35 @@ export class SceneTreeItemComponent extends React.Component<
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
                 } else if (className.indexOf("Bone") !== -1) {
                     manager.attachToMesh(this._selectedEntity._linkedTransformNode ? this._selectedEntity._linkedTransformNode : this._selectedEntity);
+                    if (!this._selectedEntity._linkedTransformNode) {
+                        manager.additionalTransformNode = this._getMeshFromBone(this._selectedEntity, scene);
+                    }
                 } else {
                     manager.attachToNode(null);
                 }
             }
         });
+    }
+
+    private _getMeshFromBone(bone: Bone, scene: Scene) {
+        const skeleton = bone.getSkeleton();
+
+        // First try to find a mesh for which we've enabled the skeleton viewer
+        for (const mesh of scene.meshes) {
+            const skeletonViewer = mesh.reservedDataStore?.skeletonViewer;
+            if (skeletonViewer && skeletonViewer.skeleton === skeleton) {
+                return mesh;
+            }
+        }
+
+        // Not found, return the first mesh that uses the skeleton
+        for (const mesh of scene.meshes) {
+            if (mesh.skeleton === skeleton) {
+                return mesh;
+            }
+        }
+
+        return undefined;
     }
 
     componentWillUnmount() {
@@ -419,6 +444,9 @@ export class SceneTreeItemComponent extends React.Component<
                     manager.attachToNode(this._selectedEntity.reservedDataStore.cameraGizmo.attachedNode);
                 } else if (className.indexOf("Bone") !== -1) {
                     manager.attachToMesh(this._selectedEntity._linkedTransformNode ? this._selectedEntity._linkedTransformNode : this._selectedEntity);
+                    if (!this._selectedEntity._linkedTransformNode) {
+                        manager.additionalTransformNode = this._getMeshFromBone(this._selectedEntity, scene);
+                    }
                 }
             }
         }

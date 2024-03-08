@@ -394,7 +394,7 @@ export const logPageErrors = async (page: Page, debug?: boolean) => {
         // serialize my args the way I want
         const args: any[] = await Promise.all(
             msg.args().map((arg: any) =>
-                arg.executionContext().evaluate((argument: string | Error) => {
+                arg.evaluate((argument: string | Error) => {
                     // I'm in a page context now. If my arg is an error - get me its message.
                     if (argument instanceof Error) return `[ERR] ${argument.message}`;
                     //Return the argument if it is just a message

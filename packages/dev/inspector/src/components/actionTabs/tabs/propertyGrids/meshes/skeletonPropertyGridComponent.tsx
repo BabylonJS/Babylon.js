@@ -61,7 +61,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                         continue;
                     }
 
-                    const viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, false, 3, {
+                    const viewer = new SkeletonViewer(mesh.skeleton, mesh, scene, true, 3, {
                         displayMode: this._skeletonViewerDisplayOptions.displayMode,
                         displayOptions: {
                             sphereBaseSize: this._skeletonViewerDisplayOptions.sphereBaseSize,

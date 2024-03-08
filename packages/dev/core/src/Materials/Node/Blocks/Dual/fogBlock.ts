@@ -7,12 +7,12 @@ import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import { MaterialHelper } from "../../../materialHelper";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
+import { GetFogState } from "core/Materials/materialHelper.functions";
 
 /**
  * Block used to add support for scene fog
@@ -112,7 +112,7 @@ export class FogBlock extends NodeMaterialBlock {
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const scene = mesh.getScene();
-        defines.setValue("FOG", nodeMaterial.fogEnabled && MaterialHelper.GetFogState(mesh, scene));
+        defines.setValue("FOG", nodeMaterial.fogEnabled && GetFogState(mesh, scene));
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {

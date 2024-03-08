@@ -5,7 +5,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import type { Material } from "../Materials/material";
 import type { Scene } from "../scene";
 import type { Light } from "../Lights/light";
-import { SerializationHelper } from "./decorators";
+import { SerializationHelper } from "./decorators.serialization";
 import { Texture } from "../Materials/Textures/texture";
 import type { CubeTexture } from "../Materials/Textures/cubeTexture";
 import type { Node } from "../node";
@@ -344,6 +344,14 @@ export class SceneSerializer {
         // Components
         for (const component of scene._serializableComponents) {
             component.serialize(serializationObject);
+        }
+
+        // Sprites
+        if (scene.spriteManagers) {
+            serializationObject.spriteManagers = [];
+            for (index = 0; index < scene.spriteManagers.length; index++) {
+                serializationObject.spriteManagers.push(scene.spriteManagers[index].serialize(true));
+            }
         }
 
         return serializationObject;
