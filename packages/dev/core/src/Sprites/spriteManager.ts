@@ -100,6 +100,11 @@ export interface ISpriteManager extends IDisposable {
      * Rebuilds the manager (after a context lost, for eg)
      */
     rebuild(): void;
+
+    /**
+     * Serializes the sprite manager to a JSON object
+     */
+    serialize(serializeTexture?: boolean): any;
 }
 
 /**

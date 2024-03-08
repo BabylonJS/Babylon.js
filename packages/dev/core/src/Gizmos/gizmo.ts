@@ -111,6 +111,13 @@ export interface IGizmo extends IDisposable {
      * @param mesh The mesh to replace the default mesh of the gizmo
      */
     setCustomMesh(mesh: Mesh): void;
+
+    /**
+     * Additional transform applied to the gizmo.
+     * It's useful when the gizmo is attached to a bone: if the bone is part of a skeleton attached to a mesh, you should define the mesh as additionalTransformNode if you want the gizmo to be displayed at the bone's correct location.
+     * Otherwise, as the gizmo is relative to the skeleton root, the mesh transformation will not be taken into account.
+     */
+    additionalTransformNode?: TransformNode | undefined;
 }
 /**
  * Renders gizmos on top of an existing scene which provide controls for position, rotation, etc.
@@ -123,6 +130,7 @@ export class Gizmo implements IGizmo {
     protected _attachedMesh: Nullable<AbstractMesh> = null;
     protected _attachedNode: Nullable<Node> = null;
     protected _customRotationQuaternion: Nullable<Quaternion> = null;
+    protected _additionalTransformNode?: TransformNode;
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
@@ -211,6 +219,19 @@ export class Gizmo implements IGizmo {
         });
         mesh.parent = this._rootMesh;
         this._customMeshSet = true;
+    }
+
+    /**
+     * Additional transform applied to the gizmo.
+     * It's useful when the gizmo is attached to a bone: if the bone is part of a skeleton attached to a mesh, you should define the mesh as additionalTransformNode if you want the gizmo to be displayed at the bone's correct location.
+     * Otherwise, as the gizmo is relative to the skeleton root, the mesh transformation will not be taken into account.
+     */
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
+    }
+
+    public set additionalTransformNode(value: TransformNode | undefined) {
+        this._additionalTransformNode = value;
     }
 
     protected _updateGizmoRotationToMatchAttachedMesh = true;
@@ -376,6 +397,12 @@ export class Gizmo implements IGizmo {
             } else {
                 this._rootMesh.scaling.setAll(this.scaleRatio);
             }
+        }
+
+        if (this.additionalTransformNode) {
+            this._rootMesh.computeWorldMatrix(true);
+            this._rootMesh.getWorldMatrix().multiplyToRef(this.additionalTransformNode.getWorldMatrix(), TmpVectors.Matrix[0]);
+            TmpVectors.Matrix[0].decompose(this._rootMesh.scaling, this._rootMesh.rotationQuaternion!, this._rootMesh.position);
         }
     }
 

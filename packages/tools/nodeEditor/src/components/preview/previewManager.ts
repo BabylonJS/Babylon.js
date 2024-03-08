@@ -420,20 +420,21 @@ export class PreviewManager {
             const bakeTransformation = (mesh: Mesh) => {
                 mesh.bakeCurrentTransformIntoVertices();
                 mesh.refreshBoundingInfo();
+                mesh.parent = null;
             };
 
             if (this._globalState.mode === NodeMaterialModes.Material) {
                 switch (this._globalState.previewType) {
                     case PreviewType.Box:
                         SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "roundedCube.glb", this._scene).then(() => {
-                            bakeTransformation(this._scene.meshes[1] as Mesh);
+                            bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
                         return;
                     case PreviewType.Sphere:
                         SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "previewSphere.glb", this._scene).then(() => {
-                            bakeTransformation(this._scene.meshes[1] as Mesh);
+                            bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
@@ -459,7 +460,7 @@ export class PreviewManager {
                         return;
                     case PreviewType.Plane: {
                         SceneLoader.AppendAsync("https://assets.babylonjs.com/meshes/", "highPolyPlane.glb", this._scene).then(() => {
-                            bakeTransformation(this._scene.meshes[1] as Mesh);
+                            bakeTransformation(this._scene.getMeshByName("__root__")!.getChildMeshes(true)[0] as Mesh);
                             this._meshes.push(...this._scene.meshes);
                             this._prepareScene();
                         });
@@ -657,7 +658,10 @@ export class PreviewManager {
 
                 default: {
                     if (this._meshes.length) {
-                        const tasks = this._meshes.map((m) => this._forceCompilationAsync(tempMaterial, m));
+                        const tasks = this._meshes.map((m) => {
+                            m.hasVertexAlpha = false;
+                            return this._forceCompilationAsync(tempMaterial, m);
+                        });
 
                         Promise.all(tasks)
                             .then(() => {

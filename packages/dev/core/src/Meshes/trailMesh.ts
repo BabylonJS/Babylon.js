@@ -49,7 +49,7 @@ export class TrailMesh extends Mesh {
         this._length = length;
         this._sectionVectors = [];
         this._sectionNormalVectors = [];
-        for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
+        for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
             this._sectionVectors[i] = Vector3.Zero();
             this._sectionNormalVectors[i] = Vector3.Zero();
         }
@@ -69,32 +69,36 @@ export class TrailMesh extends Mesh {
         const positions: Array<number> = [];
         const normals: Array<number> = [];
         const indices: Array<number> = [];
+        const uvs: Array<number> = [];
         let meshCenter = Vector3.Zero();
         if (this._generator instanceof AbstractMesh && this._generator.hasBoundingInfo) {
             meshCenter = this._generator.getBoundingInfo().boundingBox.centerWorld;
         } else {
-            meshCenter = this._generator.position;
+            meshCenter = this._generator.absolutePosition;
         }
         const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
-        for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
-            positions.push(meshCenter.x + Math.cos(i * alpha) * this.diameter, meshCenter.y + Math.sin(i * alpha) * this.diameter, meshCenter.z);
+        for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
+            const angle = i !== this._sectionPolygonPointsCount ? i * alpha : 0;
+            positions.push(meshCenter.x + Math.cos(angle) * this.diameter, meshCenter.y + Math.sin(angle) * this.diameter, meshCenter.z);
+            uvs.push(i / this._sectionPolygonPointsCount, 0);
         }
         for (let i: number = 1; i <= this._length; i++) {
-            for (let j: number = 0; j < this._sectionPolygonPointsCount; j++) {
-                positions.push(meshCenter.x + Math.cos(j * alpha) * this.diameter, meshCenter.y + Math.sin(j * alpha) * this.diameter, meshCenter.z);
+            for (let j: number = 0; j <= this._sectionPolygonPointsCount; j++) {
+                const angle = j !== this._sectionPolygonPointsCount ? j * alpha : 0;
+                positions.push(meshCenter.x + Math.cos(angle) * this.diameter, meshCenter.y + Math.sin(angle) * this.diameter, meshCenter.z);
+                uvs.push(j / this._sectionPolygonPointsCount, i / this._length);
             }
-            const l: number = positions.length / 3 - 2 * this._sectionPolygonPointsCount;
-            for (let j: number = 0; j < this._sectionPolygonPointsCount - 1; j++) {
+            const l: number = positions.length / 3 - 2 * (this._sectionPolygonPointsCount + 1);
+            for (let j: number = 0; j <= this._sectionPolygonPointsCount; j++) {
                 indices.push(l + j, l + j + this._sectionPolygonPointsCount, l + j + this._sectionPolygonPointsCount + 1);
                 indices.push(l + j, l + j + this._sectionPolygonPointsCount + 1, l + j + 1);
             }
-            indices.push(l + this._sectionPolygonPointsCount - 1, l + this._sectionPolygonPointsCount - 1 + this._sectionPolygonPointsCount, l + this._sectionPolygonPointsCount);
-            indices.push(l + this._sectionPolygonPointsCount - 1, l + this._sectionPolygonPointsCount, l);
         }
         VertexData.ComputeNormals(positions, indices, normals);
         data.positions = positions;
         data.normals = normals;
         data.indices = indices;
+        data.uvs = uvs;
         data.applyToMesh(this, true);
         if (this._autoStart) {
             this.start();
@@ -131,21 +135,22 @@ export class TrailMesh extends Mesh {
         const normals = this.getVerticesData(VertexBuffer.NormalKind);
         const wm = this._generator.getWorldMatrix();
         if (positions && normals) {
-            for (let i: number = 3 * this._sectionPolygonPointsCount; i < positions.length; i++) {
-                positions[i - 3 * this._sectionPolygonPointsCount] = positions[i] - (normals[i] / this._length) * this.diameter;
+            for (let i: number = 3 * (this._sectionPolygonPointsCount + 1); i < positions.length; i++) {
+                positions[i - 3 * (this._sectionPolygonPointsCount + 1)] = positions[i] - (normals[i] / this._length) * this.diameter;
             }
-            for (let i: number = 3 * this._sectionPolygonPointsCount; i < normals.length; i++) {
-                normals[i - 3 * this._sectionPolygonPointsCount] = normals[i];
+            for (let i: number = 3 * (this._sectionPolygonPointsCount + 1); i < normals.length; i++) {
+                normals[i - 3 * (this._sectionPolygonPointsCount + 1)] = normals[i];
             }
-            const l: number = positions.length - 3 * this._sectionPolygonPointsCount;
+            const l: number = positions.length - 3 * (this._sectionPolygonPointsCount + 1);
             const alpha: number = (2 * Math.PI) / this._sectionPolygonPointsCount;
-            for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
-                this._sectionVectors[i].copyFromFloats(Math.cos(i * alpha) * this.diameter, Math.sin(i * alpha) * this.diameter, 0);
-                this._sectionNormalVectors[i].copyFromFloats(Math.cos(i * alpha), Math.sin(i * alpha), 0);
+            for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
+                const angle = i !== this._sectionPolygonPointsCount ? i * alpha : 0;
+                this._sectionVectors[i].copyFromFloats(Math.cos(angle) * this.diameter, Math.sin(angle) * this.diameter, 0);
+                this._sectionNormalVectors[i].copyFromFloats(Math.cos(angle), Math.sin(angle), 0);
                 Vector3.TransformCoordinatesToRef(this._sectionVectors[i], wm, this._sectionVectors[i]);
                 Vector3.TransformNormalToRef(this._sectionNormalVectors[i], wm, this._sectionNormalVectors[i]);
             }
-            for (let i: number = 0; i < this._sectionPolygonPointsCount; i++) {
+            for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
                 positions[l + 3 * i] = this._sectionVectors[i].x;
                 positions[l + 3 * i + 1] = this._sectionVectors[i].y;
                 positions[l + 3 * i + 2] = this._sectionVectors[i].z;
@@ -165,7 +170,7 @@ export class TrailMesh extends Mesh {
      * @returns a new mesh
      */
     public clone(name: string = "", newGenerator: TransformNode): TrailMesh {
-        return new TrailMesh(name, newGenerator === undefined ? this._generator : newGenerator, this.getScene(), this.diameter, this._length, this._autoStart);
+        return new TrailMesh(name, newGenerator ?? this._generator, this.getScene(), this.diameter, this._length, this._autoStart);
     }
 
     /**

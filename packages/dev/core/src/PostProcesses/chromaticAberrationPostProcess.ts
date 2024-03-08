@@ -9,7 +9,8 @@ import { Constants } from "../Engines/constants";
 
 import "../Shaders/chromaticAberration.fragment";
 import { RegisterClass } from "../Misc/typeStore";
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 

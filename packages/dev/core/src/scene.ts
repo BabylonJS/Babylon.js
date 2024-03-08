@@ -143,13 +143,13 @@ export enum ScenePerformancePriority {
  */
 export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHolder {
     /** The fog is deactivated */
-    public static readonly FOGMODE_NONE = 0;
+    public static readonly FOGMODE_NONE = Constants.FOGMODE_NONE;
     /** The fog density is following an exponential function */
-    public static readonly FOGMODE_EXP = 1;
+    public static readonly FOGMODE_EXP = Constants.FOGMODE_EXP;
     /** The fog density is following an exponential function faster than FOGMODE_EXP */
-    public static readonly FOGMODE_EXP2 = 2;
+    public static readonly FOGMODE_EXP2 = Constants.FOGMODE_EXP2;
     /** The fog density is following a linear function. */
-    public static readonly FOGMODE_LINEAR = 3;
+    public static readonly FOGMODE_LINEAR = Constants.FOGMODE_LINEAR;
 
     /**
      * Gets or sets the minimum deltatime when deterministic lock step is enabled
@@ -865,6 +865,16 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets or sets a predicate used to select candidate faces for a pointer move event
      */
     public pointerMoveTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
+
+    /**
+     * Gets or sets a predicate used to select candidate faces for a pointer down event
+     */
+    public pointerDownTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
+
+    /**
+     * Gets or sets a predicate used to select candidate faces for a pointer up event
+     */
+    public pointerUpTrianglePredicate: ((p0: Vector3, p1: Vector3, p2: Vector3, ray: Ray) => boolean) | undefined;
 
     /**
      * This observable event is triggered when any ponter event is triggered. It is registered during Scene.attachControl() and it is called BEFORE the 3D engine process anything (mesh/sprite picking for instance).
@@ -4172,12 +4182,12 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     private _clearFrameBuffer(camera: Nullable<Camera>) {
         // we assume the framebuffer currently bound is the right one
         if (camera && camera._multiviewTexture) {
-            // no clearing?
+            // no clearing
         } else if (camera && camera.outputRenderTarget && !camera._renderingMultiview) {
             const rtt = camera.outputRenderTarget;
             if (rtt.onClearObservable.hasObservers()) {
                 rtt.onClearObservable.notifyObservers(this._engine);
-            } else if (!rtt.skipInitialClear) {
+            } else if (!rtt.skipInitialClear && !camera.isRightCamera) {
                 if (this.autoClear) {
                     this._engine.clear(rtt.clearColor || this.clearColor, !rtt._cleared, true, true);
                 }
@@ -4440,7 +4450,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     };
 
     /** @internal */
-    public _animate(): void {
+    public _animate(customDeltaTime?: number): void {
         // Nothing to do as long as Animatable have not been imported.
     }
 
@@ -4464,7 +4474,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
 
                 // Animations
                 this._animationRatio = defaultFrameTime * defaultFPS;
-                this._animate();
+                this._animate(defaultFrameTime);
                 this.onAfterAnimationsObservable.notifyObservers(this);
 
                 // Physics

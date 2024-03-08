@@ -67,7 +67,7 @@ type XRHandedness = "none" | "left" | "right";
 /**
  * InputSource target ray modes
  */
-type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen";
+type XRTargetRayMode = "gaze" | "tracked-pointer" | "screen" | "transient-pointer";
 
 /**
  * Eye types
@@ -677,7 +677,7 @@ interface XRJointPose extends XRPose {
 
 declare abstract class XRJointPose implements XRJointPose {}
 
-interface XRHand extends Map<string, XRJointSpace> {
+interface XRHand extends Map<XRHandJoint, XRJointSpace> {
     readonly WRIST: number;
 
     readonly THUMB_METACARPAL: number;
@@ -710,7 +710,7 @@ interface XRHand extends Map<string, XRJointSpace> {
     readonly LITTLE_PHALANX_TIP: number;
 }
 
-declare abstract class XRHand extends Map<string, XRJointSpace> implements XRHand {}
+declare abstract class XRHand extends Map<XRHandJoint, XRJointSpace> implements XRHand {}
 
 // WebXR Layers
 
@@ -808,6 +808,7 @@ interface XRProjectionLayerInit {
     textureType?: XRTextureType | undefined;
     colorFormat?: GLenum | undefined;
     depthFormat?: GLenum | undefined;
+    clearOnAccess?: boolean | undefined;
 }
 
 interface XRProjectionLayer extends XRCompositionLayer {
@@ -829,6 +830,7 @@ interface XRLayerInit {
     depthFormat?: GLenum | undefined;
     space: XRSpace;
     layout?: XRLayerLayout | undefined;
+    clearOnAccess?: boolean | undefined;
 }
 
 interface XRMediaLayerInit {
@@ -1222,7 +1224,7 @@ interface XRMesh {
     meshSpace: XRSpace;
     vertices: Float32Array;
     indices: Uint32Array;
-    lastChangedTime: number;
+    lastChangedTime: DOMHighResTimeStamp;
 }
 
 type XRMeshSet = Set<XRMesh>;

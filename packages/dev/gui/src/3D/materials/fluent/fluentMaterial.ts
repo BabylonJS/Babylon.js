@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { serializeAsColor4, serializeAsVector3, serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { Matrix } from "core/Maths/math.vector";
 import { Vector3, TmpVectors } from "core/Maths/math.vector";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import type { IEffectCreationOptions } from "core/Materials/effect";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -18,6 +18,7 @@ import { Color3, Color4 } from "core/Maths/math.color";
 
 import "./shaders/fluent.vertex";
 import "./shaders/fluent.fragment";
+import { PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 /** @internal */
 export class FluentMaterialDefines extends MaterialDefines {
@@ -201,7 +202,7 @@ export class FluentMaterial extends PushMaterial {
             const samplers = ["albedoSampler"];
             const uniformBuffers: string[] = [];
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,

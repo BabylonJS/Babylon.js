@@ -7,6 +7,7 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
+    PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type {
     PhysicsShapeParameters,
@@ -289,7 +290,6 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     private _queryCollector: bigint;
     private _fixedTimeStep: number = 1 / 60;
-    private _timeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
     private _shapes = new Map<bigint, PhysicsShape>();
@@ -385,7 +385,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             this.setPhysicsBodyTransformation(physicsBody, physicsBody.transformNode);
         }
 
-        this._hknp.HP_World_Step(this.world, this._useDeltaForWorldStep ? delta : this._timeStep);
+        const deltaTime = this._useDeltaForWorldStep ? delta : this._fixedTimeStep;
+        this._hknp.HP_World_SetIdealStepTime(this.world, deltaTime);
+        this._hknp.HP_World_Step(this.world, deltaTime);
 
         this._bodyBuffer = this._hknp.HP_World_GetBodyBuffer(this.world)[1];
         for (const physicsBody of physicsBodies) {
@@ -808,6 +810,25 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         throw new Error("Unknown motion type: " + type);
     }
 
+    /**
+     * sets the activation control mode of a physics body, for instance if you need the body to never sleep.
+     * @param body - The physics body to set the activation control mode.
+     * @param controlMode - The activation control mode.
+     */
+    public setActivationControl(body: PhysicsBody, controlMode: PhysicsActivationControl): void {
+        switch (controlMode) {
+            case PhysicsActivationControl.ALWAYS_ACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_ACTIVE);
+                break;
+            case PhysicsActivationControl.ALWAYS_INACTIVE:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.ALWAYS_INACTIVE);
+                break;
+            case PhysicsActivationControl.SIMULATION_CONTROLLED:
+                this._hknp.HP_Body_SetActivationControl(body._pluginData.hpBodyId, this._hknp.ActivationControl.SIMULATION_CONTROLLED);
+                break;
+        }
+    }
+
     private _internalComputeMassProperties(pluginData: BodyPluginData): any[] {
         const shapeRes = this._hknp.HP_Body_GetShape(pluginData.hpBodyId);
         if (shapeRes[0] == this._hknp.Result.RESULT_OK) {
@@ -1222,6 +1243,37 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                         accum.freeBuffer(this._hknp, positions);
                     } else {
                         throw new Error("No mesh provided to create physics shape.");
+                    }
+                }
+                break;
+            case PhysicsShapeType.HEIGHTFIELD:
+                {
+                    if (options.numHeightFieldSamplesX && options.numHeightFieldSamplesZ && options.heightFieldSizeX && options.heightFieldSizeZ && options.heightFieldData) {
+                        const totalNumHeights = options.numHeightFieldSamplesX * options.numHeightFieldSamplesZ;
+                        const numBytes = totalNumHeights * 4;
+                        const bufferBegin = this._hknp._malloc(numBytes);
+
+                        const heightBuffer = new Float32Array(this._hknp.HEAPU8.buffer, bufferBegin, totalNumHeights);
+                        for (let x = 0; x < options.numHeightFieldSamplesX; x++) {
+                            for (let z = 0; z < options.numHeightFieldSamplesZ; z++) {
+                                const hkBufferIndex = z * options.numHeightFieldSamplesX + x;
+                                const bjsBufferIndex = (options.numHeightFieldSamplesX - 1 - x) * options.numHeightFieldSamplesZ + z;
+                                heightBuffer[hkBufferIndex] = options.heightFieldData[bjsBufferIndex];
+                            }
+                        }
+
+                        const scaleX = options.heightFieldSizeX / (options.numHeightFieldSamplesX - 1);
+                        const scaleZ = options.heightFieldSizeZ / (options.numHeightFieldSamplesZ - 1);
+                        shape._pluginData = this._hknp.HP_Shape_CreateHeightField(
+                            options.numHeightFieldSamplesX,
+                            options.numHeightFieldSamplesZ,
+                            [scaleX, 1, scaleZ],
+                            bufferBegin
+                        )[1];
+
+                        this._hknp._free(bufferBegin);
+                    } else {
+                        throw new Error("Missing required heightfield parameters");
                     }
                 }
                 break;

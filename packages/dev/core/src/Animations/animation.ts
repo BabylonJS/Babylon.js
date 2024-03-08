@@ -4,7 +4,6 @@ import { Color3, Color4 } from "../Maths/math.color";
 import { Scalar } from "../Maths/math.scalar";
 import type { DeepImmutable, Nullable } from "../types";
 import type { Scene } from "../scene";
-import { SerializationHelper } from "../Misc/decorators";
 import { RegisterClass } from "../Misc/typeStore";
 import type { IAnimationKey } from "./animationKey";
 import { AnimationKeyInterpolation } from "./animationKey";
@@ -17,6 +16,7 @@ import { WebRequest } from "../Misc/webRequest";
 import { Constants } from "../Engines/constants";
 import type { Animatable } from "./animatable";
 import type { RuntimeAnimation } from "./runtimeAnimation";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 // Static values to help the garbage collector
 

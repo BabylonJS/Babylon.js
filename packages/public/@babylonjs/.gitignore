@@ -8,6 +8,7 @@ node_modules
 *.svg
 *.png
 *.jpg
+*.wasm
 !inspector/**/*.*
 !node-editor/**/*.*
 !node-geometry-editor/**/*.*

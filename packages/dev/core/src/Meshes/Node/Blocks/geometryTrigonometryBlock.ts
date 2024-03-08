@@ -19,8 +19,6 @@ export enum GeometryTrigonometryBlockOperations {
     Abs,
     /** Exp */
     Exp,
-    /** Exp2 */
-    Exp2,
     /** Round */
     Round,
     /** Floor */
@@ -53,6 +51,8 @@ export enum GeometryTrigonometryBlockOperations {
     ToRadians,
     /** Fract */
     Fract,
+    /** Exp2 */
+    Exp2,
 }
 
 /**

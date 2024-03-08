@@ -6,6 +6,7 @@ import { PerfCounter } from "../../Misc/perfCounter";
 import { WebGPUQuerySet } from "./webgpuQuerySet";
 import type { WebGPUEngine } from "../webgpuEngine";
 import type { WebGPUPerfCounter } from "./webgpuPerfCounter";
+import { Logger } from "core/Misc/logger";
 
 /** @internal */
 export class WebGPUTimestampQuery {
@@ -40,7 +41,13 @@ export class WebGPUTimestampQuery {
         this._enabled = value;
         this._measureDurationState = 0;
         if (value) {
-            this._measureDuration = new WebGPUDurationMeasure(this._engine, this._device, this._bufferManager, 2000, "QuerySet_TimestampQuery");
+            try {
+                this._measureDuration = new WebGPUDurationMeasure(this._engine, this._device, this._bufferManager, 2000, "QuerySet_TimestampQuery");
+            } catch (e) {
+                this._enabled = false;
+                Logger.Error("Could not create a WebGPUDurationMeasure!\nError: " + e.message + "\nMake sure timestamp query is supported and enabled in your browser.");
+                return;
+            }
         } else {
             this._measureDuration.dispose();
         }

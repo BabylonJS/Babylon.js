@@ -14,7 +14,7 @@ import { MorphTargetManager } from "../Morph/morphTargetManager";
 import { ShadowGenerator } from "../Lights/Shadows/shadowGenerator";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Texture } from "../Materials/Textures/texture";
-import { SerializationHelper } from "./decorators";
+import { SerializationHelper } from "./decorators.serialization";
 
 /**
  * Class used to record delta files between 2 scene states

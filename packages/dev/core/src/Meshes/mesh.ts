@@ -31,7 +31,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import type { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
@@ -671,7 +671,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = source.parent;
 
             // Pivot
-            this.setPivotMatrix(source.getPivotMatrix());
+            this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
 
             this.id = name + "." + source.id;
 
@@ -2784,6 +2784,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     .toArray(data, index);
             }
             this.setVerticesData(VertexBuffer.NormalKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
+        }
+
+        // Tangents
+        if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+            data = <FloatArray>this.getVerticesData(VertexBuffer.TangentKind);
+            for (index = 0; index < data.length; index += 4) {
+                Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp)
+                    .normalize()
+                    .toArray(data, index);
+            }
+            this.setVerticesData(VertexBuffer.TangentKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.TangentKind)).isUpdatable());
         }
 
         // flip faces?

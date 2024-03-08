@@ -1,0 +1,48 @@
+{
+    "name": "@babylonjs/ktx2decoder",
+    "version": "6.46.0",
+    "main": "index.js",
+    "module": "index.js",
+    "types": "index.d.ts",
+    "files": [
+        "**/*.js",
+        "**/*.d.ts",
+        "**/*.map",
+        "**/*.wasm",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run compile",
+        "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf \"./**/*.!(md|json|build.json|lts.json)\"",
+        "compile": "tsc -b tsconfig.build.json",
+        "postcompile": "build-tools -c add-js-to-es6 && build-tools -c cp -f \"../../../tools/babylonServer/public/ktx2Transcoders/1\" -t ./wasm"
+    },
+    "devDependencies": {
+        "@babylonjs/core": "^6.46.0",
+        "@dev/build-tools": "^1.0.0",
+        "@tools/ktx2decoder": "^1.0.0"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^6.0.0"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "esnext": "index.js",
+    "type": "module",
+    "sideEffects": true,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

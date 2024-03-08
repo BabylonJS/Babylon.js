@@ -1,6 +1,1382 @@
 {
-    "fromTag": "6.40.0",
+    "fromTag": "6.45.1",
     "changelog": {
+        "6.45.1": [
+            {
+                "pr": "14821",
+                "title": "Type change to XRHand",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14819",
+                "title": "GUI - Allow InputText text outline",
+                "description": "See https://forum.babylonjs.com/t/inputtextarea-onfocusselectall-does-not-work/48351",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14818",
+                "title": "NME: Fix missing alphaMode property parsing",
+                "description": "See https://forum.babylonjs.com/t/node-materiel-editor-does-not-load-alpha-mode/48396",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14815",
+                "title": "WebGPU: Simplify error handling during engine creation/initialization",
+                "description": "See https://forum.babylonjs.com/t/webgpu-cannot-allocate-wasm-memory-for-new-instance/48321/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
+            }
+        ],
+        "6.46.0": [
+            {
+                "pr": "14845",
+                "title": "Formatting issue in NGE inspector",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14846",
+                "title": "Execution count and call count displaying too many times on vector converter block",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14838",
+                "title": "Fix Scene sprites serialize/parse",
+                "description": "https://forum.babylonjs.com/t/spritemanager-and-sprite-cant-to-serialize-or-load/48387/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/dev/loaders/src/glTF/1.0/glTFLoader.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "14844",
+                "title": "Fix vertexAlpha",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14840",
+                "title": "Adding two new parameters to teleportation",
+                "description": "* Time to teleport start - if using the mainn component only, it is possible to delay the start of the teleportation ray, so a standard press won't automatically trigger it. \n* blockAllPickableMeshes - If enabled this will allow all pickable meshes in the scene to be teleportation blockers. This is off per default for performance reasons.\n\nPartly from https://forum.babylonjs.com/t/teleportation-activates-when-pinching-a-non-floor-mesh-with-a-hand/48443",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14235",
+                "title": "Tensor: Standardize Vector2, Vector3, Vector4, Color3, Color4, Quaternion, and Matrix",
+                "description": "Discussion of this PR is available on the Babylon.js forum in [this](https://forum.babylonjs.com/t/43521) thread.\r\nResolves #14201\r\n\r\n## TL;DR:\r\n\r\n`Tensor` would be added, which provides a standardized API for interacting with vectors, colors, matrices, quaternions, etc.\r\n\r\n## Rational\r\n\r\nThis PR aims to create a standard interface from which various math constructs are defined.\r\n\r\nTake the current difference in behavior between vectors and colors:\r\n```js\r\nconst c1 = Color3.Random(),\r\n\tc2 = Color3.Random(),\r\n\tc3 = new Color3(),\r\n\tv1 = Vector3.Random(),\r\n\tv2 = Vector3.Random(),\r\n\tv3 = new Vector3();\r\n\r\nc1.addToRef(c2, c3) === c3 // false\r\nv1.addToRef(v2, v3) === v3 // true\r\n```\r\n\r\nAnd the lack of a method that should exist in Color3:\r\n\r\n```js\r\nconst v1 = Vector3.Random(),\r\n\tv2 = Vector3.Random(),\r\n\tc1 = Color3.Random(),\r\n\tc2 = Color3.Random();\r\n\r\n\r\nv1.addInPlace(v2) // ok\r\nc1.addInPlace(c2) // ReferenceError! addInPlace does not exist\r\n```\r\n`Tensor` provides a single interface for tensor-like objects which users can depend on. By having tensor-like classes implement `Tensor`, it ensures that all the methods exist and have the same and correct behavior. It is meant for organization and standardization.\r\n \r\n## Semantics\r\n\r\n#### *Note:*\r\n- `CurrentClass` is a placeholder for a class that implements `Tensor`. In fields, it is the current class.\r\n- `Tensor` and its related types will be defined in `src/Maths/tensor.ts` unless otherwise noted\r\n- Signatures are shown, not implementation. \r\n- The shown signatures are not necessarily the same as implementation (e.g. `Signature<T extends number>` may be shown when it is implemented as `Signature<T> = T extends number ? ... : never`\r\n\r\n#### Status\r\n\r\n- [x] [`Vector`](#user-content-Vector)\r\n- [x] [Tuple manipulation and math types](#user-content-math-types)\r\n- [x] [`Constructor`](#user-content-Constructor)\r\n- [x] [`MultidimensionalArray`](#user-content-MultidimensionalArray)\r\n- [x] [`TensorValue`](#user-content-TensorValue)\r\n- [x] [`Tensor`](#user-content-Tensor)\r\n    - [x] Methods from `Vector`\r\n    - [x] [`Tensor.dimension`](#user-content-Tensor-dimension)\r\n    - [ ] [`Tensor.From`](#user-content-Tensor-From)\r\n    - [ ] [`Tensor.as`](#user-content-Tensor-as)\r\n    - [ ] [`Tensor.sum`](#user-content-Tensor-sum)\r\n    - [x] [`Tensor.rank`](#user-content-Tensor-rank)\r\n    - [ ] [`Tensor.value`](#user-content-Tensor-value)\r\n- [ ] [`isTensor`](#user-content-isTensor)\r\n- [ ] [`isTensorValue`](#user-content-isTensorValue)\r\n- [ ] [`getTensorDimension`](#user-content-getTensorDimension)\r\n- [ ] [`convertTensor`](#user-content-convertTensor)[*](#user-content-note-optional)\r\n\r\n<a href=\"#user-content-note-optional\" id=\"note-optional\">*</a> May not be included in the proposal\r\n\r\n### <a href=\"#user-content-Vector\" id=\"Vector\">Vector</a>\r\n\r\nDefined in `src/Maths/math.vector.ts`\r\n\r\nThis PR includes `Vector` from #13699. `Vector` extends `Tensor` and adds normalization methods, `length`, and `lengthSquared`. It is implemented by `Vector2`, `Vector3`, and `Vector4`.\r\n\r\n### <a href=\"#user-content-math-types\" id=\"math-types\">Tuple manipulation and math types</a>\r\n\r\nDefined in `src/types.ts`\r\nThe following types are being added for compile-time math and tuple manipulation, which is necessary for `MultidimensionalArray`. They are included as a single block for brevity.\r\n\r\n```ts\r\ntype Empty = [];\r\ntype Shift<T extends unknown[]>;\r\ntype First<T extends unknown[]>;\r\ntype Unshift<T extends unknown[], A>;\r\ntype Pop<T extends unknown[]>;\r\ntype Last<T extends unknown[]>;\r\ntype Push<T extends unknown[], A>;\r\ntype Concat<A extends unknown[], B extends unknown[]>;\r\ntype Remove<A extends unknown[], B extends unknown[]>;\r\ntype Length<T extends unknown[]>;\r\ntype FromLength<N extends number>;\r\ntype Increment<N extends number>;\r\ntype Decrement<N extends number>;\r\ntype Add<A extends number, B extends number>;\r\ntype Subtract<A extends number, B extends number>;\r\ntype Member<T, D>;\r\ntype Flatten<A extends unknown[], D>;\r\ntype MultidimensionalArray<T, D extends number>\r\ntype Tuple<T, N extends number>;\r\ntype FlattenTuple<T>;\r\ntype IsTuple<T>;\r\n```\r\n\r\n### <a href=\"#user-content-Constructor\" id=\"Constructor\">Constructor</a>\r\n\r\nDefined in `src/types.ts`\r\n```ts\r\ntype Constructor<C extends new (...args: any[]) => any, I extends InstanceType<C>>\r\n```\r\nDefines a single type for constructors. This replaces `Vector2Constructor`, `Vector3Constructor`, `Vector4Constructor`, `QuaternionConstructor`, and `MatrixConstructor`.\r\n\r\nInstead of using `Vector3Constructor<this>`, you would instead use `Constructor<typeof Vector3, this>`. The `typeof` is needed to get the type for the class instead of the instance, and can't be done inside the type since Typescript prohibits taking the `typeof` a type.\r\n\r\n### <a href=\"#user-content-MultidimensionalArray\" id=\"MultidimensionalArray\">MultidimensionalArray</a>\r\n\r\nDefined in `src/types.ts`\r\n\r\n```ts\r\ntype MultidimensionalArray<T, D extends number>\r\n```\r\n\r\nRepresents a multidimensional array of `T` with depth `D`.\r\n\r\n### <a href=\"#user-content-TensorValue\" id=\"TensorValue\">TensorValue</a>\r\n\r\n```ts\r\ntype TensorValue<T> = T extends Tensor<infer V> ? V : never;\r\n```\r\n\r\n### <a href=\"#user-content-Tensor\" id=\"Tensor\">Tensor</a>\r\n\r\n```ts\r\ndeclare class Tensor<V>\r\n```\r\n\r\n`Tensor` is a `declare class` for tensor-like classes to implement.\r\n\r\n`Tensor` includes all of the methods in `Vector` from #13699. This includes\r\n- Math operations (`add`, `subtract`, `multiply`, `divide`, `scale`, ...)\r\n- Array conversion (`fromArray`, `toArray`, `asArray`, ...)\r\n\t- Since the type parameter is no longer assignable to `number[]`, the return type for array-related methods is `number[]`. See `Tensor.value`\r\n- Transferring (`clone`, `copyFrom`, `copyFromFloats`, ...)\r\n- The above methods' `InPlace`, `ToRef`, `FromFloats`, etc.\r\n\r\nIt adds or changes the following methods:\r\n\r\n#### <a href=\"#user-content-Tensor-dimension\" id=\"Tensor-dimension\">Tensor.dimension</a>\r\n\r\n```ts\r\npublic abstract dimension: number[];\r\n```\r\n`dimension` is the mathematical dimension<sup>[2](#user-content-footnote-2)</sup> of the tensor. In dynamic tensor types, it can be defined as a getter.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tvec4 = new Vector4(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.dimension // [3]\r\nvec4.dimension // [4]\r\nmatrix.dimension // [4, 4]\r\n``` \r\n\r\n#### <a href=\"#user-content-Tensor-From\" id=\"Tensor-From\">Tensor.From</a>\r\n\r\n```ts\r\npublic static From(source: Tensor, fillValue: number = 0): CurrentClass;\r\n```\r\n`From` creates a new instance of `CurrentClass` from `source`.\r\n`source`: The tensor to copy data from.\r\n`fillValue`: The value to use for filling empty parts of the resulting `CurrentClass`.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3);\r\nconst vec4 = Vector4.From(vec3, 4); // { 1, 2, 3, 4 }\r\nconst matrix = Matrix.From(vec3, 0); // this is possible!\r\n```\r\n\r\nAdditionally, `From` could be changed to `From(...args: [...Tensor[], number]): CurrentClass` to allow multiple inputs. This is better understood by this **invalid** Typescript signature (since rest parameters must be last):\r\n```ts\r\npublic static From(...source: Tensor[], fillValue: number = 0): CurrentClass;\r\n```\r\n\r\n> 🛈 Implementations may write their own conversion code or use `convertTensor`.\r\n\r\n#### <a href=\"#user-content-Tensor-as\" id=\"Tensor-as\">Tensor.as</a>\r\n```ts\r\npublic as<T extends typeof Tensor>(type: T, fillValue: number = 0): InstanceType<T>;\r\n```\r\n`as` creates an instance of `type` from an instance of `CurrentClass`.\r\n`type`: The class to create an instance of.\r\n`fillValue`: The value to use for filling empty parts of the resulting instance.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3);\r\nconst vec4 = vec3.as(Vector4, 4); // { 1, 2, 3, 4 }\r\nconst matrix = vec3.as(Matrix, 0);\r\n```\r\n\r\n> 🛈 Implementations may write their own conversion code or use `convertTensor`.\r\n\r\n#### <a href=\"#user-content-Tensor-sum\" id=\"Tensor-sum\">Tensor.sum</a>\r\n```ts\r\npublic sum(): number;\r\n```\r\n`sum` return the sum of the components of the `Tensor`.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(1, 2, 3),\r\n\tvec4 = new Vector4(4, 5, 6, 7),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.sum() // 6\r\nvec4.sum() // 22\r\nmatrix.sum() // 0\r\n```\r\n\r\n> ⚠ The return value of the `lengthSquared` or `length` method of vectors is **not** the same as the return value of `sum`.\r\n\r\n#### <a href=\"#user-content-Tensor-rank\" id=\"Tensor-rank\">Tensor.rank</a>\r\n\r\n```\r\npublic abstract rank: number;\r\n```\r\nThe `rank` of a tensor is the number of indices required to uniquely select each element of the tensor.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.rank // 1\r\nmatrix.rank // 2\r\n```\r\n> 🛈 The `rank` of a `Tensor` is the same as its `dimension.length`.\r\n\r\n#### <a href=\"#user-content-Tensor-value\" id=\"Tensor-value\">Tensor.value</a>\r\n```\r\npublic get value(): V;\r\npublic set value(value: V): void;\r\n```\r\n\r\n`value` is the values of the tensor in a multidimensional array with the type `V` (the type parameter of the class). Unlike `dimension`, this *must* be implemented as a getter and setter.\r\n\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3(),\r\n\tmatrix = new Matrix();\r\n\r\nvec3.value\r\n// [0, 0, 0]\r\n\r\nmatrix.value\r\n// [ [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ], [ 0, 0, 0, 0 ] ]\r\n\r\nvec3.value = [ 1, 2, 3 ];\r\nvec3.x // 1\r\n```\r\n\r\n### <a href=\"#user-content-isTensor\" id=\"isTensor\">isTensor</a>\r\n\r\n```ts\r\nfunction isTensor<V>(value: unknown): value is Tensor<V>;\r\n```\r\nChecks if a value is a `Tensor`.\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3();\r\nisTensor(vec3) // true\r\nisTensor(vec3.value) // false\r\nisTensor([1, 2, 3]) // false\r\nisTensor(0) // false\r\nisTensor(null) // false\r\n```\r\n\r\n### <a href=\"#user-content-isTensorValue\" id=\"isTensorValue\">isTensorValue</a>\r\n\r\n```ts\r\nfunction isTensorValue<T>(value: unknown): value is TensorValue<T>;\r\n```\r\nChecks if a value is a `TensorValue`.\r\nExample:\r\n```ts\r\nconst vec3 = new Vector3();\r\nisTensorValue<1>(vec3) // false\r\nisTensorValue<Vector3>(vec3.value) // true\r\nisTensorValue<1>([1, 2, 3]) // true\r\nisTensorValue<0>([1, 2, 3]) // false\r\nisTensorValue<1>(0) // false\r\nisTensorValue<0>(0) // true\r\nisTensorValue<1>(null) // false\r\n```\r\n### <a href=\"#user-content-getTensorDimension\" id=\"getTensorDimension\">getTensorDimension</a>\r\n```ts\r\nfunction getTensorDimension(value: Tensor | TensorValue): number[];\r\n```\r\n\r\n`getTensorDimension` returns the mathimatical dimension<sup>[2](#user-content-footnote-2)</sup> of `value`, similar to `Tensor.dimension`. If `value` is not a `Tensor` or `TensorValue`, it will throw a `TypeError`\r\n\r\n> 🛈  Dynamic `Tensor` based classes should use `getTensorDimension` for their `dimension` implementations. Fixed-dimension `Tensor` sub-classes need not use `getTensorDimension`.\r\n\r\n### *(optional)* <a href=\"#user-content-convertTensor\" id=\"convertTensor\">convertTensor</a>\r\n\r\n```ts\r\nfunction convertTensor<T extends  typeof Tensor>(TensorClass: T, tensor: Tensor, fillValue: number = 0): InstanceType<T>;\r\n```\r\n\r\nCreates a new `T` with the values of `tensor`. Unlike `Tensor.as`, it performs more error checking and does not need a starting instance (and therefore avoids the dreaded `'methodName' does not exist on undefined` error).\r\n\r\n### <a href=\"#user-content-behavior\" id=\"behavior\">Behavior changes</a>\r\n\r\n- The `Color3` and `Color4` methods  `multiplyToRef`, `scaleToRef`, `scaleAndAddToRef`, `clampToRef`, `addToRef`, and `subtractToRef` have had their return types changed from `this` to the reference instance.\r\n\r\n## Considerations\r\n\r\n1. Static methods related to data manipulation (e.g. `Add`, `Normalize`, `Lerp`) and non-static normalization methods are outside the scope of this PR. While `Tensor` may include them in the future, this PR does not\r\n2. This PR does not include a dimensionally dynamic `Tensor`.\r\n3. Performance: Since `Tensor` is defined using the `declare class` and classes that follow `Tensor` do so using the `implements` keyword, there are no runtime changes to `Tensor`-based classes.\r\n4. Bundle size: The JS bundle size will increase only by the size of the added functions (`isTensor`, `getTensorDimension`, etc.). The TS declaration size will also increase slightly due to `Tensor` and the added utility types.\r\n5. Maintenance: Since there is no implementation (just a class declaration), the extra maintenance is minimized to member signatures.\r\n\r\n## Questions\r\n*For the BabylonJS team concerning the PR*\r\n\r\n1. What other classes (e.g. `Size`) would be included and standardized?\r\n\r\n## FAQs\r\n\r\n#### What use cases does this proposal have?\r\n\r\n`Tensor` is not intended to be used by users. It is meant for internal organization and standardization. The functions (`isTensor`, `getTensorDimension`, etc.) are intended to be public and may be used by users. Their use cases may be inferred from their descriptions.\r\n\r\n#### What is the difference between this and #13699?\r\n\r\nThe capabilities of the type. `Vector` supports any **rank 1** tensor. `Tensor` generalizes `Vector`, and supports *any* rank tensor. A mathematical vector can be represented as `number[]`. A mathematical tensor can be represented as a `number`, `number[]`, `number[][]`, and so on. This table highlights the capability:\r\n\r\n | tensor rank | TS representation | BJS class (if exists) |\r\n| ---- | ---- | ---- |\r\n| 1 | `number[]` | `Vector` |\r\n| 1 | `[number, number]` | `Vector2` |\r\n| 1 | `[number, number, number]` | `Vector3`, `Color3` |\r\n| 1 | `[number, number, number, number]` | `Vector4`, `Color4`, `Quaternion` |\r\n| 2 | `number[][]` | `Matrix` |\r\n| 3 | `number[][][]` | |\r\n| 4 | `number[][][][]` | |\r\n| N | `TensorValue` | |\r\n\r\n####  How is incompatibility managed? Are incompatible classes dropped or are they modified to follow `Tensor`?\r\n\r\nAny classes included will be modified to follow the standard. In many cases, the diverging behavior makes the engine difficult to use, and changing the claseses to follow the `Tensor` standard benefits end users.\r\n\r\n## Further reading\r\n\r\n<a href=\"#user-content-footnote-1\" id=\"footnote-1\">1</a>. https://en.wikipedia.org/wiki/Tensor \r\n<a href=\"#user-content-footnote-2\" id=\"footnote-2\">2</a>. https://en.wikipedia.org/wiki/Dimension",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/skeleton.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Debug/directionalLightFrustumViewer.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.plane.ts",
+                    "packages/dev/core/src/Maths/math.polar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/math.viewport.ts",
+                    "packages/dev/core/src/Maths/tensor.ts",
+                    "packages/dev/core/src/Misc/arrayTools.ts",
+                    "packages/dev/core/src/types.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.transformNode.test.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14833",
+                "title": "ComputeShader: Allow DataBuffer to be passed for uniform / storage buffer",
+                "description": "See https://forum.babylonjs.com/t/computeshader-compilation-error-callback/48508",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuComputeContext.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14811",
+                "title": "Added @babylonjs/ktx2decoder public package",
+                "description": "This PR adds a new publich package - @babylonjs/ktx2decoder, which can be used instead of our ktx2decoder on the CDN.\n\nThis package will include the compiled wasm files, created by the khronos group. License file(s) and a notice file was added to the package, including the Khronos group and all licenses that were used to create the wasm directory.\n\nNote - the wasm directory will be populated during build.\n\nThis PR is directly related to #14773, but both can be merged independently.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/ktx2decoder/NOTICE.md",
+                    "packages/public/@babylonjs/ktx2decoder/license.md",
+                    "packages/public/@babylonjs/ktx2decoder/package.json",
+                    "packages/public/@babylonjs/ktx2decoder/readme.md",
+                    "packages/public/@babylonjs/ktx2decoder/tsconfig.build.json",
+                    "packages/public/@babylonjs/ktx2decoder/tsconfig.json",
+                    "packages/public/@babylonjs/ktx2decoder/wasm/license.md",
+                    "packages/public/umd/babylonjs-ktx2decoder/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14832",
+                "title": "Mesh: Fix setPivotMatrix when cloning mesh",
+                "description": "See https://forum.babylonjs.com/t/pivot-matrix-are-not-being-copied-while-cloning-the-mesh-bug-or-feature/48478",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14831",
+                "title": "- UI Value Copy Bug",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14830",
+                "title": "- Allow the Set Colors node to accept Vector 3s as an input",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/Set/setColorsBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14827",
+                "title": "TargetCamera: Add Node Constructor code for TargetCamera",
+                "description": "This PR contains a simple fix for an issue found in a [forum post](https://forum.babylonjs.com/t/targetcamera-bug/48257).  When a `.babylon` file is created with a `TargetCamera` and reimported, the camera will imported using the default behavior (creating a `UniversalCamera`).  The fix here is to add a NodeConstructor to handle instances of `TargetCameras`",
+                "author": {
+                    "name": "PolygonalSun",
+                    "url": "https://github.com/PolygonalSun"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/targetCamera.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "loaders"
+                ]
+            },
+            {
+                "pr": "14826",
+                "title": "Decoupling SerializationHelper and ImageProcessing",
+                "description": "What a drag :) But this is for the greater good :D",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts",
+                    "packages/dev/core/src/BakedVertexAnimation/bakedVertexAnimationManager.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/cameraInputsManager.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrMetallicRoughnessMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSpecularGlossinessMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/colorCurves.functions.ts",
+                    "packages/dev/core/src/Materials/colorCurves.ts",
+                    "packages/dev/core/src/Materials/fresnelParameters.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.defines.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.functions.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialStencilState.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/Misc/decorators.functions.ts",
+                    "packages/dev/core/src/Misc/decorators.serialization.ts",
+                    "packages/dev/core/src/Misc/decorators.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/dev/core/src/Misc/sceneRecorder.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts",
+                    "packages/dev/core/src/Morph/morphTarget.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/defaultRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/standardRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
+                    "packages/dev/core/src/PostProcesses/blackAndWhitePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/blurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/chromaticAberrationPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/colorCorrectionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/convolutionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/displayPassPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/filterPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/fxaaPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/grainPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/motionBlurPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/passPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/PostProcesses/refractionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceCurvaturePostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/screenSpaceReflectionPostProcess.ts",
+                    "packages/dev/core/src/PostProcesses/sharpenPostProcess.ts",
+                    "packages/dev/core/src/Probes/reflectionProbe.ts",
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts",
+                    "packages/dev/postProcesses/src/asciiArt/asciiArtPostProcess.ts",
+                    "packages/dev/postProcesses/src/digitalRain/digitalRainPostProcess.ts",
+                    "packages/dev/proceduralTextures/src/brick/brickProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/cloud/cloudProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/fire/fireProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/grass/grassProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/marble/marbleProceduralTexture.ts",
+                    "packages/dev/proceduralTextures/src/normalMap/normalMapProceduralTexture.ts"
+                ],
+                "tags": [
+                    "modules",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14824",
+                "title": "New ThinParticleSystem",
+                "description": "Reduced size (uncompressed) of an app using ParticleSystem to ThinParticleSystem by 600KB (from 1.8MB to 1.2MB)\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.scalar.functions.ts",
+                    "packages/dev/core/src/Maths/math.scalar.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Misc/tools.functions.ts",
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/boxParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particle.ts",
+                    "packages/dev/core/src/Particles/particleSystem.functions.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "modules",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14825",
+                "title": "KTX2 - Fixing context issue and vis tests",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/ktx2decoder.png"
+                ],
+                "tags": []
+            }
+        ],
+        "6.45.0": [
+            {
+                "pr": "14773",
+                "title": "Preparation for the external dependencies package",
+                "description": "The changes in the code are up for review. \r\n\r\n* This architecture allows a developer to create their own workers or worker pool instead of using our default worker creation\r\n* This allows overriding using the CDN. For example, using vite, this will work:\r\n\r\n```javascript\r\n// index.js\r\n\r\nimport wasm from \"@babylonjs/dependencies/draco/draco_decoder_gltf.wasm?arraybuffer\"; // also works from \"draco3dgltf\" package\r\nimport { AutoReleaseWorkerPool } from \"@babylonjs/core/Misc/workerPool.js\";\r\nimport { DracoCompression } from \"@babylonjs/core/Meshes/Compression/dracoCompression.js\";\r\nimport { initializeWebWorker } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\r\nimport { Tools } from \"@babylonjs/core/Misc/tools.js\";\r\nimport { VertexBuffer } from \"@babylonjs/core/Meshes/buffer.js\";\r\n\r\nconst workerPool = new AutoReleaseWorkerPool(4, () => {\r\n  const worker = new Worker(new URL(\"./worker.js\", import.meta.url), {\r\n    type: \"module\",\r\n  });\r\n  return initializeWebWorker(worker, wasm);\r\n});\r\n\r\nconst dracoCompression = new DracoCompression({\r\n  workerPool,\r\n});\r\n\r\n// worker.js\r\nimport { workerFunction } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\r\nimport \"@babylonjs/dependencies/draco/draco_decoder_gltf.js\";\r\n\r\nworkerFunction();\r\n\r\n```\r\n\r\nThis allows each build system to decide the architecture they want to use, as long as they provide the correct data.\r\n* Providing URLs is still possible, and is the simplest way to override the default babylon behavior. This method will also be present if it is impossible\r\n* The ***Worker.ts files are not exported to UMD! So they will only be available to be used in @babylonjs/core . They will be available in UMD, but not exported.\r\n* This maintains back-compat and makes the least amount of changes\r\n* Only worker-enabled modules were changed. The rest can use the URL configuration instead of injecting, as every build system will provide a URL of an asset which can be used on the main thread. As workers work a bit differently it is required to provide this way of injecting them directly as well.\r\n\r\nWaiting for reviews!",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Misc/basis.ts",
+                    "packages/dev/core/src/Misc/basisWorker.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2Worker.ts",
+                    "packages/dev/core/src/Navigation/Plugins/recastJSPlugin.ts",
+                    "packages/tools/babylonServer/public/basisTranscoder/1/basis_transcoder.js",
+                    "packages/tools/babylonServer/public/draco_decoder_gltf.js",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_ASTC.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_BC7.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_R8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RG8_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_SRGB.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/liteTranscoder_UASTC_RGBA_UNORM.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14816",
+                "title": "Add function to control sleep activation mode for havok physics",
+                "description": "https://github.com/BabylonJS/Babylon.js/issues/14810",
+                "author": {
+                    "name": "FlorentMasson",
+                    "url": "https://github.com/FlorentMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14804",
+                "title": "Unplugging MaterialHelper",
+                "description": "Overall idea is to move big contenders out of ParticleSystem and create a ThinParticleSystem with the minimum rendering loop in it\r\n\r\nThis is first step with MaterialHelper",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrAnisotropicConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrClearCoatConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrIridescenceConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSheenConfiguration.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/material.decalMapConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.detailMapConfiguration.ts",
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/PostProcesses/volumetricLightScatteringPostProcess.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/3D/materials/fluent/fluentMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentBackplate/fluentBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/fluentButton/fluentButtonMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackglowMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlBackplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlFrontplateMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlInnerquadMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderBarMaterial.ts",
+                    "packages/dev/gui/src/3D/materials/mrdl/mrdlSliderThumbMaterial.ts",
+                    "packages/dev/materials/src/cell/cellMaterial.ts",
+                    "packages/dev/materials/src/fire/fireMaterial.ts",
+                    "packages/dev/materials/src/fur/furMaterial.ts",
+                    "packages/dev/materials/src/gradient/gradientMaterial.ts",
+                    "packages/dev/materials/src/grid/gridMaterial.ts",
+                    "packages/dev/materials/src/lava/lavaMaterial.ts",
+                    "packages/dev/materials/src/mix/mixMaterial.ts",
+                    "packages/dev/materials/src/normal/normalMaterial.ts",
+                    "packages/dev/materials/src/shadowOnly/shadowOnlyMaterial.ts",
+                    "packages/dev/materials/src/simple/simpleMaterial.ts",
+                    "packages/dev/materials/src/sky/skyMaterial.ts",
+                    "packages/dev/materials/src/terrain/terrainMaterial.ts",
+                    "packages/dev/materials/src/triPlanar/triPlanarMaterial.ts",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "modules"
+                ]
+            },
+            {
+                "pr": "14813",
+                "title": "TrailMesh: Fix wrong starting position when the generator is a TransformNode",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-always-starts-from-0-0-0-when-generator-is-a-child-node/48317",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14807",
+                "title": "OffscreenCanvas doesn't have the remove function",
+                "description": "This will make sure the function is available before executing it.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14806",
+                "title": "Particle systems: serialize worldOffset",
+                "description": "See https://forum.babylonjs.com/t/particularsystems-worldoffset-bug/48204",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particleSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14795",
+                "title": "Gizmos: add additional transform property",
+                "description": "This PR adds a new `additionalTransformNode` property to the `Gizmo` class. The name can be changed! I had first thought of `rootTransformNode`, but there's already a `_rootMesh` in the `Gizmo` class...\r\n\r\nIt is used primarily when a gizmo is attached to a bone. Currently, the gizmo is not displayed at the right location/orientation because it does not take into account the mesh on which the skeleton is attached (the gizmo is relative to the root of the skeleton). By setting `additionalTransformNode` to the mesh, the gizmo will be correctly displayed because we will multiply the final transform with the mesh transform.\r\n\r\nI also updated the inspector to use the new feature.\r\n\r\nTest PG (the gizmos should be at the location of the upper bone): https://playground.babylonjs.com/#HFWCMJ#26",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Gizmos/gizmoManager.ts",
+                    "packages/dev/core/src/Gizmos/positionGizmo.ts",
+                    "packages/dev/core/src/Gizmos/rotationGizmo.ts",
+                    "packages/dev/core/src/Gizmos/scaleGizmo.ts",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx"
+                ],
+                "tags": [
+                    "new feature",
+                    "gizmos"
+                ]
+            }
+        ],
+        "6.44.0": [
+            {
+                "pr": "14803",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLengthBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryRotate2dBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14800",
+                "title": "Add nodes to Node Geometry to augment TextureFetch",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14801",
+                "title": "Nge nodes2",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDistanceBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDotBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryPosterizeBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryReplaceColorBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/index.ts",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/components/nodeList/nodeListComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14802",
+                "title": "SkeletonViewer: Try to display a spur for the last bone of a chain",
+                "description": "In the \"spur\" or \"sphere/spur\" mode, a spur is drawn from the current bone to its child(ren). But for the last bone of a chain, there's no next, so we can't draw the \"spur\".\r\n\r\nThis PR attempts to draw a \"spur\" in this case, calculating the bounding sphere of the vertices affected by the bone and using the center of this sphere to calculate the length of the spur.\r\n\r\nPG: https://playground.babylonjs.com/#HFWCMJ#30\r\n\r\n|Without PR|With PR|\r\n|------------|-|\r\n|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/6045372e-49e8-48fb-b354-4bf4e9ea81c3\" height=\"300px\">|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/901952f0-2b3d-4de9-b6b5-ce680a1b74c2\" height=\"300px\">|\r\n|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/e844b111-3c44-4953-956a-f940245a9303\" width=\"400px\">|<img src=\"https://github.com/BabylonJS/Babylon.js/assets/4152247/5dc33a70-2b3f-458d-8960-7ab7d0d3ad24)\" width=\"400px\">|\r\n\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/skeletonViewer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations",
+                    "debug tool"
+                ]
+            },
+            {
+                "pr": "14799",
+                "title": "Add timeStep option to NullEngine",
+                "description": "This allows specifying `timeStep` when creating a `NullEngine`\r\n\r\nRef. https://forum.babylonjs.com/t/how-to-set-nullengine-timestep-missing-from-options/48082\r\n\r\nAlso adds simple unit test for `NullEngine` and it's options.",
+                "author": {
+                    "name": "pjoe",
+                    "url": "https://github.com/pjoe"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/Engines/nullEngine.test.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14798",
+                "title": "make vision OS emulator work",
+                "description": "Vision OS emulator 1.1 delivers transient pointer input events, which were not supported until this PR.\n\nNote - this is for the emulator only, the real device should have proper hand support.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14797",
+                "title": "AnimationGroup: Add setters for \"from\" and \"to\" properties",
+                "description": "See https://forum.babylonjs.com/t/the-correct-way-to-extend-an-animation-group/48181",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14796",
+                "title": "Rendering custom render targets in XR",
+                "description": "Initially I have added this loop during the creation of the camera, but this way we are guaranteeing that even if the scene changes while in XR, or after leaving XR, the XR cameras will still render custom render targets correctly.\n\nThis will also allow adding RTTs direcly to the camera's custom render target, so the arrays stay independent.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14793",
+                "title": "Update and cleanup dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".gitignore",
+                    "nx.json",
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/test-tools/package.json",
+                    "packages/tools/testTools/src/utils.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14789",
+                "title": "Add triangle predicates to pointer down and up events.",
+                "description": "This PR adds `scene.pointerDownTrianglePredicate` and `scene.pointerUpTrianglePredicate`, which function analogous to the already implemented `scene.pointerMoveTrianglePredicate`. This allows to set triangle predicates for use with `ActionManager` or Behaviors like `PointerDragBehavior`, which currently is not possible.\r\n\r\nThere should be no performance impact when not setting the predicates, as is with `pointerMoveTrianglePredicate`.\r\n\r\nRelevant forum post: https://forum.babylonjs.com/t/triangle-predicate-for-picking-triggers-in-actionmanager-and-pointerdragbehaviour/47761\r\n\r\nI hope this fits all the guidelines. :)\r\nOpen for review!",
+                "author": {
+                    "name": "f-rooom",
+                    "url": "https://github.com/f-rooom"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14792",
+                "title": "Fix declaration issue",
+                "description": "The issue (that typescript has not detected, interesting enough) is that an optional parameter cannot come before a required variable. The declaration was generated incorrectly, and the playground has no proper typings.\n\nAs this was never released (only available in the playground so far), this is not a breaking change",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14788",
+                "title": "Added the option to dispose hand meshes on XR session ending",
+                "description": "Hand meshes were only disposed when the feature was disabled (and not detached). This was done to allow better caching of the hand meshes, and a faster re-enter to the scene.\nThis adds the option to dispose the meshes on session ended, to have a better resource management for your desktop scene after leaving XR.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14785",
+                "title": "Animation: Fix animation delta time in deterministic mode",
+                "description": "See https://forum.babylonjs.com/t/how-can-i-step-physics-and-animations-manually-when-lockstep-is-active/47689/7",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14787",
+                "title": "Allow XR near interaction to interact with all meshes and GUI",
+                "description": "This PR generates the needed data for full interaction with any object using near interaction.\nbu and bv were missing, which prevented elements like the GUI from working correctly with near interaction.\n\nPG used for testing: #9K3MRA#1484",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14786",
+                "title": "GreasedLines: Fix material not disposed",
+                "description": "See https://forum.babylonjs.com/t/potential-memory-leak-when-disposing-greasedline/48098",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14753",
+                "title": "WebXR improvements",
+                "description": "* It is now possible to add a fullscreen GUI ADT to WebXR using the XR Layers feature. This reuses the same API that is used on desktop, so the experience can work on both desktop and XR. Note - no interaction is possible in XR (as this is a layer that is rendered on top of the XR environment)\n* Added the ability to add a quad XR layer. At the moment only internally, as I want to change the API and make sure we can easily support all other XR layer types.\n* Firefox reality is no longer a thing - removed code directly related to it.\n* Added hand tracking as an optional feature - this will allow devs to use the hand meshes directly instead of seeing the static default hand models.\n* Fix an issue where the baseLayer will be created twice when using XR Layers\n* Added a warning when attaching or detaching a feature didn't work as expected\n* Remodelled the internal architecture of WebXR layers, imrp\n* Small fixes for the webxr declaration\n* Moved WebXR composition layer implementation(s) to a new directory for structure. These are internal classes so it's not a breaking change.\n* Fixed an issue that is apparent when using the webxr emulator\n* made small changes to the session manager's architecture.\n* fixed an issue with clearing when in multiview mode and in layers\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts",
+                    "packages/dev/core/src/XR/features/Layers/WebXRCompositionLayer.ts",
+                    "packages/dev/core/src/XR/features/Layers/WebXRProjectionLayer.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRLayers.ts",
+                    "packages/dev/core/src/XR/webXRDefaultExperience.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts",
+                    "packages/dev/core/src/XR/webXRFeaturesManager.ts",
+                    "packages/dev/core/src/XR/webXRLayerWrapper.ts",
+                    "packages/dev/core/src/XR/webXRRenderTargetTextureProvider.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14784",
+                "title": "Animation: Allow to pass a custom delta time to the scene animate method",
+                "description": "See https://forum.babylonjs.com/t/how-can-i-step-physics-and-animations-manually-when-lockstep-is-active/47689/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/scene.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "animations"
+                ]
+            }
+        ],
+        "6.43.0": [
+            {
+                "pr": "14780",
+                "title": "Fix camera panning issue when camera is parented",
+                "description": "fix https://forum.babylonjs.com/t/camera-panning-issue-when-using-parenting/48014",
+                "author": {
+                    "name": "2315137135",
+                    "url": "https://github.com/2315137135"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14783",
+                "title": "TAA: Fix when using an orthographic camera",
+                "description": "PG: https://playground.babylonjs.com/#539X0P#42",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14781",
+                "title": "Gaussian Splatting: Fix incorrect name setting",
+                "description": "It was using `window.name` instead of `this.name`",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14779",
+                "title": "TrailMesh: Add texture coordinates to trail mesh",
+                "description": "See https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14778",
+                "title": "TriPlanar material: Fix shader crash when using instances",
+                "description": "See https://forum.babylonjs.com/t/a-serialized-mesh-with-triplanarmateriel-does-not-create-an-instance-afterwards/47954",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/materials/src/triPlanar/triplanar.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14777",
+                "title": "fix Plugin V2 timestep",
+                "description": "Follow up https://forum.babylonjs.com/t/how-to-make-havok-physics-simulation-faster/47972/6",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14775",
+                "title": "Dev Host improvements",
+                "description": "The dev host allows you to write code directly related to the typescript files in the dev packages instead of using the UMD pattern.\r\n\r\nThis allows you to better experiment with es6 modules.\r\n\r\nThis improves the dev host by doing the following:\r\n\r\n1) Module resolution using the module's name (without the @babylon part). \r\n2) Server is much quicker to reload\r\n3) Full sruppot for all of our modules.\r\n4) A new analyze script that allows you to show a report of the modules loaded with your current code.\r\n\r\nTo run the analyzer, do the following:\r\n\r\n`npm run analyze -w @tools/dev-host`\r\n\r\nThe HTML page will open automatically and will look roughly like this:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/1381702/48a63bab-de3d-402d-afdd-6901d9938b7c)\r\n\r\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/babylonServer/webpack.config.js",
+                    "packages/tools/devHost/package.json",
+                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
+                    "packages/tools/devHost/src/createScene.ts",
+                    "packages/tools/devHost/src/createSceneJS.js",
+                    "packages/tools/devHost/src/engine.ts",
+                    "packages/tools/devHost/src/index.ts",
+                    "packages/tools/devHost/tsconfig.build.json",
+                    "packages/tools/devHost/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14774",
+                "title": "NME: Fix preview for some of the pre-defined meshes",
+                "description": "See https://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5\r\n\r\nConcerned meshes: sphere, cube, plane\r\n\r\nThe problem was that we bake the current transformation but don't move the mesh to the top of the hierarchy (`parent=nullhttps://forum.babylonjs.com/t/pbr-node-material-with-coarse-roughness-issue-with-non-omni-lights/47812/5). So, the parent transformation is applied two times, one time during baking and another time when rendering the mesh.\r\n\r\nAlso, there was a bug in the baking method, because tangents were not transformed.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            }
+        ],
+        "6.42.0": [
+            {
+                "pr": "14771",
+                "title": "PostProcess: Add a simple TAA rendering pipeline",
+                "description": "This rendering pipeline is a simple implementation of Temporal Anti-Aliasing, which can be used to enhance static rendering / screenshots.\r\n\r\nSee https://medium.com/@babylonjs/an-introduction-to-temporal-anti-aliasing-with-babylon-js-7aa29c2f8a0f\r\n\r\nPG: https://playground.babylonjs.com/#539X0P#39\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/halton2DSequence.ts",
+                    "packages/dev/core/src/Maths/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/index.ts",
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/taaRenderingPipeline.ts",
+                    "packages/dev/core/src/Shaders/taa.fragment.fx"
+                ],
+                "tags": [
+                    "new feature",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14772",
+                "title": "Ray: set non 0 epsilon",
+                "description": "See https://forum.babylonjs.com/t/pickwithray-misses-front-surface-triangle-corner/47829/13",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "collisions"
+                ]
+            }
+        ],
+        "6.41.2": [
+            {
+                "pr": "14769",
+                "title": "Fixing an issue with NGE parsing",
+                "description": "Quick note - this might cause NGEs creted in the last 2-3 weeks to fail.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nodeGeometryBuildingGenerator.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14758",
+                "title": "Add back convertion to float for Matrix Indices",
+                "description": "We believe this change was made by accident. Babylon Native currently needs matrix index buffers to be converted to float in the JS side. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "6.41.1": [
+            {
+                "pr": "14765",
+                "title": "Particle systems: add support for fog",
+                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx",
+                    "packages/dev/core/src/Shaders/particles.fragment.fx",
+                    "packages/dev/core/src/Shaders/particles.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "particles"
+                ]
+            },
+            {
+                "pr": "14768",
+                "title": "ShaderMaterial: add support for fog",
+                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815/4\r\n\r\n[EDIT] Example: https://babylonsnapshots.z22.web.core.windows.net/refs/pull/14768/merge/index.html#T90MQ4#16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Shaders/color.fragment.fx",
+                    "packages/dev/core/src/Shaders/color.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14767",
+                "title": "Ray: use an epsilon when calculating ray/triangle intersections",
+                "description": "See https://forum.babylonjs.com/t/pickwithray-misses-front-surface-triangle-corner/47829/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/ray.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "collisions"
+                ]
+            },
+            {
+                "pr": "14766",
+                "title": "Move core to es2020 as well",
+                "description": "The rest of the packages have already switched to ES2020",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/tsconfig.build.json",
+                    "packages/public/@babylonjs/core/tsconfig.lts.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14764",
+                "title": "Camera: Add hasMoved property",
+                "description": "Knowing if the camera has moved since the last frame is something that comes regularly in the forum, and I also needed it in my [blog post](https://medium.com/@babylonjs/an-introduction-to-temporal-anti-aliasing-with-babylon-js-7aa29c2f8a0f).\r\n\r\nSo, I thought it would be nice to add a property in the `Camera` class for this purpose.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14763",
+                "title": "Morph targets: Add missing morph count uniforms to some renderers/materials",
+                "description": "MorphTarget optimizations added in #14734 were not being applied to some renderers.\r\n\r\nThis PullRequest will prevent some renderers or materials that do not use `MaterialHelper.PrepareDefinesForMorphTargets` from being recompiled by morph influence changes.\r\n\r\n@Popov72 ",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Rendering/depthRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/outlineRenderer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14762",
+                "title": "Misc updates for RSM & WebGPU timestamp queries",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTimestampQuery.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14761",
+                "title": "Allow loading .ply with loadFileAsync",
+                "description": "Follow up https://forum.babylonjs.com/t/unable-to-load-gaussian-spalt-ply-file/47707",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14760",
+                "title": "Add the code inspection to enable unity toolkit",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14752",
+                "title": "Havok Heightmaps",
+                "description": "This PR adds support for the Heightfield shape in Havok. This shape requires that an array of heights is provided. This array can be optionally passed in the `CreateGroundFromHeightMap` callback, allowing for easy creation.\r\n\r\nExample PG in: #I37D8G#15",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/groundBuilder.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "physics",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14759",
+                "title": "Clear world scale observers correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRSessionManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14757",
+                "title": "Vision OS missing enabledFeatures",
+                "description": "Vision OS's WebXR session is missing a feature we are using. This causes some scenes to throw an exception and fail.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14755",
+                "title": "Use shader material written in wgsl as shadow depth wrapper",
+                "description": "## Allow ShaderMaterial written in WGSL to be used as shadow depth wrapper. \r\n\r\n[Original issue discussion](https://forum.babylonjs.com/t/shadowdepthwrapper-error-with-wgsl-shader-syntax)\r\n\r\n### Changes involved\r\n\r\n- Avoids GLSL specific shader includes to be called when using WGSL for shadow depth wrapper.\r\n- This PR does not implement shadow map specific shader includes in WGSL. When option `doNotInjectCode=false`, BJS will log error in dev tool console about missing shader includes by default. The reason is BJS does not yet have full support for StandardMaterial or PBRMaterial implemented in WGSL. It is a lot of work to setup WGSL shader from scratch with transparent shadows, self shadow, etc to test the missing shader includes for shadow map. The idea is: for now, if a developer has implement a complete WGSL shader that require these shader includes, this developer can create these shader includes in WGSL, and include them in ShaderStore.IncludesShadersStoreWGSL. [This example](https://github.com/shen-lin/Babylon.js/blob/wgls-dev/packages/tools/devHost/src/createScene.ts#L30) has been tested with some dumm WGSL code included into final runtime WGSL shader. If I later on need these shader includes and I have a test case, I will implement them and add to BJS WGSL shader include.\r\n\r\nThe shader includes that could be added in the future (WGSL version) mentioned above refers to:\r\n- shadowMapVertexExtraDeclaration\r\n- shadowMapVertexNormalBias\r\n- shadowMapVertexMetric\r\n- shadowMapFragmentSoftTransparentShadow\r\n- shadowMapFragment\r\n\r\n### Example outcome\r\n\r\nSee [dev branch](https://github.com/shen-lin/Babylon.js/tree/wgls-dev) for test scenario setup in dev host.\r\n\r\nScreenshot of local test result as shown below. A WGSL vertex shader is applied to animate both sphere and shadow vertex displacement.\r\n\r\n![Screenshot 2024-01-30 at 4 26 19 PM](https://github.com/BabylonJS/Babylon.js/assets/4505448/9fc6146b-2ee9-4be5-b15d-020115759512)\r\n\r\n",
+                "author": {
+                    "name": "shen-lin",
+                    "url": "https://github.com/shen-lin"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shadowDepthWrapper.ts"
+                ],
+                "tags": [
+                    "materials",
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14754",
+                "title": "Unity Toolkit Workaround",
+                "description": "Workaround to temp disable the Unity Toolkit scripts loading from playground loadScriptAsync. But load from BABYLON.Tools.LoadScriptAsync while debugging the issue",
+                "author": {
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/tools.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.41.0": [
             {
                 "pr": "14756",

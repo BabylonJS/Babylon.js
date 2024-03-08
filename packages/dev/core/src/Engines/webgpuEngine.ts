@@ -612,29 +612,15 @@ export class WebGPUEngine extends Engine {
         this._glslangOptions = glslangOptions;
         this._twgslOptions = twgslOptions;
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
-            .then(
-                (glslang: any) => {
-                    this._glslang = glslang;
-                    this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
-                    return this._tintWASM
-                        ? this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions).then(
-                              () => {
-                                  return navigator.gpu!.requestAdapter(this._options);
-                              },
-                              (msg: string) => {
-                                  Logger.Error("Can not initialize twgsl!");
-                                  Logger.Error(msg);
-                                  throw Error("WebGPU initializations stopped.");
-                              }
-                          )
-                        : navigator.gpu!.requestAdapter(this._options);
-                },
-                (msg: string) => {
-                    Logger.Error("Can not initialize glslang!");
-                    Logger.Error(msg);
-                    throw Error("WebGPU initializations stopped.");
-                }
-            )
+            .then((glslang: any) => {
+                this._glslang = glslang;
+                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
+                return this._tintWASM
+                    ? this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions).then(() => {
+                          return navigator.gpu!.requestAdapter(this._options);
+                      })
+                    : navigator.gpu!.requestAdapter(this._options);
+            })
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
                     // eslint-disable-next-line no-throw-literal
@@ -681,58 +667,52 @@ export class WebGPUEngine extends Engine {
                     return this._adapter.requestDevice(deviceDescriptor);
                 }
             })
-            .then(
-                (device: GPUDevice) => {
-                    this._device = device;
-                    this._deviceEnabledExtensions = [];
-                    this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
-                    this._deviceLimits = device.limits;
+            .then((device: GPUDevice) => {
+                this._device = device;
+                this._deviceEnabledExtensions = [];
+                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
+                this._deviceLimits = device.limits;
 
-                    let numUncapturedErrors = -1;
-                    this._device.addEventListener("uncapturederror", (event) => {
-                        if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
-                            Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
-                        } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
-                            Logger.Warn(
-                                `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
-                            );
-                        }
-                    });
-
-                    if (!this._doNotHandleContextLost) {
-                        this._device.lost?.then((info) => {
-                            if (this._isDisposed) {
-                                return;
-                            }
-                            this._contextWasLost = true;
-                            Logger.Warn("WebGPU context lost. " + info);
-                            this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(async () => {
-                                const snapshotRenderingMode = this.snapshotRenderingMode;
-                                const snapshotRendering = this.snapshotRendering;
-                                const disableCacheSamplers = this.disableCacheSamplers;
-                                const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
-                                const disableCacheBindGroups = this.disableCacheBindGroups;
-                                const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
-
-                                await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
-
-                                this.snapshotRenderingMode = snapshotRenderingMode;
-                                this.snapshotRendering = snapshotRendering;
-                                this.disableCacheSamplers = disableCacheSamplers;
-                                this.disableCacheRenderPipelines = disableCacheRenderPipelines;
-                                this.disableCacheBindGroups = disableCacheBindGroups;
-                                this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
-                                this._currentRenderPass = null;
-                            });
-                        });
+                let numUncapturedErrors = -1;
+                this._device.addEventListener("uncapturederror", (event) => {
+                    if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
+                        Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
+                    } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
+                        Logger.Warn(
+                            `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
+                        );
                     }
-                },
-                (e: any) => {
-                    Logger.Error("Could not retrieve a WebGPU device.");
-                    Logger.Error(e);
+                });
+
+                if (!this._doNotHandleContextLost) {
+                    this._device.lost?.then((info) => {
+                        if (this._isDisposed) {
+                            return;
+                        }
+                        this._contextWasLost = true;
+                        Logger.Warn("WebGPU context lost. " + info);
+                        this.onContextLostObservable.notifyObservers(this);
+                        this._restoreEngineAfterContextLost(async () => {
+                            const snapshotRenderingMode = this.snapshotRenderingMode;
+                            const snapshotRendering = this.snapshotRendering;
+                            const disableCacheSamplers = this.disableCacheSamplers;
+                            const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
+                            const disableCacheBindGroups = this.disableCacheBindGroups;
+                            const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
+
+                            await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
+
+                            this.snapshotRenderingMode = snapshotRenderingMode;
+                            this.snapshotRendering = snapshotRendering;
+                            this.disableCacheSamplers = disableCacheSamplers;
+                            this.disableCacheRenderPipelines = disableCacheRenderPipelines;
+                            this.disableCacheBindGroups = disableCacheBindGroups;
+                            this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
+                            this._currentRenderPass = null;
+                        });
+                    });
                 }
-            )
+            })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this, this._device);
                 this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
@@ -796,10 +776,8 @@ export class WebGPUEngine extends Engine {
                 this.resize();
             })
             .catch((e: any) => {
-                Logger.Error("Can not create WebGPU Device and/or context.");
-                Logger.Error(e);
-                // eslint-disable-next-line no-console
-                console?.trace?.();
+                Logger.Error("A fatal error occurred during WebGPU creation/initialization.");
+                throw e;
             });
     }
 

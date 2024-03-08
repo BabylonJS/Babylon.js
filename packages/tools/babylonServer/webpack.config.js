@@ -99,7 +99,6 @@ module.exports = (env) => {
             "guiEditor/babylon.guiEditor.min": `./src/guiEditor/index.ts`,
             "accessibility/babylon.accessibility.min": `./src/accessibility/index.ts`,
             "babylon.ktx2Decoder": `./src/ktx2Decoder/index.ts`,
-            // "babylonjs-gltf2interface": `./src/babylon.glTF2Interface.d.ts`,
         },
         resolve: {
             extensions: [".js", ".ts", ".tsx"],

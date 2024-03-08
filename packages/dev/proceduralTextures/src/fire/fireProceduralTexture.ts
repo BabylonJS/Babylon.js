@@ -1,4 +1,5 @@
-import { serialize, serializeAsVector2, SerializationHelper } from "core/Misc/decorators";
+import { serialize, serializeAsVector2 } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { Vector2 } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { Texture } from "core/Materials/Textures/texture";

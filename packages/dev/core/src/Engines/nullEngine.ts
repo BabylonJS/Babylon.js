@@ -42,6 +42,9 @@ export class NullEngineOptions {
      */
     public deterministicLockstep = false;
 
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
+
     /**
      * Maximum about of steps between frames (Default: 4)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
@@ -96,6 +99,10 @@ export class NullEngine extends Engine {
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
+        }
+
+        if (options.timeStep !== undefined) {
+            this._timeStep = options.timeStep;
         }
 
         if (options.lockstepMaxSteps === undefined) {

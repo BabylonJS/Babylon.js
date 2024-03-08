@@ -65,6 +65,7 @@ export class PhysicsEngine implements IPhysicsEngine {
      * Default is 1/60.
      * To slow it down, enter 1/600 for example.
      * To speed it up, 1/30
+     * Unit is seconds.
      * @param newTimeStep defines the new timestep to apply to this world.
      */
     public setTimeStep(newTimeStep: number = 1 / 60) {

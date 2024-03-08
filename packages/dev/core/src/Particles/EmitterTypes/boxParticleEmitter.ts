@@ -1,11 +1,11 @@
-import { DeepCopier } from "../../Misc/deepCopier";
 import type { Matrix } from "../../Maths/math.vector";
 import { Vector3 } from "../../Maths/math.vector";
-import { Scalar } from "../../Maths/math.scalar";
 import type { Particle } from "../../Particles/particle";
 import type { IParticleEmitterType } from "./IParticleEmitterType";
 import type { UniformBufferEffectCommonAccessor } from "../../Materials/uniformBufferEffectCommonAccessor";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
+import { RandomRange } from "../../Maths/math.scalar.functions";
+import { DeepCopier } from "../../Misc/deepCopier";
 /**
  * Particle emitter emitting particles from the inside of a box.
  * It emits the particles randomly between 2 given directions.
@@ -42,9 +42,9 @@ export class BoxParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the direction should be set in local space
      */
     public startDirectionFunction(worldMatrix: Matrix, directionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const randX = Scalar.RandomRange(this.direction1.x, this.direction2.x);
-        const randY = Scalar.RandomRange(this.direction1.y, this.direction2.y);
-        const randZ = Scalar.RandomRange(this.direction1.z, this.direction2.z);
+        const randX = RandomRange(this.direction1.x, this.direction2.x);
+        const randY = RandomRange(this.direction1.y, this.direction2.y);
+        const randZ = RandomRange(this.direction1.z, this.direction2.z);
 
         if (isLocal) {
             directionToUpdate.x = randX;
@@ -64,9 +64,9 @@ export class BoxParticleEmitter implements IParticleEmitterType {
      * @param isLocal defines if the position should be set in local space
      */
     public startPositionFunction(worldMatrix: Matrix, positionToUpdate: Vector3, particle: Particle, isLocal: boolean): void {
-        const randX = Scalar.RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
-        const randY = Scalar.RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
-        const randZ = Scalar.RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
+        const randX = RandomRange(this.minEmitBox.x, this.maxEmitBox.x);
+        const randY = RandomRange(this.minEmitBox.y, this.maxEmitBox.y);
+        const randZ = RandomRange(this.minEmitBox.z, this.maxEmitBox.z);
 
         if (isLocal) {
             positionToUpdate.x = randX;

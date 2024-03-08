@@ -29,8 +29,9 @@ export interface ICanvas {
 
     /**
      * Removes the canvas from the document.
+     * Offscreen canvases don't have the remove function, so we need to make it optional.
      */
-    remove(): void;
+    remove?(): void;
 }
 
 /**
