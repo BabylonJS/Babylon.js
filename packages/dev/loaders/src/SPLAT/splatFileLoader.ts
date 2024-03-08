@@ -74,7 +74,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
         fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
         const gaussianSplatting = new GaussianSplattingMesh("GaussianSplatting", null, scene);
-        await gaussianSplatting.loadFileAsync(rootUrl + fileName);
+        await gaussianSplatting.loadFileAsync(rootUrl + (fileName ?? ""));
         return {
             meshes: [gaussianSplatting],
             particleSystems: [],
