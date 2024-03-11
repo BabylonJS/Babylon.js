@@ -5,6 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
+import { Observer } from "core/Misc";
 
 /**
  * Operations supported by the Math block
@@ -44,6 +45,8 @@ export class MathBlock extends NodeGeometryBlock {
     })
     public operation = MathBlockOperations.Add;
 
+    private readonly _connectionObservers: readonly Observer<NodeGeometryConnectionPoint>[]
+
     /**
      * Create a new MathBlock
      * @param name defines the block name
@@ -56,15 +59,25 @@ export class MathBlock extends NodeGeometryBlock {
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
-        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
-        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Geometry);
-        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
-        this._inputs[1].acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
+        this.output._typeConnectionSource = this.left;
+
+        const excludedConnectionPointTypes = [
+            NodeGeometryBlockConnectionPointTypes.Matrix,
+            NodeGeometryBlockConnectionPointTypes.Geometry,
+            NodeGeometryBlockConnectionPointTypes.Texture
+        ] as const;
+
+        this.left.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
+        this.right.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
+
         this._linkConnectionTypes(0, 1);
+
+        this._connectionObservers = [
+            this.left.onConnectionObservable.add(() => this._updateInputOutputTypes()),
+            this.left.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
+            this.right.onConnectionObservable.add(() => this._updateInputOutputTypes()),
+            this.right.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
+        ];
     }
 
     /**
@@ -98,88 +111,93 @@ export class MathBlock extends NodeGeometryBlock {
 
     protected _buildBlock() {
         let func: (state: NodeGeometryBuildState) => any;
-        const left = this.left;
-        const right = this.right;
 
-        if (!left.isConnected || !right.isConnected) {
+        if (!this.left.isConnected || !this.right.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
         }
 
-        const isFloat = left.type === NodeGeometryBlockConnectionPointTypes.Float || left.type === NodeGeometryBlockConnectionPointTypes.Int;
+        const leftIsScalar = this.left.type === NodeGeometryBlockConnectionPointTypes.Float || this.left.type === NodeGeometryBlockConnectionPointTypes.Int;
+        const rightIsScalar = this.right.type === NodeGeometryBlockConnectionPointTypes.Float || this.right.type === NodeGeometryBlockConnectionPointTypes.Int;
+
+        // If both input types are scalars, then this is a scalar operation.
+        const isScalar = leftIsScalar && rightIsScalar;
+
+        // If it's not a scalar operation, then the vector input will be considered the first input for the rest of this function.
+        const [first, second] = !isScalar && leftIsScalar ? [this.right, this.left] : [this.left, this.right];
 
         switch (this.operation) {
             case MathBlockOperations.Add: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return left.getConnectedValue(state) + right.getConnectedValue(state);
+                        return first.getConnectedValue(state) + second.getConnectedValue(state);
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).add(state.adapt(right, left.type));
+                        return first.getConnectedValue(state).add(state.adapt(second, first.type));
                     };
                 }
                 break;
             }
             case MathBlockOperations.Subtract: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return left.getConnectedValue(state) - right.getConnectedValue(state);
+                        return first.getConnectedValue(state) - second.getConnectedValue(state);
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).subtract(state.adapt(right, left.type));
+                        return first.getConnectedValue(state).subtract(state.adapt(second, first.type));
                     };
                 }
                 break;
             }
             case MathBlockOperations.Multiply: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return left.getConnectedValue(state) * right.getConnectedValue(state);
+                        return first.getConnectedValue(state) * second.getConnectedValue(state);
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).multiply(state.adapt(right, left.type));
+                        return first.getConnectedValue(state).multiply(state.adapt(second, first.type));
                     };
                 }
                 break;
             }
             case MathBlockOperations.Divide: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return left.getConnectedValue(state) / right.getConnectedValue(state);
+                        return first.getConnectedValue(state) / second.getConnectedValue(state);
                     };
                 } else {
                     func = (state) => {
-                        return left.getConnectedValue(state).divide(state.adapt(right, left.type));
+                        return first.getConnectedValue(state).divide(state.adapt(second, first.type));
                     };
                 }
                 break;
             }
             case MathBlockOperations.Min: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return Math.min(left.getConnectedValue(state), right.getConnectedValue(state));
+                        return Math.min(first.getConnectedValue(state), second.getConnectedValue(state));
                     };
                 } else {
-                    switch (left.type) {
+                    switch (first.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector2.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector3.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Minimize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector4.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
@@ -188,27 +206,27 @@ export class MathBlock extends NodeGeometryBlock {
                 break;
             }
             case MathBlockOperations.Max: {
-                if (isFloat) {
+                if (isScalar) {
                     func = (state) => {
-                        return Math.max(left.getConnectedValue(state), right.getConnectedValue(state));
+                        return Math.max(first.getConnectedValue(state), second.getConnectedValue(state));
                     };
                 } else {
-                    switch (left.type) {
+                    switch (first.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector2.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector3.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Maximize(left.getConnectedValue(state), state.adapt(right, left.type));
+                                return Vector4.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
                             };
                             break;
                         }
@@ -219,7 +237,7 @@ export class MathBlock extends NodeGeometryBlock {
         }
 
         this.output._storedFunction = (state) => {
-            if (left.type === NodeGeometryBlockConnectionPointTypes.Int) {
+            if (first.type === NodeGeometryBlockConnectionPointTypes.Int) {
                 return func(state) | 0;
             }
             return func(state);
@@ -229,6 +247,48 @@ export class MathBlock extends NodeGeometryBlock {
     protected _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\n`;
         return codeString;
+    }
+
+    private _updateInputOutputTypes() {
+        // First update the output type with the initial assumption that we'll base it on the left input.
+        this.output._typeConnectionSource = this.left;
+
+        if (this.left.isConnected && this.right.isConnected) {
+            // Both inputs are connected, so we need to determine the output type based on the input types.
+            if (this.left.type === NodeGeometryBlockConnectionPointTypes.Int ||
+                (this.left.type === NodeGeometryBlockConnectionPointTypes.Float && this.right.type !== NodeGeometryBlockConnectionPointTypes.Int)) {
+                this.output._typeConnectionSource = this.right;
+            }
+        } else if (this.left.isConnected !== this.right.isConnected) {
+            // Only one input is connected, so we need to determine the output type based on the connected input.
+            this.output._typeConnectionSource = this.left.isConnected ? this.left : this.right;
+        }
+
+        // Next update the accepted connection point types for the inputs based on the current input connection state.
+        if (this.left.isConnected || this.right.isConnected) {
+            for (const [first, second] of [[this.left, this.right], [this.right, this.left]]) {
+                // Always allow Ints and Floats.
+                first.acceptedConnectionPointTypes = [NodeGeometryBlockConnectionPointTypes.Int, NodeGeometryBlockConnectionPointTypes.Float];
+
+                if (second.isConnected) {
+                    // The same types as the connected input are always allowed.
+                    first.acceptedConnectionPointTypes.push(second.type);
+
+                    // If the other input is an Int or a Float, then we also allow Vector types.
+                    if (second.type === NodeGeometryBlockConnectionPointTypes.Int || second.type === NodeGeometryBlockConnectionPointTypes.Float) {
+                        first.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector2, NodeGeometryBlockConnectionPointTypes.Vector3, NodeGeometryBlockConnectionPointTypes.Vector4);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Release resources
+     */
+    public override dispose() {
+        super.dispose();
+        this._connectionObservers.forEach((observer) => observer.remove());
     }
 
     /**
