@@ -8,4 +8,3 @@ const engine = new BABYLON.NullEngine();
 engine.dispose();
 
 BABYLONGUI.AdvancedDynamicTexture.CreateFullscreenUI("test");
-
