@@ -1,5 +1,5 @@
 import type { Nullable } from "core/types";
-import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
+import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
