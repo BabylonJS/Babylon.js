@@ -5,7 +5,7 @@ import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConn
 import type { NodeGeometryBuildState } from "../nodeGeometryBuildState";
 import { Vector2, Vector3, Vector4 } from "core/Maths/math.vector";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
-import { Observer } from "core/Misc";
+import type { Observer } from "core/Misc";
 
 /**
  * Operations supported by the Math block
@@ -53,7 +53,7 @@ export class MathBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
-
+console.log("foo");
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.AutoDetect);
 
