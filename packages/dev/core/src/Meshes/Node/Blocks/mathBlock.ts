@@ -53,7 +53,7 @@ export class MathBlock extends NodeGeometryBlock {
      */
     public constructor(name: string) {
         super(name);
-console.log("foo");
+
         this.registerInput("left", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerInput("right", NodeGeometryBlockConnectionPointTypes.AutoDetect);
 
