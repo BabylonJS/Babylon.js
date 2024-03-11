@@ -307,7 +307,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets or Set the pointer pinch delta percentage or how fast is the camera zooming.
-     * It will be used instead of pinchDeltaPrecision if different from 0.
+     * It will be used instead of pinchPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
      */
     public get pinchDeltaPercentage(): number {
@@ -486,7 +486,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
-     * It will be used instead of pinchDeltaPrecision if different from 0.
+     * It will be used instead of pinchPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
      */
     public get wheelDeltaPercentage(): number {
