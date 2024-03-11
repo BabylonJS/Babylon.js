@@ -2,7 +2,7 @@
 import type { IGLTF, INode } from "../glTFLoaderInterfaces";
 import { GLTFPathToObjectConverter } from "./gltfPathToObjectConverter";
 import type { TransformNode } from "core/Meshes";
-import type { IObjectAccessor } from "core/FlowGraph";
+import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
 
 /**
  * Class to convert an interactivity pointer path to a smart object
