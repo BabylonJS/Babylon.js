@@ -2009,6 +2009,11 @@
             "replace": "//options//, updateUVs = true; updateAfterRender = true;",
             "referenceImage": "interleaved-buffers-updated-uvs.png",
             "renderCount": 2
+        },
+        {
+            "title": "CesiumMan from Khronos Sample Assets",
+            "playgroundId": "#4GWX8M",
+            "referenceImage": "CesiumMan.png"
         }
     ]
 }

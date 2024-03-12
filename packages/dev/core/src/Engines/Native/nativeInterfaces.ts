@@ -36,7 +36,7 @@ export interface INativeEngine {
         normalized: boolean,
         instanceDivisor: number
     ): void;
-    updateDynamicVertexBuffer(vertexBuffer: NativeData, dataBuffer: ArrayBuffer, dataByteOffset: number, dataByteLength: number, vertexByteOffset: number): void;
+    updateDynamicVertexBuffer(vertexBuffer: NativeData, dataBuffer: ArrayBuffer, dataByteOffset: number, dataByteLength: number, vertexByteOffset?: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
     createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;
