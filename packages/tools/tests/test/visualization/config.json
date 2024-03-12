@@ -1985,6 +1985,35 @@
             "renderCount": 10,
             "playgroundId": "#2I28SC#25",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Interleaved buffers test",
+            "playgroundId": "#AVFNTW#5",
+            "referenceImage": "interleaved-buffers.png"
+        },
+        {
+            "title": "Interleaved buffers test (integerPositionsAndNormals = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, integerPositionsAndNormals = true;",
+            "referenceImage": "interleaved-buffers.png"
+        },
+        {
+            "title": "Interleaved buffers test (updateUVs = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, updateUVs = true;",
+            "referenceImage": "interleaved-buffers-updated-uvs.png"
+        },
+        {
+            "title": "Interleaved buffers test (updateUVs = true, updateAfterRender = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, updateUVs = true; updateAfterRender = true;",
+            "referenceImage": "interleaved-buffers-updated-uvs.png",
+            "renderCount": 2
+        },
+        {
+            "title": "CesiumMan from Khronos Sample Assets",
+            "playgroundId": "#4GWX8M",
+            "referenceImage": "CesiumMan.png"
         }
     ]
 }
