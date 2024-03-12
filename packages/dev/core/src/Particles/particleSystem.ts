@@ -282,6 +282,22 @@ export class ParticleSystem extends ThinParticleSystem {
             this._prepareSubEmitterInternalArray();
         }
 
+        if (disposeExistingEndSubEmitters) {
+            if (this.activeSubSystems) {
+                for (let i = this.activeSubSystems.length - 1; i >= 0; i -= 1) {
+                    this.activeSubSystems[i].dispose();
+                }
+            }
+        }
+
+        this.particles?.forEach((particle) => {
+            if (particle._attachedSubEmitters) {
+                for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
+                    particle._attachedSubEmitters[i].dispose();
+                }
+            }
+        });
+
         if (this._subEmitters && this._subEmitters.length) {
             for (let index = 0; index < this._subEmitters.length; index++) {
                 for (const subEmitter of this._subEmitters[index]) {
@@ -295,22 +311,6 @@ export class ParticleSystem extends ThinParticleSystem {
 
         if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
             (<AbstractMesh>this.emitter).dispose(true);
-        }
-
-        this.particles?.forEach((particle) => {
-            if (particle._attachedSubEmitters) {
-                for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
-                    particle._attachedSubEmitters[i].dispose();
-                }
-            }
-        });
-
-        if (disposeExistingEndSubEmitters) {
-            if (this.activeSubSystems) {
-                for (let i = this.activeSubSystems.length - 1; i >= 0; i -= 1) {
-                    this.activeSubSystems[i].dispose();
-                }
-            }
         }
     }
 

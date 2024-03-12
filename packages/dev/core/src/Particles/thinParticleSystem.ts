@@ -2105,7 +2105,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /**
      * Disposes the particle system and free the associated resources
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
-     * @param disposeExistingEndSubEmitters whether to dispose all end type sub-Systems already started
+     * @param disposeExistingEndSubEmitters whether to dispose all end type sub-Systems already started (false by default)
      */
     public dispose(disposeTexture = true, disposeExistingEndSubEmitters = false): void {
         this.resetDrawCache();
