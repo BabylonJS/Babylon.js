@@ -177,7 +177,6 @@ export class GaussianSplattingMesh extends Mesh {
                 Logger.Error(`Unsupported property type: ${type}. Are you sure it's a valid Gaussian Splatting file?`);
                 return new ArrayBuffer(0);
             }
-            rowOffset += offsets[type];
         }
 
         const rowLength = 3 * 4 + 3 * 4 + 4 + 4;
