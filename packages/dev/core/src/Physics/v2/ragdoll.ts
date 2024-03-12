@@ -1,5 +1,4 @@
 import type { Skeleton } from "../../Bones/skeleton";
-//import type { Quaternion } from "../../Maths/math.vector";
 import { Vector3, Matrix, TmpVectors, Quaternion } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
 import { PhysicsAggregate } from "./physicsAggregate";
