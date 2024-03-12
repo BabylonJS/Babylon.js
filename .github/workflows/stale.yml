@@ -20,6 +20,8 @@ jobs:
           exempt-issue-labels: no-stale
           # The labels that mean a pull request is exempt from being marked as stale. Separate multiple labels with commas (eg. "label1,label2").
           exempt-pr-labels: no-stale
+          # Run the processor in debug mode without actually performing any operations on live issues.
+          debug-only: true # optional, default is false
 
   # The message to post on the issue when closing it. If none provided, will not comment when closing an issue.
   # close-issue-message: # optional
@@ -79,8 +81,6 @@ jobs:
   # remove-issue-stale-when-updated: # optional, default is 
   # Remove stale labels from pull requests when they are updated or commented on. Override "remove-stale-when-updated" option regarding only the pull requests.
   # remove-pr-stale-when-updated: # optional, default is 
-  # Run the processor in debug mode without actually performing any operations on live issues.
-  debug-only: true # optional, default is false
   # The order to get issues or pull requests. Defaults to false, which is descending.
   # ascending: # optional, default is false
   # Delete the git branch after closing a stale pull request.
