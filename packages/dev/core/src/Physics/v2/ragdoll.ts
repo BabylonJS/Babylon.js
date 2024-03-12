@@ -285,7 +285,7 @@ export class Ragdoll {
             this._bones[this._rootBoneIndex].setAbsolutePosition(TmpVectors.Vector3[0]);
 
             for (let i = 0; i < this._bones.length; i++) {
-                //if (i == this._rootBoneIndex) continue;
+                if (i == this._rootBoneIndex) continue;
                 this._setBodyOrientationToBone(i);
             }
         } else {
