@@ -163,11 +163,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         switch (xrController.inputSource.targetRayMode) {
             case "tracked-pointer":
+            case "transient-pointer":
                 return this._attachTrackedPointerRayMode(xrController);
             case "gaze":
                 return this._attachGazeMode(xrController);
             case "screen":
-            case "transient-pointer":
                 return this._attachScreenRayMode(xrController);
         }
     };
@@ -401,7 +401,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // Every frame check collisions/input
             if (controllerData.xrController) {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
-                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
+                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay, controllerData.xrController.inputSource.targetRayMode === "transient-pointer");
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
@@ -679,22 +679,26 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                    controllerData.pointerDownTriggered = true;
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-                }
+                this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                    if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                        controllerData.pointerDownTriggered = true;
+                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                    }
+                });
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
-                }
+                this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                    if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                    }
+                });
             };
 
             controllerData.eventListeners = {
