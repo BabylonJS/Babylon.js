@@ -3,6 +3,7 @@ name: Flag Stale Issues/PRs
 on:
   schedule:
     - cron: '0 0 * * *'  # Run every day at midnight
+  workflow_dispatch:
 
 jobs:
   close_stale_prs:
