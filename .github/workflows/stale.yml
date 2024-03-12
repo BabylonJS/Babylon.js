@@ -1,4 +1,4 @@
-name: Close Stale Pull Requests
+name: Flag Stale Issues/PRs
 
 on:
   schedule:
