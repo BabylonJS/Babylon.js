@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  close_stale_prs:
+  stale_detection:
     runs-on: ubuntu-latest
     steps:
-      - name: Close stale pull requests
+      - name: Flag Stale Issues/PRs
         uses: actions/stale@v9.0.0
         with:
           stale-issue-message: 'This issue has been automatically staled because it has been inactive for more than 14 days. Please reopen if you still intend to submit this pull request.'
@@ -23,6 +23,8 @@ jobs:
           exempt-pr-labels: no-stale
           # Run the processor in debug mode without actually performing any operations on live issues.
           debug-only: true # optional, default is false
+          # The maximum number of operations per run, used to control rate limiting (GitHub API CRUD related).
+          operations-per-run: 100 # optional, default is 30
 
   # The message to post on the issue when closing it. If none provided, will not comment when closing an issue.
   # close-issue-message: # optional
