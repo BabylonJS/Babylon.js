@@ -275,7 +275,7 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /** @internal */
-    public _onDispose() {
+    public _onDispose(disposeExistingEndSubEmitters = false) {
         this._removeFromRoot();
 
         if (this.subEmitters && !this._subEmitters) {
@@ -295,6 +295,22 @@ export class ParticleSystem extends ThinParticleSystem {
 
         if (this._disposeEmitterOnDispose && this.emitter && (this.emitter as AbstractMesh).dispose) {
             (<AbstractMesh>this.emitter).dispose(true);
+        }
+
+        this.particles?.forEach((particle) => {
+            if (particle._attachedSubEmitters) {
+                for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
+                    particle._attachedSubEmitters[i].dispose();
+                }
+            }
+        });
+
+        if (disposeExistingEndSubEmitters) {
+            if (this.activeSubSystems) {
+                for (let i = this.activeSubSystems.length - 1; i >= 0; i -= 1) {
+                    this.activeSubSystems[i].dispose();
+                }
+            }
         }
     }
 
