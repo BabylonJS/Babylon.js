@@ -45,7 +45,7 @@ export class MathBlock extends NodeGeometryBlock {
     })
     public operation = MathBlockOperations.Add;
 
-    private readonly _connectionObservers: readonly Observer<NodeGeometryConnectionPoint>[]
+    private readonly _connectionObservers: readonly Observer<NodeGeometryConnectionPoint>[];
 
     /**
      * Create a new MathBlock
@@ -64,7 +64,7 @@ export class MathBlock extends NodeGeometryBlock {
         const excludedConnectionPointTypes = [
             NodeGeometryBlockConnectionPointTypes.Matrix,
             NodeGeometryBlockConnectionPointTypes.Geometry,
-            NodeGeometryBlockConnectionPointTypes.Texture
+            NodeGeometryBlockConnectionPointTypes.Texture,
         ] as const;
 
         this.left.excludedConnectionPointTypes.push(...excludedConnectionPointTypes);
@@ -255,8 +255,10 @@ export class MathBlock extends NodeGeometryBlock {
 
         if (this.left.isConnected && this.right.isConnected) {
             // Both inputs are connected, so we need to determine the output type based on the input types.
-            if (this.left.type === NodeGeometryBlockConnectionPointTypes.Int ||
-                (this.left.type === NodeGeometryBlockConnectionPointTypes.Float && this.right.type !== NodeGeometryBlockConnectionPointTypes.Int)) {
+            if (
+                this.left.type === NodeGeometryBlockConnectionPointTypes.Int ||
+                (this.left.type === NodeGeometryBlockConnectionPointTypes.Float && this.right.type !== NodeGeometryBlockConnectionPointTypes.Int)
+            ) {
                 this.output._typeConnectionSource = this.right;
             }
         } else if (this.left.isConnected !== this.right.isConnected) {
@@ -266,7 +268,10 @@ export class MathBlock extends NodeGeometryBlock {
 
         // Next update the accepted connection point types for the inputs based on the current input connection state.
         if (this.left.isConnected || this.right.isConnected) {
-            for (const [first, second] of [[this.left, this.right], [this.right, this.left]]) {
+            for (const [first, second] of [
+                [this.left, this.right],
+                [this.right, this.left],
+            ]) {
                 // Always allow Ints and Floats.
                 first.acceptedConnectionPointTypes = [NodeGeometryBlockConnectionPointTypes.Int, NodeGeometryBlockConnectionPointTypes.Float];
 
@@ -276,7 +281,11 @@ export class MathBlock extends NodeGeometryBlock {
 
                     // If the other input is an Int or a Float, then we also allow Vector types.
                     if (second.type === NodeGeometryBlockConnectionPointTypes.Int || second.type === NodeGeometryBlockConnectionPointTypes.Float) {
-                        first.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector2, NodeGeometryBlockConnectionPointTypes.Vector3, NodeGeometryBlockConnectionPointTypes.Vector4);
+                        first.acceptedConnectionPointTypes.push(
+                            NodeGeometryBlockConnectionPointTypes.Vector2,
+                            NodeGeometryBlockConnectionPointTypes.Vector3,
+                            NodeGeometryBlockConnectionPointTypes.Vector4
+                        );
                     }
                 }
             }
