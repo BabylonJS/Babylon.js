@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Close stale pull requests
-        uses: actions/stale@vv9.0.0
+        uses: actions/stale@v9.0.0
         with:
           stale-issue-message: 'This issue has been automatically staled because it has been inactive for more than 14 days. Please reopen if you still intend to submit this pull request.'
           days-before-stale: 14
