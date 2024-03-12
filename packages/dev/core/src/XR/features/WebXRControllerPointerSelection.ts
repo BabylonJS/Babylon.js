@@ -401,7 +401,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             // Every frame check collisions/input
             if (controllerData.xrController) {
                 controllerGlobalPosition = controllerData.xrController.pointer.position;
-                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay, controllerData.xrController.inputSource.targetRayMode === "transient-pointer");
+                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay /*, controllerData.xrController.inputSource.targetRayMode === "transient-pointer"*/);
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
