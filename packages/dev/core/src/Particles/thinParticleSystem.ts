@@ -1268,7 +1268,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
 
     /**
      * Stops the particle system.
-     * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. the default value is true.
+     * @param stopSubEmitters if true it will stop the current system and all created sub-Systems if false it will stop the current root system only, this param is used by the root particle system only. The default value is true.
      */
     public stop(stopSubEmitters = true): void {
         if (this._stopped) {
@@ -2105,7 +2105,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     /**
      * Disposes the particle system and free the associated resources
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
-     * @param disposeExistingEndSubEmitters whether to dispose all end type SubEmitters already started
+     * @param disposeExistingEndSubEmitters whether to dispose all end type sub-Systems already started
      */
     public dispose(disposeTexture = true, disposeExistingEndSubEmitters = false): void {
         this.resetDrawCache();
