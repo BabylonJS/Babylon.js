@@ -56,7 +56,7 @@ ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, ver
         if (data instanceof Array) {
             this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, new Float32Array(data));
         } else {
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, <ArrayBuffer>data);
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, byteOffset, data);
         }
     } else {
         if (data instanceof Array) {
@@ -68,7 +68,7 @@ ThinEngine.prototype.updateDynamicVertexBuffer = function (this: ThinEngine, ver
                 data = new Uint8Array(data.buffer, data.byteOffset + byteOffset, byteLength);
             }
 
-            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, <ArrayBuffer>data);
+            this._gl.bufferSubData(this._gl.ARRAY_BUFFER, 0, data);
         }
     }
 

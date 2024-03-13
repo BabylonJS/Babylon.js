@@ -1,45 +1,110 @@
 {
-    "fromTag": "6.45.1",
+    "fromTag": "6.46.0",
     "changelog": {
-        "6.45.1": [
+        "6.46.1": [
             {
-                "pr": "14821",
-                "title": "Type change to XRHand",
-                "description": null,
+                "pr": "14862",
+                "title": "Fix signature of update dynamic vertex buffer of native engine",
+                "description": "- Add a missing argument to the `updateDynamicVertexBuffer` native interface. This function is missing an offset argument that indicates the offset of the vertex buffer to update.\r\n- Update buffer function arguments to avoid confusion.\r\n- Add some visual tests that ensure interleaved buffers and updating buffers work properly. See [playground](https://playground.babylonjs.com/#AVFNTW#5).\r\n- Add CesiumMan test which uses the same buffer for non-interleaved attributes.\r\n- Remove joint promote to float code in glTF loader.",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
                 },
                 "files": [
-                    "packages/dev/core/src/LibDeclarations/webxr.d.ts"
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicBuffer.ts",
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/loaders/src/glTF/2.0/glTFLoader.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/CesiumMan.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-updated-uvs.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14863",
+                "title": "PLY stream offset fix",
+                "description": "Fix bug introduced here : https://github.com/BabylonJS/Babylon.js/pull/14852",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "14819",
-                "title": "GUI - Allow InputText text outline",
-                "description": "See https://forum.babylonjs.com/t/inputtextarea-onfocusselectall-does-not-work/48351",
+                "pr": "14860",
+                "title": "Only trigger near pointer up if down was triggered",
+                "description": "See https://forum.babylonjs.com/t/webxr-pointer-up-event-trigger-twice-on-one-single-touch/29370/21?u=raananw",
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/controls/inputText.ts",
-                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
                 ],
-                "tags": [
-                    "new feature"
-                ]
+                "tags": []
             },
             {
-                "pr": "14818",
-                "title": "NME: Fix missing alphaMode property parsing",
-                "description": "See https://forum.babylonjs.com/t/node-materiel-editor-does-not-load-alpha-mode/48396",
+                "pr": "14859",
+                "title": "Update soundPropertyGridComponent.tsx",
+                "description": "https://forum.babylonjs.com/t/inspector-for-sound-element-samples/48715",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sounds/soundPropertyGridComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14855",
+                "title": "Fix UMD declaration and add project to test",
+                "description": "In UMD module mode we have been testing using the monorepo and not independent, so declaration errors (only in case of \"import type\" could be added to the UMD module declarations.\n\nTL;dr - this adds a project to test declarations AND fixes a few of them.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/dev/core/src/Physics/castingResult.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/interactivityPathToObjectConverter.ts",
+                    "packages/public/umd/babylonjs-testporject/package.json",
+                    "packages/public/umd/babylonjs-testporject/src/index.ts",
+                    "packages/public/umd/babylonjs-testporject/tsconfig.build.json",
+                    "packages/public/umd/babylonjs-testporject/tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14854",
+                "title": "fix: fix property name error",
+                "description": "The `pinchDeltaPrecision` in the comments should be `pinchPrecision`. There is no `pinchDeltaPrecision` property.",
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14853",
+                "title": "Fix NME Preview loading with reflectionTexture",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
                 },
                 "files": [
                     "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
@@ -50,20 +115,94 @@
                 ]
             },
             {
-                "pr": "14815",
-                "title": "WebGPU: Simplify error handling during engine creation/initialization",
-                "description": "See https://forum.babylonjs.com/t/webgpu-cannot-allocate-wasm-memory-for-new-instance/48321/5",
+                "pr": "14852",
+                "title": "sandbox label, unsupported field error and importmesh consistency",
+                "description": "follow up https://forum.babylonjs.com/t/unable-to-load-gaussian-spalt-ply-file/47707/13\r\nmore explicit error for @thomlucc file test\r\nupdate sandbox label",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/loaders/src/SPLAT/splatFileLoader.ts",
+                    "packages/tools/sandbox/src/sandbox.tsx"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "14847",
+                "title": "Baked Vertex Animations: allows you to pass a skeleton instead of a mesh",
+                "description": "See https://forum.babylonjs.com/t/glb-vat-not-working-merge-needed/48560/2",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                    "packages/dev/core/src/BakedVertexAnimation/vertexAnimationBaker.ts",
+                    "packages/dev/core/src/Bones/skeleton.ts"
                 ],
                 "tags": [
                     "enhancement",
-                    "WebGPU"
+                    "animations"
+                ]
+            },
+            {
+                "pr": "14848",
+                "title": "Fix `additionalTransformNode` type",
+                "description": "Same as https://github.com/BabylonJS/Babylon.js/pull/14306, so that `skipLibCheck: false` and `exactOptionalPropertyTypes: true` pass.",
+                "author": {
+                    "name": "alecmev",
+                    "url": "https://github.com/alecmev"
+                },
+                "files": [
+                    "packages/dev/core/src/Gizmos/gizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14851",
+                "title": "fix clone for ADT",
+                "description": "ADT clone was cloning the ADT but did neither attach it to a mesh nor create the layer that is needed for fullscreen UI",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14850",
+                "title": "Teleportation fixes",
+                "description": "1. Added blocked predicate (optional) to define a function to select blocker meshes\n2. If using the main component and the initial hit is not a teleportation surface, the teleportation will be canceled.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14849",
+                "title": "AnimationGroup: Fix usage of mask",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
                 ]
             }
         ],
@@ -449,6 +588,72 @@
                     "packages/tools/tests/test/visualization/ReferenceImages/ktx2decoder.png"
                 ],
                 "tags": []
+            }
+        ],
+        "6.45.1": [
+            {
+                "pr": "14821",
+                "title": "Type change to XRHand",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/webxr.d.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14819",
+                "title": "GUI - Allow InputText text outline",
+                "description": "See https://forum.babylonjs.com/t/inputtextarea-onfocusselectall-does-not-work/48351",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14818",
+                "title": "NME: Fix missing alphaMode property parsing",
+                "description": "See https://forum.babylonjs.com/t/node-materiel-editor-does-not-load-alpha-mode/48396",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14815",
+                "title": "WebGPU: Simplify error handling during engine creation/initialization",
+                "description": "See https://forum.babylonjs.com/t/webgpu-cannot-allocate-wasm-memory-for-new-instance/48321/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "WebGPU"
+                ]
             }
         ],
         "6.45.0": [
