@@ -163,11 +163,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
         switch (xrController.inputSource.targetRayMode) {
             case "tracked-pointer":
-            case "transient-pointer":
                 return this._attachTrackedPointerRayMode(xrController);
             case "gaze":
                 return this._attachGazeMode(xrController);
             case "screen":
+            case "transient-pointer":
                 return this._attachScreenRayMode(xrController);
         }
     };
@@ -273,11 +273,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
-            // REMOVE the controller
-            this._detachController(controller.uniqueId);
-        });
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController, true);
+        this._addNewAttachObserver(
+            this._options.xrInput.onControllerRemovedObservable,
+            (controller) => {
+                // REMOVE the controller
+                this._detachController(controller.uniqueId);
+            },
+            true
+        );
 
         this._scene.constantlyUpdateMeshUnderPointer = true;
 
