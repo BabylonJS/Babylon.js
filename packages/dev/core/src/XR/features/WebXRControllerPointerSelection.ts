@@ -119,6 +119,11 @@ export interface IWebXRControllerPointerSelectionOptions {
      * The height (y) of the mesh must be 1.
      */
     customLasterPointerMeshGenerator?: () => AbstractMesh;
+
+    /**
+     * Use the grip space instead of the pointer space for selection, if available.
+     */
+    forceGripIfAvailable?: boolean;
 }
 
 /**
@@ -133,7 +138,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             return;
         }
 
-        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
+        const { laserPointer, selectionMesh } = this._generateNewMeshPair(this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer);
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
@@ -404,8 +409,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             // Every frame check collisions/input
             if (controllerData.xrController) {
-                controllerGlobalPosition = controllerData.xrController.pointer.position;
-                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay /*, controllerData.xrController.inputSource.targetRayMode === "transient-pointer"*/);
+                controllerGlobalPosition =
+                    this._options.forceGripIfAvailable && controllerData.xrController.grip
+                        ? controllerData.xrController.grip.position
+                        : controllerData.xrController.pointer.position;
+                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay, this._options.forceGripIfAvailable);
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
@@ -421,8 +429,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 const scene = this._xrSessionManager.scene;
                 const camera = this._options.xrInput.xrCamera;
                 if (camera) {
-                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
-                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
+                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth() / camera.rigCameras.length, scene.getEngine().getRenderHeight(), this._viewportRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, camera.getTransformationMatrix(), this._viewportRef, this._screenCoordinatesRef);
                     // stay safe
                     if (
                         typeof this._screenCoordinatesRef.x === "number" &&
