@@ -22,7 +22,7 @@ jobs:
           # The labels that mean a pull request is exempt from being marked as stale. Separate multiple labels with commas (eg. "label1,label2").
           exempt-pr-labels: no-stale
           # Run the processor in debug mode without actually performing any operations on live issues.
-          debug-only: true # optional, default is false
+          # debug-only: true # optional, default is false
           # The maximum number of operations per run, used to control rate limiting (GitHub API CRUD related).
           operations-per-run: 100 # optional, default is 30
 
