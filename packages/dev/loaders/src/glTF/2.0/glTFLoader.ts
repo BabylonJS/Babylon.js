@@ -910,7 +910,7 @@ export class GLTFLoader implements IGLTFLoader {
                     // simply apply the world matrices to the bounding info - the extends are already ok
                     babylonMesh._updateBoundingInfo();
                 } else {
-                    babylonMesh.refreshBoundingInfo(true);
+                    babylonMesh.refreshBoundingInfo(true, true);
                 }
             });
 
@@ -2014,13 +2014,6 @@ export class GLTFLoader implements IGLTFLoader {
         const engine = this._babylonScene.getEngine();
 
         if (accessor.sparse || accessor.bufferView == undefined) {
-            accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
-                return new VertexBuffer(engine, data, kind, false);
-            });
-        }
-        // Load joint indices as a float array since the shaders expect float data but glTF uses unsigned byte/short.
-        // This prevents certain platforms (e.g. D3D) from having to convert the data to float on the fly.
-        else if (kind === VertexBuffer.MatricesIndicesKind || kind === VertexBuffer.MatricesIndicesExtraKind) {
             accessor._babylonVertexBuffer[kind] = this._loadFloatAccessorAsync(context, accessor).then((data) => {
                 return new VertexBuffer(engine, data, kind, false);
             });
