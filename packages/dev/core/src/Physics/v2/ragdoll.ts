@@ -124,6 +124,8 @@ export class Ragdoll {
 
     private _createColliders(): void {
         this._rootTransformNode.computeWorldMatrix();
+        this._skeleton.computeAbsoluteMatrices(true);
+        this._skeleton.prepare(true);
 
         const config = this._config;
         for (let i = 0; i < config.length; i++) {
