@@ -113,14 +113,15 @@ export function copyFolder(from: string, to: string, silent?: boolean) {
     const files = isDirectory ? fs.readdirSync(from) : glob.sync(from);
     const baseDir = isDirectory ? from : "";
     for (const file of files) {
+        const basename = isDirectory ? file : path.basename(file);
         const current = fs.lstatSync(path.join(baseDir, file));
         if (current.isDirectory()) {
-            copyFolder(path.join(baseDir, file), path.join(to, file), silent);
+            copyFolder(path.join(baseDir, file), path.join(to, basename), silent);
         } else if (current.isSymbolicLink()) {
             const symlink = fs.readlinkSync(path.join(baseDir, file));
-            fs.symlinkSync(symlink, path.join(to, file));
+            fs.symlinkSync(symlink, path.join(to, basename));
         }
-        copyFile(path.join(baseDir, file), path.join(to, file), silent);
+        copyFile(path.join(baseDir, file), path.join(to, basename), silent);
     }
 }
 
