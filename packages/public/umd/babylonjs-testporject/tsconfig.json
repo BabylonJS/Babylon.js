@@ -1,3 +1,15 @@
 {
-    "extends": "../../../../tsconfig.json"
+    "compilerOptions": {
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "declaration": false,
+        "strict": true,
+        "target": "es2015",
+        "moduleResolution": "node",
+        "jsx": "react",
+        "esModuleInterop": true,
+        "skipLibCheck": false,
+        "noEmit": true
+    },
+    "include": ["./src/**/*"]
 }

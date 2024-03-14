@@ -6,15 +6,9 @@
         "*"
     ],
     "scripts": {
-        "build": "tsc -p tsconfig.build.json"
+        "build": "tsc"
     },
-    "dependencies": {
-        "babylonjs": "../babylonjs",
-        "babylonjs-gui": "../babylonjs-gui",
-        "babylonjs-loaders": "../babylonjs-loaders",
-        "babylonjs-materials": "../babylonjs-materials",
-        "babylonjs-serializers": "../babylonjs-serializers"
-    },
+    "dependencies": {},
     "sideEffects": true
 }
 
