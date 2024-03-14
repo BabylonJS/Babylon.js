@@ -1,6 +1,67 @@
 {
-    "fromTag": "6.46.0",
+    "fromTag": "6.46.1",
     "changelog": {
+        "6.47.0": [
+            {
+                "pr": "14867",
+                "title": "Update stale.yml",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    ".github/workflows/stale.yml"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14866",
+                "title": "Update physicsPointProximityQuery.ts",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsPointProximityQuery.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14865",
+                "title": "Split interleaved buffers reference images",
+                "description": "This isn't strictly required, but in native, this was a problem. This is here just to make it consistent with native.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-3.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-4.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14817",
+                "title": "ragdoll improvements with animated skeletons",
+                "description": "After hours and days of sweating on trying to make it work with LH coordinates, I give up for now.\r\nIt works in RH and we will see if this feature gains enough traction to get back working on it.\r\nUntil then, this will stay like that.\r\n\r\nNote: Documentation will be udpated once this PR is merged.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "in progress",
+                    "skip changelog"
+                ]
+            }
+        ],
         "6.46.1": [
             {
                 "pr": "14862",
