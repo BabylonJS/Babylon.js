@@ -1,0 +1,24 @@
+{
+    "commands": [
+        {
+            "command": "declarations-es6",
+            "args": ["-r", "../../../dev/core/src/LibDeclarations", "-atf", "./Engines/engine.d.ts"]
+        },
+        {
+            "command": "add-js-to-es6"
+        },
+        {
+            "command": "prepare-es6-build",
+            "args": ["-cf", "Engines/constants.js"]
+        },
+        {
+            "command": "cp",
+            "args": ["-f", "../../../tools/babylonServer/public/draco*.*", "--to", "./assets/Draco"]
+        },
+        {
+            "command": "cp",
+            "args": ["-f", "../../../tools/babylonServer/public/basisTranscoder/1", "--to", "./assets/Basis"]
+        }
+    ]
+}
+
