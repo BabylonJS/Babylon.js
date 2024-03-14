@@ -124,6 +124,13 @@ export interface IWebXRControllerPointerSelectionOptions {
      * Use the grip space instead of the pointer space for selection, if available.
      */
     forceGripIfAvailable?: boolean;
+
+    /**
+     * If set to true, the hand rays will be disabled and the user will be able to look and pick objects.
+     * This requires system support (like in the vision OS) and will not work in all systems.
+     * @experimental - this is an experimental feature and might change int he future
+     */
+    lookAndPickMode?: boolean;
 }
 
 /**
@@ -264,6 +271,18 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
+
+        // force look and pick mode if using WebXR on safari, assuming it is vision OS
+        // Only if not explicitly set. If set to false, it will not be forced
+        if (this._options.lookAndPickMode === undefined && (this._scene.getEngine()._badDesktopOS || this._scene.getEngine()._badOS)) {
+            this._options.lookAndPickMode = true;
+        }
+
+        // look and pick mode extra state changes
+        if (this._options.lookAndPickMode) {
+            this._options.enablePointerSelectionOnAllControllers = true;
+            this.displayLaserPointer = false;
+        }
     }
 
     /**
@@ -394,8 +413,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
+            // look and pick mode
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
+            if (this._options.lookAndPickMode && controllerData.xrController?.inputSource.targetRayMode !== "transient-pointer") {
+                return;
+            }
             if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
