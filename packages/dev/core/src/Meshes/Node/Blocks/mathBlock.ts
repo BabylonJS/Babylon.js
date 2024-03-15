@@ -279,7 +279,7 @@ export class MathBlock extends NodeGeometryBlock {
                     // The same types as the connected input are always allowed.
                     first.acceptedConnectionPointTypes.push(second.type);
 
-                    // If the other input is an Int or a Float, then we also allow Vector types.
+                    // If the other input is a scalar, then we also allow Vector types.
                     if (second.type === NodeGeometryBlockConnectionPointTypes.Int || second.type === NodeGeometryBlockConnectionPointTypes.Float) {
                         first.acceptedConnectionPointTypes.push(
                             NodeGeometryBlockConnectionPointTypes.Vector2,
