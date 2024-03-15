@@ -78,6 +78,8 @@ function getFileExtensionFromMimeType(mimeType: ImageMimeType): string {
             return ".png";
         case ImageMimeType.WEBP:
             return ".webp";
+        case ImageMimeType.AVIF:
+            return ".avif";
     }
 }
 
