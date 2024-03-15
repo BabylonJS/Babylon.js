@@ -2098,16 +2098,17 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     }
 
     /** @internal */
-    public _onDispose(disposeExistingEndSubEmitters = false) {
+    public _onDispose(disposeAttachedSubEmitters = false, disposeEndSubEmitters = false) {
         // Do Nothing
     }
 
     /**
      * Disposes the particle system and free the associated resources
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
-     * @param disposeExistingEndSubEmitters whether to dispose all end type sub-Systems already started (false by default)
+     * @param disposeAttachedSubEmitters defines if the attached sub-emitters must be disposed as well (false by default)
+     * @param disposeEndSubEmitters defines if the end type sub-emitters must be disposed as well (false by default)
      */
-    public dispose(disposeTexture = true, disposeExistingEndSubEmitters = false): void {
+    public dispose(disposeTexture = true, disposeAttachedSubEmitters = false, disposeEndSubEmitters = false): void {
         this.resetDrawCache();
 
         if (this._vertexBuffer) {
@@ -2155,7 +2156,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this._rampGradientsTexture = null;
         }
 
-        this._onDispose(disposeExistingEndSubEmitters);
+        this._onDispose(disposeAttachedSubEmitters, disposeEndSubEmitters);
 
         if (this._onBeforeDrawParticlesObservable) {
             this._onBeforeDrawParticlesObservable.clear();
