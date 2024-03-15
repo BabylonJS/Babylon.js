@@ -46,7 +46,6 @@
         {
             "path": "packages/tools/ktx2Decoder/tsconfig.build.json"
         }
-
     ],
     "include": []
 }

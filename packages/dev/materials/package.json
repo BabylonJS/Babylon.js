@@ -18,13 +18,11 @@
         "watch": "concurrently \"npm run watch:assets\" \"npm run watch:source\" --kill-others",
         "watch:dev": "npm run watch",
         "watch:lts": "npm run watch:shaders"
-        
     },
     "devDependencies": {
         "@dev/core": "^1.0.0",
         "@dev/build-tools": "^1.0.0"
     },
     "sideEffects": false,
-    "dependencies": {
-    }
+    "dependencies": {}
 }
