@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
 import * as crypto from "crypto";
+import { glob } from "glob";
 
 export function populateEnvironment() {
     dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
@@ -46,8 +47,10 @@ const filterDashes = (str: string) => {
     return str.substring(index);
 };
 
+export const externalArgs: string[] = [];
+
 export const checkArgs = (testArgument: string | string[], checkOnly: boolean = false, requiredIfSet = false): string | boolean => {
-    const args = process.argv.slice(2);
+    const args = externalArgs.length ? externalArgs : process.argv.slice(2);
     const index = typeof testArgument === "string" ? args.indexOf(testArgument) : testArgument.map((arg) => args.indexOf(arg)).find((idx) => idx !== -1);
     const envValue =
         typeof testArgument === "string"
@@ -102,16 +105,23 @@ export function copyFile(from: string, to: string, silent?: boolean, checkHash?:
  */
 export function copyFolder(from: string, to: string, silent?: boolean) {
     checkDirectorySync(to);
-    const files = fs.readdirSync(from);
+    // check if from is a folder
+    let isDirectory = false;
+    try {
+        isDirectory = fs.lstatSync(from).isDirectory();
+    } catch (e) {}
+    const files = isDirectory ? fs.readdirSync(from) : glob.sync(from);
+    const baseDir = isDirectory ? from : "";
     for (const file of files) {
-        const current = fs.lstatSync(path.join(from, file));
+        const basename = isDirectory ? file : path.basename(file);
+        const current = fs.lstatSync(path.join(baseDir, file));
         if (current.isDirectory()) {
-            copyFolder(path.join(from, file), path.join(to, file), silent);
+            copyFolder(path.join(baseDir, file), path.join(to, basename), silent);
         } else if (current.isSymbolicLink()) {
-            const symlink = fs.readlinkSync(path.join(from, file));
-            fs.symlinkSync(symlink, path.join(to, file));
+            const symlink = fs.readlinkSync(path.join(baseDir, file));
+            fs.symlinkSync(symlink, path.join(to, basename));
         }
-        copyFile(path.join(from, file), path.join(to, file), silent);
+        copyFile(path.join(baseDir, file), path.join(to, basename), silent);
     }
 }
 

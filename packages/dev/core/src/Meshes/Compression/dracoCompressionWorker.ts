@@ -1,5 +1,5 @@
 import type { Nullable } from "core/types";
-import type { DecoderModule, DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
+import type { DecoderBuffer, Decoder, Mesh, PointCloud, Status } from "draco3dgltf";
 import { DracoDecoderModule } from "draco3dgltf";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -40,7 +40,7 @@ declare function postMessage(message: Message, transfer?: any[]): void;
  * @internal
  */
 export function decodeMesh(
-    decoderModule: DecoderModule,
+    decoderModule: any /*DecoderModule*/,
     data: Int8Array,
     attributes: { [kind: string]: number } | undefined,
     onIndicesData: (indices: Uint16Array | Uint32Array) => void,
@@ -51,9 +51,9 @@ export function decodeMesh(
     let geometry: Nullable<Mesh | PointCloud> = null;
 
     try {
-        decoder = new decoderModule.Decoder();
+        decoder = new decoderModule.Decoder() as Decoder;
 
-        buffer = new decoderModule.DecoderBuffer();
+        buffer = new decoderModule.DecoderBuffer() as DecoderBuffer;
         buffer.Init(data, data.byteLength);
 
         let status: Status;
@@ -80,7 +80,7 @@ export function decodeMesh(
                     decoderModule._free(ptr);
                 }
 
-                geometry = mesh;
+                geometry = mesh as Mesh;
                 break;
             }
             case decoderModule.POINT_CLOUD: {
@@ -90,7 +90,7 @@ export function decodeMesh(
                     throw new Error(status.error_msg());
                 }
 
-                geometry = pointCloud;
+                geometry = pointCloud as PointCloud;
                 break;
             }
             default: {

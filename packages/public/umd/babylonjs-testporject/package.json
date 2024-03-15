@@ -1,0 +1,20 @@
+{
+    "name": "babylonjs-testproject",
+    "private": true,
+    "version": "1.0.0",
+    "files": [
+        "*"
+    ],
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json"
+    },
+    "dependencies": {
+        "babylonjs": "../babylonjs",
+        "babylonjs-gui": "../babylonjs-gui",
+        "babylonjs-loaders": "../babylonjs-loaders",
+        "babylonjs-materials": "../babylonjs-materials",
+        "babylonjs-serializers": "../babylonjs-serializers"
+    },
+    "sideEffects": true
+}
+
