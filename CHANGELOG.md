@@ -1,5 +1,11 @@
 # Changelog
 
+## 6.47.0
+
+### Core
+
+- Update physicsPointProximityQuery.ts - by [RaananW](https://github.com/RaananW) ([#14866](https://github.com/BabylonJS/Babylon.js/pull/14866))
+
 ## 6.46.1
 
 ### Core
