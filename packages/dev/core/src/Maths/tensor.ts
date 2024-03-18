@@ -379,7 +379,7 @@ export interface TensorStatic<T extends Tensor> {
      * @param offset defines the offset in the data source
      * @returns a new instance
      */
-    FromArray(array: ArrayLike<number>, offset?: number): T;
+    FromArray(array: Flatten<TensorValue<T>>, offset?: number): T;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -388,7 +388,7 @@ export interface TensorStatic<T extends Tensor> {
      * @param result defines the target instance
      * @returns result input
      */
-    FromArrayToRef(array: ArrayLike<number>, offset: number, result: T): T;
+    FromArrayToRef(array: Flatten<TensorValue<T>>, offset: number, result: T): T;
 
     /**
      * Sets the given instance "result" with the given floats.
