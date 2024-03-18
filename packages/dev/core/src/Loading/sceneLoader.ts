@@ -21,6 +21,7 @@ import type { Geometry } from "../Meshes/geometry";
 import type { Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
+import { RandomGUID } from "../Misc/guid";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -660,7 +661,7 @@ export class SceneLoader {
             file = sceneFile;
         } else if (ArrayBuffer.isView(sceneFilename)) {
             url = "";
-            name = "arrayBuffer";
+            name = RandomGUID();
             rawData = sceneFilename as ArrayBufferView;
         } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
             url = sceneFilename;
