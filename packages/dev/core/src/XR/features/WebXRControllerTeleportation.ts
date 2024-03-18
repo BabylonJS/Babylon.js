@@ -896,7 +896,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         torus.parent = teleportationTarget;
         if (!this._options.defaultTargetMeshOptions.disableAnimation) {
             const animationInnerCircle = new Animation("animationInnerCircle", "position.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-            const keys = [];
+            const keys: { frame: number; value: number }[] = [];
             keys.push({
                 frame: 0,
                 value: 0,
@@ -1040,6 +1040,8 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         }
     }
 
+    private _colorArray: Color4[] = Array(24).fill(this._cachedColor4White);
+
     private _showParabolicPath(pickInfo: PickingInfo) {
         if (!pickInfo.pickedPoint || !this._currentTeleportationControllerId) {
             return;
@@ -1053,11 +1055,15 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
 
         const quadraticBezierVectors = Curve3.CreateQuadraticBezier(controllerData.xrController.pointer.absolutePosition, pickInfo.ray!.origin, pickInfo.pickedPoint, 25);
         const color = controllerData.teleportationState.blocked ? this._blockedRayColor : undefined;
-        const colorsArray = new Array(26).fill(color || this._cachedColor4White);
+        const colorsArray = this._colorArray.fill(color || this._cachedColor4White);
+        // take out the first 2 points, to not start directly from the controller
+        const points = quadraticBezierVectors.getPoints();
+        points.shift();
+        points.shift();
         if (!this._options.generateRayPathMesh) {
             this._quadraticBezierCurve = CreateLines(
                 "teleportation path line",
-                { points: quadraticBezierVectors.getPoints(), instance: this._quadraticBezierCurve as LinesMesh, updatable: true, colors: colorsArray },
+                { points: points, instance: this._quadraticBezierCurve as LinesMesh, updatable: true, colors: colorsArray },
                 sceneToRenderTo
             );
         } else {
