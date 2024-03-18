@@ -1,4 +1,4 @@
-import type { DeepImmutable, Flatten, FloatArray, Length } from "../types";
+import type { DeepImmutable, Flatten, Length } from "../types";
 
 /**
  * Computes the tensor dimension of a multi-dimensional array
@@ -9,6 +9,16 @@ export type Dimension<T> = T extends Array<infer U> ? [Length<T>, ...Dimension<U
  * Extracts the value type of a Tensor
  */
 export type TensorValue<T> = T extends Tensor<infer V> ? V : never;
+
+/**
+ * Extracts the element type of a Tensor value
+ */
+export type TensorValueElement<V extends unknown[]> = Flatten<V> extends Array<infer E> ? E : never;
+
+/**
+ * Extracts the element type of a Tensor
+ */
+export type TensorElement<T> = T extends Tensor<infer V> ? TensorValueElement<V> : never;
 
 /**
  * Describes a mathematical tensor.
@@ -49,7 +59,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in source array
      * @returns the current instance
      */
-    toArray(array: FloatArray, index?: number): this;
+    toArray(array: ArrayLike<TensorValueElement<V>>, index?: number): this;
 
     /**
      * Update the current instance from an array
@@ -57,7 +67,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in the destination array
      * @returns the current instance
      */
-    fromArray(array: FloatArray, index?: number): this;
+    fromArray(array: DeepImmutable<ArrayLike<TensorValueElement<V>>>, index?: number): this;
 
     /**
      * Copy the current instance to an array
@@ -379,7 +389,7 @@ export interface TensorStatic<T extends Tensor> {
      * @param offset defines the offset in the data source
      * @returns a new instance
      */
-    FromArray(array: Flatten<TensorValue<T>>, offset?: number): T;
+    FromArray(array: DeepImmutable<ArrayLike<TensorElement<T>>>, offset?: number): T;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -388,7 +398,7 @@ export interface TensorStatic<T extends Tensor> {
      * @param result defines the target instance
      * @returns result input
      */
-    FromArrayToRef(array: Flatten<TensorValue<T>>, offset: number, result: T): T;
+    FromArrayToRef(array: DeepImmutable<ArrayLike<TensorElement<T>>>, offset: number, result: T): T;
 
     /**
      * Sets the given instance "result" with the given floats.

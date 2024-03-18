@@ -3644,7 +3644,7 @@ export class ThinEngine {
      * @param matrices defines the array of float32 to store
      * @returns true if the value was set
      */
-    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
+    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Iterable<GLfloat>): boolean {
         if (!uniform) {
             return false;
         }
