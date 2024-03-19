@@ -112,7 +112,7 @@ export class PhysicsBody {
 
         this._motionType = motionType;
 
-        // only dynamic body need sync from physics to transformNode
+        // only dynamic body needs sync from physics to transformNode
         this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
 
         // instances?
