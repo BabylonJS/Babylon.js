@@ -1628,7 +1628,7 @@ export class ThinEngine {
             }
         }
 
-        if (this._activeRenderLoops.length > 0 && this._frameHandler === -1) {
+        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
