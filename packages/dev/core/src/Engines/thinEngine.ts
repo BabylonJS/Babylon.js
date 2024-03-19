@@ -1585,7 +1585,7 @@ export class ThinEngine {
     }
 
     protected _cancelFrame() {
-        if (this._frameHandler > -1) {
+        if (this._frameHandler !== 0) {
             const handlerToCancel = this._frameHandler;
             this._frameHandler = -1;
 
