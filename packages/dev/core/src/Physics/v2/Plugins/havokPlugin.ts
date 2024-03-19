@@ -391,7 +391,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
         this._bodyBuffer = this._hknp.HP_World_GetBodyBuffer(this.world)[1];
         for (const physicsBody of physicsBodies) {
-            this.sync(physicsBody);
+            if (!physicsBody.disableSync) {
+                this.sync(physicsBody);
+            }
         }
 
         this._notifyCollisions();
