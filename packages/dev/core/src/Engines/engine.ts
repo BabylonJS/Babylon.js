@@ -1256,7 +1256,7 @@ export class Engine extends ThinEngine {
     }
 
     public _renderLoop(): void {
-        this._frameHandler = -1;
+        this._frameHandler = 0;
 
         if (!this._contextWasLost) {
             let shouldRender = true;
