@@ -150,11 +150,12 @@ export abstract class WebXRAbstractFeature implements IWebXRFeature {
      * This is used to register callbacks that will automatically be removed when detach is called.
      * @param observable the observable to which the observer will be attached
      * @param callback the callback to register
+     * @param insertFirst should the callback be executed as soon as it is registered
      */
-    protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void) {
+    protected _addNewAttachObserver<T>(observable: Observable<T>, callback: (eventData: T, eventState: EventState) => void, insertFirst?: boolean) {
         this._removeOnDetach.push({
             observable,
-            observer: observable.add(callback),
+            observer: observable.add(callback, undefined, insertFirst),
         });
     }
 
