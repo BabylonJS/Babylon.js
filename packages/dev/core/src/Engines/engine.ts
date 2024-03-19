@@ -1243,7 +1243,7 @@ export class Engine extends ThinEngine {
 
     protected _cancelFrame() {
         if (this.customAnimationFrameRequester) {
-            if (this._frameHandler > -1) {
+            if (this._frameHandler !== 0) {
                 this._frameHandler = -1;
                 const { cancelAnimationFrame } = this.customAnimationFrameRequester;
                 if (cancelAnimationFrame) {
