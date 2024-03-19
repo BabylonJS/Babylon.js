@@ -581,7 +581,7 @@ export class ThinEngine {
     private _emptyTexture2DArray: Nullable<InternalTexture>;
 
     /** @internal */
-    public _frameHandler: number = -1;
+    public _frameHandler: number = 0;
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
