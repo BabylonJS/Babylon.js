@@ -38,6 +38,7 @@
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.5.0",
         "jest-junit": "~13.2.0",
+        "lerna": "^8.1.2",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^18.0.4",
         "prettier": "^3.0.3",
@@ -90,11 +91,11 @@
         "prepare": "ts-patch install -s && npm run build:tools && npm i @dev/build-tools -D && npm run build:assets && npm run build:test-tools",
         "clean": "npx nx run-many --target=clean --all && npm run build:tools",
         "format": "npm run format:check && npm run format:fix",
-        "format:check": "prettier --check ./packages/**/src/**/*.{ts,tsx,js,json,scss,css}",
-        "format:fix": "prettier --write ./packages/**/src/**/*.{ts,tsx,js,json,scss,css}",
+        "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
+        "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "lint": "npm run lint:check && npm run lint:fix",
-        "lint:check": "eslint ./packages/**/src/**/*.{ts,tsx,js,json} --quiet",
-        "lint:check-ci": "eslint -f node_modules/eslint-formatter-azure-devops/index.js ./packages/**/src/**/*.{ts,tsx,js,json} --quiet",
+        "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
+        "lint:check-ci": "eslint -f node_modules/eslint-formatter-azure-devops/index.js \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "update-all-dependencies": "npm update -ws",
         "prepare-snapshot": "npm run build:snapshot -w @tools/babylon-server && build-tools -c ps",
         "start": "concurrently --kill-others -m 2 -n dev-watch,cdn-server \"npm run watch:dev:skip-compile\" \"npm run serve -w @tools/babylon-server\""
@@ -107,8 +108,5 @@
         "nextVersion": "Unreleased",
         "ignoreCommitters": [],
         "feature": "New Feature"
-    },
-    "dependencies": {
-        "lerna": "^7.4.2"
     }
 }

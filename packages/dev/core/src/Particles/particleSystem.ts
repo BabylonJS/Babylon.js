@@ -275,11 +275,29 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /** @internal */
-    public _onDispose() {
+    public _onDispose(disposeAttachedSubEmitters = false, disposeEndSubEmitters = false) {
         this._removeFromRoot();
 
         if (this.subEmitters && !this._subEmitters) {
             this._prepareSubEmitterInternalArray();
+        }
+
+        if (disposeAttachedSubEmitters) {
+            this.particles?.forEach((particle) => {
+                if (particle._attachedSubEmitters) {
+                    for (let i = particle._attachedSubEmitters.length - 1; i >= 0; i -= 1) {
+                        particle._attachedSubEmitters[i].dispose();
+                    }
+                }
+            });
+        }
+
+        if (disposeEndSubEmitters) {
+            if (this.activeSubSystems) {
+                for (let i = this.activeSubSystems.length - 1; i >= 0; i -= 1) {
+                    this.activeSubSystems[i].dispose();
+                }
+            }
         }
 
         if (this._subEmitters && this._subEmitters.length) {

@@ -9,6 +9,7 @@ node_modules
 *.png
 *.jpg
 *.wasm
+*.license
 !inspector/**/*.*
 !node-editor/**/*.*
 !node-geometry-editor/**/*.*
