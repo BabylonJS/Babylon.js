@@ -1,6 +1,6 @@
 import type { AssetContainer } from "core/assetContainer";
 import { VertexBuffer } from "core/Buffers/buffer";
-import { Material } from "core/Materials/material";
+import type { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
