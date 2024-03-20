@@ -461,14 +461,13 @@ export class ThinEngine {
     /** @internal */
     public _videoTextureSupported: boolean;
 
-    protected _renderingQueueLaunched = false;
     protected _activeRenderLoops = new Array<() => void>();
 
     /**
      * Gets the list of current active render loop functions
-     * @returns an array with the current render loop functions
+     * @returns a read only array with the current render loop functions
      */
-    public get activeRenderLoops(): Array<() => void> {
+    public get activeRenderLoops(): ReadonlyArray<() => void> {
         return this._activeRenderLoops;
     }
 
@@ -571,7 +570,7 @@ export class ThinEngine {
     public _workingContext: Nullable<ICanvasRenderingContext>;
 
     /** @internal */
-    public _boundRenderFunction: any;
+    public _boundRenderFunction: any = () => this._renderLoop();
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -582,7 +581,7 @@ export class ThinEngine {
     private _emptyTexture2DArray: Nullable<InternalTexture>;
 
     /** @internal */
-    public _frameHandler: number;
+    public _frameHandler: number = 0;
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
@@ -1586,24 +1585,28 @@ export class ThinEngine {
     }
 
     protected _cancelFrame() {
-        if (this._renderingQueueLaunched && this._frameHandler) {
-            this._renderingQueueLaunched = false;
+        if (this._frameHandler !== 0) {
+            const handlerToCancel = this._frameHandler;
+            this._frameHandler = 0;
+
             if (!IsWindowObjectExist()) {
                 if (typeof cancelAnimationFrame === "function") {
-                    return cancelAnimationFrame(this._frameHandler);
+                    return cancelAnimationFrame(handlerToCancel);
                 }
             } else {
                 const { cancelAnimationFrame } = this.getHostWindow() || window;
                 if (typeof cancelAnimationFrame === "function") {
-                    return cancelAnimationFrame(this._frameHandler);
+                    return cancelAnimationFrame(handlerToCancel);
                 }
             }
-            return clearTimeout(this._frameHandler);
+            return clearTimeout(handlerToCancel);
         }
     }
 
     /** @internal */
     public _renderLoop(): void {
+        this._frameHandler = 0;
+
         if (!this._contextWasLost) {
             let shouldRender = true;
             if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
@@ -1625,10 +1628,8 @@ export class ThinEngine {
             }
         }
 
-        if (this._activeRenderLoops.length > 0) {
+        if (this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
-        } else {
-            this._renderingQueueLaunched = false;
         }
     }
 
@@ -1717,9 +1718,8 @@ export class ThinEngine {
 
         this._activeRenderLoops.push(renderFunction);
 
-        if (!this._renderingQueueLaunched) {
-            this._renderingQueueLaunched = true;
-            this._boundRenderFunction = () => this._renderLoop();
+        // On the first added function, start the render loop.
+        if (this._activeRenderLoops.length === 1 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
