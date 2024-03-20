@@ -1039,18 +1039,15 @@ export class ThinEngine {
         }
     }
 
-    protected _restoreEngineAfterContextLostSync(): void {
+    protected _clearEmptyResources(): void {
         this._dummyFramebuffer = null;
         this._emptyTexture = null;
         this._emptyCubeTexture = null;
         this._emptyTexture3D = null;
         this._emptyTexture2DArray = null;
+    }
 
-        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
-        const depthFunc = this._depthCullingState.depthFunc;
-        const depthMask = this._depthCullingState.depthMask;
-        const stencilTest = this._stencilState.stencilTest;
-
+    protected _rebuildGraphicsResources(): void {
         // Ensure webgl and engine states are matching
         this.wipeCaches(true);
 
@@ -1073,12 +1070,9 @@ export class ThinEngine {
 
         // Reset engine states after all the buffer/textures/... have been rebuilt
         this.wipeCaches(true);
+    }
 
-        this._depthCullingState.depthTest = depthTest;
-        this._depthCullingState.depthFunc = depthFunc;
-        this._depthCullingState.depthMask = depthMask;
-        this._stencilState.stencilTest = stencilTest;
-
+    protected _flagContextRestored(): void {
         Logger.Warn(this.name + " context successfully restored.");
         this.onContextRestoredObservable.notifyObservers(this);
         this._contextWasLost = false;
@@ -1087,11 +1081,7 @@ export class ThinEngine {
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
         // Adding a timeout to avoid race condition at browser level
         setTimeout(async () => {
-            this._dummyFramebuffer = null;
-            this._emptyTexture = null;
-            this._emptyCubeTexture = null;
-            this._emptyTexture3D = null;
-            this._emptyTexture2DArray = null;
+            this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
             const depthFunc = this._depthCullingState.depthFunc;
@@ -1100,38 +1090,14 @@ export class ThinEngine {
 
             // Rebuild context
             await initEngine();
-
-            // Ensure webgl and engine states are matching
-            this.wipeCaches(true);
-
-            // Rebuild effects
-            this._rebuildEffects();
-            this._rebuildComputeEffects?.();
-
-            // Note:
-            //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
-            //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
-
-            // Rebuild buffers
-            this._rebuildBuffers();
-            // Rebuild textures
-            this._rebuildInternalTextures();
-            // Rebuild textures
-            this._rebuildTextures();
-            // Rebuild textures
-            this._rebuildRenderTargetWrappers();
-
-            // Reset engine states after all the buffer/textures/... have been rebuilt
-            this.wipeCaches(true);
+            this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
             this._depthCullingState.depthFunc = depthFunc;
             this._depthCullingState.depthMask = depthMask;
             this._stencilState.stencilTest = stencilTest;
 
-            Logger.Warn(this.name + " context successfully restored.");
-            this.onContextRestoredObservable.notifyObservers(this);
-            this._contextWasLost = false;
+            this._flagContextRestored();
         }, 0);
     }
 

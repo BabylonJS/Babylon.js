@@ -223,11 +223,13 @@ export class NativeEngine extends Engine {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
-        this._engine.setDeviceLostCallback(() => {
-            this.onContextLostObservable.notifyObservers(this);
-            this._contextWasLost = true;
-            this._restoreEngineAfterContextLostSync();
-        });
+        if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(() => {
+                this.onContextLostObservable.notifyObservers(this);
+                this._contextWasLost = true;
+                this._restoreEngineAfterContextLost();
+            });
+        }
 
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
@@ -428,6 +430,24 @@ export class NativeEngine extends Engine {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
+    }
+
+    protected _restoreEngineAfterContextLost(): void {
+        this._clearEmptyResources();
+
+        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = this._depthCullingState.depthFunc;
+        const depthMask = this._depthCullingState.depthMask;
+        const stencilTest = this._stencilState.stencilTest;
+
+        this._rebuildGraphicsResources();
+
+        this._depthCullingState.depthTest = depthTest;
+        this._depthCullingState.depthFunc = depthFunc;
+        this._depthCullingState.depthMask = depthMask;
+        this._stencilState.stencilTest = stencilTest;
+
+        this._flagContextRestored();
     }
 
     /**
