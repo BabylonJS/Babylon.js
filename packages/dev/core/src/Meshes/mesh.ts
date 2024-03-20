@@ -4049,6 +4049,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.doNotSyncBoundingInfo = !!parsedMesh.doNotSyncBoundingInfo;
 
         if (parsedMesh.ellipsoid) {
             mesh.ellipsoid = Vector3.FromArray(parsedMesh.ellipsoid);
@@ -4057,8 +4058,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (parsedMesh.ellipsoidOffset) {
             mesh.ellipsoidOffset = Vector3.FromArray(parsedMesh.ellipsoidOffset);
         }
-
-        mesh.doNotSyncBoundingInfo = !!parsedMesh.doNotSyncBoundingInfo;
 
         if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
             mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
