@@ -1,6 +1,6 @@
 import type { AssetContainer } from "core/assetContainer";
 import { VertexBuffer } from "core/Buffers/buffer";
-import type { Material } from "core/Materials/material";
+import { Material } from "core/Materials/material";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Vector2, Vector3 } from "core/Maths/math.vector";
@@ -9,17 +9,17 @@ import { Geometry } from "core/Meshes/geometry";
 import { Mesh } from "core/Meshes/mesh";
 import { VertexData } from "core/Meshes/mesh.vertexData";
 import type { Scene } from "core/scene";
-import type { FloatArray, IndicesArray, Nullable } from "core/types";
+import type { Nullable } from "core/types";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { Logger } from "core/Misc/logger";
 
 type MeshObject = {
     name: string;
-    indices?: Array<number>;
-    positions?: Array<number>;
-    normals?: Array<number>;
-    colors?: Array<number>;
-    uvs?: Array<number>;
+    indices: Nullable<Array<number>>;
+    positions: Nullable<Array<number>>;
+    normals: Nullable<Array<number>>;
+    colors: Nullable<Array<number>>;
+    uvs: Nullable<Array<number>>;
     materialName: string;
     directMaterial?: Nullable<Material>;
     isObject: boolean; // If the entity is defined as an object ("o"), or group ("g")
@@ -93,6 +93,8 @@ export class SolidParser {
     private _grayColor = new Color4(0.5, 0.5, 0.5, 1);
     private _materialToUse: string[];
     private _babylonMeshesArray: Array<Mesh>;
+    private _getTriangles: (faces: Array<string>, v: number) => void;
+    private _handednessSign: number;
 
     /**
      * Creates a new SolidParser
@@ -210,8 +212,16 @@ export class SolidParser {
         //Every array has the same length
         for (let l = 0; l < this._wrappedPositionForBabylon.length; l++) {
             //Push the x, y, z values of each element in the unwrapped array
-            this._unwrappedPositionsForBabylon.push(this._wrappedPositionForBabylon[l].x, this._wrappedPositionForBabylon[l].y, this._wrappedPositionForBabylon[l].z);
-            this._unwrappedNormalsForBabylon.push(this._wrappedNormalsForBabylon[l].x, this._wrappedNormalsForBabylon[l].y, this._wrappedNormalsForBabylon[l].z);
+            this._unwrappedPositionsForBabylon.push(
+                this._wrappedPositionForBabylon[l].x,
+                this._wrappedPositionForBabylon[l].y,
+                this._wrappedPositionForBabylon[l].z * this._handednessSign
+            );
+            this._unwrappedNormalsForBabylon.push(
+                this._wrappedNormalsForBabylon[l].x,
+                this._wrappedNormalsForBabylon[l].y,
+                this._wrappedNormalsForBabylon[l].z * this._handednessSign
+            );
             this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             if (this._loadingOptions.importVertexColors) {
                 //Push the r, g, b, a values of each element in the unwrapped array
@@ -245,7 +255,7 @@ export class SolidParser {
      * @param faces Array[String] The indices of elements
      * @param v Integer The variable to increment
      */
-    private _getTriangles(faces: Array<string>, v: number) {
+    private _getTrianglesImpl(faces: Array<string>, v: number) {
         //Work for each element of the array
         for (let faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
             //Add on the triangle variable the indexes to obtain triangles
@@ -258,6 +268,13 @@ export class SolidParser {
         //Pattern3 => triangle = ["1/1/1","2/2/2","3/3/3","1/1/1","3/3/3","4/4/4"];
         //Pattern4 => triangle = ["1//1","2//2","3//3","1//1","3//3","4//4"];
         //Pattern5 => triangle = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-1/-1/-1","-3/-3/-3","-4/-4/-4"];
+    }
+
+    /** Flipped version of the _getTriangles function */
+    private _getTrianglesImplFlipped(faces: Array<string>, v: number) {
+        for (let faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
+            this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex]);
+        }
     }
 
     /**
@@ -514,6 +531,9 @@ export class SolidParser {
      * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
     public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>, onFileToLoadFound: (fileToLoad: string) => void): void {
+        this._getTriangles = scene.useRightHandedSystem ? this._getTrianglesImpl : this._getTrianglesImplFlipped;
+        this._handednessSign = scene.useRightHandedSystem ? 1 : -1;
+
         // Split the file into lines
         const lines = data.split("\n");
         // Look at each line
@@ -652,11 +672,11 @@ export class SolidParser {
                 // Definition of the mesh
                 const objMesh: MeshObject = {
                     name: line.substring(2).trim(), //Set the name of the current obj mesh
-                    indices: undefined,
-                    positions: undefined,
-                    normals: undefined,
-                    uvs: undefined,
-                    colors: undefined,
+                    indices: null,
+                    positions: null,
+                    normals: null,
+                    uvs: null,
+                    colors: null,
                     materialName: this._materialNameFromObj,
                     isObject: SolidParser.ObjectDescriptor.test(line),
                 };
@@ -684,11 +704,11 @@ export class SolidParser {
                         //Set the name of the current obj mesh
                         {
                             name: (this._objMeshName || "mesh") + "_mm" + this._increment.toString(), //Set the name of the current obj mesh
-                            indices: undefined,
-                            positions: undefined,
-                            normals: undefined,
-                            uvs: undefined,
-                            colors: undefined,
+                            indices: null,
+                            positions: null,
+                            normals: null,
+                            uvs: null,
+                            colors: null,
                             materialName: this._materialNameFromObj,
                             isObject: false,
                         };
@@ -848,18 +868,18 @@ export class SolidParser {
 
             const vertexData: VertexData = new VertexData(); //The container for the values
             //Set the data for the babylonMesh
-            vertexData.uvs = this._handledMesh.uvs as FloatArray;
-            vertexData.indices = this._handledMesh.indices as IndicesArray;
-            vertexData.positions = this._handledMesh.positions as FloatArray;
+            vertexData.uvs = this._handledMesh.uvs;
+            vertexData.indices = this._handledMesh.indices;
+            vertexData.positions = this._handledMesh.positions;
             if (this._loadingOptions.computeNormals) {
                 const normals: Array<number> = new Array<number>();
                 VertexData.ComputeNormals(this._handledMesh.positions, this._handledMesh.indices, normals);
                 vertexData.normals = normals;
             } else {
-                vertexData.normals = this._handledMesh.normals as FloatArray;
+                vertexData.normals = this._handledMesh.normals;
             }
             if (this._loadingOptions.importVertexColors) {
-                vertexData.colors = this._handledMesh.colors as FloatArray;
+                vertexData.colors = this._handledMesh.colors;
             }
             //Set the data from the VertexBuffer to the current Mesh
             vertexData.applyToMesh(babylonMesh);

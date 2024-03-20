@@ -2014,6 +2014,17 @@
             "title": "CesiumMan from Khronos Sample Assets",
             "playgroundId": "#4GWX8M",
             "referenceImage": "CesiumMan.png"
+        },
+        {
+            "title": "Stanford Bunny OBJ",
+            "playgroundId": "#26R8NS#3",
+            "referenceImage": "StanfordBunnyLH.png"
+        },
+        {
+            "title": "Stanford Bunny OBJ",
+            "playgroundId": "#26R8NS#3",
+            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
+            "referenceImage": "StanfordBunnyRH.png"
         }
     ]
 }
