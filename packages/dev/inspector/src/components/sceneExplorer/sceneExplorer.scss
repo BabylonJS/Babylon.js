@@ -396,12 +396,17 @@
             grid-column: 2;
             width: 100%;
             display: grid;
-            grid-template-columns: 1fr 20px 20px auto 5px;
+            grid-template-columns: 1fr auto 20px 20px auto 5px;
             align-items: center;
             min-width: 0;
 
-            .bounding-box {
+            .edit {
+                width: 20px;
                 grid-column: 2;
+            }
+
+            .bounding-box {
+                grid-column: 3;
                 opacity: 0.5;
 
                 &.selected {
@@ -410,12 +415,12 @@
             }
 
             .visibility {
-                grid-column: 3;
+                grid-column: 4;
             }
 
             .extensions {
                 width: 20px;
-                grid-column: 4;
+                grid-column: 5;
             }
         }
 
