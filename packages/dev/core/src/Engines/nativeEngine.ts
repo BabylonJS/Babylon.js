@@ -223,6 +223,12 @@ export class NativeEngine extends Engine {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
         }
 
+        this._engine.setDeviceLostCallback(() => {
+            this.onContextLostObservable.notifyObservers(this);
+            this._contextWasLost = true;
+            this._restoreEngineAfterContextLostSync();
+        });
+
         this._webGLVersion = 2;
         this.disableUniformBuffers = true;
         this._shaderPlatformName = "NATIVE";
