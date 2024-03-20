@@ -42,8 +42,8 @@ const updateEngineVersion = async (version) => {
         throw new Error("Could not find babylonjs version in thinEngine.ts");
     }
 
-    const regexp = new RegExp(array[1] + "\"", "g");
-    const newThinEngineData = thinEngineData.replace(regexp, version + "\"");
+    const regexp = new RegExp(array[1] + '"', "g");
+    const newThinEngineData = thinEngineData.replace(regexp, version + '"');
     fs.writeFileSync(thinEngineFile, newThinEngineData);
 };
 
@@ -79,8 +79,6 @@ async function runTagsUpdate() {
         }`
     );
     // update package-json
-    fs.rmSync("package-lock.json");
-    await runCommand("npm install");
     const version = getNewVersion();
     // // update engine version
     await updateEngineVersion(version);

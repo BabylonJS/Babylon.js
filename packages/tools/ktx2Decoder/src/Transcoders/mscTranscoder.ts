@@ -50,8 +50,9 @@ export class MSCTranscoder extends Transcoder {
         this._mscBasisTranscoderPromise = (
             MSCTranscoder.WasmBinary ? Promise.resolve(MSCTranscoder.WasmBinary) : WASMMemoryManager.LoadWASM(Transcoder.GetWasmUrl(MSCTranscoder.WasmModuleURL))
         ).then((wasmBinary) => {
-            if (MSCTranscoder.JSModule) {
-                MSC_TRANSCODER = MSCTranscoder.JSModule;
+            if (MSCTranscoder.JSModule && typeof MSC_TRANSCODER === "undefined") {
+                // this must be set on the global scope for the MSC transcoder to work. Mainly due to back-compat with the old way of loading the MSC transcoder.
+                (globalThis as any).MSC_TRANSCODER = MSCTranscoder.JSModule;
             } else {
                 if (MSCTranscoder.UseFromWorkerThread) {
                     importScripts(Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));

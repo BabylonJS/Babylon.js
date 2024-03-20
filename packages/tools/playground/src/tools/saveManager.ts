@@ -70,10 +70,12 @@ export class SaveManager {
         for (let i = 0; i < buffer.length; i++) {
             testData += String.fromCharCode(buffer[i]);
         }
+        const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
         const payLoad = JSON.stringify({
             code: this.globalState.currentCode,
             unicode: testData !== this.globalState.currentCode ? EncodeArrayBufferToBase64(buffer) : undefined,
+            engine: activeEngineVersion,
         });
 
         const dataToSend = {
