@@ -93,7 +93,7 @@ export class SolidParser {
     private _grayColor = new Color4(0.5, 0.5, 0.5, 1);
     private _materialToUse: string[];
     private _babylonMeshesArray: Array<Mesh>;
-    private _getTriangles: (faces: Array<string>, v: number) => void;
+    private _pushTriangle: (faces: Array<string>, faceIndex: number) => void;
     private _handednessSign: number;
 
     /**
@@ -213,14 +213,14 @@ export class SolidParser {
         for (let l = 0; l < this._wrappedPositionForBabylon.length; l++) {
             //Push the x, y, z values of each element in the unwrapped array
             this._unwrappedPositionsForBabylon.push(
-                this._wrappedPositionForBabylon[l].x,
+                this._wrappedPositionForBabylon[l].x * this._handednessSign,
                 this._wrappedPositionForBabylon[l].y,
-                this._wrappedPositionForBabylon[l].z * this._handednessSign
+                this._wrappedPositionForBabylon[l].z
             );
             this._unwrappedNormalsForBabylon.push(
-                this._wrappedNormalsForBabylon[l].x,
+                this._wrappedNormalsForBabylon[l].x * this._handednessSign,
                 this._wrappedNormalsForBabylon[l].y,
-                this._wrappedNormalsForBabylon[l].z * this._handednessSign
+                this._wrappedNormalsForBabylon[l].z
             );
             this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             if (this._loadingOptions.importVertexColors) {
@@ -255,11 +255,11 @@ export class SolidParser {
      * @param faces Array[String] The indices of elements
      * @param v Integer The variable to increment
      */
-    private _getTrianglesImpl(faces: Array<string>, v: number) {
+    private _getTriangles(faces: Array<string>, v: number) {
         //Work for each element of the array
         for (let faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
             //Add on the triangle variable the indexes to obtain triangles
-            this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
+            this._pushTriangle(faces, faceIndex);
         }
 
         //Result obtained after 2 iterations:
@@ -268,13 +268,6 @@ export class SolidParser {
         //Pattern3 => triangle = ["1/1/1","2/2/2","3/3/3","1/1/1","3/3/3","4/4/4"];
         //Pattern4 => triangle = ["1//1","2//2","3//3","1//1","3//3","4//4"];
         //Pattern5 => triangle = ["-1/-1/-1","-2/-2/-2","-3/-3/-3","-1/-1/-1","-3/-3/-3","-4/-4/-4"];
-    }
-
-    /** Flipped version of the _getTriangles function */
-    private _getTrianglesImplFlipped(faces: Array<string>, v: number) {
-        for (let faceIndex = v; faceIndex < faces.length - 1; faceIndex++) {
-            this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex]);
-        }
     }
 
     /**
@@ -449,8 +442,6 @@ export class SolidParser {
             //Set the data into Array for the mesh
             this._unwrapData();
 
-            // Reverse tab. Otherwise face are displayed in the wrong sens
-            this._indicesForBabylon.reverse();
             //Set the information for the mesh
             //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
             this._handledMesh.indices = this._indicesForBabylon.slice();
@@ -531,7 +522,9 @@ export class SolidParser {
      * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
     public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>, onFileToLoadFound: (fileToLoad: string) => void): void {
-        this._getTriangles = scene.useRightHandedSystem ? this._getTrianglesImpl : this._getTrianglesImplFlipped;
+        this._pushTriangle = scene.useRightHandedSystem
+            ? (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex])
+            : (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
         this._handednessSign = scene.useRightHandedSystem ? 1 : -1;
 
         // Split the file into lines
@@ -745,8 +738,6 @@ export class SolidParser {
             // Set the data for the last mesh
             this._handledMesh = this._meshesFromObj[this._meshesFromObj.length - 1];
 
-            //Reverse indices for displaying faces in the good sense
-            this._indicesForBabylon.reverse();
             //Get the good array
             this._unwrapData();
             //Set array
@@ -764,8 +755,6 @@ export class SolidParser {
         if (!this._hasMeshes) {
             let newMaterial: Nullable<StandardMaterial> = null;
             if (this._indicesForBabylon.length) {
-                // reverse tab of indices
-                this._indicesForBabylon.reverse();
                 //Get positions normals uvs
                 this._unwrapData();
             } else {

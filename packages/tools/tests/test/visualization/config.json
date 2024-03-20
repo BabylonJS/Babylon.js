@@ -1096,15 +1096,37 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "OBJ loader test",
+            "playgroundId": "#SYQW69#1209",
+            "referenceImage": "objTestLoader.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (LH)",
+            "playgroundId": "#26R8NS#6",
+            "referenceImage": "objStanfordBunnyNormalsLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, LH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true; useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripRH.png"
+        },
+        {
             "title": "GLTF Extension KHR_materials_variants",
             "playgroundId": "#BKGTKL#3",
             "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
-        },
-        {
-            "title": "OBJ loader test",
-            "playgroundId": "#SYQW69#311",
-            "referenceImage": "objTestLoader.png",
-            "renderCount": 10
         },
         {
             "title": "GLB load from ArrayBuffer",
@@ -2014,17 +2036,6 @@
             "title": "CesiumMan from Khronos Sample Assets",
             "playgroundId": "#4GWX8M",
             "referenceImage": "CesiumMan.png"
-        },
-        {
-            "title": "Stanford Bunny OBJ (LH)",
-            "playgroundId": "#26R8NS#3",
-            "referenceImage": "StanfordBunnyLH.png"
-        },
-        {
-            "title": "Stanford Bunny OBJ (RH)",
-            "playgroundId": "#26R8NS#3",
-            "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
-            "referenceImage": "StanfordBunnyRH.png"
         }
     ]
 }
