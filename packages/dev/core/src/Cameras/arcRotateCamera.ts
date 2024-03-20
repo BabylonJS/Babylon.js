@@ -62,6 +62,8 @@ export class ArcRotateCamera extends TargetCamera {
     protected _target: Vector3;
     @serializeAsMeshReference("targetHost")
     protected _targetHost: Nullable<TransformNode>;
+    @serialize("targetSetManually")
+    protected _targetSetManually: Boolean;
 
     /**
      * Defines the target point of the camera.
@@ -86,6 +88,17 @@ export class ArcRotateCamera extends TargetCamera {
         if (value) {
             this.setTarget(value);
         }
+    }
+
+    /**
+     * Defines the target is Automatic calculation through the program or Setting by the user
+     * In some scenarios, you need to use this parameter to determine whether the camera target needs to be automatically calculated again
+     */
+    public get targetSetManually(): Boolean {
+        return this._targetSetManually;
+    }
+    public set targetSetManually(value: Boolean) {
+        this._targetSetManually = value;
     }
 
     /**
@@ -1089,10 +1102,11 @@ export class ArcRotateCamera extends TargetCamera {
      * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
+     * @param setManually Defines the target is Automatic calculation through the program or Setting by the user
      */
-    public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+    public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false, setManually = false): void {
         cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
-
+        this._targetSetManually = setManually;
         if ((target as TransformNode).computeWorldMatrix) {
             if (toBoundingCenter && (<any>target).getBoundingInfo) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
