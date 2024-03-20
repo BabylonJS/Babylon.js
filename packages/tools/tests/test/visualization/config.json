@@ -2021,7 +2021,7 @@
             "referenceImage": "StanfordBunnyLH.png"
         },
         {
-            "title": "Stanford Bunny OBJ",
+            "title": "Stanford Bunny OBJ (RH)",
             "playgroundId": "#26R8NS#3",
             "replace": "useRightHandedSystem = false, useRightHandedSystem = true",
             "referenceImage": "StanfordBunnyRH.png"
