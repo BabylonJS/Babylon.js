@@ -389,7 +389,7 @@ export interface TensorStatic<T extends Tensor<any[]>> {
      * @param offset defines the offset in the data source
      * @returns a new instance
      */
-    FromArray(array: DeepImmutable<ArrayLike<TensorElement<T>>>, offset?: number): T;
+    FromArray(array: ArrayLike<TensorElement<T>>, offset?: number): T;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -398,7 +398,7 @@ export interface TensorStatic<T extends Tensor<any[]>> {
      * @param result defines the target instance
      * @returns result input
      */
-    FromArrayToRef(array: DeepImmutable<ArrayLike<TensorElement<T>>>, offset: number, result: T): T;
+    FromArrayToRef(array: ArrayLike<TensorElement<T>>, offset: number, result: T): T;
 
     /**
      * Sets the given instance "result" with the given floats.
