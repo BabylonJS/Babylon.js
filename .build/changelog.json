@@ -1,65 +1,35 @@
 {
-    "fromTag": "6.47.0",
+    "fromTag": "6.48.0",
     "changelog": {
-        "6.47.0": [
+        "6.48.1": [
             {
-                "pr": "14867",
-                "title": "Update stale.yml",
-                "description": null,
+                "pr": "14887",
+                "title": "Allow Draco in NullEngine on node",
+                "description": "After these changes it will be possible to use Draco in Node environment using the following code:\n\n```javascript\nconst Draco = require(\"./draco_decoder_gltf.js\");\nconst wasm = fs.readFileSync(\"./draco_decoder_gltf.wasm\");\n\nBABYLON.DracoCompression.Configuration.decoder.wasmBinary = wasm;\nBABYLON.DracoCompression.Configuration.decoder.jsModule = Draco;\n```\n\nDependencies are not included in the UMD version, and node doesn't fully support ESM, so it will still be required to download the resources once from our CDN and keep them locally on the project directory. A different approach could be to install @babylonjs/core and just require the module and wasm from the assets directory.\n\nThis PR also makes it possible to easily override the worker pool configuration option, to allow a more streamlined way of using the decompressor. Setting the static workerPool will avoid creating your own instance of the DracoCompression class:\n\n```javascript\n// index.js\n\nimport wasm from \"@babylonjs/dependencies/draco/draco_decoder_gltf.wasm?arraybuffer\"; // also works from \"draco3dgltf\" package\nimport { AutoReleaseWorkerPool } from \"@babylonjs/core/Misc/workerPool.js\";\nimport { DracoCompression } from \"@babylonjs/core/Meshes/Compression/dracoCompression.js\";\nimport { initializeWebWorker } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\nimport { Tools } from \"@babylonjs/core/Misc/tools.js\";\nimport { VertexBuffer } from \"@babylonjs/core/Meshes/buffer.js\";\n\nconst workerPool = new AutoReleaseWorkerPool(4, () => {\n  const worker = new Worker(new URL(\"./worker.js\", import.meta.url), {\n    type: \"module\",\n  });\n  return initializeWebWorker(worker, wasm);\n});\n\nDracoCompression.Configuration.decoder.workerPool = workerPool;\n\n// worker.js\nimport { workerFunction } from \"@babylonjs/core/Meshes/Compression/dracoCompressionWorker.js\";\nimport \"@babylonjs/dependencies/draco/draco_decoder_gltf.js\";\n\nworkerFunction();\n```",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    ".github/workflows/stale.yml"
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "14866",
-                "title": "Update physicsPointProximityQuery.ts",
+                "pr": "14894",
+                "title": "add ?version to NGE, NME, GUIEditor",
                 "description": null,
                 "author": {
                     "name": "RaananW",
                     "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Physics/physicsPointProximityQuery.ts"
+                    "packages/tools/guiEditor/public/index.js",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeGeometryEditor/public/index.js",
+                    "packages/tools/playground/public/index.js"
                 ],
                 "tags": []
-            },
-            {
-                "pr": "14865",
-                "title": "Split interleaved buffers reference images",
-                "description": "This isn't strictly required, but in native, this was a problem. This is here just to make it consistent with native.",
-                "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
-                },
-                "files": [
-                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-1.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-2.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-3.png",
-                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-4.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14817",
-                "title": "ragdoll improvements with animated skeletons",
-                "description": "After hours and days of sweating on trying to make it work with LH coordinates, I give up for now.\r\nIt works in RH and we will see if this feature gains enough traction to get back working on it.\r\nUntil then, this will stay like that.\r\n\r\nNote: Documentation will be udpated once this PR is merged.",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
-                ],
-                "tags": [
-                    "in progress",
-                    "skip changelog"
-                ]
             }
         ],
         "6.48.0": [
@@ -431,6 +401,67 @@
                     "packages/public/@babylonjs/core/package.json"
                 ],
                 "tags": []
+            }
+        ],
+        "6.47.0": [
+            {
+                "pr": "14867",
+                "title": "Update stale.yml",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    ".github/workflows/stale.yml"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14866",
+                "title": "Update physicsPointProximityQuery.ts",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/physicsPointProximityQuery.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14865",
+                "title": "Split interleaved buffers reference images",
+                "description": "This isn't strictly required, but in native, this was a problem. This is here just to make it consistent with native.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-2.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-3.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/interleaved-buffers-4.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14817",
+                "title": "ragdoll improvements with animated skeletons",
+                "description": "After hours and days of sweating on trying to make it work with LH coordinates, I give up for now.\r\nIt works in RH and we will see if this feature gains enough traction to get back working on it.\r\nUntil then, this will stay like that.\r\n\r\nNote: Documentation will be udpated once this PR is merged.",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/ragdoll.ts"
+                ],
+                "tags": [
+                    "in progress",
+                    "skip changelog"
+                ]
             }
         ],
         "6.46.1": [
