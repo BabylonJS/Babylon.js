@@ -18,7 +18,7 @@ export type TensorValueElement<V extends unknown[]> = Flatten<V> extends Array<i
 /**
  * Extracts the element type of a Tensor
  */
-export type TensorElement<T> = T extends Tensor<infer V> ? TensorValueElement<V> : never;
+export type TensorElement<T extends Tensor> = TensorValueElement<TensorValue<T>>;
 
 /**
  * Describes a mathematical tensor.
@@ -59,7 +59,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in source array
      * @returns the current instance
      */
-    toArray(array: ArrayLike<TensorValueElement<V>>, index?: number): this;
+    toArray(array: TensorValueElement<V>[], index?: number): this;
 
     /**
      * Update the current instance from an array
@@ -67,7 +67,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in the destination array
      * @returns the current instance
      */
-    fromArray(array: DeepImmutable<ArrayLike<TensorValueElement<V>>>, index?: number): this;
+    fromArray(array: ArrayLike<TensorValueElement<V>>, index?: number): this;
 
     /**
      * Copy the current instance to an array
@@ -355,7 +355,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
 /**
  * Static side of Tensor
  */
-export interface TensorStatic<T extends Tensor> {
+export interface TensorStatic<T extends Tensor<any[]>> {
     /**
      * Creates a new instance from the given coordinates
      */
