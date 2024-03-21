@@ -1,4 +1,5 @@
 import type { DeepImmutable, FloatArray } from "../../types";
+
 import type { INative, INativeDataStream } from "./nativeInterfaces";
 
 declare const _native: INative;
