@@ -13,6 +13,7 @@ export type TensorValue = number[] | TensorValue[];
  * Extracts the value type of a Tensor
  */
 export type ValueOfTensor<T = unknown> = T extends Tensor<infer V> ? V : TensorValue;
+
 /**
  * Describes a mathematical tensor.
  * @see https://wikipedia.org/wiki/Tensor
