@@ -1,30 +1,23 @@
-import type { DeepImmutable, Flatten, Length } from "../types";
-
+import type { DeepImmutable, Flatten, FloatArray, Length } from "../types";
 /**
  * Computes the tensor dimension of a multi-dimensional array
  */
 export type Dimension<T> = T extends Array<infer U> ? [Length<T>, ...Dimension<U>] : T extends readonly [infer U, ...infer R] ? [Length<T>, ...Dimension<U>] : [];
 
 /**
+ * Possible values for a Tensor
+ */
+export type TensorValue = number[] | TensorValue[];
+
+/**
  * Extracts the value type of a Tensor
  */
-export type TensorValue<T> = T extends Tensor<infer V> ? V : never;
-
-/**
- * Extracts the element type of a Tensor value
- */
-export type TensorValueElement<V extends unknown[]> = Flatten<V> extends Array<infer E> ? E : never;
-
-/**
- * Extracts the element type of a Tensor
- */
-export type TensorElement<T extends Tensor> = TensorValueElement<TensorValue<T>>;
-
+export type ValueOfTensor<T = unknown> = T extends Tensor<infer V> ? V : TensorValue;
 /**
  * Describes a mathematical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
-export interface Tensor<V extends unknown[] = unknown[]> {
+export interface Tensor<V extends TensorValue = TensorValue> {
     /**
      * An array of the size of each dimension.
      * For example, [3] for a Vector3 and [4,4] for a Matrix
@@ -59,7 +52,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in source array
      * @returns the current instance
      */
-    toArray(array: TensorValueElement<V>[], index?: number): this;
+    toArray(array: FloatArray, index?: number): this;
 
     /**
      * Update the current instance from an array
@@ -67,7 +60,7 @@ export interface Tensor<V extends unknown[] = unknown[]> {
      * @param index defines the offset in the destination array
      * @returns the current instance
      */
-    fromArray(array: ArrayLike<TensorValueElement<V>>, index?: number): this;
+    fromArray(array: DeepImmutable<FloatArray>, index?: number): this;
 
     /**
      * Copy the current instance to an array
@@ -359,7 +352,7 @@ export interface TensorStatic<T extends Tensor<any[]>> {
     /**
      * Creates a new instance from the given coordinates
      */
-    new (...coords: Flatten<TensorValue<T>>): T;
+    new (...coords: Flatten<ValueOfTensor<T>>): T;
 
     /**
      * So [[static]].prototype has typings, instead of just any
@@ -389,7 +382,7 @@ export interface TensorStatic<T extends Tensor<any[]>> {
      * @param offset defines the offset in the data source
      * @returns a new instance
      */
-    FromArray(array: ArrayLike<TensorElement<T>>, offset?: number): T;
+    FromArray(array: DeepImmutable<FloatArray>, offset?: number): T;
 
     /**
      * Sets "result" from the given index element of the given array
@@ -398,13 +391,13 @@ export interface TensorStatic<T extends Tensor<any[]>> {
      * @param result defines the target instance
      * @returns result input
      */
-    FromArrayToRef(array: ArrayLike<TensorElement<T>>, offset: number, result: T): T;
+    FromArrayToRef(array: DeepImmutable<FloatArray>, offset: number, result: T): T;
 
     /**
      * Sets the given instance "result" with the given floats.
      * @param args defines the coordinates of the source with the last paramater being the result
      */
-    FromFloatsToRef(...args: [...Flatten<TensorValue<T>>, T]): T;
+    FromFloatsToRef(...args: [...Flatten<ValueOfTensor<T>>, T]): T;
 
     /**
      * Gets the dot product of the instance "left" and the instance "right"
