@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.46.1",
+    "fromTag": "6.47.0",
     "changelog": {
         "6.47.0": [
             {
@@ -60,6 +60,377 @@
                     "in progress",
                     "skip changelog"
                 ]
+            }
+        ],
+        "6.48.0": [
+            {
+                "pr": "14891",
+                "title": "Add edit icon for NG meshes",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/meshTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorer.scss"
+                ],
+                "tags": [
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14890",
+                "title": "Posterize nge",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/posterizeBlock.ts",
+                    "packages/dev/core/src/Maths/index.ts",
+                    "packages/dev/core/src/Maths/math.vector.functions.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/debugBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryPosterizeBlock.ts",
+                    "packages/dev/sharedUiComponents/src/lines/textLineComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/debugNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "nme",
+                    "skip changelog",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "14889",
+                "title": "Update peer dependencies when new major is released",
+                "description": "When updating to a new version, peer dependencies are kept as is. In some of our packages we have peer dependencies for babylon packages. They are currently `^6.0.0`. \nThis change makes sure that if we run a new major release on the CI it will update the version of the peer dependencies to the `^${version}`.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "scripts/updateVersion.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14885",
+                "title": "Add native device loss handle",
+                "description": "Added capability to NativeEngine to be notified from C++ when a device loss is triggered and recreate the graphics resources accordingly. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14868",
+                "title": "fix cancel render loop",
+                "description": "https://forum.babylonjs.com/t/stopping-render-loop-and-then-immediately-running-it-again-causes-double-frames/48599",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14886",
+                "title": "Mesh: Fix missing serialization for some properties",
+                "description": "See https://forum.babylonjs.com/t/the-ellipsoidoffset-attribute-cannot-be-serialized-deserialized/48895",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14883",
+                "title": "Update NOTICE.md",
+                "description": "Added the Draco version we are packing",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/NOTICE.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14882",
+                "title": "Simplify worker code in local dependency scenarios",
+                "description": "This will simplify the worker code needed to get ktx2decoder working without using our CDN.\nIt is possible to use it without this, so this is not a bug, just a small improvement.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2Worker.ts",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14881",
+                "title": "Relax `AssetContainer` heirarchy check to allow `InstancedMesh` parents",
+                "description": "When an `InstancedMesh` is used as a parent, `AssetContainer` logs a warning saying the node heirarchy is invalid. This change fixes the issue by changing the parent's `instanceof` check from the `Mesh` class to the `AbstractMesh` class, which includes the `InstancedMesh` class since it is also derived from `AbstractMesh`.\r\n\r\nRelated forum post:\r\nhttps://forum.babylonjs.com/t/assetcontainer-throwing-warnings-with-instancedmesh/48857.\r\n\r\nRepro playground:\r\nhttps://playground.babylonjs.com/#WT9TJK.",
+                "author": {
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
+                },
+                "files": [
+                    "packages/dev/core/src/assetContainer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14864",
+                "title": "Pointer selection for transient pointers",
+                "description": "This PR makes sure scenes running in Vision OS will have correct input support.\r\n\r\nVision OS works differently - the selection ray projects from the direction of the eyes (and not the hands). On each tap of the tracked-pointers (the hands) a new transient pointer is generated which is the one that triggers selectstart and selectend events. Moving the hand while tapping will move this pointer target respectively. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAbstractFeature.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerTeleportation.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14880",
+                "title": "Disable Physics Sync for static/kinematic bodies",
+                "description": "fixes #14820 \r\nfollow up https://forum.babylonjs.com/t/physics-performance-with-many-static-bodies/48402",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "14877",
+                "title": "Save engine type when storing snippet",
+                "description": "This is a suggestion to solve an issue with WebGPU-only playgrounds.\n\nWhen storing a snippet while using a specific engine type (webgl2/webgpu) the engine type will be stored as part of the snippet. \nWhen loaded the current used engine will be compared with the engine of the snippet. If it is not the same a prompt will ask if you want to switch to the other engine. It is still possible to cancel and continue in the current engine. If the snippet will be saved again, the current engine will be stored again (i.e. - engine type is per snippet version and is not a metadata item).\n\nIt is possible to override this behavior by adding `?webgpu` or `?engine=ENGINE-TYPE` to the URL. This way it doesn't matter what the snippet engine is, the URL-type will be used (works with webgpu).\n\nOf course, this will only be enabled to snippets that are stored after this is merged. If there is no engine, the current behavior will be maintained.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/loadManager.ts",
+                    "packages/tools/playground/src/tools/saveManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14879",
+                "title": "Changed Array Buffer View import to randomize name to avoid bad caching",
+                "description": "Changed FileInfo name when loading model using an Array Buffer View to be random. Otherwise, texture caching will wrongly cache textures from models loaded using Array Buffer View because they are not uniquely identifiable by their URL. \r\n\r\nThis aims to solve the following user issue without the URL work around:\r\nhttps://forum.babylonjs.com/t/sceneloader-load-material-bug-when-scenefilename-is-arraybufferview/48515",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/sceneLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14878",
+                "title": "WebGPU: Fix vertex buffer creation when byte offset is not a multiple of 4",
+                "description": "This PR will fix this PG: https://playground.babylonjs.com/?webgpu#AVFNTW#6\r\n",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.align.ts",
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14875",
+                "title": "Avoid recreating package-lock on version update",
+                "description": "This adds lerna as a hard dependency as well.\n\nThis should solve the issue of missing optional dependencies, even after a new minor/path version update.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "scripts/updateVersion.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14870",
+                "title": "Better architecture of the UMD test project",
+                "description": "The test project tests the declaration generated for core, gui, loaders, materials and serializers. \nThis takes the declaration generated directly, without the nees to deal with npm dependencies. It is set to no-emit, so it only checks compilation and nothing else.\n\nIt will not be able to report which reference is incorrect, just the package that failed and the reason (line in a long declaration file)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/umd/babylonjs-testporject/package.json",
+                    "packages/public/umd/babylonjs-testporject/src/index.ts",
+                    "packages/public/umd/babylonjs-testporject/tsconfig.json",
+                    "packages/public/umd/babylonjs-testproject/package.json",
+                    "packages/public/umd/babylonjs-testproject/src/index.ts",
+                    "packages/public/umd/babylonjs-testproject/tsconfig.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14858",
+                "title": "fix: dispose subEmitters",
+                "description": null,
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14873",
+                "title": "Add back architecture specific nx packages to package-lock.json",
+                "description": "Currently in master, `npm install` fails because it can't resolve the optional architecture specific nx packages. This is because the architecture specific packages are missing from the package-lock.json. This change adds those back to package-lock.json to fix the `npm install` error that happens in a clean repo. This was done by regenerating the package-lock.json locally. This resulted in a lot of changes, but it's mostly tiny changes like the LICENSE property being removed for all packages in the lock file. This seems to be due to a difference in how the package-lock.json file gets generated locally vs. the package-lock.json update that happens in the build process (see below), but @RaananW said these small changes are expected and ok from his experience. Unfortunately this means you can't diff the file in GitHub.\r\n\r\nThis is an example of one of the architecture specific packages that was added back to the package-lock.json:\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/5084643/4d0d2a6d-8bec-431a-b585-22dd96451b75)\r\n\r\nThe reason these optional architecture specific packages are missing from the package-lock.json is due to a step in the automated release process where package versions in the package-lock.json are updated. This step regenerates the package-lock.json, but results in any packages not present in node_modules to be removed from the package-lock.json which is then checked back in. This means that if nothing else is done, this will break again next time a release is cut. Fortunately @RaananW already planned to remove part of the step that causes this problem and is no longer needed anyway. He's expecting to make that change on Monday, but this change is also needed and at least fixes master.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14872",
+                "title": "Enable prettier ESLint plugin/rules and formatters and format on save",
+                "description": "This PR is trying to improve prettier related configurations to make sure contributors know as soon as possible (e.g. while editing code) that they have introduced a formatting error, and also make formatting more automatic to make it less likely that a formatting issue is even introduced.\r\n\r\n1. `.eslintrc.js`: Enable the prettier ESLint plugin so that in VSCode you get red squigglies if introduce a formatting error.\r\n2. `settings.json`: Enable formatOnSave.\r\n3. `settings.json`: Since the formatting scripts defined in package.json includes `*.{ts,tsx,js,json,scss,css}`, I also specified that the associated file types should use the prettier formatter in VSCode (so that formatOnSave in those files will result in content that passes the command line prettier format check).\r\n4. Since I added the above, it applies to *all* json files in the repo (not just those under `packages/**/src`. I don't want formatting changes to be unexpectedly applied next time someone makes a change to one of these files, so I ran the prettier formatter on these files as well. Some of these files will look like every line changed, but this is because prettier wants CRLF in json files, not LF.\r\n5. `package.json`: The format and lint commands defined in package.json don't work on Mac. I updated the command so that it works on both Mac and Windows.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".eslintrc.js",
+                    ".vscode/settings.json",
+                    "lerna.json",
+                    "nx.json",
+                    "package.json",
+                    "packages/dev/buildTools/package.json",
+                    "packages/dev/buildTools/tsconfig.build.json",
+                    "packages/dev/buildTools/tsconfig.json",
+                    "packages/dev/core/package.json",
+                    "packages/dev/core/tsconfig.build.json",
+                    "packages/dev/core/tsconfig.json",
+                    "packages/dev/core/tsconfig.test.json",
+                    "packages/dev/gui/tsconfig.build.json",
+                    "packages/dev/gui/tsconfig.nocomposite.json",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/inspector/tsconfig.build.json",
+                    "packages/dev/inspector/tsconfig.json",
+                    "packages/dev/inspector/tsconfig.nocomposite.json",
+                    "packages/dev/loaders/tsconfig.json",
+                    "packages/dev/loaders/tsconfig.nocomposite.json",
+                    "packages/dev/materials/package.json",
+                    "packages/dev/materials/tsconfig.build.json",
+                    "packages/dev/materials/tsconfig.nocomposite.json",
+                    "packages/dev/postProcesses/package.json",
+                    "packages/dev/postProcesses/tsconfig.nocomposite.json",
+                    "packages/dev/proceduralTextures/package.json",
+                    "packages/dev/proceduralTextures/tsconfig.nocomposite.json",
+                    "packages/dev/serializers/package.json",
+                    "packages/dev/serializers/tsconfig.nocomposite.json",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/tsconfig.json",
+                    "packages/dev/sharedUiComponents/tsconfig.nocomposite.json",
+                    "tsconfig.devpackages.json",
+                    "tsconfig.json",
+                    "tsconfig.test.json",
+                    "tsdoc.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14871",
+                "title": "Bump follow-redirects from 1.15.5 to 1.15.6",
+                "description": "Bumps [follow-redirects](https://github.com/follow-redirects/follow-redirects) from 1.15.5 to 1.15.6.\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/follow-redirects/follow-redirects/commit/35a517c5861d79dc8bff7db8626013d20b711b06\"><code>35a517c</code></a> Release version 1.15.6 of the npm package.</li>\n<li><a href=\"https://github.com/follow-redirects/follow-redirects/commit/c4f847f85176991f95ab9c88af63b1294de8649b\"><code>c4f847f</code></a> Drop Proxy-Authorization across hosts.</li>\n<li><a href=\"https://github.com/follow-redirects/follow-redirects/commit/8526b4a1b2ab3a2e4044299377df623a661caa76\"><code>8526b4a</code></a> Use GitHub for disclosure.</li>\n<li>See full diff in <a href=\"https://github.com/follow-redirects/follow-redirects/compare/v1.15.5...v1.15.6\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=follow-redirects&package-manager=npm_and_yarn&previous-version=1.15.5&new-version=1.15.6)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "14869",
+                "title": "Include Draco and Basis in @babylonjs/core",
+                "description": "Part of #12783.\nKTX2 Decoders package was already released under @babylonjs/ktx2decoder",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/index.ts",
+                    "packages/dev/buildTools/src/utils.ts",
+                    "packages/public/@babylonjs/.gitignore",
+                    "packages/public/@babylonjs/core/NOTICE.md",
+                    "packages/public/@babylonjs/core/config.tasks.json",
+                    "packages/public/@babylonjs/core/package.json"
+                ],
+                "tags": []
             }
         ],
         "6.46.1": [
