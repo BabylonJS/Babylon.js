@@ -788,7 +788,7 @@ describe("Babylon Scene Loader", function () {
                 });
             }, fileContents);
 
-            expect(assertionData["positions"]).toEqual([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            expect(assertionData["positions"]).toEqual([-1, 1, 1, -1, 2, 1, -2, 1, 1, -1, 1, 2]);
             expect(assertionData["colors"]).toBeNull();
             expect(assertionData["meshesLength"]).toBe(1);
         });
@@ -822,7 +822,7 @@ describe("Babylon Scene Loader", function () {
                 });
             }, fileContents);
 
-            expect(assertionData["positions"]).toEqual([1, 1, 1, 1, 2, 1, 2, 1, 1, 1, 1, 2]);
+            expect(assertionData["positions"]).toEqual([-1, 1, 1, -1, 2, 1, -2, 1, 1, -1, 1, 2]);
             expect(assertionData["meshesLength"]).toBe(1);
         });
     });
