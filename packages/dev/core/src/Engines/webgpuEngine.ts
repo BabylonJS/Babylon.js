@@ -2208,13 +2208,14 @@ export class WebGPUEngine extends Engine {
 
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
-        texture.depth = layers;
+        texture.depth = depth || layers;
         texture.isReady = true;
         texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
@@ -2222,6 +2223,7 @@ export class WebGPUEngine extends Engine {
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
+        texture.is3D = depth > 0;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;

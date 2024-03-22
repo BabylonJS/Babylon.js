@@ -773,7 +773,7 @@ export class WebGPUTextureManager {
 
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
 
-        if (!isCompressedFormat && !is3D) {
+        if (!isCompressedFormat) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
             additionalUsages |= renderAttachmentFlag | WebGPUConstants.TextureUsage.CopyDst;
         }
@@ -1069,7 +1069,7 @@ export class WebGPUTextureManager {
 
             gpuTextureWrapper.set(gpuTexture);
 
-            const arrayLayerCount = texture.is3D ? 1 : layerCount;
+            const arrayLayerCount = layerCount;
             const format = WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format);
             const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
             const dimension = texture.is2DArray
@@ -1082,7 +1082,9 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
                         texture.is2DArray ? "_Array" + arrayLayerCount : ""
-                    }_${width}x${height}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
+                    }_${width}x${height}${
+                        texture.is3D ? "x" + layerCount : ""
+                    }_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,

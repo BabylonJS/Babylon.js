@@ -118,8 +118,14 @@ ThinEngine.prototype.createDepthStencilTexture = function (size: TextureSize, op
 
 ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
     const gl = this._gl;
-    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
-    const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+    const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+    const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+    let target: number = gl.TEXTURE_2D;
+    if (layers !== 0) {
+        target = gl.TEXTURE_2D_ARRAY;
+    } else if (depth !== 0) {
+        target = gl.TEXTURE_3D;
+    }
     const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
     internalTexture.label = options.label;
     if (!this._caps.depthTextureExtension) {
@@ -196,6 +202,8 @@ ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, o
 
     if (internalTexture.is2DArray) {
         gl.texImage3D(target, 0, internalFormat, internalTexture.width, internalTexture.height, layers, 0, format, type, null);
+    } else if (internalTexture.is3D) {
+        gl.texImage3D(target, 0, internalFormat, internalTexture.width, internalTexture.height, depth, 0, format, type, null);
     } else {
         gl.texImage2D(target, 0, internalFormat, internalTexture.width, internalTexture.height, 0, format, type, null);
     }

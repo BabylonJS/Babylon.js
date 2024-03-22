@@ -119,14 +119,16 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
 ): void {
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+    const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+    const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 
     internalTexture.baseWidth = width;
     internalTexture.baseHeight = height;
     internalTexture.width = width;
     internalTexture.height = height;
     internalTexture.is2DArray = layers > 0;
-    internalTexture.depth = layers;
+    internalTexture.is3D = depth > 0;
+    internalTexture.depth = layers || depth;
     internalTexture.isReady = true;
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;

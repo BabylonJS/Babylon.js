@@ -413,6 +413,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
+                    depth: this.depth
                 };
 
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
@@ -443,7 +444,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
-                    layers: this.is2DArray ? this.texture?.depth : undefined,
+                    layers: (this.is2DArray || this.is3D) ? this.texture?.depth : undefined,
                 };
 
                 rtw = this._engine.createRenderTargetTexture(size, options);
