@@ -85,6 +85,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
             { label: "Reciprocal", value: GeometryTrigonometryBlockOperations.Reciprocal },
             { label: "ToDegrees", value: GeometryTrigonometryBlockOperations.ToDegrees },
             { label: "ToRadians", value: GeometryTrigonometryBlockOperations.ToRadians },
+            { label: "Fract", value: GeometryTrigonometryBlockOperations.Fract },
         ],
     })
     public operation = GeometryTrigonometryBlockOperations.Cos;
