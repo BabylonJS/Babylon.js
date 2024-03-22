@@ -286,7 +286,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     public clearColor: Color4;
     protected _size: TextureSize;
-    protected _initialSizeParameter: number | { width: number; height: number } | { ratio: number };
+    protected _initialSizeParameter: TextureSize | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @internal */
     public _generateMipMaps: boolean;
@@ -420,7 +420,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param scene The scene the RTT belongs to. Default is the last created scene.
      * @param options The options for creating the render target texture.
      */
-    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+    constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
@@ -445,7 +445,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps?: boolean,
         doNotChangeAspectRatio?: boolean,
@@ -466,7 +466,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /** @internal */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
@@ -615,7 +615,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    protected _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }, createRenderPassIds = true): void {
+    protected _processSizeParameter(size: TextureSize | { ratio: number }, createRenderPassIds = true): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
             const engine = this._getEngine()!;
@@ -624,7 +624,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio),
             };
         } else {
-            this._size = <number | { width: number; height: number; layers?: number }>size;
+            this._size = <TextureSize>size;
         }
 
         if (createRenderPassIds) {
@@ -779,9 +779,13 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @returns the number of layers
      */
     public getRenderLayers(): number {
-        const layers = (<{ width: number; height: number; layers?: number }>this._size).layers;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).layers;
         if (layers) {
             return layers;
+        }
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).depth;
+        if (depth) {
+            return depth;
         }
 
         return 0;
@@ -831,7 +835,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      *   - an object containing { width: number, height: number }
      *   - or an object containing a ratio { ratio: number }
      */
-    public resize(size: number | { width: number; height: number } | { ratio: number }): void {
+    public resize(size: TextureSize | { ratio: number }): void {
         const wasCube = this.isCube;
 
         this._renderTarget?.dispose();
