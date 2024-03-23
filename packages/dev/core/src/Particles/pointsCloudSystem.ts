@@ -540,7 +540,6 @@ export class PointsCloudSystem implements IDisposable {
 
     // calculates the point density per facet of a mesh for surface points
     private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
-        let density: number[] = new Array<number>();
         let id0: number;
         let id1: number;
         let id2: number;
@@ -565,7 +564,7 @@ export class PointsCloudSystem implements IDisposable {
         let c: number; //length of side of triangle
         let p: number; //perimeter of triangle
         let area: number;
-        const areas: number[] = new Array<number>();
+        const cumulativeAreas: number[] = [];
         let surfaceArea: number = 0;
 
         const nbFacets = indices.length / 3;
@@ -596,25 +595,28 @@ export class PointsCloudSystem implements IDisposable {
             p = (a + b + c) / 2;
             area = Math.sqrt(p * (p - a) * (p - b) * (p - c));
             surfaceArea += area;
-            areas[index] = area;
-        }
-        let pointCount: number = 0;
-        for (let index = 0; index < nbFacets; index++) {
-            density[index] = Math.floor((nbPoints * areas[index]) / surfaceArea);
-            pointCount += density[index];
+            cumulativeAreas[index] = surfaceArea;
         }
 
-        const diff: number = nbPoints - pointCount;
-        const pointsPerFacet: number = Math.floor(diff / nbFacets);
-        const extraPoints: number = diff % nbFacets;
-
-        if (pointsPerFacet > 0) {
-            density = density.map((x) => x + pointsPerFacet);
+        const density: number[] = new Array<number>(nbFacets);
+        let remainingPoints = nbPoints;
+        for (let index = nbFacets - 1; index > 0; index--) {
+            const cumulativeArea = cumulativeAreas[index];
+            if (cumulativeArea === 0) {
+                // avoiding division by 0 upon degenerate triangles
+                density[index] = 0;
+            } else {
+                const area = cumulativeArea - cumulativeAreas[index - 1];
+                const facetPointsWithFraction = (area / cumulativeArea) * remainingPoints;
+                const floored = Math.floor(facetPointsWithFraction);
+                const fraction = facetPointsWithFraction - floored;
+                const extraPoint = Number(Math.random() < fraction);
+                const facetPoints = floored + extraPoint;
+                density[index] = facetPoints;
+                remainingPoints -= facetPoints;
+            }
         }
-
-        for (let index = 0; index < extraPoints; index++) {
-            density[index] += 1;
-        }
+        density[0] = remainingPoints;
 
         return density;
     }
