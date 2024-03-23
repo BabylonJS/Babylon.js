@@ -399,7 +399,7 @@ export class PointsCloudSystem implements IDisposable {
                 this._addParticle(idxPoints, pointsGroup, this._groupCounter, index + i);
                 particle = this.particles[idxPoints];
                 //form a point inside the facet v0, v1, v2;
-                lamda = Scalar.RandomRange(0, 1);
+                lamda = Math.sqrt(Scalar.RandomRange(0, 1));
                 mu = Scalar.RandomRange(0, 1);
                 facetPoint = vertex0.add(vec0.scale(lamda)).add(vec1.scale(lamda * mu));
                 if (isVolume) {
