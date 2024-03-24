@@ -168,7 +168,7 @@ export class GIRSMManager {
 
     /**
      * Defines if the blur should be done at full resolution or not. Default is false.
-     * If this setting is eabled, upampling will be disabled (ignored) as it is not needed anymore.
+     * If this setting is enabled, upampling will be disabled (ignored) as it is not needed anymore.
      */
     public get fullSizeBlur() {
         return this._forceFullSizeBlur;
