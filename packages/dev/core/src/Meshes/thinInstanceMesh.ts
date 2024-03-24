@@ -11,6 +11,15 @@ declare module "./mesh" {
          * Gets or sets a boolean defining if we want picking to pick thin instances as well
          */
         thinInstanceEnablePicking: boolean;
+
+        /**
+         * Indicates that a buffer created as static should be recreated if the buffer is updated (by calling thinInstanceSetMatrixAt or thinInstanceSetAttributeAt, for eg.)
+         * If this flag is false, a buffer created as "static" won't show any update done to it, and will stay the same as it was created.
+         * Note however that recreating a buffer each time there's a change will have some performance cost, that's why it is set to false by default.
+         * You should set this flag to true only if your static buffers should change infrequently. If they change frequently, you should create your buffers as "dynamic" instead.
+         */
+        thinInstanceAllowAutomaticStaticBufferRecreation: boolean;
+
         /**
          * Creates a new thin instance
          * @param matrix the matrix or array of matrices (position, rotation, scale) of the thin instance(s) to create
@@ -290,13 +299,13 @@ Mesh.prototype.thinInstanceSetBuffer = function (kind: string, buffer: Nullable<
 
 Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
     if (kind === "matrix") {
-        if (Mesh.THININSTANCE_ALLOW_AUTOMATIC_STATICBUFFER_RECREATION && this._thinInstanceDataStorage.matrixBuffer && !this._thinInstanceDataStorage.matrixBuffer.isUpdatable()) {
+        if (this.thinInstanceAllowAutomaticStaticBufferRecreation && this._thinInstanceDataStorage.matrixBuffer && !this._thinInstanceDataStorage.matrixBuffer.isUpdatable()) {
             this._thinInstanceRecreateBuffer(kind);
         }
         this._thinInstanceDataStorage.matrixBuffer?.updateDirectly(this._thinInstanceDataStorage.matrixData!, 0, this._thinInstanceDataStorage.instancesCount);
     } else if (kind === "previousMatrix") {
         if (
-            Mesh.THININSTANCE_ALLOW_AUTOMATIC_STATICBUFFER_RECREATION &&
+            this.thinInstanceAllowAutomaticStaticBufferRecreation &&
             this._thinInstanceDataStorage.previousMatrixBuffer &&
             !this._thinInstanceDataStorage.previousMatrixBuffer.isUpdatable()
         ) {
@@ -310,7 +319,7 @@ Mesh.prototype.thinInstanceBufferUpdated = function (kind: string): void {
         }
 
         if (this._userThinInstanceBuffersStorage?.vertexBuffers[kind]) {
-            if (Mesh.THININSTANCE_ALLOW_AUTOMATIC_STATICBUFFER_RECREATION && !this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.isUpdatable()) {
+            if (this.thinInstanceAllowAutomaticStaticBufferRecreation && !this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.isUpdatable()) {
                 this._thinInstanceRecreateBuffer(kind);
             }
             this._userThinInstanceBuffersStorage.vertexBuffers[kind]!.updateDirectly(this._userThinInstanceBuffersStorage.data[kind], 0);
