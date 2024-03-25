@@ -557,12 +557,8 @@ export class PointsCloudSystem implements IDisposable {
         const vertex2 = Vector3.Zero();
         const vec0 = Vector3.Zero();
         const vec1 = Vector3.Zero();
-        const vec2 = Vector3.Zero();
+        const normal = Vector3.Zero();
 
-        let a: number; //length of side of triangle
-        let b: number; //length of side of triangle
-        let c: number; //length of side of triangle
-        let p: number; //perimeter of triangle
         let area: number;
         const cumulativeAreas: number[] = [];
         let surfaceArea: number = 0;
@@ -588,12 +584,8 @@ export class PointsCloudSystem implements IDisposable {
             vertex2.set(v2X, v2Y, v2Z);
             vertex1.subtractToRef(vertex0, vec0);
             vertex2.subtractToRef(vertex1, vec1);
-            vertex2.subtractToRef(vertex0, vec2);
-            a = vec0.length();
-            b = vec1.length();
-            c = vec2.length();
-            p = (a + b + c) / 2;
-            area = Math.sqrt(p * (p - a) * (p - b) * (p - c));
+            Vector3.CrossToRef(vec0, vec1, normal);
+            area = 0.5 * normal.length();
             surfaceArea += area;
             cumulativeAreas[index] = surfaceArea;
         }
