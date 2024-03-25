@@ -54,6 +54,7 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
+import type { IShaderPath } from "../Materials/shaderMaterial";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -2924,7 +2925,7 @@ export class ThinEngine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: any,
+        baseName: IShaderPath,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | ThinEngine,
         samplers?: string[],
@@ -2935,8 +2936,26 @@ export class ThinEngine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
-        const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const vertex =
+            typeof baseName === "string"
+                ? baseName
+                : "vertexElement" in baseName
+                ? baseName.vertexElement
+                : "vertex" in baseName
+                ? baseName.vertex
+                : "vertexToken" in baseName
+                ? baseName.vertexToken
+                : baseName.vertexSource || baseName;
+        const fragment =
+            typeof baseName === "string"
+                ? baseName
+                : "fragmentElement" in baseName
+                ? baseName.fragmentElement
+                : "fragment" in baseName
+                ? baseName.fragment
+                : "fragmentToken" in baseName
+                ? baseName.fragmentToken
+                : baseName.fragmentSource || baseName;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";

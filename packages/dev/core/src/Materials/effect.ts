@@ -20,6 +20,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import type { IShaderPath } from "./shaderMaterial";
 
 /**
  * Options to be used when creating an effect.
@@ -107,7 +108,7 @@ export class Effect implements IDisposable {
     /**
      * Name of the effect.
      */
-    public name: any = null;
+    public name: IShaderPath;
     /**
      * String container all the define statements that should be set on the shader.
      */
@@ -237,7 +238,7 @@ export class Effect implements IDisposable {
      * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     constructor(
-        baseName: any,
+        baseName: IShaderPath,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | ThinEngine,
         samplers: Nullable<string[]> = null,
@@ -309,9 +310,11 @@ export class Effect implements IDisposable {
         const baseName = this.name;
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
-        if (baseName.vertexSource) {
+        if (typeof baseName === "string") {
+            vertexSource = baseName;
+        } else if ("vertexSource" in baseName) {
             vertexSource = "source:" + baseName.vertexSource;
-        } else if (baseName.vertexElement) {
+        } else if ("vertexElement" in baseName) {
             vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
 
             if (!vertexSource) {
@@ -320,10 +323,11 @@ export class Effect implements IDisposable {
         } else {
             vertexSource = baseName.vertex || baseName;
         }
-
-        if (baseName.fragmentSource) {
+        if (typeof baseName === "string") {
+            fragmentSource = baseName;
+        } else if ("fragmentSource" in baseName) {
             fragmentSource = "source:" + baseName.fragmentSource;
-        } else if (baseName.fragmentElement) {
+        } else if ("fragmentElement" in baseName) {
             fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
 
             if (!fragmentSource) {

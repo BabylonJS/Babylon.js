@@ -36,6 +36,48 @@ import {
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
 /**
+ * Defines the route to the shader code.
+ *  * object: `{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" }` for directly passing the shader code
+ *  * object: `{ vertex: "custom", fragment: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
+ *  * object: `{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }`, used with shader code in script tags
+ *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+ */
+export type IShaderPath =
+  | {
+      /**
+       * Directly pass the shader code
+       */
+      vertexSource: string;
+      /**
+       * Directly pass the shader code
+       */
+      fragmentSource: string;
+    }
+  | {
+      /**
+       * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
+       * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
+       */
+      vertex: string;
+      /**
+       * Used with Effect.ShadersStore. If the `fragment` is set to `"custom`, then
+       * Babylon.js will read from Effect.ShadersStore["customFragmentShader"]
+       */
+      fragment: string;
+    }
+  | {
+      /**
+       * Used with shader code in script tags
+       */
+      vertexElement: string;
+      /**
+       * Used with shader code in script tags
+       */
+      fragmentElement: string;
+    }
+  | string;
+
+/**
  * Defines the options associated with the creation of a shader material.
  */
 export interface IShaderMaterialOptions {
@@ -108,7 +150,7 @@ export interface IShaderMaterialOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
-    private _shaderPath: any;
+    private _shaderPath: IShaderPath;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
@@ -158,15 +200,11 @@ export class ShaderMaterial extends PushMaterial {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
-     * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: \{ vertex: "custom", fragment: "custom" \}, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *  * object: \{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" \}, used with shader code in script tags
-     *  * object: \{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" \} using with strings containing the shaders code
-     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     * @param shaderPath Defines  the route to the shader code.
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene: Scene, shaderPath: IShaderPath, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
         super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
@@ -190,7 +228,7 @@ export class ShaderMaterial extends PushMaterial {
      * Gets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public get shaderPath(): any {
+    public get shaderPath(): IShaderPath {
         return this._shaderPath;
     }
 
@@ -198,7 +236,7 @@ export class ShaderMaterial extends PushMaterial {
      * Sets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public set shaderPath(shaderPath: any) {
+    public set shaderPath(shaderPath: IShaderPath) {
         this._shaderPath = shaderPath;
     }
 
@@ -882,7 +920,7 @@ export class ShaderMaterial extends PushMaterial {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
             samplers = samplers.slice();
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
