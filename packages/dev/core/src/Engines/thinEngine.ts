@@ -4039,12 +4039,12 @@ export class ThinEngine {
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
-        const width = (<{ width: number; height: number; depth?: number, layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; depth?: number, layers?: number }>size).height || <number>size;
-        const depth = (<{ width: number; height: number; depth?: number, layers?: number }>size).depth || 0;
-        const layers = (<{ width: number; height: number; depth?: number, layers?: number }>size).layers || 0;
+        const width = (<{ width: number; height: number; depth?: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; depth?: number; layers?: number }>size).height || <number>size;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : (depth !== 0 ? gl.TEXTURE_3D : gl.TEXTURE_2D);
+        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : depth !== 0 ? gl.TEXTURE_3D : gl.TEXTURE_2D;
         const sizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
         const internalFormat = this._getInternalFormat(format);
         const textureType = this._getWebGLTextureType(type);

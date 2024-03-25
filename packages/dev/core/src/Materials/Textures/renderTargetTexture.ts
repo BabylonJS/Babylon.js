@@ -977,7 +977,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // We probably didn't execute scene.render() yet, so make sure we have a view/projection matrix setup for the scene
                 scene.updateTransformMatrix();
             }
-            const numLayers = (this.is2DArray || this.is3D) ? this.getRenderLayers() : this.isCube ? 6 : 1;
+            const numLayers = this.is2DArray || this.is3D ? this.getRenderLayers() : this.isCube ? 6 : 1;
             for (let layer = 0; layer < numLayers && returnValue; layer++) {
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
                 const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -1203,7 +1203,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
 
             if (this.getCustomRenderList) {
-                currentRenderList = this.getCustomRenderList((this.is2DArray || this.is3D) ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
+                currentRenderList = this.getCustomRenderList(this.is2DArray || this.is3D ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
             }
 
             if (!currentRenderList) {
