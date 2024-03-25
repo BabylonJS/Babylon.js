@@ -1,4 +1,4 @@
-import type { float, int, DeepImmutable } from "../types";
+import type { float, int, DeepImmutable, Tuple } from "../types";
 
 /**
  * @internal
@@ -58,7 +58,7 @@ export interface IPlaneLike {
  * @internal
  */
 export interface IMatrixLike {
-    asArray(): DeepImmutable<Float32Array | Array<float>>;
+    asArray(): DeepImmutable<Tuple<number, 16>>;
     updateFlag: int;
 }
 

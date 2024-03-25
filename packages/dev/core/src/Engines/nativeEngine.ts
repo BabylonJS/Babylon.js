@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray } from "../types";
+import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } from "../types";
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -166,7 +166,7 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32(commandArg);
     }
 
-    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+    public encodeCommandArgAsFloat32s(commandArg: DeepImmutable<FloatArray>) {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
@@ -1391,7 +1391,7 @@ export class NativeEngine extends Engine {
         return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }
