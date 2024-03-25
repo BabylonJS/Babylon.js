@@ -775,7 +775,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual number of layers of the texture.
+     * Gets the actual number of layers of the texture or, in the case of a 3D texture, return the depth.
      * @returns the number of layers
      */
     public getRenderLayers(): number {

@@ -2964,7 +2964,7 @@ export class WebGPUEngine extends Engine {
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
                         format: gpuMRTWrapper.format,
-                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
+                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : mrtTexture.is3D ? 0 : layerIndex,
                     };
                     const msaaViewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
@@ -2979,6 +2979,7 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                        depthSlice:  mrtTexture.is3D ? layerIndex : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -3222,7 +3223,7 @@ export class WebGPUEngine extends Engine {
 
         this._rttRenderPassWrapper.colorAttachmentViewDescriptor = {
             format: this._colorFormat as GPUTextureFormat,
-            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
@@ -3232,7 +3233,7 @@ export class WebGPUEngine extends Engine {
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
             format: this._depthTextureFormat!,
-            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: 0,

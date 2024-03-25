@@ -773,7 +773,7 @@ export class WebGPUTextureManager {
 
         additionalUsages |= hasMipmaps && !isCompressedFormat ? WebGPUConstants.TextureUsage.CopySrc | renderAttachmentFlag : 0;
 
-        if (!isCompressedFormat) {
+        if (!isCompressedFormat && !is3D) {
             // we don't know in advance if the texture will be updated with copyExternalImageToTexture (which requires to have those flags), so we need to force the flags all the times
             additionalUsages |= renderAttachmentFlag | WebGPUConstants.TextureUsage.CopyDst;
         }
@@ -1069,7 +1069,7 @@ export class WebGPUTextureManager {
 
             gpuTextureWrapper.set(gpuTexture);
 
-            const arrayLayerCount = layerCount;
+            const arrayLayerCount = texture.is3D ? 1 : layerCount;
             const format = WebGPUTextureHelper.GetDepthFormatOnly(gpuTextureWrapper.format);
             const aspect = WebGPUTextureHelper.HasDepthAndStencilAspects(gpuTextureWrapper.format) ? WebGPUConstants.TextureAspect.DepthOnly : WebGPUConstants.TextureAspect.All;
             const dimension = texture.is2DArray
