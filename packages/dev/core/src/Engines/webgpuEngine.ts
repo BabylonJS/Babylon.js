@@ -2979,7 +2979,7 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
-                        depthSlice:  mrtTexture.is3D ? layerIndex : undefined,
+                        depthSlice: mrtTexture.is3D ? layerIndex : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,

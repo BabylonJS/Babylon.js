@@ -1952,8 +1952,17 @@ export class ThinEngine {
 
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         if (depthStencilTexture) {
+            if (rtWrapper.is3D) {
+                if (
+                    rtWrapper.texture!.width != depthStencilTexture.width ||
+                    rtWrapper.texture!.height != depthStencilTexture.height ||
+                    rtWrapper.texture!.depth != depthStencilTexture.depth
+                ) {
+                    console.warn("Depth/Stencil attachment for 3D target must have same dimensions as color attachment");
+                }
+            }
             const attachment = rtWrapper._depthStencilTextureWithStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-            if (rtWrapper.is2DArray) {
+            if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
@@ -4743,7 +4752,7 @@ export class ThinEngine {
      */
     public _setupDepthStencilTexture(
         internalTexture: InternalTexture,
-        size: number | { width: number; height: number; layers?: number },
+        size: TextureSize,
         generateStencil: boolean,
         bilinearFiltering: boolean,
         comparisonFunction: number,
@@ -4751,14 +4760,16 @@ export class ThinEngine {
     ): void {
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 
         internalTexture.baseWidth = width;
         internalTexture.baseHeight = height;
         internalTexture.width = width;
         internalTexture.height = height;
         internalTexture.is2DArray = layers > 0;
-        internalTexture.depth = layers;
+        InternalTexture.is3D = depth > 0;
+        internalTexture.depth = layers || depth;
         internalTexture.isReady = true;
         internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
