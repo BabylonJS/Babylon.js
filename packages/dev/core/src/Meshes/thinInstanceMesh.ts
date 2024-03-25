@@ -14,7 +14,7 @@ declare module "./mesh" {
 
         /**
          * Indicates that a buffer created as static should be recreated if the buffer is updated (by calling thinInstanceSetMatrixAt or thinInstanceSetAttributeAt, for eg.)
-         * If this flag is false, a buffer created as "static" won't show any update done to it, and will stay the same as it was created.
+         * If this flag is false (the default behavior), a buffer created as "static" won't show any update done to it, and will stay the same as it was created.
          * Note however that recreating a buffer each time there's a change will have some performance cost, that's why it is set to false by default.
          * You should set this flag to true only if your static buffers should change infrequently. If they change frequently, you should create your buffers as "dynamic" instead.
          */
