@@ -1958,7 +1958,7 @@ export class ThinEngine {
                     rtWrapper.texture!.height != depthStencilTexture.height ||
                     rtWrapper.texture!.depth != depthStencilTexture.depth
                 ) {
-                    console.warn("Depth/Stencil attachment for 3D target must have same dimensions as color attachment");
+                    Logger.Warn("Depth/Stencil attachment for 3D target must have same dimensions as color attachment");
                 }
             }
             const attachment = rtWrapper._depthStencilTextureWithStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
@@ -4768,7 +4768,6 @@ export class ThinEngine {
         internalTexture.width = width;
         internalTexture.height = height;
         internalTexture.is2DArray = layers > 0;
-        InternalTexture.is3D = depth > 0;
         internalTexture.depth = layers || depth;
         internalTexture.isReady = true;
         internalTexture.samples = samples;
