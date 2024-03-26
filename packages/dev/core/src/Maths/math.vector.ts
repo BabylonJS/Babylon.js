@@ -1300,7 +1300,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param offset defines the offset in the destination array
      * @returns the current Vector3
      */
-    public fromArray(array: FloatArray, offset: number = 0): this {
+    public fromArray(array: DeepImmutable<FloatArray>, offset: number = 0): this {
         Vector3.FromArrayToRef(array, offset, this);
         return this;
     }

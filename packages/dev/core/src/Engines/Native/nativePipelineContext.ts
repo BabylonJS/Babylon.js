@@ -488,7 +488,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this._engine.setMatrices(this._uniforms[uniformName]!, matrix.asArray() as Float32Array)) {
+            if (!this._engine.setMatrices(this._uniforms[uniformName]!, matrix.asArray())) {
                 this._valueCache[uniformName] = null;
             }
         }

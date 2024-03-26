@@ -7,7 +7,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { Nullable, DataArray, IndicesArray } from "../types";
+import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
@@ -3655,7 +3655,7 @@ export class ThinEngine {
      * @param matrices defines the array of float32 to store
      * @returns true if the value was set
      */
-    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
+    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }
