@@ -304,17 +304,17 @@ export class Effect implements IDisposable {
 
     /** @internal */
     public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        let vertexSource: any;
-        let fragmentSource: any;
+        let vertexSource: string | HTMLElement | IShaderPath | null | undefined;
+        let fragmentSource: string | HTMLElement | IShaderPath | null | undefined;
 
         const baseName = this.name;
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
         if (typeof baseName === "string") {
             vertexSource = baseName;
-        } else if ("vertexSource" in baseName) {
+        } else if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
-        } else if ("vertexElement" in baseName) {
+        } else if (baseName.vertexElement) {
             vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
 
             if (!vertexSource) {
@@ -325,9 +325,9 @@ export class Effect implements IDisposable {
         }
         if (typeof baseName === "string") {
             fragmentSource = baseName;
-        } else if ("fragmentSource" in baseName) {
+        } else if (baseName.fragmentSource) {
             fragmentSource = "source:" + baseName.fragmentSource;
-        } else if ("fragmentElement" in baseName) {
+        } else if (baseName.fragmentElement) {
             fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
 
             if (!fragmentSource) {
