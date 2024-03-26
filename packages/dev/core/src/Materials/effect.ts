@@ -57,6 +57,14 @@ export type IShaderPath =
            * Used with shader code in script tags
            */
           fragmentElement?: string;
+          /**
+           * @internal
+           */
+          vertexToken?: string;
+          /**
+           * @internal
+           */
+          fragmentToken?: string;
       }
     | string;
 

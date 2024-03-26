@@ -2935,8 +2935,8 @@ export class ThinEngine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = typeof baseName === "string" ? baseName : baseName.vertexSource || baseName.vertexElement || baseName.vertex || (baseName as any).vertexToken;
-        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentSource || baseName.fragmentElement || baseName.fragment || (baseName as any).fragmentToken;
+        const vertex = typeof baseName === "string" ? baseName : baseName.vertexSource || baseName.vertexElement || baseName.vertex || baseName.vertexToken;
+        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentSource || baseName.fragmentElement || baseName.fragment || baseName.fragmentToken;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";

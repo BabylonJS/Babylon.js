@@ -4,7 +4,7 @@ import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from ".
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IEffectCreationOptions } from "../Materials/effect";
+import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
@@ -1766,7 +1766,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: any,
+        baseName: IShaderPath,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | Engine,
         samplers?: string[],
@@ -1777,8 +1777,8 @@ export class WebGPUEngine extends Engine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
-        const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const vertex = typeof baseName === "string" ? baseName : baseName.vertexSource || baseName.vertexElement || baseName.vertex || baseName.vertexToken;
+        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentSource || baseName.fragmentElement || baseName.fragment || baseName.fragmentToken;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
