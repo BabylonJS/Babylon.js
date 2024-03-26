@@ -8,7 +8,7 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import type { Effect, IEffectCreationOptions } from "./effect";
+import type { Effect, IEffectCreationOptions, IShaderPath } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
 import { EffectFallbacks } from "./effectFallbacks";
@@ -34,45 +34,6 @@ import {
 } from "./materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
-
-/**
- * Defines the route to the shader code. The priority is as follows:
- *  * object: `{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" }` for directly passing the shader code
- *  * object: `{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }`, used with shader code in script tags
- *  * object: `{ vertex: "custom", fragment: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
- *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
- */
-export type IShaderPath =
-    | {
-          /**
-           * Directly pass the shader code
-           */
-          vertexSource?: string;
-          /**
-           * Directly pass the shader code
-           */
-          fragmentSource?: string;
-
-          /**
-           * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
-           * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
-           */
-          vertex?: string;
-          /**
-           * Used with Effect.ShadersStore. If the `fragment` is set to `"custom`, then
-           * Babylon.js will read from Effect.ShadersStore["customFragmentShader"]
-           */
-          fragment?: string;
-          /**
-           * Used with shader code in script tags
-           */
-          vertexElement?: string;
-          /**
-           * Used with shader code in script tags
-           */
-          fragmentElement?: string;
-      }
-    | string;
 
 /**
  * Defines the options associated with the creation of a shader material.

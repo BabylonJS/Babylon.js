@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import type { IEffectCreationOptions } from "../Materials/effect";
+import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
@@ -54,7 +54,6 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
-import type { IShaderPath } from "../Materials/shaderMaterial";
 
 /**
  * Defines the interface used by objects working like Scene
