@@ -38,7 +38,6 @@ export type IShaderPath =
            * Directly pass the shader code
            */
           fragmentSource?: string;
-
           /**
            * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
            * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
@@ -57,14 +56,6 @@ export type IShaderPath =
            * Used with shader code in script tags
            */
           fragmentElement?: string;
-          /**
-           * @internal
-           */
-          vertexToken?: string;
-          /**
-           * @internal
-           */
-          fragmentToken?: string;
       }
     | string;
 
@@ -350,8 +341,8 @@ export class Effect implements IDisposable {
 
     /** @internal */
     public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        let vertexSource: string | HTMLElement | IShaderPath | null | undefined;
-        let fragmentSource: string | HTMLElement | IShaderPath | null | undefined;
+        let vertexSource: string | HTMLElement | IShaderPath;
+        let fragmentSource: string | HTMLElement | IShaderPath;
 
         const baseName = this.name;
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
@@ -361,11 +352,7 @@ export class Effect implements IDisposable {
         } else if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
         } else if (baseName.vertexElement) {
-            vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
-
-            if (!vertexSource) {
-                vertexSource = baseName.vertexElement;
-            }
+            vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
         } else {
             vertexSource = baseName.vertex || baseName;
         }
@@ -374,11 +361,7 @@ export class Effect implements IDisposable {
         } else if (baseName.fragmentSource) {
             fragmentSource = "source:" + baseName.fragmentSource;
         } else if (baseName.fragmentElement) {
-            fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
-
-            if (!fragmentSource) {
-                fragmentSource = baseName.fragmentElement;
-            }
+            fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
         } else {
             fragmentSource = baseName.fragment || baseName;
         }

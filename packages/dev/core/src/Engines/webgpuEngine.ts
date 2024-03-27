@@ -1766,7 +1766,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: IShaderPath,
+        baseName: IShaderPath & { vertexToken?: string; fragmentToken?: string },
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | Engine,
         samplers?: string[],
@@ -1777,8 +1777,8 @@ export class WebGPUEngine extends Engine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = typeof baseName === "string" ? baseName : baseName.vertexSource || baseName.vertexElement || baseName.vertex || baseName.vertexToken;
-        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentSource || baseName.fragmentElement || baseName.fragment || baseName.fragmentToken;
+        const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
+        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
