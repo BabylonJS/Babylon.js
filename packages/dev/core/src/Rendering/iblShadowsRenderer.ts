@@ -166,9 +166,9 @@ export class IblShadowsRenderer {
         // This prohibits SSR
         // scene.prePassRenderer!.generateNormalsInWorldSpace = true;
         
-        for (let i = 0; i < this._layoutCacheFormat.length; ++i) {
-            this._layoutCache[i] = this._engine.buildTextureLayout(this._layoutCacheFormat[i]);
-        }
+        // for (let i = 0; i < this._layoutCacheFormat.length; ++i) {
+        //     this._layoutCache[i] = this._engine.buildTextureLayout(this._layoutCacheFormat[i]);
+        // }
 
         this._renderPassIds = [];
         this.useRenderPasses = false;
@@ -319,6 +319,9 @@ export class IblShadowsRenderer {
         // Retrieve opaque color texture
         this._prePassEffectConfiguration.texturesRequired.forEach( (type) => {
             const textureIndex = prePassRenderer.getIndex(type);
+            if (textureIndex === -1) {
+                return;
+            }
             const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
     
             if (!prePassTexture) {
@@ -375,9 +378,10 @@ export class IblShadowsRenderer {
     /**
      * Links to the prepass renderer
      * @param prePassRenderer The scene PrePassRenderer
+     * @returns PrePassEffectConfiguration
      */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer) {
-        prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
+    public setPrePassRenderer(prePassRenderer: PrePassRenderer): PrePassEffectConfiguration {
+        return prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
     // /**
@@ -525,7 +529,7 @@ export class IblShadowsRenderer {
 
         // const currentRenderPassId = this._engine.currentRenderPassId;
 
-        (this._scene.prePassRenderer! as any)._enabled = false;
+        // (this._scene.prePassRenderer! as any)._enabled = false;
 
         // if (this._useRenderPasses) {
         //     this._engine.currentRenderPassId = this._renderPassIds[0];
@@ -630,7 +634,7 @@ export class IblShadowsRenderer {
         // // Final composition on default FB
         this._finalCompose();
 
-        (this._scene.prePassRenderer! as any)._enabled = true;
+        // (this._scene.prePassRenderer! as any)._enabled = true;
         // this._engine.depthCullingState.depthMask = true;
         // this._engine.depthCullingState.depthTest = true;
 
