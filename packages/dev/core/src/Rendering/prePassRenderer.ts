@@ -866,7 +866,10 @@ export class PrePassRenderer {
         }
 
         if (this._scene._iblShadowsRenderer) {
-            this._scene._iblShadowsRenderer.setPrePassRenderer(this);
+            const config = this._scene._iblShadowsRenderer.setPrePassRenderer(this);
+            if (config) {
+                config.enabled = true;
+            }
             enablePrePass = true;
         }
 
