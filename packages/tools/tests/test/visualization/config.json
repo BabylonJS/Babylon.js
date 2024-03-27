@@ -2009,6 +2009,12 @@
             "excludeFromAutomaticTesting": true
         },
         {
+            "title": "Render to 3D RT",
+            "renderCount": 5,
+            "playgroundId": "#XSNYAU#83",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "Interleaved buffers test",
             "playgroundId": "#AVFNTW#5",
             "referenceImage": "interleaved-buffers-1.png"
