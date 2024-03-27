@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -193,8 +193,8 @@ export class LightInformationBlock extends NodeMaterialBlock {
         this._lightShadowExtraUniformName = state._getFreeVariableName("shadowExtraData");
         this._lightTypeDefineName = state._getFreeDefineName("LIGHTPOINTTYPE");
 
-        state._emitUniformFromString(this._lightDataUniformName, "vec3");
-        state._emitUniformFromString(this._lightColorUniformName, "vec4");
+        state._emitUniformFromString(this._lightDataUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString(this._lightColorUniformName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         state.compilationString += `#ifdef ${this._lightTypeDefineName}\n`;
         state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
@@ -206,7 +206,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\n`;
 
         if (shadowBias.hasEndpoints || shadowNormalBias.hasEndpoints || shadowDepthScale.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowUniformName, "vec3");
+            state._emitUniformFromString(this._lightShadowUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
             if (shadowBias.hasEndpoints) {
                 state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\n`;
             }
@@ -219,7 +219,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
 
         if (shadowDepthRange.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowExtraUniformName, "vec2");
+            state._emitUniformFromString(this._lightShadowExtraUniformName, NodeMaterialBlockConnectionPointTypes.Vector2);
             state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\n`;
         }
 

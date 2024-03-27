@@ -2,7 +2,7 @@ import type { GlobalState } from "../../globalState";
 import { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
-import { Engine } from "core/Engines/engine";
+import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { Scene } from "core/scene";
 import { Vector3 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
@@ -39,6 +39,7 @@ import type { TextureBlock } from "core/Materials/Node/Blocks/Dual/textureBlock"
 import { FilesInput } from "core/Misc/filesInput";
 import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const dontSerializeTextureContent = true;
 
@@ -57,7 +58,7 @@ export class PreviewManager {
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
-    private _engine: Engine;
+    private _engine: WebGPUEngine;
     private _scene: Scene;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
@@ -113,6 +114,11 @@ export class PreviewManager {
         return serializationObject;
     }
 
+    /**
+     * Create a new Preview Manager
+     * @param targetCanvas defines the canvas to render to
+     * @param globalState defines the global state
+     */
     public constructor(targetCanvas: HTMLCanvasElement, globalState: GlobalState) {
         this._nodeMaterial = globalState.nodeMaterial;
         this._globalState = globalState;
@@ -156,7 +162,12 @@ export class PreviewManager {
             this._material.needDepthPrePass = this._globalState.depthPrePass;
         });
 
-        this._engine = new Engine(targetCanvas, true);
+        this._initAsync(targetCanvas);
+    }
+
+    public async _initAsync(targetCanvas: HTMLCanvasElement) {
+        this._engine = new WebGPUEngine(targetCanvas);
+        await this._engine.initAsync();
         this._scene = new Scene(this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
         this._scene.ambientColor = new Color3(1, 1, 1);
@@ -582,7 +593,7 @@ export class PreviewManager {
 
             const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
-            const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene);
+            const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", ShaderLanguage.WGSL);
             NodeMaterial.IgnoreTexturesAtLoadTime = store;
 
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;

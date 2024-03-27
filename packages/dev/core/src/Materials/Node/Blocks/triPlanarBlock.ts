@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
@@ -469,7 +469,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         const comments = `//${this.name}`;
         state._emitFunctionFromInclude("helperFunctions", comments);
 
-        state._emitUniformFromString(this._textureInfoName, "float");
+        state._emitUniformFromString(this._textureInfoName, NodeMaterialBlockConnectionPointTypes.Float);
 
         this._generateTextureLookup(state);
 

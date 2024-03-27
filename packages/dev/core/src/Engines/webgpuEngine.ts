@@ -1808,7 +1808,7 @@ export class WebGPUEngine extends Engine {
             onError,
             indexParameters,
             name,
-            shaderLanguage
+            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage
         );
         this._compiledEffects[name] = effect;
 

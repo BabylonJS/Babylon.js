@@ -8,14 +8,15 @@ import type { Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import type { Scene } from "../../../../scene";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { PrecisionDate } from "core/Misc/precisionDate";
+import { PrecisionDate } from "../../../../Misc/precisionDate";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -46,6 +47,7 @@ export class InputBlock extends NodeMaterialBlock {
     private _valueCallback: () => any;
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
+    private _prefix = "";
 
     /** Gets or set a value used to limit the range of float values */
     public min: number = 0;
@@ -276,7 +278,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
-        return this._associatedVariableName;
+        return this._prefix + this._associatedVariableName;
     }
 
     public set associatedVariableName(value: string) {
@@ -492,7 +494,12 @@ export class InputBlock extends NodeMaterialBlock {
             if (define) {
                 state._uniformDeclaration += this._emitDefine(define);
             }
-            state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                state._uniformDeclaration += `uniform ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
+                this._prefix = "uniforms.";
+            } else {
+                state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+            }
             if (define) {
                 state._uniformDeclaration += `#endif\n`;
             }
@@ -521,13 +528,18 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
+            const glType = state._getGLType(this.type);
+
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
                     if (attributeAsUniform[this.name]) {
-                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                        state._emitUniformFromString(this.associatedVariableName, this.type, define);
+                        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                            this._prefix = `vertexInputs.`;
+                        }
                     } else {
-                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                        state._emitVaryingFromString(this.associatedVariableName, glType, define);
                     }
                 } else {
                     this._emit(state._vertexState, define);
@@ -543,15 +555,20 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
-                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    state._emitUniformFromString(this.associatedVariableName, this.type, define);
                 } else {
-                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    state._emitVaryingFromString(this.associatedVariableName, glType, define);
                 }
             } else {
                 if (define) {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
-                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+                if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    state._attributeDeclaration += `attribute ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
+                    this.associatedVariableName = `vertexInputs.${this.associatedVariableName}`;
+                } else {
+                    state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.associatedVariableName};\n`;
+                }
                 if (define) {
                     state._attributeDeclaration += `#endif\n`;
                 }
@@ -567,7 +584,7 @@ export class InputBlock extends NodeMaterialBlock {
             return;
         }
 
-        const variableName = this.associatedVariableName;
+        const variableName = this._associatedVariableName;
         switch (this._systemValue) {
             case NodeMaterialSystemValues.World:
                 effect.setMatrix(variableName, world);
@@ -589,7 +606,7 @@ export class InputBlock extends NodeMaterialBlock {
             return;
         }
 
-        const variableName = this.associatedVariableName;
+        const variableName = this._associatedVariableName;
         if (this._systemValue) {
             switch (this._systemValue) {
                 case NodeMaterialSystemValues.World:

@@ -2,6 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
+import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * Class used to store node based material build state
@@ -78,6 +79,13 @@ export class NodeMaterialBuildState {
     public compilationString = "";
 
     /**
+     * Gets the current shader language to use
+     */
+    public get shaderLanguage() {
+        return this.sharedData.nodeMaterial.shaderLanguage;
+    }
+
+    /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
@@ -85,7 +93,15 @@ export class NodeMaterialBuildState {
         const emitComments = state.sharedData.emitComments;
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
-        this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (isFragmentMode) {
+                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.compilationString}`;
+            } else {
+                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n${this.compilationString}`;
+            }
+        } else {
+            this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+        }
 
         if (this._constantDeclaration) {
             this.compilationString = `\n${emitComments ? "//Constants\n" : ""}${this._constantDeclaration}\n${this.compilationString}`;
@@ -123,18 +139,20 @@ export class NodeMaterialBuildState {
             this.compilationString = `\n${emitComments ? "//Attributes\n" : ""}${this._attributeDeclaration}\n${this.compilationString}`;
         }
 
-        this.compilationString = "precision highp float;\n" + this.compilationString;
-        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
+        if (this.shaderLanguage !== ShaderLanguage.WGSL) {
+            this.compilationString = "precision highp float;\n" + this.compilationString;
+            this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
 
-        if (isFragmentMode) {
-            this.compilationString =
-                "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
-                this.compilationString;
-        }
+            if (isFragmentMode) {
+                this.compilationString =
+                    "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
+                    this.compilationString;
+            }
 
-        for (const extensionName in this.extensions) {
-            const extension = this.extensions[extensionName];
-            this.compilationString = `\n${extension}\n${this.compilationString}`;
+            for (const extensionName in this.extensions) {
+                const extension = this.extensions[extensionName];
+                this.compilationString = `\n${extension}\n${this.compilationString}`;
+            }
         }
 
         this._builtCompilationString = this.compilationString;
@@ -234,6 +252,30 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
+    public _getShaderType(type: NodeMaterialBlockConnectionPointTypes) {
+        const isWGSL = this.shaderLanguage === ShaderLanguage.WGSL;
+
+        switch (type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return isWGSL ? "f32" : "float";
+            case NodeMaterialBlockConnectionPointTypes.Int:
+                return isWGSL ? "i32" : "int";
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return isWGSL ? "vec2<f32>" : "vec2";
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return isWGSL ? "vec3<f32>" : "vec3";
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return isWGSL ? "vec4<f32>" : "vec4";
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                return isWGSL ? "mat4x4<f32>" : "mat4";
+        }
+    }
+
+    /**
+     * @internal
+     */
     public _emitExtension(name: string, extension: string, define: string = "") {
         if (this.extensions[name]) {
             return;
@@ -318,51 +360,54 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
-            if (options && options.repeatKey) {
-                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
-            } else {
-                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\n`;
-            }
+        // TODOWGSL
+        return;
 
-            if (this.sharedData.emitComments) {
-                this.functions[key] = comments + `\n` + this.functions[key];
-            }
+        // if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
+        //     if (options && options.repeatKey) {
+        //         this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
+        //     } else {
+        //         this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\n`;
+        //     }
 
-            return;
-        }
+        //     if (this.sharedData.emitComments) {
+        //         this.functions[key] = comments + `\n` + this.functions[key];
+        //     }
 
-        this.functions[key] = Effect.IncludesShadersStore[includeName];
+        //     return;
+        // }
 
-        if (this.sharedData.emitComments) {
-            this.functions[key] = comments + `\n` + this.functions[key];
-        }
+        // this.functions[key] = Effect.IncludesShadersStore[includeName];
 
-        if (options.removeIfDef) {
-            this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
-            this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
-            this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
-            this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
-        }
+        // if (this.sharedData.emitComments) {
+        //     this.functions[key] = comments + `\n` + this.functions[key];
+        // }
 
-        if (options.removeAttributes) {
-            this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
-        }
+        // if (options.removeIfDef) {
+        //     this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
+        //     this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
+        //     this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
+        //     this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
+        // }
 
-        if (options.removeUniforms) {
-            this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
-        }
+        // if (options.removeAttributes) {
+        //     this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
+        // }
 
-        if (options.removeVaryings) {
-            this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
-        }
+        // if (options.removeUniforms) {
+        //     this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
+        // }
 
-        if (options.replaceStrings) {
-            for (let index = 0; index < options.replaceStrings.length; index++) {
-                const replaceString = options.replaceStrings[index];
-                this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
-            }
-        }
+        // if (options.removeVaryings) {
+        //     this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
+        // }
+
+        // if (options.replaceStrings) {
+        //     for (let index = 0; index < options.replaceStrings.length; index++) {
+        //         const replaceString = options.replaceStrings[index];
+        //         this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
+        //     }
+        // }
     }
 
     /**
@@ -405,7 +450,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
+    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
@@ -419,7 +464,12 @@ export class NodeMaterialBuildState {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this._uniformDeclaration += `uniform ${type} ${name};\n`;
+        const shaderType = this._getShaderType(type);
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            this._uniformDeclaration += `uniform ${name}: ${shaderType};\n`;
+        } else {
+            this._uniformDeclaration += `uniform ${shaderType} ${name};\n`;
+        }
         if (define) {
             this._uniformDeclaration += `#endif\n`;
         }

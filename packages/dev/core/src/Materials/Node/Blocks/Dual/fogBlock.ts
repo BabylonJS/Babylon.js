@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -144,7 +144,7 @@ export class FogBlock extends NodeMaterialBlock {
             this._fogParameters = state._getFreeVariableName("fogParameters");
             const output = this._outputs[0];
 
-            state._emitUniformFromString(this._fogParameters, "vec4");
+            state._emitUniformFromString(this._fogParameters, NodeMaterialBlockConnectionPointTypes.Vector4);
 
             state.compilationString += `#ifdef FOG\n`;
             state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\n`;

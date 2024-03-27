@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -974,7 +974,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const aoIntensity = "1.";
 
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
-        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, "vec4");
+        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         code += `vec3 baseColor = surfaceAlbedo;
 
@@ -1075,8 +1075,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
-        state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
-        state._emitUniformFromString("ambientFromScene", "vec3");
+        state._emitUniformFromString("vDebugMode", NodeMaterialBlockConnectionPointTypes.Vector2, "defined(IGNORE) || DEBUGMODE > 0");
+        state._emitUniformFromString("ambientFromScene", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         // Image processing uniforms
         state.uniforms.push("exposureLinear");
@@ -1145,7 +1145,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // code
         //
 
-        state._emitUniformFromString("vLightingIntensity", "vec4");
+        state._emitUniformFromString("vLightingIntensity", NodeMaterialBlockConnectionPointTypes.Vector4);
 
         if (reflectionBlock?.generateOnlyFragmentCode) {
             state.compilationString += reflectionBlock.handleVertexSide(state);
@@ -1166,7 +1166,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         this._invertNormalName = state._getFreeVariableName("invertNormal");
 
-        state._emitUniformFromString(this._invertNormalName, "float");
+        state._emitUniformFromString(this._invertNormalName, NodeMaterialBlockConnectionPointTypes.Float);
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [

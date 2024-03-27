@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
@@ -161,7 +161,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             const uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
 
             if (!uvInputOwnerBlock.isAttribute) {
-                state._emitUniformFromString(uvInput.associatedVariableName, "vec2");
+                state._emitUniformFromString(uvInput.associatedVariableName, NodeMaterialBlockConnectionPointTypes.Vector2);
             }
         }
 

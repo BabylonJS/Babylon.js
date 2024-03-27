@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
@@ -435,7 +435,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
         state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
 
-        state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
+        state._emitUniformFromString(this._textureTransformName, NodeMaterialBlockConnectionPointTypes.Matrix, this._defineName);
 
         state.compilationString += `#ifdef ${this._defineName}\n`;
         state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
@@ -611,7 +611,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         if (this._isMixed) {
-            state._emitUniformFromString(this._textureInfoName, "float");
+            state._emitUniformFromString(this._textureInfoName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         this._writeTextureRead(state);

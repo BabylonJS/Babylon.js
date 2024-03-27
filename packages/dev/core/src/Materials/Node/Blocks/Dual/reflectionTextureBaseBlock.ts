@@ -1,5 +1,5 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { BaseTexture } from "../../../Textures/baseTexture";
@@ -21,6 +21,7 @@ import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { SubMesh } from "../../../..//Meshes/subMesh";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -288,7 +289,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
 
-        state._emitUniformFromString(this._reflectionMatrixName, "mat4");
+        state._emitUniformFromString(this._reflectionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let code = "";
 
@@ -362,10 +363,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
 
         this._reflectionPositionName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionPositionName, "vec3");
+        state._emitUniformFromString(this._reflectionPositionName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._reflectionSizeName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionSizeName, "vec3");
+        state._emitUniformFromString(this._reflectionSizeName, NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
     /**

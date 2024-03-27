@@ -14,6 +14,7 @@ import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -227,7 +228,11 @@ export class NodeMaterialBlock {
     }
 
     protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
-        return `${state._getGLType(output.type)} ${output.associatedVariableName}`;
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `var ${output.associatedVariableName}: ${state._getShaderType(output.type)}`;
+        } else {
+            return `${state._getShaderType(output.type)} ${output.associatedVariableName}`;
+        }
     }
 
     protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {

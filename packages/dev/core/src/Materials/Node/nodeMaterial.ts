@@ -68,6 +68,7 @@ import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBl
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
 import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
+import { ShaderLanguage } from "../shaderLanguage";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -220,6 +221,8 @@ export interface INodeMaterialOptions {
      * Defines if blocks should emit comments
      */
     emitComments: boolean;
+    /** Defines shader language to use (GLSL by default) */
+    shaderLanguage: ShaderLanguage;
 }
 
 /**
@@ -299,6 +302,11 @@ export class NodeMaterial extends PushMaterial {
         }
 
         return undefined;
+    }
+
+    /** Get the active shader language */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._options.shaderLanguage;
     }
 
     /**
@@ -421,6 +429,7 @@ export class NodeMaterial extends PushMaterial {
 
         this._options = {
             emitComments: false,
+            shaderLanguage: ShaderLanguage.GLSL,
             ...options,
         };
 
@@ -908,6 +917,10 @@ export class NodeMaterial extends PushMaterial {
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
         }
+
+        // TODOWGSL
+        Logger.Log(this._vertexCompilationState.compilationString);
+        Logger.Log(this._fragmentCompilationState.compilationString);
     }
 
     /**
@@ -1546,6 +1559,27 @@ export class NodeMaterial extends PushMaterial {
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
+        // //*********************** */
+        // const tempA = `
+        // uniform u_World : mat4x4<f32>;
+        // uniform u_ViewProjection : mat4x4<f32>;
+        // attribute position : vec3<f32>;
+
+        // @vertex
+        // fn main(input : VertexInputs) -> FragmentInputs {
+        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
+        // }
+        // `;
+
+        // const tempB = `
+        // uniform u_color : vec4<f32>;
+
+        // @fragment
+        // fn main(input : FragmentInputs) -> FragmentOutputs {
+        //     fragmentOutputs.color = uniforms.u_color;
+        // }`;
+        // /*********************** */
+
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation
@@ -1568,6 +1602,7 @@ export class NodeMaterial extends PushMaterial {
                     onError: this.onError,
                     multiTarget: defines.PREPASS,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                    shaderLanguage: this.shaderLanguage,
                 },
                 engine
             );
@@ -2365,10 +2400,11 @@ export class NodeMaterial extends PushMaterial {
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param shaderLanguage defines the language to use (GLSL by default)
      * @returns a new node material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string = ""): NodeMaterial {
-        const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
+    public static Parse(source: any, scene: Scene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
+        const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene, { shaderLanguage: shaderLanguage }), source, scene, rootUrl);
 
         nodeMaterial.parseSerializedObject(source, rootUrl);
         nodeMaterial.build();
