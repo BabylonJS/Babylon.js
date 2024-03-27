@@ -118,10 +118,18 @@ const materialsTree = {
                     KHR_texture_transform: getTextureTransformTree("albedoTexture"),
                 },
             },
+            metallicRoughnessTexture: {
+                extensions: {
+                    KHR_texture_transform: getTextureTransformTree("metallicRoughnessTexture"),
+                },
+            },
         },
         emissiveFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "emissiveColor", getColor3, () => 3)],
         normalTexture: {
             scale: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "bumpTexture.level", getFloat, () => 1)],
+            extensions: {
+                KHR_texture_transform: getTextureTransformTree("bumpTexture"),
+            },
         },
         occlusionTexture: {
             strength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "ambientTextureStrength", getFloat, () => 1)],
@@ -135,34 +143,43 @@ const materialsTree = {
             },
         },
         extensions: {
-            KHR_materials_ior: {
-                ior: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction", getFloat, () => 1)],
+            KHR_materials_anisotropy: {
+                anisotropyStrength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.intensity", getFloat, () => 1)],
+                anisotropyRotation: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.angle", getFloat, () => 1)],
+                anisotropyTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("emissiveTexture"),
+                    },
+                },
             },
             KHR_materials_clearcoat: {
                 clearcoatFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.intensity", getFloat, () => 1)],
                 clearcoatRoughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.roughness", getFloat, () => 1)],
+                clearcoatTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("clearCoat.texture"),
+                    },
+                },
+                clearcoatNormalTexture: {
+                    scale: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "clearCoat.bumpTexture.level", getFloat, () => 1)],
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("clearCoat.bumpTexture"),
+                    },
+                },
+                clearcoatRoughnessTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("clearCoat.textureRoughness"),
+                    },
+                },
             },
-            KHR_materials_sheen: {
-                sheenColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3)],
-                sheenRoughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness", getFloat, () => 1)],
-            },
-            KHR_materials_specular: {
-                specularFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor", getFloat, () => 1)],
-                specularColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", getColor3, () => 3)],
+            KHR_materials_dispersion: {
+                dispersion: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.dispersion", getFloat, () => 1)],
             },
             KHR_materials_emissive_strength: {
                 emissiveStrength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "emissiveIntensity", getFloat, () => 1)],
             },
-            KHR_materials_transmission: {
-                transmissionFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity", getFloat, () => 1)],
-            },
-            KHR_materials_volume: {
-                attenuationColor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", getColor3, () => 3)],
-                attenuationDistance: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", getFloat, () => 1)],
-                thicknessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", getFloat, () => 1)],
-            },
-            KHR_materials_dispersion: {
-                dispersion: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.dispersion", getFloat, () => 1)],
+            KHR_materials_ior: {
+                ior: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "indexOfRefraction", getFloat, () => 1)],
             },
             KHR_materials_iridescence: {
                 iridescenceFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.intensity", getFloat, () => 1)],
@@ -170,9 +187,51 @@ const materialsTree = {
                 iridescenceThicknessMinimum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", getFloat, () => 1)],
                 iridescenceThicknessMaximum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", getFloat, () => 1)],
             },
-            KHR_materials_anisotropy: {
-                anisotropyStrength: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.intensity", getFloat, () => 1)],
-                anisotropyRotation: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.angle", getFloat, () => 1)],
+            KHR_materials_sheen: {
+                sheenColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3)],
+                sheenRoughnessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "sheen.roughness", getFloat, () => 1)],
+                sheenColorTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("sheen.texture"),
+                    },
+                },
+                sheenRoughnessTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("sheen.textureRoughness"),
+                    },
+                },
+            },
+            KHR_materials_specular: {
+                specularFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "metallicF0Factor", getFloat, () => 1)],
+                specularColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "metallicReflectanceColor", getColor3, () => 3)],
+                specularTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("metallicReflectanceTexture"),
+                    },
+                },
+                specularColorTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("reflectanceTexture"),
+                    },
+                },
+            },
+            KHR_materials_transmission: {
+                transmissionFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.refractionIntensity", getFloat, () => 1)],
+                transmissionTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("subSurface.refractionIntensityTexture"),
+                    },
+                },
+            },
+            KHR_materials_volume: {
+                attenuationColor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.tintColor", getColor3, () => 3)],
+                attenuationDistance: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.tintColorAtDistance", getFloat, () => 1)],
+                thicknessFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.maximumThickness", getFloat, () => 1)],
+                thicknessTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("subSurface.thicknessTexture"),
+                    },
+                },
             },
         },
     },
