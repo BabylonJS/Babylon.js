@@ -440,7 +440,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets or sets a boolean indicating if the mesh can be grabbed. Default is false.
      * Setting this to true, while using the XR near interaction feature, will trigger a pointer event when the mesh is grabbed.
      * Grabbing means that the controller is using the squeeze or main trigger button to grab the mesh.
-     * This is different that nearPickable which only triggers the event when the mesh is touched by the controller
+     * This is different from nearPickable which only triggers the event when the mesh is touched by the controller
      */
     public isNearGrabbable = false;
 
