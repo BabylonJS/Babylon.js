@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
+import { serialize, serializeAsColor3, expandToProperty, serializeAsFresnelParameters, serializeAsTexture } from "../Misc/decorators";
 import type { Observer } from "../Misc/observable";
 import { SmartArray } from "../Misc/smartArray";
 import type { IAnimatable } from "../Animations/animatable.interface";
@@ -14,7 +14,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { PrePassConfiguration } from "./prePassConfiguration";
 
-import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration";
+import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { ImageProcessingConfiguration } from "./imageProcessingConfiguration";
 import type { ColorCurves } from "./colorCurves";
 import type { FresnelParameters } from "./fresnelParameters";
@@ -60,6 +60,7 @@ import {
     PrepareDefinesForPrePass,
     PrepareUniformsAndSamplersList,
 } from "./materialHelper.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 

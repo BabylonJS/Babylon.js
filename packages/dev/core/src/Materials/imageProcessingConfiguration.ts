@@ -1,65 +1,16 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
+import { serialize, serializeAsTexture, serializeAsColorCurves, serializeAsColor4 } from "../Misc/decorators";
 import { Observable } from "../Misc/observable";
-import { Tools } from "../Misc/tools";
 import type { Nullable } from "../types";
 import { Color4 } from "../Maths/math.color";
-import { MaterialDefines } from "../Materials/materialDefines";
 import { ColorCurves } from "../Materials/colorCurves";
 
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
-
-/**
- * Interface to follow in your material defines to integrate easily the
- * Image processing functions.
- * @internal
- */
-export interface IImageProcessingConfigurationDefines {
-    IMAGEPROCESSING: boolean;
-    VIGNETTE: boolean;
-    VIGNETTEBLENDMODEMULTIPLY: boolean;
-    VIGNETTEBLENDMODEOPAQUE: boolean;
-    TONEMAPPING: boolean;
-    TONEMAPPING_ACES: boolean;
-    CONTRAST: boolean;
-    EXPOSURE: boolean;
-    COLORCURVES: boolean;
-    COLORGRADING: boolean;
-    COLORGRADING3D: boolean;
-    SAMPLER3DGREENDEPTH: boolean;
-    SAMPLER3DBGRMAP: boolean;
-    DITHER: boolean;
-    IMAGEPROCESSINGPOSTPROCESS: boolean;
-    SKIPFINALCOLORCLAMP: boolean;
-}
-
-/**
- * @internal
- */
-export class ImageProcessingConfigurationDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
-    public IMAGEPROCESSING = false;
-    public VIGNETTE = false;
-    public VIGNETTEBLENDMODEMULTIPLY = false;
-    public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
-    public CONTRAST = false;
-    public COLORCURVES = false;
-    public COLORGRADING = false;
-    public COLORGRADING3D = false;
-    public SAMPLER3DGREENDEPTH = false;
-    public SAMPLER3DBGRMAP = false;
-    public DITHER = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public EXPOSURE = false;
-    public SKIPFINALCOLORCLAMP = false;
-
-    constructor() {
-        super();
-        this.rebuild();
-    }
-}
+import { Mix } from "../Misc/tools.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
+import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
 
 /**
  * This groups together the common properties used for image processing either in direct forward pass
@@ -495,41 +446,14 @@ export class ImageProcessingConfiguration {
      * @param uniforms The list of uniforms used in the effect
      * @param defines the list of defines currently in use
      */
-    public static PrepareUniforms(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
-        if (defines.EXPOSURE) {
-            uniforms.push("exposureLinear");
-        }
-        if (defines.CONTRAST) {
-            uniforms.push("contrast");
-        }
-        if (defines.COLORGRADING) {
-            uniforms.push("colorTransformSettings");
-        }
-        if (defines.VIGNETTE || defines.DITHER) {
-            uniforms.push("vInverseScreenSize");
-        }
-        if (defines.VIGNETTE) {
-            uniforms.push("vignetteSettings1");
-            uniforms.push("vignetteSettings2");
-        }
-        if (defines.COLORCURVES) {
-            ColorCurves.PrepareUniforms(uniforms);
-        }
-        if (defines.DITHER) {
-            uniforms.push("ditherIntensity");
-        }
-    }
+    public static PrepareUniforms: (uniforms: string[], defines: IImageProcessingConfigurationDefines) => void = PrepareUniformsForImageProcessing;
 
     /**
      * Prepare the list of samplers associated with the Image Processing effects.
      * @param samplersList The list of uniforms used in the effect
      * @param defines the list of defines currently in use
      */
-    public static PrepareSamplers(samplersList: string[], defines: IImageProcessingConfigurationDefines): void {
-        if (defines.COLORGRADING) {
-            samplersList.push("txColorTransform");
-        }
-    }
+    public static PrepareSamplers: (samplersList: string[], defines: IImageProcessingConfigurationDefines) => void = PrepareSamplersForImageProcessing;
 
     /**
      * Prepare the list of defines associated to the shader.
@@ -621,8 +545,8 @@ export class ImageProcessingConfiguration {
                 let vignetteScaleX = vignetteScaleY * aspectRatio;
 
                 const vignetteScaleGeometricMean = Math.sqrt(vignetteScaleX * vignetteScaleY);
-                vignetteScaleX = Tools.Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
-                vignetteScaleY = Tools.Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleX = Mix(vignetteScaleX, vignetteScaleGeometricMean, this.vignetteStretch);
+                vignetteScaleY = Mix(vignetteScaleY, vignetteScaleGeometricMean, this.vignetteStretch);
 
                 effect.setFloat4("vignetteSettings1", vignetteScaleX, vignetteScaleY, -vignetteScaleX * this.vignetteCenterX, -vignetteScaleY * this.vignetteCenterY);
 

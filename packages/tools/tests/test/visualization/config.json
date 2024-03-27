@@ -1096,15 +1096,37 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "OBJ loader test",
+            "playgroundId": "#SYQW69#1209",
+            "referenceImage": "objTestLoader.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (LH)",
+            "playgroundId": "#26R8NS#6",
+            "referenceImage": "objStanfordBunnyNormalsLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, LH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true; useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripRH.png"
+        },
+        {
             "title": "GLTF Extension KHR_materials_variants",
             "playgroundId": "#BKGTKL#3",
             "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
-        },
-        {
-            "title": "OBJ loader test",
-            "playgroundId": "#SYQW69#311",
-            "referenceImage": "objTestLoader.png",
-            "renderCount": 10
         },
         {
             "title": "GLB load from ArrayBuffer",
@@ -1524,7 +1546,7 @@
         },
         {
             "title": "Baked Vertex Animation",
-            "playgroundId": "#14WJWW#11",
+            "playgroundId": "#14WJWW#13",
             "referenceImage": "bakedVertexAnimation.png"
         },
         {
@@ -1985,6 +2007,35 @@
             "renderCount": 10,
             "playgroundId": "#2I28SC#25",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Interleaved buffers test",
+            "playgroundId": "#AVFNTW#5",
+            "referenceImage": "interleaved-buffers-1.png"
+        },
+        {
+            "title": "Interleaved buffers test (integerPositionsAndNormals = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, integerPositionsAndNormals = true;",
+            "referenceImage": "interleaved-buffers-2.png"
+        },
+        {
+            "title": "Interleaved buffers test (updateUVs = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, updateUVs = true;",
+            "referenceImage": "interleaved-buffers-3.png"
+        },
+        {
+            "title": "Interleaved buffers test (updateUVs = true, updateAfterRender = true)",
+            "playgroundId": "#AVFNTW#5",
+            "replace": "//options//, updateUVs = true; updateAfterRender = true;",
+            "referenceImage": "interleaved-buffers-4.png",
+            "renderCount": 2
+        },
+        {
+            "title": "CesiumMan from Khronos Sample Assets",
+            "playgroundId": "#4GWX8M",
+            "referenceImage": "CesiumMan.png"
         },
         {
             "title": "Render to 3D RT",

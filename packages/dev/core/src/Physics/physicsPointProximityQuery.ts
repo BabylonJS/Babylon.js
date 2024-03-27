@@ -1,6 +1,6 @@
 import type { Vector3 } from "../Maths/math.vector";
 import type { IRaycastQuery } from "./physicsRaycastResult";
-import type { PhysicsBody } from "./v2";
+import type { PhysicsBody } from "./v2/physicsBody";
 
 /**
  * Interface for point proximity query.

@@ -177,8 +177,11 @@ export class Skeleton implements IAnimatable {
      * @param mesh defines the mesh to use to get the root matrix (if needInitialSkinMatrix === true)
      * @returns a Float32Array containing matrices data
      */
-    public getTransformMatrices(mesh: AbstractMesh): Float32Array {
+    public getTransformMatrices(mesh: Nullable<AbstractMesh>): Float32Array {
         if (this.needInitialSkinMatrix) {
+            if (!mesh) {
+                throw new Error("getTransformMatrices: When using the needInitialSkinMatrix flag, a mesh must be provided");
+            }
             if (!mesh._bonesTransformMatrices) {
                 this.prepare(true);
             }
@@ -751,8 +754,8 @@ export class Skeleton implements IAnimatable {
                 index: bone.getIndex(),
                 name: bone.name,
                 id: bone.id,
-                matrix: bone.getBindMatrix().toArray(),
-                rest: bone.getRestMatrix().toArray(),
+                matrix: bone.getBindMatrix().asArray(),
+                rest: bone.getRestMatrix().asArray(),
                 linkedTransformNodeId: bone.getTransformNode()?.id,
             };
 

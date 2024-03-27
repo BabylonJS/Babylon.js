@@ -1,3 +1,4 @@
+import { Vector2ToFixed, Vector3ToFixed, Vector4ToFixed } from "../../../Maths/math.vector.functions";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeGeometryBlockConnectionPointTypes } from "../Enums/nodeGeometryConnectionPointTypes";
 import { NodeGeometryBlock } from "../nodeGeometryBlock";
@@ -11,7 +12,7 @@ export class DebugBlock extends NodeGeometryBlock {
     /**
      * Gets the log entries
      */
-    public log: string[] = [];
+    public log: string[][] = [];
 
     /**
      * Create a new DebugBlock
@@ -71,11 +72,24 @@ export class DebugBlock extends NodeGeometryBlock {
             const input = this.input.getConnectedValue(state);
 
             if (input === null || input === undefined) {
-                this.log.push("null");
+                this.log.push(["null", ""]);
                 return input;
             }
 
-            this.log.push(input.toString());
+            switch (this.input.type) {
+                case NodeGeometryBlockConnectionPointTypes.Vector2:
+                    this.log.push([Vector2ToFixed(input, 4), input.toString()]);
+                    break;
+                case NodeGeometryBlockConnectionPointTypes.Vector3:
+                    this.log.push([Vector3ToFixed(input, 4), input.toString()]);
+                    break;
+                case NodeGeometryBlockConnectionPointTypes.Vector4:
+                    this.log.push([Vector4ToFixed(input, 4), input.toString()]);
+                    break;
+                default:
+                    this.log.push([input.toString(), input.toString()]);
+                    break;
+            }
 
             return input;
         };

@@ -14,7 +14,8 @@ import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { MaterialDefines } from "core/Materials/materialDefines";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { RegisterClass } from "core/Misc/typeStore";
-import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { serialize } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import { VertexBuffer } from "core/Buffers/buffer";
 
 import "./shaders/mrdlBackglow.fragment";

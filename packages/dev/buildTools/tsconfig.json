@@ -5,6 +5,6 @@
         "target": "es2017",
         "module": "esnext",
         "resolveJsonModule": true,
-        "allowSyntheticDefaultImports": true,
+        "allowSyntheticDefaultImports": true
     }
 }

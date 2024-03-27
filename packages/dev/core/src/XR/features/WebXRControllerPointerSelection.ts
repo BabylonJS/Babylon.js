@@ -119,6 +119,18 @@ export interface IWebXRControllerPointerSelectionOptions {
      * The height (y) of the mesh must be 1.
      */
     customLasterPointerMeshGenerator?: () => AbstractMesh;
+
+    /**
+     * Use the grip space instead of the pointer space for selection, if available.
+     */
+    forceGripIfAvailable?: boolean;
+
+    /**
+     * If set to true, the hand rays will be disabled and the user will be able to look and pick objects.
+     * This requires system support (like in the vision OS) and will not work in all systems.
+     * @experimental - this is an experimental feature and might change int he future
+     */
+    lookAndPickMode?: boolean;
 }
 
 /**
@@ -133,7 +145,7 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
             return;
         }
 
-        const { laserPointer, selectionMesh } = this._generateNewMeshPair(xrController.pointer);
+        const { laserPointer, selectionMesh } = this._generateNewMeshPair(this._options.forceGripIfAvailable && xrController.grip ? xrController.grip : xrController.pointer);
 
         // get two new meshes
         this._controllers[xrController.uniqueId] = {
@@ -259,6 +271,18 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this._scene = this._xrSessionManager.scene;
+
+        // force look and pick mode if using WebXR on safari, assuming it is vision OS
+        // Only if not explicitly set. If set to false, it will not be forced
+        if (this._options.lookAndPickMode === undefined && (this._scene.getEngine()._badDesktopOS || this._scene.getEngine()._badOS)) {
+            this._options.lookAndPickMode = true;
+        }
+
+        // look and pick mode extra state changes
+        if (this._options.lookAndPickMode) {
+            this._options.enablePointerSelectionOnAllControllers = true;
+            this.displayLaserPointer = false;
+        }
     }
 
     /**
@@ -273,11 +297,15 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         }
 
         this._options.xrInput.controllers.forEach(this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController);
-        this._addNewAttachObserver(this._options.xrInput.onControllerRemovedObservable, (controller) => {
-            // REMOVE the controller
-            this._detachController(controller.uniqueId);
-        });
+        this._addNewAttachObserver(this._options.xrInput.onControllerAddedObservable, this._attachController, true);
+        this._addNewAttachObserver(
+            this._options.xrInput.onControllerRemovedObservable,
+            (controller) => {
+                // REMOVE the controller
+                this._detachController(controller.uniqueId);
+            },
+            true
+        );
 
         this._scene.constantlyUpdateMeshUnderPointer = true;
 
@@ -385,8 +413,12 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
     protected _onXRFrame(_xrFrame: XRFrame) {
         Object.keys(this._controllers).forEach((id) => {
+            // look and pick mode
             // only do this for the selected pointer
             const controllerData = this._controllers[id];
+            if (this._options.lookAndPickMode && controllerData.xrController?.inputSource.targetRayMode !== "transient-pointer") {
+                return;
+            }
             if ((!this._options.enablePointerSelectionOnAllControllers && id !== this._attachedController) || controllerData.disabledByNearInteraction) {
                 controllerData.selectionMesh.isVisible = false;
                 controllerData.laserPointer.isVisible = false;
@@ -400,8 +432,11 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
 
             // Every frame check collisions/input
             if (controllerData.xrController) {
-                controllerGlobalPosition = controllerData.xrController.pointer.position;
-                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay);
+                controllerGlobalPosition =
+                    this._options.forceGripIfAvailable && controllerData.xrController.grip
+                        ? controllerData.xrController.grip.position
+                        : controllerData.xrController.pointer.position;
+                controllerData.xrController.getWorldPointerRayToRef(controllerData.tmpRay, this._options.forceGripIfAvailable);
             } else if (controllerData.webXRCamera) {
                 controllerGlobalPosition = controllerData.webXRCamera.position;
                 controllerData.webXRCamera.getForwardRayToRef(controllerData.tmpRay);
@@ -417,8 +452,8 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                 const scene = this._xrSessionManager.scene;
                 const camera = this._options.xrInput.xrCamera;
                 if (camera) {
-                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth(), scene.getEngine().getRenderHeight(), this._viewportRef);
-                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, scene.getTransformMatrix(), this._viewportRef, this._screenCoordinatesRef);
+                    camera.viewport.toGlobalToRef(scene.getEngine().getRenderWidth() / camera.rigCameras.length, scene.getEngine().getRenderHeight(), this._viewportRef);
+                    Vector3.ProjectToRef(controllerGlobalPosition, this._identityMatrix, camera.getTransformationMatrix(), this._viewportRef, this._screenCoordinatesRef);
                     // stay safe
                     if (
                         typeof this._screenCoordinatesRef.x === "number" &&
@@ -665,6 +700,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             }
                         } else {
                             if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                // force a pointer up if switching controllers
+                                // get the controller that was attached before
+                                const prevController = this._controllers[this._attachedController];
+                                if (prevController && prevController.pointerDownTriggered && !prevController.finalPointerUpTriggered) {
+                                    this._augmentPointerInit(pointerEventInit, prevController.id, prevController.screenCoordinates);
+                                    this._scene.simulatePointerUp(new PickingInfo(), {
+                                        pointerId: prevController.id,
+                                        pointerType: "xr",
+                                    });
+                                    prevController.finalPointerUpTriggered = true;
+                                }
                                 this._attachedController = xrController.uniqueId;
                             }
                         }
@@ -679,22 +725,26 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
         } else {
             // use the select and squeeze events
             const selectStartListener = (event: XRInputSourceEvent) => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
-                    controllerData.pointerDownTriggered = true;
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
-                }
+                this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                    if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                        this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                        controllerData.pointerDownTriggered = true;
+                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshPickedColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerPickedColor;
+                    }
+                });
             };
 
             const selectEndListener = (event: XRInputSourceEvent) => {
-                this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
-                if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
-                    this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
-                    (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
-                    (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
-                }
+                this._xrSessionManager.onXRFrameObservable.addOnce(() => {
+                    this._augmentPointerInit(pointerEventInit, controllerData.id, controllerData.screenCoordinates);
+                    if (controllerData.xrController && event.inputSource === controllerData.xrController.inputSource && controllerData.pick) {
+                        this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                        (<StandardMaterial>controllerData.selectionMesh.material).emissiveColor = this.selectionMeshDefaultColor;
+                        (<StandardMaterial>controllerData.laserPointer.material).emissiveColor = this.laserPointerDefaultColor;
+                    }
+                });
             };
 
             controllerData.eventListeners = {

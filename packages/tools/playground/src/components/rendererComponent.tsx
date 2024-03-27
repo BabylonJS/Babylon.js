@@ -141,12 +141,20 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
 
             if (useWebGPU) {
                 globalObject.createDefaultEngine = async function () {
-                    const engine = new WebGPUEngine(canvas, {
-                        enableAllFeatures: true,
-                        setMaximumLimits: true,
-                    });
-                    await engine.initAsync();
-                    return engine;
+                    try {
+                        const engine = new WebGPUEngine(canvas, {
+                            enableAllFeatures: true,
+                            setMaximumLimits: true,
+                        });
+                        await engine.initAsync();
+                        return engine;
+                    } catch (e) {
+                        // eslint-disable-next-line no-console
+                        console.error("The Playground could not create a WebGPU engine instance. Make sure WebGPU is supported by your browser.");
+                        // eslint-disable-next-line no-console
+                        console.error(e);
+                        return null;
+                    }
                 };
             } else {
                 globalObject.createDefaultEngine = function () {

@@ -1,12 +1,12 @@
 import type { Nullable } from "../types";
 import { Vector2, Vector3, TmpVectors, Vector4 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import { Scalar } from "../Maths/math.scalar";
-import type { ParticleSystem } from "./particleSystem";
 import type { SubEmitter } from "./subEmitter";
 import type { ColorGradient, FactorGradient } from "../Misc/gradients";
 
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import type { ThinParticleSystem } from "./thinParticleSystem";
+import { Clamp } from "../Maths/math.scalar.functions";
 
 /**
  * A particle represents one of the element emitted by a particle system.
@@ -152,7 +152,7 @@ export class Particle {
         /**
          * The particle system the particle belongs to.
          */
-        public particleSystem: ParticleSystem
+        public particleSystem: ThinParticleSystem
     ) {
         this.id = Particle._Count++;
         if (!this.particleSystem.isAnimationSheetEnabled) {
@@ -190,9 +190,9 @@ export class Particle {
         const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID;
         let ratio: number;
         if (this._initialSpriteCellLoop) {
-            ratio = Scalar.Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
+            ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);
         } else {
-            ratio = Scalar.Clamp((offsetAge * changeSpeed) / this.lifeTime);
+            ratio = Clamp((offsetAge * changeSpeed) / this.lifeTime);
         }
         this.cellIndex = (this._initialStartSpriteCellID + ratio * dist) | 0;
     }

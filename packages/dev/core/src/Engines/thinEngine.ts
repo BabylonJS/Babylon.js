@@ -7,7 +7,7 @@ import { _WarnImport } from "../Misc/devTools";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
-import type { Nullable, DataArray, IndicesArray } from "../types";
+import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
@@ -227,14 +227,14 @@ export class ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@6.44.0";
+        return "babylonjs@6.48.1";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "6.44.0";
+        return "6.48.1";
     }
 
     /**
@@ -461,14 +461,13 @@ export class ThinEngine {
     /** @internal */
     public _videoTextureSupported: boolean;
 
-    protected _renderingQueueLaunched = false;
     protected _activeRenderLoops = new Array<() => void>();
 
     /**
      * Gets the list of current active render loop functions
-     * @returns an array with the current render loop functions
+     * @returns a read only array with the current render loop functions
      */
-    public get activeRenderLoops(): Array<() => void> {
+    public get activeRenderLoops(): ReadonlyArray<() => void> {
         return this._activeRenderLoops;
     }
 
@@ -571,7 +570,7 @@ export class ThinEngine {
     public _workingContext: Nullable<ICanvasRenderingContext>;
 
     /** @internal */
-    public _boundRenderFunction: any;
+    public _boundRenderFunction: any = () => this._renderLoop();
 
     private _vaoRecordInProgress = false;
     private _mustWipeVertexAttributes = false;
@@ -582,7 +581,7 @@ export class ThinEngine {
     private _emptyTexture2DArray: Nullable<InternalTexture>;
 
     /** @internal */
-    public _frameHandler: number;
+    public _frameHandler: number = 0;
 
     private _nextFreeTextureSlots = new Array<number>();
     private _maxSimultaneousTextures = 0;
@@ -1039,14 +1038,49 @@ export class ThinEngine {
         }
     }
 
+    protected _clearEmptyResources(): void {
+        this._dummyFramebuffer = null;
+        this._emptyTexture = null;
+        this._emptyCubeTexture = null;
+        this._emptyTexture3D = null;
+        this._emptyTexture2DArray = null;
+    }
+
+    protected _rebuildGraphicsResources(): void {
+        // Ensure webgl and engine states are matching
+        this.wipeCaches(true);
+
+        // Rebuild effects
+        this._rebuildEffects();
+        this._rebuildComputeEffects?.();
+
+        // Note:
+        //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
+        //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
+
+        // Rebuild buffers
+        this._rebuildBuffers();
+        // Rebuild textures
+        this._rebuildInternalTextures();
+        // Rebuild textures
+        this._rebuildTextures();
+        // Rebuild textures
+        this._rebuildRenderTargetWrappers();
+
+        // Reset engine states after all the buffer/textures/... have been rebuilt
+        this.wipeCaches(true);
+    }
+
+    protected _flagContextRestored(): void {
+        Logger.Warn(this.name + " context successfully restored.");
+        this.onContextRestoredObservable.notifyObservers(this);
+        this._contextWasLost = false;
+    }
+
     protected _restoreEngineAfterContextLost(initEngine: () => void): void {
         // Adding a timeout to avoid race condition at browser level
         setTimeout(async () => {
-            this._dummyFramebuffer = null;
-            this._emptyTexture = null;
-            this._emptyCubeTexture = null;
-            this._emptyTexture3D = null;
-            this._emptyTexture2DArray = null;
+            this._clearEmptyResources();
 
             const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
             const depthFunc = this._depthCullingState.depthFunc;
@@ -1055,38 +1089,14 @@ export class ThinEngine {
 
             // Rebuild context
             await initEngine();
-
-            // Ensure webgl and engine states are matching
-            this.wipeCaches(true);
-
-            // Rebuild effects
-            this._rebuildEffects();
-            this._rebuildComputeEffects?.();
-
-            // Note:
-            //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
-            //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
-
-            // Rebuild buffers
-            this._rebuildBuffers();
-            // Rebuild textures
-            this._rebuildInternalTextures();
-            // Rebuild textures
-            this._rebuildTextures();
-            // Rebuild textures
-            this._rebuildRenderTargetWrappers();
-
-            // Reset engine states after all the buffer/textures/... have been rebuilt
-            this.wipeCaches(true);
+            this._rebuildGraphicsResources();
 
             this._depthCullingState.depthTest = depthTest;
             this._depthCullingState.depthFunc = depthFunc;
             this._depthCullingState.depthMask = depthMask;
             this._stencilState.stencilTest = stencilTest;
 
-            Logger.Warn(this.name + " context successfully restored.");
-            this.onContextRestoredObservable.notifyObservers(this);
-            this._contextWasLost = false;
+            this._flagContextRestored();
         }, 0);
     }
 
@@ -1451,7 +1461,7 @@ export class ThinEngine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: false,
             supportSpriteInstancing: true,
-            forceVertexBufferStrideMultiple4Bytes: false,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1586,24 +1596,28 @@ export class ThinEngine {
     }
 
     protected _cancelFrame() {
-        if (this._renderingQueueLaunched && this._frameHandler) {
-            this._renderingQueueLaunched = false;
+        if (this._frameHandler !== 0) {
+            const handlerToCancel = this._frameHandler;
+            this._frameHandler = 0;
+
             if (!IsWindowObjectExist()) {
                 if (typeof cancelAnimationFrame === "function") {
-                    return cancelAnimationFrame(this._frameHandler);
+                    return cancelAnimationFrame(handlerToCancel);
                 }
             } else {
                 const { cancelAnimationFrame } = this.getHostWindow() || window;
                 if (typeof cancelAnimationFrame === "function") {
-                    return cancelAnimationFrame(this._frameHandler);
+                    return cancelAnimationFrame(handlerToCancel);
                 }
             }
-            return clearTimeout(this._frameHandler);
+            return clearTimeout(handlerToCancel);
         }
     }
 
     /** @internal */
     public _renderLoop(): void {
+        this._frameHandler = 0;
+
         if (!this._contextWasLost) {
             let shouldRender = true;
             if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
@@ -1625,10 +1639,8 @@ export class ThinEngine {
             }
         }
 
-        if (this._activeRenderLoops.length > 0) {
+        if (this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
-        } else {
-            this._renderingQueueLaunched = false;
         }
     }
 
@@ -1717,9 +1729,8 @@ export class ThinEngine {
 
         this._activeRenderLoops.push(renderFunction);
 
-        if (!this._renderingQueueLaunched) {
-            this._renderingQueueLaunched = true;
-            this._boundRenderFunction = () => this._renderLoop();
+        // On the first added function, start the render loop.
+        if (this._activeRenderLoops.length === 1 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
@@ -3653,7 +3664,7 @@ export class ThinEngine {
      * @param matrices defines the array of float32 to store
      * @returns true if the value was set
      */
-    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: Float32Array): boolean {
+    public setMatrices(uniform: Nullable<WebGLUniformLocation>, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }
