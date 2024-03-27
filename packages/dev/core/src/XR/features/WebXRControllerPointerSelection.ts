@@ -700,6 +700,17 @@ export class WebXRControllerPointerSelection extends WebXRAbstractFeature {
                             }
                         } else {
                             if (pressed && !this._options.enablePointerSelectionOnAllControllers && !this._options.disableSwitchOnClick) {
+                                // force a pointer up if switching controllers
+                                // get the controller that was attached before
+                                const prevController = this._controllers[this._attachedController];
+                                if (prevController && prevController.pointerDownTriggered && !prevController.finalPointerUpTriggered) {
+                                    this._augmentPointerInit(pointerEventInit, prevController.id, prevController.screenCoordinates);
+                                    this._scene.simulatePointerUp(new PickingInfo(), {
+                                        pointerId: prevController.id,
+                                        pointerType: "xr",
+                                    });
+                                    prevController.finalPointerUpTriggered = true;
+                                }
                                 this._attachedController = xrController.uniqueId;
                             }
                         }
