@@ -23,7 +23,6 @@ import type { Scene } from "../../scene";
 import type { VideoTexture, VideoTextureSettings } from "./videoTexture";
 
 import { SerializationHelper } from "../../Misc/decorators.serialization";
-import { TextureDome } from "core/Helpers/textureDome";
 
 /**
  * Defines the available options when creating a texture
@@ -320,7 +319,7 @@ export class Texture extends BaseTexture {
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
-    private _cachedIdentity3x2: boolean = TextureDome;
+    private _cachedIdentity3x2: boolean = true;
 
     private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
     private _cachedReflectionUOffset = -1;
