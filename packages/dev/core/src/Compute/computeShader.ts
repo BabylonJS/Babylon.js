@@ -55,7 +55,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
  */
 export class ComputeShader {
     private _engine: ThinEngine;
-    private _shaderPath: IComputeShaderPath;
+    private _shaderPath: IComputeShaderPath | string;
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
     private _cachedDefines: string;
@@ -123,7 +123,7 @@ export class ComputeShader {
      *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
-    constructor(name: string, engine: ThinEngine, shaderPath: IComputeShaderPath, options: Partial<IComputeShaderOptions> = {}) {
+    constructor(name: string, engine: ThinEngine, shaderPath: IComputeShaderPath | string, options: Partial<IComputeShaderOptions> = {}) {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;

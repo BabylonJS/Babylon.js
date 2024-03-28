@@ -108,7 +108,7 @@ export interface IShaderMaterialOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
-    private _shaderPath: IShaderPath;
+    private _shaderPath: IShaderPath | string;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
@@ -162,7 +162,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: IShaderPath, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene: Scene, shaderPath: IShaderPath | string, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
         super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
@@ -186,7 +186,7 @@ export class ShaderMaterial extends PushMaterial {
      * Gets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public get shaderPath(): IShaderPath {
+    public get shaderPath() {
         return this._shaderPath;
     }
 
@@ -194,7 +194,7 @@ export class ShaderMaterial extends PushMaterial {
      * Sets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public set shaderPath(shaderPath: IShaderPath) {
+    public set shaderPath(shaderPath: IShaderPath | string) {
         this._shaderPath = shaderPath;
     }
 
