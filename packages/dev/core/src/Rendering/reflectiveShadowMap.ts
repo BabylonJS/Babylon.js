@@ -394,7 +394,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                     uniform mat4 rsmTextureProjectionMatrix;
                     uniform vec4 rsmSpotInfo;
                     uniform vec3 rsmLightColor;
-                    unfiorm vec3 rsmLightPosition;
+                    uniform vec3 rsmLightPosition;
                 #endif`,
         };
     }
