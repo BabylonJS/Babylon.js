@@ -1,5 +1,5 @@
 {
-    "fromTag": "6.48.0",
+    "fromTag": "6.48.1",
     "changelog": {
         "6.48.1": [
             {
@@ -30,6 +30,335 @@
                     "packages/tools/playground/public/index.js"
                 ],
                 "tags": []
+            }
+        ],
+        "6.49.0": [
+            {
+                "pr": "14920",
+                "title": "Add legacy behavior flag to obj loader",
+                "description": "See forum: https://forum.babylonjs.com/t/obj-exported-scene-rotated-180-around-up-axis/48825/25.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/OBJ/objLoadingOptions.ts",
+                    "packages/dev/loaders/src/OBJ/solidParser.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objTestLoaderLegacy.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14919",
+                "title": "Fix PBR Sub Surface",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14917",
+                "title": "Fix PBR sub surface Dirty mecanism on textures",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14915",
+                "title": "Update glTF animation pointer property tree",
+                "description": "Also updated KHR_materials_emission_strength to use `emissiveIntensity` instead of multiplying the color.\r\n\r\nSee forum: https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_emissive_strength.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14912",
+                "title": "Fix matrix usage on pbr sheen roughness",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14913",
+                "title": "fix: add `actualBoundingBoxAscent` and `actualBoundingBoxDescent` props to `ITextMetrics`",
+                "description": "Hi,\r\nthese mentioned properties were discussed in the following forum thread. The thread was marked as resolved with info the props will be added, but it looks like it has never happened. \r\n\r\n\r\nhttps://forum.babylonjs.com/t/upgrading-to-the-latest-babylon-5-2-0/29377/1",
+                "author": {
+                    "name": "yedpodtrzitko",
+                    "url": "https://github.com/yedpodtrzitko"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/ICanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14911",
+                "title": "Some fixes for 6DoF",
+                "description": "* isNearGrabbable is now set on the mesh and its children (will enable grabbing glTFs as well)\n* If the attached controller changes in XR and the last controller had a pointer down triggered, a pointer up event will trigger (caused an issue with 6DoF)\n* Multipointer in WebXR is disabled (temporary) until an issue with touching multipointers will be solved.\n* Docs updated for more clarity\n* XR evets are treated the same in 6DoF, meaning a remote controller can now rotate a model when using 6DoF behavior.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/XR/features/WebXRControllerPointerSelection.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14910",
+                "title": "PBR: fix the \"eho\" debug mode",
+                "description": "See https://forum.babylonjs.com/t/edgerendering-not-apply-animation/49026/9",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14876",
+                "title": "Fixed `Tensor` value typing",
+                "description": "Minor PR, this fixes the types of `array`. Previously, they were `ArrayLike<number>`. This has been corrected to the `Tensor`'s value.\r\n\r\n",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeDataStream.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/tensor.ts",
+                    "packages/dev/core/src/types.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14876",
+                "title": "Fixed `Tensor` value typing",
+                "description": "Minor PR, this fixes the types of `array`. Previously, they were `ArrayLike<number>`. This has been corrected to the `Tensor`'s value.\r\n\r\n",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeDataStream.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Maths/math.like.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/tensor.ts",
+                    "packages/dev/core/src/types.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14893",
+                "title": "Add interpolation option for varying in WGSL",
+                "description": "In the current version, when preprocessing a WGSL shader the interpolation options are ignored making it impossible to use non `f32` based types which require `@interpolate(flat)`. With the proposed changes both interpolation type and sampling can be specified in a similar fashion as in GLSL shaders.\r\n\r\nReference: https://www.w3.org/TR/WGSL/#interpolation",
+                "author": {
+                    "name": "XanthosXanthopoulos",
+                    "url": "https://github.com/XanthosXanthopoulos"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14901",
+                "title": "Thin instances: Automatic buffer recreation when static buffer changes",
+                "description": "See https://forum.babylonjs.com/t/unable-to-set-thin-instance-with-thininstancesetmatrixat/48896/11",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/thinInstanceMesh.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14904",
+                "title": "Global Illumination: small fixes to the GI code",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14900",
+                "title": "fix in PointsCloudSystem: uniform distribution in triangle",
+                "description": "See issue 1 in https://forum.babylonjs.com/t/pointscloudsystem-unequal-distribution-of-points/48981\r\n\r\nPlayground usage example: #UI95UC#2446",
+                "author": {
+                    "name": "hcschuetz",
+                    "url": "https://github.com/hcschuetz"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14903",
+                "title": "PointsCloudSystem: simplified triangle area calculation",
+                "description": "See issue 3 in https://forum.babylonjs.com/t/pointscloudsystem-unequal-distribution-of-points/48981\r\n\r\nNo semantic change.\r\n\r\nUsage example: https://playground.babylonjs.com/#UI95UC#2447",
+                "author": {
+                    "name": "hcschuetz",
+                    "url": "https://github.com/hcschuetz"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14902",
+                "title": "fix in PointsCloudSystem: uniform distribution across triangles",
+                "description": "See issue 2 in https://forum.babylonjs.com/t/pointscloudsystem-unequal-distribution-of-points/48981\r\n\r\nusage example: https://playground.babylonjs.com/#UI95UC#2447",
+                "author": {
+                    "name": "hcschuetz",
+                    "url": "https://github.com/hcschuetz"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14899",
+                "title": "Removed int from Distance/dot/length",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDistanceBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryDotBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryLengthBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14898",
+                "title": "Fract node in NGE should not have Operation property",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/geometryTrigonometryBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14895",
+                "title": "Update storybook to new version, including dependencies",
+                "description": "Also updated dependencies in general",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/sharedUiComponents/.storybook/main.js",
+                    "packages/dev/sharedUiComponents/.storybook/preview.js",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/src/storybookExtension.d.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14884",
+                "title": "Fix obj loader and exporter to support handedness correctly",
+                "description": "See forum: https://forum.babylonjs.com/t/obj-exported-scene-rotated-180-around-up-axis/48825\r\n\r\nSee PG for the test: https://playground.babylonjs.com/#26R8NS#6",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/solidParser.ts",
+                    "packages/dev/loaders/test/integration/babylon.sceneLoader.test.ts",
+                    "packages/dev/serializers/src/OBJ/objSerializer.ts",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objStanfordBunnyNormalsLH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objStanfordBunnyNormalsRH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objStanfordBunnyNormalsRoundTripLH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objStanfordBunnyNormalsRoundTripRH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/objTestLoader.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change"
+                ]
             }
         ],
         "6.48.0": [
