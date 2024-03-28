@@ -55,7 +55,7 @@ export class PhysicsBody {
     disablePreStep: boolean = true;
 
     /**
-     * Disable sync from physics to transformNode. This value is set to true at body creation when the body is not dynamic.
+     * Disable sync from physics to transformNode. This value is set to true at body creation or at motionType setting when the body is not dynamic.
      */
     disableSync: boolean = false;
 
@@ -242,6 +242,7 @@ export class PhysicsBody {
      * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for.
      */
     public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
+        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
         this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
     }
 

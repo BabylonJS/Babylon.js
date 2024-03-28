@@ -204,7 +204,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
         if (pointerCount === 1) {
             this._targetPosition.copyFrom(this._ownerNode.absolutePosition);
-            this._targetOrientation.copyFrom(this._ownerNode.absoluteRotationQuaternion);
+            this._targetOrientation.copyFrom(this._ownerNode.rotationQuaternion);
             this._targetScaling.copyFrom(this._ownerNode.absoluteScaling);
 
             if (this.faceCameraOnDragStart && this._scene.activeCamera) {
