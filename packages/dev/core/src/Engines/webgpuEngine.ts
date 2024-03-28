@@ -1766,7 +1766,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: IShaderPath & { vertexToken?: string; fragmentToken?: string },
+        baseName: string | (IShaderPath & { vertexToken?: string; fragmentToken?: string }),
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | Engine,
         samplers?: string[],
