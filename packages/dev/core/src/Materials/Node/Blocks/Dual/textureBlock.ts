@@ -20,6 +20,7 @@ import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to read a texture from a sampler
@@ -30,6 +31,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _gammaDefineName: string;
     private _tempTextureRead: string;
     private _samplerName: string;
+    private _textureName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
@@ -410,7 +412,12 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this._imageSource) {
-            effect.setTexture(this._samplerName, this.texture);
+            if (this._textureName) {
+                effect.setTexture(this._textureName, this.texture);
+                effect.setTextureSampler(this._samplerName, this.texture._texture);
+            } else {
+                effect.setTexture(this._samplerName, this.texture);
+            }
         }
     }
 
@@ -472,7 +479,10 @@ export class TextureBlock extends NodeMaterialBlock {
         return coords;
     }
 
-    private get _samplerFunc() {
+    private _samplerFunc(state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSample";
+        }
         return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
     }
 
@@ -480,15 +490,18 @@ export class TextureBlock extends NodeMaterialBlock {
         return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : "";
     }
 
-    private _generateTextureLookup(state: NodeMaterialBuildState): void {
-        const samplerName = this.samplerName;
+    private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerFunc(state)}(${this._textureName},${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+        }
+        return `${this._samplerFunc(state)}(${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+    }
 
+    private _generateTextureLookup(state: NodeMaterialBuildState): void {
         state.compilationString += `#ifdef ${this._defineName}\n`;
-        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(state._getVaryingName(this._transformedUVName))}${this._samplerLodSuffix});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(state._getVaryingName(this._transformedUVName), state)};\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
-            this._mainUVName ? state._getVaryingName(this._mainUVName) : this.uv.associatedVariableName
-        )}${this._samplerLodSuffix});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(this._mainUVName ? state._getVaryingName(this._mainUVName) : this.uv.associatedVariableName, state)}${this._samplerLodSuffix};\n`;
         state.compilationString += `#endif\n`;
     }
 
@@ -505,9 +518,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
-                this._samplerLodSuffix
-            });\n`;
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(uvInput.associatedVariableName, state)}${this._samplerLodSuffix};\n`;
             return;
         }
 
@@ -550,7 +561,7 @@ export class TextureBlock extends NodeMaterialBlock {
         let complement = "";
 
         if (!this.disableLevelMultiplication) {
-            complement = ` * ${this._textureInfoName}`;
+            complement = ` * ${(state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "") + this._textureInfoName}`;
         }
 
         state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
@@ -575,11 +586,14 @@ export class TextureBlock extends NodeMaterialBlock {
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
                 this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+                if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    this._textureName = state._getFreeVariableName(this.name + "Texture");
+                }
 
                 if (this._texture?._texture?.is2DArray) {
                     state._emit2DArraySampler(this._samplerName);
                 } else {
-                    state._emit2DSampler(this._samplerName);
+                    state._emit2DSampler(this._samplerName, this._textureName);
                 }
             }
 
@@ -606,7 +620,7 @@ export class TextureBlock extends NodeMaterialBlock {
             if (this._texture?._texture?.is2DArray) {
                 state._emit2DArraySampler(this._samplerName);
             } else {
-                state._emit2DSampler(this._samplerName);
+                state._emit2DSampler(this._samplerName, this._textureName);
             }
         }
 

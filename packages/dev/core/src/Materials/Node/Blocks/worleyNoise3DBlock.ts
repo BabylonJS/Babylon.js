@@ -253,11 +253,11 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         }
 
         if (this.x.hasEndpoints) {
-            state.compilationString += state._declareOutput(this.x, state) + ` = ${tempVariable}.x;\n`;
+            state.compilationString += state._declareOutput(this.x) + ` = ${tempVariable}.x;\n`;
         }
 
         if (this.y.hasEndpoints) {
-            state.compilationString += state._declareOutput(this.y, state) + ` = ${tempVariable}.y;\n`;
+            state.compilationString += state._declareOutput(this.y) + ` = ${tempVariable}.y;\n`;
         }
         return this;
     }

@@ -129,11 +129,11 @@ export class TwirlBlock extends NodeMaterialBlock {
         }
 
         if (this.x.hasEndpoints) {
-            state.compilationString += state._declareOutput(this.x, state) + ` = ${tempResult}.x;\n`;
+            state.compilationString += state._declareOutput(this.x) + ` = ${tempResult}.x;\n`;
         }
 
         if (this.y.hasEndpoints) {
-            state.compilationString += state._declareOutput(this.y, state) + ` = ${tempResult}.y;\n`;
+            state.compilationString += state._declareOutput(this.y) + ` = ${tempResult}.y;\n`;
         }
 
         return this;

@@ -120,7 +120,7 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         }
 
         if (this.cells.hasEndpoints) {
-            state.compilationString += state._declareOutput(this.cells, state) + ` = ${tempCells};\n`;
+            state.compilationString += state._declareOutput(this.cells) + ` = ${tempCells};\n`;
         }
 
         return this;

@@ -127,7 +127,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        state.compilationString += `${state._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\n`;
+        state.compilationString += `${state._declareOutput(this.depth)} = vec3(depthSM, 1., 1.);\n`;
 
         return this;
     }

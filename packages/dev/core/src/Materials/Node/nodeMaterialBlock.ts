@@ -14,7 +14,6 @@ import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
-import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * Defines a block that can be used inside a node based material

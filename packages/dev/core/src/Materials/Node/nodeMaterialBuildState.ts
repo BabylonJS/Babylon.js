@@ -209,10 +209,11 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string) {
+    public _emit2DSampler(name: string, textureName: string) {
         if (this.samplers.indexOf(name) < 0) {
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
                 this._samplerDeclaration += `var ${name}: sampler;\n`;
+                this._samplerDeclaration += `var ${textureName}: texture_2d<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform sampler2D ${name};\n`;
             }

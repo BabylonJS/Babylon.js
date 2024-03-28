@@ -172,7 +172,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
             state.compilationString += `#endif\n`;
 
             if (this.rgb.hasEndpoints) {
-                state.compilationString += state._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+                state.compilationString += state._declareOutput(this.rgb) + ` = ${this.output.associatedVariableName}.xyz;\n`;
             }
         }
 

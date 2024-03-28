@@ -187,7 +187,7 @@ export class CloudBlock extends NodeMaterialBlock {
             chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2(0., 0.)" : "vec3(0., 0., 0.)";
         }
 
-        state.compilationString += state._declareOutput(this._outputs[0], state) + ` = ${fbmNewName}(${localVariable}, ${chaosValue});\n`;
+        state.compilationString += state._declareOutput(this._outputs[0]) + ` = ${fbmNewName}(${localVariable}, ${chaosValue});\n`;
 
         return this;
     }
