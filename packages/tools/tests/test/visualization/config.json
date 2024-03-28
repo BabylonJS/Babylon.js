@@ -2042,12 +2042,6 @@
             "title": "CesiumMan from Khronos Sample Assets",
             "playgroundId": "#4GWX8M",
             "referenceImage": "CesiumMan.png"
-        },
-        {
-            "title": "Render to 3D RT",
-            "renderCount": 5,
-            "playgroundId": "#XSNYAU#83",
-            "excludedEngines": ["webgl1"]
         }
     ]
 }

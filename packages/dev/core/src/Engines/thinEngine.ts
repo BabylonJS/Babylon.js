@@ -1965,9 +1965,9 @@ export class ThinEngine {
         if (depthStencilTexture) {
             if (rtWrapper.is3D) {
                 if (
-                    rtWrapper.texture!.width != depthStencilTexture.width ||
-                    rtWrapper.texture!.height != depthStencilTexture.height ||
-                    rtWrapper.texture!.depth != depthStencilTexture.depth
+                    rtWrapper.texture!.width !== depthStencilTexture.width ||
+                    rtWrapper.texture!.height !== depthStencilTexture.height ||
+                    rtWrapper.texture!.depth !== depthStencilTexture.depth
                 ) {
                     Logger.Warn("Depth/Stencil attachment for 3D target must have same dimensions as color attachment");
                 }
