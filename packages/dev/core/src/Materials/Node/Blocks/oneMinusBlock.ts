@@ -49,7 +49,7 @@ export class OneMinusBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = 1. - ${this.input.associatedVariableName};\n`;
+        state.compilationString += state._declareOutput(output) + ` = 1. - ${this.input.associatedVariableName};\n`;
 
         return this;
     }

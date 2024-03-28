@@ -293,7 +293,7 @@ export class CurveBlock extends NodeMaterialBlock {
 
         state._emitFunction(registeredFunctionName, `${inputType} ${registeredFunctionName}(${inputType} v) {${registeredFunction};}\n`, "");
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${registeredFunctionName}(${this.input.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${registeredFunctionName}(${this.input.associatedVariableName});\n`;
 
         return this;
     }

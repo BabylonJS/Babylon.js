@@ -76,7 +76,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (this.entryPoint) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
         }
     }
 

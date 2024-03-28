@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -293,8 +293,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         const tintTexture = "vec4(0.)";
 
         if (ccBlock) {
-            state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
-            state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
+            state._emitUniformFromString("vClearCoatRefractionParams", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClearCoatTangentSpaceParams", NodeMaterialBlockConnectionPointTypes.Vector2);
 
             const normalShading = ccBlock.worldNormal;
             code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
@@ -391,7 +391,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             state.sharedData.blocksWithDefines.push(this);
 
             this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
-            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         return this;

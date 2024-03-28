@@ -81,7 +81,7 @@ export class ReplaceColorBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + `;\n`;
+        state.compilationString += state._declareOutput(output) + `;\n`;
         state.compilationString += `if (length(${this.value.associatedVariableName} - ${this.reference.associatedVariableName}) < ${this.distance.associatedVariableName}) {\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.replacement.associatedVariableName};\n`;
         state.compilationString += `} else {\n`;

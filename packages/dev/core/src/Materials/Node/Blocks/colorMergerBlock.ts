@@ -133,29 +133,32 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         const color4Output = this._outputs[0];
         const color3Output = this._outputs[1];
 
+        const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec3 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector3);
+
         if (rgbInput.isConnected) {
             if (color4Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color4Output, state) +
-                    ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
+                    state._declareOutput(color4Output) +
+                    ` = ${vec4}(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
+                state.compilationString += state._declareOutput(color3Output) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
             }
         } else {
             if (color4Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color4Output, state) +
-                    ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
+                    state._declareOutput(color4Output) +
+                    ` = ${vec4}(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
                     }, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color3Output, state) +
-                    ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
+                    state._declareOutput(color3Output) +
+                    ` = ${vec3}(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
                     })${this._buildSwizzle(3)};\n`;
             }

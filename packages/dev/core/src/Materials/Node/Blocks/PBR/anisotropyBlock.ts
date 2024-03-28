@@ -1,7 +1,6 @@
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -12,6 +11,7 @@ import { TBNBlock } from "../Fragment/TBNBlock";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
 import { Logger } from "core/Misc/logger";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
@@ -232,7 +232,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
             state.sharedData.bindableBlocks.push(this);
 
             this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
-            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         return this;

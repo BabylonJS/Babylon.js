@@ -103,7 +103,7 @@ export class RemapBlock extends NodeMaterialBlock {
         const targetMax = this.targetMax.isConnected ? this.targetMax.associatedVariableName : this._writeFloat(this.targetRange.y);
 
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = ${targetMin} + (${this._inputs[0].associatedVariableName} - ${sourceMin}) * (${targetMax} - ${targetMin}) / (${sourceMax} - ${sourceMin});\n`;
 
         return this;

@@ -60,7 +60,7 @@ export class SubtractBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.left.associatedVariableName} - ${this.right.associatedVariableName};\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${this.left.associatedVariableName} - ${this.right.associatedVariableName};\n`;
 
         return this;
     }

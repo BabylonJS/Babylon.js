@@ -173,7 +173,7 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
         }
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${operation}(${this.input.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${operation}(${this.input.associatedVariableName});\n`;
 
         return this;
     }

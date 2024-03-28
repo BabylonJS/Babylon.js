@@ -1,5 +1,5 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -296,27 +296,31 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vEnvironmentIrradianceName = state._getFreeVariableName("vEnvironmentIrradiance");
 
-        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)");
+        state._emitVaryingFromString(
+            this._vEnvironmentIrradianceName,
+            NodeMaterialBlockConnectionPointTypes.Vector3,
+            "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)"
+        );
 
-        state._emitUniformFromString("vSphericalL00", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL1_1", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL10", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL11", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL2_2", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL2_1", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL20", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL21", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL22", "vec3", "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL00", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL1_1", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL10", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL11", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL2_2", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL2_1", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL20", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL21", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL22", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
 
-        state._emitUniformFromString("vSphericalX", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalY", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalXX_ZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalYY_ZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalXY", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalYZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZX", "vec3", "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalY", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalXX_ZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalYY_ZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalXY", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalYZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
 
         code += `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
                 vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
@@ -379,13 +383,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vReflectionMicrosurfaceInfosName = state._getFreeVariableName("vReflectionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
+        state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
 
         this._vReflectionFilteringInfoName = state._getFreeVariableName("vReflectionFilteringInfo");
 
-        state._emitUniformFromString(this._vReflectionFilteringInfoName, "vec2");
+        state._emitUniformFromString(this._vReflectionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         code += `#ifdef REFLECTION
             vec2 ${this._vReflectionInfosName} = vec2(1., 0.);

@@ -177,7 +177,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
                 break;
         }
 
-        const output = this._declareOutput(this.output, state);
+        const output = state._declareOutput(this.output);
         if (attributeDefine) {
             state.compilationString += `#ifdef ${attributeDefine}\n`;
         }

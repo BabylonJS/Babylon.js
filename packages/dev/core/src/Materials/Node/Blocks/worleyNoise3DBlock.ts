@@ -249,15 +249,15 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         state.compilationString += `vec2 ${tempVariable} = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\n`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempVariable};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempVariable};\n`;
         }
 
         if (this.x.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempVariable}.x;\n`;
+            state.compilationString += state._declareOutput(this.x, state) + ` = ${tempVariable}.x;\n`;
         }
 
         if (this.y.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempVariable}.y;\n`;
+            state.compilationString += state._declareOutput(this.y, state) + ` = ${tempVariable}.y;\n`;
         }
         return this;
     }

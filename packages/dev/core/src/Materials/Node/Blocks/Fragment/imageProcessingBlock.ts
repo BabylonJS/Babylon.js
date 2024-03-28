@@ -154,9 +154,9 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
 
         if (color.connectedPoint?.isConnected) {
             if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                state.compilationString += `${this._declareOutput(output, state)} = ${color.associatedVariableName};\n`;
+                state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
             } else {
-                state.compilationString += `${this._declareOutput(output, state)} = vec4(${color.associatedVariableName}, 1.0);\n`;
+                state.compilationString += `${state._declareOutput(output)} = vec4(${color.associatedVariableName}, 1.0);\n`;
             }
             state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
             if (this.convertInputToLinearSpace) {
@@ -172,7 +172,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
             state.compilationString += `#endif\n`;
 
             if (this.rgb.hasEndpoints) {
-                state.compilationString += this._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+                state.compilationString += state._declareOutput(this.rgb, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
             }
         }
 

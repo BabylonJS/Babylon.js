@@ -190,9 +190,9 @@ export class BonesBlock extends NodeMaterialBlock {
         const worldInput = this.world;
 
         state.compilationString += `#if NUM_BONE_INFLUENCERS>0\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${worldInput.associatedVariableName} * ${influenceVariablename};\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = ${worldInput.associatedVariableName};\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${worldInput.associatedVariableName};\n`;
         state.compilationString += `#endif\n`;
 
         return this;

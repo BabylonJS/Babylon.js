@@ -143,13 +143,13 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunction("heightToNormal", heightToNormal, "// heightToNormal");
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = heightToNormal(${this.input.associatedVariableName}, ${this.worldPosition.associatedVariableName}, ${
                 this.worldTangent.isConnected ? this.worldTangent.associatedVariableName : "vec3(0.)"
             }.xyz, ${this.worldNormal.associatedVariableName});\n`;
 
         if (this.xyz.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+            state.compilationString += state._declareOutput(this.xyz) + ` = ${this.output.associatedVariableName}.xyz;\n`;
         }
 
         return this;

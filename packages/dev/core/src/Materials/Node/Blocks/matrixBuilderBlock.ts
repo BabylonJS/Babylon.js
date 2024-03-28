@@ -104,7 +104,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         const row3 = this.row3;
 
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = mat4(${row0.associatedVariableName}, ${row1.associatedVariableName}, ${row2.associatedVariableName}, ${row3.associatedVariableName});\n`;
 
         return this;

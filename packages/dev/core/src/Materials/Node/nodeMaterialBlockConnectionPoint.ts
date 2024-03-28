@@ -120,6 +120,13 @@ export class NodeMaterialConnectionPoint {
     public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
+     * Gets the declaration variable name in the shader
+     */
+    public get declarationVariableName(): string {
+        return this._associatedVariableName;
+    }
+
+    /**
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
