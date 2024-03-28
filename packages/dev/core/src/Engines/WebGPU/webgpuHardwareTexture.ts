@@ -88,6 +88,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             arrayLayerCount = 6 * (depth || 1);
         } else if (is3D) {
             viewDimension = WebGPUConstants.TextureViewDimension.E3d;
+            arrayLayerCount = 1;
         } else if (is2DArray) {
             viewDimension = WebGPUConstants.TextureViewDimension.E2dArray;
             arrayLayerCount = depth;

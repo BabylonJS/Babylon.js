@@ -2186,13 +2186,14 @@ export class WebGPUEngine extends Engine {
 
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
-        texture.depth = layers;
+        texture.depth = depth || layers;
         texture.isReady = true;
         texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
@@ -2200,6 +2201,7 @@ export class WebGPUEngine extends Engine {
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
+        texture.is3D = depth > 0;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
@@ -2939,11 +2941,13 @@ export class WebGPUEngine extends Engine {
                     const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+                        dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
-                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
+                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : mrtTexture.is3D ? 0 : layerIndex,
                     };
                     const msaaViewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+                        dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
@@ -2955,6 +2959,7 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                        depthSlice: mrtTexture.is3D ? layerIndex : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -2970,6 +2975,13 @@ export class WebGPUEngine extends Engine {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
 
+                let depthSlice: number | undefined = undefined;
+
+                if (rtWrapper.is3D) {
+                    depthSlice = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
+                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
+                }
+
                 const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
@@ -2978,6 +2990,7 @@ export class WebGPUEngine extends Engine {
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                    depthSlice,
                     clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
@@ -3198,7 +3211,7 @@ export class WebGPUEngine extends Engine {
 
         this._rttRenderPassWrapper.colorAttachmentViewDescriptor = {
             format: this._colorFormat as GPUTextureFormat,
-            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
@@ -3210,7 +3223,7 @@ export class WebGPUEngine extends Engine {
             format: this._depthTextureFormat!,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All,

@@ -84,6 +84,13 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Defines if the render target wrapper is for a 3D texture
+     */
+    public get is3D(): boolean {
+        return this.depth > 0;
+    }
+
+    /**
      * Gets the size of the render target wrapper (used for cubes, as width=height in this case)
      */
     public get size(): number {
@@ -108,7 +115,14 @@ export class RenderTargetWrapper {
      * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target)
      */
     public get layers(): number {
-        return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
+        return (<{ width: number; height: number; depth?: number; layers?: number }>this._size).layers || 0;
+    }
+
+    /**
+     * Gets the depth of the render target wrapper (only used if is3D is true and wrapper is not a multi render target)
+     */
+    public get depth(): number {
+        return (<{ width: number; height: number; depth?: number; layers?: number }>this._size).depth || 0;
     }
 
     /**
@@ -399,6 +413,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
+                    depth: this.depth,
                 };
 
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
@@ -429,7 +444,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
-                    layers: this.is2DArray ? this.texture?.depth : undefined,
+                    layers: this.is2DArray || this.is3D ? this.texture?.depth : undefined,
                 };
 
                 rtw = this._engine.createRenderTargetTexture(size, options);

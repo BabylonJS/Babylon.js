@@ -286,7 +286,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     public clearColor: Color4;
     protected _size: TextureSize;
-    protected _initialSizeParameter: number | { width: number; height: number } | { ratio: number };
+    protected _initialSizeParameter: TextureSize | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @internal */
     public _generateMipMaps: boolean;
@@ -420,7 +420,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param scene The scene the RTT belongs to. Default is the last created scene.
      * @param options The options for creating the render target texture.
      */
-    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+    constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
@@ -445,7 +445,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps?: boolean,
         doNotChangeAspectRatio?: boolean,
@@ -466,7 +466,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /** @internal */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
@@ -615,7 +615,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    protected _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }, createRenderPassIds = true): void {
+    protected _processSizeParameter(size: TextureSize | { ratio: number }, createRenderPassIds = true): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
             const engine = this._getEngine()!;
@@ -624,7 +624,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio),
             };
         } else {
-            this._size = <number | { width: number; height: number; layers?: number }>size;
+            this._size = <TextureSize>size;
         }
 
         if (createRenderPassIds) {
@@ -775,13 +775,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual number of layers of the texture.
+     * Gets the actual number of layers of the texture or, in the case of a 3D texture, return the depth.
      * @returns the number of layers
      */
     public getRenderLayers(): number {
-        const layers = (<{ width: number; height: number; layers?: number }>this._size).layers;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).layers;
         if (layers) {
             return layers;
+        }
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).depth;
+        if (depth) {
+            return depth;
         }
 
         return 0;
@@ -831,7 +835,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      *   - an object containing { width: number, height: number }
      *   - or an object containing a ratio { ratio: number }
      */
-    public resize(size: number | { width: number; height: number } | { ratio: number }): void {
+    public resize(size: TextureSize | { ratio: number }): void {
         const wasCube = this.isCube;
 
         this._renderTarget?.dispose();
@@ -953,7 +957,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         let returnValue = checkReadiness;
 
         if (!checkReadiness) {
-            if (this.is2DArray && !this.isMulti) {
+            if ((this.is2DArray || this.is3D) && !this.isMulti) {
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
                     this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
@@ -973,7 +977,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // We probably didn't execute scene.render() yet, so make sure we have a view/projection matrix setup for the scene
                 scene.updateTransformMatrix();
             }
-            const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
+            const numLayers = this.is2DArray || this.is3D ? this.getRenderLayers() : this.isCube ? 6 : 1;
             for (let layer = 0; layer < numLayers && returnValue; layer++) {
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
                 const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -1015,7 +1019,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
                 this.onAfterRenderObservable.notifyObservers(layer);
 
-                if (this.is2DArray || this.isCube) {
+                if (this.is2DArray || this.is3D || this.isCube) {
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
@@ -1182,7 +1186,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
-        if (this.is2DArray) {
+        if (this.is2DArray || this.is3D) {
             engine.currentRenderPassId = this._renderPassIds[layer];
             this.onBeforeRenderObservable.notifyObservers(layer);
         } else {
@@ -1199,7 +1203,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
 
             if (this.getCustomRenderList) {
-                currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
+                currentRenderList = this.getCustomRenderList(this.is2DArray || this.is3D ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
             }
 
             if (!currentRenderList) {

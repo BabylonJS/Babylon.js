@@ -1082,7 +1082,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
                         texture.is2DArray ? "_Array" + arrayLayerCount : ""
-                    }_${width}x${height}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
+                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,

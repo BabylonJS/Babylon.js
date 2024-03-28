@@ -2216,7 +2216,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRenderTargetTexture(size: number | { width: number; height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    public createRenderTargetTexture(size: number | { width: number; height: number; depth: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         let generateDepthBuffer = true;

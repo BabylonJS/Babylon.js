@@ -65,4 +65,4 @@ export interface DepthTextureCreationOptions {
 /**
  * Type used to define a texture size (either with a number or with a rect width and height)
  */
-export type TextureSize = number | { width: number; height: number; layers?: number };
+export type TextureSize = number | { width: number; height: number; depth?: number; layers?: number };

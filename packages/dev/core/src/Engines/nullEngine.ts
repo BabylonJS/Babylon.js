@@ -711,7 +711,11 @@ export class NullEngine extends Engine {
     /**
      * @internal
      */
-    public _createHardwareRenderTargetWrapper(isMulti: boolean, isCube: boolean, size: number | { width: number; height: number; layers?: number }): RenderTargetWrapper {
+    public _createHardwareRenderTargetWrapper(
+        isMulti: boolean,
+        isCube: boolean,
+        size: number | { width: number; height: number; depth?: number; layers?: number }
+    ): RenderTargetWrapper {
         const rtWrapper = new RenderTargetWrapper(isMulti, isCube, size, this);
         this._renderTargetWrapperCache.push(rtWrapper);
         return rtWrapper;

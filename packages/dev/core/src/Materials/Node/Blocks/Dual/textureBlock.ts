@@ -460,8 +460,12 @@ export class TextureBlock extends NodeMaterialBlock {
         let coords = uvName;
 
         const is2DArrayTexture = this._texture?._texture?.is2DArray ?? false;
+        const is3D = this._texture?._texture?.is3D ?? false;
 
         if (is2DArrayTexture) {
+            const layerValue = this.layer.isConnected ? this.layer.associatedVariableName : "0";
+            coords = `vec3(${uvName}, ${layerValue})`;
+        } else if (is3D) {
             const layerValue = this.layer.isConnected ? this.layer.associatedVariableName : "0";
             coords = `vec3(${uvName}, ${layerValue})`;
         }
