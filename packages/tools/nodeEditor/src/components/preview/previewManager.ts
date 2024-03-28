@@ -40,6 +40,7 @@ import { FilesInput } from "core/Misc/filesInput";
 import "core/Helpers/sceneHelpers";
 import "core/Rendering/depthRendererSceneComponent";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Engine } from "core/Engines/engine";
 
 const dontSerializeTextureContent = true;
 
@@ -58,7 +59,7 @@ export class PreviewManager {
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
-    private _engine: WebGPUEngine;
+    private _engine: Engine;
     private _scene: Scene;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;
@@ -166,8 +167,12 @@ export class PreviewManager {
     }
 
     public async _initAsync(targetCanvas: HTMLCanvasElement) {
-        this._engine = new WebGPUEngine(targetCanvas);
-        await this._engine.initAsync();
+        if (this._nodeMaterial.shaderLanguage === ShaderLanguage.WGSL) {
+            this._engine = new WebGPUEngine(targetCanvas);
+            await (this._engine as WebGPUEngine).initAsync();
+        } else {
+            this._engine = new Engine(targetCanvas);
+        }
         this._scene = new Scene(this._engine);
         this._scene.clearColor = this._globalState.backgroundColor;
         this._scene.ambientColor = new Color3(1, 1, 1);
@@ -593,7 +598,7 @@ export class PreviewManager {
 
             const store = NodeMaterial.IgnoreTexturesAtLoadTime;
             NodeMaterial.IgnoreTexturesAtLoadTime = false;
-            const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", ShaderLanguage.WGSL);
+            const tempMaterial = NodeMaterial.Parse(serializationObject, this._scene, "", this._nodeMaterial.shaderLanguage);
             NodeMaterial.IgnoreTexturesAtLoadTime = store;
 
             tempMaterial.backFaceCulling = this._globalState.backFaceCulling;

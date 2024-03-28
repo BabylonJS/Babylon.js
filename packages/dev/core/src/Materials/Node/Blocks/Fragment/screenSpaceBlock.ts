@@ -112,13 +112,13 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         state.compilationString += `${tempVariableName}.xy = ${tempVariableName}.xy * 0.5 + vec2(0.5, 0.5);`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempVariableName}.xy;\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempVariableName}.xy;\n`;
         }
         if (this.x.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempVariableName}.x;\n`;
+            state.compilationString += state._declareOutput(this.x, state) + ` = ${tempVariableName}.x;\n`;
         }
         if (this.y.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempVariableName}.y;\n`;
+            state.compilationString += state._declareOutput(this.y, state) + ` = ${tempVariableName}.y;\n`;
         }
 
         return this;

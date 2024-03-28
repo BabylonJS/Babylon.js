@@ -107,7 +107,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.sharedData.blocksWithDefines.push(this);
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
             state._emitUniformFromString("logarithmicDepthConstant", NodeMaterialBlockConnectionPointTypes.Float);
-            state._emitVaryingFromString("vFragmentDepth", "float");
+            state._emitVaryingFromString("vFragmentDepth", NodeMaterialBlockConnectionPointTypes.Float);
             state.sharedData.bindableBlocks.push(this);
         }
         this._linearDefineName = state._getFreeDefineName("CONVERTTOLINEAR");

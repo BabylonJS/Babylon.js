@@ -70,7 +70,7 @@ export class CustomBlock extends NodeMaterialBlock {
 
         // Declare the output variables
         this._outputs.forEach((output) => {
-            state.compilationString += this._declareOutput(output, state) + ";\n";
+            state.compilationString += state._declareOutput(output) + ";\n";
         });
 
         // Generate the function call

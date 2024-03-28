@@ -65,7 +65,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         // TODOWGSL
         if (this._isLogarithmicDepthEnabled(state.sharedData.fragmentOutputNodes, state.sharedData.nodeMaterial.useLogarithmicDepth)) {
             state._emitUniformFromString("logarithmicDepthConstant", NodeMaterialBlockConnectionPointTypes.Float);
-            state._emitVaryingFromString("vFragmentDepth", "float");
+            state._emitVaryingFromString("vFragmentDepth", NodeMaterialBlockConnectionPointTypes.Float);
 
             state.compilationString += `vFragmentDepth = 1.0 + gl_Position.w;\n`;
             state.compilationString += `gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;\n`;

@@ -482,7 +482,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\n`;
+                state._constantDeclaration += state._declareOutput(this.output) + ` = ${this._emitConstant(state)};\n`;
                 return;
             }
 
@@ -494,11 +494,12 @@ export class InputBlock extends NodeMaterialBlock {
             if (define) {
                 state._uniformDeclaration += this._emitDefine(define);
             }
+            const shaderType = state._getShaderType(this.type);
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                state._uniformDeclaration += `uniform ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
+                state._uniformDeclaration += `uniform ${this.associatedVariableName}: ${shaderType};\n`;
                 this._prefix = "uniforms.";
             } else {
-                state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+                state._uniformDeclaration += `uniform ${shaderType} ${this.associatedVariableName};\n`;
             }
             if (define) {
                 state._uniformDeclaration += `#endif\n`;
@@ -528,8 +529,6 @@ export class InputBlock extends NodeMaterialBlock {
         if (this.isAttribute) {
             this.associatedVariableName = remapAttributeName[this.name] ?? this.name;
 
-            const glType = state._getGLType(this.type);
-
             if (this.target === NodeMaterialBlockTargets.Vertex && state._vertexState) {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
@@ -539,7 +538,7 @@ export class InputBlock extends NodeMaterialBlock {
                             this._prefix = `vertexInputs.`;
                         }
                     } else {
-                        state._emitVaryingFromString(this.associatedVariableName, glType, define);
+                        state._emitVaryingFromString(this.associatedVariableName, this.type, define);
                     }
                 } else {
                     this._emit(state._vertexState, define);
@@ -557,7 +556,7 @@ export class InputBlock extends NodeMaterialBlock {
                 if (attributeAsUniform[this.name]) {
                     state._emitUniformFromString(this.associatedVariableName, this.type, define);
                 } else {
-                    state._emitVaryingFromString(this.associatedVariableName, glType, define);
+                    state._emitVaryingFromString(this.associatedVariableName, this.type, define);
                 }
             } else {
                 if (define) {

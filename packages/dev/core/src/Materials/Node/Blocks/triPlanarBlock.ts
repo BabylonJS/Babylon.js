@@ -433,7 +433,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             complement = ` * ${this._textureInfoName}`;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
         this._generateConversionCode(state, output, swizzle);
     }
 

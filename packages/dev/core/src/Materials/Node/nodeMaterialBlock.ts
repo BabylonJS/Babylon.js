@@ -227,14 +227,6 @@ export class NodeMaterialBlock {
         // Do nothing
     }
 
-    protected _declareOutput(output: NodeMaterialConnectionPoint, state: NodeMaterialBuildState): string {
-        if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `var ${output.associatedVariableName}: ${state._getShaderType(output.type)}`;
-        } else {
-            return `${state._getShaderType(output.type)} ${output.associatedVariableName}`;
-        }
-    }
-
     protected _writeVariable(currentPoint: NodeMaterialConnectionPoint): string {
         const connectionPoint = currentPoint.connectedPoint;
 
@@ -564,7 +556,7 @@ export class NodeMaterialBlock {
                 (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
                 const connectedPoint = input.connectedPoint!;
-                if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, state._getGLType(connectedPoint.type))) {
+                if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, connectedPoint.type)) {
                     state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\n`;
                 }
                 input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;

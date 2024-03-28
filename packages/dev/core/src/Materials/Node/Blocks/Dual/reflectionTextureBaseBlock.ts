@@ -296,14 +296,14 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
 
         const worldPosVaryingName = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName;
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, NodeMaterialBlockConnectionPointTypes.Vector3, this._defineSkyboxName)) {
             code += `#ifdef ${this._defineSkyboxName}\n`;
             code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\n`;
             code += `#endif\n`;
@@ -313,7 +313,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             this.generateOnlyFragmentCode ||
             state._emitVaryingFromString(
                 this._directionWName,
-                "vec3",
+                NodeMaterialBlockConnectionPointTypes.Vector3,
                 `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
             )
         ) {
@@ -496,7 +496,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             for (const output of this._outputs) {
                 if (output.hasEndpoints) {
-                    code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                    code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
                 }
             }
         }

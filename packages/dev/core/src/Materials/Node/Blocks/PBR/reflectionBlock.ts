@@ -1,5 +1,5 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -296,7 +296,11 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vEnvironmentIrradianceName = state._getFreeVariableName("vEnvironmentIrradiance");
 
-        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)");
+        state._emitVaryingFromString(
+            this._vEnvironmentIrradianceName,
+            NodeMaterialBlockConnectionPointTypes.Vector3,
+            "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)"
+        );
 
         state._emitUniformFromString("vSphericalL00", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
         state._emitUniformFromString("vSphericalL1_1", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");

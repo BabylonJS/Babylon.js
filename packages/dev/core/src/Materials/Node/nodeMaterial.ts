@@ -917,10 +917,6 @@ export class NodeMaterial extends PushMaterial {
         if (prePassRenderer) {
             prePassRenderer.markAsDirty();
         }
-
-        // TODOWGSL
-        Logger.Log(this._vertexCompilationState.compilationString);
-        Logger.Log(this._fragmentCompilationState.compilationString);
     }
 
     /**

@@ -54,7 +54,7 @@ export class ArcTan2Block extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = atan(${this.x.associatedVariableName}, ${this.y.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = atan(${this.x.associatedVariableName}, ${this.y.associatedVariableName});\n`;
 
         return this;
     }

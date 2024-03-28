@@ -3,6 +3,7 @@ import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
 import { ShaderLanguage } from "../shaderLanguage";
+import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 
 /**
  * Class used to store node based material build state
@@ -210,7 +211,11 @@ export class NodeMaterialBuildState {
      */
     public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                this._samplerDeclaration += `var ${name}: sampler;\n`;
+            } else {
+                this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+            }
             this.samplers.push(name);
         }
     }
@@ -271,6 +276,8 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return isWGSL ? "mat4x4<f32>" : "mat4";
         }
+
+        return "";
     }
 
     /**
@@ -425,7 +432,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
+    public _emitVaryingFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return false;
         }
@@ -439,12 +446,28 @@ export class NodeMaterialBuildState {
                 this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this.sharedData.varyingDeclaration += `varying ${type} ${name};\n`;
+        const shaderType = this._getShaderType(type);
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            this.sharedData.varyingDeclaration += `varying ${name}: ${shaderType};\n`;
+        } else {
+            this.sharedData.varyingDeclaration += `varying ${shaderType} ${name};\n`;
+        }
         if (define) {
             this.sharedData.varyingDeclaration += `#endif\n`;
         }
 
         return true;
+    }
+
+    /**
+     * @internal
+     */
+    public _getVaryingName(name: string): string {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return (this.target !== NodeMaterialBlockTargets.Fragment ? "vertexOutputs." : "fragmentInputs.") + name;
+        }
+
+        return name;
     }
 
     /**
@@ -484,5 +507,23 @@ export class NodeMaterialBuildState {
         }
 
         return value.toString();
+    }
+
+    /**
+     * @internal
+     */
+    public _declareOutput(output: NodeMaterialConnectionPoint): string {
+        return this, this._declareLocalVar(output.associatedVariableName, output.type);
+    }
+
+    /**
+     * @internal
+     */
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes): string {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `var ${name}: ${this._getShaderType(type)}`;
+        } else {
+            return `${this._getShaderType(type)} ${name}`;
+        }
     }
 }

@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -67,7 +67,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
             }
         }
 

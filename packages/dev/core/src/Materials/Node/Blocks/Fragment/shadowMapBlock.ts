@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -127,7 +127,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        state.compilationString += `${this._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\n`;
+        state.compilationString += `${state._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\n`;
 
         return this;
     }

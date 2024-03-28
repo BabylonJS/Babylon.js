@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
@@ -423,24 +423,27 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        this._mainUVDefineName = "VMAIN" + uvInput.associatedVariableName.toUpperCase();
+        this._mainUVDefineName = "VMAIN" + uvInput.declarationVariableName.toUpperCase();
 
-        this._mainUVName = "vMain" + uvInput.associatedVariableName;
+        this._mainUVName = "vMain" + uvInput.declarationVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
         this.level.associatedVariableName = this._textureInfoName;
 
-        state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
-        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
+        state._emitVaryingFromString(this._transformedUVName, NodeMaterialBlockConnectionPointTypes.Vector2, this._defineName);
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, this._mainUVDefineName);
 
         state._emitUniformFromString(this._textureTransformName, NodeMaterialBlockConnectionPointTypes.Matrix, this._defineName);
 
+        const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+
         state.compilationString += `#ifdef ${this._defineName}\n`;
-        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
+        state.compilationString += `${state._getVaryingName(this._transformedUVName)} = ${vec2}(${this._textureTransformName} * ${vec4}(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
+        state.compilationString += `${state._getVaryingName(this._mainUVName)} = ${uvInput.associatedVariableName}.xy;\n`;
         state.compilationString += `#endif\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
@@ -481,10 +484,10 @@ export class TextureBlock extends NodeMaterialBlock {
         const samplerName = this.samplerName;
 
         state.compilationString += `#ifdef ${this._defineName}\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(state._getVaryingName(this._transformedUVName))}${this._samplerLodSuffix});\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
-            this._mainUVName ? this._mainUVName : this.uv.associatedVariableName
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
+            this._mainUVName ? state._getVaryingName(this._mainUVName) : this.uv.associatedVariableName
         )}${this._samplerLodSuffix});\n`;
         state.compilationString += `#endif\n`;
     }
@@ -502,7 +505,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
                 this._samplerLodSuffix
             });\n`;
             return;
@@ -534,13 +537,13 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
@@ -550,7 +553,7 @@ export class TextureBlock extends NodeMaterialBlock {
             complement = ` * ${this._textureInfoName}`;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
         this._generateConversionCode(state, output, swizzle);
     }
 

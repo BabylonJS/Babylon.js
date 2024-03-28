@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { NodeMaterialBlockConnectionPointTypes, type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { Mesh } from "../../../../Meshes/mesh";
@@ -149,15 +149,15 @@ export class FogBlock extends NodeMaterialBlock {
             state.compilationString += `#ifdef FOG\n`;
             state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\n`;
             state.compilationString +=
-                this._declareOutput(output, state) +
+                state._declareOutput(output) +
                 ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName}.rgb;\n`;
-            state.compilationString += `#else\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\n`;
+            state.compilationString += `#else\n${state._declareOutput(output)} =  ${color.associatedVariableName}.rgb;\n`;
             state.compilationString += `#endif\n`;
         } else {
             const worldPos = this.worldPosition;
             const view = this.view;
             this._fogDistanceName = state._getFreeVariableName("vFogDistance");
-            state._emitVaryingFromString(this._fogDistanceName, "vec3");
+            state._emitVaryingFromString(this._fogDistanceName, NodeMaterialBlockConnectionPointTypes.Vector3);
             state.compilationString += `${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\n`;
         }
 

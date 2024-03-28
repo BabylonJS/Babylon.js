@@ -108,18 +108,17 @@ export class TransformBlock extends NodeMaterialBlock {
                 switch (vector.connectedPoint.type) {
                     case NodeMaterialBlockConnectionPointTypes.Vector2:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) +
+                            state._declareOutput(this.output) +
                             ` = ${vec4}(${transformName} * ${vec3}(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}), ${this._writeFloat(this.complementW)});\n`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector3:
                     case NodeMaterialBlockConnectionPointTypes.Color3:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) + ` = ${vec4}(${transformName} * ${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\n`;
+                            state._declareOutput(this.output) + ` = ${vec4}(${transformName} * ${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\n`;
                         break;
                     default:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) +
-                            ` = ${vec4}(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\n`;
+                            state._declareOutput(this.output) + ` = ${vec4}(${transformName} * ${vector.associatedVariableName}.xyz, ${this._writeFloat(this.complementW)});\n`;
                         break;
                 }
             } else {
@@ -127,22 +126,22 @@ export class TransformBlock extends NodeMaterialBlock {
                 switch (vector.connectedPoint.type) {
                     case NodeMaterialBlockConnectionPointTypes.Vector2:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) +
+                            state._declareOutput(this.output) +
                             ` = ${transformName} * ${vec4}(${vector.associatedVariableName}, ${this._writeFloat(this.complementZ)}, ${this._writeFloat(this.complementW)});\n`;
                         break;
                     case NodeMaterialBlockConnectionPointTypes.Vector3:
                     case NodeMaterialBlockConnectionPointTypes.Color3:
                         state.compilationString +=
-                            this._declareOutput(this.output, state) + ` = ${transformName} * ${vec4}(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\n`;
+                            state._declareOutput(this.output) + ` = ${transformName} * ${vec4}(${vector.associatedVariableName}, ${this._writeFloat(this.complementW)});\n`;
                         break;
                     default:
-                        state.compilationString += this._declareOutput(this.output, state) + ` = ${transformName} * ${vector.associatedVariableName};\n`;
+                        state.compilationString += state._declareOutput(this.output) + ` = ${transformName} * ${vector.associatedVariableName};\n`;
                         break;
                 }
             }
 
             if (this.xyz.hasEndpoints) {
-                state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+                state.compilationString += state._declareOutput(this.xyz) + ` = ${this.output.associatedVariableName}.xyz;\n`;
             }
         }
 

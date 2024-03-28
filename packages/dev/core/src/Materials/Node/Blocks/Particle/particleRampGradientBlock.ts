@@ -67,7 +67,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
         }
 
         state._emit2DSampler("rampSampler");
-        state._emitVaryingFromString("remapRanges", "vec4", "RAMPGRADIENT");
+        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
         state.compilationString += `
             #ifdef RAMPGRADIENT
@@ -83,9 +83,9 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
                 float finalAlpha = baseColor.a;
                 baseColor.a = clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0);
 
-                ${this._declareOutput(this.rampColor, state)} = baseColor;
+                ${state._declareOutput(this.rampColor)} = baseColor;
             #else
-                ${this._declareOutput(this.rampColor, state)} = ${this.color.associatedVariableName};
+                ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
             #endif
         `;
 

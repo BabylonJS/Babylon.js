@@ -123,7 +123,7 @@ export class SimplexPerlin3DBlock extends NodeMaterialBlock {
         functionString += `}\n`;
 
         state._emitFunction("SimplexPerlin3D", functionString, "// SimplexPerlin3D");
-        state.compilationString += this._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.seed.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(this._outputs[0], state) + ` = SimplexPerlin3D(${this.seed.associatedVariableName});\n`;
 
         return this;
     }

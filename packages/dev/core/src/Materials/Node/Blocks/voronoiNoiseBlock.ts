@@ -116,11 +116,11 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         state.compilationString += `voronoi(${this.seed.associatedVariableName}, ${this.offset.associatedVariableName}, ${this.density.associatedVariableName}, ${tempOutput}, ${tempCells});\n`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempOutput};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempOutput};\n`;
         }
 
         if (this.cells.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.cells, state) + ` = ${tempCells};\n`;
+            state.compilationString += state._declareOutput(this.cells, state) + ` = ${tempCells};\n`;
         }
 
         return this;
