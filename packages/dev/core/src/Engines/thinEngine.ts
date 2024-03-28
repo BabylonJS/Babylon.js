@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { EngineStore } from "./engineStore";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import type { IEffectCreationOptions } from "../Materials/effect";
+import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
@@ -2924,7 +2924,7 @@ export class ThinEngine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: any,
+        baseName: IShaderPath & { vertexToken?: string; fragmentToken?: string },
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | ThinEngine,
         samplers?: string[],
@@ -2935,8 +2935,8 @@ export class ThinEngine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
-        const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
+        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
