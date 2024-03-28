@@ -42,12 +42,14 @@ declare module "../../Engines/thinEngine" {
          * @returns The new compute effect
          */
         createComputeEffect(
-            baseName: IComputeShaderPath & {
-                /**
-                 * @internal
-                 */
-                computeToken?: string;
-            },
+            baseName:
+                | string
+                | (IComputeShaderPath & {
+                      /**
+                       * @internal
+                       */
+                      computeToken?: string;
+                  }),
             options: IComputeEffectCreationOptions
         ): ComputeEffect;
 
