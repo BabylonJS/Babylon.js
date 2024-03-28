@@ -1096,6 +1096,11 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "OBJ loader test (legacy)",
+            "playgroundId": "#SYQW69#1212",
+            "referenceImage": "objTestLoaderLegacy.png"
+        },
+        {
             "title": "OBJ loader test",
             "playgroundId": "#SYQW69#1209",
             "referenceImage": "objTestLoader.png"
