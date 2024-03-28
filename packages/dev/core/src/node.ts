@@ -239,6 +239,7 @@ export class Node implements IBehaviorAware<Node> {
 
         // Store new parent
         this._parentNode = parent;
+        this._isDirty = true;
 
         // Add as child to new parent
         if (this._parentNode) {
@@ -480,7 +481,6 @@ export class Node implements IBehaviorAware<Node> {
     /** @internal */
     public _initCache() {
         this._cache = {};
-        this._cache.parent = undefined;
     }
 
     /**
@@ -490,8 +490,6 @@ export class Node implements IBehaviorAware<Node> {
         if (!force && this.isSynchronized()) {
             return;
         }
-
-        this._cache.parent = this.parent;
 
         this._updateCache();
     }
@@ -542,11 +540,6 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @internal */
     public isSynchronized(): boolean {
-        if (this._cache.parent !== this._parentNode) {
-            this._cache.parent = this._parentNode;
-            return false;
-        }
-
         if (this._parentNode && !this.isSynchronizedWithParent()) {
             return false;
         }
