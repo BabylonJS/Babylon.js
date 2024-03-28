@@ -120,6 +120,11 @@ export class NodeMaterialConnectionPoint {
     public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
+     * Observable triggered when this point is disconnected
+     */
+    public onDisconnectionObservable = new Observable<NodeMaterialConnectionPoint>();
+
+    /**
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
@@ -513,6 +518,10 @@ export class NodeMaterialConnectionPoint {
         endpoint._connectedPoint = null;
         this._enforceAssociatedVariableName = false;
         endpoint._enforceAssociatedVariableName = false;
+
+        this.onDisconnectionObservable.notifyObservers(endpoint);
+        endpoint.onDisconnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -562,5 +571,6 @@ export class NodeMaterialConnectionPoint {
      */
     public dispose() {
         this.onConnectionObservable.clear();
+        this.onDisconnectionObservable.clear();
     }
 }

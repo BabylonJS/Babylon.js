@@ -77,6 +77,11 @@ export class NodeGeometryConnectionPoint {
     public onConnectionObservable = new Observable<NodeGeometryConnectionPoint>();
 
     /**
+     * Observable triggered when this point is disconnected
+     */
+    public onDisconnectionObservable = new Observable<NodeGeometryConnectionPoint>();
+
+    /**
      * Gets or sets a boolean indicating that this connection point is exposed on a frame
      */
     public isExposedOnFrame: boolean = false;
@@ -359,6 +364,10 @@ export class NodeGeometryConnectionPoint {
 
         this._endpoints.splice(index, 1);
         endpoint._connectedPoint = null;
+
+        this.onDisconnectionObservable.notifyObservers(endpoint);
+        endpoint.onDisconnectionObservable.notifyObservers(this);
+
         return this;
     }
 
@@ -410,5 +419,6 @@ export class NodeGeometryConnectionPoint {
      */
     public dispose() {
         this.onConnectionObservable.clear();
+        this.onDisconnectionObservable.clear();
     }
 }
