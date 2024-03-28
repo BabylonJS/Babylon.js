@@ -481,7 +481,7 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _samplerFunc(state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return "textureSample";
+            return state.target === NodeMaterialBlockTargets.Vertex ? "textureSampleLevel" : "textureSample";
         }
         return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
     }
@@ -492,7 +492,8 @@ export class TextureBlock extends NodeMaterialBlock {
 
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerFunc(state)}(${this._textureName},${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+            const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
+            return `${this._samplerFunc(state)}(${this._textureName},${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
         return `${this._samplerFunc(state)}(${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }

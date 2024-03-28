@@ -275,6 +275,13 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the declaration variable name in the shader
+     */
+    public get declarationVariableName(): string {
+        return this._associatedVariableName;
+    }
+
+    /**
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
@@ -564,7 +571,7 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
                     state._attributeDeclaration += `attribute ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
-                    this.associatedVariableName = `vertexInputs.${this.associatedVariableName}`;
+                    this._prefix = `vertexInputs.`;
                 } else {
                     state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.associatedVariableName};\n`;
                 }

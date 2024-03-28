@@ -4,6 +4,7 @@ import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateS
 import { Effect } from "../effect";
 import { ShaderLanguage } from "../shaderLanguage";
 import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 
 /**
  * Class used to store node based material build state
@@ -382,7 +383,9 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        this.functions[key] = Effect.IncludesShadersStore[includeName];
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
+
+        this.functions[key] = store[includeName];
 
         if (this.sharedData.emitComments) {
             this.functions[key] = comments + `\n` + this.functions[key];

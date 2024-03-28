@@ -146,11 +146,11 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         }
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
-        state.compilationString += `${outputString}  = toLinearSpace(gl_FragColor);\n`;
+        state.compilationString += `${outputString}  = toLinearSpace(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
         state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
-        state.compilationString += `${outputString}  = toGammaSpace(gl_FragColor);\n`;
+        state.compilationString += `${outputString}  = toGammaSpace(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
         // TODOWGSL

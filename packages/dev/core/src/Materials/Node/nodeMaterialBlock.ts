@@ -14,6 +14,7 @@ import type { Scene } from "../../scene";
 import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "../shaderLanguage";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -555,10 +556,12 @@ export class NodeMaterialBlock {
                 (block.isInput && (block as InputBlock).isAttribute && !(block as InputBlock)._noContextSwitch) // block is an attribute
             ) {
                 const connectedPoint = input.connectedPoint!;
-                if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.associatedVariableName, connectedPoint.type)) {
-                    state._vertexState.compilationString += `${"v_" + connectedPoint.associatedVariableName} = ${connectedPoint.associatedVariableName};\n`;
+                if (state._vertexState._emitVaryingFromString("v_" + connectedPoint.declarationVariableName, connectedPoint.type)) {
+                    const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "";
+                    state._vertexState.compilationString += `${prefix}${"v_" + connectedPoint.declarationVariableName} = ${connectedPoint.associatedVariableName};\n`;
                 }
-                input.associatedVariableName = "v_" + connectedPoint.associatedVariableName;
+                const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+                input.associatedVariableName = prefix + "v_" + connectedPoint.declarationVariableName;
                 input._enforceAssociatedVariableName = true;
             }
         }
