@@ -473,8 +473,8 @@ export class InputBlock extends NodeMaterialBlock {
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
-            if (!this.associatedVariableName) {
-                this.associatedVariableName = state._getFreeVariableName("u_" + this.name);
+            if (!this._associatedVariableName) {
+                this._associatedVariableName = state._getFreeVariableName("u_" + this.name);
             }
 
             if (this.isConstant) {
@@ -496,7 +496,7 @@ export class InputBlock extends NodeMaterialBlock {
             }
             const shaderType = state._getShaderType(this.type);
             if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                state._uniformDeclaration += `uniform ${this.associatedVariableName}: ${shaderType};\n`;
+                state._uniformDeclaration += `uniform ${this._associatedVariableName}: ${shaderType};\n`;
                 this._prefix = "uniforms.";
             } else {
                 state._uniformDeclaration += `uniform ${shaderType} ${this.associatedVariableName};\n`;

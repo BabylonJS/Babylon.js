@@ -585,9 +585,10 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
-                this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+                const varName = state._getFreeVariableName(this.name);
+                this._samplerName = varName + "Sampler";
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    this._textureName = state._getFreeVariableName(this.name + "Texture");
+                    this._textureName = varName + "Texture";
                 }
 
                 if (this._texture?._texture?.is2DArray) {

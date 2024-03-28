@@ -209,7 +209,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, textureName: string) {
+    public _emit2DSampler(name: string, textureName = "") {
         if (this.samplers.indexOf(name) < 0) {
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
                 this._samplerDeclaration += `var ${name}: sampler;\n`;
@@ -368,54 +368,51 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        // TODOWGSL
-        return;
+        if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
+            if (options && options.repeatKey) {
+                this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
+            } else {
+                this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\n`;
+            }
 
-        // if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
-        //     if (options && options.repeatKey) {
-        //         this.functions[key] = `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
-        //     } else {
-        //         this.functions[key] = `#include<${includeName}>${options?.substitutionVars ? "(" + options?.substitutionVars + ")" : ""}\n`;
-        //     }
+            if (this.sharedData.emitComments) {
+                this.functions[key] = comments + `\n` + this.functions[key];
+            }
 
-        //     if (this.sharedData.emitComments) {
-        //         this.functions[key] = comments + `\n` + this.functions[key];
-        //     }
+            return;
+        }
 
-        //     return;
-        // }
+        this.functions[key] = Effect.IncludesShadersStore[includeName];
 
-        // this.functions[key] = Effect.IncludesShadersStore[includeName];
+        if (this.sharedData.emitComments) {
+            this.functions[key] = comments + `\n` + this.functions[key];
+        }
 
-        // if (this.sharedData.emitComments) {
-        //     this.functions[key] = comments + `\n` + this.functions[key];
-        // }
+        if (options.removeIfDef) {
+            this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
+            this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
+        }
 
-        // if (options.removeIfDef) {
-        //     this.functions[key] = this.functions[key].replace(/^\s*?#ifdef.+$/gm, "");
-        //     this.functions[key] = this.functions[key].replace(/^\s*?#endif.*$/gm, "");
-        //     this.functions[key] = this.functions[key].replace(/^\s*?#else.*$/gm, "");
-        //     this.functions[key] = this.functions[key].replace(/^\s*?#elif.*$/gm, "");
-        // }
+        if (options.removeAttributes) {
+            this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
+        }
 
-        // if (options.removeAttributes) {
-        //     this.functions[key] = this.functions[key].replace(/\s*?attribute .+?;/g, "\n");
-        // }
+        if (options.removeUniforms) {
+            this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
+        }
 
-        // if (options.removeUniforms) {
-        //     this.functions[key] = this.functions[key].replace(/\s*?uniform .*?;/g, "\n");
-        // }
+        if (options.removeVaryings) {
+            this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
+        }
 
-        // if (options.removeVaryings) {
-        //     this.functions[key] = this.functions[key].replace(/\s*?(varying|in) .+?;/g, "\n");
-        // }
-
-        // if (options.replaceStrings) {
-        //     for (let index = 0; index < options.replaceStrings.length; index++) {
-        //         const replaceString = options.replaceStrings[index];
-        //         this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
-        //     }
-        // }
+        if (options.replaceStrings) {
+            for (let index = 0; index < options.replaceStrings.length; index++) {
+                const replaceString = options.replaceStrings[index];
+                this.functions[key] = this.functions[key].replace(replaceString.search, replaceString.replace);
+            }
+        }
     }
 
     /**

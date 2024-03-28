@@ -5,6 +5,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Operations supported by the ConditionalBlock block
@@ -101,6 +102,14 @@ export class ConditionalBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
+    private _generateTertiary(trueStatement: string, falseStatement: string, condition: string, state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `select(${falseStatement}, ${trueStatement}, ${condition})`;
+        }
+
+        return `${condition} ? ${trueStatement} : ${falseStatement}`;
+    }
+
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -112,49 +121,56 @@ export class ConditionalBlock extends NodeMaterialBlock {
         switch (this.condition) {
             case ConditionalBlockConditions.Equal: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} == ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} == ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.NotEqual: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} != ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} != ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.LessThan: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} < ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} < ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.LessOrEqual: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} <= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} <= ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterThan: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} > ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} > ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.GreaterOrEqual: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = ${this.a.associatedVariableName} >= ${this.b.associatedVariableName} ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `${this.a.associatedVariableName} >= ${this.b.associatedVariableName}`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.Xor: {
                 state.compilationString +=
                     state._declareOutput(output) +
-                    ` = (mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0) ? ${trueStatement} : ${falseStatement};\n`;
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `(mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0)`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.Or: {
                 state.compilationString +=
                     state._declareOutput(output) +
-                    ` = (min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0) ? ${trueStatement} : ${falseStatement};\n`;
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0)`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.And: {
                 state.compilationString +=
-                    state._declareOutput(output) + ` = (${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0)  ? ${trueStatement} : ${falseStatement};\n`;
+                    state._declareOutput(output) +
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `(${this.a.associatedVariableName} * ${this.b.associatedVariableName} > 0.0)`, state)};\n`;
                 break;
             }
         }
