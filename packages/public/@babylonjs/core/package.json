@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/core",
-    "version": "6.49.0",
+    "version": "7.0.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
