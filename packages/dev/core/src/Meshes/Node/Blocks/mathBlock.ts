@@ -114,14 +114,14 @@ export class MathBlock extends NodeGeometryBlock {
         const left = this.left;
         const right = this.right;
 
-        if (!this.left.isConnected || !this.right.isConnected) {
+        if (!left.isConnected || !right.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
             return;
         }
 
-        const leftIsScalar = this.left.type === NodeGeometryBlockConnectionPointTypes.Float || this.left.type === NodeGeometryBlockConnectionPointTypes.Int;
-        const rightIsScalar = this.right.type === NodeGeometryBlockConnectionPointTypes.Float || this.right.type === NodeGeometryBlockConnectionPointTypes.Int;
+        const leftIsScalar = left.type === NodeGeometryBlockConnectionPointTypes.Float || left.type === NodeGeometryBlockConnectionPointTypes.Int;
+        const rightIsScalar = right.type === NodeGeometryBlockConnectionPointTypes.Float || right.type === NodeGeometryBlockConnectionPointTypes.Int;
 
         // If both input types are scalars, then this is a scalar operation.
         const isScalar = leftIsScalar && rightIsScalar;
