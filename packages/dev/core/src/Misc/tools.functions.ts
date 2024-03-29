@@ -1,3 +1,5 @@
+import { Constants } from "../Engines/constants";
+
 /**
  * Function indicating if a number is an exponent of 2
  * @param value defines the value to test
@@ -63,4 +65,30 @@ export function FloorPOT(x: number): number {
     x = x | (x >> 8);
     x = x | (x >> 16);
     return x - (x >> 1);
+}
+
+/**
+ * Get the closest exponent of two
+ * @param value defines the value to approximate
+ * @param max defines the maximum value to return
+ * @param mode defines how to define the closest value
+ * @returns closest exponent of two of the given value
+ */
+export function GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
+    let pot;
+
+    switch (mode) {
+        case Constants.SCALEMODE_FLOOR:
+            pot = FloorPOT(value);
+            break;
+        case Constants.SCALEMODE_NEAREST:
+            pot = NearestPOT(value);
+            break;
+        case Constants.SCALEMODE_CEILING:
+        default:
+            pot = CeilingPOT(value);
+            break;
+    }
+
+    return Math.min(pot, max);
 }

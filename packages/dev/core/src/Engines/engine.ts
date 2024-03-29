@@ -360,11 +360,6 @@ export class Engine extends AbstractEngine {
         throw _WarnImport("LoadingScreen");
     }
 
-    /**
-     * Method called to create the default rescale post process on each engine.
-     */
-    public static _RescalePostProcessFactory: Nullable<(engine: Engine) => PostProcess> = null;
-
     // Members
 
     /**

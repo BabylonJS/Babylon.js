@@ -600,4 +600,9 @@ export abstract class AbstractEngine extends ThinEngine {
             anyDoc.webkitCancelFullScreen();
         }
     }
+
+    /**
+     * Method called to create the default rescale post process on each engine.
+     */
+    public static _RescalePostProcessFactory: Nullable<(engine: AbstractEngine) => PostProcess> = null;
 }

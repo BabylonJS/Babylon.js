@@ -54,7 +54,7 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
-import { CeilingPOT, FloorPOT, NearestPOT } from "../Misc/tools.functions";
+import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -5013,8 +5013,8 @@ export class ThinEngine {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
     ): void {
         const maxTextureSize = this.getCaps().maxTextureSize;
-        const potWidth = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(img.width, maxTextureSize) : img.width);
-        const potHeight = Math.min(maxTextureSize, this.needPOTTextures ? ThinEngine.GetExponentOfTwo(img.height, maxTextureSize) : img.height);
+        const potWidth = Math.min(maxTextureSize, this.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
+        const potHeight = Math.min(maxTextureSize, this.needPOTTextures ? GetExponentOfTwo(img.height, maxTextureSize) : img.height);
 
         const gl = this._gl;
         if (!gl) {
@@ -6120,24 +6120,7 @@ export class ThinEngine {
      * @param mode defines how to define the closest value
      * @returns closest exponent of two of the given value
      */
-    public static GetExponentOfTwo(value: number, max: number, mode = Constants.SCALEMODE_NEAREST): number {
-        let pot;
-
-        switch (mode) {
-            case Constants.SCALEMODE_FLOOR:
-                pot = ThinEngine.FloorPOT(value);
-                break;
-            case Constants.SCALEMODE_NEAREST:
-                pot = ThinEngine.NearestPOT(value);
-                break;
-            case Constants.SCALEMODE_CEILING:
-            default:
-                pot = ThinEngine.CeilingPOT(value);
-                break;
-        }
-
-        return Math.min(pot, max);
-    }
+    public static GetExponentOfTwo: (value: number, max: number, mode: number) => number = GetExponentOfTwo;
 
     /**
      * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
