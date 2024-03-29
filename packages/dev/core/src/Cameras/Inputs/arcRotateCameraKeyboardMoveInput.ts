@@ -9,6 +9,7 @@ import type { Engine } from "../../Engines/engine";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import { Tools } from "../../Misc/tools";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Manage the keyboard inputs to control the movement of an arc rotate camera.
@@ -83,7 +84,7 @@ export class ArcRotateCameraKeyboardMoveInput implements ICameraInput<ArcRotateC
     private _altPressed: boolean;
     private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _scene: Scene;
 
     /**

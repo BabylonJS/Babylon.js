@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
+import { ThinEngine, type ISceneLike, type ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -65,6 +65,7 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 import type { Scene } from "core/scene";
+import { AbstractEngine } from "./abstractEngine";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -173,7 +174,7 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  * @since 5.0.0
  */
-export class WebGPUEngine extends Engine {
+export class WebGPUEngine extends AbstractEngine {
     // Default glslang options.
     private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
         jsPath: `${Tools._DefaultCdnUrl}/glslang/glslang.js`,
@@ -272,6 +273,14 @@ export class WebGPUEngine extends Engine {
      * Max number of uncaptured error messages to log
      */
     public numMaxUncapturedErrors = 20;
+
+    /**
+     * Gets the list of created scenes
+     */
+    public scenes: Scene[] = [];
+
+    /** @internal */
+    public _virtualScenes = new Array<Scene>();
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state

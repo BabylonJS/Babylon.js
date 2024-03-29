@@ -1,4 +1,3 @@
-import type { Engine } from "../../Engines/engine";
 import { DeviceType } from "./deviceEnums";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
@@ -9,6 +8,7 @@ import { InternalDeviceSourceManager } from "../internalDeviceSourceManager";
 import type { IDisposable } from "../../scene";
 import type { ThinEngine } from "../../Engines/thinEngine";
 import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Class to keep track of devices
@@ -26,7 +26,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
     public readonly onDeviceDisconnectedObservable: Observable<DeviceSourceType>;
 
     // Private Members
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
@@ -72,7 +72,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
      * Default constructor
      * @param engine - Used to get canvas (if applicable)
      */
-    constructor(engine: Engine) {
+    constructor(engine: AbstractEngine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array(numberOfDeviceTypes);
         this._firstDevice = new Array(numberOfDeviceTypes);

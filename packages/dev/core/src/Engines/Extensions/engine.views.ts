@@ -28,8 +28,8 @@ export class EngineView {
     customResize?: (canvas: HTMLCanvasElement) => void;
 }
 
-declare module "../../Engines/engine" {
-    export interface Engine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /** @internal */
         _inputElement: Nullable<HTMLElement>;
 

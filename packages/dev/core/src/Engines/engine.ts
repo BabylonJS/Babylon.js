@@ -30,6 +30,7 @@ import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import { AbstractEngine } from "./abstractEngine";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -44,7 +45,7 @@ interface IViewportOwnerLike {
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
  */
-export class Engine extends ThinEngine {
+export class Engine extends AbstractEngine {
     // Const statics
 
     /** Defines that alpha blending is disabled */
@@ -404,27 +405,12 @@ export class Engine extends ThinEngine {
      */
     public onNewSceneAddedObservable = new Observable<Scene>();
 
-    /**
-     * Gets the list of created postprocesses
-     */
-    public postProcesses: PostProcess[] = [];
-
-    /**
-     * Gets a boolean indicating if the pointer is currently locked
-     */
-    public isPointerLock = false;
-
     // Observables
 
     /**
      * Observable event triggered each time the rendering canvas is resized
      */
     public onResizeObservable = new Observable<Engine>();
-
-    /**
-     * Observable event triggered each time the canvas loses focus
-     */
-    public onCanvasBlurObservable = new Observable<Engine>();
 
     /**
      * Observable event triggered each time the canvas gains focus
@@ -437,29 +423,9 @@ export class Engine extends ThinEngine {
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
-     * Observable raised when the engine begins a new frame
-     */
-    public onBeginFrameObservable = new Observable<Engine>();
-
-    /**
      * If set, will be used to request the next animation frame for the render loop
      */
     public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
-
-    /**
-     * Observable raised when the engine ends the current frame
-     */
-    public onEndFrameObservable = new Observable<Engine>();
-
-    /**
-     * Observable raised when the engine is about to compile a shader
-     */
-    public onBeforeShaderCompilationObservable = new Observable<Engine>();
-
-    /**
-     * Observable raised when the engine has just compiled a shader
-     */
-    public onAfterShaderCompilationObservable = new Observable<Engine>();
 
     /**
      * Gets the audio engine
@@ -505,9 +471,6 @@ export class Engine extends ThinEngine {
     /** @internal */
     public _drawCalls = new PerfCounter();
 
-    /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
-    public canvasTabIndex = 1;
-
     /**
      * Turn this value on if you want to pause FPS computation when in background
      */
@@ -531,33 +494,8 @@ export class Engine extends ThinEngine {
     private _onCanvasContextMenu: (evt: Event) => void;
 
     private _onFullscreenChange: () => void;
-    private _onPointerLockChange: () => void;
-
-    protected _compatibilityMode = true;
-
-    /**
-     * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
-     * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
-     * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
-     */
-    public get compatibilityMode() {
-        return this._compatibilityMode;
-    }
-
-    public set compatibilityMode(mode: boolean) {
-        // not supported in WebGL
-        this._compatibilityMode = true;
-    }
 
     // Events
-
-    /**
-     * Gets the HTML element used to attach event listeners
-     * @returns a HTML element
-     */
-    public getInputElement(): Nullable<HTMLElement> {
-        return this._renderingCanvas;
-    }
 
     /**
      * Creates a new engine
@@ -690,11 +628,6 @@ export class Engine extends ThinEngine {
         this._timeStep = this._creationOptions.timeStep || 1 / 60;
     }
 
-    /** @internal */
-    public _verifyPointerLock(): void {
-        this._onPointerLockChange?.();
-    }
-
     /**
      * Gets current aspect ratio
      * @param viewportOwner defines the camera to use to get the aspect ratio
@@ -712,28 +645,6 @@ export class Engine extends ThinEngine {
      */
     public getScreenAspectRatio(): number {
         return this.getRenderWidth(true) / this.getRenderHeight(true);
-    }
-
-    /**
-     * Gets the client rect of the HTML canvas attached with the current webGL context
-     * @returns a client rectangle
-     */
-    public getRenderingCanvasClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this._renderingCanvas.getBoundingClientRect();
-    }
-
-    /**
-     * Gets the client rect of the HTML element used for events
-     * @returns a client rectangle
-     */
-    public getInputElementClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this.getInputElement()!.getBoundingClientRect();
     }
 
     /**
@@ -779,22 +690,6 @@ export class Engine extends ThinEngine {
     }
 
     /** States */
-
-    /**
-     * Gets a boolean indicating if depth writing is enabled
-     * @returns the current depth writing state
-     */
-    public getDepthWrite(): boolean {
-        return this._depthCullingState.depthMask;
-    }
-
-    /**
-     * Enable or disable depth writing
-     * @param enable defines the state to set
-     */
-    public setDepthWrite(enable: boolean): void {
-        this._depthCullingState.depthMask = enable;
-    }
 
     /**
      * Gets a boolean indicating if stencil buffer is enabled
@@ -946,50 +841,6 @@ export class Engine extends ThinEngine {
         } else {
             this._gl.enable(this._gl.RASTERIZER_DISCARD);
         }
-    }
-
-    /**
-     * Gets the current depth function
-     * @returns a number defining the depth function
-     */
-    public getDepthFunction(): Nullable<number> {
-        return this._depthCullingState.depthFunc;
-    }
-
-    /**
-     * Sets the current depth function
-     * @param depthFunc defines the function to use
-     */
-    public setDepthFunction(depthFunc: number) {
-        this._depthCullingState.depthFunc = depthFunc;
-    }
-
-    /**
-     * Sets the current depth function to GREATER
-     */
-    public setDepthFunctionToGreater(): void {
-        this.setDepthFunction(Constants.GREATER);
-    }
-
-    /**
-     * Sets the current depth function to GEQUAL
-     */
-    public setDepthFunctionToGreaterOrEqual(): void {
-        this.setDepthFunction(Constants.GEQUAL);
-    }
-
-    /**
-     * Sets the current depth function to LESS
-     */
-    public setDepthFunctionToLess(): void {
-        this.setDepthFunction(Constants.LESS);
-    }
-
-    /**
-     * Sets the current depth function to LEQUAL
-     */
-    public setDepthFunctionToLessOrEqual(): void {
-        this.setDepthFunction(Constants.LEQUAL);
     }
 
     private _cachedStencilBuffer: boolean;
@@ -1507,10 +1358,6 @@ export class Engine extends ThinEngine {
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     protected static _RenderPassIdCounter = 0;
-    /**
-     * Gets or sets the current render pass id
-     */
-    public currentRenderPassId = Constants.RENDERPASS_MAIN;
 
     private _renderPassNames: string[] = ["main"];
     /**

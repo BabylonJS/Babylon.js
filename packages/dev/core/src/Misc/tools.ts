@@ -28,6 +28,7 @@ import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
 import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -351,7 +352,7 @@ export class Tools {
      * @param engine defines the engine we are finding the prefix for
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
-    public static GetPointerPrefix(engine: Engine): string {
+    public static GetPointerPrefix(engine: AbstractEngine): string {
         let eventPrefix = "pointer";
 
         // Check if pointer events are supported

@@ -27,6 +27,7 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Allows for custom processing of the shader code used by a post process
@@ -295,7 +296,7 @@ export class PostProcess {
 
     private _camera: Camera;
     protected _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -521,7 +522,7 @@ export class PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         defines?: Nullable<string>,
         textureType?: number,
@@ -629,7 +630,7 @@ export class PostProcess {
      * Gets the engine which this post process belongs to.
      * @returns The engine the post process was enabled with.
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 

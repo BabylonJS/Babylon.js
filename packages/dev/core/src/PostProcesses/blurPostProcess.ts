@@ -6,7 +6,6 @@ import { PostProcess } from "./postProcess";
 import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/kernelBlur.fragment";
@@ -16,6 +15,7 @@ import { serialize, serializeAsVector2 } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -106,7 +106,7 @@ export class BlurPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",

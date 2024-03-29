@@ -4,6 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
 import type { Observer } from "../../Misc/observable";
+import type { ThinEngine } from "../thinEngine";
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -36,50 +37,6 @@ export class _OcclusionDataStorage {
 declare module "../../Engines/engine" {
     export interface Engine {
         /**
-         * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-         * @returns the new query
-         */
-        createQuery(): OcclusionQuery;
-
-        /**
-         * Delete and release a webGL query
-         * @param query defines the query to delete
-         * @returns the current engine
-         */
-        deleteQuery(query: OcclusionQuery): Engine;
-
-        /**
-         * Check if a given query has resolved and got its value
-         * @param query defines the query to check
-         * @returns true if the query got its value
-         */
-        isQueryResultAvailable(query: OcclusionQuery): boolean;
-
-        /**
-         * Gets the value of a given query
-         * @param query defines the query to check
-         * @returns the value of the query
-         */
-        getQueryResult(query: OcclusionQuery): number;
-
-        /**
-         * Initiates an occlusion query
-         * @param algorithmType defines the algorithm to use
-         * @param query defines the query to use
-         * @returns the current engine
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
-         */
-        beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean;
-
-        /**
-         * Ends an occlusion query
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
-         * @param algorithmType defines the algorithm to use
-         * @returns the current engine
-         */
-        endOcclusionQuery(algorithmType: number): Engine;
-
-        /**
          * Starts a time query (used to measure time spent by the GPU on a specific frame)
          * Please note that only one query can be issued at a time
          * @returns a time token used to track the time span
@@ -93,18 +50,6 @@ declare module "../../Engines/engine" {
          */
         endTimeQuery(token: _TimeToken): int;
 
-        /**
-         * Get the performance counter associated with the frame time computation
-         * @returns the perf counter
-         */
-        getGPUFrameTimeCounter(): PerfCounter;
-
-        /**
-         * Enable or disable the GPU frame time capture
-         * @param value True to enable, false to disable
-         */
-        captureGPUFrameTime(value: boolean): void;
-
         /** @internal */
         _currentNonTimestampToken: Nullable<_TimeToken>;
         /** @internal */
@@ -114,12 +59,12 @@ declare module "../../Engines/engine" {
         /** @internal */
         _gpuFrameTime: PerfCounter;
         /** @internal */
-        _onBeginFrameObserver: Nullable<Observer<Engine>>;
+        _onBeginFrameObserver: Nullable<Observer<ThinEngine>>;
         /** @internal */
-        _onEndFrameObserver: Nullable<Observer<Engine>>;
+        _onEndFrameObserver: Nullable<Observer<ThinEngine>>;
 
         /** @internal */
-        _createTimeQuery(): WebGLQuery;
+        _createTimeQuery(): Nullable<WebGLQuery>;
 
         /** @internal */
         _deleteTimeQuery(query: WebGLQuery): void;
@@ -171,7 +116,7 @@ Engine.prototype.endOcclusionQuery = function (algorithmType: number): Engine {
     return this;
 };
 
-Engine.prototype._createTimeQuery = function (): WebGLQuery {
+Engine.prototype._createTimeQuery = function (): Nullable<WebGLQuery> {
     const timerQuery = <EXT_disjoint_timer_query>this.getCaps().timerQuery;
 
     if (timerQuery.createQueryEXT) {
@@ -222,17 +167,21 @@ Engine.prototype.startTimeQuery = function (): Nullable<_TimeToken> {
     if (caps.canUseTimestampForTimerQuery) {
         token._startTimeQuery = this._createTimeQuery();
 
-        timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
+        if (token._startTimeQuery) {
+            timerQuery.queryCounterEXT(token._startTimeQuery, timerQuery.TIMESTAMP_EXT);
+        }
     } else {
         if (this._currentNonTimestampToken) {
             return this._currentNonTimestampToken;
         }
 
         token._timeElapsedQuery = this._createTimeQuery();
-        if (timerQuery.beginQueryEXT) {
-            timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
-        } else {
-            this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+        if (token._timeElapsedQuery) {
+            if (timerQuery.beginQueryEXT) {
+                timerQuery.beginQueryEXT(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+            } else {
+                this._gl.beginQuery(timerQuery.TIME_ELAPSED_EXT, token._timeElapsedQuery);
+            }
         }
 
         this._currentNonTimestampToken = token;
@@ -253,7 +202,9 @@ Engine.prototype.endTimeQuery = function (token: _TimeToken): int {
         }
         if (!token._endTimeQuery) {
             token._endTimeQuery = this._createTimeQuery();
-            timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
+            if (token._endTimeQuery) {
+                timerQuery.queryCounterEXT(token._endTimeQuery, timerQuery.TIMESTAMP_EXT);
+            }
         }
     } else if (!token._timeElapsedQueryEnded) {
         if (!token._timeElapsedQuery) {
@@ -540,7 +491,7 @@ AbstractMesh.prototype._checkOcclusionQuery = function () {
             this._occlusionQuery = engine.createQuery();
         }
 
-        if (engine.beginOcclusionQuery(dataStorage.occlusionQueryAlgorithmType, this._occlusionQuery)) {
+        if (this._occlusionQuery && engine.beginOcclusionQuery(dataStorage.occlusionQueryAlgorithmType, this._occlusionQuery)) {
             occlusionBoundingBoxRenderer.renderOcclusionBoundingBox(this);
             engine.endOcclusionQuery(dataStorage.occlusionQueryAlgorithmType);
             this._occlusionDataStorage.isOcclusionQueryInProgress = true;

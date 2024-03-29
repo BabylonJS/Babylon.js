@@ -2,7 +2,7 @@ import type { Observer } from "../Misc/observable";
 import { PerfCounter } from "../Misc/perfCounter";
 import type { Nullable } from "../types";
 import type { IDisposable } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { ThinEngine } from "../Engines/thinEngine";
 /**
  * This class can be used to get instrumentation data from a Babylon engine
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
@@ -14,16 +14,16 @@ export class EngineInstrumentation implements IDisposable {
     private _shaderCompilationTime = new PerfCounter();
 
     // Observers
-    private _onBeginFrameObserver: Nullable<Observer<Engine>> = null;
-    private _onEndFrameObserver: Nullable<Observer<Engine>> = null;
-    private _onBeforeShaderCompilationObserver: Nullable<Observer<Engine>> = null;
-    private _onAfterShaderCompilationObserver: Nullable<Observer<Engine>> = null;
+    private _onBeginFrameObserver: Nullable<Observer<ThinEngine>> = null;
+    private _onEndFrameObserver: Nullable<Observer<ThinEngine>> = null;
+    private _onBeforeShaderCompilationObserver: Nullable<Observer<ThinEngine>> = null;
+    private _onAfterShaderCompilationObserver: Nullable<Observer<ThinEngine>> = null;
 
     // Properties
     /**
      * Gets the perf counter used for GPU frame time
      */
-    public get gpuFrameTimeCounter(): PerfCounter {
+    public get gpuFrameTimeCounter(): Nullable<PerfCounter> {
         return this.engine.getGPUFrameTimeCounter();
     }
 
@@ -97,7 +97,7 @@ export class EngineInstrumentation implements IDisposable {
         /**
          * Define the instrumented engine.
          */
-        public engine: Engine
+        public engine: ThinEngine
     ) {}
 
     /**

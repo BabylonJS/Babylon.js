@@ -90,6 +90,7 @@ import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
+import type { AbstractEngine } from "./Engines/abstractEngine";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -1824,7 +1825,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets the engine associated with the scene
      * @returns an Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
