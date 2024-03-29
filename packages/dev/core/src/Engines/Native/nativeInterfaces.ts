@@ -17,6 +17,7 @@ export interface INativeEngine {
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
+    setDeviceLostCallback(callback: () => void): void;
 
     createVertexArray(): NativeData;
 

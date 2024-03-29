@@ -1096,15 +1096,42 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
-            "title": "GLTF Extension KHR_materials_variants",
-            "playgroundId": "#BKGTKL#3",
-            "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
+            "title": "OBJ loader test (legacy)",
+            "playgroundId": "#SYQW69#1213",
+            "referenceImage": "objTestLoaderLegacy.png"
         },
         {
             "title": "OBJ loader test",
-            "playgroundId": "#SYQW69#311",
-            "referenceImage": "objTestLoader.png",
-            "renderCount": 10
+            "playgroundId": "#SYQW69#1209",
+            "referenceImage": "objTestLoader.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (LH)",
+            "playgroundId": "#26R8NS#6",
+            "referenceImage": "objStanfordBunnyNormalsLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, LH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripLH.png"
+        },
+        {
+            "title": "OBJ Stanford Bunny normals (round trip, RH)",
+            "playgroundId": "#26R8NS#6",
+            "replace": "//options//, roundTrip = true; useRightHandedSystem = true;",
+            "referenceImage": "objStanfordBunnyNormalsRoundTripRH.png"
+        },
+        {
+            "title": "GLTF Extension KHR_materials_variants",
+            "playgroundId": "#BKGTKL#3",
+            "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
         },
         {
             "title": "GLB load from ArrayBuffer",

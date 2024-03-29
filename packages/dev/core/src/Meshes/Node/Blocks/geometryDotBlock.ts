@@ -19,6 +19,7 @@ export class GeometryDotBlock extends NodeGeometryBlock {
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Float);
 
         this._linkConnectionTypes(0, 1);
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
         this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);

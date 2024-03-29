@@ -653,6 +653,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             return true;
         }
 
+        if (this._refractionIntensityTexture === texture) {
+            return true;
+        }
+
+        if (this._translucencyIntensityTexture === texture) {
+            return true;
+        }
+
         return false;
     }
 

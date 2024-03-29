@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray } from "../types";
+import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } from "../types";
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -166,7 +166,7 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32(commandArg);
     }
 
-    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+    public encodeCommandArgAsFloat32s(commandArg: DeepImmutable<FloatArray>) {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
@@ -221,6 +221,14 @@ export class NativeEngine extends Engine {
 
         if (_native.Engine.PROTOCOL_VERSION !== NativeEngine.PROTOCOL_VERSION) {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
+        }
+
+        if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(() => {
+                this.onContextLostObservable.notifyObservers(this);
+                this._contextWasLost = true;
+                this._restoreEngineAfterContextLost();
+            });
         }
 
         this._webGLVersion = 2;
@@ -305,7 +313,7 @@ export class NativeEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
-            forceVertexBufferStrideMultiple4Bytes: false,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -422,6 +430,24 @@ export class NativeEngine extends Engine {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
+    }
+
+    protected _restoreEngineAfterContextLost(): void {
+        this._clearEmptyResources();
+
+        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = this._depthCullingState.depthFunc;
+        const depthMask = this._depthCullingState.depthMask;
+        const stencilTest = this._stencilState.stencilTest;
+
+        this._rebuildGraphicsResources();
+
+        this._depthCullingState.depthTest = depthTest;
+        this._depthCullingState.depthFunc = depthFunc;
+        this._depthCullingState.depthMask = depthMask;
+        this._stencilState.stencilTest = stencilTest;
+
+        this._flagContextRestored();
     }
 
     /**
@@ -1365,7 +1391,7 @@ export class NativeEngine extends Engine {
         return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }

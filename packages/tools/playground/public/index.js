@@ -34,6 +34,23 @@ var Versions = {
         "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
         "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
     ],
+    "6.49.0": [
+        "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
+        "https://cdn.babylonjs.com/v6.49.0/babylon.js",
+        "https://cdn.babylonjs.com/v6.49.0/gui/babylon.gui.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/inspector/babylon.inspector.bundle.js",
+        "https://cdn.babylonjs.com/v6.49.0/nodeEditor/babylon.nodeEditor.js",
+        "https://cdn.babylonjs.com/v6.49.0/nodeGeometryEditor/babylon.nodeGeometryEditor.js",
+        "https://cdn.babylonjs.com/v6.49.0/guiEditor/babylon.guiEditor.js",
+        "https://cdn.babylonjs.com/v6.49.0/materialsLibrary/babylonjs.materials.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/proceduralTexturesLibrary/babylonjs.proceduralTextures.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/postProcessesLibrary/babylonjs.postProcess.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/loaders/babylonjs.loaders.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/serializers/babylonjs.serializers.min.js",
+        "https://cdn.babylonjs.com/v6.49.0/accessibility/babylon.accessibility.js",
+        "https://rawcdn.githack.com/BabylonJS/Extensions/f43ab677b4bca0a6ab77132d3f785be300382760/ClonerSystem/src/babylonx.cloner.js",
+        "https://rawcdn.githack.com/BabylonJS/Extensions/785013ec55b210d12263c91f3f0a2ae70cf0bc8a/CompoundShader/src/babylonx.CompoundShader.js",
+    ],
     "5.71.1": [
         "https://cdn.babylonjs.com/timestamp.js?t=" + Date.now(),
         "https://cdn.babylonjs.com/v5.71.1/babylon.js",
@@ -163,14 +180,14 @@ let checkBabylonVersionAsync = function () {
     let frameworkScripts = Versions[activeVersion] || Versions["Latest"];
     if (snapshot) {
         frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
-    } else if(version) {
+    } else if (version) {
         frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version));
     } else if (window.location.href.includes("debug.html")) {
         frameworkScripts = frameworkScripts.map((v) => {
             if (!v.includes("https://preview.babylonjs.com") && !v.includes("https://cdn.jsdelivr.net/gh/BabylonJS/Babylon.js")) {
                 return v;
             }
-            if(v.includes("timestamp.js")) {
+            if (v.includes("timestamp.js")) {
                 return v;
             }
             if (v.includes(".min.")) {

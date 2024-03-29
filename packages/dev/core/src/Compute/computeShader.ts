@@ -5,7 +5,7 @@ import type { Nullable } from "../types";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
-import type { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
+import type { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "./computeEffect";
 import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import { ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -55,7 +55,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
  */
 export class ComputeShader {
     private _engine: ThinEngine;
-    private _shaderPath: any;
+    private _shaderPath: IComputeShaderPath | string;
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
     private _cachedDefines: string;
@@ -116,14 +116,14 @@ export class ComputeShader {
      * Instantiates a new compute shader.
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
-     * @param shaderPath Defines  the route to the shader code in one of three ways:
+     * @param shaderPath Defines the route to the shader code in one of three ways:
      *  * object: \{ compute: "custom" \}, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
      *  * object: \{ computeElement: "HTMLElementId" \}, used with shader code in script tags
      *  * object: \{ computeSource: "compute shader code string" \}, where the string contains the shader code
      *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
-    constructor(name: string, engine: ThinEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
+    constructor(name: string, engine: ThinEngine, shaderPath: IComputeShaderPath | string, options: Partial<IComputeShaderOptions> = {}) {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;

@@ -16,6 +16,7 @@ export class GeometryLengthBlock extends NodeGeometryBlock {
         this.registerInput("value", NodeGeometryBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Float);
 
+        this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this._inputs[0].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Matrix);
     }

@@ -1,4 +1,5 @@
-import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties } from "./IPhysicsEnginePlugin";
+import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -54,6 +55,11 @@ export class PhysicsBody {
     disablePreStep: boolean = true;
 
     /**
+     * Disable sync from physics to transformNode. This value is set to true at body creation when the body is not dynamic.
+     */
+    disableSync: boolean = false;
+
+    /**
      * Physics engine will try to make this body sleeping and not active
      */
     public startAsleep: boolean;
@@ -105,6 +111,9 @@ export class PhysicsBody {
         this.startAsleep = startsAsleep;
 
         this._motionType = motionType;
+
+        // only dynamic body needs sync from physics to transformNode
+        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
 
         // instances?
         const m = transformNode as Mesh;

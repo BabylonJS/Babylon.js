@@ -317,8 +317,10 @@ export interface IParticleSystem {
     /**
      * Dispose the particle system and frees its associated resources.
      * @param disposeTexture defines if the particle texture must be disposed as well (true by default)
+     * @param disposeAttachedSubEmitters defines if the attached sub-emitters must be disposed as well (false by default)
+     * @param disposeEndSubEmitters defines if the end type sub-emitters must be disposed as well (false by default)
      */
-    dispose(disposeTexture?: boolean): void;
+    dispose(disposeTexture?: boolean, disposeAttachedSubEmitters?: boolean, disposeEndSubEmitters?: boolean): void;
     /**
      * An event triggered when the system is disposed
      */

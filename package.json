@@ -38,6 +38,7 @@
         "jest": "^29.7.0",
         "jest-environment-jsdom": "^29.5.0",
         "jest-junit": "~13.2.0",
+        "lerna": "^8.1.2",
         "mini-css-extract-plugin": "~2.6.0",
         "nx": "^18.0.4",
         "prettier": "^3.0.3",
@@ -107,8 +108,5 @@
         "nextVersion": "Unreleased",
         "ignoreCommitters": [],
         "feature": "New Feature"
-    },
-    "dependencies": {
-        "lerna": "^7.4.2"
     }
 }

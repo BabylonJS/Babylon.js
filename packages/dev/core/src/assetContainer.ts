@@ -235,7 +235,7 @@ export class AssetContainer extends AbstractScene {
      * @returns true if the node is contained in this container, otherwise false.
      */
     private _isNodeInContainer(node: Node) {
-        if (node instanceof Mesh && this.meshes.indexOf(node) !== -1) {
+        if (node instanceof AbstractMesh && this.meshes.indexOf(node) !== -1) {
             return true;
         }
         if (node instanceof TransformNode && this.transformNodes.indexOf(node) !== -1) {
