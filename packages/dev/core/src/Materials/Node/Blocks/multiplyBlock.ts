@@ -1,11 +1,11 @@
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { MathBlock } from "./mathBlock";
+import { BaseMathBlock } from "./baseMathBlock";
 
 /**
  * Block used to multiply 2 values
  */
-export class MultiplyBlock extends MathBlock {
+export class MultiplyBlock extends BaseMathBlock {
     /**
      * Creates a new MultiplyBlock
      * @param name defines the block name

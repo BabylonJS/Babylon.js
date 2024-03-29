@@ -1,11 +1,11 @@
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { MathBlock } from "./mathBlock";
+import { BaseMathBlock } from "./baseMathBlock";
 
 /**
  * Block used to divide 2 vectors
  */
-export class DivideBlock extends MathBlock {
+export class DivideBlock extends BaseMathBlock {
     /**
      * Creates a new DivideBlock
      * @param name defines the block name

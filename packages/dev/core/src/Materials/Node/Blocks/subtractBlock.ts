@@ -1,11 +1,11 @@
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
-import { MathBlock } from "./mathBlock";
+import { BaseMathBlock } from "./baseMathBlock";
 
 /**
  * Block used to subtract 2 vectors
  */
-export class SubtractBlock extends MathBlock {
+export class SubtractBlock extends BaseMathBlock {
     /**
      * Creates a new SubtractBlock
      * @param name defines the block name

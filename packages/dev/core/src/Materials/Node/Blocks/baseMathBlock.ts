@@ -7,8 +7,8 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
 /**
  * Block used to perform a mathematical operation on 2 values
  */
-export class MathBlock extends NodeMaterialBlock {
-    private readonly _connectionObservers: readonly Observer<NodeMaterialConnectionPoint>[];
+export class BaseMathBlock extends NodeMaterialBlock {
+    private readonly _connectionObservers: Observer<NodeMaterialConnectionPoint>[];
 
     protected constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
@@ -104,5 +104,6 @@ export class MathBlock extends NodeMaterialBlock {
     public override dispose(): void {
         super.dispose();
         this._connectionObservers.forEach((observer) => observer.remove());
+        this._connectionObservers.length = 0;
     }
 }

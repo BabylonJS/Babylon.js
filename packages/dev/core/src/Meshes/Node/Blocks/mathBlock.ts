@@ -45,7 +45,7 @@ export class MathBlock extends NodeGeometryBlock {
     })
     public operation = MathBlockOperations.Add;
 
-    private readonly _connectionObservers: readonly Observer<NodeGeometryConnectionPoint>[];
+    private readonly _connectionObservers: Observer<NodeGeometryConnectionPoint>[];
 
     /**
      * Create a new MathBlock
@@ -317,6 +317,7 @@ export class MathBlock extends NodeGeometryBlock {
     public override dispose() {
         super.dispose();
         this._connectionObservers.forEach((observer) => observer.remove());
+        this._connectionObservers.length = 0;
     }
 
     /**
