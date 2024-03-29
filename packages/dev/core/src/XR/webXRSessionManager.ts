@@ -121,7 +121,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         /** The scene which the session should be created for */
         public scene: Scene
     ) {
-        this._engine = scene.getEngine();
+        this._engine = scene.getEngine() as Engine;
         this._onEngineDisposedObserver = this._engine.onDisposeObservable.addOnce(() => {
             this._engine = null;
         });

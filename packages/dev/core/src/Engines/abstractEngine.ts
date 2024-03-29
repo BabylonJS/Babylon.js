@@ -8,6 +8,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IViewportLike } from "../Maths/math.like";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -540,6 +541,76 @@ export abstract class AbstractEngine extends ThinEngine {
      */
     public setStencilOperationPass(operation: number): void {
         this._stencilState.stencilOpStencilDepthPass = operation;
+    }
+
+    private _cachedStencilBuffer: boolean;
+    private _cachedStencilFunction: number;
+    private _cachedStencilMask: number;
+    private _cachedStencilOperationPass: number;
+    private _cachedStencilOperationFail: number;
+    private _cachedStencilOperationDepthFail: number;
+    private _cachedStencilReference: number;
+
+    /**
+     * Caches the state of the stencil buffer
+     */
+    public cacheStencilState() {
+        this._cachedStencilBuffer = this.getStencilBuffer();
+        this._cachedStencilFunction = this.getStencilFunction();
+        this._cachedStencilMask = this.getStencilMask();
+        this._cachedStencilOperationPass = this.getStencilOperationPass();
+        this._cachedStencilOperationFail = this.getStencilOperationFail();
+        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
+        this._cachedStencilReference = this.getStencilFunctionReference();
+    }
+
+    /**
+     * Restores the state of the stencil buffer
+     */
+    public restoreStencilState() {
+        this.setStencilFunction(this._cachedStencilFunction);
+        this.setStencilMask(this._cachedStencilMask);
+        this.setStencilBuffer(this._cachedStencilBuffer);
+        this.setStencilOperationPass(this._cachedStencilOperationPass);
+        this.setStencilOperationFail(this._cachedStencilOperationFail);
+        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
+        this.setStencilFunctionReference(this._cachedStencilReference);
+    }
+
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap.
+     */
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        const promise = new Promise<ImageBitmap>((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => {
+                image.decode().then(() => {
+                    this.createImageBitmap(image, options).then((imageBitmap) => {
+                        resolve(imageBitmap);
+                    });
+                });
+            };
+            image.onerror = () => {
+                reject(`Error loading image ${image.src}`);
+            };
+
+            image.src = imageSource;
+        });
+
+        return promise;
+    }
+
+    /**
+     * Engine abstraction for createImageBitmap
+     * @param image source for image
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public createImageBitmap(image: ImageBitmapSource, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return createImageBitmap(image, options);
     }
 
     /**

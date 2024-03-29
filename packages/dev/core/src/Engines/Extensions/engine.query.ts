@@ -4,7 +4,7 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { _TimeToken } from "../../Instrumentation/timeToken";
 import { PerfCounter } from "../../Misc/perfCounter";
 import type { Observer } from "../../Misc/observable";
-import type { ThinEngine } from "../thinEngine";
+import type { AbstractEngine } from "../abstractEngine";
 
 /** @internal */
 export type OcclusionQuery = WebGLQuery | number;
@@ -59,9 +59,9 @@ declare module "../../Engines/engine" {
         /** @internal */
         _gpuFrameTime: PerfCounter;
         /** @internal */
-        _onBeginFrameObserver: Nullable<Observer<ThinEngine>>;
+        _onBeginFrameObserver: Nullable<Observer<AbstractEngine>>;
         /** @internal */
-        _onEndFrameObserver: Nullable<Observer<ThinEngine>>;
+        _onEndFrameObserver: Nullable<Observer<AbstractEngine>>;
 
         /** @internal */
         _createTimeQuery(): Nullable<WebGLQuery>;

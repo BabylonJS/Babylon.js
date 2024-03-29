@@ -8,7 +8,7 @@ import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOp
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -109,7 +109,7 @@ export class ComputeEffect {
      */
     public _wasPreviouslyReady = false;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _isReady = false;
     private _compilationError = "";
     /** @internal */
@@ -133,7 +133,7 @@ export class ComputeEffect {
      * @param engine The engine the effect is created for
      * @param key Effect Key identifying uniquely compiled shader variants
      */
-    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
+    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: AbstractEngine, key = "") {
         this.name = baseName;
         this._key = key;
 
@@ -241,7 +241,7 @@ export class ComputeEffect {
      * The engine the effect was initialized with.
      * @returns the engine.
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 

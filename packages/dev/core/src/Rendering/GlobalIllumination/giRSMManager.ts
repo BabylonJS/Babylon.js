@@ -22,7 +22,7 @@ import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { GeometryBufferRenderer } from "../geometryBufferRenderer";
 import { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { WebGPURenderTargetWrapper } from "core/Engines/WebGPU/webgpuRenderTargetWrapper";
@@ -40,7 +40,7 @@ import "../../Shaders/rsmFullGlobalIllumination.fragment";
  */
 export class GIRSMManager {
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _giRSM: GIRSM[] = [];
     private _materialsWithRenderPlugin: Material[];
     private _sampleTexture: RawTexture;
