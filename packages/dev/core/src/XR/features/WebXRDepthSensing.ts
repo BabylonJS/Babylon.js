@@ -294,7 +294,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
 
         const scene = this._xrSessionManager.scene;
         const engine = scene.getEngine();
-        const internalTexture = engine.wrapWebGLTexture(texture);
+        const internalTexture = (engine as Engine).wrapWebGLTexture(texture);
 
         if (!this._cachedDepthImageTexture) {
             this._cachedDepthImageTexture = RawTexture.CreateRTexture(

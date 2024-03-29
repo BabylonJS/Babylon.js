@@ -41,7 +41,6 @@ import type {
     CameraStageFrameBufferAction,
 } from "./sceneComponent";
 import { Stage } from "./sceneComponent";
-import type { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
@@ -1354,7 +1353,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public proceduralTexturesEnabled = true;
 
     // Private
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     // Performance counters
     private _totalVertices = new PerfCounter();
@@ -1654,7 +1653,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param engine defines the engine to use to render this scene
      * @param options defines the scene options
      */
-    constructor(engine: Engine, options?: SceneOptions) {
+    constructor(engine: AbstractEngine, options?: SceneOptions) {
         super();
 
         this.activeCameras = [] as Camera[];

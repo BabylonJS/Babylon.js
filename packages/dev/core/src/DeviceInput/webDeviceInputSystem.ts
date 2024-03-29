@@ -1,5 +1,4 @@
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Engine } from "../Engines/engine";
 import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
 import { IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { _WarnImport } from "./devTools";
-import type { Engine } from "../Engines/engine";
 
 import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
@@ -10,6 +9,7 @@ import type { Nullable } from "../types";
 
 import { passPixelShader } from "../Shaders/pass.fragment";
 import { Scalar } from "../Maths/math.scalar";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 type DumpToolsEngine = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -77,7 +77,7 @@ export class DumpTools {
     public static async DumpFramebuffer(
         width: number,
         height: number,
-        engine: Engine,
+        engine: AbstractEngine,
         successCallback?: (data: string) => void,
         mimeType = "image/png",
         fileName?: string,

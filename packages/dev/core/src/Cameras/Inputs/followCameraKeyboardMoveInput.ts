@@ -4,7 +4,6 @@ import type { FollowCamera } from "../../Cameras/followCamera";
 import { serialize } from "../../Misc/decorators";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
-import type { Engine } from "../../Engines/engine";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import type { Scene } from "../../scene";

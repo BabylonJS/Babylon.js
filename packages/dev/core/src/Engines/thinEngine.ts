@@ -54,6 +54,7 @@ import type { WebRequest } from "../Misc/webRequest";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { Texture } from "../Materials/Textures/texture";
 import { PrecisionDate } from "../Misc/precisionDate";
+import { CeilingPOT, FloorPOT, NearestPOT } from "../Misc/tools.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -6096,41 +6097,21 @@ export class ThinEngine {
      * @param x Number to start search from.
      * @returns Next highest power of two.
      */
-    public static CeilingPOT(x: number): number {
-        x--;
-        x |= x >> 1;
-        x |= x >> 2;
-        x |= x >> 4;
-        x |= x >> 8;
-        x |= x >> 16;
-        x++;
-        return x;
-    }
+    public static CeilingPOT: (x: number) => number = CeilingPOT;
 
     /**
      * Find the next lowest power of two.
      * @param x Number to start search from.
      * @returns Next lowest power of two.
      */
-    public static FloorPOT(x: number): number {
-        x = x | (x >> 1);
-        x = x | (x >> 2);
-        x = x | (x >> 4);
-        x = x | (x >> 8);
-        x = x | (x >> 16);
-        return x - (x >> 1);
-    }
+    public static FloorPOT: (x: number) => number = FloorPOT;
 
     /**
      * Find the nearest power of two.
      * @param x Number to start search from.
      * @returns Next nearest power of two.
      */
-    public static NearestPOT(x: number): number {
-        const c = ThinEngine.CeilingPOT(x);
-        const f = ThinEngine.FloorPOT(x);
-        return c - x > x - f ? f : c;
-    }
+    public static NearestPOT: (x: number) => number = NearestPOT;
 
     /**
      * Get the closest exponent of two
