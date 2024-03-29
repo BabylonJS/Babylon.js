@@ -13,7 +13,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Color4 } from "../Maths/math.color";
 import { _WarnImport } from "../Misc/devTools";
 import type { Observer } from "../Misc/observable";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Nullable } from "../types";
 import { Material } from "../Materials/material";
 
@@ -122,7 +122,7 @@ export class GeometryBufferRenderer {
     }
 
     private _scene: Scene;
-    private _resizeObserver: Nullable<Observer<Engine>> = null;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _multiRenderTarget: MultiRenderTarget;
     private _textureTypesAndFormats: { [key: number]: { textureType: number; textureFormat: number } };
     private _ratioOrDimensions: number | { width: number; height: number };
