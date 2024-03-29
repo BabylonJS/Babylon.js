@@ -15,7 +15,7 @@ import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
 import "../../ShadersWGSL/clearQuad.vertex";
 import "../../ShadersWGSL/clearQuad.fragment";
-import { ShaderLanguage } from "../../Materials";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 /** @internal */
 export class WebGPUClearQuad {
