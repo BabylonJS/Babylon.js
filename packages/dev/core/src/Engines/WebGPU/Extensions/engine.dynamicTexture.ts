@@ -1,8 +1,8 @@
-import { ThinEngine } from "core/Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../../Materials/Textures/internalTexture";
 import type { ImageSource, Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
+import { GetExponentOfTwo } from "../../../Misc/tools.functions";
 
 WebGPUEngine.prototype.createDynamicTexture = function (width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture {
     const texture = new InternalTexture(this, InternalTextureSource.Dynamic);
@@ -10,8 +10,8 @@ WebGPUEngine.prototype.createDynamicTexture = function (width: number, height: n
     texture.baseHeight = height;
 
     if (generateMipMaps) {
-        width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
-        height = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
+        width = this.needPOTTextures ? GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
+        height = this.needPOTTextures ? GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
     }
 
     texture.width = width;

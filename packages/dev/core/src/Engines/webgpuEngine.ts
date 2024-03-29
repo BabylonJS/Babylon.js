@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { ThinEngine, type ISceneLike, type ThinEngineOptions } from "./thinEngine";
+import { type ISceneLike, type ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";

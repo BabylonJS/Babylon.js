@@ -24,7 +24,6 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
 import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
@@ -760,7 +759,7 @@ export class Tools {
     public static async DumpFramebuffer(
         width: number,
         height: number,
-        engine: Engine,
+        engine: AbstractEngine,
         successCallback?: (data: string) => void,
         mimeType = "image/png",
         fileName?: string,
@@ -1016,7 +1015,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshot(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         successCallback?: (data: string) => void,
@@ -1045,7 +1044,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
+    public static CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -1074,7 +1073,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTarget(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         successCallback?: (data: string) => void,
@@ -1115,7 +1114,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTargetAsync(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         mimeType = "image/png",

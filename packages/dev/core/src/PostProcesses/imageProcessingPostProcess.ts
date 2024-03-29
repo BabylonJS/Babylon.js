@@ -11,7 +11,7 @@ import type { IImageProcessingConfigurationDefines } from "../Materials/imagePro
 import { ImageProcessingConfiguration } from "../Materials/imageProcessingConfiguration";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 
@@ -420,7 +420,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         imageProcessingConfiguration?: ImageProcessingConfiguration

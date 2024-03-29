@@ -438,12 +438,58 @@ export abstract class AbstractEngine extends ThinEngine {
             }
         }
     }
+
+    /**
+     * Ask the browser to promote the current element to pointerlock mode
+     * @param element defines the DOM element to promote
+     */
+    static _RequestPointerlock(element: HTMLElement): void {
+        if (element.requestPointerLock) {
+            // In some browsers, requestPointerLock returns a promise.
+            // Handle possible rejections to avoid an unhandled top-level exception.
+            const promise: unknown = element.requestPointerLock();
+            if (promise instanceof Promise)
+                promise
+                    .then(() => {
+                        element.focus();
+                    })
+                    .catch(() => {});
+            else element.focus();
+        }
+    }
+
+    /**
+     * Asks the browser to exit pointerlock mode
+     */
+    static _ExitPointerlock(): void {
+        if (document.exitPointerLock) {
+            document.exitPointerLock();
+        }
+    }
+
+    /**
+     * creates and returns a new video element
+     * @param constraints video constraints
+     * @returns video element
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public createVideoElement(constraints: MediaTrackConstraints): any {
+        return document.createElement("video");
+    }
+
     // FPS
     protected _fps = 60;
     protected _deltaTime = 0;
 
     /** @internal */
     public _drawCalls = new PerfCounter();
+
+    /**
+     * @internal
+     */
+    public _reportDrawCall(numDrawCalls = 1) {
+        this._drawCalls.addCount(numDrawCalls, false);
+    }
     /**
      * Gets the current framerate
      * @returns a number representing the framerate

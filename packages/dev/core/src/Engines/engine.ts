@@ -595,10 +595,6 @@ export class Engine extends AbstractEngine {
     /**
      * @internal
      */
-    public _reportDrawCall(numDrawCalls = 1) {
-        this._drawCalls.addCount(numDrawCalls, false);
-    }
-
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: false): Promise<string>;
     public _loadFileAsync(url: string, offlineProvider?: IOfflineProvider, useArrayBuffer?: true): Promise<ArrayBuffer>;
 
@@ -1310,46 +1306,6 @@ export class Engine extends AbstractEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
-    }
-
-    /**
-     * creates and returns a new video element
-     * @param constraints video constraints
-     * @returns video element
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createVideoElement(constraints: MediaTrackConstraints): any {
-        return document.createElement("video");
-    }
-
-    /** Pointerlock and fullscreen */
-
-    /**
-     * Ask the browser to promote the current element to pointerlock mode
-     * @param element defines the DOM element to promote
-     */
-    static _RequestPointerlock(element: HTMLElement): void {
-        if (element.requestPointerLock) {
-            // In some browsers, requestPointerLock returns a promise.
-            // Handle possible rejections to avoid an unhandled top-level exception.
-            const promise: unknown = element.requestPointerLock();
-            if (promise instanceof Promise)
-                promise
-                    .then(() => {
-                        element.focus();
-                    })
-                    .catch(() => {});
-            else element.focus();
-        }
-    }
-
-    /**
-     * Asks the browser to exit pointerlock mode
-     */
-    static _ExitPointerlock(): void {
-        if (document.exitPointerLock) {
-            document.exitPointerLock();
-        }
     }
 
     /**

@@ -9,6 +9,7 @@ import { RandomGUID } from "../../Misc/guid";
 import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { Constants } from "../constants";
 import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -471,7 +472,7 @@ ThinEngine.prototype.createCubeTexture = function (
         fallback,
         (texture: InternalTexture) => this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true),
         (texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => {
-            const width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
+            const width = this.needPOTTextures ? GetExponentOfTwo(imgs[0].width, this._caps.maxCubemapTextureSize) : imgs[0].width;
             const height = width;
 
             const faces = [

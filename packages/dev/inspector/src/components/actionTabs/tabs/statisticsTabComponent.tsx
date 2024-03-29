@@ -98,8 +98,8 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="Render" value={sceneInstrumentation.renderTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Frame total" value={sceneInstrumentation.frameTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Inter-frame" value={sceneInstrumentation.interFrameTimeCounter.lastSecAverage} units="ms" />
-                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001} units="ms" />
-                    <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
+                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter!.lastSecAverage * 0.000001} units="ms" />
+                    <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter!.average * 0.000001} units="ms" />
                 </LineContainerComponent>
                 <LineContainerComponent title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
