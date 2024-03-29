@@ -8,7 +8,9 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IViewportLike } from "../Maths/math.like";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import { IsWindowObjectExist } from "../Misc/domManagement";
+import type { ILoadingScreen } from "../Loading/loadingScreen";
+import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -26,6 +28,22 @@ interface IViewportOwnerLike {
 export abstract class AbstractEngine extends ThinEngine {
     protected _compatibilityMode = true;
     protected _pointerLockRequested: boolean;
+    private _loadingScreen: ILoadingScreen;
+
+    /**
+     * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
+     **/
+    public enableOfflineSupport = false;
+
+    /**
+     * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
+     **/
+    public disableManifestCheck = false;
+
+    /**
+     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
+     */
+    public disableContextMenu: boolean = true;
 
     /**
      * Gets or sets the current render pass id
@@ -301,6 +319,71 @@ export abstract class AbstractEngine extends ThinEngine {
      */
     public getScreenAspectRatio(): number {
         return this.getRenderWidth(true) / this.getRenderHeight(true);
+    }
+
+    // Loading screen
+
+    /**
+     * Display the loading screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public displayLoadingUI(): void {
+        if (!IsWindowObjectExist()) {
+            return;
+        }
+        const loadingScreen = this.loadingScreen;
+        if (loadingScreen) {
+            loadingScreen.displayLoadingUI();
+        }
+    }
+
+    /**
+     * Hide the loading screen
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public hideLoadingUI(): void {
+        if (!IsWindowObjectExist()) {
+            return;
+        }
+        const loadingScreen = this._loadingScreen;
+        if (loadingScreen) {
+            loadingScreen.hideLoadingUI();
+        }
+    }
+
+    /**
+     * Gets the current loading screen object
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public get loadingScreen(): ILoadingScreen {
+        if (!this._loadingScreen && this._renderingCanvas) {
+            this._loadingScreen = AbstractEngine.DefaultLoadingScreenFactory(this._renderingCanvas);
+        }
+        return this._loadingScreen;
+    }
+
+    /**
+     * Sets the current loading screen object
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public set loadingScreen(loadingScreen: ILoadingScreen) {
+        this._loadingScreen = loadingScreen;
+    }
+
+    /**
+     * Sets the current loading screen text
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public set loadingUIText(text: string) {
+        this.loadingScreen.loadingUIText = text;
+    }
+
+    /**
+     * Sets the current loading screen background color
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
+     */
+    public set loadingUIBackgroundColor(color: string) {
+        this.loadingScreen.loadingUIBackgroundColor = color;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -614,6 +697,29 @@ export abstract class AbstractEngine extends ThinEngine {
     }
 
     /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        const canvas = this.createCanvas(bufferWidth, bufferHeight);
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+            throw new Error("Unable to get 2d context for resizeImageBitmap");
+        }
+
+        context.drawImage(image, 0, 0);
+
+        // Create VertexData from map data
+        // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+        const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+        return buffer;
+    }
+
+    /**
      * Toggle full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
@@ -676,4 +782,14 @@ export abstract class AbstractEngine extends ThinEngine {
      * Method called to create the default rescale post process on each engine.
      */
     public static _RescalePostProcessFactory: Nullable<(engine: AbstractEngine) => PostProcess> = null;
+
+    /**
+     * Method called to create the default loading screen.
+     * This can be overridden in your own app.
+     * @param canvas The rendering canvas element
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
+        throw _WarnImport("LoadingScreen");
+    }
 }

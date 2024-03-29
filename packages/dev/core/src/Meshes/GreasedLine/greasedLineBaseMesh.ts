@@ -7,7 +7,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
-import type { Engine } from "../../Engines/engine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
@@ -146,7 +146,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     protected _lazy = false;
     protected _updatable = false;
 
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
 
     constructor(
         public readonly name: string,

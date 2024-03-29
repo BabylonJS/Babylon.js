@@ -3,7 +3,6 @@ import type { Scene } from "../scene";
 import type { Vector2 } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { Engine } from "../Engines/engine";
 import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -23,6 +22,7 @@ import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
 import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -52,7 +52,7 @@ export class Geometry implements IGetSetVerticesData {
 
     // Private
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _meshes: Mesh[];
     private _totalVertices = 0;
     private _totalIndices?: number;
@@ -189,7 +189,7 @@ export class Geometry implements IGetSetVerticesData {
      * Gets the hosting engine
      * @returns the hosting Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 

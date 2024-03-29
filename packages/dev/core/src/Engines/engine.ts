@@ -1,10 +1,9 @@
-import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
-import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
+import { IsDocumentAvailable } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
 import { _WarnImport } from "../Misc/devTools";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
@@ -17,7 +16,6 @@ import type { IViewportLike, IColor4Like } from "../Maths/math.like";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import { PerfCounter } from "../Misc/perfCounter";
 import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import { Logger } from "../Misc/logger";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
@@ -274,28 +272,6 @@ export class Engine extends AbstractEngine {
     }
 
     /** @internal */
-    /**
-     * Resize an image and returns the image data as an uint8array
-     * @param image image to resize
-     * @param bufferWidth destination buffer width
-     * @param bufferHeight destination buffer height
-     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
-     */
-    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        const canvas = this.createCanvas(bufferWidth, bufferHeight);
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-            throw new Error("Unable to get 2d context for resizeImageBitmap");
-        }
-
-        context.drawImage(image, 0, 0);
-
-        // Create VertexData from map data
-        // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-        const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
-        return buffer;
-    }
 
     /**
      * Will flag all materials in all scenes in all engines as dirty to trigger new shader compilation
@@ -321,25 +297,10 @@ export class Engine extends AbstractEngine {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
-        throw _WarnImport("LoadingScreen");
+        return AbstractEngine.DefaultLoadingScreenFactory(canvas);
     }
 
     // Members
-
-    /**
-     * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
-     **/
-    public enableOfflineSupport = false;
-
-    /**
-     * Gets or sets a boolean to enable/disable checking manifest if IndexedDB support is enabled (js will always consider the database is up to date)
-     **/
-    public disableManifestCheck = false;
-
-    /**
-     * Gets or sets a boolean to enable/disable the context menu (right-click) from appearing on the main canvas
-     */
-    public disableContextMenu: boolean = true;
 
     /**
      * If set, will be used to request the next animation frame for the render loop
@@ -370,7 +331,6 @@ export class Engine extends AbstractEngine {
      */
     public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 
-    private _loadingScreen: ILoadingScreen;
     private _rescalePostProcess: Nullable<PostProcess>;
 
     protected get _supportsHardwareTextureRescaling() {
@@ -1350,71 +1310,6 @@ export class Engine extends AbstractEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
-    }
-
-    // Loading screen
-
-    /**
-     * Display the loading screen
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public displayLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this.loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.displayLoadingUI();
-        }
-    }
-
-    /**
-     * Hide the loading screen
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public hideLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this._loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.hideLoadingUI();
-        }
-    }
-
-    /**
-     * Gets the current loading screen object
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public get loadingScreen(): ILoadingScreen {
-        if (!this._loadingScreen && this._renderingCanvas) {
-            this._loadingScreen = Engine.DefaultLoadingScreenFactory(this._renderingCanvas);
-        }
-        return this._loadingScreen;
-    }
-
-    /**
-     * Sets the current loading screen object
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingScreen(loadingScreen: ILoadingScreen) {
-        this._loadingScreen = loadingScreen;
-    }
-
-    /**
-     * Sets the current loading screen text
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingUIText(text: string) {
-        this.loadingScreen.loadingUIText = text;
-    }
-
-    /**
-     * Sets the current loading screen background color
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingUIBackgroundColor(color: string) {
-        this.loadingScreen.loadingUIBackgroundColor = color;
     }
 
     /**

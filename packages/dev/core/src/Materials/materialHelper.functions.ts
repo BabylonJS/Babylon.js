@@ -14,7 +14,7 @@ import type { Light } from "../Lights/light";
 import type { MaterialDefines } from "./materialDefines";
 import type { EffectFallbacks } from "./effectFallbacks";
 import { LightConstants } from "../Lights/lightConstants";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Material } from "./material";
 import type { Nullable } from "../types";
 import { prepareDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
@@ -605,7 +605,7 @@ export function PrepareDefinesForLight(
  */
 export function PrepareDefinesForFrameBoundValues(
     scene: Scene,
-    engine: Engine,
+    engine: AbstractEngine,
     material: Material,
     defines: any,
     useInstances: boolean,
