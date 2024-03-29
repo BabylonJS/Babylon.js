@@ -111,6 +111,8 @@ export class MathBlock extends NodeGeometryBlock {
 
     protected _buildBlock() {
         let func: (state: NodeGeometryBuildState) => any;
+        const left = this.left;
+        const right = this.right;
 
         if (!this.left.isConnected || !this.right.isConnected) {
             this.output._storedFunction = null;
@@ -124,18 +126,19 @@ export class MathBlock extends NodeGeometryBlock {
         // If both input types are scalars, then this is a scalar operation.
         const isScalar = leftIsScalar && rightIsScalar;
 
-        // If it's not a scalar operation, then the vector input will be considered the first input for the rest of this function.
-        const [first, second] = !isScalar && leftIsScalar ? [this.right, this.left] : [this.left, this.right];
-
         switch (this.operation) {
             case MathBlockOperations.Add: {
                 if (isScalar) {
                     func = (state) => {
-                        return first.getConnectedValue(state) + second.getConnectedValue(state);
+                        return left.getConnectedValue(state) + right.getConnectedValue(state);
+                    };
+                } else if (leftIsScalar) {
+                    func = (state) => {
+                        return state.adapt(left, right.type).add(right.getConnectedValue(state));
                     };
                 } else {
                     func = (state) => {
-                        return first.getConnectedValue(state).add(state.adapt(second, first.type));
+                        return left.getConnectedValue(state).add(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -143,11 +146,15 @@ export class MathBlock extends NodeGeometryBlock {
             case MathBlockOperations.Subtract: {
                 if (isScalar) {
                     func = (state) => {
-                        return first.getConnectedValue(state) - second.getConnectedValue(state);
+                        return left.getConnectedValue(state) - right.getConnectedValue(state);
+                    };
+                } else if (leftIsScalar) {
+                    func = (state) => {
+                        return state.adapt(left, right.type).subtract(right.getConnectedValue(state));
                     };
                 } else {
                     func = (state) => {
-                        return first.getConnectedValue(state).subtract(state.adapt(second, first.type));
+                        return left.getConnectedValue(state).subtract(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -155,11 +162,15 @@ export class MathBlock extends NodeGeometryBlock {
             case MathBlockOperations.Multiply: {
                 if (isScalar) {
                     func = (state) => {
-                        return first.getConnectedValue(state) * second.getConnectedValue(state);
+                        return left.getConnectedValue(state) * right.getConnectedValue(state);
+                    };
+                } else if (leftIsScalar) {
+                    func = (state) => {
+                        return state.adapt(left, right.type).multiply(right.getConnectedValue(state));
                     };
                 } else {
                     func = (state) => {
-                        return first.getConnectedValue(state).multiply(state.adapt(second, first.type));
+                        return left.getConnectedValue(state).multiply(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -167,11 +178,15 @@ export class MathBlock extends NodeGeometryBlock {
             case MathBlockOperations.Divide: {
                 if (isScalar) {
                     func = (state) => {
-                        return first.getConnectedValue(state) / second.getConnectedValue(state);
+                        return left.getConnectedValue(state) / right.getConnectedValue(state);
+                    };
+                } else if (leftIsScalar) {
+                    func = (state) => {
+                        return state.adapt(left, right.type).divide(right.getConnectedValue(state));
                     };
                 } else {
                     func = (state) => {
-                        return first.getConnectedValue(state).divide(state.adapt(second, first.type));
+                        return left.getConnectedValue(state).divide(state.adapt(right, left.type));
                     };
                 }
                 break;
@@ -179,25 +194,27 @@ export class MathBlock extends NodeGeometryBlock {
             case MathBlockOperations.Min: {
                 if (isScalar) {
                     func = (state) => {
-                        return Math.min(first.getConnectedValue(state), second.getConnectedValue(state));
+                        return Math.min(left.getConnectedValue(state), right.getConnectedValue(state));
                     };
                 } else {
-                    switch (first.type) {
+                    const [vector, scalar] = leftIsScalar ? [right, left] : [left, right];
+
+                    switch (vector.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector2.Minimize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector3.Minimize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Minimize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector4.Minimize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
@@ -208,25 +225,27 @@ export class MathBlock extends NodeGeometryBlock {
             case MathBlockOperations.Max: {
                 if (isScalar) {
                     func = (state) => {
-                        return Math.max(first.getConnectedValue(state), second.getConnectedValue(state));
+                        return Math.max(left.getConnectedValue(state), right.getConnectedValue(state));
                     };
                 } else {
-                    switch (first.type) {
+                    const [vector, scalar] = leftIsScalar ? [right, left] : [left, right];
+
+                    switch (vector.type) {
                         case NodeGeometryBlockConnectionPointTypes.Vector2: {
                             func = (state) => {
-                                return Vector2.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector2.Maximize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector3: {
                             func = (state) => {
-                                return Vector3.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector3.Maximize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
                         case NodeGeometryBlockConnectionPointTypes.Vector4: {
                             func = (state) => {
-                                return Vector4.Maximize(first.getConnectedValue(state), state.adapt(second, first.type));
+                                return Vector4.Maximize(vector.getConnectedValue(state), state.adapt(scalar, vector.type));
                             };
                             break;
                         }
@@ -237,7 +256,7 @@ export class MathBlock extends NodeGeometryBlock {
         }
 
         this.output._storedFunction = (state) => {
-            if (first.type === NodeGeometryBlockConnectionPointTypes.Int) {
+            if (left.type === NodeGeometryBlockConnectionPointTypes.Int) {
                 return func(state) | 0;
             }
             return func(state);
