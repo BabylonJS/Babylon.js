@@ -2,7 +2,7 @@ import type { IDrawContext } from "../Engines/IDrawContext";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import type { Nullable } from "../types";
 
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "./effect";
 import type { MaterialDefines } from "./materialDefines";
 
@@ -39,7 +39,7 @@ export class DrawWrapper {
         return (effect as Effect).getPipelineContext === undefined ? (effect as DrawWrapper).effect : (effect as Effect);
     }
 
-    constructor(engine: ThinEngine, createMaterialContext = true) {
+    constructor(engine: AbstractEngine, createMaterialContext = true) {
         this.effect = null;
         this.defines = null;
         this.drawContext = engine.createDrawContext();

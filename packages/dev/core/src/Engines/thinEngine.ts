@@ -1,18 +1,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { EngineStore } from "./engineStore";
-import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
-import type { Observer } from "../Misc/observable";
-import type { DepthCullingState } from "../States/depthCullingState";
-import type { StencilState } from "../States/stencilState";
-import type { AlphaState } from "../States/alphaCullingState";
 import { Constants } from "./constants";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IViewportLike, IColor4Like } from "../Maths/math.like";
+import type { IColor4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
@@ -26,14 +20,12 @@ import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
-import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { IMaterialContext } from "./IMaterialContext";
 import type { IDrawContext } from "./IDrawContext";
-import type { ICanvas, ICanvasRenderingContext, IImage } from "./ICanvas";
-import type { StencilStateComposer } from "../States/stencilStateComposer";
+import type { ICanvas, ICanvasRenderingContext } from "./ICanvas";
 import type { IStencilState } from "../States/IStencilState";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
@@ -134,34 +126,6 @@ export class ThinEngine extends AbstractEngine {
         { key: ".*(15.4).*AppleWebKit.*Safari", capture: null, captureConstraint: null, targets: ["antialias", "maxMSAASamples"] },
     ];
 
-    /**
-     * Returns the current npm package of the sdk
-     */
-    // Not mixed with Version for tooling purpose.
-    public static get NpmPackage(): string {
-        return "babylonjs@7.0.0";
-    }
-
-    /**
-     * Returns the current version of the framework
-     */
-    public static get Version(): string {
-        return "7.0.0";
-    }
-
-    /**
-     * Returns a string describing the current engine
-     */
-    public get description(): string {
-        let description = this.name + this.webGLVersion;
-
-        if (this._caps.parallelShaderCompile) {
-            description += " - Parallel shader compilation";
-        }
-
-        return description;
-    }
-
     /** @internal */
     protected _creationOptions: EngineOptions;
 
@@ -253,25 +217,12 @@ export class ThinEngine extends AbstractEngine {
         return this._webGLVersion < 2 || this.forcePOTTextures;
     }
 
-    /** @internal */
-    public _badDesktopOS = false;
-
     private _glVersion: string;
     private _glRenderer: string;
     private _glVendor: string;
 
-    /** @internal */
-    public _videoTextureSupported: boolean;
-
-    /**
-     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
-     */
-    public disableVertexArrayObjects = false;
-
     // Cache
 
-    /** @internal */
-    public _currentDrawContext: IDrawContext;
     /** @internal */
     public _currentMaterialContext: IMaterialContext;
     /** @internal */
@@ -318,25 +269,10 @@ export class ThinEngine extends AbstractEngine {
     }
 
     /**
-     * Gets the current viewport
-     */
-    public get currentViewport(): Nullable<IViewportLike> {
-        return this._cachedViewport;
-    }
-
-    /**
      * Creates a new snapshot at the next frame using the current snapshotRenderingMode
      */
     public snapshotRenderingReset(): void {
         this.snapshotRendering = false;
-    }
-
-    /**
-     * Create an image to use with canvas
-     * @returns IImage interface
-     */
-    public createCanvasImage(): IImage {
-        return document.createElement("img");
     }
 
     /**
@@ -909,6 +845,16 @@ export class ThinEngine extends AbstractEngine {
             renderer: this._glRenderer,
             version: this._glVersion,
         };
+    }
+
+    /**Gets driver info if available */
+    public extractDriverInfo() {
+        const glInfo = this.getGlInfo();
+        if (glInfo && glInfo.renderer) {
+            return glInfo.renderer;
+        }
+
+        return "";
     }
 
     /**
@@ -3854,16 +3800,6 @@ export class ThinEngine extends AbstractEngine {
         // Integrated irradiance map.
         if (texture._irradianceTexture) {
             texture._irradianceTexture.dispose();
-        }
-    }
-
-    /**
-     * @internal
-     */
-    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
-        const index = this._renderTargetWrapperCache.indexOf(rtWrapper);
-        if (index !== -1) {
-            this._renderTargetWrapperCache.splice(index, 1);
         }
     }
 

@@ -93,16 +93,17 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         label?: string
     ): InternalTexture {
         if (this._depthStencilBuffer) {
+            const engine = this._engine as ThinEngine;
             // Dispose previous depth/stencil render buffers and clear the corresponding attachment.
             // Next time this framebuffer is bound, the new depth/stencil texture will be attached.
-            const currentFrameBuffer = this._engine._currentFramebuffer;
+            const currentFrameBuffer = engine._currentFramebuffer;
             const gl = this._context;
 
-            this._engine._bindUnboundFramebuffer(this._framebuffer);
+            engine._bindUnboundFramebuffer(this._framebuffer);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
             gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
-            this._engine._bindUnboundFramebuffer(currentFrameBuffer);
+            engine._bindUnboundFramebuffer(currentFrameBuffer);
             gl.deleteRenderbuffer(this._depthStencilBuffer);
 
             this._depthStencilBuffer = null;
@@ -122,15 +123,16 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         const gl = this._context;
         const depthbuffer = this._depthStencilBuffer;
         const framebuffer = renderTarget._MSAAFramebuffer || renderTarget._framebuffer;
+        const engine = this._engine as ThinEngine;
 
         if (renderTarget._depthStencilBuffer && renderTarget._depthStencilBuffer !== depthbuffer) {
             gl.deleteRenderbuffer(renderTarget._depthStencilBuffer);
         }
         renderTarget._depthStencilBuffer = depthbuffer;
         const attachment = renderTarget._generateStencilBuffer ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-        this._engine._bindUnboundFramebuffer(framebuffer);
+        engine._bindUnboundFramebuffer(framebuffer);
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, attachment, gl.RENDERBUFFER, depthbuffer);
-        this._engine._bindUnboundFramebuffer(null);
+        engine._bindUnboundFramebuffer(null);
     }
 
     /**
@@ -146,11 +148,11 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         }
 
         const framebuffer = this._framebuffer;
+        const engine = this._engine as ThinEngine;
+        const currentFB = engine._currentFramebuffer;
+        engine._bindUnboundFramebuffer(framebuffer);
 
-        const currentFB = this._engine._currentFramebuffer;
-        this._engine._bindUnboundFramebuffer(framebuffer);
-
-        if (this._engine.webGLVersion > 1) {
+        if (engine.webGLVersion > 1) {
             const gl = this._context as WebGL2RenderingContext;
 
             const attachment = (<any>gl)["COLOR_ATTACHMENT" + attachmentIndex];
@@ -175,7 +177,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
             gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, target, texture._hardwareTexture.underlyingResource, lodLevel);
         }
 
-        this._engine._bindUnboundFramebuffer(currentFB);
+        engine._bindUnboundFramebuffer(currentFB);
     }
 
     /**

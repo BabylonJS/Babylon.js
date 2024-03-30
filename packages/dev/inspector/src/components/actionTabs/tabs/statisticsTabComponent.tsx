@@ -123,7 +123,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="Max textures units" value={caps.maxTexturesImageUnits} fractionDigits={0} />
                     <ValueLineComponent label="Max textures size" value={caps.maxTextureSize} fractionDigits={0} />
                     <ValueLineComponent label="Max anisotropy" value={caps.maxAnisotropy} fractionDigits={0} />
-                    <TextLineComponent label="Driver" value={engine.getGlInfo().renderer} />
+                    <TextLineComponent label="Driver" value={engine.extractDriverInfo()} />
                 </LineContainerComponent>
             </div>
         );

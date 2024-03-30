@@ -10,7 +10,6 @@ import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
-import { ThinEngine } from "../Engines/thinEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";

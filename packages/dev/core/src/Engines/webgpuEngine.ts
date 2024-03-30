@@ -1706,6 +1706,14 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * Unbind all instance attributes
+     */
+    public unbindInstanceAttributes(): void {
+        // eslint-disable-next-line no-throw-literal
+        throw "Not implemented on WebGPU";
+    }
+
+    /**
      * Bind a list of vertex buffers with the engine
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
@@ -2928,6 +2936,11 @@ export class WebGPUEngine extends AbstractEngine {
                 }
             }
         }
+    }
+
+    /**Gets driver info if available */
+    public extractDriverInfo() {
+        return "";
     }
 
     /**

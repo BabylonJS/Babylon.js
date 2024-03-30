@@ -52,8 +52,8 @@ export class FxaaPostProcess extends PostProcess {
             return null;
         }
 
-        const glInfo = engine.getGlInfo();
-        if (glInfo && glInfo.renderer && glInfo.renderer.toLowerCase().indexOf("mali") > -1) {
+        const driverInfo = engine.extractDriverInfo();
+        if (driverInfo.toLowerCase().indexOf("mali") > -1) {
             return "#define MALI 1\n";
         }
 

@@ -11,7 +11,7 @@ import type { IAnimatable } from "../../Animations/animatable.interface";
 import { RandomGUID } from "../../Misc/guid";
 
 import "../../Misc/fileTools";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { ThinTexture } from "./thinTexture";
 import type { AbstractScene } from "../../abstractScene";
 
@@ -538,7 +538,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
      * @param sceneOrEngine Define the scene or engine the texture belongs to
      * @param internalTexture Define the internal texture associated with the texture
      */
-    constructor(sceneOrEngine?: Nullable<Scene | ThinEngine>, internalTexture: Nullable<InternalTexture> = null) {
+    constructor(sceneOrEngine?: Nullable<Scene | AbstractEngine>, internalTexture: Nullable<InternalTexture> = null) {
         super(null);
 
         if (sceneOrEngine) {
@@ -571,7 +571,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @internal */
-    protected _getEngine(): Nullable<ThinEngine> {
+    protected _getEngine(): Nullable<AbstractEngine> {
         return this._engine;
     }
 
@@ -921,7 +921,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         }
     }
 
-    private static _IsScene(sceneOrEngine: Scene | ThinEngine): sceneOrEngine is Scene {
+    private static _IsScene(sceneOrEngine: Scene | AbstractEngine): sceneOrEngine is Scene {
         return sceneOrEngine.getClassName() === "Scene";
     }
 }

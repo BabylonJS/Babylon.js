@@ -2,7 +2,7 @@ import { Texture } from "./texture";
 import { Constants } from "../../Engines/constants";
 import "../../Engines/Extensions/engine.rawTexture";
 import type { Nullable } from "../../types";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 import type { Scene } from "../../scene";
 
@@ -37,7 +37,7 @@ export class RawTexture extends Texture {
          * Define the format of the data (RGB, RGBA... Engine.TEXTUREFORMAT_xxx)
          */
         public format: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -87,7 +87,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
@@ -110,7 +110,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
@@ -133,7 +133,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
@@ -159,7 +159,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -188,7 +188,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -216,7 +216,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
@@ -254,7 +254,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -279,7 +279,7 @@ export class RawTexture extends Texture {
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
-        sceneOrEngine: Nullable<Scene | ThinEngine>,
+        sceneOrEngine: Nullable<Scene | AbstractEngine>,
         generateMipMaps: boolean = true,
         invertY: boolean = false,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,

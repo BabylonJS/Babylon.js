@@ -20,7 +20,7 @@ import { Constants } from "../Engines/constants";
 import { EngineStore } from "../Engines/engineStore";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import { CustomParticleEmitter } from "./EmitterTypes/customParticleEmitter";
-import { ThinEngine } from "../Engines/thinEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { UniformBufferEffectCommonAccessor } from "../Materials/uniformBufferEffectCommonAccessor";
@@ -919,7 +919,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             capacity: number;
             randomTextureSize: number;
         }>,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
         isAnimationSheetEnabled: boolean = false
     ) {
@@ -931,7 +931,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {
-            this._engine = sceneOrEngine as ThinEngine;
+            this._engine = sceneOrEngine as AbstractEngine;
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
@@ -2079,12 +2079,12 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the parsed GPU particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): GPUParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | AbstractEngine, rootUrl: string, doNotStart = false, capacity?: number): GPUParticleSystem {
         const name = parsedParticleSystem.name;
-        let engine: ThinEngine;
+        let engine: AbstractEngine;
         let scene: Nullable<Scene>;
 
-        if (sceneOrEngine instanceof ThinEngine) {
+        if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
             scene = sceneOrEngine as Scene;

@@ -6,7 +6,7 @@ import { PerfCounter } from "../Misc/perfCounter";
 import type { OcclusionQuery } from "./Extensions/engine.query";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
-import type { IViewportLike } from "../Maths/math.like";
+import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
@@ -15,7 +15,7 @@ import { DepthCullingState } from "../States/depthCullingState";
 import { StencilStateComposer } from "../States/stencilStateComposer";
 import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
-import type { ICanvas } from "./ICanvas";
+import type { ICanvas, IImage } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { ISceneLike } from "./thinEngine";
 import type { EngineCapabilities } from "./engineCapabilities";
@@ -29,6 +29,7 @@ import { PerformanceConfigurator } from "./performanceConfigurator";
 import type { EngineFeatures } from "./engineFeatures";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
+import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
@@ -43,6 +44,15 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { EngineStore } from "./engineStore";
 import type { ExternalTexture } from "../Materials/Textures/externalTexture";
+import type { TextureSampler } from "../Materials/Textures/textureSampler";
+import type { DepthTextureCreationOptions, InternalTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import type { EffectFallbacks } from "../Materials/effectFallbacks";
+import type { IMaterialContext } from "./IMaterialContext";
+import type { IStencilState } from "../States/IStencilState";
+import type { DrawWrapper } from "../Materials/drawWrapper";
+import type { IDrawContext } from "./IDrawContext";
+import type { VertexBuffer } from "../Meshes/buffer";
 
 /**
  * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
@@ -186,6 +196,10 @@ export abstract class AbstractEngine {
 
     /** @internal */
     public _badOS = false;
+    /** @internal */
+    public _badDesktopOS = false;
+    /** @internal */
+    public _videoTextureSupported: boolean;
 
     protected _compatibilityMode = true;
     protected _pointerLockRequested: boolean;
@@ -206,6 +220,8 @@ export abstract class AbstractEngine {
     public _caps: EngineCapabilities;
     /** @internal */
     protected _cachedViewport: Nullable<IViewportLike>;
+    /** @internal */
+    public _currentDrawContext: IDrawContext;
 
     /** @internal */
     protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
@@ -218,6 +234,11 @@ export abstract class AbstractEngine {
 
     /** @internal */
     protected _isWebGPU: boolean = false;
+
+    /**
+     * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
+     */
+    public disableVertexArrayObjects = false;
 
     /** @internal */
     protected _frameId = 0;
@@ -681,6 +702,14 @@ export abstract class AbstractEngine {
      * Gets or sets a boolean indicating that cache can be kept between frames
      */
     public preventCacheWipeBetweenFrames = false;
+
+    /**
+     * Returns the string "AbstractEngine"
+     * @returns "AbstractEngine"
+     */
+    public getClassName(): string {
+        return "AbstractEngine";
+    }
 
     /**
      * Gets the default empty texture
@@ -1148,7 +1177,468 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
+    public abstract _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+
+    /**
+     * @internal
+     */
+    public abstract _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer?: boolean): number;
+
+    /** @internal */
+    public abstract _getUnpackAlignement(): number;
+
+    /**
+     * @internal
+     */
+    public abstract _uploadCompressedDataToTextureDirectly(
+        texture: InternalTexture,
+        internalFormat: number,
+        width: number,
+        height: number,
+        data: ArrayBufferView,
+        faceIndex: number,
+        lod?: number
+    ): void;
+
+    /**
+     * @internal
+     */
+    public abstract _bindTextureDirectly(target: number, texture: Nullable<InternalTexture>, forTextureDataUpdate?: boolean, force?: boolean): boolean;
+
+    /**
+     * @internal
+     */
+    public abstract _uploadDataToTextureDirectly(
+        texture: InternalTexture,
+        imageData: ArrayBufferView,
+        faceIndex?: number,
+        lod?: number,
+        babylonInternalFormat?: number,
+        useTextureWidthAndHeight?: boolean
+    ): void;
+
+    /** @internal */
+    public abstract _readTexturePixels(
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number
+    ): Promise<ArrayBufferView>;
+
+    /** @internal */
+    public abstract _readTexturePixelsSync(
+        texture: InternalTexture,
+        width: number,
+        height: number,
+        faceIndex?: number,
+        level?: number,
+        buffer?: Nullable<ArrayBufferView>,
+        flushRenderer?: boolean,
+        noDataConversion?: boolean,
+        x?: number,
+        y?: number
+    ): ArrayBufferView;
+
+    /**
+     * Reads pixels from the current frame buffer. Please note that this function can be slow
+     * @param x defines the x coordinate of the rectangle where pixels must be read
+     * @param y defines the y coordinate of the rectangle where pixels must be read
+     * @param width defines the width of the rectangle where pixels must be read
+     * @param height defines the height of the rectangle where pixels must be read
+     * @param hasAlpha defines whether the output should have alpha or not (defaults to true)
+     * @param flushRenderer true to flush the renderer from the pending commands before reading the pixels
+     * @returns a ArrayBufferView promise (Uint8Array) containing RGBA colors
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public abstract readPixels(x: number, y: number, width: number, height: number, hasAlpha?: boolean, flushRenderer?: boolean): Promise<ArrayBufferView>;
+
+    /**
+     * Force a WebGPU flush (ie. a flush of all waiting commands)
+     */
+    public abstract flushFramebuffer(): void;
+
+    /** @internal */
+    public abstract _currentFrameBufferIsDefaultFrameBuffer(): boolean;
+
+    /**
+     * Creates an internal texture without binding it to a framebuffer
+     * @internal
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @param delayGPUTextureCreation true to delay the texture creation the first time it is really needed. false to create it right away
+     * @param source source type of the texture
+     * @returns a new internal texture
+     */
+    public abstract _createInternalTexture(
+        size: TextureSize,
+        options: boolean | InternalTextureCreationOptions,
+        delayGPUTextureCreation?: boolean,
+        source?: InternalTextureSource
+    ): InternalTexture;
+
+    /** @internal */
+    public abstract applyStates(): void;
+
+    /**
+     * Binds the frame buffer to the specified texture.
+     * @param texture The render target wrapper to render to
+     * @param faceIndex The face of the texture to render to in case of cube texture
+     * @param requiredWidth The width of the target to render to
+     * @param requiredHeight The height of the target to render to
+     * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
+     * @param lodLevel defines the lod level to bind to the frame buffer
+     * @param layer defines the 2d array index to bind to frame buffer to
+     */
+    public abstract bindFramebuffer(
+        texture: RenderTargetWrapper,
+        faceIndex?: number,
+        requiredWidth?: number,
+        requiredHeight?: number,
+        forceFullscreenViewport?: boolean,
+        lodLevel?: number,
+        layer?: number
+    ): void;
+
+    /**
+     * Update the sampling mode of a given texture
+     * @param texture defines the texture to update
+     * @param wrapU defines the texture wrap mode of the u coordinates
+     * @param wrapV defines the texture wrap mode of the v coordinates
+     * @param wrapR defines the texture wrap mode of the r coordinates
+     */
+    public abstract updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV?: Nullable<number>, wrapR?: Nullable<number>): void;
+
+    /**
+     * Update a video texture
+     * @param texture defines the texture to update
+     * @param video defines the video element to use
+     * @param invertY defines if data must be stored with Y axis inverted
+     */
+    public abstract updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void;
+
+    /**
+     * Unbind the current render target and bind the default framebuffer
+     */
+    public abstract restoreDefaultFramebuffer(): void;
+
+    /**
+     * Update a raw texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store in the texture
+     * @param format defines the format of the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     */
+    public abstract updateRawTexture(
+        texture: Nullable<InternalTexture>,
+        data: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression?: Nullable<string>,
+        type?: number,
+        useSRGBBuffer?: boolean
+    ): void;
+
+    /**
+     * Creates a storage buffer
+     * @param data the data for the storage buffer or the size of the buffer
+     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
+     * @param label defines the label of the buffer (for debug purpose)
+     * @returns the new buffer
+     */
+    public abstract createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer;
+
+    /**
+     * Updates a storage buffer
+     * @param buffer the storage buffer to update
+     * @param data the data used to update the storage buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public abstract updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+
+    /**
+     * Read data from a storage buffer
+     * @param storageBuffer The storage buffer to read from
+     * @param offset The offset in the storage buffer to start reading from (default: 0)
+     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
+     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
+     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
+     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
+     */
+    public abstract readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView>;
+
+    /**
+     * Draw a list of indexed primitives
+     * @param fillMode defines the primitive to use
+     * @param indexStart defines the starting index
+     * @param indexCount defines the number of index to draw
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+     */
+    public abstract drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void;
+
+    /**
+     * Unbind the current render target texture from the webGL context
+     * @param texture defines the render target wrapper to unbind
+     * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
+     * @param onBeforeUnbind defines a function which will be called before the effective unbind
+     */
+    public abstract unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps?: boolean, onBeforeUnbind?: () => void): void;
+
+    /**Gets driver info if available */
+    public abstract extractDriverInfo(): string;
+
+    /**
+     * Creates a layout object to draw/clear on specific textures in a MRT
+     * @param textureStatus textureStatus[i] indicates if the i-th is active
+     * @returns A layout to be fed to the engine, calling `bindAttachments`.
+     */
+    public abstract buildTextureLayout(textureStatus: boolean[]): number[];
+
+    /**
+     * Restores the webgl state to only draw on the main color attachment
+     * when the frame buffer associated is the canvas frame buffer
+     */
+    public abstract restoreSingleAttachment(): void;
+
+    /**
+     * Select a subsets of attachments to draw to.
+     * @param attachments gl attachments
+     */
+    public abstract bindAttachments(attachments: number[]): void;
+
+    /**
+     * Bind a list of vertex buffers to the webGL context
+     * @param vertexBuffers defines the list of vertex buffers to bind
+     * @param indexBuffer defines the index buffer to bind
+     * @param effect defines the effect associated with the vertex buffers
+     * @param overrideVertexBuffers defines optional list of avertex buffers that overrides the entries in vertexBuffers
+     */
+    public abstract bindBuffers(
+        vertexBuffers: { [key: string]: Nullable<VertexBuffer> },
+        indexBuffer: Nullable<DataBuffer>,
+        effect: Effect,
+        overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
+    ): void;
+
+    /**
+     * @internal
+     */
+    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+        const index = this._renderTargetWrapperCache.indexOf(rtWrapper);
+        if (index !== -1) {
+            this._renderTargetWrapperCache.splice(index, 1);
+        }
+    }
+
+    /**
+     * Activates an effect, making it the current one (ie. the one used for rendering)
+     * @param effect defines the effect to activate
+     */
+    public abstract enableEffect(effect: Nullable<Effect | DrawWrapper>): void;
+
+    /**
+     * Set various states to the webGL context
+     * @param culling defines culling state: true to enable culling, false to disable it
+     * @param zOffset defines the value to apply to zOffset (0 by default)
+     * @param force defines if states must be applied even if cache is up to date
+     * @param reverseSide defines if culling must be reversed (CCW if false, CW if true)
+     * @param cullBackFaces true to cull back faces, false to cull front faces (if culling is enabled)
+     * @param stencil stencil states to set
+     * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
+     */
+    public abstract setState(
+        culling: boolean,
+        zOffset?: number,
+        force?: boolean,
+        reverseSide?: boolean,
+        cullBackFaces?: boolean,
+        stencil?: IStencilState,
+        zOffsetUnits?: number
+    ): void;
+
+    /**
+     * Creates a new material context
+     * @returns the new context
+     */
+    public abstract createMaterialContext(): IMaterialContext | undefined;
+
+    /**
+     * Creates a new draw context
+     * @returns the new context
+     */
+    public abstract createDrawContext(): IDrawContext | undefined;
+
+    /**
+     * Create a new effect (used to store vertex/fragment shaders)
+     * @param baseName defines the base name of the effect (The name of file without .fragment.fx or .vertex.fx)
+     * @param attributesNamesOrOptions defines either a list of attribute names or an IEffectCreationOptions object
+     * @param uniformsNamesOrEngine defines either a list of uniform names or the engine to use
+     * @param samplers defines an array of string used to represent textures
+     * @param defines defines the string containing the defines to use to compile the shaders
+     * @param fallbacks defines the list of potential fallbacks to use if shader compilation fails
+     * @param onCompiled defines a function to call when the effect creation is successful
+     * @param onError defines a function to call when the effect creation has failed
+     * @param indexParameters defines an object containing the index values to use to compile shaders (like the maximum number of simultaneous lights)
+     * @param shaderLanguage the language the shader is written in (default: GLSL)
+     * @returns the new Effect
+     */
+    public abstract createEffect(
+        baseName: string | (IShaderPath & { vertexToken?: string; fragmentToken?: string }),
+        attributesNamesOrOptions: string[] | IEffectCreationOptions,
+        uniformsNamesOrEngine: string[] | AbstractEngine,
+        samplers?: string[],
+        defines?: string,
+        fallbacks?: EffectFallbacks,
+        onCompiled?: Nullable<(effect: Effect) => void>,
+        onError?: Nullable<(effect: Effect, errors: string) => void>,
+        indexParameters?: any,
+        shaderLanguage?: ShaderLanguage
+    ): Effect;
+
+    /**
+     * Clear the current render buffer or the current render target (if any is set up)
+     * @param color defines the color to use
+     * @param backBuffer defines if the back buffer must be cleared
+     * @param depth defines if the depth buffer must be cleared
+     * @param stencil defines if the stencil buffer must be cleared
+     */
+    public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+
+    /**
+     * Sets alpha constants used by some alpha blending modes
+     * @param r defines the red component
+     * @param g defines the green component
+     * @param b defines the blue component
+     * @param a defines the alpha component
+     */
+    public abstract setAlphaConstants(r: number, g: number, b: number, a: number): void;
+
+    /**
+     * Sets the current alpha mode
+     * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+     * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+     */
+    public abstract setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+
+    /**
+     * Gets the current alpha mode
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+     * @returns the current alpha mode
+     */
+    public abstract getAlphaMode(): number;
+
+    /**
+     * Sets the current alpha equation
+     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+     */
+    public abstract setAlphaEquation(equation: number): void;
+
+    /**
+     * Gets the current alpha equation.
+     * @returns the current alpha equation
+     */
+    public abstract getAlphaEquation(): number;
+
+    /**
+     * Gets a boolean indicating that only power of 2 textures are supported
+     * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
+     */
+    public abstract get needPOTTextures(): boolean;
+
+    /**
+     * Creates a new index buffer
+     * @param indices defines the content of the index buffer
+     * @param _updatable defines if the index buffer must be updatable
+     * @param label defines the label of the buffer (for debug purpose)
+     * @returns a new buffer
+     */
+    public abstract createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer;
+
+    /**
+     * Creates a new render target texture
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target wrapper ready to render texture
+     */
+    public abstract createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
+
+    /**
+     * Creates a new render target cube wrapper
+     * @param size defines the size of the texture
+     * @param options defines the options used to create the texture
+     * @returns a new render target cube wrapper
+     */
+    public abstract createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper;
+
+    /**
+     * Create a multi render target texture
+     * @see https://doc.babylonjs.com/setup/support/webGL2#multiple-render-target
+     * @param size defines the size of the texture
+     * @param options defines the creation options
+     * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
+     * @returns a new render target wrapper ready to render textures
+     */
+    public abstract createMultipleRenderTarget(size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
+
+    /**
+     * Creates a depth stencil texture.
+     * This is only available in WebGL 2 or with the depth texture extension available.
+     * @param size The size of face edge in the texture.
+     * @param options The options defining the texture.
+     * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
+     * @returns The texture
+     */
+    public abstract createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+
+    /**
+     * Update the sample count for a given multiple render target texture
+     * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
+     * @param rtWrapper defines the render target wrapper to update
+     * @param samples defines the sample count to set
+     * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
+     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+     */
+    public abstract updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
+
+    /**
+     * Updates the sample count of a render target texture
+     * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
+     * @param rtWrapper defines the render target wrapper to update
+     * @param samples defines the sample count to set
+     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
+     */
+    public abstract updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
+
+    /**
+     * Draw a list of unindexed primitives
+     * @param fillMode defines the primitive to use
+     * @param verticesStart defines the index of first vertex to draw
+     * @param verticesCount defines the count of vertices to draw
+     * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
+     */
+    public abstract drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+
+    /**
+     * @internal
+     */
     public abstract _viewport(x: number, y: number, width: number, height: number): void;
+
+    /**
+     * Gets the current viewport
+     */
+    public get currentViewport(): Nullable<IViewportLike> {
+        return this._cachedViewport;
+    }
 
     /**
      * Set the WebGL's viewport
@@ -1166,6 +1656,20 @@ export abstract class AbstractEngine {
 
         this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
     }
+
+    /**
+     * Sets a storage buffer in the shader
+     * @param name Defines the name of the storage buffer as defined in the shader
+     * @param buffer Defines the value to give to the uniform
+     */
+    public abstract setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
+
+    /**
+     * Sets a texture sampler to the according uniform.
+     * @param name The name of the uniform in the effect
+     * @param sampler The sampler to apply
+     */
+    public abstract setTextureSampler(name: string, sampler: Nullable<TextureSampler>): void;
 
     /**
      * Update the sampling mode of a given texture
@@ -1204,9 +1708,35 @@ export abstract class AbstractEngine {
     public _transformTextureUrl: Nullable<(url: string) => string> = null;
 
     /**
+     * Unbind all instance attributes
+     */
+    public abstract unbindInstanceAttributes(): void;
+
+    /**
      * @internal
      */
     public abstract _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean;
+
+    /**
+     * Create an image to use with canvas
+     * @returns IImage interface
+     */
+    public createCanvasImage(): IImage {
+        return document.createElement("img");
+    }
+
+    /**
+     * Returns a string describing the current engine
+     */
+    public get description(): string {
+        let description = this.name + this.version;
+
+        if (this._caps.parallelShaderCompile) {
+            description += " - Parallel shader compilation";
+        }
+
+        return description;
+    }
 
     protected _createTextureBase(
         url: Nullable<string>,
@@ -1614,6 +2144,21 @@ export abstract class AbstractEngine {
 
     public set name(value: string) {
         this._name = value;
+    }
+
+    /**
+     * Returns the current npm package of the sdk
+     */
+    // Not mixed with Version for tooling purpose.
+    public static get NpmPackage(): string {
+        return "babylonjs@7.0.0";
+    }
+
+    /**
+     * Returns the current version of the framework
+     */
+    public static get Version(): string {
+        return "7.0.0";
     }
 
     /**

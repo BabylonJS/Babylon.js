@@ -5,7 +5,7 @@ import { Constants } from "../../Engines/constants";
 import type { ISize } from "../../Maths/math.size";
 import { Size } from "../../Maths/math.size";
 
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 
 /**
@@ -145,7 +145,7 @@ export class ThinTexture {
     /** @internal */
     public _texture: Nullable<InternalTexture> = null;
 
-    protected _engine: Nullable<ThinEngine> = null;
+    protected _engine: Nullable<AbstractEngine> = null;
 
     private _cachedSize: ISize = Size.Zero();
     private _cachedBaseSize: ISize = Size.Zero();

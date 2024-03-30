@@ -12,7 +12,7 @@ import type { Viewport } from "../Maths/math.viewport";
 import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
 import { NativeXRLayerWrapper, NativeXRRenderTarget } from "./native/nativeXRRenderTarget";
 import { WebXRWebGLLayerWrapper } from "./webXRWebGLLayer";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Manages an XRSession to work with Babylon's engine
@@ -25,7 +25,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
     private _baseLayerRTTProvider: Nullable<WebXRLayerRenderTargetTextureProvider>;
     private _xrNavigator: any;
     private _sessionMode: XRSessionMode;
-    private _onEngineDisposedObserver: Nullable<Observer<ThinEngine>>;
+    private _onEngineDisposedObserver: Nullable<Observer<AbstractEngine>>;
 
     /**
      * The base reference space from which the session started. good if you want to reset your
