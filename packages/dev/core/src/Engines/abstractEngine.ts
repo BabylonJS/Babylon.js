@@ -1,7 +1,7 @@
 import { Observable } from "../Misc/observable";
 import type { Observer } from "../Misc/observable";
 import { Constants } from "./constants";
-import type { DataArray, ImageSource, IndicesArray, Nullable } from "../types";
+import type { DataArray, FloatArray, ImageSource, IndicesArray, Nullable } from "../types";
 import { PerfCounter } from "../Misc/perfCounter";
 import type { OcclusionQuery } from "./Extensions/engine.query";
 import type { PostProcess } from "../PostProcesses/postProcess";
@@ -42,6 +42,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import { EngineStore } from "./engineStore";
+import type { ExternalTexture } from "../Materials/Textures/externalTexture";
 
 /**
  * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
@@ -183,6 +184,9 @@ export abstract class AbstractEngine {
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
 
+    /** @internal */
+    public _badOS = false;
+
     protected _compatibilityMode = true;
     protected _pointerLockRequested: boolean;
     private _loadingScreen: ILoadingScreen;
@@ -214,6 +218,15 @@ export abstract class AbstractEngine {
 
     /** @internal */
     protected _isWebGPU: boolean = false;
+
+    /** @internal */
+    protected _frameId = 0;
+    /**
+     * Gets the current frame id
+     */
+    public get frameId(): number {
+        return this._frameId;
+    }
     /**
      * Gets a boolean indicating if the engine runs in WebGPU or not.
      */
@@ -229,6 +242,12 @@ export abstract class AbstractEngine {
     public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         return this._shaderProcessor;
     }
+
+    /**
+     * Gets a boolean indicating if all created effects are ready
+     * @returns true if all effects are ready
+     */
+    public abstract areAllEffectsReady(): boolean;
 
     /**
      * @internal
@@ -249,6 +268,20 @@ export abstract class AbstractEngine {
      * @param effect defines the effect to bind
      */
     public abstract bindSamplers(effect: Effect): void;
+
+    /**
+     * Creates an external texture
+     * @param video video element
+     * @returns the external texture, or null if external textures are not supported by the engine
+     */
+    public abstract createExternalTexture(video: HTMLVideoElement): Nullable<ExternalTexture>;
+
+    /**
+     * Sets an internal texture to the according uniform.
+     * @param name The name of the uniform in the effect
+     * @param texture The texture to apply
+     */
+    public abstract setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void;
 
     /**
      * @internal
@@ -397,6 +430,53 @@ export abstract class AbstractEngine {
         } else {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
         }
+    }
+
+    /**
+     * Enable or disable color writing
+     * @param enable defines the state to set
+     */
+    public setColorWrite(enable: boolean): void {
+        if (enable !== this._colorWrite) {
+            this._colorWriteChanged = true;
+            this._colorWrite = enable;
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if color writing is enabled
+     * @returns the current color writing state
+     */
+    public getColorWrite(): boolean {
+        return this._colorWrite;
+    }
+
+    /**
+     * Gets the depth culling state manager
+     */
+    public get depthCullingState(): DepthCullingState {
+        return this._depthCullingState;
+    }
+
+    /**
+     * Gets the alpha state manager
+     */
+    public get alphaState(): AlphaState {
+        return this._alphaState;
+    }
+
+    /**
+     * Gets the stencil state manager
+     */
+    public get stencilState(): StencilState {
+        return this._stencilState;
+    }
+
+    /**
+     * Gets the stencil state composer
+     */
+    public get stencilStateComposer(): StencilStateComposer {
+        return this._stencilStateComposer;
     }
 
     /**
@@ -1644,6 +1724,9 @@ export abstract class AbstractEngine {
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
+        // Detect if we are running on a faulty buggy OS.
+        this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
+
         // Save this off for use in resize().
         this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
 
@@ -1739,6 +1822,34 @@ export abstract class AbstractEngine {
      * @internal
      */
     public abstract _releaseBuffer(buffer: DataBuffer): boolean;
+
+    /**
+     * Create a dynamic uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public abstract createDynamicUniformBuffer(elements: FloatArray, label?: string): DataBuffer;
+
+    /**
+     * Create an uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param elements defines the content of the uniform buffer
+     * @param label defines a name for the buffer (for debugging purpose)
+     * @returns the webGL uniform buffer
+     */
+    public abstract createUniformBuffer(elements: FloatArray, label?: string): DataBuffer;
+
+    /**
+     * Update an existing uniform buffer
+     * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
+     * @param uniformBuffer defines the target uniform buffer
+     * @param elements defines the content to update
+     * @param offset defines the offset in the uniform buffer where update should start
+     * @param count defines the size of the data to update
+     */
+    public abstract updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
 
     /**
      * Update a dynamic index buffer

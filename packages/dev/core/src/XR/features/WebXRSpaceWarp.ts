@@ -13,10 +13,10 @@ import { Constants } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Material } from "../../Materials/material";
-
 import "../../Shaders/velocity.fragment";
 import "../../Shaders/velocity.vertex";
 import type { Observer } from "../../Misc/observable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 /**
  * Used for Space Warp render process
@@ -300,7 +300,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         }
 
         const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = engine._gl;
+        this._glContext = (engine as ThinEngine)._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
 
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);

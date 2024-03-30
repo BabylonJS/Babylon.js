@@ -6,9 +6,8 @@ import type { DeviceSource } from "./deviceSource";
 import type { IObservableManager, DeviceSourceType } from "../internalDeviceSourceManager";
 import { InternalDeviceSourceManager } from "../internalDeviceSourceManager";
 import type { IDisposable } from "../../scene";
-import type { ThinEngine } from "../../Engines/thinEngine";
-import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { IKeyboardEvent, IPointerEvent, IUIEvent, IWheelEvent } from "../../Events/deviceInputEvents";
 
 /**
  * Class to keep track of devices
@@ -27,7 +26,7 @@ export class DeviceSourceManager implements IDisposable, IObservableManager {
 
     // Private Members
     private _engine: AbstractEngine;
-    private _onDisposeObserver: Nullable<Observer<ThinEngine>>;
+    private _onDisposeObserver: Nullable<Observer<AbstractEngine>>;
     private readonly _devices: Array<Array<DeviceSource<DeviceType>>>;
     private readonly _firstDevice: Array<number>;
 

@@ -216,14 +216,6 @@ export class ThinEngine extends AbstractEngine {
      */
     public disableUniformBuffers = false;
 
-    private _frameId = 0;
-    /**
-     * Gets the current frame id
-     */
-    public get frameId(): number {
-        return this._frameId;
-    }
-
     /**
      * Gets a boolean indicating that the engine supports uniform buffers
      * @see https://doc.babylonjs.com/setup/support/webGL2#uniform-buffer-objets
@@ -260,9 +252,6 @@ export class ThinEngine extends AbstractEngine {
     public get needPOTTextures(): boolean {
         return this._webGLVersion < 2 || this.forcePOTTextures;
     }
-
-    /** @internal */
-    public _badOS = false;
 
     /** @internal */
     public _badDesktopOS = false;
@@ -526,9 +515,6 @@ export class ThinEngine extends AbstractEngine {
 
         // Shader processor
         this._shaderProcessor = this.webGLVersion > 1 ? new WebGL2ShaderProcessor() : new WebGLShaderProcessor();
-
-        // Detect if we are running on a faulty buggy OS.
-        this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
         // Starting with iOS 14, we can trust the browser
         // let matches = navigator.userAgent.match(/Version\/(\d+)/);
@@ -2809,53 +2795,6 @@ export class ThinEngine extends AbstractEngine {
             const enable = this._colorWrite;
             this._gl.colorMask(enable, enable, enable, enable);
         }
-    }
-
-    /**
-     * Enable or disable color writing
-     * @param enable defines the state to set
-     */
-    public setColorWrite(enable: boolean): void {
-        if (enable !== this._colorWrite) {
-            this._colorWriteChanged = true;
-            this._colorWrite = enable;
-        }
-    }
-
-    /**
-     * Gets a boolean indicating if color writing is enabled
-     * @returns the current color writing state
-     */
-    public getColorWrite(): boolean {
-        return this._colorWrite;
-    }
-
-    /**
-     * Gets the depth culling state manager
-     */
-    public get depthCullingState(): DepthCullingState {
-        return this._depthCullingState;
-    }
-
-    /**
-     * Gets the alpha state manager
-     */
-    public get alphaState(): AlphaState {
-        return this._alphaState;
-    }
-
-    /**
-     * Gets the stencil state manager
-     */
-    public get stencilState(): StencilState {
-        return this._stencilState;
-    }
-
-    /**
-     * Gets the stencil state composer
-     */
-    public get stencilStateComposer(): StencilStateComposer {
-        return this._stencilStateComposer;
     }
 
     // Textures
