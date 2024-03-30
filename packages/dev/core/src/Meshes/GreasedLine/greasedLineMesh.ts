@@ -96,10 +96,10 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             const positions: number[] = [];
             const indices: number[] = [];
 
-            const totalLength = GreasedLineTools.GetLineLength(p);
+            const lengthArray = GreasedLineTools.GetLineLengthArray(p);
+            const totalLength = lengthArray[lengthArray.length - 1];
             for (let j = 0, jj = 0; jj < p.length; j++, jj += 3) {
-                const partialLine = p.slice(0, jj + 3);
-                const partialLineLength = GreasedLineTools.GetLineLength(partialLine);
+                const partialLineLength = lengthArray[j];
                 const c = partialLineLength / totalLength;
 
                 positions.push(p[jj], p[jj + 1], p[jj + 2]);
