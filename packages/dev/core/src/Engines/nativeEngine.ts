@@ -50,6 +50,7 @@ import {
     getNativeStencilOpFail,
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
+import { AbstractEngine } from "./abstractEngine";
 
 declare const _native: INative;
 
@@ -1740,7 +1741,7 @@ export class NativeEngine extends Engine {
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
 
         let loader: Nullable<IInternalTextureLoader> = null;
-        for (const availableLoader of Engine._TextureLoaders) {
+        for (const availableLoader of AbstractEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;

@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { type ISceneLike, type ThinEngineOptions } from "./thinEngine";
+import { type ISceneLike } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -64,8 +64,10 @@ import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
-import type { Scene } from "core/scene";
+import type { Scene } from "../scene";
+import type { AbstractEngineOptions } from "./abstractEngine";
 import { AbstractEngine } from "./abstractEngine";
+import type { PostProcess } from "../PostProcesses/postProcess";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -118,7 +120,7 @@ export interface GlslangOptions {
 /**
  * Options to create the WebGPU engine
  */
-export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapterOptions {
+export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAdapterOptions {
     /**
      * Defines the category of adapter to use.
      * Is it the discrete or integrated device.
@@ -357,6 +359,7 @@ export class WebGPUEngine extends AbstractEngine {
     public dbgShowEmptyEnableEffectCalls = true;
 
     private _snapshotRendering: WebGPUSnapshotRendering;
+    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -570,14 +573,19 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public readonly hasOriginBottomLeft: boolean = false;
 
+    /** @internal */
+    protected _creationOptions: WebGPUEngineOptions;
+
     /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
     public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
-        super(null, options.antialias ?? true, options);
+        super(options.antialias ?? true, options);
         this._name = "WebGPU";
+
+        this._creationOptions = options;
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
@@ -1076,6 +1084,54 @@ export class WebGPUEngine extends AbstractEngine {
         this._uniformBuffers = uboList;
 
         super._restoreEngineAfterContextLost(initEngine);
+    }
+
+    /**
+     * Sets a depth stencil texture from a render target to the according uniform.
+     * @param channel The texture channel
+     * @param uniform The uniform to set
+     * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
+     */
+    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
+        if (channel === undefined) {
+            return;
+        }
+
+        if (!texture || !texture.depthStencilTexture) {
+            this._setTexture(channel, null, undefined, undefined, name);
+        } else {
+            this._setTexture(channel, texture, false, true, name);
+        }
+    }
+
+    /**
+     * Sets a texture to the context from a postprocess
+     * @param channel defines the channel to use
+     * @param postProcess defines the source postprocess
+     * @param name name of the channel
+     */
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        let postProcessInput = null;
+        if (postProcess) {
+            if (postProcess._forcedOutputTexture) {
+                postProcessInput = postProcess._forcedOutputTexture;
+            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+            }
+        }
+
+        this._bindTexture(channel, postProcessInput?.texture ?? null, name);
+    }
+
+    /**
+     * Binds the output of the passed in post process to the texture channel specified
+     * @param channel The channel the texture should be bound to
+     * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
+     */
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
     /**
@@ -1777,7 +1833,7 @@ export class WebGPUEngine extends AbstractEngine {
     public createEffect(
         baseName: string | (IShaderPath & { vertexToken?: string; fragmentToken?: string }),
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
-        uniformsNamesOrEngine: string[] | Engine,
+        uniformsNamesOrEngine: string[] | AbstractEngine,
         samplers?: string[],
         defines?: string,
         fallbacks?: EffectFallbacks,
@@ -2382,6 +2438,13 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * @internal
+     */
+    public _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+        return useSRGBBuffer && this._caps.supportSRGBBuffers;
+    }
+
+    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
@@ -2455,6 +2518,13 @@ export class WebGPUEngine extends AbstractEngine {
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
+    }
+
+    /**
+     * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
+     */
+    public createPrefilteredCubeTexture(): InternalTexture {
+        throw new Error("WebGPU engine: createPrefilteredCubeTexture not supported");
     }
 
     /**
@@ -2574,7 +2644,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _bindTexture(channel: number, texture: InternalTexture, name: string): void {
+    public _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }
@@ -2843,8 +2913,6 @@ export class WebGPUEngine extends AbstractEngine {
         this._cacheBindGroups.endFrame();
 
         this._pendingDebugCommands.length = 0;
-
-        super.endFrame();
 
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {

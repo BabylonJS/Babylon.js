@@ -773,8 +773,6 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  * @internal
  */
 const initSideEffects = () => {
-    ThinEngine._FileToolsLoadImage = LoadImage;
-    ThinEngine._FileToolsLoadFile = LoadFile;
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 

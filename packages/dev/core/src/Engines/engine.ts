@@ -5,7 +5,6 @@ import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { IsDocumentAvailable } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
-import { _WarnImport } from "../Misc/devTools";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ICustomAnimationFrameRequester } from "../Misc/customAnimationFrameRequester";
@@ -33,7 +32,7 @@ import { AbstractEngine } from "./abstractEngine";
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
  */
-export class Engine extends AbstractEngine {
+export class Engine extends ThinEngine {
     // Const statics
 
     /** Defines that alpha blending is disabled */
@@ -672,7 +671,7 @@ export class Engine extends AbstractEngine {
     }
 
     /**
-     * Sets a texture to the webGL context from a postprocess
+     * Sets a texture to the context from a postprocess
      * @param channel defines the channel to use
      * @param postProcess defines the source postprocess
      * @param name name of the channel
@@ -725,18 +724,6 @@ export class Engine extends AbstractEngine {
         }
 
         super._rebuildBuffers();
-    }
-
-    protected _rebuildTextures(): void {
-        for (const scene of this.scenes) {
-            scene._rebuildTextures();
-        }
-
-        for (const scene of this._virtualScenes) {
-            scene._rebuildTextures();
-        }
-
-        super._rebuildTextures();
     }
 
     /** @internal */

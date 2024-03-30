@@ -13,7 +13,7 @@ import { EngineStore } from "./Engines/engineStore";
 import type { Nullable } from "./types";
 import type { Node } from "./node";
 import type { Observer } from "./Misc/observable";
-import type { ThinEngine } from "./Engines/thinEngine";
+import type { AbstractEngine } from "./Engines/abstractEngine";
 import { InstancedMesh } from "./Meshes/instancedMesh";
 import { Light } from "./Lights/light";
 import { Camera } from "./Cameras/camera";
@@ -69,7 +69,7 @@ export class InstantiatedEntries {
  */
 export class AssetContainer extends AbstractScene {
     private _wasAddedToScene = false;
-    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
+    private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     /**
      * The scene the AssetContainer belongs to.

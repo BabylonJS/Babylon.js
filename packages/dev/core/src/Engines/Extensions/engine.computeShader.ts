@@ -33,8 +33,8 @@ export enum ComputeBindingType {
 /** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a new compute effect
          * @param baseName Name of the effect

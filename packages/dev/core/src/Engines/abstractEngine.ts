@@ -1,16 +1,142 @@
 import { Observable } from "../Misc/observable";
-import { ThinEngine } from "./thinEngine";
+import type { Observer } from "../Misc/observable";
 import { Constants } from "./constants";
-import type { Nullable } from "../types";
+import type { DataArray, ImageSource, IndicesArray, Nullable } from "../types";
 import { PerfCounter } from "../Misc/perfCounter";
 import type { OcclusionQuery } from "./Extensions/engine.query";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IViewportLike } from "../Maths/math.like";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import { IsWindowObjectExist } from "../Misc/domManagement";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { _WarnImport } from "../Misc/devTools";
+import { DepthCullingState } from "../States/depthCullingState";
+import { StencilStateComposer } from "../States/stencilStateComposer";
+import { StencilState } from "../States/stencilState";
+import { AlphaState } from "../States/alphaCullingState";
+import type { ICanvas } from "./ICanvas";
+import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
+import type { ISceneLike } from "./thinEngine";
+import type { EngineCapabilities } from "./engineCapabilities";
+import type { DataBuffer } from "../Buffers/dataBuffer";
+import type { RenderTargetWrapper } from "./renderTargetWrapper";
+import type { IShaderProcessor } from "./Processors/iShaderProcessor";
+import type { ShaderLanguage } from "../Materials/shaderLanguage";
+import { PrecisionDate } from "../Misc/precisionDate";
+import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
+import { PerformanceConfigurator } from "./performanceConfigurator";
+import type { EngineFeatures } from "./engineFeatures";
+import type { UniformBuffer } from "../Materials/uniformBuffer";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { Effect } from "../Materials/effect";
+import type { IOfflineProvider } from "../Offline/IOfflineProvider";
+import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
+import type { IFileRequest } from "../Misc/fileRequest";
+import { Logger } from "../Misc/logger";
+import type { Texture } from "../Materials/Textures/texture";
+import { LoadFile, LoadImage } from "../Misc/fileTools";
+import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
+import type { IPipelineContext } from "./IPipelineContext";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
+import { EngineStore } from "./engineStore";
+
+/**
+ * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
+ * @param func - the function to be called
+ * @param requester - the object that will request the next frame. Falls back to window.
+ * @returns frame number
+ */
+export function QueueNewFrame(func: () => void, requester?: any): number {
+    // Note that there is kind of a typing issue here, as `setTimeout` might return something else than a number (NodeJs returns a NodeJS.Timeout object).
+    // Also if the global `requestAnimationFrame`'s returnType is number, `requester.requestPostAnimationFrame` and `requester.requestAnimationFrame` types
+    // are `any`.
+
+    if (!IsWindowObjectExist()) {
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    } else {
+        const { requestAnimationFrame } = requester || window;
+        if (typeof requestAnimationFrame === "function") {
+            return requestAnimationFrame(func);
+        }
+    }
+
+    // fallback to the global `setTimeout`.
+    // In most cases (aka in the browser), `window` is the global object, so instead of calling `window.setTimeout` we could call the global `setTimeout`.
+    return setTimeout(func, 16) as unknown as number;
+}
+
+/** Interface defining initialization parameters for ThinEngine class */
+export interface AbstractEngineOptions {
+    /**
+     * Defines if the engine should no exceed a specified device ratio
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio
+     */
+    limitDeviceRatio?: number;
+    /**
+     * Defines if webaudio should be initialized as well
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+     */
+    audioEngine?: boolean;
+    /**
+     * Specifies options for the audio engine
+     */
+    audioEngineOptions?: IAudioEngineOptions;
+
+    /**
+     * Defines if animations should run using a deterministic lock step
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
+     */
+    deterministicLockstep?: boolean;
+    /** Defines the maximum steps to use with deterministic lock step mode */
+    lockstepMaxSteps?: number;
+    /** Defines the seconds between each deterministic lock step */
+    timeStep?: number;
+    /**
+     * Defines that engine should ignore context lost events
+     * If this event happens when this parameter is true, you will have to reload the page to restore rendering
+     */
+    doNotHandleContextLost?: boolean;
+    /**
+     * Defines that engine should ignore modifying touch action attribute and style
+     * If not handle, you might need to set it up on your side for expected touch devices behavior.
+     */
+    doNotHandleTouchAction?: boolean;
+
+    /**
+     * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
+     */
+    useHighPrecisionMatrix?: boolean;
+
+    /**
+     * Defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    adaptToDeviceRatio?: boolean;
+
+    /**
+     * Defines whether MSAA is enabled on the canvas.
+     */
+    antialias?: boolean;
+
+    /**
+     * Defines whether the stencil buffer should be enabled.
+     */
+    stencil?: boolean;
+
+    /**
+     * Defines whether the canvas should be created in "premultiplied" mode (if false, the canvas is created in the "opaque" mode) (true by default)
+     */
+    premultipliedAlpha?: boolean;
+    /**
+     * True if the more expensive but exact conversions should be used for transforming colors to and from linear space within shaders.
+     * Otherwise, the default is to use a cheaper approximation.
+     */
+    useExactSrgbConversions?: boolean;
+}
 
 /**
  * Defines the interface used by objects containing a viewport (like a camera)
@@ -23,12 +149,153 @@ interface IViewportOwnerLike {
 }
 
 /**
+ * Information about the current host
+ */
+export interface HostInformation {
+    /**
+     * Defines if the current host is a mobile
+     */
+    isMobile: boolean;
+}
+
+/**
  * The parent class for specialized engines (WebGL, WebGPU)
  */
-export abstract class AbstractEngine extends ThinEngine {
+export abstract class AbstractEngine {
+    /** @internal */
+    public static _TextureLoaders: IInternalTextureLoader[] = [];
+
+    // States
+    /** @internal */
+    protected _colorWrite = true;
+    /** @internal */
+    protected _colorWriteChanged = true;
+    /** @internal */
+    protected _depthCullingState = new DepthCullingState();
+    /** @internal */
+    protected _stencilStateComposer = new StencilStateComposer();
+    /** @internal */
+    protected _stencilState = new StencilState();
+    /** @internal */
+    public _alphaState = new AlphaState();
+    /** @internal */
+    public _alphaMode = Constants.ALPHA_ADD;
+    /** @internal */
+    public _alphaEquation = Constants.ALPHA_DISABLE;
+
     protected _compatibilityMode = true;
     protected _pointerLockRequested: boolean;
     private _loadingScreen: ILoadingScreen;
+    protected _renderingCanvas: Nullable<HTMLCanvasElement>; /** @internal */
+    public _internalTexturesCache = new Array<InternalTexture>();
+    private _activeRequests = new Array<IFileRequest>();
+    protected _currentEffect: Nullable<Effect>;
+    /** @internal */
+    protected _cachedVertexBuffers: any;
+    /** @internal */
+    protected _cachedIndexBuffer: Nullable<DataBuffer>;
+    /** @internal */
+    protected _cachedEffectForVertexBuffers: Nullable<Effect>;
+    /** @internal */
+    public _currentRenderTarget: Nullable<RenderTargetWrapper> = null;
+    /** @internal */
+    public _caps: EngineCapabilities;
+    /** @internal */
+    protected _cachedViewport: Nullable<IViewportLike>;
+
+    /** @internal */
+    protected _boundTexturesCache: { [key: string]: Nullable<InternalTexture> } = {};
+    /** @internal */
+    protected _activeChannel = 0;
+    /** @internal */
+    protected _currentTextureChannel = -1;
+    /** @internal */
+    protected _viewportCached = { x: 0, y: 0, z: 0, w: 0 };
+
+    /** @internal */
+    protected _isWebGPU: boolean = false;
+    /**
+     * Gets a boolean indicating if the engine runs in WebGPU or not.
+     */
+    public get isWebGPU(): boolean {
+        return this._isWebGPU;
+    }
+
+    protected _shaderProcessor: Nullable<IShaderProcessor>;
+
+    /**
+     * @internal
+     */
+    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+        return this._shaderProcessor;
+    }
+
+    /**
+     * @internal
+     */
+    public abstract _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
+
+    /**
+     * Sets a texture to the according uniform.
+     * @param channel The texture channel
+     * @param unused unused parameter
+     * @param texture The texture to apply
+     * @param name The name of the uniform in the effect
+     */
+    public abstract setTexture(channel: number, unused: Nullable<WebGLUniformLocation>, texture: Nullable<ThinTexture>, name: string): void;
+
+    /**
+     * Binds an effect to the webGL context
+     * @param effect defines the effect to bind
+     */
+    public abstract bindSamplers(effect: Effect): void;
+
+    /**
+     * @internal
+     */
+    public abstract _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void;
+
+    /**
+     * @internal
+     */
+    public abstract _deletePipelineContext(pipelineContext: IPipelineContext): void;
+
+    /**
+     * @internal
+     */
+    public abstract _preparePipelineContext(
+        pipelineContext: IPipelineContext,
+        vertexSourceCode: string,
+        fragmentSourceCode: string,
+        createAsRaw: boolean,
+        rawVertexSourceCode: string,
+        rawFragmentSourceCode: string,
+        rebuildRebind: any,
+        defines: Nullable<string>,
+        transformFeedbackVaryings: Nullable<string[]>,
+        key: string
+    ): void;
+
+    /** @internal */
+    protected _shaderPlatformName: string;
+    /**
+     * Gets the shader platform name used by the effects.
+     */
+    public get shaderPlatformName(): string {
+        return this._shaderPlatformName;
+    }
+
+    /**
+     * Gets information about the current host
+     */
+    public hostInformation: HostInformation = {
+        isMobile: false,
+    };
+
+    /**
+     * Gets a boolean indicating if the engine is currently rendering in fullscreen mode
+     */
+    public isFullscreen = false;
 
     /**
      * Gets or sets a boolean to enable/disable IndexedDB support and avoid XHR on .manifest
@@ -88,6 +355,199 @@ export abstract class AbstractEngine extends ThinEngine {
      */
     public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
+    /** @internal */
+    protected _onContextLost: (evt: Event) => void;
+    /** @internal */
+    protected _onContextRestored: (evt: Event) => void;
+    /** @internal */
+    protected _contextWasLost = false;
+
+    private _emptyTexture: Nullable<InternalTexture>;
+    private _emptyCubeTexture: Nullable<InternalTexture>;
+    private _emptyTexture3D: Nullable<InternalTexture>;
+    private _emptyTexture2DArray: Nullable<InternalTexture>;
+
+    protected _clearEmptyResources(): void {
+        this._emptyTexture = null;
+        this._emptyCubeTexture = null;
+        this._emptyTexture3D = null;
+        this._emptyTexture2DArray = null;
+    }
+
+    public abstract wipeCaches(bruteForce?: boolean): void;
+
+    private _useReverseDepthBuffer = false;
+    /**
+     * Gets or sets a boolean indicating if depth buffer should be reverse, going from far to near.
+     * This can provide greater z depth for distant objects.
+     */
+    public get useReverseDepthBuffer(): boolean {
+        return this._useReverseDepthBuffer;
+    }
+
+    public set useReverseDepthBuffer(useReverse) {
+        if (useReverse === this._useReverseDepthBuffer) {
+            return;
+        }
+
+        this._useReverseDepthBuffer = useReverse;
+
+        if (useReverse) {
+            this._depthCullingState.depthFunc = Constants.GEQUAL;
+        } else {
+            this._depthCullingState.depthFunc = Constants.LEQUAL;
+        }
+    }
+
+    /**
+     * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
+     */
+    public readonly isNDCHalfZRange: boolean = false;
+
+    /**
+     * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
+     */
+    public readonly hasOriginBottomLeft: boolean = true;
+
+    /**
+     * Gets a boolean indicating if the exact sRGB conversions or faster approximations are used for converting to and from linear space.
+     */
+    public readonly useExactSrgbConversions: boolean;
+
+    /** @internal */
+    public _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
+        if (defines) {
+            if (this.isNDCHalfZRange) {
+                defines["IS_NDC_HALF_ZRANGE"] = "";
+            } else {
+                delete defines["IS_NDC_HALF_ZRANGE"];
+            }
+            if (this.useReverseDepthBuffer) {
+                defines["USE_REVERSE_DEPTHBUFFER"] = "";
+            } else {
+                delete defines["USE_REVERSE_DEPTHBUFFER"];
+            }
+            if (this.useExactSrgbConversions) {
+                defines["USE_EXACT_SRGB_CONVERSIONS"] = "";
+            } else {
+                delete defines["USE_EXACT_SRGB_CONVERSIONS"];
+            }
+            return;
+        } else {
+            let s = "";
+            if (this.isNDCHalfZRange) {
+                s += "#define IS_NDC_HALF_ZRANGE";
+            }
+            if (this.useReverseDepthBuffer) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_REVERSE_DEPTHBUFFER";
+            }
+            if (this.useExactSrgbConversions) {
+                if (s) {
+                    s += "\n";
+                }
+                s += "#define USE_EXACT_SRGB_CONVERSIONS";
+            }
+            return s;
+        }
+    }
+
+    /** @internal */
+    public _renderTargetWrapperCache = new Array<RenderTargetWrapper>();
+    /** @internal */
+    protected _compiledEffects: { [key: string]: Effect } = {};
+
+    private _rebuildInternalTextures(): void {
+        const currentState = this._internalTexturesCache.slice(); // Do a copy because the rebuild will add proxies
+
+        for (const internalTexture of currentState) {
+            internalTexture._rebuild();
+        }
+    }
+
+    private _rebuildRenderTargetWrappers(): void {
+        const currentState = this._renderTargetWrapperCache.slice(); // Do a copy because the rebuild will add proxies
+
+        for (const renderTargetWrapper of currentState) {
+            renderTargetWrapper._rebuild();
+        }
+    }
+
+    private _rebuildEffects(): void {
+        for (const key in this._compiledEffects) {
+            const effect = <Effect>this._compiledEffects[key];
+
+            effect._pipelineContext = null; // because _prepareEffect will try to dispose this pipeline before recreating it and that would lead to webgl errors
+            effect._prepareEffect();
+        }
+
+        Effect.ResetCache();
+    }
+
+    protected _rebuildGraphicsResources(): void {
+        // Ensure webgl and engine states are matching
+        this.wipeCaches(true);
+
+        // Rebuild effects
+        this._rebuildEffects();
+        this._rebuildComputeEffects?.();
+
+        // Note:
+        //  The call to _rebuildBuffers must be made before the call to _rebuildInternalTextures because in the process of _rebuildBuffers the buffers used by the post process managers will be rebuilt
+        //  and we may need to use the post process manager of the scene during _rebuildInternalTextures (in WebGL1, non-POT textures are rescaled using a post process + post process manager of the scene)
+
+        // Rebuild buffers
+        this._rebuildBuffers();
+        // Rebuild textures
+        this._rebuildInternalTextures();
+        // Rebuild textures
+        this._rebuildTextures();
+        // Rebuild textures
+        this._rebuildRenderTargetWrappers();
+
+        // Reset engine states after all the buffer/textures/... have been rebuilt
+        this.wipeCaches(true);
+    }
+
+    protected _flagContextRestored(): void {
+        Logger.Warn(this.name + " context successfully restored.");
+        this.onContextRestoredObservable.notifyObservers(this);
+        this._contextWasLost = false;
+    }
+
+    protected _restoreEngineAfterContextLost(initEngine: () => void): void {
+        // Adding a timeout to avoid race condition at browser level
+        setTimeout(async () => {
+            this._clearEmptyResources();
+
+            const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+            const depthFunc = this._depthCullingState.depthFunc;
+            const depthMask = this._depthCullingState.depthMask;
+            const stencilTest = this._stencilState.stencilTest;
+
+            // Rebuild context
+            await initEngine();
+            this._rebuildGraphicsResources();
+
+            this._depthCullingState.depthTest = depthTest;
+            this._depthCullingState.depthFunc = depthFunc;
+            this._depthCullingState.depthMask = depthMask;
+            this._stencilState.stencilTest = stencilTest;
+
+            this._flagContextRestored();
+        }, 0);
+    }
+
+    /** @internal */
+    protected _isDisposed = false;
+
+    /** Gets a boolean indicating if the engine was disposed */
+    public get isDisposed(): boolean {
+        return this._isDisposed;
+    }
+
     /**
      * Gets the list of created scenes
      */
@@ -102,6 +562,299 @@ export abstract class AbstractEngine extends ThinEngine {
     public _verifyPointerLock(): void {
         this._onPointerLockChange?.();
     }
+
+    /** @internal */
+    public _features: EngineFeatures;
+
+    /**
+     * Enables or disables the snapshot rendering mode
+     * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
+     */
+    public get snapshotRendering(): boolean {
+        return false;
+    }
+
+    public set snapshotRendering(activate) {
+        // WebGL engine does not support snapshot rendering
+    }
+
+    /**
+     * Gets or sets the snapshot rendering mode
+     */
+    public get snapshotRenderingMode(): number {
+        return Constants.SNAPSHOTRENDERING_STANDARD;
+    }
+
+    public set snapshotRenderingMode(mode: number) {}
+
+    /**
+     * Observable event triggered before each texture is initialized
+     */
+    public onBeforeTextureInitObservable = new Observable<Texture>();
+
+    /**
+     * Gets or sets a boolean indicating if the engine must keep rendering even if the window is not in foreground
+     */
+    public renderEvenInBackground = true;
+
+    /**
+     * Gets or sets a boolean indicating that cache can be kept between frames
+     */
+    public preventCacheWipeBetweenFrames = false;
+
+    /**
+     * Gets the default empty texture
+     */
+    public get emptyTexture(): InternalTexture {
+        if (!this._emptyTexture) {
+            this._emptyTexture = this.createRawTexture(new Uint8Array(4), 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        }
+
+        return this._emptyTexture;
+    }
+
+    /**
+     * Gets the default empty 3D texture
+     */
+    public get emptyTexture3D(): InternalTexture {
+        if (!this._emptyTexture3D) {
+            this._emptyTexture3D = this.createRawTexture3D(new Uint8Array(4), 1, 1, 1, Constants.TEXTUREFORMAT_RGBA, false, false, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        }
+
+        return this._emptyTexture3D;
+    }
+
+    /**
+     * Gets the default empty 2D array texture
+     */
+    public get emptyTexture2DArray(): InternalTexture {
+        if (!this._emptyTexture2DArray) {
+            this._emptyTexture2DArray = this.createRawTexture2DArray(
+                new Uint8Array(4),
+                1,
+                1,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            );
+        }
+
+        return this._emptyTexture2DArray;
+    }
+
+    /**
+     * Gets the default empty cube texture
+     */
+    public get emptyCubeTexture(): InternalTexture {
+        if (!this._emptyCubeTexture) {
+            const faceData = new Uint8Array(4);
+            const cubeData = [faceData, faceData, faceData, faceData, faceData, faceData];
+            this._emptyCubeTexture = this.createRawCubeTexture(
+                cubeData,
+                1,
+                Constants.TEXTUREFORMAT_RGBA,
+                Constants.TEXTURETYPE_UNSIGNED_INT,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE
+            );
+        }
+
+        return this._emptyCubeTexture;
+    }
+
+    /** @internal */
+    public _frameHandler: number = 0;
+
+    /** @internal */
+    protected _activeRenderLoops = new Array<() => void>();
+
+    /**
+     * Gets the list of current active render loop functions
+     * @returns a read only array with the current render loop functions
+     */
+    public get activeRenderLoops(): ReadonlyArray<() => void> {
+        return this._activeRenderLoops;
+    }
+
+    /**
+     * stop executing a render loop function and remove it from the execution array
+     * @param renderFunction defines the function to be removed. If not provided all functions will be removed.
+     */
+    public stopRenderLoop(renderFunction?: () => void): void {
+        if (!renderFunction) {
+            this._activeRenderLoops.length = 0;
+            this._cancelFrame();
+            return;
+        }
+
+        const index = this._activeRenderLoops.indexOf(renderFunction);
+
+        if (index >= 0) {
+            this._activeRenderLoops.splice(index, 1);
+            if (this._activeRenderLoops.length == 0) {
+                this._cancelFrame();
+            }
+        }
+    }
+
+    protected _cancelFrame() {
+        if (this._frameHandler !== 0) {
+            const handlerToCancel = this._frameHandler;
+            this._frameHandler = 0;
+
+            if (!IsWindowObjectExist()) {
+                if (typeof cancelAnimationFrame === "function") {
+                    return cancelAnimationFrame(handlerToCancel);
+                }
+            } else {
+                const { cancelAnimationFrame } = this.getHostWindow() || window;
+                if (typeof cancelAnimationFrame === "function") {
+                    return cancelAnimationFrame(handlerToCancel);
+                }
+            }
+            return clearTimeout(handlerToCancel);
+        }
+    }
+
+    protected _windowIsBackground = false;
+
+    /**
+     * Begin a new frame
+     */
+    public beginFrame(): void {}
+
+    /**
+     * End the current frame
+     */
+    public abstract endFrame(): void;
+
+    /** @internal */
+    public _boundRenderFunction: any = () => this._renderLoop();
+
+    /** @internal */
+    public _renderLoop(): void {
+        this._frameHandler = 0;
+
+        if (!this._contextWasLost) {
+            let shouldRender = true;
+            if (this._isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
+                shouldRender = false;
+            }
+
+            if (shouldRender) {
+                // Start new frame
+                this.beginFrame();
+
+                for (let index = 0; index < this._activeRenderLoops.length; index++) {
+                    const renderFunction = this._activeRenderLoops[index];
+
+                    renderFunction();
+                }
+
+                // Present
+                this.endFrame();
+            }
+        }
+
+        if (this._frameHandler === 0) {
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+        }
+    }
+
+    /**
+     * Can be used to override the current requestAnimationFrame requester.
+     * @internal
+     */
+    protected _queueNewFrame(bindedRenderFunction: any, requester?: any): number {
+        return QueueNewFrame(bindedRenderFunction, requester);
+    }
+
+    /**
+     * Register and execute a render loop. The engine can have more than one render function
+     * @param renderFunction defines the function to continuously execute
+     */
+    public runRenderLoop(renderFunction: () => void): void {
+        if (this._activeRenderLoops.indexOf(renderFunction) !== -1) {
+            return;
+        }
+
+        this._activeRenderLoops.push(renderFunction);
+
+        // On the first added function, start the render loop.
+        if (this._activeRenderLoops.length === 1 && this._frameHandler === 0) {
+            this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
+        }
+    }
+
+    /**
+     * Gets a boolean indicating if depth testing is enabled
+     * @returns the current state
+     */
+    public getDepthBuffer(): boolean {
+        return this._depthCullingState.depthTest;
+    }
+
+    /**
+     * Enable or disable depth buffering
+     * @param enable defines the state to set
+     */
+    public setDepthBuffer(enable: boolean): void {
+        this._depthCullingState.depthTest = enable;
+    }
+
+    /**
+     * Set the z offset Factor to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffset(value: number): void {
+        this._depthCullingState.zOffset = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Factor
+     * @returns the current zOffset Factor state
+     */
+    public getZOffset(): number {
+        const zOffset = this._depthCullingState.zOffset;
+        return this.useReverseDepthBuffer ? -zOffset : zOffset;
+    }
+
+    /**
+     * Set the z offset Units to apply to current rendering
+     * @param value defines the offset to apply
+     */
+    public setZOffsetUnits(value: number): void {
+        this._depthCullingState.zOffsetUnits = this.useReverseDepthBuffer ? -value : value;
+    }
+
+    /**
+     * Gets the current value of the zOffset Units
+     * @returns the current zOffset Units state
+     */
+    public getZOffsetUnits(): number {
+        const zOffsetUnits = this._depthCullingState.zOffsetUnits;
+        return this.useReverseDepthBuffer ? -zOffsetUnits : zOffsetUnits;
+    }
+
+    /**
+     * Gets host window
+     * @returns the host window object
+     */
+    public getHostWindow(): Nullable<Window> {
+        if (!IsWindowObjectExist()) {
+            return null;
+        }
+
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument && this._renderingCanvas.ownerDocument.defaultView) {
+            return this._renderingCanvas.ownerDocument.defaultView;
+        }
+
+        return window;
+    }
+
     /**
      * Gets the HTML element used to attach event listeners
      * @returns a HTML element
@@ -302,6 +1055,1245 @@ export abstract class AbstractEngine extends ThinEngine {
         return this;
     }
 
+    protected _rebuildTextures(): void {
+        for (const scene of this.scenes) {
+            scene._rebuildTextures();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene._rebuildTextures();
+        }
+    }
+
+    /**
+     * @internal
+     */
+    public abstract _viewport(x: number, y: number, width: number, height: number): void;
+
+    /**
+     * Set the WebGL's viewport
+     * @param viewport defines the viewport element to be used
+     * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
+     * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
+     */
+    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+        const width = requiredWidth || this.getRenderWidth();
+        const height = requiredHeight || this.getRenderHeight();
+        const x = viewport.x || 0;
+        const y = viewport.y || 0;
+
+        this._cachedViewport = viewport;
+
+        this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
+    }
+
+    /**
+     * Update the sampling mode of a given texture
+     * @param samplingMode defines the required sampling mode
+     * @param texture defines the texture to update
+     * @param generateMipMaps defines whether to generate mipmaps for the texture
+     */
+    public abstract updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps?: boolean): void;
+
+    /**
+     * Sets a texture to the context from a postprocess
+     * @param channel defines the channel to use
+     * @param postProcess defines the source postprocess
+     * @param name name of the channel
+     */
+    public abstract setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
+
+    /**
+     * Binds the output of the passed in post process to the texture channel specified
+     * @param channel The channel the texture should be bound to
+     * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
+     */
+    public abstract setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
+
+    /**
+     * Sets an array of texture to the webGL context
+     * @param channel defines the channel where the texture array must be set
+     * @param uniform defines the associated uniform location
+     * @param textures defines the array of textures to bind
+     * @param name name of the channel
+     */
+    public abstract setTextureArray(channel: number, uniform: Nullable<WebGLUniformLocation>, textures: ThinTexture[], name: string): void;
+
+    /** @internal */
+    public _transformTextureUrl: Nullable<(url: string) => string> = null;
+
+    /**
+     * @internal
+     */
+    public abstract _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean;
+
+    protected _createTextureBase(
+        url: Nullable<string>,
+        noMipmap: boolean,
+        invertY: boolean,
+        scene: Nullable<ISceneLike>,
+        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        onLoad: Nullable<(texture: InternalTexture) => void> = null,
+        onError: Nullable<(message: string, exception: any) => void> = null,
+        prepareTexture: (
+            texture: InternalTexture,
+            extension: string,
+            scene: Nullable<ISceneLike>,
+            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+            invertY: boolean,
+            noMipmap: boolean,
+            isCompressed: boolean,
+            processFunction: (
+                width: number,
+                height: number,
+                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+                extension: string,
+                texture: InternalTexture,
+                continuationCallback: () => void
+            ) => boolean,
+            samplingMode: number
+        ) => void,
+        prepareTextureProcessFunction: (
+            width: number,
+            height: number,
+            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+            extension: string,
+            texture: InternalTexture,
+            continuationCallback: () => void
+        ) => boolean,
+        buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
+        fallback: Nullable<InternalTexture> = null,
+        format: Nullable<number> = null,
+        forcedExtension: Nullable<string> = null,
+        mimeType?: string,
+        loaderOptions?: any,
+        useSRGBBuffer?: boolean
+    ): InternalTexture {
+        url = url || "";
+        const fromData = url.substr(0, 5) === "data:";
+        const fromBlob = url.substr(0, 5) === "blob:";
+        const isBase64 = fromData && url.indexOf(";base64,") !== -1;
+
+        const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Url);
+
+        if (texture !== fallback) {
+            texture.label = url.substring(0, 60); // default label, can be overriden by the caller
+        }
+
+        const originalUrl = url;
+        if (this._transformTextureUrl && !isBase64 && !fallback && !buffer) {
+            url = this._transformTextureUrl(url);
+        }
+
+        if (originalUrl !== url) {
+            texture._originalUrl = originalUrl;
+        }
+
+        // establish the file extension, if possible
+        const lastDot = url.lastIndexOf(".");
+        let extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
+        let loader: Nullable<IInternalTextureLoader> = null;
+
+        // Remove query string
+        const queryStringIndex = extension.indexOf("?");
+
+        if (queryStringIndex > -1) {
+            extension = extension.split("?")[0];
+        }
+
+        for (const availableLoader of AbstractEngine._TextureLoaders) {
+            if (availableLoader.canLoad(extension, mimeType)) {
+                loader = availableLoader;
+                break;
+            }
+        }
+
+        if (scene) {
+            scene.addPendingData(texture);
+        }
+        texture.url = url;
+        texture.generateMipMaps = !noMipmap;
+        texture.samplingMode = samplingMode;
+        texture.invertY = invertY;
+        texture._useSRGBBuffer = this._getUseSRGBBuffer(!!useSRGBBuffer, noMipmap);
+
+        if (!this._doNotHandleContextLost) {
+            // Keep a link to the buffer only if we plan to handle context lost
+            texture._buffer = buffer;
+        }
+
+        let onLoadObserver: Nullable<Observer<InternalTexture>> = null;
+        if (onLoad && !fallback) {
+            onLoadObserver = texture.onLoadedObservable.add(onLoad);
+        }
+
+        if (!fallback) {
+            this._internalTexturesCache.push(texture);
+        }
+
+        const onInternalError = (message?: string, exception?: any) => {
+            if (scene) {
+                scene.removePendingData(texture);
+            }
+
+            if (url === originalUrl) {
+                if (onLoadObserver) {
+                    texture.onLoadedObservable.remove(onLoadObserver);
+                }
+
+                if (EngineStore.UseFallbackTexture && url !== EngineStore.FallbackTexture) {
+                    this._createTextureBase(
+                        EngineStore.FallbackTexture,
+                        noMipmap,
+                        texture.invertY,
+                        scene,
+                        samplingMode,
+                        null,
+                        onError,
+                        prepareTexture,
+                        prepareTextureProcessFunction,
+                        buffer,
+                        texture
+                    );
+                }
+
+                message = (message || "Unknown error") + (EngineStore.UseFallbackTexture ? " - Fallback texture was used" : "");
+                texture.onErrorObservable.notifyObservers({ message, exception });
+                if (onError) {
+                    onError(message, exception);
+                }
+            } else {
+                // fall back to the original url if the transformed url fails to load
+                Logger.Warn(`Failed to load ${url}, falling back to ${originalUrl}`);
+                this._createTextureBase(
+                    originalUrl,
+                    noMipmap,
+                    texture.invertY,
+                    scene,
+                    samplingMode,
+                    onLoad,
+                    onError,
+                    prepareTexture,
+                    prepareTextureProcessFunction,
+                    buffer,
+                    texture,
+                    format,
+                    forcedExtension,
+                    mimeType,
+                    loaderOptions,
+                    useSRGBBuffer
+                );
+            }
+        };
+
+        // processing for non-image formats
+        if (loader) {
+            const callback = (data: ArrayBufferView) => {
+                loader!.loadData(
+                    data,
+                    texture,
+                    (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void, loadFailed) => {
+                        if (loadFailed) {
+                            onInternalError("TextureLoader failed to load data");
+                        } else {
+                            prepareTexture(
+                                texture,
+                                extension,
+                                scene,
+                                { width, height },
+                                texture.invertY,
+                                !loadMipmap,
+                                isCompressed,
+                                () => {
+                                    done();
+                                    return false;
+                                },
+                                samplingMode
+                            );
+                        }
+                    },
+                    loaderOptions
+                );
+            };
+
+            if (!buffer) {
+                this._loadFile(
+                    url,
+                    (data) => callback(new Uint8Array(data as ArrayBuffer)),
+                    undefined,
+                    scene ? scene.offlineProvider : undefined,
+                    true,
+                    (request?: IWebRequest, exception?: any) => {
+                        onInternalError("Unable to load " + (request ? request.responseURL : url, exception));
+                    }
+                );
+            } else {
+                if (buffer instanceof ArrayBuffer) {
+                    callback(new Uint8Array(buffer));
+                } else if (ArrayBuffer.isView(buffer)) {
+                    callback(buffer);
+                } else {
+                    if (onError) {
+                        onError("Unable to load: only ArrayBuffer or ArrayBufferView is supported", null);
+                    }
+                }
+            }
+        } else {
+            const onload = (img: HTMLImageElement | ImageBitmap) => {
+                if (fromBlob && !this._doNotHandleContextLost) {
+                    // We need to store the image if we need to rebuild the texture
+                    // in case of a webgl context lost
+                    texture._buffer = img;
+                }
+
+                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
+            };
+            // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
+            // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
+
+            if (!fromData || isBase64) {
+                if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
+                    onload(<HTMLImageElement>buffer);
+                } else {
+                    LoadImage(
+                        url || "",
+                        onload,
+                        onInternalError,
+                        scene ? scene.offlineProvider : null,
+                        mimeType,
+                        texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                    );
+                }
+            } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
+                LoadImage(
+                    buffer,
+                    onload,
+                    onInternalError,
+                    scene ? scene.offlineProvider : null,
+                    mimeType,
+                    texture.invertY && this._features.needsInvertingBitmap ? { imageOrientation: "flipY" } : undefined
+                );
+            } else if (buffer) {
+                onload(buffer);
+            }
+        }
+
+        return texture;
+    }
+
+    /**
+     * Creates a new pipeline context
+     * @param shaderProcessingContext defines the shader processing context used during the processing if available
+     * @returns the new pipeline
+     */
+    public abstract createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext;
+
+    /**
+     * Inline functions in shader code that are marked to be inlined
+     * @param code code to inline
+     * @returns inlined code
+     */
+    public abstract inlineShaderCode(code: string): string;
+
+    /**
+     * Gets a boolean indicating that the engine supports uniform buffers
+     */
+    public abstract get supportsUniformBuffers(): boolean;
+
+    /**
+     * Returns the version of the engine
+     */
+    public abstract get version(): number;
+
+    /**
+     * @internal
+     */
+    public abstract _releaseEffect(effect: Effect): void;
+
+    /**
+     * Bind a buffer to the current draw context
+     * @param buffer defines the buffer to bind
+     * @param _location not used in WebGPU
+     * @param name Name of the uniform variable to bind
+     */
+    public abstract bindUniformBufferBase(buffer: DataBuffer, _location: number, name: string): void;
+
+    /**
+     * Bind a specific block at a given index in a specific shader program
+     * @param pipelineContext defines the pipeline context to use
+     * @param blockName defines the block name
+     * @param index defines the index where to bind the block
+     */
+    public abstract bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
+
+    /**
+     * Sets a depth stencil texture from a render target to the according uniform.
+     * @param channel The texture channel
+     * @param uniform The uniform to set
+     * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
+     */
+    public abstract setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void;
+
+    /** @internal */
+    public _uniformBuffers = new Array<UniformBuffer>();
+    /** @internal */
+    public _storageBuffers = new Array<StorageBuffer>();
+    protected _rebuildBuffers(): void {
+        // Uniforms
+        for (const uniformBuffer of this._uniformBuffers) {
+            uniformBuffer._rebuildAfterContextLost();
+        }
+    }
+
+    protected _highPrecisionShadersAllowed = true;
+    /** @internal */
+    public get _shouldUseHighPrecisionShader(): boolean {
+        return !!(this._caps.highPrecisionShaderSupported && this._highPrecisionShadersAllowed);
+    }
+    /**
+     * @internal
+     */
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext>;
+
+    /**
+     * Gets host document
+     * @returns the host document object
+     */
+    public getHostDocument(): Nullable<Document> {
+        if (this._renderingCanvas && this._renderingCanvas.ownerDocument) {
+            return this._renderingCanvas.ownerDocument;
+        }
+
+        return IsDocumentAvailable() ? document : null;
+    }
+
+    // Lost context
+    /**
+     * Observable signaled when a context lost event is raised
+     */
+    public onContextLostObservable = new Observable<AbstractEngine>();
+    /**
+     * Observable signaled when a context restored event is raised
+     */
+    public onContextRestoredObservable = new Observable<AbstractEngine>();
+
+    /**
+     * Gets the list of loaded textures
+     * @returns an array containing all loaded textures
+     */
+    public getLoadedTexturesCache(): InternalTexture[] {
+        return this._internalTexturesCache;
+    }
+
+    /**
+     * Clears the list of texture accessible through engine.
+     * This can help preventing texture load conflict due to name collision.
+     */
+    public clearInternalTexturesCache() {
+        this._internalTexturesCache.length = 0;
+    }
+
+    /**
+     * @internal
+     */
+    public abstract _releaseTexture(texture: InternalTexture): void;
+
+    /**
+     * Gets the object containing all engine capabilities
+     * @returns the EngineCapabilities object
+     */
+    public getCaps(): EngineCapabilities {
+        return this._caps;
+    }
+
+    /**
+     * Reset the texture cache to empty state
+     */
+    public resetTextureCache() {
+        for (const key in this._boundTexturesCache) {
+            if (!Object.prototype.hasOwnProperty.call(this._boundTexturesCache, key)) {
+                continue;
+            }
+            this._boundTexturesCache[key] = null;
+        }
+
+        this._currentTextureChannel = -1;
+    }
+
+    /** @internal */
+    protected _name = "";
+
+    /**
+     * Gets or sets the name of the engine
+     */
+    public get name(): string {
+        return this._name;
+    }
+
+    public set name(value: string) {
+        this._name = value;
+    }
+
+    /**
+     * The time (in milliseconds elapsed since the current page has been loaded) when the engine was initialized
+     */
+    public readonly startTime: number;
+
+    /** @internal */
+    protected _audioContext: Nullable<AudioContext>;
+    /** @internal */
+    protected _audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>;
+    /**
+     * Gets the HTML canvas attached with the current webGL context
+     * @returns a HTML canvas
+     */
+    public getRenderingCanvas(): Nullable<HTMLCanvasElement> {
+        return this._renderingCanvas;
+    }
+
+    /**
+     * Gets the audio context specified in engine initialization options
+     * @returns an Audio Context
+     */
+    public getAudioContext(): Nullable<AudioContext> {
+        return this._audioContext;
+    }
+
+    /**
+     * Gets the audio destination specified in engine initialization options
+     * @returns an audio destination node
+     */
+    public getAudioDestination(): Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode> {
+        return this._audioDestination;
+    }
+
+    /**
+     * Defines whether the engine has been created with the premultipliedAlpha option on or not.
+     */
+    public premultipliedAlpha: boolean = true;
+
+    /**
+     * If set to true zooming in and out in the browser will rescale the hardware-scaling correctly.
+     */
+    public adaptToDeviceRatio: boolean = false;
+
+    /** @internal */
+    protected _lastDevicePixelRatio: number = 1.0;
+
+    /** @internal */
+    public _hardwareScalingLevel: number;
+
+    /**
+     * Defines the hardware scaling level.
+     * By default the hardware scaling level is computed from the window device ratio.
+     * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+     * @param level defines the level to use
+     */
+    public setHardwareScalingLevel(level: number): void {
+        this._hardwareScalingLevel = level;
+        this.resize();
+    }
+
+    /**
+     * Gets the current hardware scaling level.
+     * By default the hardware scaling level is computed from the window device ratio.
+     * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
+     * @returns a number indicating the current hardware scaling level
+     */
+    public getHardwareScalingLevel(): number {
+        return this._hardwareScalingLevel;
+    }
+
+    /** @internal */
+    public _doNotHandleContextLost = false;
+
+    /**
+     * Gets or sets a boolean indicating if resources should be retained to be able to handle context lost events
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#handling-webgl-context-lost
+     */
+    public get doNotHandleContextLost(): boolean {
+        return this._doNotHandleContextLost;
+    }
+
+    public set doNotHandleContextLost(value: boolean) {
+        this._doNotHandleContextLost = value;
+    }
+
+    /** @internal */
+    protected _isStencilEnable: boolean;
+
+    /**
+     * Returns true if the stencil buffer has been enabled through the creation option of the context.
+     */
+    public get isStencilEnable(): boolean {
+        return this._isStencilEnable;
+    }
+
+    /**
+     * Creates a new engine
+     * @param antialias defines enable antialiasing (default: false)
+     * @param options defines further options to be sent to the creation context
+     * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
+     */
+    constructor(antialias: boolean, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
+        this.startTime = PrecisionDate.Now;
+
+        this._stencilStateComposer.stencilGlobal = this._stencilState;
+
+        PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
+
+        // Save this off for use in resize().
+        this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;
+
+        options.antialias = antialias ?? options.antialias;
+        options.deterministicLockstep = options.deterministicLockstep ?? false;
+        options.lockstepMaxSteps = options.lockstepMaxSteps ?? 4;
+        options.timeStep = options.timeStep ?? 1 / 60;
+        options.audioEngine = options.audioEngine ?? true;
+        options.stencil = options.stencil ?? true;
+
+        this._audioContext = options.audioEngineOptions?.audioContext ?? null;
+        this._audioDestination = options.audioEngineOptions?.audioDestination ?? null;
+        this.premultipliedAlpha = options.premultipliedAlpha ?? true;
+        this._doNotHandleContextLost = !!options.doNotHandleContextLost;
+        this._isStencilEnable = options.stencil ? true : false;
+        this.useExactSrgbConversions = options.useExactSrgbConversions ?? false;
+
+        const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+
+        const limitDeviceRatio = options.limitDeviceRatio || devicePixelRatio;
+        // Viewport
+        adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
+        this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
+        this._lastDevicePixelRatio = devicePixelRatio;
+    }
+
+    /**
+     * Resize the view according to the canvas' size
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     */
+    public resize(forceSetSize = false): void {
+        let width: number;
+        let height: number;
+
+        // Re-query hardware scaling level to handle zoomed-in resizing.
+        if (this.adaptToDeviceRatio) {
+            const devicePixelRatio = IsWindowObjectExist() ? window.devicePixelRatio || 1.0 : 1.0;
+            const changeRatio = this._lastDevicePixelRatio / devicePixelRatio;
+            this._lastDevicePixelRatio = devicePixelRatio;
+            this._hardwareScalingLevel *= changeRatio;
+        }
+
+        if (IsWindowObjectExist() && IsDocumentAvailable()) {
+            // make sure it is a Node object, and is a part of the document.
+            if (this._renderingCanvas) {
+                const boundingRect = this._renderingCanvas.getBoundingClientRect
+                    ? this._renderingCanvas.getBoundingClientRect()
+                    : {
+                          // fallback to last solution in case the function doesn't exist
+                          width: this._renderingCanvas.width * this._hardwareScalingLevel,
+                          height: this._renderingCanvas.height * this._hardwareScalingLevel,
+                      };
+                width = this._renderingCanvas.clientWidth || boundingRect.width || this._renderingCanvas.width || 100;
+                height = this._renderingCanvas.clientHeight || boundingRect.height || this._renderingCanvas.height || 100;
+            } else {
+                width = window.innerWidth;
+                height = window.innerHeight;
+            }
+        } else {
+            width = this._renderingCanvas ? this._renderingCanvas.width : 100;
+            height = this._renderingCanvas ? this._renderingCanvas.height : 100;
+        }
+
+        this.setSize(width / this._hardwareScalingLevel, height / this._hardwareScalingLevel, forceSetSize);
+    }
+
+    /**
+     * Force a specific size of the canvas
+     * @param width defines the new canvas' width
+     * @param height defines the new canvas' height
+     * @param forceSetSize true to force setting the sizes of the underlying canvas
+     * @returns true if the size was changed
+     */
+    public setSize(width: number, height: number, forceSetSize = false): boolean {
+        if (!this._renderingCanvas) {
+            return false;
+        }
+
+        width = width | 0;
+        height = height | 0;
+
+        if (!forceSetSize && this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
+            return false;
+        }
+
+        this._renderingCanvas.width = width;
+        this._renderingCanvas.height = height;
+
+        return true;
+    }
+
+    /**
+     * @internal
+     */
+    public abstract _releaseBuffer(buffer: DataBuffer): boolean;
+
+    /**
+     * Update a dynamic index buffer
+     * @param indexBuffer defines the target index buffer
+     * @param indices defines the data to update
+     * @param offset defines the offset in the target index buffer where update should start
+     */
+    public abstract updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
+
+    /**
+     * Updates a dynamic vertex buffer.
+     * @param vertexBuffer the vertex buffer to update
+     * @param data the data used to update the vertex buffer
+     * @param byteOffset the byte offset of the data
+     * @param byteLength the byte length of the data
+     */
+    public abstract updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
+
+    /**
+     * Creates a dynamic vertex buffer
+     * @param data the data for the dynamic vertex buffer
+     * @param _label defines the label of the buffer (for debug purpose)
+     * @returns the new WebGL dynamic buffer
+     */
+    public abstract createDynamicVertexBuffer(data: DataArray | number, _label?: string): DataBuffer;
+
+    /**
+     * Creates a vertex buffer
+     * @param data the data or size for the vertex buffer
+     * @param _updatable whether the buffer should be created as updatable
+     * @param _label defines the label of the buffer (for debug purpose)
+     * @returns the new WebGL static buffer
+     */
+    public abstract createVertexBuffer(data: DataArray | number, _updatable?: boolean, _label?: string): DataBuffer;
+
+    /**
+     * Update the dimensions of a texture
+     * @param texture texture to update
+     * @param width new width of the texture
+     * @param height new height of the texture
+     * @param depth new depth of the texture
+     */
+    public abstract updateTextureDimensions(texture: InternalTexture, width: number, height: number, depth: number): void;
+
+    /**
+     * Usually called from Texture.ts.
+     * Passed information to create a WebGLTexture
+     * @param url defines a value which contains one of the following:
+     * * A conventional http URL, e.g. 'http://...' or 'file://...'
+     * * A base64 string of in-line texture data, e.g. 'data:image/jpg;base64,/...'
+     * * An indicator that data being passed using the buffer parameter, e.g. 'data:mytexture.jpg'
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated.  Ignored for compressed textures.  They must be in the file
+     * @param invertY when true, image is flipped when loaded.  You probably want true. Certain compressed textures may invert this if their default is inverted (eg. ktx)
+     * @param scene needed for loading to the correct scene
+     * @param samplingMode mode with should be used sample / access the texture (Default: Texture.TRILINEAR_SAMPLINGMODE)
+     * @param onLoad optional callback to be called upon successful completion
+     * @param onError optional callback to be called upon failure
+     * @param buffer a source of a file previously fetched as either a base64 string, an ArrayBuffer (compressed or image format), HTMLImageElement (image format), or a Blob
+     * @param fallback an internal argument in case the function must be called again, due to etc1 not having alpha capabilities
+     * @param format internal format.  Default: RGB when extension is '.jpg' else RGBA.  Ignored for compressed textures
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param mimeType defines an optional mime type
+     * @param loaderOptions options to be passed to the loader
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @returns a InternalTexture for assignment back into BABYLON.Texture
+     */
+    public abstract createTexture(
+        url: Nullable<string>,
+        noMipmap: boolean,
+        invertY: boolean,
+        scene: Nullable<ISceneLike>,
+        samplingMode?: number,
+        onLoad?: Nullable<(texture: InternalTexture) => void>,
+        onError?: Nullable<(message: string, exception: any) => void>,
+        buffer?: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap>,
+        fallback?: Nullable<InternalTexture>,
+        format?: Nullable<number>,
+        forcedExtension?: Nullable<string>,
+        mimeType?: string,
+        loaderOptions?: any,
+        creationFlags?: number,
+        useSRGBBuffer?: boolean
+    ): InternalTexture;
+
+    /**
+     * @internal
+     */
+    public abstract _setupDepthStencilTexture(
+        internalTexture: InternalTexture,
+        size: number | { width: number; height: number; layers?: number },
+        generateStencil: boolean,
+        bilinearFiltering: boolean,
+        comparisonFunction: number,
+        samples?: number
+    ): void;
+
+    /**
+     * Creates a raw texture
+     * @param data defines the data to store in the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param format defines the format of the data
+     * @param generateMipMaps defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @param compression defines the compression used (null by default)
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @returns the raw texture inside an InternalTexture
+     */
+    public abstract createRawTexture(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression?: Nullable<string>,
+        type?: number,
+        creationFlags?: number,
+        useSRGBBuffer?: boolean
+    ): InternalTexture;
+
+    /**
+     * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
+     * @param rootUrl defines the url where the file to load is located
+     * @param scene defines the current scene
+     * @param lodScale defines scale to apply to the mip map selection
+     * @param lodOffset defines offset to apply to the mip map selection
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createPrefilteredCubeTexture(
+        rootUrl: string,
+        scene: Nullable<Scene>,
+        lodScale: number,
+        lodOffset: number,
+        onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>,
+        onError?: Nullable<(message?: string, exception?: any) => void>,
+        format?: number,
+        forcedExtension?: any,
+        createPolynomials?: boolean
+    ): InternalTexture;
+
+    /**
+     * Creates a dynamic texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param generateMipMaps defines if the engine should generate the mip levels
+     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
+     * @returns the dynamic texture inside an InternalTexture
+     */
+    public abstract createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
+
+    /**
+     * Update the content of a dynamic texture
+     * @param texture defines the texture to update
+     * @param source defines the source containing the data
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param premulAlpha defines if alpha is stored as premultiplied
+     * @param format defines the format of the data
+     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
+     * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
+     */
+    public abstract updateDynamicTexture(
+        texture: Nullable<InternalTexture>,
+        source: ImageSource | ICanvas,
+        invertY?: boolean,
+        premulAlpha?: boolean,
+        format?: number,
+        forceBindTexture?: boolean,
+        allowGPUOptimization?: boolean
+    ): void;
+
+    /**
+     * Creates a cube texture
+     * @param rootUrl defines the url where the files to load is located
+     * @param scene defines the current scene
+     * @param files defines the list of files to load (1 per face)
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param createPolynomials if a polynomial sphere should be created for the cube texture
+     * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+     * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+     * @param fallback defines texture to use while falling back when (compressed) texture file not found.
+     * @param loaderOptions options to be passed to the loader
+     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createCubeTexture(
+        rootUrl: string,
+        scene: Nullable<Scene>,
+        files: Nullable<string[]>,
+        noMipmap: boolean | undefined,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>,
+        format: number | undefined,
+        forcedExtension: any,
+        createPolynomials: boolean,
+        lodScale: number,
+        lodOffset: number,
+        fallback: Nullable<InternalTexture>,
+        loaderOptions: any,
+        useSRGBBuffer: boolean
+    ): InternalTexture;
+
+    /**
+     * Creates a cube texture
+     * @param rootUrl defines the url where the files to load is located
+     * @param scene defines the current scene
+     * @param files defines the list of files to load (1 per face)
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createCubeTexture(
+        rootUrl: string,
+        scene: Nullable<Scene>,
+        files: Nullable<string[]>,
+        noMipmap: boolean,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>,
+        format: number | undefined,
+        forcedExtension: any
+    ): InternalTexture;
+
+    /**
+     * Creates a cube texture
+     * @param rootUrl defines the url where the files to load is located
+     * @param scene defines the current scene
+     * @param files defines the list of files to load (1 per face)
+     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param createPolynomials if a polynomial sphere should be created for the cube texture
+     * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
+     * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createCubeTexture(
+        rootUrl: string,
+        scene: Nullable<Scene>,
+        files: Nullable<string[]>,
+        noMipmap: boolean,
+        onLoad: Nullable<(data?: any) => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>,
+        format: number | undefined,
+        forcedExtension: any,
+        createPolynomials: boolean,
+        lodScale: number,
+        lodOffset: number
+    ): InternalTexture;
+
+    /**
+     * Creates a new raw cube texture
+     * @param data defines the array of data to use to create each face
+     * @param size defines the size of the textures
+     * @param format defines the format of the data
+     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param generateMipMaps  defines if the engine should generate the mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compression used (null by default)
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createRawCubeTexture(
+        data: Nullable<ArrayBufferView[]>,
+        size: number,
+        format: number,
+        type: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression?: Nullable<string>
+    ): InternalTexture;
+
+    /**
+     * Update a raw cube texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param invertY defines if data must be stored with Y axis inverted
+     */
+    public abstract updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
+
+    /**
+     * Update a raw cube texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     */
+    public abstract updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>): void;
+
+    /**
+     * Update a raw cube texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the compression used (null by default)
+     * @param level defines which level of the texture to update
+     */
+    public abstract updateRawCubeTexture(
+        texture: InternalTexture,
+        data: ArrayBufferView[],
+        format: number,
+        type: number,
+        invertY: boolean,
+        compression: Nullable<string>,
+        level: number
+    ): void;
+
+    /**
+     * Creates a new raw cube texture from a specified url
+     * @param url defines the url where the data is located
+     * @param scene defines the current scene
+     * @param size defines the size of the textures
+     * @param format defines the format of the data
+     * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param noMipmap defines if the engine should avoid generating the mip levels
+     * @param callback defines a callback used to extract texture data from loaded data
+     * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+     * @param onLoad defines a callback called when texture is loaded
+     * @param onError defines a callback called if there is an error
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createRawCubeTextureFromUrl(
+        url: string,
+        scene: Nullable<Scene>,
+        size: number,
+        format: number,
+        type: number,
+        noMipmap: boolean,
+        callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+        mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
+        onLoad: Nullable<() => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>
+    ): InternalTexture;
+
+    /**
+     * Creates a new raw cube texture from a specified url
+     * @param url defines the url where the data is located
+     * @param scene defines the current scene
+     * @param size defines the size of the textures
+     * @param format defines the format of the data
+     * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
+     * @param noMipmap defines if the engine should avoid generating the mip levels
+     * @param callback defines a callback used to extract texture data from loaded data
+     * @param mipmapGenerator defines to provide an optional tool to generate mip levels
+     * @param onLoad defines a callback called when texture is loaded
+     * @param onError defines a callback called if there is an error
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @returns the cube texture as an InternalTexture
+     */
+    public abstract createRawCubeTextureFromUrl(
+        url: string,
+        scene: Nullable<Scene>,
+        size: number,
+        format: number,
+        type: number,
+        noMipmap: boolean,
+        callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
+        mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
+        onLoad: Nullable<() => void>,
+        onError: Nullable<(message?: string, exception?: any) => void>,
+        samplingMode: number,
+        invertY: boolean
+    ): InternalTexture;
+
+    /**
+     * Creates a new raw 3D texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the depth of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @returns a new raw 3D texture (stored in an InternalTexture)
+     */
+    public abstract createRawTexture3D(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression?: Nullable<string>,
+        textureType?: number,
+        creationFlags?: number
+    ): InternalTexture;
+
+    /**
+     * Update a raw 3D texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     */
+    public abstract updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+
+    /**
+     * Update a raw 3D texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the used compression (can be null)
+     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     */
+    public abstract updateRawTexture3D(
+        texture: InternalTexture,
+        data: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string>,
+        textureType: number
+    ): void;
+
+    /**
+     * Creates a new raw 2D array texture
+     * @param data defines the data used to create the texture
+     * @param width defines the width of the texture
+     * @param height defines the height of the texture
+     * @param depth defines the number of layers of the texture
+     * @param format defines the format of the texture
+     * @param generateMipMaps defines if the engine must generate mip levels
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
+     * @param compression defines the compressed used (can be null)
+     * @param textureType defines the compressed used (can be null)
+     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @returns a new raw 2D array texture (stored in an InternalTexture)
+     */
+    public abstract createRawTexture2DArray(
+        data: Nullable<ArrayBufferView>,
+        width: number,
+        height: number,
+        depth: number,
+        format: number,
+        generateMipMaps: boolean,
+        invertY: boolean,
+        samplingMode: number,
+        compression?: Nullable<string>,
+        textureType?: number,
+        creationFlags?: number
+    ): InternalTexture;
+
+    /**
+     * Update a raw 2D array texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     */
+    public abstract updateRawTexture2DArray(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
+
+    /**
+     * Update a raw 2D array texture
+     * @param texture defines the texture to update
+     * @param data defines the data to store
+     * @param format defines the data format
+     * @param invertY defines if data must be stored with Y axis inverted
+     * @param compression defines the used compression (can be null)
+     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
+     */
+    public abstract updateRawTexture2DArray(
+        texture: InternalTexture,
+        data: Nullable<ArrayBufferView>,
+        format: number,
+        invertY: boolean,
+        compression: Nullable<string>,
+        textureType: number
+    ): void;
+
+    /**
+     * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
+     * If non null, this takes precedence over the value from the material
+     */
+    public cullBackFaces: Nullable<boolean> = null;
+
+    /**
+     * Gets the current render width
+     * @param useScreen defines if screen size must be used (or the current render target if any)
+     * @returns a number defining the current render width
+     */
+    public abstract getRenderWidth(useScreen?: boolean): number;
+
+    /**
+     * Gets the current render height
+     * @param useScreen defines if screen size must be used (or the current render target if any)
+     * @returns a number defining the current render height
+     */
+    public abstract getRenderHeight(useScreen?: boolean): number;
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement) {
+        this._renderingCanvas = canvas;
+    }
+
+    private _checkForMobile: () => void;
+
+    protected _setupMobileChecks(): void {
+        if (!(navigator && navigator.userAgent)) {
+            return;
+        }
+
+        // Function to check if running on mobile device
+        this._checkForMobile = () => {
+            const currentUA = navigator.userAgent;
+            this.hostInformation.isMobile =
+                currentUA.indexOf("Mobile") !== -1 ||
+                // Needed for iOS 13+ detection on iPad (inspired by solution from https://stackoverflow.com/questions/9038625/detect-if-device-is-ios)
+                (currentUA.indexOf("Mac") !== -1 && IsDocumentAvailable() && "ontouchend" in document);
+        };
+
+        // Set initial isMobile value
+        this._checkForMobile();
+
+        // Set up event listener to check when window is resized (used to get emulator activation to work properly)
+        if (IsWindowObjectExist()) {
+            window.addEventListener("resize", this._checkForMobile);
+        }
+    }
+
     /**
      * Gets current aspect ratio
      * @param viewportOwner defines the camera to use to get the aspect ratio
@@ -466,6 +2458,9 @@ export abstract class AbstractEngine extends ThinEngine {
             document.exitPointerLock();
         }
     }
+
+    /** @internal */
+    public abstract _createHardwareTexture(): HardwareTextureWrapper;
 
     /**
      * creates and returns a new video element
@@ -797,6 +2792,91 @@ export abstract class AbstractEngine extends ThinEngine {
         if (this.isFullscreen) {
             AbstractEngine._ExitFullscreen();
         }
+    }
+
+    protected static _CreateCanvas(width: number, height: number): ICanvas {
+        if (typeof document === "undefined") {
+            return <ICanvas>(<any>new OffscreenCanvas(width, height));
+        }
+        const canvas = <ICanvas>(<any>document.createElement("canvas"));
+        canvas.width = width;
+        canvas.height = height;
+        return canvas;
+    }
+
+    /**
+     * Create a canvas. This method is overridden by other engines
+     * @param width width
+     * @param height height
+     * @returns ICanvas interface
+     */
+    public createCanvas(width: number, height: number): ICanvas {
+        return AbstractEngine._CreateCanvas(width, height);
+    }
+
+    /**
+     * @internal
+     */
+    public _loadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (data: any) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: IWebRequest, exception?: any) => void
+    ): IFileRequest {
+        const request = LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add((request) => {
+            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
+        });
+        return request;
+    }
+
+    /**
+     * An event triggered when the engine is disposed.
+     */
+    public readonly onDisposeObservable = new Observable<AbstractEngine>();
+
+    /**
+     * Dispose and release all associated resources
+     */
+    public dispose(): void {
+        this._isDisposed = true;
+        this.stopRenderLoop();
+
+        // Empty texture
+        if (this._emptyTexture) {
+            this._releaseTexture(this._emptyTexture);
+            this._emptyTexture = null;
+        }
+        if (this._emptyCubeTexture) {
+            this._releaseTexture(this._emptyCubeTexture);
+            this._emptyCubeTexture = null;
+        }
+
+        this._renderingCanvas = null;
+
+        // Clear observables
+        if (this.onBeforeTextureInitObservable) {
+            this.onBeforeTextureInitObservable.clear();
+        }
+
+        // Release effects
+        this.releaseComputeEffects?.();
+
+        Effect.ResetCache();
+
+        // Abort active requests
+        for (const request of this._activeRequests) {
+            request.abort();
+        }
+
+        this._boundRenderFunction = null;
+
+        this.onDisposeObservable.notifyObservers(this);
+        this.onDisposeObservable.clear();
+        window.removeEventListener("resize", this._checkForMobile);
     }
 
     /**

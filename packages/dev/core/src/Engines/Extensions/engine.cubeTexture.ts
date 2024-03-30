@@ -10,6 +10,7 @@ import type { IWebRequest } from "../../Misc/interfaces/iWebRequest";
 import { Constants } from "../constants";
 import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
+import { AbstractEngine } from "../abstractEngine";
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -361,7 +362,7 @@ ThinEngine.prototype.createCubeTextureBase = function (
     const extension = forcedExtension ? forcedExtension : lastDot > -1 ? rootUrlWithoutUriParams.substring(lastDot).toLowerCase() : "";
 
     let loader: Nullable<IInternalTextureLoader> = null;
-    for (const availableLoader of ThinEngine._TextureLoaders) {
+    for (const availableLoader of AbstractEngine._TextureLoaders) {
         if (availableLoader.canLoad(extension)) {
             loader = availableLoader;
             break;
