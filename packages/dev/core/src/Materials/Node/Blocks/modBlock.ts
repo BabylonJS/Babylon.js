@@ -59,7 +59,7 @@ export class ModBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += state._declareOutput(output) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = (${this.left.associatedVariableName} % ${this.right.associatedVariableName});\n`;
 
         return this;
     }

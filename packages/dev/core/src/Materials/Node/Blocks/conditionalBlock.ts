@@ -158,13 +158,13 @@ export class ConditionalBlock extends NodeMaterialBlock {
             case ConditionalBlockConditions.Xor: {
                 state.compilationString +=
                     state._declareOutput(output) +
-                    ` = ${this._generateTertiary(trueStatement, falseStatement, `(mod(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 2.0) > 0.0)`, state)};\n`;
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `(((${this.a.associatedVariableName} + ${this.b.associatedVariableName}) % 2.0) > 0.0)`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.Or: {
                 state.compilationString +=
                     state._declareOutput(output) +
-                    ` = ${this._generateTertiary(trueStatement, falseStatement, `min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0)`, state)};\n`;
+                    ` = ${this._generateTertiary(trueStatement, falseStatement, `(min(${this.a.associatedVariableName} + ${this.b.associatedVariableName}, 1.0) > 0.0)`, state)};\n`;
                 break;
             }
             case ConditionalBlockConditions.And: {
