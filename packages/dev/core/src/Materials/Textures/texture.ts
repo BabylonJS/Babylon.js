@@ -319,6 +319,7 @@ export class Texture extends BaseTexture {
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
+    private _cachedIdentity3x2: boolean = true;
 
     private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
     private _cachedReflectionUOffset = -1;
@@ -767,7 +768,10 @@ export class Texture extends BaseTexture {
             return this._cachedTextureMatrix;
         }
 
-        if (this.optimizeUVAllocation) {
+        const previousIdentity3x2 = this._cachedIdentity3x2;
+        this._cachedIdentity3x2 = this._cachedTextureMatrix.isIdentityAs3x2();
+
+        if (this.optimizeUVAllocation && previousIdentity3x2 !== this._cachedIdentity3x2) {
             // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
             // will get different values (see PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
