@@ -131,9 +131,9 @@ export interface GreasedLineMeshOptions {
  * GreasedLineBaseMesh
  */
 export abstract class GreasedLineBaseMesh extends Mesh {
-    protected _vertexPositions: number[];
-    protected _indices: number[];
-    protected _uvs: number[];
+    protected _vertexPositions: number[] | Float32Array;
+    protected _indices: number[] | Uint16Array | Uint32Array;
+    protected _uvs: number[] | Float32Array;
     protected _points: number[][];
     protected _offsets: number[];
     protected _colorPointers: number[];
@@ -342,7 +342,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
             colorPointers: this._colorPointers,
             lazy: this._lazy,
             updatable: this._updatable,
-            uvs: this._uvs,
+            uvs: this._uvs instanceof Float32Array ? Array.from(this._uvs) : this._uvs,
             widths: this._widths,
             ribbonOptions: this._options.ribbonOptions,
         };
