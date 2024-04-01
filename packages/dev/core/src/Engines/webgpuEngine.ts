@@ -1715,8 +1715,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Unbind all instance attributes
      */
     public unbindInstanceAttributes(): void {
-        // eslint-disable-next-line no-throw-literal
-        throw "Not implemented on WebGPU";
+        // Does nothing
     }
 
     /**
