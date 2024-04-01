@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-
-import type { Engine } from "core/Engines/engine";
-
 /* eslint-disable @typescript-eslint/naming-convention */
 declare const BABYLON: typeof window.BABYLON;
 
@@ -247,7 +244,7 @@ export const evaluateDisposeSceneForVisualization = async (engineFlags: { forceU
 
 export const evaluateIsGLError = async () => {
     try {
-        const gl = (window.engine! as Engine)._gl,
+        const gl = (window.engine! as any)._gl,
             glError = gl ? gl.getError() : 0;
         if (gl && glError !== 0) {
             return true;
