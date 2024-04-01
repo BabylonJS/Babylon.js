@@ -988,7 +988,7 @@ export class ThinEngine extends AbstractEngine {
 
         const gl = this._gl;
         if (!rtWrapper.isMulti) {
-            if (rtWrapper.is2DArray) {
+            if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, rtWrapper.texture!._hardwareTexture?.underlyingResource, lodLevel, layer);
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(
@@ -1006,8 +1006,17 @@ export class ThinEngine extends AbstractEngine {
 
         const depthStencilTexture = rtWrapper._depthStencilTexture;
         if (depthStencilTexture) {
+            if (rtWrapper.is3D) {
+                if (
+                    rtWrapper.texture!.width !== depthStencilTexture.width ||
+                    rtWrapper.texture!.height !== depthStencilTexture.height ||
+                    rtWrapper.texture!.depth !== depthStencilTexture.depth
+                ) {
+                    Logger.Warn("Depth/Stencil attachment for 3D target must have same dimensions as color attachment");
+                }
+            }
             const attachment = rtWrapper._depthStencilTextureWithStencil ? gl.DEPTH_STENCIL_ATTACHMENT : gl.DEPTH_ATTACHMENT;
-            if (rtWrapper.is2DArray) {
+            if (rtWrapper.is2DArray || rtWrapper.is3D) {
                 gl.framebufferTextureLayer(gl.FRAMEBUFFER, attachment, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel, layer);
             } else if (rtWrapper.isCube) {
                 gl.framebufferTexture2D(gl.FRAMEBUFFER, attachment, gl.TEXTURE_CUBE_MAP_POSITIVE_X + faceIndex, depthStencilTexture._hardwareTexture?.underlyingResource, lodLevel);
@@ -2955,11 +2964,12 @@ export class ThinEngine extends AbstractEngine {
 
         const gl = this._gl;
         const texture = new InternalTexture(this, source);
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const width = (<{ width: number; height: number; depth?: number; layers?: number }>size).width || <number>size;
+        const height = (<{ width: number; height: number; depth?: number; layers?: number }>size).height || <number>size;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
         const filters = this._getSamplingParameters(samplingMode, generateMipMaps);
-        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : gl.TEXTURE_2D;
+        const target = layers !== 0 ? gl.TEXTURE_2D_ARRAY : depth !== 0 ? gl.TEXTURE_3D : gl.TEXTURE_2D;
         const sizedFormat = this._getRGBABufferInternalSizedFormat(type, format, useSRGBBuffer);
         const internalFormat = this._getInternalFormat(format);
         const textureType = this._getWebGLTextureType(type);
@@ -2970,6 +2980,9 @@ export class ThinEngine extends AbstractEngine {
         if (layers !== 0) {
             texture.is2DArray = true;
             gl.texImage3D(target, 0, sizedFormat, width, height, layers, 0, internalFormat, textureType, null);
+        } else if (depth !== 0) {
+            texture.is3D = true;
+            gl.texImage3D(target, 0, sizedFormat, width, height, depth, 0, internalFormat, textureType, null);
         } else {
             gl.texImage2D(target, 0, sizedFormat, width, height, 0, internalFormat, textureType, null);
         }
@@ -3379,7 +3392,7 @@ export class ThinEngine extends AbstractEngine {
      */
     public _setupDepthStencilTexture(
         internalTexture: InternalTexture,
-        size: number | { width: number; height: number; layers?: number },
+        size: TextureSize,
         generateStencil: boolean,
         bilinearFiltering: boolean,
         comparisonFunction: number,
@@ -3387,14 +3400,15 @@ export class ThinEngine extends AbstractEngine {
     ): void {
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 
         internalTexture.baseWidth = width;
         internalTexture.baseHeight = height;
         internalTexture.width = width;
         internalTexture.height = height;
         internalTexture.is2DArray = layers > 0;
-        internalTexture.depth = layers;
+        internalTexture.depth = layers || depth;
         internalTexture.isReady = true;
         internalTexture.samples = samples;
         internalTexture.generateMipMaps = false;
