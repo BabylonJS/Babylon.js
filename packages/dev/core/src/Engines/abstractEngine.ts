@@ -852,7 +852,11 @@ export abstract class AbstractEngine {
     /**
      * End the current frame
      */
-    public abstract endFrame(): void;
+    public endFrame(): void {
+        this._frameId++;
+
+        this.onEndFrameObservable.notifyObservers(this);
+    }
 
     /** @internal */
     public _boundRenderFunction: any = () => this._renderLoop();
@@ -1526,6 +1530,34 @@ export abstract class AbstractEngine {
      * @param stencil defines if the stencil buffer must be cleared
      */
     public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
+
+    /**
+     * Sets alpha constants used by some alpha blending modes
+     * @param r defines the red component
+     * @param g defines the green component
+     * @param b defines the blue component
+     * @param a defines the alpha component
+     */
+    public setAlphaConstants(r: number, g: number, b: number, a: number): void {
+        this._alphaState.setAlphaBlendConstants(r, g, b, a);
+    }
+
+    /**
+     * Gets the current alpha mode
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+     * @returns the current alpha mode
+     */
+    public getAlphaMode(): number {
+        return this._alphaMode;
+    }
+
+    /**
+     * Gets the current alpha equation.
+     * @returns the current alpha equation
+     */
+    public getAlphaEquation(): number {
+        return this._alphaEquation;
+    }
 
     /**
      * Sets the current alpha mode

@@ -4,6 +4,7 @@ import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { Nullable } from "../../types";
+import { AbstractEngine } from "../abstractEngine";
 import type { WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
 
 /**
@@ -161,7 +162,7 @@ ThinEngine.prototype._prepareComputePipelineContext = function (
 
 ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
-ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (pipelineContext: IComputePipelineContext, action: () => void): void {
+AbstractEngine.prototype._executeWhenComputeStateIsCompiled = function (pipelineContext: IComputePipelineContext, action: () => void): void {
     action();
 };
 

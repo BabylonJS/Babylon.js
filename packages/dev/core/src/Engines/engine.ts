@@ -792,15 +792,6 @@ export class Engine extends ThinEngine {
     }
 
     /**
-     * End the current frame
-     */
-    public endFrame(): void {
-        super.endFrame();
-
-        this.onEndFrameObservable.notifyObservers(this);
-    }
-
-    /**
      * Force a specific size of the canvas
      * @param width defines the new canvas' width
      * @param height defines the new canvas' height

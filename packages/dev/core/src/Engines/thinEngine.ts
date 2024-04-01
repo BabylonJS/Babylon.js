@@ -952,11 +952,11 @@ export class ThinEngine extends AbstractEngine {
      * End the current frame
      */
     public endFrame(): void {
+        super.endFrame();
         // Force a flush in case we are using a bad OS.
         if (this._badOS) {
             this.flushFramebuffer();
         }
-        this._frameId++;
     }
 
     /**

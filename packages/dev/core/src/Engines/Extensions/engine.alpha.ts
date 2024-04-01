@@ -1,32 +1,5 @@
 import { ThinEngine } from "../../Engines/thinEngine";
-import { AbstractEngine } from "../../Engines/abstractEngine";
 import { Constants } from "../constants";
-
-declare module "../../Engines/abstractEngine" {
-    export interface AbstractEngine {
-        /**
-         * Sets alpha constants used by some alpha blending modes
-         * @param r defines the red component
-         * @param g defines the green component
-         * @param b defines the blue component
-         * @param a defines the alpha component
-         */
-        setAlphaConstants(r: number, g: number, b: number, a: number): void;
-
-        /**
-         * Gets the current alpha mode
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-         * @returns the current alpha mode
-         */
-        getAlphaMode(): number;
-
-        /**
-         * Gets the current alpha equation.
-         * @returns the current alpha equation
-         */
-        getAlphaEquation(): number;
-    }
-}
 
 declare module "../../Engines/thinEngine" {
     export interface ThinEngine {
@@ -45,18 +18,6 @@ declare module "../../Engines/thinEngine" {
         setAlphaEquation(equation: number): void;
     }
 }
-
-AbstractEngine.prototype.setAlphaConstants = function (r: number, g: number, b: number, a: number) {
-    this._alphaState.setAlphaBlendConstants(r, g, b, a);
-};
-
-AbstractEngine.prototype.getAlphaMode = function (): number {
-    return this._alphaMode;
-};
-
-AbstractEngine.prototype.getAlphaEquation = function () {
-    return this._alphaEquation;
-};
 
 ThinEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode) {

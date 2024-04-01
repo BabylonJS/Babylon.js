@@ -2928,6 +2928,7 @@ export class WebGPUEngine extends AbstractEngine {
      * End the current frame
      */
     public endFrame() {
+        super.endFrame();
         this._endCurrentRenderPass();
 
         this._snapshotRendering.endFrame();
