@@ -3666,7 +3666,10 @@ export abstract class AbstractEngine {
 
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
-        window.removeEventListener("resize", this._checkForMobile);
+
+        if (IsWindowObjectExist()) {
+            window.removeEventListener("resize", this._checkForMobile);
+        }
 
         // Remove from Instances
         const index = EngineStore.Instances.indexOf(this);
