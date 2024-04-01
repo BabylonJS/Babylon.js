@@ -8,7 +8,7 @@ import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IsDocumentAvailable, IsWindowObjectExist } from "../Misc/domManagement";
+import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { _WarnImport } from "../Misc/devTools";
 import { DepthCullingState } from "../States/depthCullingState";
@@ -2281,7 +2281,7 @@ export abstract class AbstractEngine {
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
-        if (navigator && navigator.userAgent) {
+        if (IsNavigatorAvailable() && navigator.userAgent) {
             // Detect if we are running on a faulty buggy OS.
             this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
 
