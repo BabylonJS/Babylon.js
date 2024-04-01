@@ -14,6 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import type { INative } from "../Engines/Native/nativeInterfaces";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 declare const _native: INative;
@@ -772,6 +773,8 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  * @internal
  */
 const initSideEffects = () => {
+    AbstractEngine._FileToolsLoadImage = LoadImage;
+    AbstractEngine._FileToolsLoadFile = LoadFile;
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 

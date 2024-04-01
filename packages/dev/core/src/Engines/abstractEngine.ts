@@ -35,7 +35,7 @@ import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import type { IFileRequest } from "../Misc/fileRequest";
 import { Logger } from "../Misc/logger";
 import type { Texture } from "../Materials/Textures/texture";
-import { LoadFile, LoadImage } from "../Misc/fileTools";
+import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
@@ -53,6 +53,7 @@ import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
+import type { WebRequest } from "core/Misc/webRequest";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -1998,7 +1999,7 @@ export abstract class AbstractEngine {
                 if (buffer && (typeof (<HTMLImageElement>buffer).decoding === "string" || (<ImageBitmap>buffer).close)) {
                     onload(<HTMLImageElement>buffer);
                 } else {
-                    LoadImage(
+                    AbstractEngine._FileToolsLoadImage(
                         url || "",
                         onload,
                         onInternalError,
@@ -2008,7 +2009,7 @@ export abstract class AbstractEngine {
                     );
                 }
             } else if (typeof buffer === "string" || buffer instanceof ArrayBuffer || ArrayBuffer.isView(buffer) || buffer instanceof Blob) {
-                LoadImage(
+                AbstractEngine._FileToolsLoadImage(
                     buffer,
                     onload,
                     onInternalError,
@@ -3545,6 +3546,50 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * Loads an image as an HTMLImageElement.
+     * @param input url string, ArrayBuffer, or Blob to load
+     * @param onLoad callback called when the image successfully loads
+     * @param onError callback called when the image fails to load
+     * @param offlineProvider offline provider for caching
+     * @param mimeType optional mime type
+     * @param imageBitmapOptions optional the options to use when creating an ImageBitmap
+     * @returns the HTMLImageElement of the loaded image
+     * @internal
+     */
+    public static _FileToolsLoadImage(
+        input: string | ArrayBuffer | ArrayBufferView | Blob,
+        onLoad: (img: HTMLImageElement | ImageBitmap) => void,
+        onError: (message?: string, exception?: any) => void,
+        offlineProvider: Nullable<IOfflineProvider>,
+        mimeType?: string,
+        imageBitmapOptions?: ImageBitmapOptions
+    ): Nullable<HTMLImageElement> {
+        throw _WarnImport("FileTools");
+    }
+
+    /**
+     * Loads a file from a url
+     * @param url url to load
+     * @param onSuccess callback called when the file successfully loads
+     * @param onProgress callback called while file is loading (if the server supports this mode)
+     * @param offlineProvider defines the offline provider for caching
+     * @param useArrayBuffer defines a boolean indicating that date must be returned as ArrayBuffer
+     * @param onError callback called when the file fails to load
+     * @returns a file request object
+     * @internal
+     */
+    public static _FileToolsLoadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (ev: ProgressEvent) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: WebRequest, exception?: LoadFileError) => void
+    ): IFileRequest {
+        throw _WarnImport("FileTools");
+    }
+
+    /**
      * @internal
      */
     public _loadFile(
@@ -3555,7 +3600,7 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
-        const request = LoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        const request = AbstractEngine._FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
         this._activeRequests.push(request);
         request.onCompleteObservable.add((request) => {
             this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
