@@ -607,7 +607,9 @@ export class WebGPUEngine extends AbstractEngine {
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
-        this._setupMobileChecks();
+        if (navigator && navigator.userAgent) {
+            this._setupMobileChecks();
+        }
 
         this._sharedInit(this._renderingCanvas);
 

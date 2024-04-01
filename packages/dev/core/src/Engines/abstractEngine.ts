@@ -2303,8 +2303,13 @@ export abstract class AbstractEngine {
 
         PerformanceConfigurator.SetMatrixPrecision(!!options.useHighPrecisionMatrix);
 
-        // Detect if we are running on a faulty buggy OS.
-        this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
+        if (navigator && navigator.userAgent) {
+            // Detect if we are running on a faulty buggy OS.
+            this._badOS = /iPad/i.test(navigator.userAgent) || /iPhone/i.test(navigator.userAgent);
+
+            // Detect if we are running on a faulty buggy desktop OS.
+            this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+        }
 
         // Save this off for use in resize().
         this.adaptToDeviceRatio = adaptToDeviceRatio ?? false;

@@ -362,8 +362,6 @@ export class ThinEngine extends AbstractEngine {
                 options.powerPreference = options.powerPreference || "high-performance";
             }
 
-            // Detect if we are running on a faulty buggy desktop OS.
-            this._badDesktopOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
             if (this._badDesktopOS) {
                 options.xrCompatible = false;
             }
