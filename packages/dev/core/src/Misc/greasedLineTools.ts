@@ -252,6 +252,28 @@ export class GreasedLineTools {
     }
 
     /**
+     * Gets the the length from the beginning to each point of the line as array.
+     * @param data array of line points
+     * @returns length array of the line
+     */
+    public static GetLineLengthArray(data: number[]): Float32Array {
+        const out = new Float32Array(data.length / 3);
+        let length = 0;
+        for (let index = 0, pointsLength = data.length / 3 - 1; index < pointsLength; index++) {
+            let x = data[index * 3 + 0];
+            let y = data[index * 3 + 1];
+            let z = data[index * 3 + 2];
+            x -= data[index * 3 + 3];
+            y -= data[index * 3 + 4];
+            z -= data[index * 3 + 5];
+            const currentLength = Math.sqrt(x * x + y * y + z * z);
+            length += currentLength;
+            out[index + 1] = length;
+        }
+        return out;
+    }
+
+    /**
      * Divides a segment into smaller segments.
      * A segment is a part of the line between it's two points.
      * @param point1 first point of the line
