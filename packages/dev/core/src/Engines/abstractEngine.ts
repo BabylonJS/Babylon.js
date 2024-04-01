@@ -17,7 +17,6 @@ import { StencilState } from "../States/stencilState";
 import { AlphaState } from "../States/alphaCullingState";
 import type { ICanvas, IImage } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import type { ISceneLike } from "./thinEngine";
 import type { EngineCapabilities } from "./engineCapabilities";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
@@ -53,6 +52,20 @@ import type { IStencilState } from "../States/IStencilState";
 import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
+import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
+
+/**
+ * Defines the interface used by objects working like Scene
+ * @internal
+ */
+export interface ISceneLike {
+    addPendingData(data: any): void;
+    removePendingData(data: any): void;
+    /**
+     *
+     */
+    offlineProvider: IOfflineProvider;
+}
 
 /**
  * Queue a new function into the requested animation frame pool (ie. this function will be executed by the browser (or the javascript engine) for the next frame)
@@ -81,7 +94,7 @@ export function QueueNewFrame(func: () => void, requester?: any): number {
     return setTimeout(func, 16) as unknown as number;
 }
 
-/** Interface defining initialization parameters for ThinEngine class */
+/** Interface defining initialization parameters for AbstractEngine class */
 export interface AbstractEngineOptions {
     /**
      * Defines if the engine should no exceed a specified device ratio
@@ -1590,6 +1603,18 @@ export abstract class AbstractEngine {
      */
     public abstract createMultipleRenderTarget(size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
 
+    /** @internal */
+    public abstract _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+
+    /**
+     * Creates a depth stencil cube texture.
+     * This is only available in WebGL 2.
+     * @param size The size of face edge in the cube texture.
+     * @param options The options defining the cube texture.
+     * @returns The cube texture
+     */
+    public abstract _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
+
     /**
      * Creates a depth stencil texture.
      * This is only available in WebGL 2 or with the depth texture extension available.
@@ -1598,7 +1623,14 @@ export abstract class AbstractEngine {
      * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
      * @returns The texture
      */
-    public abstract createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
+    public createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
+        if (options.isCube) {
+            const width = (<{ width: number; height: number }>size).width || <number>size;
+            return this._createDepthStencilCubeTexture(width, options);
+        } else {
+            return this._createDepthStencilTexture(size, options, rtWrapper);
+        }
+    }
 
     /**
      * Update the sample count for a given multiple render target texture
@@ -2263,6 +2295,7 @@ export abstract class AbstractEngine {
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
     constructor(antialias: boolean, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
+        EngineStore.Instances.push(this);
         this.startTime = PrecisionDate.Now;
 
         this._stencilStateComposer.stencilGlobal = this._stencilState;
@@ -3417,6 +3450,47 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * Get the current error code of the webGL context
+     * @returns the error code
+     */
+    public abstract getError(): number;
+
+    /**
+     * Get Font size information
+     * @param font font name
+     * @returns an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+        const text = document.createElement("span");
+        text.innerHTML = "Hg";
+        text.setAttribute("style", `font: ${font} !important`);
+
+        const block = document.createElement("div");
+        block.style.display = "inline-block";
+        block.style.width = "1px";
+        block.style.height = "0px";
+        block.style.verticalAlign = "bottom";
+
+        const div = document.createElement("div");
+        div.style.whiteSpace = "nowrap";
+        div.appendChild(text);
+        div.appendChild(block);
+
+        document.body.appendChild(div);
+
+        let fontAscent = 0;
+        let fontHeight = 0;
+        try {
+            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+            block.style.verticalAlign = "baseline";
+            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        } finally {
+            document.body.removeChild(div);
+        }
+        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+    }
+
+    /**
      * Toggle full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
@@ -3533,6 +3607,13 @@ export abstract class AbstractEngine {
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
         window.removeEventListener("resize", this._checkForMobile);
+
+        // Remove from Instances
+        const index = EngineStore.Instances.indexOf(this);
+
+        if (index >= 0) {
+            EngineStore.Instances.splice(index, 1);
+        }
     }
 
     /**
@@ -3574,4 +3655,28 @@ export abstract class AbstractEngine {
     public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
         throw _WarnImport("LoadingScreen");
     }
+
+    /**
+     * Gets the audio engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
+     * @ignorenaming
+     */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    public static audioEngine: Nullable<IAudioEngine>;
+
+    /**
+     * Default AudioEngine factory responsible of creating the Audio Engine.
+     * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
+     */
+    public static AudioEngineFactory: (
+        hostElement: Nullable<HTMLElement>,
+        audioContext: Nullable<AudioContext>,
+        audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>
+    ) => IAudioEngine;
+
+    /**
+     * Default offline support factory responsible of creating a tool used to store data locally.
+     * By default, this will create a Database object if the workload has been embedded.
+     */
+    public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 }

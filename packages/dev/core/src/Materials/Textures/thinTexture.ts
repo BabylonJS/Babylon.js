@@ -157,7 +157,7 @@ export class ThinTexture {
     /**
      * Instantiates a new ThinTexture.
      * Base class of all the textures in babylon.
-     * This can be used as an internal texture wrapper in ThinEngine to benefit from the cache
+     * This can be used as an internal texture wrapper in AbstractEngine to benefit from the cache
      * @param internalTexture Define the internalTexture to wrap. You can also pass a RenderTargetWrapper, in which case the texture will be the render target's texture
      */
     constructor(internalTexture: Nullable<InternalTexture | RenderTargetWrapper>) {

@@ -23,7 +23,6 @@ import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
-import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
@@ -241,25 +240,25 @@ export class Engine extends ThinEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return ThinEngine.NpmPackage;
+        return AbstractEngine.NpmPackage;
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return ThinEngine.Version;
+        return AbstractEngine.Version;
     }
 
     /** Gets the list of created engines */
-    public static get Instances(): Engine[] {
+    public static get Instances(): AbstractEngine[] {
         return EngineStore.Instances;
     }
 
     /**
      * Gets the latest created engine
      */
-    public static get LastCreatedEngine(): Nullable<Engine> {
+    public static get LastCreatedEngine(): Nullable<AbstractEngine> {
         return EngineStore.LastCreatedEngine;
     }
 
@@ -305,30 +304,6 @@ export class Engine extends ThinEngine {
      * If set, will be used to request the next animation frame for the render loop
      */
     public customAnimationFrameRequester: Nullable<ICustomAnimationFrameRequester> = null;
-
-    /**
-     * Gets the audio engine
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic
-     * @ignorenaming
-     */
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static audioEngine: Nullable<IAudioEngine>;
-
-    /**
-     * Default AudioEngine factory responsible of creating the Audio Engine.
-     * By default, this will create a BabylonJS Audio Engine if the workload has been embedded.
-     */
-    public static AudioEngineFactory: (
-        hostElement: Nullable<HTMLElement>,
-        audioContext: Nullable<AudioContext>,
-        audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>
-    ) => IAudioEngine;
-
-    /**
-     * Default offline support factory responsible of creating a tool used to store data locally.
-     * By default, this will create a Database object if the workload has been embedded.
-     */
-    public static OfflineProviderFactory: (urlToScene: string, callbackManifestChecked: (checked: boolean) => any, disableManifestCheck: boolean) => IOfflineProvider;
 
     private _rescalePostProcess: Nullable<PostProcess>;
 
@@ -382,8 +357,6 @@ export class Engine extends ThinEngine {
         adaptToDeviceRatio: boolean = false
     ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
-
-        Engine.Instances.push(this);
 
         if (!canvasOrContext) {
             return;
@@ -1264,13 +1237,6 @@ export class Engine extends ThinEngine {
 
         super.dispose();
 
-        // Remove from Instances
-        const index = EngineStore.Instances.indexOf(this);
-
-        if (index >= 0) {
-            EngineStore.Instances.splice(index, 1);
-        }
-
         // no more engines left in the engine store? Notify!
         if (!Engine.Instances.length) {
             EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
@@ -1293,40 +1259,5 @@ export class Engine extends ThinEngine {
         this._renderingCanvas.setAttribute("touch-action", "none");
         this._renderingCanvas.style.touchAction = "none";
         (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
-    }
-
-    /**
-     * Get Font size information
-     * @param font font name
-     * @returns an object containing ascent, height and descent
-     */
-    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
-        const text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute("style", `font: ${font} !important`);
-
-        const block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
-
-        const div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
-
-        document.body.appendChild(div);
-
-        let fontAscent = 0;
-        let fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
-        }
-        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
     }
 }

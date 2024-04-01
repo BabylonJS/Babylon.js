@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { type ISceneLike } from "./thinEngine";
+import { type ISceneLike } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -612,6 +612,11 @@ export class WebGPUEngine extends AbstractEngine {
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
+
+        // Create Audio Engine if needed.
+        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
+            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
+        }
     }
 
     //------------------------------------------------------------------------------
@@ -3365,7 +3370,7 @@ export class WebGPUEngine extends AbstractEngine {
     public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         const saveCRT = this._currentRenderTarget;
 
-        this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
+        this._currentRenderTarget = null; // to be iso with abstractEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
 
         if (onBeforeUnbind) {
             onBeforeUnbind();

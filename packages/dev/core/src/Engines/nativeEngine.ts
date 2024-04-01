@@ -21,7 +21,7 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import type { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./abstractEngine";
 import { ThinEngine } from "./thinEngine";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";

@@ -10,7 +10,7 @@ import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./abstractEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
@@ -94,8 +94,6 @@ export class NullEngine extends Engine {
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
-
-        Engine.Instances.push(this);
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;

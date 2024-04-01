@@ -9,6 +9,7 @@ import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 
+import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../../Engines/Extensions/engine.cubeTexture";
 import { Observable } from "../../Misc/observable";
 

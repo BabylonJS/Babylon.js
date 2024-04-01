@@ -11,6 +11,7 @@ import { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
+import "../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../Engines/Extensions/engine.cubeTexture";
 import { ThinEngine } from "../Engines/thinEngine";
 

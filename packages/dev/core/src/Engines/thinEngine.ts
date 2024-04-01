@@ -18,7 +18,6 @@ import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { VertexBuffer } from "../Buffers/buffer";
 import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
@@ -34,22 +33,9 @@ import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper"
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
-import type { AbstractEngineOptions } from "./abstractEngine";
+import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
 import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
-
-/**
- * Defines the interface used by objects working like Scene
- * @internal
- */
-export interface ISceneLike {
-    addPendingData(data: any): void;
-    removePendingData(data: any): void;
-    /**
-     *
-     */
-    offlineProvider: IOfflineProvider;
-}
 
 /**
  * Keeps track of all the buffer info used in engine.
