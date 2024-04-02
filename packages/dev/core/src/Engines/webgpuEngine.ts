@@ -70,7 +70,6 @@ import type { AbstractEngineOptions } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
-import { EngineStore } from "./engineStore";
 import { _CommonDispose, _CommonInit } from "./engine.common";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
