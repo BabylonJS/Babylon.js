@@ -133,7 +133,8 @@ export interface GreasedLineMeshOptions {
 export abstract class GreasedLineBaseMesh extends Mesh {
     protected _vertexPositions: FloatArray;
 
-    protected _indices: number[] | Uint16Array | Uint32Array;
+    protected _indices: IndicesArray;
+
     protected _uvs: FloatArray;
 
     protected _points: number[][];
