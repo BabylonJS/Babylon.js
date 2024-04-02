@@ -786,8 +786,6 @@ export class Engine extends ThinEngine {
      */
     public beginFrame(): void {
         this._measureFps();
-
-        this.onBeginFrameObservable.notifyObservers(this);
         super.beginFrame();
     }
 

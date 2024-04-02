@@ -54,6 +54,7 @@ import type { IDrawContext } from "./IDrawContext";
 import type { VertexBuffer } from "../Meshes/buffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 import type { WebRequest } from "core/Misc/webRequest";
+import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -847,7 +848,9 @@ export abstract class AbstractEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void {}
+    public beginFrame(): void {
+        this.onBeginFrameObservable.notifyObservers(this);
+    }
 
     /**
      * End the current frame
@@ -857,6 +860,12 @@ export abstract class AbstractEngine {
 
         this.onEndFrameObservable.notifyObservers(this);
     }
+
+    /**
+     * Gets the performance monitor attached to this engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
+     */
+    public abstract get performanceMonitor(): PerformanceMonitor;
 
     /** @internal */
     public _boundRenderFunction: any = () => this._renderLoop();

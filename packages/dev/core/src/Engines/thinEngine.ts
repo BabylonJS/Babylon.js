@@ -36,6 +36,7 @@ import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tool
 import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
 import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -957,6 +958,14 @@ export class ThinEngine extends AbstractEngine {
         if (this._badOS) {
             this.flushFramebuffer();
         }
+    }
+
+    /**
+     * Gets the performance monitor attached to this engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
+     */
+    public get performanceMonitor(): PerformanceMonitor {
+        throw new Error("Not Supported by ThinEngine");
     }
 
     /**

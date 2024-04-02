@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { type ISceneLike } from "./abstractEngine";
+import { type ISceneLike, AbstractEngine } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -66,9 +66,10 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 import type { Scene } from "../scene";
 import type { AbstractEngineOptions } from "./abstractEngine";
-import { AbstractEngine } from "./abstractEngine";
+
 import type { PostProcess } from "../PostProcesses/postProcess";
-import { SphericalPolynomial } from "core/Maths/sphericalPolynomial";
+import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
+import { PerformanceMonitor } from "../Misc/performanceMonitor";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -2919,10 +2920,26 @@ export class WebGPUEngine extends AbstractEngine {
     //                              Frame management
     //------------------------------------------------------------------------------
 
+    private _measureFps(): void {
+        this._performanceMonitor.sampleFrame();
+        this._fps = this._performanceMonitor.averageFPS;
+        this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
+    }
+
+    private _performanceMonitor = new PerformanceMonitor();
+    /**
+     * Gets the performance monitor attached to this engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
+     */
+    public get performanceMonitor(): PerformanceMonitor {
+        return this._performanceMonitor;
+    }
+
     /**
      * Begin a new frame
      */
     public beginFrame(): void {
+        this._measureFps();
         super.beginFrame();
     }
 
