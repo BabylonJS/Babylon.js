@@ -1,0 +1,286 @@
+import { Constants } from "../Engines/constants";
+import { Engine } from "../Engines/engine";
+import { ShaderMaterial } from "../Materials/shaderMaterial";
+import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
+import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
+// import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import { Color4 } from "../Maths/math.color";
+import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
+
+// import type { SubMesh } from "../Meshes/subMesh";
+import { Mesh } from "../Meshes/mesh";
+// import type { AbstractMesh } from "../Meshes/abstractMesh";
+// import type { SmartArray } from "../Misc/smartArray";
+import type { Scene } from "../scene";
+import { Texture } from "../Materials/Textures/texture";
+// import { ThinTexture } from "../Materials/Textures/thinTexture";
+// import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import { Logger } from "../Misc/logger";
+import "../Shaders/voxelGrid.fragment";
+import "../Shaders/voxelGrid.vertex";
+import "../Shaders/voxelGrid2dArrayDebug.fragment";
+import "../Shaders/voxelGrid3dDebug.fragment";
+// import { ShaderStore } from "../Engines/shaderStore";
+import { PostProcess } from "../PostProcesses/postProcess";
+
+/**
+ * Voxel-based shadow rendering for IBL's.
+ * This should not be instanciated directly, as it is part of a scene component
+ */
+export class IblShadowsVoxelRenderer {
+    private _scene: Scene;
+    private _engine: Engine;
+
+    private _voxelGridRT: RenderTargetTexture;
+    private _voxelMrts: MultiRenderTarget[] = [];
+    private _isVoxelGrid3D: boolean = false;
+
+    private _voxelResolution: number;
+    private _maxDrawBuffers: number;
+
+    // private _voxelMaterial: ShaderMaterial;
+    // private _voxelEffectWrapper: EffectWrapper;
+    // private _voxelEffectRenderer: EffectRenderer;
+
+    /**
+     * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
+     */
+    public get voxelResolution(): number {
+        return this._voxelResolution;
+    }
+
+    private _voxelDebugPass: PostProcess;
+    private _voxelDebugEnabled: boolean = false;
+
+    public set voxelResolution(resolution: number) {
+        if (this._voxelResolution === resolution) {
+            return;
+        }
+        this._voxelResolution = resolution;
+        this._disposeTextures();
+        this._createTextures();
+    }
+
+    public get voxelDebugEnabled(): boolean {
+        return this._voxelDebugEnabled;
+    }
+
+    public set voxelDebugEnabled(enabled: boolean) {
+        if (this._voxelDebugEnabled === enabled) {
+            return;
+        }
+        this._voxelDebugEnabled = enabled;
+        if (enabled) {
+            this._voxelDebugPass = new PostProcess(
+                "Final compose shader",
+                this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
+                ["slice"], // attributes
+                ["texture_array"], // textures
+                1.0, // options
+                this._scene.activeCamera, // camera
+                Texture.BILINEAR_SAMPLINGMODE, // sampling
+                this._engine // engine
+            );
+            this._voxelDebugPass.onApply = (effect) => {
+                // update the caustic texture with what we just rendered.
+                effect.setTexture("texture_array", this._voxelGridRT);
+            };
+        }
+    }
+
+    /**
+     * Instanciates the depth peeling renderer
+     * @param scene Scene to attach to
+     * @param resolution Number of depth layers to peel
+     * @returns The depth peeling renderer
+     */
+    constructor(scene: Scene, resolution: number = 64) {
+        this._scene = scene;
+        this._engine = scene.getEngine();
+        this._voxelResolution = resolution;
+
+        if (!this._engine.getCaps().drawBuffersExtension) {
+            Logger.Error("Can't do voxel rendering without the draw buffers extension.");
+        }
+
+        this._maxDrawBuffers = this._engine._gl.getParameter(this._engine._gl.MAX_DRAW_BUFFERS);
+
+        this._createTextures();
+        // this._createEffects();
+    }
+
+    private _computeNumberOfSlabs(): number {
+        return Math.ceil(this._voxelResolution / this._maxDrawBuffers);
+    }
+
+    private _createTextures() {
+        this._voxelGridRT = new RenderTargetTexture(
+            "voxelGrid",
+            {
+                width: this._voxelResolution,
+                height: this._voxelResolution,
+                layers: this._isVoxelGrid3D ? undefined : this._voxelResolution,
+                // depth: this._isVoxelGrid3D ? this._voxelResolution : undefined
+            },
+            this._scene,
+            {
+                generateDepthBuffer: false,
+                type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                format: Constants.TEXTUREFORMAT_R,
+                samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                generateMipMaps: false,
+            }
+        );
+
+        // We can render up to maxDrawBuffers voxel slices of the grid per render.
+        // We call this a slab.
+        const numSlabs = this._computeNumberOfSlabs();
+        const targetTypes = new Array(this._maxDrawBuffers).fill(-1);
+        targetTypes[0] = this._isVoxelGrid3D ? Constants.TEXTURE_3D : Constants.TEXTURE_2D_ARRAY;
+
+        for (let mrt_index = 0; mrt_index < numSlabs; mrt_index++) {
+            let layerIndices = new Array(this._maxDrawBuffers).fill(0);
+            layerIndices = layerIndices.map((value, index) => mrt_index * this._maxDrawBuffers + index);
+
+            let textureNames = new Array(this._maxDrawBuffers).fill("");
+            textureNames = textureNames.map((value, index) => "voxel_grid_" + (mrt_index * this._maxDrawBuffers + index));
+
+            const mrt = new MultiRenderTarget(
+                "mrt" + mrt_index,
+                { width: this._voxelResolution, height: this._voxelResolution },
+                this._maxDrawBuffers, // number of draw buffers
+                this._scene,
+                {
+                    types: new Array(this._maxDrawBuffers).fill(Constants.TEXTURETYPE_UNSIGNED_BYTE),
+                    samplingModes: new Array(this._maxDrawBuffers).fill(Constants.TEXTURE_TRILINEAR_SAMPLINGMODE),
+                    generateMipMaps: false,
+                    targetTypes,
+                    formats: new Array(this._maxDrawBuffers).fill(Constants.TEXTUREFORMAT_R),
+                    faceIndex: new Array(this._maxDrawBuffers).fill(0),
+                    layerIndex: layerIndices,
+                    layerCounts: new Array(this._maxDrawBuffers).fill(this._voxelResolution),
+                    generateDepthBuffer: false,
+                    generateStencilBuffer: false,
+                },
+                textureNames
+            );
+
+            mrt.clearColor = new Color4(0, 0, 0, 1);
+
+            for (let i = 0; i < this._maxDrawBuffers; i++) {
+                mrt.setInternalTexture(this._voxelGridRT.getInternalTexture()!, i);
+            }
+
+            this._voxelMrts.push(mrt);
+        }
+    }
+
+    private _disposeTextures() {
+        for (let i = 0; i < this._voxelMrts.length; i++) {
+            this._voxelMrts[i].dispose(true);
+        }
+        this._voxelGridRT.dispose();
+        this._voxelMrts = [];
+    }
+
+    private _createVoxelMaterial(): ShaderMaterial {
+        return new ShaderMaterial("voxelization", this._scene, "voxelGrid", {
+            uniforms: ["world", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
+            defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
+        });
+    }
+
+    /**
+     * Checks if the depth peeling renderer is ready to render transparent meshes
+     * @returns true if the depth peeling renderer is ready to render the transparent meshes
+     */
+    public isReady() {
+        return true;
+    }
+
+    /**
+     * Renders voxel grid of scene for IBL shadows
+     * @param excludedMeshes
+     */
+    public updateVoxelGrid(excludedMeshes: number[]) {
+        
+        // If the MRT's are already in the list of render targets, remove them.
+        const currentRTs = this._scene.customRenderTargets;
+        const mrtIdx = currentRTs.findIndex((rt) => {
+            if (rt === this._voxelMrts[0]) return true;
+            return false;
+        });
+        if (mrtIdx >= 0) {
+            this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
+        }
+
+        // Update render lists and scene scale for voxel rendering
+        const bounds = this._scene.getWorldExtends((mesh) => {
+            return mesh instanceof Mesh && excludedMeshes.indexOf(mesh.uniqueId) === -1;
+        });
+        const size = bounds.max.subtract(bounds.min);
+        const slabSize = 1.0 / this._computeNumberOfSlabs();
+        Logger.Log("Scene size: " + size);
+        const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
+        Logger.Log("Half size: " + halfSize);
+        const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
+        Logger.Log("Centre translation: " + centre);
+        const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
+        Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
+
+        const meshes = this._scene.meshes;
+        
+        // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
+        this._voxelMrts.forEach((mrt, mrtIndex) => {
+            mrt.renderList = [];
+            const nearPlane = mrtIndex * slabSize;
+            const farPlane = (mrtIndex + 1) * slabSize;
+            const stepSize = slabSize / this._maxDrawBuffers;
+            // Logger.Log("Near plane for slab " + mrtIndex + " is " + nearPlane);
+            // Logger.Log("Far plane for slab " + mrtIndex + " is " + farPlane);
+            // Logger.Log("Size of slab " + mrtIndex + " is " + slabSize);
+            const voxelMaterial = this._createVoxelMaterial();
+            voxelMaterial.setMatrix("invWorldScale", invWorldScaleMatrix);
+            voxelMaterial.setFloat("nearPlane", nearPlane);
+            voxelMaterial.setFloat("farPlane", farPlane);
+            voxelMaterial.setFloat("stepSize", stepSize);
+            voxelMaterial.cullBackFaces = false;
+            voxelMaterial.backFaceCulling = false;
+            voxelMaterial.depthFunction = Engine.ALWAYS;
+
+            // Set this material on every mesh in the scene (for this RT)
+            meshes.forEach((mesh) => {
+                if (mesh instanceof Mesh && mesh.material && excludedMeshes.indexOf(mesh.uniqueId) === -1) {
+                    mrt.renderList?.push(mesh);
+
+                    // TODO - if the mesh already has a voxel material applied, don't create a new one.
+                    // mesh.getMaterialForRenderPass(mrt.renderPassIds)
+                    mrt.setMaterialForRendering(mesh, voxelMaterial);
+                    Logger.Log("Setting voxel material for " + mesh.name);
+                }
+            });
+        });
+
+        // Add the MRT's to render.
+        this._scene.customRenderTargets = currentRTs.concat(this._voxelMrts);
+
+        this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+            // Remove the MRTs from the array so they don't get rendered again.
+            // TODO - this seems to be removing the MRT's too early??
+            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+                // this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
+            });
+        });
+    }
+
+    /**
+     * Disposes the depth peeling renderer and associated ressources
+     */
+    public dispose() {
+        this._disposeTextures();
+        // TODO - dispose all created voxel materials.
+        // this._blendBackEffectWrapper.dispose();
+        // this._voxelEffectWrapper.dispose();
+        // this._voxelEffectRenderer.dispose();
+    }
+}

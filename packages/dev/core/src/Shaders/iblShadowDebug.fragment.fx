@@ -1,18 +1,56 @@
-precision highp float;
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+varying vec2 vUV;
+        
+uniform sampler2D textureSampler;
+uniform sampler2D depthSampler;
+uniform sampler2D normalSampler;
 uniform sampler2D worldNormalSampler;
+uniform sampler2D worldPositionSampler;
 uniform sampler2D localPositionSampler;
 uniform sampler2D velocitySampler;
-uniform sampler2D depthSampler;
 
-void main()
+void main(void)
 {
-    ivec2 quarter_fragCoord = ivec2(gl_FragCoord.xy * vec2(2.0));
-    vec2 texSize = vec2(textureSize(worldNormalSampler, 0));
-    vec4 normal = texelFetch(worldNormalSampler, quarter_fragCoord - ivec2(0.0, texSize.y), 0);
-    vec4 position = texelFetch(localPositionSampler, quarter_fragCoord - ivec2(texSize.x, texSize.y), 0);
-    vec4 depth = texelFetch(depthSampler, quarter_fragCoord - ivec2(texSize.x, 0.0), 0).rrra;
-    depth.rgb *= 0.01;
-    vec4 velocity = texelFetch(velocitySampler, quarter_fragCoord, 0);
-    velocity.xy = clamp(velocity.xy * 2.0 - vec2(1.0), 0.0, 1.0);
-    glFragColor = normal + position + depth + velocity;
+    vec4 first = texture2D(textureSampler, vUV);
+    vec4 depth = texture2D(depthSampler, vUV);
+    vec4 normal = texture2D(normalSampler, vUV);
+    vec4 worldNormal = texture2D(worldNormalSampler, vUV);
+    vec4 worldPosition = texture2D(worldPositionSampler, vUV);
+    vec4 localPosition = texture2D(localPositionSampler, vUV);
+    vec4 velocity = texture2D(velocitySampler, vUV);
+    // mixes colors
+    if (vUV.x <= 0.125) { // show only base texture
+        gl_FragColor = first;
+    }
+    else if (vUV.x <= 0.25) { // show only depth texture
+        gl_FragColor.rgb = depth.rgb / 100.0;
+        gl_FragColor.a = 1.0;
+    }
+    else if (vUV.x <= 0.375) {
+        gl_FragColor.rgb = velocity.rgb;
+        gl_FragColor.a = 1.0;
+    }
+    else if (vUV.x <= 0.5) {
+        gl_FragColor.rgb = worldPosition.rgb;
+        gl_FragColor.a = 1.0;
+    }
+    else if (vUV.x <= 0.625) {
+        gl_FragColor.rgb = localPosition.rgb;
+        gl_FragColor.a = 1.0;
+    }
+    else if (vUV.x <= 0.75) {
+        gl_FragColor.rgb = worldNormal.rgb;
+        gl_FragColor.a = 1.0;
+    }
+    else if (vUV.x <= 0.875) {
+        gl_FragColor.rgb = worldNormal.rgb;
+        gl_FragColor.a = 1.0;
+    }
+    else { // normal
+        gl_FragColor.rgb = normal.rgb * vec3(0.5, 0.5, 0.0) + vec3(0.5, 0.5, 0.0);
+        gl_FragColor.a = 1.0;
+    }
 }

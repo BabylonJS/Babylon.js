@@ -1,0 +1,14 @@
+﻿attribute vec3 position;
+attribute vec3 normal;
+
+varying vec3 vNormalizedPosition;
+
+uniform mat4 world;
+uniform mat4 invWorldScale;
+
+void main(void) {
+    // inverse scale this by world scale to put in 0-1 space.
+    gl_Position = invWorldScale * world * vec4(position, 1.);
+
+    vNormalizedPosition.xyz = gl_Position.xyz * 0.5 + 0.5;
+}
