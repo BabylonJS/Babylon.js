@@ -12,6 +12,7 @@ import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
 import type { VertexData } from "../mesh.vertexData";
+import type { FloatArray } from "../../types";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
@@ -22,8 +23,8 @@ Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  * Use the GreasedLineBuilder.CreateGreasedLine function to create an instance of this class.
  */
 export class GreasedLineMesh extends GreasedLineBaseMesh {
-    private _previousAndSide: number[] | Float32Array;
-    private _nextAndCounters: number[] | Float32Array;
+    private _previousAndSide: FloatArray;
+    private _nextAndCounters:FloatArray;
 
     private static _V_START = new Vector3();
     private static _V_END = new Vector3();
