@@ -120,7 +120,7 @@ const materialsTree = {
             },
             metallicRoughnessTexture: {
                 extensions: {
-                    KHR_texture_transform: getTextureTransformTree("metallicRoughnessTexture"),
+                    KHR_texture_transform: getTextureTransformTree("metallicTexture"),
                 },
             },
         },

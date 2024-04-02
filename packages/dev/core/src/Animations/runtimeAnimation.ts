@@ -241,10 +241,13 @@ export class RuntimeAnimation {
         const targetPropertyPath = this._animation.targetPropertyPath;
 
         if (targetPropertyPath.length > 1) {
-            let property = target[targetPropertyPath[0]];
-
-            for (let index = 1; index < targetPropertyPath.length - 1; index++) {
-                property = property[targetPropertyPath[index]];
+            let property = target;
+            for (let index = 0; index < targetPropertyPath.length - 1; index++) {
+                const name = targetPropertyPath[index];
+                property = property[name];
+                if (property === undefined) {
+                    throw new Error(`Invalid property (${name}) in property path (${targetPropertyPath.join(".")})`);
+                }
             }
 
             this._targetPath = targetPropertyPath[targetPropertyPath.length - 1];
@@ -252,6 +255,10 @@ export class RuntimeAnimation {
         } else {
             this._targetPath = targetPropertyPath[0];
             this._activeTargets[targetIndex] = target;
+        }
+
+        if (this._activeTargets[targetIndex][this._targetPath] === undefined) {
+            throw new Error(`Invalid property (${this._targetPath}) in property path (${targetPropertyPath.join(".")})`);
         }
     }
 
