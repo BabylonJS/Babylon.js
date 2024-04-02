@@ -3,7 +3,6 @@ import type { Scene } from "../scene";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
-import { IsDocumentAvailable } from "../Misc/domManagement";
 import { EngineStore } from "./engineStore";
 import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { IPipelineContext } from "./IPipelineContext";
