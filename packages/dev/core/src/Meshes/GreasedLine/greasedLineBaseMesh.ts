@@ -134,7 +134,8 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     protected _vertexPositions: FloatArray;
 
     protected _indices: number[] | Uint16Array | Uint32Array;
-    protected _uvs: number[] | Float32Array;
+    protected _uvs: FloatArray;
+
     protected _points: number[][];
     protected _offsets: number[];
     protected _colorPointers: number[];
