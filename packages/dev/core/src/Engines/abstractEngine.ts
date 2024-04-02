@@ -217,9 +217,11 @@ export abstract class AbstractEngine {
     public _videoTextureSupported: boolean;
 
     protected _compatibilityMode = true;
-    protected _pointerLockRequested: boolean;
+    /** @internal */
+    public _pointerLockRequested: boolean;
     private _loadingScreen: ILoadingScreen;
-    protected _renderingCanvas: Nullable<HTMLCanvasElement>; /** @internal */
+    protected _renderingCanvas: Nullable<HTMLCanvasElement>;
+    /** @internal */
     public _internalTexturesCache = new Array<InternalTexture>();
     private _activeRequests = new Array<IFileRequest>();
     protected _currentEffect: Nullable<Effect>;
@@ -249,6 +251,27 @@ export abstract class AbstractEngine {
 
     /** @internal */
     protected _isWebGPU: boolean = false;
+
+    // Focus
+    /** @internal */
+    public _onFocus: () => void;
+    /** @internal */
+    public _onBlur: () => void;
+    /** @internal */
+    public _onCanvasPointerOut: (event: PointerEvent) => void;
+    /** @internal */
+    public _onCanvasBlur: () => void;
+    /** @internal */
+    public _onCanvasFocus: () => void;
+    /** @internal */
+    public _onCanvasContextMenu: (evt: Event) => void;
+    /** @internal */
+    public _onFullscreenChange: () => void;
+
+    /**
+     * Turn this value on if you want to pause FPS computation when in background
+     */
+    public disablePerformanceMonitorInBackground = false;
 
     /**
      * Gets or sets a boolean indicating that vertex array object must be disabled even if they are supported
@@ -403,6 +426,10 @@ export abstract class AbstractEngine {
      * Observable event triggered each time the canvas loses focus
      */
     public onCanvasBlurObservable = new Observable<AbstractEngine>();
+    /**
+     * Observable event triggered each time the canvas gains focus
+     */
+    public onCanvasFocusObservable = new Observable<AbstractEngine>();
 
     /**
      * Event raised when a new scene is created
@@ -413,11 +440,6 @@ export abstract class AbstractEngine {
      * Observable event triggered each time the rendering canvas is resized
      */
     public onResizeObservable = new Observable<AbstractEngine>();
-
-    /**
-     * Observable event triggered each time the canvas gains focus
-     */
-    public onCanvasFocusObservable = new Observable<AbstractEngine>();
 
     /**
      * Observable event triggered each time the canvas receives pointerout event
@@ -672,7 +694,8 @@ export abstract class AbstractEngine {
     /** @internal */
     public _virtualScenes = new Array<Scene>();
 
-    protected _onPointerLockChange: () => void;
+    /** @internal */
+    public _onPointerLockChange: () => void;
 
     /** @internal */
     public _verifyPointerLock(): void {
@@ -843,7 +866,8 @@ export abstract class AbstractEngine {
         }
     }
 
-    protected _windowIsBackground = false;
+    /** @internal */
+    public _windowIsBackground = false;
 
     /**
      * Begin a new frame
@@ -3216,9 +3240,12 @@ export abstract class AbstractEngine {
     }
 
     // Deterministic lockstepMaxSteps
-    protected _deterministicLockstep: boolean = false;
-    protected _lockstepMaxSteps: number = 4;
-    protected _timeStep: number = 1 / 60;
+    /** @internal */
+    public _deterministicLockstep: boolean = false;
+    /** @internal */
+    public _lockstepMaxSteps: number = 4;
+    /** @internal */
+    public _timeStep: number = 1 / 60;
 
     /**
      * Gets a boolean indicating that the engine is running in deterministic lock step mode
@@ -3641,6 +3668,8 @@ export abstract class AbstractEngine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
+        this.hideLoadingUI();
+
         this._isDisposed = true;
         this.stopRenderLoop();
 
@@ -3659,6 +3688,22 @@ export abstract class AbstractEngine {
         // Clear observables
         if (this.onBeforeTextureInitObservable) {
             this.onBeforeTextureInitObservable.clear();
+        }
+
+        // Release postProcesses
+        while (this.postProcesses.length) {
+            this.postProcesses[0].dispose();
+        }
+
+        this.onNewSceneAddedObservable.clear();
+
+        // Release scenes
+        while (this.scenes.length) {
+            this.scenes[0].dispose();
+        }
+
+        while (this._virtualScenes.length) {
+            this._virtualScenes[0].dispose();
         }
 
         // Release effects
@@ -3686,6 +3731,19 @@ export abstract class AbstractEngine {
         if (index >= 0) {
             EngineStore.Instances.splice(index, 1);
         }
+
+        // no more engines left in the engine store? Notify!
+        if (!EngineStore.Instances.length) {
+            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+        }
+
+        // Observables
+        this.onResizeObservable.clear();
+        this.onCanvasBlurObservable.clear();
+        this.onCanvasFocusObservable.clear();
+        this.onCanvasPointerOutObservable.clear();
+        this.onBeginFrameObservable.clear();
+        this.onEndFrameObservable.clear();
     }
 
     /**

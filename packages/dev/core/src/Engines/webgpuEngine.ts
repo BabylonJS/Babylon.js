@@ -70,6 +70,8 @@ import type { AbstractEngineOptions } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
+import { EngineStore } from "./engineStore";
+import { _CommonDispose, _CommonInit } from "./engine.common";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -616,11 +618,6 @@ export class WebGPUEngine extends AbstractEngine {
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
-
-        // Create Audio Engine if needed.
-        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
-        }
     }
 
     //------------------------------------------------------------------------------
@@ -1035,6 +1032,16 @@ export class WebGPUEngine extends AbstractEngine {
             colorAttachments: mainColorAttachments,
             depthStencilAttachment: mainDepthAttachment,
         };
+    }
+
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement) {
+        super._sharedInit(canvas);
+
+        _CommonInit(this, canvas, this._creationOptions);
     }
 
     private _configureContext(): void {
@@ -3745,6 +3752,9 @@ export class WebGPUEngine extends AbstractEngine {
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
         this._device.destroy();
+
+        _CommonDispose(this, this._renderingCanvas);
+
         super.dispose();
     }
 

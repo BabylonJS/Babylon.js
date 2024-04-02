@@ -27,6 +27,7 @@ import "./Extensions/engine.dynamicBuffer";
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
+import { _CommonDispose, _CommonInit } from "./engine.common";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -317,11 +318,6 @@ export class Engine extends ThinEngine {
         this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
     }
 
-    /**
-     * Turn this value on if you want to pause FPS computation when in background
-     */
-    public disablePerformanceMonitorInBackground = false;
-
     private _performanceMonitor = new PerformanceMonitor();
     /**
      * Gets the performance monitor attached to this engine
@@ -330,16 +326,6 @@ export class Engine extends ThinEngine {
     public get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
     }
-
-    // Focus
-    private _onFocus: () => void;
-    private _onBlur: () => void;
-    private _onCanvasPointerOut: (event: PointerEvent) => void;
-    private _onCanvasBlur: () => void;
-    private _onCanvasFocus: () => void;
-    private _onCanvasContextMenu: (evt: Event) => void;
-
-    private _onFullscreenChange: () => void;
 
     // Events
 
@@ -386,90 +372,7 @@ export class Engine extends ThinEngine {
     protected _sharedInit(canvas: HTMLCanvasElement) {
         super._sharedInit(canvas);
 
-        this._onCanvasFocus = () => {
-            this.onCanvasFocusObservable.notifyObservers(this);
-        };
-
-        this._onCanvasBlur = () => {
-            this.onCanvasBlurObservable.notifyObservers(this);
-        };
-
-        this._onCanvasContextMenu = (evt: Event) => {
-            if (this.disableContextMenu) {
-                evt.preventDefault();
-            }
-        };
-
-        canvas.addEventListener("focus", this._onCanvasFocus);
-        canvas.addEventListener("blur", this._onCanvasBlur);
-        canvas.addEventListener("contextmenu", this._onCanvasContextMenu);
-
-        this._onBlur = () => {
-            if (this.disablePerformanceMonitorInBackground) {
-                this._performanceMonitor.disable();
-            }
-            this._windowIsBackground = true;
-        };
-
-        this._onFocus = () => {
-            if (this.disablePerformanceMonitorInBackground) {
-                this._performanceMonitor.enable();
-            }
-            this._windowIsBackground = false;
-        };
-
-        this._onCanvasPointerOut = (ev) => {
-            // Check that the element at the point of the pointer out isn't the canvas and if it isn't, notify observers
-            // Note: This is a workaround for a bug with Safari
-            if (document.elementFromPoint(ev.clientX, ev.clientY) !== canvas) {
-                this.onCanvasPointerOutObservable.notifyObservers(ev);
-            }
-        };
-
-        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.addEventListener === "function") {
-            hostWindow.addEventListener("blur", this._onBlur);
-            hostWindow.addEventListener("focus", this._onFocus);
-        }
-
-        canvas.addEventListener("pointerout", this._onCanvasPointerOut);
-
-        if (!this._creationOptions.doNotHandleTouchAction) {
-            this._disableTouchAction();
-        }
-
-        // Create Audio Engine if needed.
-        if (!Engine.audioEngine && this._creationOptions.audioEngine && Engine.AudioEngineFactory) {
-            Engine.audioEngine = Engine.AudioEngineFactory(this.getRenderingCanvas(), this.getAudioContext(), this.getAudioDestination());
-        }
-        if (IsDocumentAvailable()) {
-            // Fullscreen
-            this._onFullscreenChange = () => {
-                this.isFullscreen = !!document.fullscreenElement;
-
-                // Pointer lock
-                if (this.isFullscreen && this._pointerLockRequested && canvas) {
-                    Engine._RequestPointerlock(canvas);
-                }
-            };
-
-            document.addEventListener("fullscreenchange", this._onFullscreenChange, false);
-            document.addEventListener("webkitfullscreenchange", this._onFullscreenChange, false);
-
-            // Pointer lock
-            this._onPointerLockChange = () => {
-                this.isPointerLock = document.pointerLockElement === canvas;
-            };
-
-            document.addEventListener("pointerlockchange", this._onPointerLockChange, false);
-            document.addEventListener("webkitpointerlockchange", this._onPointerLockChange, false);
-        }
-
-        this.enableOfflineSupport = Engine.OfflineProviderFactory !== undefined;
-
-        this._deterministicLockstep = !!this._creationOptions.deterministicLockstep;
-        this._lockstepMaxSteps = this._creationOptions.lockstepMaxSteps || 0;
-        this._timeStep = this._creationOptions.timeStep || 1 / 60;
+        _CommonInit(this, canvas, this._creationOptions);
     }
 
     public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
@@ -1170,83 +1073,13 @@ export class Engine extends ThinEngine {
     }
 
     public dispose(): void {
-        this.hideLoadingUI();
-
-        this.onNewSceneAddedObservable.clear();
-
-        // Release postProcesses
-        while (this.postProcesses.length) {
-            this.postProcesses[0].dispose();
-        }
-
         // Rescale PP
         if (this._rescalePostProcess) {
             this._rescalePostProcess.dispose();
         }
 
-        // Release scenes
-        while (this.scenes.length) {
-            this.scenes[0].dispose();
-        }
-
-        while (this._virtualScenes.length) {
-            this._virtualScenes[0].dispose();
-        }
-
-        // Release audio engine
-        if (EngineStore.Instances.length === 1 && Engine.audioEngine) {
-            Engine.audioEngine.dispose();
-            Engine.audioEngine = null;
-        }
-
-        // Events
-        const hostWindow = this.getHostWindow(); // it calls IsWindowObjectExist()
-        if (hostWindow && typeof hostWindow.removeEventListener === "function") {
-            hostWindow.removeEventListener("blur", this._onBlur);
-            hostWindow.removeEventListener("focus", this._onFocus);
-        }
-
-        if (this._renderingCanvas) {
-            this._renderingCanvas.removeEventListener("focus", this._onCanvasFocus);
-            this._renderingCanvas.removeEventListener("blur", this._onCanvasBlur);
-            this._renderingCanvas.removeEventListener("pointerout", this._onCanvasPointerOut);
-            this._renderingCanvas.removeEventListener("contextmenu", this._onCanvasContextMenu);
-        }
-
-        if (IsDocumentAvailable()) {
-            document.removeEventListener("fullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("mozfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("webkitfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("msfullscreenchange", this._onFullscreenChange);
-            document.removeEventListener("pointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mspointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("mozpointerlockchange", this._onPointerLockChange);
-            document.removeEventListener("webkitpointerlockchange", this._onPointerLockChange);
-        }
+        _CommonDispose(this, this._renderingCanvas);
 
         super.dispose();
-
-        // no more engines left in the engine store? Notify!
-        if (!Engine.Instances.length) {
-            EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
-        }
-
-        // Observables
-        this.onResizeObservable.clear();
-        this.onCanvasBlurObservable.clear();
-        this.onCanvasFocusObservable.clear();
-        this.onCanvasPointerOutObservable.clear();
-        this.onBeginFrameObservable.clear();
-        this.onEndFrameObservable.clear();
-    }
-
-    private _disableTouchAction(): void {
-        if (!this._renderingCanvas || !this._renderingCanvas.setAttribute) {
-            return;
-        }
-
-        this._renderingCanvas.setAttribute("touch-action", "none");
-        this._renderingCanvas.style.touchAction = "none";
-        (this._renderingCanvas.style as any).webkitTapHighlightColor = "transparent";
     }
 }
