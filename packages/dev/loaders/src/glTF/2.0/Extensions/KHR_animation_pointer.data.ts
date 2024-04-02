@@ -148,7 +148,7 @@ const materialsTree = {
                 anisotropyRotation: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "anisotropy.angle", getFloat, () => 1)],
                 anisotropyTexture: {
                     extensions: {
-                        KHR_texture_transform: getTextureTransformTree("emissiveTexture"),
+                        KHR_texture_transform: getTextureTransformTree("anisotropyTexture"),
                     },
                 },
             },
