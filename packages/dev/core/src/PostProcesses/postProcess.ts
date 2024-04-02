@@ -14,7 +14,8 @@ import type { Color4 } from "../Maths/math.color";
 
 import "../Engines/Extensions/engine.renderTarget";
 import type { NodeMaterial } from "../Materials/Node/nodeMaterial";
-import { serialize, serializeAsColor4, SerializationHelper } from "../Misc/decorators";
+import { serialize, serializeAsColor4 } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import type { AbstractScene } from "../abstractScene";
@@ -147,7 +148,6 @@ export class PostProcess {
      * Registers a shader code processing with a post process name.
      * @param postProcessName name of the post process. Use null for the fallback shader code processing. This is the shader code processing that will be used in case no specific shader code processing has been associated to a post process name
      * @param customShaderCodeProcessing shader code processing to associate to the post process name
-     * @returns
      */
     public static RegisterShaderCodeProcessing(postProcessName: Nullable<string>, customShaderCodeProcessing?: PostProcessCustomShaderCodeProcessing) {
         if (!customShaderCodeProcessing) {

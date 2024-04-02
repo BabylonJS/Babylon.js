@@ -8,11 +8,11 @@ import { Constants } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import { DrawWrapper } from "../Materials/drawWrapper";
-import { MaterialHelper } from "../Materials/materialHelper";
 
 import "../Shaders/outline.fragment";
 import "../Shaders/outline.vertex";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "core/Materials/clipPlaneMaterialHelper";
+import { BindMorphTargetParameters, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
 declare module "../scene" {
     export interface Scene {
@@ -216,7 +216,7 @@ export class OutlineRenderer implements ISceneComponent {
         }
 
         // Morph targets
-        MaterialHelper.BindMorphTargetParameters(renderingMesh, effect);
+        BindMorphTargetParameters(renderingMesh, effect);
 
         if (!hardwareInstancedRendering) {
             renderingMesh._bind(subMesh, effect, material.fillMode);
@@ -305,9 +305,8 @@ export class OutlineRenderer implements ISceneComponent {
         const morphTargetManager = (mesh as Mesh).morphTargetManager;
         let numMorphInfluencers = 0;
         if (morphTargetManager) {
-            if (morphTargetManager.numInfluencers > 0) {
-                numMorphInfluencers = morphTargetManager.numInfluencers;
-
+            numMorphInfluencers = morphTargetManager.numMaxInfluencers || morphTargetManager.numInfluencers;
+            if (numMorphInfluencers > 0) {
                 defines.push("#define MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + numMorphInfluencers);
 
@@ -315,14 +314,14 @@ export class OutlineRenderer implements ISceneComponent {
                     defines.push("#define MORPHTARGETS_TEXTURE");
                 }
 
-                MaterialHelper.PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
+                PrepareAttributesForMorphTargetsInfluencers(attribs, mesh, numMorphInfluencers);
             }
         }
 
         // Instances
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs);
+            PushAttributesForInstances(attribs);
             if (subMesh.getRenderingMesh().hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
             }
@@ -343,6 +342,7 @@ export class OutlineRenderer implements ISceneComponent {
                 "color",
                 "logarithmicDepthConstant",
                 "morphTargetInfluences",
+                "morphTargetCount",
                 "morphTargetTextureInfo",
                 "morphTargetTextureIndices",
             ];

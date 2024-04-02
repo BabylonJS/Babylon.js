@@ -298,7 +298,8 @@ export class Context {
      * If any current active animation has a key at the received frameNumber,
      * return the index of the animation in the active animation array, and
      * the index of the frame on the animation.
-     * @param frameNumber
+     * @param frameNumber the frame number to look for
+     * @returns null if no key was found, or an object with the animation index and key index
      */
     public getKeyAtAnyFrameIndex(frameNumber: number) {
         if (!this.animations || !this.animations.length || !this.activeAnimations || !this.activeAnimations.length) {
@@ -320,6 +321,9 @@ export class Context {
         return null;
     }
 
+    /**
+     * @returns true if any active animation has a quaternion animation
+     */
     public hasActiveQuaternionAnimationKeyPoints() {
         const activeAnimData = this.activeKeyPoints?.map((keyPointComponent) => keyPointComponent.props.curve.animation.dataType);
         const quaternionAnimData = activeAnimData?.filter((type) => type === Animation.ANIMATIONTYPE_QUATERNION);

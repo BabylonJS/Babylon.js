@@ -24,6 +24,7 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
 
     constructor() {}
 
+    /** Dispose */
     public dispose() {}
 
     /** @internal */
@@ -39,6 +40,13 @@ export class KHR_materials_ior implements IGLTFExporterExtensionV2 {
         return mat.indexOfRefraction != undefined && mat.indexOfRefraction != 1.5; // 1.5 is normative default value.
     }
 
+    /**
+     * After exporting a material
+     * @param context GLTF context of the material
+     * @param node exported GLTF node
+     * @param babylonMaterial corresponding babylon material
+     * @returns promise, resolves with the material
+     */
     public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
         return new Promise((resolve) => {
             if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {

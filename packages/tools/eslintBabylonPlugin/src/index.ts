@@ -167,7 +167,7 @@ const plugin: IPlugin = {
                 const tsdocConfiguration: TSDocConfiguration = new TSDocConfiguration();
 
                 try {
-                    const tsdocConfigFile: TSDocConfigFile = ConfigCache.getForSourceFile(sourceFilePath);
+                    const tsdocConfigFile: TSDocConfigFile = ConfigCache.GetForSourceFile(sourceFilePath);
                     if (!tsdocConfigFile.fileNotFound) {
                         if (tsdocConfigFile.hasErrors) {
                             context.report({

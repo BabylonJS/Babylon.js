@@ -17,14 +17,15 @@ export interface INativeEngine {
     dispose(): void;
 
     requestAnimationFrame(callback: () => void): void;
+    setDeviceLostCallback(callback: () => void): void;
 
     createVertexArray(): NativeData;
 
-    createIndexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, is32Bits: boolean, dynamic: boolean): NativeData;
+    createIndexBuffer(dataBuffer: ArrayBuffer, dataByteOffset: number, dataByteLength: number, is32Bits: boolean, dynamic: boolean): NativeData;
     recordIndexBuffer(vertexArray: NativeData, indexBuffer: NativeData): void;
-    updateDynamicIndexBuffer(buffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number, startIndex: number): void;
+    updateDynamicIndexBuffer(indexBuffer: NativeData, data: ArrayBuffer, dataByteOffset: number, dataByteLength: number, startIndex: number): void;
 
-    createVertexBuffer(bytes: ArrayBuffer, byteOffset: number, byteLength: number, dynamic: boolean): NativeData;
+    createVertexBuffer(dataBuffer: ArrayBuffer, dataByteOffset: number, dataByteLength: number, dynamic: boolean): NativeData;
     recordVertexBuffer(
         vertexArray: NativeData,
         vertexBuffer: NativeData,
@@ -36,7 +37,7 @@ export interface INativeEngine {
         normalized: boolean,
         instanceDivisor: number
     ): void;
-    updateDynamicVertexBuffer(vertexBuffer: NativeData, bytes: ArrayBuffer, byteOffset: number, byteLength: number): void;
+    updateDynamicVertexBuffer(vertexBuffer: NativeData, dataBuffer: ArrayBuffer, dataByteOffset: number, dataByteLength: number, vertexByteOffset?: number): void;
 
     createProgram(vertexShader: string, fragmentShader: string): NativeProgram;
     createProgramAsync(vertexShader: string, fragmentShader: string, onSuccess: () => void, onError: (error: Error) => void): NativeProgram;

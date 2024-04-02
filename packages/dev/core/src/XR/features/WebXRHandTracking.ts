@@ -10,6 +10,7 @@ import type { Nullable } from "../../types";
 import { PhysicsImpostor } from "../../Physics/v1/physicsImpostor";
 
 import type { IDisposable, Scene } from "../../scene";
+import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { InstancedMesh } from "../../Meshes/instancedMesh";
 import type { ISceneLoaderAsyncResult } from "../../Loading/sceneLoader";
@@ -23,6 +24,7 @@ import { TransformNode } from "../../Meshes/transformNode";
 import { Axis } from "../../Maths/math.axis";
 import { EngineStore } from "../../Engines/engineStore";
 import { Constants } from "../../Engines/constants";
+import type { WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
 
 declare const XRHand: XRHand;
 
@@ -112,6 +114,12 @@ export interface IWebXRHandTrackingOptions {
             fingerColor?: Color3;
             tipFresnel?: Color3;
         };
+
+        /**
+         * Define whether or not the hand meshes should be disposed on just invisible when the session ends.
+         * Not setting, or setting to false, will maintain the hand meshes in the scene after the session ends, which will allow q quicker re-entry into XR.
+         */
+        disposeOnSessionEnd?: boolean;
     };
 }
 
@@ -363,25 +371,12 @@ export class WebXRHand implements IDisposable {
         // hide the motion controller, if available/loaded
         if (this.xrController.motionController) {
             if (this.xrController.motionController.rootMesh) {
-                this.xrController.motionController.rootMesh.setEnabled(false);
-            } else {
-                this.xrController.motionController.onModelLoadedObservable.add((controller) => {
-                    if (controller.rootMesh) {
-                        controller.rootMesh.setEnabled(false);
-                    }
-                });
+                this.xrController.motionController.rootMesh.dispose(false, true);
             }
         }
 
         this.xrController.onMotionControllerInitObservable.add((motionController) => {
-            motionController.onModelLoadedObservable.add((controller) => {
-                if (controller.rootMesh) {
-                    controller.rootMesh.setEnabled(false);
-                }
-            });
-            if (motionController.rootMesh) {
-                motionController.rootMesh.setEnabled(false);
-            }
+            motionController._doNotLoadControllerMesh = true;
         });
     }
 
@@ -389,13 +384,16 @@ export class WebXRHand implements IDisposable {
      * Sets the current hand mesh to render for the WebXRHand.
      * @param handMesh The rigged hand mesh that will be tracked to the user's hand.
      * @param rigMapping The mapping from XRHandJoint to bone names to use with the mesh.
+     * @param _xrSessionManager The XRSessionManager used to initialize the hand mesh.
      */
-    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>) {
+    public setHandMesh(handMesh: AbstractMesh, rigMapping: Nullable<XRHandMeshRigMapping>, _xrSessionManager?: WebXRSessionManager) {
         this._handMesh = handMesh;
 
         // Avoid any strange frustum culling. We will manually control visibility via attach and detach.
         handMesh.alwaysSelectAsActiveMesh = true;
-        handMesh.getChildMeshes().forEach((mesh) => (mesh.alwaysSelectAsActiveMesh = true));
+        handMesh.getChildMeshes().forEach((mesh) => {
+            mesh.alwaysSelectAsActiveMesh = true;
+        });
 
         // Link the bones in the hand mesh to the transform nodes that will be bound to the WebXR tracked joints.
         if (this._handMesh.skeleton) {
@@ -481,10 +479,16 @@ export class WebXRHand implements IDisposable {
 
     /**
      * Dispose this Hand object
+     * @param disposeMeshes Should the meshes be disposed as well
      */
-    public dispose() {
+    public dispose(disposeMeshes = false) {
         if (this._handMesh) {
-            this._handMesh.isVisible = false;
+            if (disposeMeshes) {
+                this._handMesh.skeleton?.dispose();
+                this._handMesh.dispose(false, true);
+            } else {
+                this._handMesh.isVisible = false;
+            }
         }
     }
 }
@@ -554,7 +558,11 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         return { left: meshes.left, right: meshes.right };
     }
 
-    private static _GenerateDefaultHandMeshesAsync(scene: Scene, options?: IWebXRHandTrackingOptions): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
+    private static _GenerateDefaultHandMeshesAsync(
+        scene: Scene,
+        xrSessionManager: WebXRSessionManager,
+        options?: IWebXRHandTrackingOptions
+    ): Promise<{ left: AbstractMesh; right: AbstractMesh }> {
         // eslint-disable-next-line no-async-promise-executor
         return new Promise(async (resolve) => {
             const riggedMeshes: { [handedness: string]: AbstractMesh } = {};
@@ -577,8 +585,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             WebXRHandTracking._RightHandGLB = handGLBs[0];
             WebXRHandTracking._LeftHandGLB = handGLBs[1];
 
-            const handShader = new NodeMaterial("handShader", scene, { emitComments: false });
-            await handShader.loadAsync(WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL);
+            const handShader = await NodeMaterial.ParseFromFileAsync("handShader", WebXRHandTracking.DEFAULT_HAND_MODEL_SHADER_URL, scene);
 
             // depth prepass and alpha mode
             handShader.needDepthPrePass = true;
@@ -608,7 +615,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             handNodes.fresnel.value = handColors.fresnel;
             handNodes.fingerColor.value = handColors.fingerColor;
             handNodes.tipFresnel.value = handColors.tipFresnel;
-
+            const isMultiview = (xrSessionManager._getBaseLayerWrapper() as WebXRCompositionLayerWrapper)?.isMultiview;
             ["left", "right"].forEach((handedness) => {
                 const handGLB = handedness == "left" ? WebXRHandTracking._LeftHandGLB : WebXRHandTracking._RightHandGLB;
                 if (!handGLB) {
@@ -617,7 +624,10 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 }
                 const handMesh = handGLB.meshes[1];
                 handMesh._internalAbstractMeshDataInfo._computeBonesUsingShaders = true;
-                handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                // if in multiview do not use the material
+                if (!isMultiview) {
+                    handMesh.material = handShader.clone(`${handedness}HandShaderClone`, true);
+                }
                 handMesh.isVisible = false;
 
                 riggedMeshes[handedness] = handMesh;
@@ -636,6 +646,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Generates a mapping from XRHandJoint to bone name for the default hand mesh.
      * @param handedness The handedness being mapped for.
+     * @returns A mapping from XRHandJoint to bone name.
      */
     private static _GenerateDefaultHandMeshRigMapping(handedness: XRHandedness): XRHandMeshRigMapping {
         const H = handedness == "right" ? "R" : "L";
@@ -683,6 +694,8 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         rigMappings: Nullable<{ left: XRHandMeshRigMapping; right: XRHandMeshRigMapping }>;
     } = { jointMeshes: null, handMeshes: null, rigMappings: null };
 
+    private _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>> = null;
+
     /**
      * This observable will notify registered observers when a new hand object was added and initialized
      */
@@ -695,6 +708,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Check if the needed objects are defined.
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
+     * @returns true if the needed objects for this feature are defined
      */
     public isCompatible(): boolean {
         return typeof XRHand !== "undefined";
@@ -791,7 +805,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
 
         // If they didn't supply custom meshes and are not disabling the default meshes...
         if (!this.options.handMeshes?.customMeshes && !this.options.handMeshes?.disableDefaultMeshes) {
-            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this.options).then((defaultHandMeshes) => {
+            WebXRHandTracking._GenerateDefaultHandMeshesAsync(EngineStore.LastCreatedScene!, this._xrSessionManager, this.options).then((defaultHandMeshes) => {
                 this._handResources.handMeshes = defaultHandMeshes;
                 this._handResources.rigMappings = {
                     left: WebXRHandTracking._GenerateDefaultHandMeshRigMapping("left"),
@@ -799,8 +813,16 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 };
 
                 // Apply meshes to existing hands if already tracking.
-                this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left);
-                this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right);
+                this._trackingHands.left?.setHandMesh(this._handResources.handMeshes.left, this._handResources.rigMappings.left, this._xrSessionManager);
+                this._trackingHands.right?.setHandMesh(this._handResources.handMeshes.right, this._handResources.rigMappings.right, this._xrSessionManager);
+                this._handResources.handMeshes.left.scaling.setAll(this._xrSessionManager.worldScalingFactor);
+                this._handResources.handMeshes.right.scaling.setAll(this._xrSessionManager.worldScalingFactor);
+            });
+            this._worldScaleObserver = this._xrSessionManager.onWorldScaleFactorChangedObservable.add((scalingFactors) => {
+                if (this._handResources.handMeshes) {
+                    this._handResources.handMeshes.left.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
+                    this._handResources.handMeshes.right.scaling.scaleInPlace(scalingFactors.newScaleFactor / scalingFactors.previousScaleFactor);
+                }
             });
         }
 
@@ -838,7 +860,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
         this.onHandAddedObservable.notifyObservers(webxrHand);
     };
 
-    private _detachHandById(controllerId: string) {
+    private _detachHandById(controllerId: string, disposeMesh?: boolean) {
         const hand = this.getHandByControllerId(controllerId);
         if (hand) {
             const handedness = hand.xrController.inputSource.handedness == "left" ? "left" : "right";
@@ -846,7 +868,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
                 this._trackingHands[handedness] = null;
             }
             this.onHandRemovedObservable.notifyObservers(hand);
-            hand.dispose();
+            hand.dispose(disposeMesh);
             delete this._attachedHands[controllerId];
         }
     }
@@ -866,7 +888,18 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
             return false;
         }
 
-        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId));
+        Object.keys(this._attachedHands).forEach((uniqueId) => this._detachHandById(uniqueId, this.options.handMeshes?.disposeOnSessionEnd));
+        if (this.options.handMeshes?.disposeOnSessionEnd) {
+            if (this._handResources.jointMeshes) {
+                this._handResources.jointMeshes.left.forEach((trackedMesh) => trackedMesh.dispose());
+                this._handResources.jointMeshes.right.forEach((trackedMesh) => trackedMesh.dispose());
+            }
+        }
+
+        // remove world scale observer
+        if (this._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(this._worldScaleObserver);
+        }
 
         return true;
     }

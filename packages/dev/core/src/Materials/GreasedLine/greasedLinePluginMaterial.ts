@@ -205,7 +205,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     /**
      * Get the shader textures
-     * @param activeTextures
+     * @param activeTextures array which will be filled with the textures
      */
     public getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this.colorsTexture) {
@@ -504,7 +504,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param colors color table RGBA
      * @param lazy if lazy, the colors are not updated
      * @param forceNewTexture force creation of a new texture
-     * @returns
      */
     public setColors(colors: Nullable<Color3[]>, lazy = false, forceNewTexture = false): void {
         const origColorsCount = this._colors?.length ?? 0;
@@ -589,6 +588,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     /**
      * Sets the color of the line. If set the whole line will be mixed with this color according to the colorMode option.
      * @param value color
+     * @param doNotMarkDirty if true, the material will not be marked as dirty
      */
     public setColor(value: Nullable<Color3>, doNotMarkDirty = false) {
         if ((this._color === null && value !== null) || (this._color !== null && value === null)) {

@@ -81,6 +81,7 @@ declare module "recast-detour" {
     moveAlong(position: Vec3, destination: Vec3): Vec3;
     getNavMesh(): dtNavMesh;
     computePath(start: Vec3, end: Vec3): NavPath;
+    computePathSmooth(start: Vec3, end: Vec3): NavPath;
     setDefaultQueryExtent(extent: Vec3): void;
     getDefaultQueryExtent(): Vec3;
     addCylinderObstacle(

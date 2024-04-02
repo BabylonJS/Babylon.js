@@ -449,7 +449,7 @@ export class CombineAction extends Action {
 
     /**
      * Execute the action and executes all the aggregated actions.
-     * @param evt
+     * @param evt event to execute
      */
     public execute(evt: ActionEvent): void {
         for (const action of this.children) {
@@ -505,7 +505,7 @@ export class ExecuteCodeAction extends Action {
 
     /**
      * Execute the action and run the attached code.
-     * @param evt
+     * @param evt event to execute
      */
     public execute(evt: ActionEvent): void {
         this.func(evt);

@@ -1,3 +1,4 @@
+import type { DeepImmutable, FloatArray } from "../../types";
 import type { INative, INativeDataStream } from "./nativeInterfaces";
 
 declare const _native: INative;
@@ -32,21 +33,37 @@ export class NativeDataStream {
         });
     }
 
+    /**
+     * Writes a uint32 to the stream
+     * @param value the value to write
+     */
     public writeUint32(value: number): void {
         this._flushIfNecessary(1);
         this._uint32s[this._position++] = value;
     }
 
+    /**
+     * Writes an int32 to the stream
+     * @param value the value to write
+     */
     public writeInt32(value: number): void {
         this._flushIfNecessary(1);
         this._int32s[this._position++] = value;
     }
 
+    /**
+     * Writes a float32 to the stream
+     * @param value the value to write
+     */
     public writeFloat32(value: number): void {
         this._flushIfNecessary(1);
         this._float32s[this._position++] = value;
     }
 
+    /**
+     * Writes a uint32 array to the stream
+     * @param values the values to write
+     */
     public writeUint32Array(values: Uint32Array): void {
         this._flushIfNecessary(1 + values.length);
         this._uint32s[this._position++] = values.length;
@@ -54,6 +71,10 @@ export class NativeDataStream {
         this._position += values.length;
     }
 
+    /**
+     * Writes an int32 array to the stream
+     * @param values the values to write
+     */
     public writeInt32Array(values: Int32Array): void {
         this._flushIfNecessary(1 + values.length);
         this._uint32s[this._position++] = values.length;
@@ -61,19 +82,31 @@ export class NativeDataStream {
         this._position += values.length;
     }
 
-    public writeFloat32Array(values: Float32Array): void {
+    /**
+     * Writes a float32 array to the stream
+     * @param values the values to write
+     */
+    public writeFloat32Array(values: DeepImmutable<FloatArray>): void {
         this._flushIfNecessary(1 + values.length);
         this._uint32s[this._position++] = values.length;
         this._float32s.set(values, this._position);
         this._position += values.length;
     }
 
+    /**
+     * Writes native data to the stream
+     * @param handle the handle to the native data
+     */
     public writeNativeData(handle: NativeData) {
         this._flushIfNecessary(handle.length);
         this._uint32s.set(handle, this._position);
         this._position += handle.length;
     }
 
+    /**
+     * Writes a boolean to the stream
+     * @param value the value to write
+     */
     public writeBoolean(value: boolean) {
         this.writeUint32(value ? 1 : 0);
     }

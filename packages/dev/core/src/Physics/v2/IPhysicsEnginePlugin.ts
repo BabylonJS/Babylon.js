@@ -218,6 +218,26 @@ export interface PhysicsShapeParameters {
      * Use children hierarchy
      */
     includeChildMeshes?: boolean;
+    /**
+     * The size of the heightfield in the X axis
+     */
+    heightFieldSizeX?: number;
+    /**
+     * The size of the heightfield in the Z axis
+     */
+    heightFieldSizeZ?: number;
+    /**
+     * The number of samples along the X axis
+     */
+    numHeightFieldSamplesX?: number;
+    /**
+     * The number of samples along the Z axis
+     */
+    numHeightFieldSamplesZ?: number;
+    /**
+     * The data for the heightfield
+     */
+    heightFieldData?: Float32Array;
 }
 
 /**
@@ -327,6 +347,15 @@ export enum PhysicsMotionType {
 }
 
 /**
+ * Controls the body sleep mode.
+ */
+export enum PhysicsActivationControl {
+    SIMULATION_CONTROLLED,
+    ALWAYS_ACTIVE,
+    ALWAYS_INACTIVE,
+}
+
+/**
  * Represents a pair of bodies connected by a constraint.
  */
 export type ConstrainedBodyPair = { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number };
@@ -406,6 +435,7 @@ export interface IPhysicsEnginePluginV2 {
     setShapeFilterCollideMask(shape: PhysicsShape, collideMask: number): void;
     getShapeFilterCollideMask(shape: PhysicsShape): number;
     setMaterial(shape: PhysicsShape, material: PhysicsMaterial): void;
+    getMaterial(shape: PhysicsShape): PhysicsMaterial;
     setDensity(shape: PhysicsShape, density: number): void;
     getDensity(shape: PhysicsShape): number;
     addChild(shape: PhysicsShape, newChild: PhysicsShape, translation?: Vector3, rotation?: Quaternion, scale?: Vector3): void;

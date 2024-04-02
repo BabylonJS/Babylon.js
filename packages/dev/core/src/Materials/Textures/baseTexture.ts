@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper, serializeAsTexture } from "../../Misc/decorators";
+import { serialize, serializeAsTexture } from "../../Misc/decorators";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
@@ -16,6 +16,7 @@ import { ThinTexture } from "./thinTexture";
 import type { AbstractScene } from "../../abstractScene";
 
 import type { Animation } from "../../Animations/animation";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 /**
  * Base class of all the textures in babylon.
@@ -228,6 +229,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.isCube;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set isCube(value: boolean) {
         if (!this._texture) {
             this._isCube = value;
@@ -248,6 +250,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.is3D;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is3D(value: boolean) {
         if (!this._texture) {
             return;
@@ -268,6 +271,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
         return this._texture.is2DArray;
     }
 
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     protected set is2DArray(value: boolean) {
         if (!this._texture) {
             return;
@@ -660,7 +664,7 @@ export class BaseTexture extends ThinTexture implements IAnimatable {
     }
 
     /** @internal */
-    public _rebuild(): void {}
+    public _rebuild(_fromContextLost = false): void {}
 
     /**
      * Clones the texture.

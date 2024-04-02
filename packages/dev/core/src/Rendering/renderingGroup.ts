@@ -110,7 +110,6 @@ export class RenderingGroup {
      * @param renderSprites
      * @param renderParticles
      * @param activeMeshes
-     * @returns true if rendered some submeshes.
      */
     public render(
         customRenderFunction: Nullable<
@@ -202,7 +201,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderOpaqueSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._opaqueSortCompareFn, this._scene.activeCamera, false);
     }
 
     /**
@@ -210,7 +209,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderAlphaTestSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
+        RenderingGroup._RenderSorted(subMeshes, this._alphaTestSortCompareFn, this._scene.activeCamera, false);
     }
 
     /**
@@ -218,7 +217,7 @@ export class RenderingGroup {
      * @param subMeshes The submeshes to render
      */
     private _renderTransparentSorted(subMeshes: SmartArray<SubMesh>): void {
-        return RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
+        RenderingGroup._RenderSorted(subMeshes, this._transparentSortCompareFn, this._scene.activeCamera, true);
     }
 
     /**

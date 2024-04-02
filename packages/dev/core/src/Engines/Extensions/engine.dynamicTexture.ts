@@ -1,6 +1,6 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import type { Nullable } from "../../types";
+import type { ImageSource, Nullable } from "../../types";
 import type { ICanvas } from "../ICanvas";
 
 declare module "../../Engines/thinEngine" {
@@ -27,7 +27,7 @@ declare module "../../Engines/thinEngine" {
          */
         updateDynamicTexture(
             texture: Nullable<InternalTexture>,
-            source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas | ICanvas,
+            source: ImageSource | ICanvas,
             invertY?: boolean,
             premulAlpha?: boolean,
             format?: number,
@@ -63,7 +63,7 @@ ThinEngine.prototype.createDynamicTexture = function (width: number, height: num
 
 ThinEngine.prototype.updateDynamicTexture = function (
     texture: Nullable<InternalTexture>,
-    source: ImageBitmap | ImageData | HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas,
+    source: ImageSource,
     invertY?: boolean,
     premulAlpha: boolean = false,
     format?: number,

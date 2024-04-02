@@ -2,7 +2,7 @@ import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 /**
@@ -44,6 +44,9 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
             this.timeRemaining.setValue(remaining, context);
         }
     }
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGThrottleBlock";
     }

@@ -4,7 +4,7 @@ import type { Nullable, DataArray, IndicesArray, Immutable, FloatArray } from ".
 import { Color4 } from "../Maths/math";
 import { Engine } from "../Engines/engine";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import type { IEffectCreationOptions } from "../Materials/effect";
+import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
 import { Effect } from "../Materials/effect";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import { Constants } from "./constants";
@@ -23,6 +23,7 @@ import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptio
 import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingContext";
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
+import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
 import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
@@ -63,6 +64,7 @@ import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
+import type { Scene } from "core/scene";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -178,8 +180,13 @@ export class WebGPUEngine extends Engine {
         wasmPath: `${Tools._DefaultCdnUrl}/glslang/glslang.wasm`,
     };
 
+    private static _InstanceId = 0;
+
     /** true to enable using TintWASM to convert Spir-V to WGSL */
     public static UseTWGSL = true;
+
+    /** A unique id to identify this instance */
+    public readonly uniqueId = -1;
 
     // Page Life cycle and constants
     private readonly _uploadEncoderDescriptor = { label: "upload" };
@@ -212,8 +219,10 @@ export class WebGPUEngine extends Engine {
     private _deviceLimits: GPUSupportedLimits;
     private _context: GPUCanvasContext;
     private _mainPassSampleCount: number;
+    private _glslangOptions?: GlslangOptions;
+    private _twgslOptions?: TwgslOptions;
     /** @internal */
-    public _textureHelper: WebGPUTextureHelper;
+    public _textureHelper: WebGPUTextureManager;
     /** @internal */
     public _bufferManager: WebGPUBufferManager;
     private _clearQuad: WebGPUClearQuad;
@@ -557,7 +566,7 @@ export class WebGPUEngine extends Engine {
      * @param canvas Defines the canvas to use to display the result
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
-    public constructor(canvas: HTMLCanvasElement, options: WebGPUEngineOptions = {}) {
+    public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
         super(null, options.antialias ?? true, options);
         this._name = "WebGPU";
 
@@ -575,14 +584,14 @@ export class WebGPUEngine extends Engine {
         this._isWebGPU = true;
         this._shaderPlatformName = "WEBGPU";
 
-        this._renderingCanvas = canvas;
+        this._renderingCanvas = canvas as HTMLCanvasElement;
         this._options = options;
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
         this._setupMobileChecks();
 
-        this._sharedInit(canvas);
+        this._sharedInit(this._renderingCanvas);
 
         this._shaderProcessor = new WebGPUShaderProcessorGLSL();
         this._shaderProcessorWGSL = new WebGPUShaderProcessorWGSL();
@@ -599,32 +608,22 @@ export class WebGPUEngine extends Engine {
      * @returns a promise notifying the readiness of the engine.
      */
     public initAsync(glslangOptions?: GlslangOptions, twgslOptions?: TwgslOptions): Promise<void> {
+        (this.uniqueId as number) = WebGPUEngine._InstanceId++;
+        this._glslangOptions = glslangOptions;
+        this._twgslOptions = twgslOptions;
         return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
-            .then(
-                (glslang: any) => {
-                    this._glslang = glslang;
-                    this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
-                    return this._tintWASM
-                        ? this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions).then(
-                              () => {
-                                  return navigator.gpu!.requestAdapter(this._options);
-                              },
-                              (msg: string) => {
-                                  Logger.Error("Can not initialize twgsl!");
-                                  Logger.Error(msg);
-                                  throw Error("WebGPU initializations stopped.");
-                              }
-                          )
-                        : navigator.gpu!.requestAdapter(this._options);
-                },
-                (msg: string) => {
-                    Logger.Error("Can not initialize glslang!");
-                    Logger.Error(msg);
-                    throw Error("WebGPU initializations stopped.");
-                }
-            )
+            .then((glslang: any) => {
+                this._glslang = glslang;
+                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
+                return this._tintWASM
+                    ? this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions).then(() => {
+                          return navigator.gpu!.requestAdapter(this._options);
+                      })
+                    : navigator.gpu!.requestAdapter(this._options);
+            })
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
+                    // eslint-disable-next-line no-throw-literal
                     throw "Could not retrieve a WebGPU adapter (adapter is null).";
                 } else {
                     this._adapter = adapter!;
@@ -655,51 +654,68 @@ export class WebGPUEngine extends Engine {
                     if (this._options.setMaximumLimits && !deviceDescriptor.requiredLimits) {
                         deviceDescriptor.requiredLimits = {};
                         for (const name in this._adapterSupportedLimits) {
+                            if (name === "minSubgroupSize" || name === "maxSubgroupSize") {
+                                // Chrome exposes these limits in "webgpu developer" mode, but these can't be set on the device.
+                                continue;
+                            }
                             deviceDescriptor.requiredLimits[name] = this._adapterSupportedLimits[name];
                         }
                     }
 
+                    deviceDescriptor.label = `BabylonWebGPUDevice${this.uniqueId}`;
+
                     return this._adapter.requestDevice(deviceDescriptor);
                 }
             })
-            .then(
-                (device: GPUDevice) => {
-                    this._device = device;
-                    this._deviceEnabledExtensions = [];
-                    this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
-                    this._deviceLimits = device.limits;
+            .then((device: GPUDevice) => {
+                this._device = device;
+                this._deviceEnabledExtensions = [];
+                this._device.features?.forEach((feature) => this._deviceEnabledExtensions.push(feature as WebGPUConstants.FeatureName));
+                this._deviceLimits = device.limits;
 
-                    let numUncapturedErrors = -1;
-                    this._device.addEventListener("uncapturederror", (event) => {
-                        if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
-                            Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
-                        } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
-                            Logger.Warn(
-                                `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
-                            );
-                        }
-                    });
-
-                    if (!this._doNotHandleContextLost) {
-                        this._device.lost?.then((info) => {
-                            if (this._isDisposed) {
-                                return;
-                            }
-                            this._contextWasLost = true;
-                            Logger.Warn("WebGPU context lost. " + info);
-                            this.onContextLostObservable.notifyObservers(this);
-                            this._restoreEngineAfterContextLost(() => this.initAsync());
-                        });
+                let numUncapturedErrors = -1;
+                this._device.addEventListener("uncapturederror", (event) => {
+                    if (++numUncapturedErrors < this.numMaxUncapturedErrors) {
+                        Logger.Warn(`WebGPU uncaptured error (${numUncapturedErrors + 1}): ${(<GPUUncapturedErrorEvent>event).error} - ${(<any>event).error.message}`);
+                    } else if (numUncapturedErrors++ === this.numMaxUncapturedErrors) {
+                        Logger.Warn(
+                            `WebGPU uncaptured error: too many warnings (${this.numMaxUncapturedErrors}), no more warnings will be reported to the console for this engine.`
+                        );
                     }
-                },
-                (e: any) => {
-                    Logger.Error("Could not retrieve a WebGPU device.");
-                    Logger.Error(e);
+                });
+
+                if (!this._doNotHandleContextLost) {
+                    this._device.lost?.then((info) => {
+                        if (this._isDisposed) {
+                            return;
+                        }
+                        this._contextWasLost = true;
+                        Logger.Warn("WebGPU context lost. " + info);
+                        this.onContextLostObservable.notifyObservers(this);
+                        this._restoreEngineAfterContextLost(async () => {
+                            const snapshotRenderingMode = this.snapshotRenderingMode;
+                            const snapshotRendering = this.snapshotRendering;
+                            const disableCacheSamplers = this.disableCacheSamplers;
+                            const disableCacheRenderPipelines = this.disableCacheRenderPipelines;
+                            const disableCacheBindGroups = this.disableCacheBindGroups;
+                            const enableGPUTimingMeasurements = this.enableGPUTimingMeasurements;
+
+                            await this.initAsync(this._glslangOptions ?? this._options?.glslangOptions, this._twgslOptions ?? this._options?.twgslOptions);
+
+                            this.snapshotRenderingMode = snapshotRenderingMode;
+                            this.snapshotRendering = snapshotRendering;
+                            this.disableCacheSamplers = disableCacheSamplers;
+                            this.disableCacheRenderPipelines = disableCacheRenderPipelines;
+                            this.disableCacheBindGroups = disableCacheBindGroups;
+                            this.enableGPUTimingMeasurements = enableGPUTimingMeasurements;
+                            this._currentRenderPass = null;
+                        });
+                    });
                 }
-            )
+            })
             .then(() => {
                 this._bufferManager = new WebGPUBufferManager(this, this._device);
-                this._textureHelper = new WebGPUTextureHelper(this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
+                this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
@@ -730,7 +746,12 @@ export class WebGPUEngine extends Engine {
 
                 this._initializeLimits();
 
-                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", false, false, 1, false, 0, 1);
+                this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
+                    stride: 1,
+                    offset: 0,
+                    size: 1,
+                    label: "EmptyVertexBuffer",
+                });
 
                 this._cacheRenderPipeline = new WebGPUCacheRenderPipelineTree(this._device, this._emptyVertexBuffer);
 
@@ -755,10 +776,8 @@ export class WebGPUEngine extends Engine {
                 this.resize();
             })
             .catch((e: any) => {
-                Logger.Error("Can not create WebGPU Device and/or context.");
-                Logger.Error(e);
-                // eslint-disable-next-line no-console
-                console?.trace?.();
+                Logger.Error("A fatal error occurred during WebGPU creation/initialization.");
+                throw e;
             });
     }
 
@@ -846,8 +865,6 @@ export class WebGPUEngine extends Engine {
             disableMorphTargetTexture: false,
         };
 
-        this._caps.parallelShaderCompile = null as any;
-
         this._features = {
             forceBitmapOverHTMLImageElement: true,
             supportRenderAndCopyToLodForFloatTextures: true,
@@ -872,13 +889,14 @@ export class WebGPUEngine extends Engine {
             needToAlwaysBindUniformBuffers: true,
             supportRenderPasses: true,
             supportSpriteInstancing: true,
-            forceVertexBufferStrideMultiple4Bytes: true,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
 
     private _initializeContextAndSwapChain(): void {
         if (!this._renderingCanvas) {
+            // eslint-disable-next-line no-throw-literal
             throw "The rendering canvas has not been set!";
         }
         this._context = this._renderingCanvas.getContext("webgpu") as unknown as GPUCanvasContext;
@@ -1000,6 +1018,55 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
         });
+    }
+
+    protected _rebuildBuffers(): void {
+        super._rebuildBuffers();
+
+        for (const storageBuffer of this._storageBuffers) {
+            // The buffer can already be rebuilt by the call to _rebuildGeometries(), which recreates the storage buffers for the ComputeShaderParticleSystem
+            if ((storageBuffer.getBuffer() as WebGPUDataBuffer).engineId !== this.uniqueId) {
+                storageBuffer._rebuild();
+            }
+        }
+    }
+
+    protected _restoreEngineAfterContextLost(initEngine: () => void) {
+        WebGPUCacheRenderPipelineTree.ResetCache();
+        WebGPUCacheBindGroups.ResetCache();
+
+        // Clear the draw wrappers and material contexts
+        const cleanScenes = (scenes: Scene[]) => {
+            for (const scene of scenes) {
+                for (const mesh of scene.meshes) {
+                    const subMeshes = mesh.subMeshes;
+                    if (!subMeshes) {
+                        continue;
+                    }
+                    for (const subMesh of subMeshes) {
+                        subMesh._drawWrappers = [];
+                    }
+                }
+
+                for (const material of scene.materials) {
+                    material._materialContext?.reset();
+                }
+            }
+        };
+
+        cleanScenes(this.scenes);
+        cleanScenes(this._virtualScenes);
+
+        // The leftOver uniform buffers are removed from the list because they will be recreated when we rebuild the effects
+        const uboList: UniformBuffer[] = [];
+        for (const uniformBuffer of this._uniformBuffers) {
+            if (uniformBuffer.name.indexOf("leftOver") < 0) {
+                uboList.push(uniformBuffer);
+            }
+        }
+        this._uniformBuffers = uboList;
+
+        super._restoreEngineAfterContextLost(initEngine);
     }
 
     /**
@@ -1405,13 +1472,13 @@ export class WebGPUEngine extends Engine {
 
     /**
      * Creates a vertex buffer
-     * @param data the data for the vertex buffer
+     * @param data the data or the size for the vertex buffer
      * @param _updatable whether the buffer should be created as updatable
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    public createVertexBuffer(data: DataArray, _updatable?: boolean, label?: string): DataBuffer {
-        let view: ArrayBufferView;
+    public createVertexBuffer(data: DataArray | number, _updatable?: boolean, label?: string): DataBuffer {
+        let view: ArrayBufferView | number;
 
         if (data instanceof Array) {
             view = new Float32Array(data);
@@ -1561,6 +1628,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public bindBuffersDirectly(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1568,6 +1636,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public updateAndBindInstancesBuffer(): void {
+        // eslint-disable-next-line no-throw-literal
         throw "Not implemented on WebGPU";
     }
 
@@ -1697,7 +1766,7 @@ export class WebGPUEngine extends Engine {
      * @returns the new Effect
      */
     public createEffect(
-        baseName: any,
+        baseName: string | (IShaderPath & { vertexToken?: string; fragmentToken?: string }),
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | Engine,
         samplers?: string[],
@@ -1708,8 +1777,8 @@ export class WebGPUEngine extends Engine {
         indexParameters?: any,
         shaderLanguage = ShaderLanguage.GLSL
     ): Effect {
-        const vertex = baseName.vertexElement || baseName.vertex || baseName.vertexToken || baseName.vertexSource || baseName;
-        const fragment = baseName.fragmentElement || baseName.fragment || baseName.fragmentToken || baseName.fragmentSource || baseName;
+        const vertex = typeof baseName === "string" ? baseName : baseName.vertexToken || baseName.vertexSource || baseName.vertexElement || baseName.vertex;
+        const fragment = typeof baseName === "string" ? baseName : baseName.fragmentToken || baseName.fragmentSource || baseName.fragmentElement || baseName.fragment;
         const globalDefines = this._getGlobalDefines()!;
 
         let fullDefines = defines ?? (<IEffectCreationOptions>attributesNamesOrOptions).defines ?? "";
@@ -1831,6 +1900,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createRawShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -1838,6 +1908,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public createShaderProgram(): WebGLProgram {
+        // eslint-disable-next-line no-throw-literal
         throw "Not available on WebGPU";
     }
 
@@ -1947,17 +2018,14 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        let isNewEffect = true;
-
         if (!DrawWrapper.IsWrapper(effect)) {
-            isNewEffect = effect !== this._currentEffect;
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
             this._counters.numEnableEffects++;
             if (this.dbgLogIfNotDrawWrapper) {
                 Logger.Warn(
-                    `enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${effect.name.vertex}, effect.name.fragment=${effect.name.fragment}`,
+                    `enableEffect has been called with an Effect and not a Wrapper! effect.uniqueId=${effect.uniqueId}, effect.name=${effect.name}, effect.name.vertex=${typeof effect.name === "string" ? "" : effect.name.vertex}, effect.name.fragment=${typeof effect.name === "string" ? "" : effect.name.fragment}`,
                     10
                 );
             }
@@ -1970,32 +2038,31 @@ export class WebGPUEngine extends Engine {
         ) {
             if (!effect.effect && this.dbgShowEmptyEnableEffectCalls) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw "Invalid call to enableEffect: the effect property is empty!";
             }
             return;
         } else {
-            isNewEffect = effect.effect !== this._currentEffect;
             this._currentEffect = effect.effect;
             this._currentMaterialContext = effect.materialContext as WebGPUMaterialContext;
             this._currentDrawContext = effect.drawContext as WebGPUDrawContext;
             this._counters.numEnableDrawWrapper++;
             if (!this._currentMaterialContext) {
                 Logger.Log(["drawWrapper=", effect]);
+                // eslint-disable-next-line no-throw-literal
                 throw `Invalid call to enableEffect: the materialContext property is empty!`;
             }
         }
 
         this._stencilStateComposer.stencilMaterial = undefined;
 
-        this._forceEnableEffect = isNewEffect || this._forceEnableEffect ? false : this._forceEnableEffect;
+        this._forceEnableEffect = false;
 
-        if (isNewEffect) {
-            if (this._currentEffect!.onBind) {
-                this._currentEffect!.onBind(this._currentEffect!);
-            }
-            if (this._currentEffect!._onBindObservable) {
-                this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
-            }
+        if (this._currentEffect!.onBind) {
+            this._currentEffect!.onBind(this._currentEffect!);
+        }
+        if (this._currentEffect!._onBindObservable) {
+            this._currentEffect!._onBindObservable.notifyObservers(this._currentEffect!);
         }
     }
 
@@ -2119,13 +2186,14 @@ export class WebGPUEngine extends Engine {
 
         const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
         const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
 
         texture.baseWidth = width;
         texture.baseHeight = height;
         texture.width = width;
         texture.height = height;
-        texture.depth = layers;
+        texture.depth = depth || layers;
         texture.isReady = true;
         texture.samples = fullOptions.samples;
         texture.generateMipMaps = fullOptions.generateMipMaps ? true : false;
@@ -2133,6 +2201,7 @@ export class WebGPUEngine extends Engine {
         texture.type = fullOptions.type;
         texture.format = fullOptions.format;
         texture.is2DArray = layers > 0;
+        texture.is3D = depth > 0;
         texture._cachedWrapU = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
         texture._useSRGBBuffer = fullOptions.useSRGBBuffer;
@@ -2220,6 +2289,7 @@ export class WebGPUEngine extends Engine {
                 texture.height = imageBitmap.height;
                 texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
                 texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
+                texture._creationFlags = creationFlags ?? 0;
 
                 processFunction(texture.width, texture.height, imageBitmap, extension, texture, () => {});
 
@@ -2283,6 +2353,7 @@ export class WebGPUEngine extends Engine {
         return internalTexture;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture
@@ -2667,6 +2738,7 @@ export class WebGPUEngine extends Engine {
         }
 
         if (image instanceof HTMLImageElement) {
+            // eslint-disable-next-line no-throw-literal
             throw "WebGPU engine: HTMLImageElement not supported in _uploadImageToTexture!";
         }
 
@@ -2869,11 +2941,13 @@ export class WebGPUEngine extends Engine {
                     const faceIndex = rtWrapper.faceIndices?.[i] ?? 0;
                     const viewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+                        dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
-                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : layerIndex,
+                        baseArrayLayer: mrtTexture.isCube ? layerIndex * 6 + faceIndex : mrtTexture.is3D ? 0 : layerIndex,
                     };
                     const msaaViewDescriptor = {
                         ...this._rttRenderPassWrapper.colorAttachmentViewDescriptor!,
+                        dimension: mrtTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                         format: gpuMRTWrapper.format,
                         baseArrayLayer: 0,
                     };
@@ -2885,6 +2959,7 @@ export class WebGPUEngine extends Engine {
                     colorAttachments.push({
                         view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                         resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                        depthSlice: mrtTexture.is3D ? layerIndex : undefined,
                         clearValue: index !== 0 && mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                         loadOp: index !== 0 && mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                         storeOp: WebGPUConstants.StoreOp.Store,
@@ -2900,6 +2975,13 @@ export class WebGPUEngine extends Engine {
                 const gpuWrapper = internalTexture._hardwareTexture as WebGPUHardwareTexture;
                 const gpuTexture = gpuWrapper.underlyingResource!;
 
+                let depthSlice: number | undefined = undefined;
+
+                if (rtWrapper.is3D) {
+                    depthSlice = this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer;
+                    this._rttRenderPassWrapper.colorAttachmentViewDescriptor!.baseArrayLayer = 0;
+                }
+
                 const gpuMSAATexture = gpuWrapper.getMSAATexture();
                 const colorTextureView = gpuTexture.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
                 const colorMSAATextureView = gpuMSAATexture?.createView(this._rttRenderPassWrapper.colorAttachmentViewDescriptor!);
@@ -2908,6 +2990,7 @@ export class WebGPUEngine extends Engine {
                 colorAttachments.push({
                     view: colorMSAATextureView ? colorMSAATextureView : colorTextureView,
                     resolveTarget: gpuMSAATexture ? colorTextureView : undefined,
+                    depthSlice,
                     clearValue: mustClearColor ? (isRTInteger ? clearColorForIntegerRT : clearColor) : undefined,
                     loadOp: mustClearColor ? WebGPUConstants.LoadOp.Clear : WebGPUConstants.LoadOp.Load,
                     storeOp: WebGPUConstants.StoreOp.Store,
@@ -3128,7 +3211,7 @@ export class WebGPUEngine extends Engine {
 
         this._rttRenderPassWrapper.colorAttachmentViewDescriptor = {
             format: this._colorFormat as GPUTextureFormat,
-            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            dimension: texture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
             baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
             baseMipLevel: lodLevel,
@@ -3140,7 +3223,7 @@ export class WebGPUEngine extends Engine {
             format: this._depthTextureFormat!,
             dimension: WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: texture.isCube ? layer * 6 + faceIndex : layer,
+            baseArrayLayer: 0,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All,
@@ -3607,6 +3690,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _bindUnboundFramebuffer() {
+        // eslint-disable-next-line no-throw-literal
         throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
     }
 
@@ -3616,6 +3700,7 @@ export class WebGPUEngine extends Engine {
      * @internal
      */
     public _getSamplingParameters(): { min: number; mag: number } {
+        // eslint-disable-next-line no-throw-literal
         throw "_getSamplingParameters is not available in WebGPU";
     }
 

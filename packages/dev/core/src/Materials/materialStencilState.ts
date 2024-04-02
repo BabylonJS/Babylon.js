@@ -1,5 +1,6 @@
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Constants } from "../Engines/constants";
-import { SerializationHelper, serialize } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import type { IStencilState } from "../States/IStencilState";
 
 import type { Scene } from "../scene";

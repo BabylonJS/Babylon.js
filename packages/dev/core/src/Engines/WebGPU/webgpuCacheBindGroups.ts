@@ -1,3 +1,5 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
 import { Logger } from "../../Misc/logger";
 import type { WebGPUCacheSampler } from "./webgpuCacheSampler";
 import type { WebGPUMaterialContext } from "./webgpuMaterialContext";
@@ -45,6 +47,17 @@ export class WebGPUCacheBindGroups {
         };
     }
 
+    public static ResetCache() {
+        WebGPUCacheBindGroups._Cache = new WebGPUBindGroupCacheNode();
+        WebGPUCacheBindGroups.NumBindGroupsCreatedTotal = 0;
+        WebGPUCacheBindGroups.NumBindGroupsCreatedLastFrame = 0;
+        WebGPUCacheBindGroups.NumBindGroupsLookupLastFrame = 0;
+        WebGPUCacheBindGroups.NumBindGroupsNoLookupLastFrame = 0;
+        WebGPUCacheBindGroups._NumBindGroupsCreatedCurrentFrame = 0;
+        WebGPUCacheBindGroups._NumBindGroupsLookupCurrentFrame = 0;
+        WebGPUCacheBindGroups._NumBindGroupsNoLookupCurrentFrame = 0;
+    }
+
     constructor(device: GPUDevice, cacheSampler: WebGPUCacheSampler, engine: WebGPUEngine) {
         this._device = device;
         this._cacheSampler = cacheSampler;
@@ -67,6 +80,7 @@ export class WebGPUCacheBindGroups {
      * @param webgpuPipelineContext
      * @param drawContext
      * @param materialContext
+     * @returns a bind group array
      */
     public getBindGroups(webgpuPipelineContext: WebGPUPipelineContext, drawContext: WebGPUDrawContext, materialContext: WebGPUMaterialContext): GPUBindGroup[] {
         let bindGroups: GPUBindGroup[] | undefined = undefined;

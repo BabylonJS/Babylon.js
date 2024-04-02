@@ -29,17 +29,19 @@ export interface IFlowGraphReceiveCustomEventBlockConfiguration extends IFlowGra
 export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     private _eventObserver: Nullable<Observer<any>>;
 
-    constructor(public config: IFlowGraphReceiveCustomEventBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphReceiveCustomEventBlockConfiguration
+    ) {
         super(config);
-    }
-
-    public configure(): void {
-        super.configure();
         for (let i = 0; i < this.config.eventData.length; i++) {
             const dataName = this.config.eventData[i];
             this.registerDataOutput(dataName, RichTypeAny);
         }
     }
+
     public _preparePendingTasks(context: FlowGraphContext): void {
         const observable = context.configuration.coordinator.getCustomEventObservable(this.config.eventId);
         this._eventObserver = observable.add((eventDatas: any[]) => {
@@ -58,12 +60,22 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         }
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphReceiveCustomEventBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGReceiveCustomEventBlock";
 
+    /**
+     * Serializes this block
+     * @param serializationObject the object to serialize to
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.eventId = this.config.eventId;

@@ -98,7 +98,7 @@ export interface IGreasedLineMaterial {
     setColor(value: Nullable<Color3>, doNotMarkDirty?: boolean): void;
 
     /**
-     *
+     * Set the colors
      * @param colors colors array
      * @param lazy if true the colors texture will not be updated
      * @param forceNewTexture forces to create a new colors texture

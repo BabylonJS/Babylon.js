@@ -88,14 +88,17 @@ export class PanoramaToCubeMapTools {
      * @param inputWidth The width of the input panorama.
      * @param inputHeight The height of the input panorama.
      * @param size The willing size of the generated cubemap (each faces will be size * size pixels)
+     * @param supersample enable supersampling the cubemap
      * @returns The cubemap data
      */
     public static ConvertPanoramaToCubemap(float32Array: Float32Array, inputWidth: number, inputHeight: number, size: number, supersample = false): CubeMapInfo {
         if (!float32Array) {
+            // eslint-disable-next-line no-throw-literal
             throw "ConvertPanoramaToCubemap: input cannot be null";
         }
 
         if (float32Array.length != inputWidth * inputHeight * 3) {
+            // eslint-disable-next-line no-throw-literal
             throw "ConvertPanoramaToCubemap: input size is wrong";
         }
 

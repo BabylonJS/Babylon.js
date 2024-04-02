@@ -169,6 +169,7 @@ export class GUINodeTools {
                 element.height = "40px";
                 return element;
             default:
+                // eslint-disable-next-line no-throw-literal
                 throw "Error: control type not recognized";
         }
     }

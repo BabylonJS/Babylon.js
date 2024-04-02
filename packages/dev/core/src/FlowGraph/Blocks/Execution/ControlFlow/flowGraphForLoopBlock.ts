@@ -1,6 +1,6 @@
 import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnection";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "core/FlowGraph/flowGraphExecutionBlockWithOutSignal";
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import { RichTypeNumber } from "../../../flowGraphRichTypes";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -70,6 +70,9 @@ export class FlowGraphForLoopBlock extends FlowGraphExecutionBlockWithOutSignal 
         this._executeLoop(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGForLoopBlock";
     }

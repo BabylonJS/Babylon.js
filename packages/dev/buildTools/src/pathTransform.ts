@@ -28,8 +28,9 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
  * Used mainly for publishing and generating LTS versions.
  * The idea is to convert 'import { Something } from "location/something";' to 'import { Something } from "package/something";'
  * @param location the source's location
- * @param options
- * @param sourceFilename
+ * @param options the transformer options
+ * @param sourceFilename the optional source filename
+ * @returns the new location
  */
 export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
     const directoryParts = location.split("/");

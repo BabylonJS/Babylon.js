@@ -1,5 +1,5 @@
 {
-  "versionDefinition": "patch",
-  "preid": "rc",
-  "nonce": 175
+    "versionDefinition": "major",
+    "preid": "rc",
+    "nonce": 195
 }

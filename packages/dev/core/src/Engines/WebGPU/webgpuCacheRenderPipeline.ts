@@ -11,7 +11,8 @@ import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
 enum StatePosition {
     StencilReadMask = 0,
@@ -359,6 +360,7 @@ export abstract class WebGPUCacheRenderPipeline {
             // If we want more than 10 attachments we need to change this method (and the StatePosition enum) but 10 seems plenty: note that WebGPU only supports 8 at the time (2021/12/13)!
             // As we need ~39 different values we are using 6 bits to encode a texture format, meaning we can encode 5 texture formats in 32 bits
             // We are using 2x32 bit values to handle 10 textures
+            // eslint-disable-next-line no-throw-literal
             throw "Can't handle more than 10 attachments for a MRT in cache render pipeline!";
         }
         (this.mrtTextureArray as any) = textureArray;
@@ -513,6 +515,7 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.MATERIAL_LineLoopDrawMode:
                 // return this._gl.LINE_LOOP;
                 // TODO WEBGPU. Line Loop Mode Fallback at buffer load time.
+                // eslint-disable-next-line no-throw-literal
                 throw "LineLoop is an unsupported fillmode in WebGPU";
             case Constants.MATERIAL_LineStripDrawMode:
                 return WebGPUConstants.PrimitiveTopology.LineStrip;
@@ -521,6 +524,7 @@ export abstract class WebGPUCacheRenderPipeline {
             case Constants.MATERIAL_TriangleFanDrawMode:
                 // return this._gl.TRIANGLE_FAN;
                 // TODO WEBGPU. Triangle Fan Mode Fallback at buffer load time.
+                // eslint-disable-next-line no-throw-literal
                 throw "TriangleFan is an unsupported fillmode in WebGPU";
             default:
                 return WebGPUConstants.PrimitiveTopology.TriangleList;
@@ -1065,7 +1069,7 @@ export abstract class WebGPUCacheRenderPipeline {
             }
         }
 
-        const stencilFrontBack: GPUStencilStateFace = {
+        const stencilFrontBack: GPUStencilFaceState = {
             compare: WebGPUCacheRenderPipeline._GetCompareFunction(this._stencilEnabled ? this._stencilFrontCompare : 7 /* ALWAYS */),
             depthFailOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontDepthFailOp : 1 /* KEEP */),
             failOp: WebGPUCacheRenderPipeline._GetStencilOpFunction(this._stencilEnabled ? this._stencilFrontFailOp : 1 /* KEEP */),

@@ -7,6 +7,7 @@ export { expDm as deepmerge };
  * Is the provided string a URL?
  *
  * @param urlToCheck the url to inspect
+ * @returns true if the string is a URL
  */
 export function isUrl(urlToCheck: string): boolean {
     if (urlToCheck.indexOf("http") === 0 || urlToCheck.indexOf("/") === 0 || urlToCheck.indexOf("./") === 0 || urlToCheck.indexOf("../") === 0) {
@@ -18,6 +19,7 @@ export function isUrl(urlToCheck: string): boolean {
 /**
  * Convert a string from kebab-case to camelCase
  * @param s string to convert
+ * @returns the converted string
  */
 export function kebabToCamel(s: string) {
     return s.replace(/(-\w)/g, function (m) {
@@ -29,6 +31,7 @@ export function kebabToCamel(s: string) {
 /**
  * Convert a string from camelCase to kebab-case
  * @param str string to convert
+ * @returns the converted string
  */
 export function camelToKebab(str: string) {
     return !str

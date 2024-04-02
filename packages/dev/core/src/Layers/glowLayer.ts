@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
@@ -25,6 +25,7 @@ import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Layers/effectLayerSceneComponent";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -239,6 +240,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
+     * @internal
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
      */
@@ -431,7 +433,7 @@ export class GlowLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
+     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return false;
@@ -595,6 +597,7 @@ export class GlowLayer extends EffectLayer {
     /**
      * Defines whether the current material of the mesh should be use to render the effect.
      * @param mesh defines the current mesh to render
+     * @returns true if the material of the mesh should be use to render the effect
      */
     protected _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {

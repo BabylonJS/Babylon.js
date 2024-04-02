@@ -7,6 +7,7 @@ import type { WebXRAbstractMotionController } from "./motionController/webXRAbst
 import { WebXRMotionControllerManager } from "./motionController/webXRMotionControllerManager";
 import { Tools } from "../Misc/tools";
 import type { WebXRCamera } from "./webXRCamera";
+import type { WebXRSessionManager } from "./webXRSessionManager";
 
 let idCount = 0;
 
@@ -181,15 +182,16 @@ export class WebXRInputSource {
      * @param xrFrame xr frame to update the pose with
      * @param referenceSpace reference space to use
      * @param xrCamera the xr camera, used for parenting
+     * @param xrSessionManager the session manager used to get the world reference system
      */
-    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera) {
+    public updateFromXRFrame(xrFrame: XRFrame, referenceSpace: XRReferenceSpace, xrCamera: WebXRCamera, xrSessionManager: WebXRSessionManager) {
         const pose = xrFrame.getPose(this.inputSource.targetRaySpace, referenceSpace);
         this._lastXRPose = pose;
 
         // Update the pointer mesh
         if (pose) {
             const pos = pose.transform.position;
-            this.pointer.position.set(pos.x, pos.y, pos.z);
+            this.pointer.position.set(pos.x, pos.y, pos.z).scaleInPlace(xrSessionManager.worldScalingFactor);
             const orientation = pose.transform.orientation;
             this.pointer.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
             if (!this._scene.useRightHandedSystem) {
@@ -198,6 +200,7 @@ export class WebXRInputSource {
                 this.pointer.rotationQuaternion!.w *= -1;
             }
             this.pointer.parent = xrCamera.parent;
+            this.pointer.scaling.setAll(xrSessionManager.worldScalingFactor);
         }
 
         // Update the grip mesh if it exists
@@ -206,7 +209,7 @@ export class WebXRInputSource {
             if (pose) {
                 const pos = pose.transform.position;
                 const orientation = pose.transform.orientation;
-                this.grip.position.set(pos.x, pos.y, pos.z);
+                this.grip.position.set(pos.x, pos.y, pos.z).scaleInPlace(xrSessionManager.worldScalingFactor);
                 this.grip.rotationQuaternion!.set(orientation.x, orientation.y, orientation.z, orientation.w);
                 if (!this._scene.useRightHandedSystem) {
                     this.grip.position.z *= -1;
@@ -215,6 +218,7 @@ export class WebXRInputSource {
                 }
             }
             this.grip.parent = xrCamera.parent;
+            this.grip.scaling.setAll(xrSessionManager.worldScalingFactor);
         }
         if (this.motionController) {
             // either update buttons only or also position, if in gamepad mode

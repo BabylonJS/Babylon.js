@@ -14,19 +14,20 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Input connection: The input signal of the block.
      */
     public readonly in: FlowGraphSignalConnection;
-
+    /**
+     * Input connections that activate the block.
+     */
     public signalInputs: FlowGraphSignalConnection[];
+    /**
+     * Output connections that can activate downstream blocks.
+     */
     public signalOutputs: FlowGraphSignalConnection[];
 
     protected constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
-        this.in = this._registerSignalInput("in");
-    }
-
-    public configure() {
-        super.configure();
         this.signalInputs = [];
         this.signalOutputs = [];
+        this.in = this._registerSignalInput("in");
     }
 
     /**
@@ -47,14 +48,28 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         return output;
     }
 
+    /**
+     * Given a name of a signal input, return that input if it exists
+     * @param name the name of the input
+     * @returns if the input exists, the input. Otherwise, undefined.
+     */
     public getSignalInput(name: string): FlowGraphSignalConnection | undefined {
         return this.signalInputs.find((input) => input.name === name);
     }
 
+    /**
+     * Given a name of a signal output, return that input if it exists
+     * @param name the name of the input
+     * @returns if the input exists, the input. Otherwise, undefined.
+     */
     public getSignalOutput(name: string): FlowGraphSignalConnection | undefined {
         return this.signalOutputs.find((output) => output.name === name);
     }
 
+    /**
+     * Serializes this block
+     * @param serializationObject the object to serialize in
+     */
     public serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.signalInputs = [];
@@ -71,6 +86,10 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         }
     }
 
+    /**
+     * Deserializes from an object
+     * @param serializationObject the object to deserialize from
+     */
     public deserialize(serializationObject: any) {
         for (let i = 0; i < serializationObject.signalInputs.length; i++) {
             const signalInput = this.getSignalInput(serializationObject.signalInputs[i].name);
@@ -90,6 +109,9 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
         }
     }
 
+    /**
+     * @returns the class name
+     */
     public getClassName(): string {
         return "FGExecutionBlock";
     }

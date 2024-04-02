@@ -36,25 +36,25 @@ interface IGizmoScalePointProps {
 import gizmoPivotIcon from "../imgs/gizmoPivotIcon.svg";
 
 // load in custom cursor icons
-import cursor_scaleDiagonalLeft from "../imgs/cursor_scaleDiagonalLeft.svg";
-import cursor_scaleDiagonalRight from "../imgs/cursor_scaleDiagonalRight.svg";
-import cursor_scaleHorizontal from "../imgs/cursor_scaleHorizontal.svg";
-import cursor_scaleVertical from "../imgs/cursor_scaleVertical.svg";
+import cursorScaleDiagonalLeftIcon from "../imgs/cursor_scaleDiagonalLeft.svg";
+import cursorScaleDiagonalRightIcon from "../imgs/cursor_scaleDiagonalRight.svg";
+import cursorScaleHorizontalIcon from "../imgs/cursor_scaleHorizontal.svg";
+import cursorScaleVerticalIcon from "../imgs/cursor_scaleVertical.svg";
 
-import cursor_rotate0 from "../imgs/cursor_rotate0.svg";
-import cursor_rotate1 from "../imgs/cursor_rotate1.svg";
-import cursor_rotate2 from "../imgs/cursor_rotate2.svg";
-import cursor_rotate3 from "../imgs/cursor_rotate3.svg";
-import cursor_rotate4 from "../imgs/cursor_rotate4.svg";
-import cursor_rotate5 from "../imgs/cursor_rotate5.svg";
-import cursor_rotate6 from "../imgs/cursor_rotate6.svg";
-import cursor_rotate7 from "../imgs/cursor_rotate7.svg";
+import cursorRotate0 from "../imgs/cursor_rotate0.svg";
+import cursorRotate1 from "../imgs/cursor_rotate1.svg";
+import cursorRotate2 from "../imgs/cursor_rotate2.svg";
+import cursorRotate3 from "../imgs/cursor_rotate3.svg";
+import cursorRotate4 from "../imgs/cursor_rotate4.svg";
+import cursorRotate5 from "../imgs/cursor_rotate5.svg";
+import cursorRotate6 from "../imgs/cursor_rotate6.svg";
+import cursorRotate7 from "../imgs/cursor_rotate7.svg";
 
 // load in custom cursor icons
-const cursorScaleDiagonaLeft: string = `url("${cursor_scaleDiagonalLeft}") 12 12, nwse-resize`;
-const cursorScaleDiagonalRight: string = `url("${cursor_scaleDiagonalRight}") 12 12, nesw-resize`;
-const cursorScaleHorizontal: string = `url("${cursor_scaleHorizontal}") 12 12, pointer`;
-const cursorScaleVertical: string = `url("${cursor_scaleVertical}") 12 12, ns-resize`;
+const cursorScaleDiagonaLeft: string = `url("${cursorScaleDiagonalLeftIcon}") 12 12, nwse-resize`;
+const cursorScaleDiagonalRight: string = `url("${cursorScaleDiagonalRightIcon}") 12 12, nesw-resize`;
+const cursorScaleHorizontal: string = `url("${cursorScaleHorizontalIcon}") 12 12, pointer`;
+const cursorScaleVertical: string = `url("${cursorScaleVerticalIcon}") 12 12, ns-resize`;
 const scalePointCursors = [
     cursorScaleVertical,
     cursorScaleDiagonalRight,
@@ -65,7 +65,7 @@ const scalePointCursors = [
     cursorScaleHorizontal,
     cursorScaleDiagonaLeft,
 ];
-const rotateCursors = [cursor_rotate0, cursor_rotate1, cursor_rotate2, cursor_rotate3, cursor_rotate4, cursor_rotate5, cursor_rotate6, cursor_rotate7].map(
+const rotateCursors = [cursorRotate0, cursorRotate1, cursorRotate2, cursorRotate3, cursorRotate4, cursorRotate5, cursorRotate6, cursorRotate7].map(
     (cursor) => `url("${cursor}") 12 12, pointer`
 );
 

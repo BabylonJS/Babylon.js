@@ -28,6 +28,7 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
      * Uploads the cube texture data to the WebGL texture. It has already been bound.
      */
     public loadCubeData(): void {
+        // eslint-disable-next-line no-throw-literal
         throw ".env not supported in Cube.";
     }
 

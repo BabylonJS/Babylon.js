@@ -246,7 +246,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
             }
             const pos = pose.transform.position;
             const quat = pose.transform.orientation;
-            this._tmpPos.set(pos.x, pos.y, pos.z);
+            this._tmpPos.set(pos.x, pos.y, pos.z).scaleInPlace(this._xrSessionManager.worldScalingFactor);
             this._tmpQuat.set(quat.x, quat.y, quat.z, quat.w);
             Matrix.FromFloat32ArrayToRefScaled(pose.transform.matrix, 0, 1, this._tmpMat);
             if (!this._xrSessionManager.scene.useRightHandedSystem) {

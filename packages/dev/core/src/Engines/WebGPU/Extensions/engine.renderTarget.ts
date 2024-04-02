@@ -73,7 +73,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
 };
 
 WebGPUEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
-    const internalTexture = new InternalTexture(this, InternalTextureSource.DepthStencil);
+    const internalTexture = new InternalTexture(this, options.generateStencil ? InternalTextureSource.DepthStencil : InternalTextureSource.Depth);
 
     internalTexture.label = options.label;
 
@@ -119,14 +119,18 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
 ): void {
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-    const layers = (<{ width: number; height: number; layers?: number }>size).layers || 0;
+
+    // Only 2D textures are supported for depth/stencil
+    const layers = 0;
+    const depth = 0;
 
     internalTexture.baseWidth = width;
     internalTexture.baseHeight = height;
     internalTexture.width = width;
     internalTexture.height = height;
     internalTexture.is2DArray = layers > 0;
-    internalTexture.depth = layers;
+    internalTexture.is3D = depth > 0;
+    internalTexture.depth = layers || depth;
     internalTexture.isReady = true;
     internalTexture.samples = samples;
     internalTexture.generateMipMaps = false;

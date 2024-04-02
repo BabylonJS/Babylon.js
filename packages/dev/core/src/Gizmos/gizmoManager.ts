@@ -20,6 +20,7 @@ import type { IScaleGizmo } from "./scaleGizmo";
 import { ScaleGizmo } from "./scaleGizmo";
 import type { IBoundingBoxGizmo } from "./boundingBoxGizmo";
 import { BoundingBoxGizmo } from "./boundingBoxGizmo";
+import type { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Helps setup gizmo's in the scene to rotate/scale/position nodes
@@ -57,6 +58,7 @@ export class GizmoManager implements IDisposable {
     protected _thickness: number = 1;
     protected _scaleRatio: number = 1;
     protected _coordinatesMode = GizmoCoordinatesMode.Local;
+    protected _additionalTransformNode?: TransformNode;
 
     /** Node Caching for quick lookup */
     private _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
@@ -107,6 +109,21 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * True when the mouse pointer is dragging a gizmo mesh
+     */
+    public get isDragging() {
+        let dragging = false;
+
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            if (gizmo && gizmo.isDragging) {
+                dragging = true;
+            }
+        });
+
+        return dragging;
+    }
+
+    /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
     public set scaleRatio(value: number) {
@@ -138,6 +155,28 @@ export class GizmoManager implements IDisposable {
     public get coordinatesMode(): GizmoCoordinatesMode {
         return this._coordinatesMode;
     }
+
+    /**
+     * The mesh the gizmo's is attached to
+     */
+    public get attachedMesh() {
+        return this._attachedMesh;
+    }
+
+    /**
+     * The node the gizmo's is attached to
+     */
+    public get attachedNode() {
+        return this._attachedNode;
+    }
+
+    /**
+     * Additional transform node that will be used to transform all the gizmos
+     */
+    public get additionalTransformNode() {
+        return this._additionalTransformNode;
+    }
+
     /**
      * Instantiates a gizmo manager
      * @param _scene the scene to overlay the gizmos on top of
@@ -163,8 +202,10 @@ export class GizmoManager implements IDisposable {
     }
 
     /**
+     * @internal
      * Subscribes to pointer down events, for attaching and detaching mesh
      * @param scene The scene layer the observer will be added to
+     * @returns the pointer observer
      */
     private _attachToMeshPointerObserver(scene: Scene): Observer<PointerInfo> {
         // Instantiate/dispose gizmos based on pointer actions
@@ -281,6 +322,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.positionGizmo.attachedNode = null;
         }
         this._gizmosEnabled.positionGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get positionGizmoEnabled(): boolean {
         return this._gizmosEnabled.positionGizmo;
@@ -302,6 +344,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.rotationGizmo.attachedNode = null;
         }
         this._gizmosEnabled.rotationGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get rotationGizmoEnabled(): boolean {
         return this._gizmosEnabled.rotationGizmo;
@@ -321,6 +364,7 @@ export class GizmoManager implements IDisposable {
             this.gizmos.scaleGizmo.attachedNode = null;
         }
         this._gizmosEnabled.scaleGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get scaleGizmoEnabled(): boolean {
         return this._gizmosEnabled.scaleGizmo;
@@ -353,9 +397,28 @@ export class GizmoManager implements IDisposable {
             this.gizmos.boundingBoxGizmo.attachedNode = null;
         }
         this._gizmosEnabled.boundingBoxGizmo = value;
+        this._setAdditionalTransformNode();
     }
     public get boundingBoxGizmoEnabled(): boolean {
         return this._gizmosEnabled.boundingBoxGizmo;
+    }
+
+    /**
+     * Sets the additional transform applied to all the gizmos.
+     * @See Gizmo.additionalTransformNode for more detail
+     */
+    public set additionalTransformNode(node: TransformNode | undefined) {
+        this._additionalTransformNode = node;
+        this._setAdditionalTransformNode();
+    }
+
+    private _setAdditionalTransformNode() {
+        for (const key in this.gizmos) {
+            const gizmo = <Nullable<IGizmo>>(<any>this.gizmos)[key];
+            if (gizmo && (<any>this._gizmosEnabled)[key]) {
+                gizmo.additionalTransformNode = this._additionalTransformNode;
+            }
+        }
     }
 
     /**
@@ -368,6 +431,15 @@ export class GizmoManager implements IDisposable {
                 this._gizmoAxisCache.set(k, v);
             });
         }
+    }
+
+    /**
+     * Force release the drag action by code
+     */
+    public releaseDrag() {
+        [this.gizmos.positionGizmo, this.gizmos.rotationGizmo, this.gizmos.scaleGizmo, this.gizmos.boundingBoxGizmo].forEach((gizmo) => {
+            gizmo?.releaseDrag();
+        });
     }
 
     /**

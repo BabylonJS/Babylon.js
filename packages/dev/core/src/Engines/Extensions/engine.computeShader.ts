@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import type { ComputeEffect, IComputeEffectCreationOptions } from "../../Compute/computeEffect";
+import type { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "../../Compute/computeEffect";
 import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
@@ -27,6 +27,7 @@ export enum ComputeBindingType {
     TextureWithoutSampler = 4,
     Sampler = 5,
     ExternalTexture = 6,
+    DataBuffer = 7,
 }
 
 /** @internal */
@@ -40,7 +41,17 @@ declare module "../../Engines/thinEngine" {
          * @param options Options used to create the effect
          * @returns The new compute effect
          */
-        createComputeEffect(baseName: any, options: IComputeEffectCreationOptions): ComputeEffect;
+        createComputeEffect(
+            baseName:
+                | string
+                | (IComputeShaderPath & {
+                      /**
+                       * @internal
+                       */
+                      computeToken?: string;
+                  }),
+            options: IComputeEffectCreationOptions
+        ): ComputeEffect;
 
         /**
          * Creates a new compute pipeline context
@@ -110,7 +121,7 @@ declare module "../../Engines/thinEngine" {
     }
 }
 
-ThinEngine.prototype.createComputeEffect = function (baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
+ThinEngine.prototype.createComputeEffect = function (baseName: IComputeShaderPath & { computeToken?: string }, options: IComputeEffectCreationOptions): ComputeEffect {
     throw new Error("createComputeEffect: This engine does not support compute shaders!");
 };
 

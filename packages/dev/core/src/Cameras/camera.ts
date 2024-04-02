@@ -1,8 +1,8 @@
-import { serialize, SerializationHelper, serializeAsVector3 } from "../Misc/decorators";
+import { serialize, serializeAsVector3 } from "../Misc/decorators";
 import { SmartArray } from "../Misc/smartArray";
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
+import type { DeepImmutable, Nullable } from "../types";
 import type { CameraInputsManager } from "./cameraInputsManager";
 import type { Scene } from "../scene";
 import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
@@ -24,6 +24,7 @@ import type { FreeCamera } from "./freeCamera";
 import type { TargetCamera } from "./targetCamera";
 import type { Ray } from "../Culling/ray";
 import type { ArcRotateCamera } from "./arcRotateCamera";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 /**
  * Oblique projection values
@@ -177,12 +178,12 @@ export class Camera extends Node {
         return x * y;
     }
 
+    private _orthoLeft: Nullable<number> = null;
+
     /**
      * Define the current limit on the left side for an orthographic camera
      * In scene unit
      */
-    private _orthoLeft: Nullable<number> = null;
-
     public set orthoLeft(value: Nullable<number>) {
         this._orthoLeft = value;
 
@@ -196,12 +197,12 @@ export class Camera extends Node {
         return this._orthoLeft;
     }
 
+    private _orthoRight: Nullable<number> = null;
+
     /**
      * Define the current limit on the right side for an orthographic camera
      * In scene unit
      */
-    private _orthoRight: Nullable<number> = null;
-
     public set orthoRight(value: Nullable<number>) {
         this._orthoRight = value;
 
@@ -215,12 +216,12 @@ export class Camera extends Node {
         return this._orthoRight;
     }
 
+    private _orthoBottom: Nullable<number> = null;
+
     /**
      * Define the current limit on the bottom side for an orthographic camera
      * In scene unit
      */
-    private _orthoBottom: Nullable<number> = null;
-
     public set orthoBottom(value: Nullable<number>) {
         this._orthoBottom = value;
 
@@ -234,12 +235,12 @@ export class Camera extends Node {
         return this._orthoBottom;
     }
 
+    private _orthoTop: Nullable<number> = null;
+
     /**
      * Define the current limit on the top side for an orthographic camera
      * In scene unit
      */
-    private _orthoTop: Nullable<number> = null;
-
     public set orthoTop(value: Nullable<number>) {
         this._orthoTop = value;
 
@@ -290,10 +291,11 @@ export class Camera extends Node {
     @serialize()
     public inertia = 0.9;
 
+    private _mode = Camera.PERSPECTIVE_CAMERA;
+
     /**
      * Define the mode of the camera (Camera.PERSPECTIVE_CAMERA or Camera.ORTHOGRAPHIC_CAMERA)
      */
-    private _mode = Camera.PERSPECTIVE_CAMERA;
     set mode(mode: number) {
         this._mode = mode;
 
@@ -401,6 +403,15 @@ export class Camera extends Node {
      */
     public renderPassId: number;
 
+    private _hasMoved = false;
+
+    /**
+     * Gets a flag indicating that the camera has moved in some way since the last call to Camera.update()
+     */
+    public get hasMoved() {
+        return this._hasMoved;
+    }
+
     /** @internal */
     public _cameraRigParams: any;
     /** @internal */
@@ -467,6 +478,7 @@ export class Camera extends Node {
 
     /**
      * Restores the camera state values if it has been stored. You must call storeState() first
+     * @returns true if restored and false otherwise
      */
     protected _restoreStateValues(): boolean {
         if (!this._stateStored) {
@@ -696,6 +708,7 @@ export class Camera extends Node {
      * Update the camera state according to the different inputs gathered during the frame.
      */
     public update(): void {
+        this._hasMoved = false;
         this._checkInputs();
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             this._updateRigCameras();
@@ -816,6 +829,7 @@ export class Camera extends Node {
 
     /**
      * Gets the current world matrix of the camera
+     * @returns the world matrix
      */
     public getWorldMatrix(): Matrix {
         if (this._isSynchronizedViewMatrix()) {
@@ -842,6 +856,8 @@ export class Camera extends Node {
         if (!force && this._isSynchronizedViewMatrix()) {
             return this._computedViewMatrix;
         }
+
+        this._hasMoved = true;
 
         this.updateCache();
         this._computedViewMatrix = this._getViewMatrix();
@@ -1086,6 +1102,7 @@ export class Camera extends Node {
         return target.isCompletelyInFrustum(this._frustumPlanes);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param length Defines the length of the ray to create
@@ -1098,6 +1115,7 @@ export class Camera extends Node {
         throw _WarnImport("Ray");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Gets a ray in the forward direction from the camera.
      * @param refRay the ray to (re)use when setting the values
@@ -1401,7 +1419,7 @@ export class Camera extends Node {
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @returns the direction
      */
-    public getDirection(localAxis: Vector3): Vector3 {
+    public getDirection(localAxis: DeepImmutable<Vector3>): Vector3 {
         const result = Vector3.Zero();
 
         this.getDirectionToRef(localAxis, result);
@@ -1423,7 +1441,7 @@ export class Camera extends Node {
      * @param localAxis Defines the reference axis to provide a relative direction.
      * @param result Defines the vector to store the result in
      */
-    public getDirectionToRef(localAxis: Vector3, result: Vector3): void {
+    public getDirectionToRef(localAxis: DeepImmutable<Vector3>, result: Vector3): void {
         Vector3.TransformNormalToRef(localAxis, this.getWorldMatrix(), result);
     }
 

@@ -1,5 +1,6 @@
 import type { DeepImmutable, Nullable } from "../types";
-import { serialize, serializeAsVector3, serializeAsQuaternion, SerializationHelper } from "../Misc/decorators";
+import { serialize, serializeAsVector3, serializeAsQuaternion } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Observable } from "../Misc/observable";
 
 import type { Camera } from "../Cameras/camera";
@@ -9,6 +10,7 @@ import { Node } from "../node";
 import type { Bone } from "../Bones/bone";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Space } from "../Maths/math.axis";
+import { GetClass } from "../Misc/typeStore";
 
 const convertRHSToLHS = Matrix.Compose(Vector3.One(), Quaternion.FromEulerAngles(0, Math.PI, 0), Vector3.Zero());
 
@@ -219,7 +221,7 @@ export class TransformNode extends Node {
     }
 
     /**
-     * return true if pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect.
+     * @returns true if pivot matrix must be cancelled in the world matrix. When this parameter is set to true (default), the inverse of the pivot matrix is also applied at the end to cancel the transformation effect.
      */
     public isUsingPostMultiplyPivotMatrix(): boolean {
         return this._postMultiplyPivotMatrix;
@@ -1433,6 +1435,10 @@ export class TransformNode extends Node {
 
         serializationObject.isEnabled = this.isEnabled();
 
+        // Animations
+        SerializationHelper.AppendSerializedAnimations(this, serializationObject);
+        serializationObject.ranges = this.serializeAnimationRanges();
+
         return serializationObject;
     }
 
@@ -1464,6 +1470,28 @@ export class TransformNode extends Node {
 
         if (parsedTransformNode.parentInstanceIndex !== undefined) {
             transformNode._waitingParentInstanceIndex = parsedTransformNode.parentInstanceIndex;
+        }
+
+        // Animations
+        if (parsedTransformNode.animations) {
+            for (let animationIndex = 0; animationIndex < parsedTransformNode.animations.length; animationIndex++) {
+                const parsedAnimation = parsedTransformNode.animations[animationIndex];
+                const internalClass = GetClass("BABYLON.Animation");
+                if (internalClass) {
+                    transformNode.animations.push(internalClass.Parse(parsedAnimation));
+                }
+            }
+            Node.ParseAnimationRanges(transformNode, parsedTransformNode, scene);
+        }
+
+        if (parsedTransformNode.autoAnimate) {
+            scene.beginAnimation(
+                transformNode,
+                parsedTransformNode.autoAnimateFrom,
+                parsedTransformNode.autoAnimateTo,
+                parsedTransformNode.autoAnimateLoop,
+                parsedTransformNode.autoAnimateSpeed || 1.0
+            );
         }
 
         return transformNode;

@@ -81,7 +81,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Returns the string "InstancedMesh".
+     * @returns the string "InstancedMesh".
      */
     public getClassName(): string {
         return "InstancedMesh";
@@ -174,7 +174,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /**
-     * Returns the total number of vertices (integer).
+     * @returns the total number of vertices (integer).
      */
     public getTotalVertices(): number {
         return this._sourceMesh ? this._sourceMesh.getTotalVertices() : 0;
@@ -249,10 +249,11 @@ export class InstancedMesh extends AbstractMesh {
      * - VertexBuffer.MatricesWeightsExtraKind
      *
      * Returns the Mesh.
-     * @param kind
-     * @param data
-     * @param updatable
-     * @param stride
+     * @param kind defines vertex data kind
+     * @param data defines the data source
+     * @param updatable defines if the data must be flagged as updatable (false as default)
+     * @param stride defines the vertex stride (optional)
+     * @returns the current mesh
      */
     public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
         if (this.sourceMesh) {
@@ -284,10 +285,11 @@ export class InstancedMesh extends AbstractMesh {
      * - VertexBuffer.MatricesWeightsExtraKind
      *
      * Returns the Mesh.
-     * @param kind
-     * @param data
-     * @param updateExtends
-     * @param makeItUnique
+     * @param kind defines vertex data kind
+     * @param data defines the data source
+     * @param updateExtends defines if extends info of the mesh must be updated (can be null). This is mostly useful for "position" kind
+     * @param makeItUnique defines it the updated vertex buffer must be flagged as unique (false by default)
+     * @returns the source mesh
      */
     public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
         if (this.sourceMesh) {
@@ -302,8 +304,9 @@ export class InstancedMesh extends AbstractMesh {
      * If the mesh has no geometry, a new Geometry object is created and set to the mesh.
      * This method creates a new index buffer each call.
      * Returns the Mesh.
-     * @param indices
-     * @param totalVertices
+     * @param indices the source data
+     * @param totalVertices defines the total number of vertices referenced by indices (could be null)
+     * @returns source mesh
      */
     public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
         if (this.sourceMesh) {
@@ -314,14 +317,27 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Boolean : True if the mesh owns the requested kind of data.
-     * @param kind
+     * @param kind defines which buffer to check (positions, indices, normals, etc). Possible `kind` values :
+     * - VertexBuffer.PositionKind
+     * - VertexBuffer.UVKind
+     * - VertexBuffer.UV2Kind
+     * - VertexBuffer.UV3Kind
+     * - VertexBuffer.UV4Kind
+     * - VertexBuffer.UV5Kind
+     * - VertexBuffer.UV6Kind
+     * - VertexBuffer.ColorKind
+     * - VertexBuffer.MatricesIndicesKind
+     * - VertexBuffer.MatricesIndicesExtraKind
+     * - VertexBuffer.MatricesWeightsKind
+     * - VertexBuffer.MatricesWeightsExtraKind
+     * @returns true if data kind is present
      */
     public isVerticesDataPresent(kind: string): boolean {
         return this._sourceMesh.isVerticesDataPresent(kind);
     }
 
     /**
-     * Returns an array of indices (IndicesArray).
+     * @returns an array of indices (IndicesArray).
      */
     public getIndices(): Nullable<IndicesArray> {
         return this._sourceMesh.getIndices();
@@ -427,7 +443,8 @@ export class InstancedMesh extends AbstractMesh {
 
     /**
      * Returns the current associated LOD AbstractMesh.
-     * @param camera
+     * @param camera defines the camera to use to pick the LOD level
+     * @returns a Mesh or `null` if no LOD is associated with the AbstractMesh
      */
     public getLOD(camera: Camera): AbstractMesh {
         if (!camera) {
@@ -560,8 +577,8 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Disposes the InstancedMesh.
      * Returns nothing.
-     * @param doNotRecurse
-     * @param disposeMaterialAndTextures
+     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         // Remove from mesh

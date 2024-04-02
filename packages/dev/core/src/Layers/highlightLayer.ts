@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
@@ -30,6 +30,7 @@ import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
 import "../Layers/effectLayerSceneComponent";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -341,6 +342,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * Create the merge effect. This is the shader use to blit the information back
      * to the main canvas at the end of the scene rendering.
+     * @returns The effect created
      */
     protected _createMergeEffect(): Effect {
         // Effect
@@ -482,7 +484,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns whether or not the layer needs stencil enabled during the mesh rendering.
+     * @returns whether or not the layer needs stencil enabled during the mesh rendering.
      */
     public needStencil(): boolean {
         return true;
@@ -553,7 +555,7 @@ export class HighlightLayer extends EffectLayer {
     }
 
     /**
-     * Returns true if the layer contains information to display, otherwise false.
+     * @returns true if the layer contains information to display, otherwise false.
      */
     public shouldRender(): boolean {
         if (super.shouldRender()) {

@@ -10,7 +10,9 @@ import { TestPlanner } from "@memlab/e2e";
 const playgrounds: string[] = ["#2FDQT5#1508", "#T90MQ4#14", "#8EDB5N#2", "#YACNQS#2", "#SLV8LW#3"];
 
 /**
- *
+ * Get the global configuration for the tests
+ * @param overrideConfig override the default configuration
+ * @returns the configuration
  */
 export const getGlobalConfig = (overrideConfig: { root?: string; baseUrl?: string } = {}) => {
     populateEnvironment();
@@ -36,7 +38,9 @@ function getConfigFromRunOptions(options: RunOptions): MemLabConfig {
     return config;
 }
 /**
- *
+ * Take snapshots of the playgrounds
+ * @param options the options to use
+ * @returns the result reader
  */
 export async function takeSnapshotsLocal(options: RunOptions = {}): Promise<BrowserInteractionResultReader> {
     const config = getConfigFromRunOptions(options);

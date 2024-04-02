@@ -1,3 +1,4 @@
+/* eslint-disable babylonjs/available */
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import { WebGPUDataBuffer } from "../../Meshes/WebGPU/webgpuDataBuffer";
 import { FromHalfFloat } from "../../Misc/textureTools";
@@ -5,6 +6,7 @@ import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import { allocateAndCopyTypedBuffer } from "../Extensions/engine.readTexture";
 import type { WebGPUEngine } from "../webgpuEngine";
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 
 /** @internal */
@@ -40,7 +42,7 @@ export class WebGPUBufferManager {
     public createRawBuffer(viewOrSize: ArrayBufferView | number, flags: GPUBufferUsageFlags, mappedAtCreation = false, label?: string): GPUBuffer {
         const alignedLength = (viewOrSize as ArrayBufferView).byteLength !== undefined ? ((viewOrSize as ArrayBufferView).byteLength + 3) & ~3 : ((viewOrSize as number) + 3) & ~3; // 4 bytes alignments (because of the upload which requires this)
         const verticesBufferDescriptor = {
-            label: WebGPUBufferManager._FlagsToString(flags, label ?? "Buffer") + "_size" + alignedLength,
+            label: "BabylonWebGPUDevice" + this._engine.uniqueId + "_" + WebGPUBufferManager._FlagsToString(flags, label ?? "Buffer") + "_size" + alignedLength,
             mappedAtCreation,
             size: alignedLength,
             usage: flags,
@@ -55,6 +57,7 @@ export class WebGPUBufferManager {
         const dataBuffer = new WebGPUDataBuffer(buffer);
         dataBuffer.references = 1;
         dataBuffer.capacity = isView ? (viewOrSize as ArrayBufferView).byteLength : (viewOrSize as number);
+        dataBuffer.engineId = this._engine.uniqueId;
 
         if (isView) {
             this.setSubData(dataBuffer, 0, viewOrSize as ArrayBufferView);
@@ -126,6 +129,7 @@ export class WebGPUBufferManager {
         noDataConversion = false
     ): Promise<ArrayBufferView> {
         const floatFormat = type === Constants.TEXTURETYPE_FLOAT ? 2 : type === Constants.TEXTURETYPE_HALF_FLOAT ? 1 : 0;
+        const engineId = this._engine.uniqueId;
         return new Promise((resolve, reject) => {
             gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, offset, size).then(
                 () => {
@@ -199,7 +203,8 @@ export class WebGPUBufferManager {
                     resolve(data!);
                 },
                 (reason) => {
-                    if (this._engine.isDisposed) {
+                    if (this._engine.isDisposed || this._engine.uniqueId !== engineId) {
+                        // The engine was disposed while waiting for the promise, or a context loss/restoration has occurred: don't reject
                         resolve(new Uint8Array());
                     } else {
                         reject(reason);

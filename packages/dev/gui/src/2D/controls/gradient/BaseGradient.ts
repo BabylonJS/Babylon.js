@@ -43,7 +43,9 @@ export abstract class BaseGradient {
     /**
      * If there are any changes or the context changed, regenerate the canvas gradient object. Else,
      * reuse the existing gradient.
-     **/
+     * @param context the context to create the gradient from
+     * @returns the canvas gradient
+     */
     public getCanvasGradient(context: ICanvasRenderingContext) {
         if (this._gradientDirty || this._context !== context) {
             this._context = context;
@@ -81,23 +83,33 @@ export abstract class BaseGradient {
         this._gradientDirty = true;
     }
 
-    /** Color stops of the gradient */
+    /**
+     * Color stops of the gradient
+     */
     public get colorStops() {
         return this._colorStops;
     }
 
-    /** Type of the gradient */
+    /**
+     * @returns Type of the gradient
+     */
     public getClassName() {
         return "BaseGradient";
     }
 
-    /** Serialize into a json object */
+    /**
+     * Serialize into a json object
+     * @param serializationObject object to serialize into
+     */
     public serialize(serializationObject: any) {
         serializationObject.colorStops = this._colorStops;
         serializationObject.className = this.getClassName();
     }
 
-    /** Parse from json object */
+    /**
+     * Parse from json object
+     * @param serializationObject object to parse from
+     */
     public parse(serializationObject: any) {
         this._colorStops = serializationObject.colorStops;
     }

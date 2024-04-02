@@ -1,6 +1,7 @@
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../../types";
+import { Constants } from "../constants";
 import type { Engine } from "../engine";
 import { RenderTargetWrapper } from "../renderTargetWrapper";
 import type { ThinEngine } from "../thinEngine";
@@ -21,6 +22,7 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
     /**
      * @internal
      */
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     public _MSAAFramebuffer: Nullable<WebGLFramebuffer> = null;
 
     // Multiview
@@ -70,6 +72,43 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
         target._depthStencilTextureArray = this._depthStencilTextureArray;
 
         this._framebuffer = this._depthStencilBuffer = this._MSAAFramebuffer = this._colorTextureArray = this._depthStencilTextureArray = null;
+    }
+
+    /**
+     * Creates the depth/stencil texture
+     * @param comparisonFunction Comparison function to use for the texture
+     * @param bilinearFiltering true if bilinear filtering should be used when sampling the texture
+     * @param generateStencil true if the stencil aspect should also be created
+     * @param samples sample count to use when creating the texture
+     * @param format format of the depth texture
+     * @param label defines the label to use for the texture (for debugging purpose only)
+     * @returns the depth/stencil created texture
+     */
+    public createDepthStencilTexture(
+        comparisonFunction: number = 0,
+        bilinearFiltering: boolean = true,
+        generateStencil: boolean = false,
+        samples: number = 1,
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
+    ): InternalTexture {
+        if (this._depthStencilBuffer) {
+            // Dispose previous depth/stencil render buffers and clear the corresponding attachment.
+            // Next time this framebuffer is bound, the new depth/stencil texture will be attached.
+            const currentFrameBuffer = this._engine._currentFramebuffer;
+            const gl = this._context;
+
+            this._engine._bindUnboundFramebuffer(this._framebuffer);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, null);
+            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.STENCIL_ATTACHMENT, gl.RENDERBUFFER, null);
+            this._engine._bindUnboundFramebuffer(currentFrameBuffer);
+            gl.deleteRenderbuffer(this._depthStencilBuffer);
+
+            this._depthStencilBuffer = null;
+        }
+
+        return super.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
     /**

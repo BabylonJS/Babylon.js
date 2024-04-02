@@ -432,12 +432,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public isPickable = true;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near picked. Default is false
+     * Gets or sets a boolean indicating if the mesh can be near picked (touched by the XR controller or hands). Default is false
      */
     public isNearPickable = false;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near grabbed. Default is false
+     * Gets or sets a boolean indicating if the mesh can be grabbed. Default is false.
+     * Setting this to true, while using the XR near interaction feature, will trigger a pointer event when the mesh is grabbed.
+     * Grabbing means that the controller is using the squeeze or main trigger button to grab the mesh.
+     * This is different from nearPickable which only triggers the event when the mesh is touched by the controller
      */
     public isNearGrabbable = false;
 
@@ -977,6 +980,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         for (const subMesh of this.subMeshes) {
             subMesh._rebuild();
         }
+
+        this.resetDrawCache();
     }
 
     /** @internal */
@@ -1488,6 +1493,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param applyMorph
      * @param data
      * @param kind the kind of data you want. Can be Normal or Position
+     * @returns a FloatArray of the vertex data
      */
     private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
         data = data ?? this.getVerticesData(kind)!.slice();
@@ -2637,6 +2643,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return false;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Disables the mesh edge rendering mode
      * @returns the currentAbstractMesh
@@ -2645,6 +2652,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         throw _WarnImport("EdgesRenderer");
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Enables the edge rendering mode on the mesh.
      * This mode makes the mesh edges visible

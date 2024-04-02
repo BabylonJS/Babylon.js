@@ -7,7 +7,6 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { ThinEngine } from "../Engines/thinEngine";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
-
 import "../Engines/Extensions/engine.uniformBuffer";
 
 /**
@@ -413,6 +412,7 @@ export class UniformBuffer {
         // std140 FTW...
         if (arraySize > 0) {
             if (size instanceof Array) {
+                // eslint-disable-next-line no-throw-literal
                 throw "addUniform should not be use with Array in UBO: " + name;
             }
 
@@ -465,7 +465,7 @@ export class UniformBuffer {
      * @param mat A 4x4 matrix.
      */
     public addMatrix(name: string, mat: IMatrixLike) {
-        this.addUniform(name, Array.prototype.slice.call(mat.toArray()));
+        this.addUniform(name, Array.prototype.slice.call(mat.asArray()));
     }
 
     /**
@@ -558,10 +558,18 @@ export class UniformBuffer {
         this._needSync = true;
     }
 
+    // The result of this method is used for debugging purpose, as part of the buffer name
+    // It is meant to more easily know what this buffer is about when debugging
+    // Some buffers can have a lot of uniforms (several dozens), so the method only returns the first 10 of them
+    // (should be enough to understand what the buffer is for)
     private _getNames() {
         const names = [];
+        let i = 0;
         for (const name in this._uniformLocations) {
             names.push(name);
+            if (++i === 10) {
+                break;
+            }
         }
         return names.join(",");
     }
@@ -583,6 +591,15 @@ export class UniformBuffer {
             this._bufferIndex = this._buffers.length - 1;
             this._createBufferOnWrite = false;
         }
+    }
+
+    /** @internal */
+    public _rebuildAfterContextLost(): void {
+        if (this._engine._features.trackUbosInFrame) {
+            this._buffers = [];
+            this._currentFrameId = 0;
+        }
+        this._rebuild();
     }
 
     /** @internal */
@@ -703,7 +720,7 @@ export class UniformBuffer {
         if (location === undefined) {
             if (this._buffer) {
                 // Cannot add an uniform if the buffer is already created
-                Logger.Error("Cannot add an uniform after UBO has been created.");
+                Logger.Error("Cannot add an uniform after UBO has been created. uniformName=" + uniformName);
                 return;
             }
             this.addUniform(uniformName, size);
@@ -923,7 +940,7 @@ export class UniformBuffer {
 
     private _updateMatrixForUniform(name: string, mat: IMatrixLike) {
         if (this._cacheMatrix(name, mat)) {
-            this.updateUniform(name, <any>mat.toArray(), 16);
+            this.updateUniform(name, <any>mat.asArray(), 16);
         }
     }
 

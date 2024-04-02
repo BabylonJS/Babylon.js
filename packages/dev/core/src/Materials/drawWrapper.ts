@@ -13,6 +13,24 @@ export class DrawWrapper {
     public materialContext?: IMaterialContext;
     public drawContext?: IDrawContext;
 
+    /**
+     * @internal
+     * Specifies if the effect was previously ready
+     */
+    public _wasPreviouslyReady = false;
+
+    /**
+     * @internal
+     * Forces the code from bindForSubMesh to be fully run the next time it is called
+     */
+    public _forceRebindOnNextCall = true;
+
+    /**
+     * @internal
+     * Specifies if the effect was previously using instances
+     */
+    public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
+
     public static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
         return (effect as Effect).getPipelineContext === undefined;
     }

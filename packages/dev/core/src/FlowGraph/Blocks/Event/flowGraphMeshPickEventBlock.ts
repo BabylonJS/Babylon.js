@@ -4,29 +4,44 @@ import { PointerEventTypes } from "../../../Events/pointerEvents";
 import type { FlowGraphContext } from "../../flowGraphContext";
 import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { FlowGraphPath } from "../../flowGraphPath";
-import { Tools } from "../../../Misc/tools";
 import { _isADescendantOf } from "../../utils";
+import type { IPathToObjectConverter } from "../../../ObjectModel/objectModelInterfaces";
+import type { IObjectAccessor } from "../../typeDefinitions";
 /**
  * @experimental
  */
 export interface IFlowGraphMeshPickEventBlockConfiguration extends IFlowGraphBlockConfiguration {
-    path: FlowGraphPath;
+    /**
+     * The path of the mesh to pick.
+     */
+    path: string;
+    /**
+     * The path converter to use to convert the path to an object accessor.
+     */
+    pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 /**
  * @experimental
  * A block that activates when a mesh is picked.
  */
 export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
-    public constructor(public config: IFlowGraphMeshPickEventBlockConfiguration) {
-        if (config.path.hasTemplateStrings) {
-            Tools.Warn("Template strings are not supported in the path of mesh pick event blocks.");
-        }
+    public constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphMeshPickEventBlockConfiguration
+    ) {
         super(config);
     }
 
-    public _getReferencedMesh(context: FlowGraphContext): AbstractMesh | undefined {
-        return this.config.path.getProperty(context);
+    public _getReferencedMesh(): AbstractMesh {
+        const iAccessor = this.config.pathConverter.convert(this.config.path);
+
+        const mesh = iAccessor.info.getObject(iAccessor.object) as AbstractMesh;
+        if (!mesh || !(mesh instanceof AbstractMesh)) {
+            throw new Error("Mesh pick event block requires a valid mesh");
+        }
+        return mesh;
     }
 
     /**
@@ -35,10 +50,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     public _preparePendingTasks(context: FlowGraphContext): void {
         let pickObserver = context._getExecutionVariable(this, "meshPickObserver");
         if (!pickObserver) {
-            const mesh = this.config.path.getProperty(context);
-            if (!mesh || !(mesh instanceof AbstractMesh)) {
-                throw new Error("Mesh pick event block requires a valid mesh");
-            }
+            const mesh = this._getReferencedMesh();
             context._setExecutionVariable(this, "mesh", mesh);
             pickObserver = mesh.getScene().onPointerObservable.add((pointerInfo) => {
                 if (
@@ -76,15 +88,25 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         context._deleteExecutionVariable(this, "meshDisposeObserver");
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphMeshPickEventBlock.ClassName;
     }
 
+    /**
+     * Serializes the block to a JSON object.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
-        serializationObject.config.path = this.config.path.serialize();
+        serializationObject.config.path = this.config.path;
     }
 
-    static ClassName = "FGMeshPickEventBlock";
+    /**
+     * Class name of the block.
+     */
+    public static ClassName = "FGMeshPickEventBlock";
 }
 RegisterClass(FlowGraphMeshPickEventBlock.ClassName, FlowGraphMeshPickEventBlock);

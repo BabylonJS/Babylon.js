@@ -28,7 +28,7 @@ function isTextureAsset(name: string): boolean {
         name = name.substring(0, queryStringIndex);
     }
 
-    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg");
+    return name.endsWith(".ktx") || name.endsWith(".ktx2") || name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".webp");
 }
 
 interface IRenderingZoneProps {
@@ -169,8 +169,9 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
             const camera = this._scene.activeCamera! as ArcRotateCamera;
 
-            if (this._currentPluginName === "gltf") {
+            if (this._currentPluginName === "gltf" || this._currentPluginName === "obj") {
                 // glTF assets use a +Z forward convention while the default camera faces +Z. Rotate the camera to look at the front of the asset.
+                // We do this same for obj as it matches other viewers, but obj does not specify a forward convention.
                 camera.alpha += Math.PI;
             }
 

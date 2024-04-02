@@ -19,18 +19,6 @@ import { CreateGroundVertexData } from "./groundBuilder";
  * * sideOrientation optional and takes the values : Mesh.FRONTSIDE (default), Mesh.BACKSIDE or Mesh.DOUBLESIDE
  * * frontUvs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the front side, optional, default vector4 (0, 0, 1, 1)
  * * backUVs only usable when you create a double-sided mesh, used to choose what parts of the texture image to crop and apply on the back side, optional, default vector4 (0, 0, 1, 1)
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.depth
- * @param options.faceUV
- * @param options.faceColors
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.wrap
- * @param options.topBaseAt
- * @param options.bottomBaseAt
  * @returns the VertexData of the box
  */
 export function CreateBoxVertexData(options: {
@@ -168,14 +156,6 @@ export function CreateBoxVertexData(options: {
  * * widthSegments sets the number of segments on the x axis (1 by default)
  * * heightSegments sets the number of segments on the y axis (1 by default)
  * * depthSegments sets the number of segments on the z axis (1 by default)
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.depth
- * @param options.segments
- * @param options.widthSegments
- * @param options.heightSegments
- * @param options.depthSegments
  * @returns the VertexData of the box
  */
 export function CreateSegmentedBoxVertexData(options: {
@@ -250,19 +230,6 @@ export function CreateSegmentedBoxVertexData(options: {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#box
  * @param name defines the name of the mesh
  * @param options defines the options used to create the mesh
- * @param options.size
- * @param options.width
- * @param options.height
- * @param options.depth
- * @param options.faceUV
- * @param options.faceColors
- * @param options.sideOrientation
- * @param options.frontUVs
- * @param options.backUVs
- * @param options.wrap
- * @param options.topBaseAt
- * @param options.bottomBaseAt
- * @param options.updatable
  * @param scene defines the hosting scene
  * @returns the box mesh
  */

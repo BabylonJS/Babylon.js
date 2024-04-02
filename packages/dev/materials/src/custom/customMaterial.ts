@@ -8,63 +8,152 @@ import type { Scene } from "core/scene";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { Nullable } from "core/types";
+import type { SubMesh } from "core/Meshes/subMesh";
 
+/**
+ * Structure of a custom shader
+ */
 export class CustomShaderStructure {
+    /**
+     * Fragment store
+     */
     public FragmentStore: string;
+    /**
+     * Vertex store
+     */
     public VertexStore: string;
 
     constructor() {}
 }
 
+/**
+ * Parts of a shader
+ */
 export class ShaderSpecialParts {
     constructor() {}
 
+    /**
+     * Beginning of the fragment shader
+     */
     public Fragment_Begin: string;
+    /**
+     * Variable definitions of the fragment shader
+     */
     public Fragment_Definitions: string;
+    /**
+     * Beginning of the fragment main function
+     */
     public Fragment_MainBegin: string;
+    /**
+     * End of the fragment main function
+     */
     public Fragment_MainEnd: string;
 
-    // diffuseColor
+    /**
+     * Diffuse color calculation
+     */
     public Fragment_Custom_Diffuse: string;
-    // lights
+    /**
+     * Before lightning computations
+     */
     public Fragment_Before_Lights: string;
-    // fog
+    /**
+     * Before fog computations
+     */
     public Fragment_Before_Fog: string;
-    // alpha
+    /**
+     * Alpha calculations
+     */
     public Fragment_Custom_Alpha: string;
-
+    /**
+     * Before frag color is assigned
+     */
     public Fragment_Before_FragColor: string;
-
+    /**
+     * Beginning of the vertex shader
+     */
     public Vertex_Begin: string;
+    /**
+     * Variable definitions of the vertex shader
+     */
     public Vertex_Definitions: string;
+    /**
+     * Start of the main function of the vertex shader
+     */
     public Vertex_MainBegin: string;
 
-    // positionUpdated
+    /**
+     * Before the world position computation
+     */
     public Vertex_Before_PositionUpdated: string;
 
-    // normalUpdated
+    /**
+     * Before the normal computation
+     */
     public Vertex_Before_NormalUpdated: string;
 
-    // worldPosComputed
+    /**
+     * After the world position has been computed
+     */
     public Vertex_After_WorldPosComputed: string;
 
-    // mainEnd
+    /**
+     * Main end of the vertex shader
+     */
     public Vertex_MainEnd: string;
 }
 
+/**
+ * Customized material
+ */
 export class CustomMaterial extends StandardMaterial {
+    /**
+     * Index for each created shader
+     */
     public static ShaderIndexer = 1;
+    /**
+     * Custom shader structure
+     */
     public CustomParts: ShaderSpecialParts;
-    _createdShaderName: string;
-    _customUniform: string[];
-    _newUniforms: string[];
-    _newUniformInstances: { [name: string]: any };
-    _newSamplerInstances: { [name: string]: Texture };
-    _customAttributes: string[];
+    /**
+     * Name of the shader
+     */
+    public _createdShaderName: string;
+    /**
+     * List of custom uniforms
+     */
+    public _customUniform: string[];
+    /**
+     * Names of the new uniforms
+     */
+    public _newUniforms: string[];
+    /**
+     * Instances of the new uniform objects
+     */
+    public _newUniformInstances: { [name: string]: any };
+    /**
+     * Instances of the new sampler objects
+     */
+    public _newSamplerInstances: { [name: string]: Texture };
+    /**
+     * List of the custom attributes
+     */
+    public _customAttributes: string[];
 
+    /**
+     * Fragment shader string
+     */
     public FragmentShader: string;
+    /**
+     * Vertex shader string
+     */
     public VertexShader: string;
 
+    /**
+     * Runs after the material is bound to a mesh
+     * @param mesh mesh bound
+     * @param effect bound effect used to render
+     */
     public AttachAfterBind(mesh: Mesh | undefined, effect: Effect) {
         if (this._newUniformInstances) {
             for (const el in this._newUniformInstances) {
@@ -101,6 +190,9 @@ export class CustomMaterial extends StandardMaterial {
         }
     }
 
+    /**
+     * @internal
+     */
     public ReviewUniform(name: string, arr: string[]): string[] {
         if (name == "uniform" && this._newUniforms) {
             for (let ind = 0; ind < this._newUniforms.length; ind++) {
@@ -119,6 +211,16 @@ export class CustomMaterial extends StandardMaterial {
         return arr;
     }
 
+    /**
+     * Builds the material
+     * @param shaderName name of the shader
+     * @param uniforms list of uniforms
+     * @param uniformBuffers list of uniform buffers
+     * @param samplers list of samplers
+     * @param defines list of defines
+     * @param attributes list of attributes
+     * @returns the shader name
+     */
     public Builder(shaderName: string, uniforms: string[], uniformBuffers: string[], samplers: string[], defines: MaterialDefines | string[], attributes?: string[]): string {
         if (attributes && this._customAttributes && this._customAttributes.length > 0) {
             attributes.push(...this._customAttributes);
@@ -190,16 +292,23 @@ export class CustomMaterial extends StandardMaterial {
         this._createdShaderName = "custom_" + CustomMaterial.ShaderIndexer;
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;
         }
         this.AttachAfterBind(mesh, effect);
         try {
-            super._afterBind(mesh, effect);
+            super._afterBind(mesh, effect, subMesh);
         } catch (e) {}
     }
 
+    /**
+     * Adds a new uniform to the shader
+     * @param name the name of the uniform to add
+     * @param kind the type of the uniform to add
+     * @param param the value of the uniform to add
+     * @returns the current material
+     */
     public AddUniform(name: string, kind: string, param: any): CustomMaterial {
         if (!this._customUniform) {
             this._customUniform = new Array();
@@ -220,6 +329,11 @@ export class CustomMaterial extends StandardMaterial {
         return this;
     }
 
+    /**
+     * Adds a custom attribute
+     * @param name the name of the attribute
+     * @returns the current material
+     */
     public AddAttribute(name: string): CustomMaterial {
         if (!this._customAttributes) {
             this._customAttributes = [];
@@ -230,81 +344,161 @@ export class CustomMaterial extends StandardMaterial {
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Begin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Begin(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Begin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Definitions portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Definitions(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Definitions = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_MainBegin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_MainBegin(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_MainBegin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_MainEnd portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_MainEnd(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_MainEnd = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_Diffuse portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_Diffuse(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Custom_Diffuse = shaderPart.replace("result", "diffuseColor");
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Custom_Alpha portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Custom_Alpha(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Custom_Alpha = shaderPart.replace("result", "alpha");
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_Lights portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_Lights(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_Lights = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_Fog portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_Fog(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_Fog = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Fragment_Before_FragColor portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Fragment_Before_FragColor(shaderPart: string): CustomMaterial {
         this.CustomParts.Fragment_Before_FragColor = shaderPart.replace("result", "color");
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Begin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Begin(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Begin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Definitions portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Definitions(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Definitions = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_MainBegin portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_MainBegin(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_MainBegin = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Before_PositionUpdated portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Before_PositionUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_PositionUpdated = shaderPart.replace("result", "positionUpdated");
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_Before_NormalUpdated portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_Before_NormalUpdated(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_Before_NormalUpdated = shaderPart.replace("result", "normalUpdated");
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_After_WorldPosComputed portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_After_WorldPosComputed(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_After_WorldPosComputed = shaderPart;
         return this;
     }
 
+    /**
+     * Sets the code on Vertex_MainEnd portion
+     * @param shaderPart the code string
+     * @returns the current material
+     */
     public Vertex_MainEnd(shaderPart: string): CustomMaterial {
         this.CustomParts.Vertex_MainEnd = shaderPart;
         return this;

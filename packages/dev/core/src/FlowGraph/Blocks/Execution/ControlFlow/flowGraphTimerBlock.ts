@@ -69,10 +69,16 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
         context._deleteExecutionVariable(this, "runningTimers");
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return FlowGraphTimerBlock.ClassName;
     }
 
+    /**
+     * the class name of the block.
+     */
     public static ClassName = "FGTimerBlock";
 }
 RegisterClass("FGTimerBlock", FlowGraphTimerBlock);

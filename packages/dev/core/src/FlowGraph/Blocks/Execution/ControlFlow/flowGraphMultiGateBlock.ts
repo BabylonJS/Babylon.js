@@ -47,14 +47,15 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     public readonly currentIndex: FlowGraphDataConnection<number>;
     private _cachedUnusedIndexes: number[] = [];
 
-    constructor(public config: IFlowGraphMultiGateBlockConfiguration) {
+    constructor(
+        /**
+         * the configuration of the block
+         */
+        public config: IFlowGraphMultiGateBlockConfiguration
+    ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
         this.currentIndex = this.registerDataOutput("currentIndex", RichTypeNumber);
-    }
-
-    public configure() {
-        super.configure();
         this.config.startIndex = this.config.startIndex !== undefined ? this.config.startIndex : 0;
         this.config.startIndex = Math.max(0, Math.min(this.config.startIndex!, this.config.numberOutputFlows - 1));
         this.outFlows = [];
@@ -117,10 +118,17 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         this.outFlows[nextIndex]._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGMultiGateBlock";
     }
 
+    /**
+     * Serializes the block.
+     * @param serializationObject the object to serialize to.
+     */
     public serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.numberOutputFlows = this.config.numberOutputFlows;

@@ -104,18 +104,20 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     }
 
     public preProcessShaderCode(code: string): string {
-        return (
-            `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n` +
-            RemoveComments(code)
-        );
+        // Same check as in webgpuShaderProcessorsGLSL to avoid same ubDelcaration to be injected twice.
+        const ubDeclaration = `struct ${WebGPUShaderProcessor.InternalsUBOName} {\n  yFactor_: f32,\n  textureOutputHeight_: f32,\n};\nvar<uniform> ${internalsVarName} : ${WebGPUShaderProcessor.InternalsUBOName};\n`;
+        const alreadyInjected = code.indexOf(ubDeclaration) !== -1;
+        return alreadyInjected ? code : ubDeclaration + RemoveComments(code);
     }
 
     public varyingProcessor(varying: string, isFragment: boolean, preProcessors: { [key: string]: string }) {
-        const varyingRegex = /\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm;
+        const varyingRegex = /\s*(flat|linear|perspective)?\s*(center|centroid|sample)?\s*varying\s+(?:(?:highp)?|(?:lowp)?)\s*(\S+)\s*:\s*(.+)\s*;/gm;
         const match = varyingRegex.exec(varying);
         if (match !== null) {
-            const varyingType = match[2];
-            const name = match[1];
+            const interpolationType = match[1] ?? "perspective";
+            const interpolationSampling = match[2] ?? "center";
+            const varyingType = match[4];
+            const name = match[3];
             let location: number;
             if (isFragment) {
                 location = this._webgpuProcessingContext.availableVaryings[name];
@@ -125,7 +127,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             } else {
                 location = this._webgpuProcessingContext.getVaryingNextLocation(varyingType, this._getArraySize(name, varyingType, preProcessors)[2]);
                 this._webgpuProcessingContext.availableVaryings[name] = location;
-                this._varyingsWGSL.push(`  @location(${location}) ${name} : ${varyingType},`);
+                this._varyingsWGSL.push(`  @location(${location}) @interpolate(${interpolationType}, ${interpolationSampling}) ${name} : ${varyingType},`);
                 this._varyingNamesWGSL.push(name);
             }
 
@@ -222,6 +224,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             textureInfo.sampleType = sampleType;
 
             if (textureDimension === undefined) {
+                // eslint-disable-next-line no-throw-literal
                 throw `Can't get the texture dimension corresponding to the texture function "${textureFunc}"!`;
             }
 
@@ -239,8 +242,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    public postProcessor(code: string) {
-        return code;
+    public postProcessor(code: string, defines: string[]) {
+        const defineToValue: { [key: string]: string } = {};
+        for (const define of defines) {
+            const parts = define.split(/ +/);
+            defineToValue[parts[1]] = parts.length > 2 ? parts[2] : "";
+        }
+        return code.replace(/\$(\w+)\$/g, (_, p1) => {
+            return defineToValue[p1] ?? p1;
+        });
     }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {

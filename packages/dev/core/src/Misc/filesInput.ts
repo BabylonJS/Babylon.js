@@ -19,17 +19,22 @@ export class FilesInput {
 
     /**
      * Callback called when a file is processed
+     * @returns false to abort the process
      */
     public onProcessFileCallback: (file: File, name: string, extension: string, setSceneFileToLoad: (sceneFile: File) => void) => boolean = () => {
         return true;
     };
 
+    /**
+     * If a loading UI should be displayed while loading a file
+     */
     public displayLoadingUI: boolean = true;
 
     /**
      * Function used when loading the scene file
-     * @param sceneFile
-     * @param onProgress
+     * @param sceneFile defines the file to load
+     * @param onProgress onProgress callback called while loading the file
+     * @returns a promise completing when the load is complete
      */
     public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) =>
         this.useAppend ? SceneLoader.AppendAsync("file:", sceneFile, this._currentScene, onProgress) : SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);

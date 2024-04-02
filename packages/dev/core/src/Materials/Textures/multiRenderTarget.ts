@@ -319,8 +319,8 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * @internal
      */
-    public _rebuild(forceFullRebuild: boolean = false, textureNames?: string[]): void {
-        if (this._count < 1) {
+    public _rebuild(fromContextLost = false, forceFullRebuild: boolean = false, textureNames?: string[]): void {
+        if (this._count < 1 || fromContextLost) {
             return;
         }
 
@@ -496,7 +496,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      */
     public resize(size: any) {
         this._processSizeParameter(size, false);
-        this._rebuild(undefined, this._textureNames);
+        this._rebuild(false, undefined, this._textureNames);
     }
 
     /**
@@ -532,7 +532,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._multiRenderTargetOptions.layerCounts = layerCounts;
         this._multiRenderTargetOptions.labels = textureNames;
 
-        this._rebuild(true, textureNames);
+        this._rebuild(false, true, textureNames);
     }
 
     protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
@@ -545,7 +545,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
 
     /**
      * Dispose the render targets and their associated resources
-     * @param doNotDisposeInternalTextures
+     * @param doNotDisposeInternalTextures if set to true, internal textures won't be disposed (default: false).
      */
     public dispose(doNotDisposeInternalTextures = false): void {
         this._releaseTextures();

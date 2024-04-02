@@ -14,7 +14,8 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import "../Animations/animatable";
 import "../Rendering/geometryBufferRendererSceneComponent";
 import "../Shaders/motionBlur.fragment";
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
 
 import type { Engine } from "../Engines/engine";
@@ -229,8 +230,9 @@ export class MotionBlurPostProcess extends PostProcess {
 
     /**
      * Called on the mode changed (object based or screen based).
+     * @returns void
      */
-    private _applyMode(): void {
+    private _applyMode() {
         if (!this._geometryBufferRenderer && !this._prePassRenderer) {
             // We can't get a velocity or depth texture. So, work as a passthrough.
             Logger.Warn("Multiple Render Target support needed to compute object based motion blur");

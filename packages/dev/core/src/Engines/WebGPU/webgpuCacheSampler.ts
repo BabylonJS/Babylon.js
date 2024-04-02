@@ -1,3 +1,6 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
+// eslint-disable-next-line @typescript-eslint/naming-convention
 import * as WebGPUConstants from "./webgpuConstants";
 import { Constants } from "../constants";
 import type { TextureSampler } from "../../Materials/Textures/textureSampler";

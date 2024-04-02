@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { serialize, SerializationHelper } from "../../../Misc/decorators";
+import { serialize } from "../../../Misc/decorators";
+import { SerializationHelper } from "../../../Misc/decorators.serialization";
 import { Vector3, Matrix, Quaternion, TmpVectors } from "../../../Maths/math.vector";
 import type { Camera } from "../../../Cameras/camera";
 import type { Effect } from "../../../Materials/effect";
@@ -693,7 +694,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
     /**
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
-     * @param disableGeometryBufferRenderer
+     * @param disableGeometryBufferRenderer if the geometry buffer renderer should be disabled
      */
     public dispose(disableGeometryBufferRenderer: boolean = false): void {
         this._disposeDepthRenderer();

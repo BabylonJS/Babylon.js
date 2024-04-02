@@ -301,6 +301,7 @@ export class ArcFollowCamera extends TargetCamera {
     /**
      * Returns the class name of the object.
      * It is mostly used internally for serialization purposes.
+     * @returns the class name
      */
     public getClassName(): string {
         return "ArcFollowCamera";

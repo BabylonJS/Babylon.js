@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVec
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -19,6 +19,7 @@ import { Epsilon } from "../Maths/math.constants";
 import { Tools } from "../Misc/tools";
 
 import type { Collider } from "../Collisions/collider";
+import type { TransformNode } from "core/Meshes/transformNode";
 
 Node.AddNodeConstructor("ArcRotateCamera", (name, scene) => {
     return () => new ArcRotateCamera(name, 0, 0, 1.0, Vector3.Zero(), scene);
@@ -60,7 +61,7 @@ export class ArcRotateCamera extends TargetCamera {
     @serializeAsVector3("target")
     protected _target: Vector3;
     @serializeAsMeshReference("targetHost")
-    protected _targetHost: Nullable<AbstractMesh>;
+    protected _targetHost: Nullable<TransformNode>;
 
     /**
      * Defines the target point of the camera.
@@ -74,14 +75,14 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Defines the target mesh of the camera.
+     * Defines the target transform node of the camera.
      * The camera looks towards it from the radius distance.
      * Please note that setting a target host will disable panning.
      */
-    public get targetHost(): Nullable<AbstractMesh> {
+    public get targetHost(): Nullable<TransformNode> {
         return this._targetHost;
     }
-    public set targetHost(value: Nullable<AbstractMesh>) {
+    public set targetHost(value: Nullable<TransformNode>) {
         if (value) {
             this.setTarget(value);
         }
@@ -306,7 +307,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets or Set the pointer pinch delta percentage or how fast is the camera zooming.
-     * It will be used instead of pinchDeltaPrecision if different from 0.
+     * It will be used instead of pinchPrecision if different from 0.
      * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
      */
     public get pinchDeltaPercentage(): number {
@@ -485,8 +486,8 @@ export class ArcRotateCamera extends TargetCamera {
 
     /**
      * Gets or Set the mouse wheel delta percentage or how fast is the camera zooming.
-     * It will be used instead of pinchDeltaPrecision if different from 0.
-     * It defines the percentage of current camera.radius to use as delta when pinch zoom is used.
+     * It will be used instead of wheelPrecision if different from 0.
+     * It defines the percentage of current camera.radius to use as delta when wheel zoom is used.
      */
     public get wheelDeltaPercentage(): number {
         const mousewheel = <ArcRotateCameraMouseWheelInput>this.inputs.attached["mousewheel"];
@@ -655,9 +656,9 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /**
-     * Observable triggered when the mesh target has been changed on the camera.
+     * Observable triggered when the transform node target has been changed on the camera.
      */
-    public onMeshTargetChangedObservable = new Observable<Nullable<AbstractMesh>>();
+    public onMeshTargetChangedObservable = new Observable<Nullable<TransformNode>>();
 
     /**
      * Event raised when the camera is colliding with a mesh.
@@ -962,6 +963,12 @@ export class ArcRotateCamera extends TargetCamera {
                         this._target.copyFrom(this._transformedDirection);
                     }
                 } else {
+                    if (this.parent) {
+                        const m = TmpVectors.Matrix[0];
+                        this.parent.getWorldMatrix().getRotationMatrixToRef(m);
+                        m.transposeToRef(m);
+                        Vector3.TransformCoordinatesToRef(this._transformedDirection, m, this._transformedDirection);
+                    }
                     this._target.addInPlace(this._transformedDirection);
                 }
             }
@@ -1078,22 +1085,22 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the target the camera should look at.
      * This will automatically adapt alpha beta and radius to fit within the new target.
      * Please note that setting a target as a mesh will disable panning.
-     * @param target Defines the new target as a Vector or a mesh
+     * @param target Defines the new target as a Vector or a transform node
      * @param toBoundingCenter In case of a mesh target, defines whether to target the mesh position or its bounding information center
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
-    public setTarget(target: AbstractMesh | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+    public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
         cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
 
-        if ((<any>target).getBoundingInfo) {
-            if (toBoundingCenter) {
+        if ((target as TransformNode).computeWorldMatrix) {
+            if (toBoundingCenter && (<any>target).getBoundingInfo) {
                 this._targetBoundingCenter = (<any>target).getBoundingInfo().boundingBox.centerWorld.clone();
             } else {
                 this._targetBoundingCenter = null;
             }
-            (<AbstractMesh>target).computeWorldMatrix();
-            this._targetHost = <AbstractMesh>target;
+            (<TransformNode>target).computeWorldMatrix();
+            this._targetHost = <TransformNode>target;
             this._target = this._getTargetPosition();
 
             this.onMeshTargetChangedObservable.notifyObservers(this._targetHost);
@@ -1254,6 +1261,8 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @override
      * Override Camera.createRigCamera
+     * @param name the name of the camera
+     * @param cameraIndex the index of the camera in the rig cameras array
      */
     public createRigCamera(name: string, cameraIndex: number): Camera {
         let alphaShift: number = 0;

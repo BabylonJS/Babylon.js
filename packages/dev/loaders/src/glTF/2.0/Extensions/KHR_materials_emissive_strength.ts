@@ -61,7 +61,7 @@ export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
         }
 
         if (properties.emissiveStrength !== undefined) {
-            babylonMaterial.emissiveColor.scaleToRef(properties.emissiveStrength, babylonMaterial.emissiveColor);
+            babylonMaterial.emissiveIntensity = properties.emissiveStrength;
         }
     }
 }

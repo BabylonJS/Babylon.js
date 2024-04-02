@@ -1,4 +1,5 @@
-import { serializeAsMeshReference, serializeAsVector3, SerializationHelper } from "../Misc/decorators";
+import { serializeAsMeshReference, serializeAsVector3 } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Matrix, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";

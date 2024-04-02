@@ -310,10 +310,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     }
 
     /**
+     * @internal
      * Create Geometry for Gizmo
      * @param parentMesh
      * @param thickness
      * @param isCollider
+     * @returns the gizmo mesh
      */
     protected _createGizmoMesh(parentMesh: AbstractMesh, thickness: number, isCollider = false) {
         const arrowMesh = CreateBox("yPosMesh", { size: 0.4 * (1 + (thickness - 1) / 4) }, this.gizmoLayer.utilityLayerScene);

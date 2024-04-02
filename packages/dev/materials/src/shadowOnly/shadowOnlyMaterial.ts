@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { SerializationHelper } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IShadowLight } from "core/Lights/shadowLight";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { VertexBuffer } from "core/Buffers/buffer";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -21,6 +20,20 @@ import "./shadowOnly.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import type { CascadedShadowGenerator } from "core/Lights/Shadows/cascadedShadowGenerator";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLights,
+    BindLogDepth,
+    HandleFallbacksForShadows,
+    PrepareAttributesForBones,
+    PrepareAttributesForInstances,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForLights,
+    PrepareDefinesForMisc,
+    PrepareUniformsAndSamplersList,
+} from "core/Materials/materialHelper.functions";
 
 class ShadowOnlyMaterialDefines extends MaterialDefines {
     public CLIPPLANE = false;
@@ -86,8 +99,10 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
     // Methods
     public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        const drawWrapper = subMesh._drawWrapper;
+
         if (this.isFrozen) {
-            if (subMesh.effect && subMesh.effect._wasPreviouslyReady && subMesh.effect._wasPreviouslyUsingInstances === useInstances) {
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
                 return true;
             }
         }
@@ -124,11 +139,11 @@ export class ShadowOnlyMaterial extends PushMaterial {
             }
         }
 
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
-        defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, 1);
+        defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, 1);
 
         const shadowGenerator = this._getFirstShadowLightForMesh(mesh)?.getShadowGenerator();
 
@@ -141,7 +156,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, true);
+        PrepareDefinesForAttributes(mesh, defines, false, true);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -155,7 +170,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 fallbacks.addFallback(1, "FOG");
             }
 
-            MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, 1);
+            HandleFallbacksForShadows(defines, fallbacks, 1);
 
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
@@ -170,8 +185,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.NormalKind);
             }
 
-            MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+            PrepareAttributesForInstances(attribs, defines);
 
             const shaderName = "shadowOnly";
             const join = defines.toString();
@@ -194,7 +209,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
             const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -227,8 +242,8 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         defines._renderId = scene.getRenderId();
-        subMesh.effect._wasPreviouslyReady = true;
-        subMesh.effect._wasPreviouslyUsingInstances = !!useInstances;
+        drawWrapper._wasPreviouslyReady = true;
+        drawWrapper._wasPreviouslyUsingInstances = !!useInstances;
 
         return true;
     }
@@ -252,9 +267,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+        BindBonesParameters(mesh, this._activeEffect);
 
-        if (this._mustRebind(scene, effect)) {
+        if (this._mustRebind(scene, effect, subMesh)) {
             // Clip plane
             bindClipPlane(effect, this, scene);
 
@@ -268,7 +283,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
             // Log. depth
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(defines, effect, scene);
+                BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);
@@ -276,7 +291,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
         // Lights
         if (scene.lightsEnabled) {
-            MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, 1);
+            BindLights(scene, mesh, this._activeEffect, defines, 1);
 
             const light = this._getFirstShadowLightForMesh(mesh);
 
@@ -296,9 +311,9 @@ export class ShadowOnlyMaterial extends PushMaterial {
         }
 
         // Fog
-        MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+        BindFogParameters(scene, mesh, this._activeEffect);
 
-        this._afterBind(mesh, this._activeEffect);
+        this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
     public clone(name: string): ShadowOnlyMaterial {

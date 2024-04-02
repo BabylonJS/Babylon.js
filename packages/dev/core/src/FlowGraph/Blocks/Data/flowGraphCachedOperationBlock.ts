@@ -4,8 +4,8 @@ import type { FlowGraphContext } from "../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../flowGraphDataConnection";
 import type { RichType } from "../../flowGraphRichTypes";
 
-const CACHE_NAME = "cachedOperationValue";
-const CACHE_EXEC_ID_NAME = "cachedExecutionId";
+const cacheName = "cachedOperationValue";
+const cacheExecIdName = "cachedExecutionId";
 
 /**
  * @experimental
@@ -30,14 +30,14 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
     public abstract _doOperation(context: FlowGraphContext): OutputT;
 
     public _updateOutputs(context: FlowGraphContext) {
-        const cachedExecutionId = context._getExecutionVariable(this, CACHE_EXEC_ID_NAME);
-        const cachedValue = context._getExecutionVariable(this, CACHE_NAME);
+        const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName);
+        const cachedValue = context._getExecutionVariable(this, cacheName);
         if (cachedValue !== undefined && cachedExecutionId === context.executionId) {
             this.value.setValue(cachedValue, context);
         } else {
             const calculatedValue = this._doOperation(context);
-            context._setExecutionVariable(this, CACHE_NAME, calculatedValue);
-            context._setExecutionVariable(this, CACHE_EXEC_ID_NAME, context.executionId);
+            context._setExecutionVariable(this, cacheName, calculatedValue);
+            context._setExecutionVariable(this, cacheExecIdName, context.executionId);
             this.value.setValue(calculatedValue, context);
         }
     }

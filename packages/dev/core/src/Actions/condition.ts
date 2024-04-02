@@ -53,6 +53,7 @@ export class Condition {
         return this._actionManager._getEffectiveTarget(target, propertyPath);
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Serialize placeholder for child classes
      * @returns the serialized object

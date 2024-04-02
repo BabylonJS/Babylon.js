@@ -42,6 +42,8 @@ export type ResizeItem = {
 
 /**
  * A component that renders a bar that the user can drag to resize.
+ * @param props properties
+ * @returns resize bar element
  */
 export const FlexibleResizeBar: FC<IFlexibleRowResizerProps> = (props) => {
     const [_, drag] = useDrag(() => ({

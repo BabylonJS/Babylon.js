@@ -1,6 +1,6 @@
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
-import type { Scene } from "../scene";
+import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
@@ -8,8 +8,7 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { MaterialHelper } from "./materialHelper";
-import type { Effect, IEffectCreationOptions } from "./effect";
+import type { Effect, IEffectCreationOptions, IShaderPath } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
 import { EffectFallbacks } from "./effectFallbacks";
@@ -24,6 +23,15 @@ import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareAttributesForBakedVertexAnimation,
+    PushAttributesForInstances,
+} from "./materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -100,7 +108,7 @@ export interface IShaderMaterialOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
-    private _shaderPath: any;
+    private _shaderPath: IShaderPath | string;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
@@ -150,15 +158,11 @@ export class ShaderMaterial extends PushMaterial {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
-     * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: \{ vertex: "custom", fragment: "custom" \}, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *  * object: \{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" \}, used with shader code in script tags
-     *  * object: \{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" \} using with strings containing the shaders code
-     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     * @param shaderPath Defines  the route to the shader code.
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene: Scene, shaderPath: IShaderPath | string, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
         super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
@@ -182,7 +186,7 @@ export class ShaderMaterial extends PushMaterial {
      * Gets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public get shaderPath(): any {
+    public get shaderPath() {
         return this._shaderPath;
     }
 
@@ -190,7 +194,7 @@ export class ShaderMaterial extends PushMaterial {
      * Sets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public set shaderPath(shaderPath: any) {
+    public set shaderPath(shaderPath: IShaderPath | string) {
         this._shaderPath = shaderPath;
     }
 
@@ -656,15 +660,9 @@ export class ShaderMaterial extends PushMaterial {
         const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
 
         if (this.isFrozen) {
-            if (storeEffectOnSubMeshes) {
-                if (subMesh.effect && subMesh.effect._wasPreviouslyReady) {
-                    return true;
-                }
-            } else {
-                const effect = this._drawWrapper.effect;
-                if (effect && effect._wasPreviouslyReady && effect._wasPreviouslyUsingInstances === useInstances) {
-                    return true;
-                }
+            const drawWrapper = storeEffectOnSubMeshes ? subMesh._drawWrapper : this._drawWrapper;
+            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
+                return true;
             }
         }
 
@@ -685,8 +683,8 @@ export class ShaderMaterial extends PushMaterial {
         if (engine.getCaps().multiview && scene.activeCamera && scene.activeCamera.outputRenderTarget && scene.activeCamera.outputRenderTarget.getViewCount() > 1) {
             this._multiview = true;
             defines.push("#define MULTIVIEW");
-            if (this._options.uniforms.indexOf("viewProjection") !== -1 && this._options.uniforms.indexOf("viewProjectionR") === -1) {
-                this._options.uniforms.push("viewProjectionR");
+            if (uniforms.indexOf("viewProjection") !== -1 && uniforms.indexOf("viewProjectionR") === -1) {
+                uniforms.push("viewProjectionR");
             }
         }
 
@@ -708,7 +706,7 @@ export class ShaderMaterial extends PushMaterial {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
+            PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
                 if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
@@ -735,8 +733,8 @@ export class ShaderMaterial extends PushMaterial {
             if (skeleton.isUsingTextureForMatrices) {
                 defines.push("#define BONETEXTURE");
 
-                if (this._options.uniforms.indexOf("boneTextureWidth") === -1) {
-                    this._options.uniforms.push("boneTextureWidth");
+                if (uniforms.indexOf("boneTextureWidth") === -1) {
+                    uniforms.push("boneTextureWidth");
                 }
 
                 if (this._options.samplers.indexOf("boneSampler") === -1) {
@@ -745,8 +743,8 @@ export class ShaderMaterial extends PushMaterial {
             } else {
                 defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
 
-                if (this._options.uniforms.indexOf("mBones") === -1) {
-                    this._options.uniforms.push("mBones");
+                if (uniforms.indexOf("mBones") === -1) {
+                    uniforms.push("mBones");
                 }
             }
         } else {
@@ -760,7 +758,7 @@ export class ShaderMaterial extends PushMaterial {
             const uv = manager.supportsUVs && defines.indexOf("#define UV1") !== -1;
             const tangent = manager.supportsTangents && defines.indexOf("#define TANGENT") !== -1;
             const normal = manager.supportsNormals && defines.indexOf("#define NORMAL") !== -1;
-            numInfluencers = manager.numInfluencers;
+            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
             if (uv) {
                 defines.push("#define MORPHTARGETS_UV");
             }
@@ -776,8 +774,8 @@ export class ShaderMaterial extends PushMaterial {
             if (manager.isUsingTextureForTargets) {
                 defines.push("#define MORPHTARGETS_TEXTURE");
 
-                if (this._options.uniforms.indexOf("morphTargetTextureIndices") === -1) {
-                    this._options.uniforms.push("morphTargetTextureIndices");
+                if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                    uniforms.push("morphTargetTextureIndices");
                 }
 
                 if (this._options.samplers.indexOf("morphTargets") === -1) {
@@ -803,6 +801,7 @@ export class ShaderMaterial extends PushMaterial {
             if (numInfluencers > 0) {
                 uniforms = uniforms.slice();
                 uniforms.push("morphTargetInfluences");
+                uniforms.push("morphTargetCount");
                 uniforms.push("morphTargetTextureInfo");
                 uniforms.push("morphTargetTextureIndices");
             }
@@ -816,14 +815,14 @@ export class ShaderMaterial extends PushMaterial {
 
             if (bvaManager && bvaManager.isEnabled) {
                 defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-                if (this._options.uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationSettings");
+                if (uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
+                    uniforms.push("bakedVertexAnimationSettings");
                 }
-                if (this._options.uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationTextureSizeInverted");
+                if (uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
+                    uniforms.push("bakedVertexAnimationTextureSizeInverted");
                 }
-                if (this._options.uniforms.indexOf("bakedVertexAnimationTime") === -1) {
-                    this._options.uniforms.push("bakedVertexAnimationTime");
+                if (uniforms.indexOf("bakedVertexAnimationTime") === -1) {
+                    uniforms.push("bakedVertexAnimationTime");
                 }
 
                 if (this._options.samplers.indexOf("bakedVertexAnimationTexture") === -1) {
@@ -831,7 +830,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
-            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
         }
 
         // Textures
@@ -853,11 +852,25 @@ export class ShaderMaterial extends PushMaterial {
             prepareStringDefinesForClipPlanes(this, scene, defines);
         }
 
+        // Fog
+        if (scene.fogEnabled && mesh?.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
+            defines.push("#define FOG");
+            if (uniforms.indexOf("view") === -1) {
+                uniforms.push("view");
+            }
+            if (uniforms.indexOf("vFogInfos") === -1) {
+                uniforms.push("vFogInfos");
+            }
+            if (uniforms.indexOf("vFogColor") === -1) {
+                uniforms.push("vFogColor");
+            }
+        }
+
         // Misc
         if (this._useLogarithmicDepth) {
             defines.push("#define LOGARITHMICDEPTH");
-            if (this._options.uniforms.indexOf("logarithmicDepthConstant") === -1) {
-                this._options.uniforms.push("logarithmicDepthConstant");
+            if (uniforms.indexOf("logarithmicDepthConstant") === -1) {
+                uniforms.push("logarithmicDepthConstant");
             }
         }
 
@@ -865,10 +878,10 @@ export class ShaderMaterial extends PushMaterial {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
             samplers = samplers.slice();
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
-        const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper() : this._drawWrapper;
+        const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
         const previousEffect = drawWrapper?.effect ?? null;
         const previousDefines = drawWrapper?.defines ?? null;
         const join = defines.join("\n");
@@ -905,7 +918,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        effect!._wasPreviouslyUsingInstances = !!useInstances;
+        drawWrapper!._wasPreviouslyUsingInstances = !!useInstances;
 
         if (!effect?.isReady() ?? true) {
             return false;
@@ -915,7 +928,7 @@ export class ShaderMaterial extends PushMaterial {
             scene.resetCachedMaterial();
         }
 
-        effect._wasPreviouslyReady = true;
+        drawWrapper!._wasPreviouslyReady = true;
 
         return true;
     }
@@ -946,6 +959,10 @@ export class ShaderMaterial extends PushMaterial {
         if (this._options.uniforms.indexOf("worldViewProjection") !== -1) {
             world.multiplyToRef(scene.getTransformMatrix(), this._cachedWorldViewProjectionMatrix);
             effect.setMatrix("worldViewProjection", this._cachedWorldViewProjectionMatrix);
+        }
+
+        if (this._options.uniforms.indexOf("view") !== -1) {
+            effect.setMatrix("view", scene.getViewMatrix());
         }
     }
 
@@ -996,7 +1013,7 @@ export class ShaderMaterial extends PushMaterial {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                        BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
                         scene.finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
@@ -1004,7 +1021,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, mesh.visibility) : scene.getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -1027,14 +1044,19 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, effect);
+            BindBonesParameters(mesh, effect);
 
             // Clip plane
             bindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+                BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+            }
+
+            // Fog
+            if (mesh) {
+                BindFogParameters(scene, mesh, effect);
             }
 
             let name: string;
@@ -1177,17 +1199,18 @@ export class ShaderMaterial extends PushMaterial {
             // Morph targets
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
-                MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
+                BindMorphTargetParameters(<Mesh>mesh, effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
 
             if (bvaManager && bvaManager.isEnabled) {
-                mesh.bakedVertexAnimationManager?.bind(effect, !!effect._wasPreviouslyUsingInstances);
+                const drawWrapper = storeEffectOnSubMeshes ? subMesh._drawWrapper : this._drawWrapper;
+                mesh.bakedVertexAnimationManager?.bind(effect, !!drawWrapper._wasPreviouslyUsingInstances);
             }
         }
 
-        this._afterBind(mesh, effect);
+        this._afterBind(mesh, effect, subMesh);
     }
 
     /**
@@ -1480,9 +1503,9 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         // Floats
-        serializationObject.FloatArrays = {};
+        serializationObject.floatsArrays = {};
         for (name in this._floatsArrays) {
-            serializationObject.FloatArrays[name] = this._floatsArrays[name];
+            serializationObject.floatsArrays[name] = this._floatsArrays[name];
         }
 
         // Color3

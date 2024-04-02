@@ -1,6 +1,6 @@
 import type { FlowGraphContext } from "../../../flowGraphContext";
 import type { FlowGraphDataConnection } from "../../../flowGraphDataConnection";
-import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphWithOnDoneExecutionBlock";
+import { FlowGraphExecutionBlockWithOutSignal } from "../../../flowGraphExecutionBlockWithOutSignal";
 import type { Animatable } from "../../../../Animations/animatable";
 import { RichTypeAny } from "../../../flowGraphRichTypes";
 import type { IFlowGraphBlockConfiguration } from "../../../flowGraphBlock";
@@ -11,7 +11,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  */
 export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
-     *
+     * Input connection: The animation to stop.
      */
     public readonly animationToStop: FlowGraphDataConnection<Animatable>;
 
@@ -26,6 +26,9 @@ export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutS
         this.out._activateSignal(context);
     }
 
+    /**
+     * @returns class name of the block.
+     */
     public getClassName(): string {
         return "FGStopAnimationBlock";
     }

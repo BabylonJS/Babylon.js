@@ -38,6 +38,12 @@ export class Container extends Control {
     /** @internal */
     protected _intermediateTexture: Nullable<DynamicTexture> = null;
 
+    /**
+     * Gets or sets a boolean indicating that the container will let internal controls handle picking instead of doing it directly using its bounding info
+     */
+    @serialize()
+    public delegatePickingToChildren = false;
+
     /** Gets or sets boolean indicating if children should be rendered to an intermediate texture rather than directly to host, useful for alpha blending */
     @serialize()
     public get renderToIntermediateTexture(): boolean {
@@ -588,6 +594,21 @@ export class Container extends Control {
             return false;
         }
 
+        if (this.delegatePickingToChildren) {
+            let contains = false;
+            for (let index = this._children.length - 1; index >= 0; index--) {
+                const child = this._children[index];
+                if (child.isEnabled && child.isHitTestVisible && child.isVisible && !child.notRenderable && child.contains(x, y)) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (!contains) {
+                return false;
+            }
+        }
+
         // Checking backwards to pick closest first
         for (let index = this._children.length - 1; index >= 0; index--) {
             const child = this._children[index];
@@ -642,9 +663,13 @@ export class Container extends Control {
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
+     * @param force force serialization even if isSerializable === false
      */
-    public serialize(serializationObject: any) {
-        super.serialize(serializationObject);
+    public serialize(serializationObject: any, force: boolean = false) {
+        super.serialize(serializationObject, force);
+        if (!this.isSerializable && !force) {
+            return;
+        }
 
         if (this.backgroundGradient) {
             serializationObject.backgroundGradient = {};
@@ -658,9 +683,11 @@ export class Container extends Control {
         serializationObject.children = [];
 
         for (const child of this.children) {
-            const childSerializationObject = {};
-            child.serialize(childSerializationObject);
-            serializationObject.children.push(childSerializationObject);
+            if (child.isSerializable || force) {
+                const childSerializationObject = {};
+                child.serialize(childSerializationObject);
+                serializationObject.children.push(childSerializationObject);
+            }
         }
     }
 

@@ -30,6 +30,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
 
     /**
      * Creates a new FlowGraphCoordinateTransformBlock
+     * @param config optional configuration for this block
      */
     constructor(config?: IFlowGraphBlockConfiguration) {
         super(config);
@@ -61,6 +62,10 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
         Vector3.TransformCoordinatesToRef(inputCoordinatesValue, sourceToDestination, outputCoordinatesValue);
     }
 
+    /**
+     * Gets the class name of this block
+     * @returns the class name
+     */
     public getClassName(): string {
         return "FGCoordinateTransformBlock";
     }

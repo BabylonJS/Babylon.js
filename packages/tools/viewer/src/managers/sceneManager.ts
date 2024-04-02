@@ -404,7 +404,8 @@ export class SceneManager {
 
     /**
      * initialize the scene. Calling this function again will dispose the old scene, if exists.
-     * @param sceneConfiguration
+     * @param sceneConfiguration the configuration of the scene
+     * @returns a promise that resolves when the scene is ready
      */
     public initScene(sceneConfiguration: ISceneConfiguration = {}): Promise<Scene> {
         // if the scene exists, dispose it.

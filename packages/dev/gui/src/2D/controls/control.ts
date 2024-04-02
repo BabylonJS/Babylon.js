@@ -18,7 +18,8 @@ import { Measure } from "../measure";
 import type { Style } from "../style";
 import { Matrix2D, Vector2WithInfo } from "../math2D";
 import { GetClass, RegisterClass } from "core/Misc/typeStore";
-import { SerializationHelper, serialize } from "core/Misc/decorators";
+import { serialize } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IAccessibilityTag } from "core/IAccessibilityTag";
@@ -326,6 +327,9 @@ export class Control implements IAnimatable {
 
     protected _accessibilityTag: Nullable<IAccessibilityTag> = null;
 
+    /**
+     * Observable that fires whenever the accessibility event of the control has changed
+     */
     public onAccessibilityTagChangedObservable = new Observable<Nullable<IAccessibilityTag>>();
 
     /**
@@ -450,6 +454,12 @@ export class Control implements IAnimatable {
         this._isHighlighted = value;
         this._markAsDirty();
     }
+
+    /**
+     * Indicates if the control should be serialized. Defaults to true.
+     */
+    @serialize()
+    public isSerializable: boolean = true;
 
     /**
      * Gets or sets a string defining the color to use for highlighting this control
@@ -2454,7 +2464,7 @@ export class Control implements IAnimatable {
      */
     public clone(host?: AdvancedDynamicTexture): Control {
         const serialization: any = {};
-        this.serialize(serialization);
+        this.serialize(serialization, true);
 
         const controlType = Tools.Instantiate("BABYLON.GUI." + serialization.className);
         const cloned = new controlType();
@@ -2482,8 +2492,12 @@ export class Control implements IAnimatable {
     /**
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
+     * @param force if the control should be serialized even if the isSerializable flag is set to false (default false)
      */
-    public serialize(serializationObject: any) {
+    public serialize(serializationObject: any, force: boolean = false) {
+        if (!this.isSerializable && !force) {
+            return;
+        }
         SerializationHelper.Serialize(this, serializationObject);
         serializationObject.name = this.name;
         serializationObject.className = this.getClassName();

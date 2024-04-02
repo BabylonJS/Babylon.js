@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-returns-check */
 import type { Observer } from "../Misc/observable";
 import { Observable } from "../Misc/observable";
 import { Tools, AsyncLoop } from "../Misc/tools";
@@ -30,7 +31,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import type { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
@@ -670,7 +671,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = source.parent;
 
             // Pivot
-            this.setPivotMatrix(source.getPivotMatrix());
+            this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
 
             this.id = name + "." + source.id;
 
@@ -2339,8 +2340,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
             this._internalMeshDataInfo._effectiveMaterial = material;
         } else if (
-            (material._storeEffectOnSubMeshes && !subMesh.effect?._wasPreviouslyReady) ||
-            (!material._storeEffectOnSubMeshes && !material.getEffect()?._wasPreviouslyReady)
+            (material._storeEffectOnSubMeshes && !subMesh._drawWrapper?._wasPreviouslyReady) ||
+            (!material._storeEffectOnSubMeshes && !material._getDrawWrapper()._wasPreviouslyReady)
         ) {
             if (oldCamera) {
                 oldCamera.maxZ = oldCameraMaxZ;
@@ -2783,6 +2784,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     .toArray(data, index);
             }
             this.setVerticesData(VertexBuffer.NormalKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.NormalKind)).isUpdatable());
+        }
+
+        // Tangents
+        if (this.isVerticesDataPresent(VertexBuffer.TangentKind)) {
+            data = <FloatArray>this.getVerticesData(VertexBuffer.TangentKind);
+            for (index = 0; index < data.length; index += 4) {
+                Vector3.TransformNormalFromFloatsToRef(data[index], data[index + 1], data[index + 2], transform, temp)
+                    .normalize()
+                    .toArray(data, index);
+            }
+            this.setVerticesData(VertexBuffer.TangentKind, data, (<VertexBuffer>this.getVertexBuffer(VertexBuffer.TangentKind)).isUpdatable());
         }
 
         // flip faces?
@@ -3617,6 +3629,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Serialize current mesh
      * @param serializationObject defines the object which will receive the serialization data
+     * @returns the serialized object
      */
     public serialize(serializationObject: any = {}): any {
         serializationObject.name = this.name;
@@ -3652,8 +3665,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.billboardMode = this.billboardMode;
         serializationObject.visibility = this.visibility;
+        serializationObject.alwaysSelectAsActiveMesh = this.alwaysSelectAsActiveMesh;
 
         serializationObject.checkCollisions = this.checkCollisions;
+        serializationObject.ellipsoid = this.ellipsoid.asArray();
+        serializationObject.ellipsoidOffset = this.ellipsoidOffset.asArray();
+        serializationObject.doNotSyncBoundingInfo = this.doNotSyncBoundingInfo;
         serializationObject.isBlocker = this.isBlocker;
         serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
 
@@ -4004,6 +4021,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
         mesh.infiniteDistance = parsedMesh.infiniteDistance;
+        mesh.alwaysSelectAsActiveMesh = !!parsedMesh.alwaysSelectAsActiveMesh;
 
         mesh.showBoundingBox = parsedMesh.showBoundingBox;
         mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
@@ -4031,6 +4049,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.doNotSyncBoundingInfo = !!parsedMesh.doNotSyncBoundingInfo;
+
+        if (parsedMesh.ellipsoid) {
+            mesh.ellipsoid = Vector3.FromArray(parsedMesh.ellipsoid);
+        }
+
+        if (parsedMesh.ellipsoidOffset) {
+            mesh.ellipsoidOffset = Vector3.FromArray(parsedMesh.ellipsoidOffset);
+        }
 
         if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
             mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;

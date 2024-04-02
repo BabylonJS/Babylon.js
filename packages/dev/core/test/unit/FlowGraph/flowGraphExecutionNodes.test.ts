@@ -9,7 +9,6 @@ import {
     FlowGraphForLoopBlock,
     FlowGraphConsoleLogBlock,
     FlowGraphMultiGateBlock,
-    FlowGraphPath,
     FlowGraphSceneReadyEventBlock,
     FlowGraphSceneTickEventBlock,
     FlowGraphSetPropertyBlock,
@@ -18,6 +17,8 @@ import {
     FlowGraphTimerBlock,
 } from "core/FlowGraph";
 import { FlowGraphBranchBlock } from "core/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock";
+import { FlowGraphInteger } from "core/FlowGraph/flowGraphInteger";
+import { FlowGraphPathConverter } from "core/FlowGraph/flowGraphPathConverter";
 import { Vector3 } from "core/Maths/math.vector";
 import { Mesh } from "core/Meshes";
 import { Logger } from "core/Misc/logger";
@@ -38,7 +39,7 @@ describe("Flow Graph Execution Nodes", () => {
             deterministicLockstep: false,
             lockstepMaxSteps: 1,
         });
-        
+
         Logger.Log = jest.fn();
         scene = new Scene(engine);
         flowGraphCoordinator = new FlowGraphCoordinator({ scene });
@@ -83,7 +84,7 @@ describe("Flow Graph Execution Nodes", () => {
         flowGraph.start();
 
         const numCalls = 5;
-        doN.n.setValue(numCalls, flowGraphContext);
+        doN.n.setValue(new FlowGraphInteger(numCalls), flowGraphContext);
 
         const extraCalls = 2;
 
@@ -259,20 +260,20 @@ describe("Flow Graph Execution Nodes", () => {
         const sceneReady = new FlowGraphSceneReadyEventBlock();
         flowGraph.addEventBlock(sceneReady);
 
-        flowGraphContext.setVariable("0", mesh0);
-        flowGraphContext.setVariable("1", mesh1);
+        flowGraphContext.setVariable("nodes", [mesh0, mesh1]);
 
-        const path = new FlowGraphPath("/{nodeIndex}/position");
+        const pathConverter = new FlowGraphPathConverter(flowGraphContext, "/");
 
         const setProperty = new FlowGraphSetPropertyBlock<Vector3>({
-            path,
+            path: "nodes/{nodeIndex}/position",
+            pathConverter,
         });
         sceneReady.out.connectTo(setProperty.in);
 
         const nodeIndexInput = setProperty.getDataInput("nodeIndex");
         expect(nodeIndexInput).toBeDefined();
 
-        nodeIndexInput!.setValue(1, flowGraphContext);
+        nodeIndexInput!.setValue(new FlowGraphInteger(1), flowGraphContext);
         setProperty.a.setValue(new Vector3(1, 2, 3), flowGraphContext);
 
         flowGraph.start();

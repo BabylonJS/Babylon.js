@@ -46,9 +46,11 @@ type ControllerData = {
     nearInteraction: boolean;
     hoverInteraction: boolean;
     grabInteraction: boolean;
+    downTriggered: boolean;
     // event support
     eventListeners?: { [event in XREventType]?: (event: XRInputSourceEvent) => void };
     pickedPointVisualCue: AbstractMesh;
+    _worldScaleObserver?: Nullable<Observer<{ previousScaleFactor: number; newScaleFactor: number }>>;
 };
 
 // Tracks the interaction animation state when using a motion controller with a near interaction orb
@@ -163,9 +165,25 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             hoverInteraction: false,
             nearInteraction: false,
             grabInteraction: false,
+            downTriggered: false,
             id: WebXRNearInteraction._IdCounter++,
             pickedPointVisualCue: selectionMesh,
         };
+
+        this._controllers[xrController.uniqueId]._worldScaleObserver =
+            this._controllers[xrController.uniqueId]._worldScaleObserver ||
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.add((values) => {
+                if (values.newScaleFactor !== values.previousScaleFactor) {
+                    this._controllers[xrController.uniqueId].touchCollisionMesh.dispose();
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue.dispose();
+
+                    const { touchCollisionMesh, touchCollisionMeshFunction, hydrateCollisionMeshFunction } = this._generateNewTouchPointMesh();
+                    this._controllers[xrController.uniqueId].touchCollisionMesh = touchCollisionMesh;
+                    this._controllers[xrController.uniqueId].touchCollisionMeshFunction = touchCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].hydrateCollisionMeshFunction = hydrateCollisionMeshFunction;
+                    this._controllers[xrController.uniqueId].pickedPointVisualCue = this._generateVisualCue();
+                }
+            });
 
         if (this._attachedController) {
             if (
@@ -322,7 +340,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction pick and hover
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearPickPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearPickable;
@@ -330,7 +349,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for near interaction grab
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearGrabPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && mesh.isNearGrabbable;
@@ -338,7 +358,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
     /**
      * Filter used for any near interaction
-     * @param mesh
+     * @param mesh the mesh candidate to be pick-filtered
+     * @returns if the mesh should be included in the list of candidate meshes for near interaction
      */
     private _nearInteractionPredicate(mesh: AbstractMesh): boolean {
         return mesh.isEnabled() && mesh.isVisible && mesh.isPickable && (mesh.isNearPickable || mesh.isNearGrabbable);
@@ -423,8 +444,8 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             controllerData.grabRay.origin.addInPlace(this._tmpRay.direction.scale(0.05));
         }
 
-        controllerData.grabRay.length = this._nearGrabLengthScale * this._hoverRadius;
-        controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin);
+        controllerData.grabRay.length = this._nearGrabLengthScale * this._hoverRadius * this._xrSessionManager.worldScalingFactor;
+        controllerData.touchCollisionMesh.position.copyFrom(controllerData.grabRay.origin).scaleInPlace(this._xrSessionManager.worldScalingFactor);
     }
 
     protected _onXRFrame(_xrFrame: XRFrame) {
@@ -515,11 +536,19 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 // near interaction hover
                 let utilitySceneHoverPick = null;
                 if (this._options.useUtilityLayer && this._utilityLayerScene) {
-                    utilitySceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._utilityLayerScene, (mesh: AbstractMesh) =>
-                        this._nearInteractionPredicate(mesh)
+                    utilitySceneHoverPick = this._pickWithSphere(
+                        controllerData,
+                        this._hoverRadius * this._xrSessionManager.worldScalingFactor,
+                        this._utilityLayerScene,
+                        (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh)
                     );
                 }
-                const originalSceneHoverPick = this._pickWithSphere(controllerData, this._hoverRadius, this._scene, (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh));
+                const originalSceneHoverPick = this._pickWithSphere(
+                    controllerData,
+                    this._hoverRadius * this._xrSessionManager.worldScalingFactor,
+                    this._scene,
+                    (mesh: AbstractMesh) => this._nearInteractionPredicate(mesh)
+                );
 
                 const hoverPickInfo = accuratePickInfo(originalSceneHoverPick, utilitySceneHoverPick);
                 if (hoverPickInfo && hoverPickInfo.hit) {
@@ -532,7 +561,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 // near interaction pick
                 if (controllerData.hoverInteraction) {
                     let utilitySceneNearPick = null;
-                    const radius = handData ? this._pickRadius : this._controllerPickRadius;
+                    const radius = (handData ? this._pickRadius : this._controllerPickRadius) * this._xrSessionManager.worldScalingFactor;
                     if (this._options.useUtilityLayer && this._utilityLayerScene) {
                         utilitySceneNearPick = this._pickWithSphere(controllerData, radius, this._utilityLayerScene, (mesh: AbstractMesh) => this._nearPickPredicate(mesh));
                     }
@@ -588,7 +617,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         const selectionMesh = CreateSphere(
             "nearInteraction",
             {
-                diameter: 0.0035 * 3,
+                diameter: 0.0035 * 3 * this._xrSessionManager.worldScalingFactor,
             },
             sceneToRenderTo
         );
@@ -640,9 +669,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                 if (!controllerData.nearInteractionTargetMesh) {
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
                     controllerData.nearInteractionTargetMesh = controllerData.meshUnderPointer;
+                    controllerData.downTriggered = true;
                 }
             } else if (controllerData.nearInteractionTargetMesh && controllerData.stalePick) {
                 this._scene.simulatePointerUp(controllerData.stalePick, pointerEventInit);
+                controllerData.downTriggered = false;
                 controllerData.nearInteractionTargetMesh = null;
             }
         });
@@ -659,8 +690,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.grabInteraction = true;
                     controllerData.pickedPointVisualCue.isVisible = false;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                    controllerData.downTriggered = true;
                 } else if (!pressed && controllerData.pick && controllerData.grabInteraction) {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
+                    controllerData.downTriggered = false;
                     controllerData.grabInteraction = false;
                     controllerData.pickedPointVisualCue.isVisible = true;
                 }
@@ -710,6 +743,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     controllerData.grabInteraction = true;
                     controllerData.pickedPointVisualCue.isVisible = false;
                     this._scene.simulatePointerDown(controllerData.pick, pointerEventInit);
+                    controllerData.downTriggered = true;
                 }
             };
 
@@ -723,6 +757,7 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     this._scene.simulatePointerUp(controllerData.pick, pointerEventInit);
                     controllerData.grabInteraction = false;
                     controllerData.pickedPointVisualCue.isVisible = true;
+                    controllerData.downTriggered = false;
                 }
             };
 
@@ -766,13 +801,21 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         controllerData.pickedPointVisualCue.dispose();
 
         this._xrSessionManager.runInXRFrame(() => {
-            // Fire a pointerup
+            if (!controllerData.downTriggered) {
+                return;
+            }
+            // Fire a pointerup in case controller was detached before a pointerup event was fired
             const pointerEventInit: PointerEventInit = {
                 pointerId: controllerData.id,
                 pointerType: "xr-near",
             };
             this._scene.simulatePointerUp(new PickingInfo(), pointerEventInit);
         });
+
+        // remove world scale observer
+        if (controllerData._worldScaleObserver) {
+            this._xrSessionManager.onWorldScaleFactorChangedObservable.remove(controllerData._worldScaleObserver);
+        }
 
         // remove from the map
         delete this._controllers[xrControllerUniqueId];
@@ -788,10 +831,11 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
     }
 
     private _generateNewTouchPointMesh() {
+        const worldScale = this._xrSessionManager.worldScalingFactor;
         // populate information for near hover, pick and pinch
         const meshCreationScene = this._options.useUtilityLayer ? this._options.customUtilityLayerScene || UtilityLayerRenderer.DefaultUtilityLayer.utilityLayerScene : this._scene;
 
-        const touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 }, meshCreationScene);
+        const touchCollisionMesh = CreateSphere("PickSphere", { diameter: 1 * worldScale }, meshCreationScene);
         touchCollisionMesh.isVisible = false;
 
         // Generate the material for the touch mesh visuals
@@ -809,15 +853,15 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         // Adjust the visual size based off of the size of the touch collision orb.
         // Having the size perfectly match for hover gives a more accurate tell for when the user will start interacting with the target
         // Sizes for other states are somewhat arbitrary, as they are based on what feels nice during an interaction
-        const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius);
+        const hoverSizeVec = new Vector3(this._controllerPickRadius, this._controllerPickRadius, this._controllerPickRadius).scaleInPlace(worldScale);
         const touchSize = this._controllerPickRadius * (4 / 3);
-        const touchSizeVec = new Vector3(touchSize, touchSize, touchSize);
+        const touchSizeVec = new Vector3(touchSize, touchSize, touchSize).scaleInPlace(worldScale);
         const hydrateTransitionSize = this._controllerPickRadius * (7 / 6);
-        const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize);
+        const hydrateTransitionSizeVec = new Vector3(hydrateTransitionSize, hydrateTransitionSize, hydrateTransitionSize).scaleInPlace(worldScale);
         const touchHoverTransitionSize = this._controllerPickRadius * (4 / 5);
-        const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize);
+        const touchHoverTransitionSizeVec = new Vector3(touchHoverTransitionSize, touchHoverTransitionSize, touchHoverTransitionSize).scaleInPlace(worldScale);
         const hoverTouchTransitionSize = this._controllerPickRadius * (3 / 2);
-        const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize);
+        const hoverTouchTransitionSizeVec = new Vector3(hoverTouchTransitionSize, hoverTouchTransitionSize, hoverTouchTransitionSize).scaleInPlace(worldScale);
 
         const touchKeys = [
             { frame: 0, value: hoverSizeVec },
@@ -898,6 +942,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
                     pickingInfo.gripTransform = controllerData.xrController.grip || null;
                     pickingInfo.originMesh = controllerData.touchCollisionMesh;
                     pickingInfo.distance = result.distance;
+                    pickingInfo.bu = result.bu;
+                    pickingInfo.bv = result.bv;
+                    pickingInfo.faceId = result.faceId;
+                    pickingInfo.subMeshId = result.subMeshId;
                 }
             }
         }
@@ -930,9 +978,10 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
         const result = TmpVectors.Vector3[0];
         const tmpVec = TmpVectors.Vector3[1];
+        const tmpRay = new Ray(Vector3.Zero(), Vector3.Zero(), 1);
 
         let distance = +Infinity;
-        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter;
+        let tmp, tmpDistanceSphereToCenter, tmpDistanceSurfaceToCenter, intersectionInfo;
         const center = TmpVectors.Vector3[2];
         const worldToMesh = TmpVectors.Matrix[0];
         worldToMesh.copyFrom(mesh.getWorldMatrix());
@@ -957,6 +1006,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
 
             if (tmp !== -1 && tmp < distance) {
                 distance = tmp;
+
+                // ray between the sphere center and the point on the mesh
+                Ray.CreateFromToToRef(sphere.center, tmpVec, tmpRay);
+                tmpRay.length = distance * 2;
+                intersectionInfo = tmpRay.intersectsMesh(mesh);
+
                 result.copyFrom(tmpVec);
             }
         }
@@ -966,6 +1021,12 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
             pi.distance = distance;
             pi.pickedMesh = mesh;
             pi.pickedPoint = result.clone();
+            if (intersectionInfo && intersectionInfo.bu !== null && intersectionInfo.bv !== null) {
+                pi.faceId = intersectionInfo.faceId;
+                pi.subMeshId = intersectionInfo.subMeshId;
+                pi.bu = intersectionInfo.bu;
+                pi.bv = intersectionInfo.bv;
+            }
         }
 
         return pi;

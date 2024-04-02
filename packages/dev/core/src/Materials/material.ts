@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import type { SmartArray } from "../Misc/smartArray";
@@ -19,7 +19,6 @@ import { Logger } from "../Misc/logger";
 import type { IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
 import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
-import { MaterialHelper } from "./materialHelper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
@@ -50,6 +49,8 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { Mesh } from "../Meshes/mesh";
 import type { Animation } from "../Animations/animation";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
+import { BindSceneUniformBuffer } from "./materialHelper.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare let BABYLON: any;
 
@@ -795,7 +796,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @internal
      * Stores the effects for the material
      */
-    protected _materialContext: IMaterialContext | undefined;
+    public _materialContext: IMaterialContext | undefined;
 
     protected _drawWrapper: DrawWrapper;
     /** @internal */
@@ -1139,6 +1140,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Specifies if material alpha testing should be turned on for the mesh
      * @param mesh defines the mesh to check
+     * @returns a boolean specifying if alpha testing should be turned on for the mesh
      */
     protected _shouldTurnAlphaTestOn(mesh: AbstractMesh): boolean {
         return !this.needAlphaBlendingForMesh(mesh) && this.needAlphaTesting();
@@ -1167,13 +1169,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
                     continue;
                 }
 
-                if (!subMesh.effect) {
-                    continue;
+                for (const drawWrapper of subMesh._drawWrappers) {
+                    if (!drawWrapper) {
+                        continue;
+                    }
+                    if (this._materialContext === drawWrapper.materialContext) {
+                        drawWrapper._wasPreviouslyReady = false;
+                        drawWrapper._wasPreviouslyUsingInstances = null;
+                        drawWrapper._forceRebindOnNextCall = forceMaterialDirty;
+                    }
                 }
-
-                subMesh.effect._wasPreviouslyReady = false;
-                subMesh.effect._wasPreviouslyUsingInstances = null;
-                subMesh.effect._forceRebindOnNextCall = forceMaterialDirty;
             }
         }
 
@@ -1234,14 +1239,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param subMesh defines the submesh to bind the material to
      */
     public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const effect = subMesh.effect;
-        if (!effect) {
-            return;
-        }
+        const drawWrapper = subMesh._drawWrapper;
 
         this._eventInfo.subMesh = subMesh;
         this._callbackPluginEventBindForSubMesh(this._eventInfo);
-        effect._forceRebindOnNextCall = false;
+        drawWrapper._forceRebindOnNextCall = false;
     }
 
     /**
@@ -1292,14 +1294,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     /**
      * Processes to execute after binding the material to a mesh
      * @param mesh defines the rendered mesh
-     * @param effect
+     * @param effect defines the effect used to bind the material
+     * @param _subMesh defines the subMesh that the material has been bound for
      */
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null): void {
+    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, _subMesh?: SubMesh): void {
         this._scene._cachedMaterial = this;
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
                 this._scene.finalizeSceneUbo();
             }
         }
@@ -1404,13 +1407,15 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         // Create plugins in targetMaterial in case they don't exist
         this._serializePlugins(serializationObject);
 
-        Material._parsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
+        Material._ParsePlugins(serializationObject, targetMaterial, this._scene, rootUrl);
 
         // Copy the properties of the current plugins to the cloned material's plugins
         if (this.pluginManager) {
             for (const plugin of this.pluginManager._plugins) {
-                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name)!;
-                plugin.copyTo(targetPlugin);
+                const targetPlugin = targetMaterial.pluginManager!.getPlugin(plugin.name);
+                if (targetPlugin) {
+                    plugin.copyTo(targetPlugin);
+                }
             }
         }
     }
@@ -1918,7 +1923,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return material;
     }
 
-    protected static _parsePlugins(serializationObject: any, material: Material, scene: Scene, rootUrl: string) {
+    protected static _ParsePlugins(serializationObject: any, material: Material, scene: Scene, rootUrl: string) {
         if (!serializationObject.plugins) {
             return;
         }

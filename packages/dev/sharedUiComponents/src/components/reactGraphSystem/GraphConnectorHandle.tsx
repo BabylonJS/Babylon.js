@@ -47,6 +47,7 @@ export interface IGraphConnectorHandlerProps {
 /**
  * This component is used to initiate a connection between two nodes. Simply
  * drag the handle in a node and drop it in another node to create a connection.
+ * @returns connector element
  */
 export const GraphConnectorHandler: FC<IGraphConnectorHandlerProps> = ({ parentId, parentX, parentY, offsetX = 0, offsetY = 0, parentWidth, parentHeight, parentContainerId }) => {
     const { onNodesConnected } = useGraphContext();

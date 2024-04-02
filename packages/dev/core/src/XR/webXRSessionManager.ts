@@ -59,6 +59,16 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Fires when the xr session is initialized: right after requestSession was called and returned with a successful result
      */
     public onXRSessionInit: Observable<XRSession> = new Observable<XRSession>();
+
+    /**
+     * Fires when the xr reference space has been initialized
+     */
+    public onXRReferenceSpaceInitialized: Observable<XRReferenceSpace> = new Observable<XRReferenceSpace>();
+
+    /**
+     * Fires when the session manager is rendering the first frame
+     */
+    public onXRReady: Observable<WebXRSessionManager> = new Observable<WebXRSessionManager>();
     /**
      * Underlying xr session
      */
@@ -76,6 +86,32 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Are we in an XR session?
      */
     public inXRSession: boolean = false;
+
+    private _worldScalingFactor: number = 1;
+
+    /**
+     * Observable raised when the world scale has changed
+     */
+    public onWorldScaleFactorChangedObservable: Observable<{
+        previousScaleFactor: number;
+        newScaleFactor: number;
+    }> = new Observable(undefined, true);
+
+    /**
+     * Scale factor to apply to all XR-related elements (camera, controllers)
+     */
+    public get worldScalingFactor(): number {
+        return this._worldScalingFactor;
+    }
+
+    public set worldScalingFactor(value: number) {
+        const oldValue = this._worldScalingFactor;
+        this._worldScalingFactor = value;
+        this.onWorldScaleFactorChangedObservable.notifyObservers({
+            previousScaleFactor: oldValue,
+            newScaleFactor: value,
+        });
+    }
 
     /**
      * Constructs a WebXRSessionManager, this must be initialized within a user action before usage
@@ -130,6 +166,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         this.onXRSessionEnded.clear();
         this.onXRReferenceSpaceChanged.clear();
         this.onXRSessionInit.clear();
+        this.onWorldScaleFactorChangedObservable.clear();
         this._engine?.onDisposeObservable.remove(this._onEngineDisposedObserver);
         this._engine = null;
     }
@@ -138,12 +175,14 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Stops the xrSession and restores the render loop
      * @returns Promise which resolves after it exits XR
      */
-    public exitXRAsync() {
+    public async exitXRAsync() {
         if (this.session && this.inXRSession) {
             this.inXRSession = false;
-            return this.session.end().catch(() => {
+            try {
+                return await this.session.end();
+            } catch {
                 Logger.Warn("Could not end XR session.");
-            });
+            }
         }
         return Promise.resolve();
     }
@@ -217,8 +256,8 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         return this._xrNavigator.xr.requestSession(xrSessionMode, xrSessionInit).then((session: XRSession) => {
             this.session = session;
             this._sessionMode = xrSessionMode;
-            this.onXRSessionInit.notifyObservers(session);
             this.inXRSession = true;
+            this.onXRSessionInit.notifyObservers(session);
 
             // handle when the session is ended (By calling session.end or device ends its own session eg. pressing home button on phone)
             this.session.addEventListener(
@@ -292,7 +331,11 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                 this.currentTimestamp = timestamp;
                 if (xrFrame) {
                     this.inXRFrameLoop = true;
-                    this._engine.framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+                    const framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+                    // equality can be tested as it should be the same object
+                    if (this._engine.framebufferDimensionsObject !== framebufferDimensionsObject) {
+                        this._engine.framebufferDimensionsObject = framebufferDimensionsObject;
+                    }
                     this.onXRFrameObservable.notifyObservers(xrFrame);
                     this._engine._renderLoop();
                     this._engine.framebufferDimensionsObject = null;
@@ -302,6 +345,9 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
         };
 
         this._engine.framebufferDimensionsObject = this._baseLayerRTTProvider?.getFramebufferDimensions() || null;
+        this.onXRFrameObservable.addOnce(() => {
+            this.onXRReady.notifyObservers(this);
+        });
 
         // Stop window's animation frame and trigger sessions animation frame
         if (typeof window !== "undefined" && window.cancelAnimationFrame) {
@@ -334,6 +380,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
                         },
                         (rejectionReason) => {
                             Logger.Error(rejectionReason);
+                            // eslint-disable-next-line no-throw-literal
                             throw 'XR initialization failed: required "viewer" reference space type not supported.';
                         }
                     );
@@ -349,6 +396,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
             .then((referenceSpace) => {
                 // initialize the base and offset (currently the same)
                 this.referenceSpace = this.baseReferenceSpace = referenceSpace;
+                this.onXRReferenceSpaceInitialized.notifyObservers(referenceSpace);
                 return this.referenceSpace;
             });
     }
@@ -358,7 +406,7 @@ export class WebXRSessionManager implements IDisposable, IWebXRRenderTargetTextu
      * Note that this is deprecated in favor of WebXRSessionManager.updateRenderState().
      * @param state state to set
      * @returns a promise that resolves once the render state has been updated
-     * @deprecated
+     * @deprecated Use updateRenderState() instead.
      */
     public updateRenderStateAsync(state: XRRenderState): Promise<void> {
         return Promise.resolve(this.session.updateRenderState(state));

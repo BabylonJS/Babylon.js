@@ -127,6 +127,7 @@ export class WebXRExperienceHelper implements IDisposable {
         sessionCreationOptions: XRSessionInit = {}
     ): Promise<WebXRSessionManager> {
         if (!this._supported) {
+            // eslint-disable-next-line no-throw-literal
             throw "WebXR not supported in this browser or environment";
         }
         this._setState(WebXRState.ENTERING_XR);
@@ -143,7 +144,6 @@ export class WebXRExperienceHelper implements IDisposable {
         try {
             await this.sessionManager.initializeSessionAsync(sessionMode, sessionCreationOptions);
             await this.sessionManager.setReferenceSpaceTypeAsync(referenceSpaceType);
-            const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
 
             const xrRenderState: XRRenderStateInit = {
                 // if maxZ is 0 it should be "Infinity", but it doesn't work with the WebXR API. Setting to a large number.
@@ -153,6 +153,7 @@ export class WebXRExperienceHelper implements IDisposable {
 
             // The layers feature will have already initialized the xr session's layers on session init.
             if (!this.featuresManager.getEnabledFeature(WebXRFeatureName.LAYERS)) {
+                const baseLayer = await renderTarget.initializeXRLayerAsync(this.sessionManager.session);
                 xrRenderState.baseLayer = baseLayer;
             }
 

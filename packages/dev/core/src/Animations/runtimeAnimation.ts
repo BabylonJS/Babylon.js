@@ -241,10 +241,13 @@ export class RuntimeAnimation {
         const targetPropertyPath = this._animation.targetPropertyPath;
 
         if (targetPropertyPath.length > 1) {
-            let property = target[targetPropertyPath[0]];
-
-            for (let index = 1; index < targetPropertyPath.length - 1; index++) {
-                property = property[targetPropertyPath[index]];
+            let property = target;
+            for (let index = 0; index < targetPropertyPath.length - 1; index++) {
+                const name = targetPropertyPath[index];
+                property = property[name];
+                if (property === undefined) {
+                    throw new Error(`Invalid property (${name}) in property path (${targetPropertyPath.join(".")})`);
+                }
             }
 
             this._targetPath = targetPropertyPath[targetPropertyPath.length - 1];
@@ -252,6 +255,10 @@ export class RuntimeAnimation {
         } else {
             this._targetPath = targetPropertyPath[0];
             this._activeTargets[targetIndex] = target;
+        }
+
+        if (this._activeTargets[targetIndex][this._targetPath] === undefined) {
+            throw new Error(`Invalid property (${this._targetPath}) in property path (${targetPropertyPath.join(".")})`);
         }
     }
 
@@ -518,11 +525,11 @@ export class RuntimeAnimation {
         this._previousElapsedTime = elapsedTimeSinceAnimationStart;
         this._previousAbsoluteFrame = absoluteFrame;
 
-        if (!loop && to >= from && absoluteFrame >= frameRange) {
+        if (!loop && to >= from && ((absoluteFrame >= frameRange && speedRatio > 0) || (absoluteFrame <= 0 && speedRatio < 0))) {
             // If we are out of range and not looping get back to caller
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._maxValue);
-        } else if (!loop && from >= to && absoluteFrame <= frameRange) {
+        } else if (!loop && from >= to && ((absoluteFrame <= frameRange && speedRatio < 0) || (absoluteFrame >= 0 && speedRatio > 0))) {
             returnValue = false;
             highLimitValue = animation._getKeyValue(this._minValue);
         } else if (this._animationState.loopMode !== Animation.ANIMATIONLOOPMODE_CYCLE) {
@@ -650,7 +657,7 @@ export class RuntimeAnimation {
                 // Make sure current frame has passed event frame and that event frame is within the current range
                 // Also, handle both forward and reverse animations
                 if (
-                    (frameRange > 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
+                    (frameRange >= 0 && currentFrame >= events[index].frame && events[index].frame >= from) ||
                     (frameRange < 0 && currentFrame <= events[index].frame && events[index].frame <= from)
                 ) {
                     const event = events[index];

@@ -40,6 +40,7 @@ export class TextureHelper {
      * @param height the height of the result, which does not have to match the source texture height
      * @param face if the texture has multiple faces, the face index to use for the source
      * @param channels a filter for which of the RGBA channels to return in the result
+     * @param globalState the global state to use for rendering the texture
      * @param lod if the texture has multiple LODs, the lod index to use for the source
      * @returns the 8-bit texture data
      */

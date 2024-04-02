@@ -32,6 +32,7 @@ WebGPUEngine.prototype.createRawTexture = function (
     texture.invertY = invertY;
     texture._compression = compression;
     texture.type = type;
+    texture._creationFlags = creationFlags;
     texture._useSRGBBuffer = useSRGBBuffer;
 
     if (!this._doNotHandleContextLost) {
@@ -115,6 +116,7 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
     }
 
     texture.isCube = true;
+    texture._originalFormat = format;
     texture.format = format === Constants.TEXTUREFORMAT_RGB ? Constants.TEXTUREFORMAT_RGBA : format;
     texture.type = type;
     texture.generateMipMaps = generateMipMaps;
@@ -283,6 +285,7 @@ WebGPUEngine.prototype.createRawTexture3D = function (
     texture.generateMipMaps = generateMipMaps;
     texture.samplingMode = samplingMode;
     texture.is3D = true;
+    texture._creationFlags = creationFlags;
 
     if (!this._doNotHandleContextLost) {
         texture._bufferView = data;
@@ -358,6 +361,7 @@ WebGPUEngine.prototype.createRawTexture2DArray = function (
     texture.generateMipMaps = generateMipMaps;
     texture.samplingMode = samplingMode;
     texture.is2DArray = true;
+    texture._creationFlags = creationFlags;
 
     if (!this._doNotHandleContextLost) {
         texture._bufferView = data;

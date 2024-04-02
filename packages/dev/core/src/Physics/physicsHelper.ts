@@ -470,6 +470,7 @@ class PhysicsRadialExplosionEvent {
      * Returns the force and contact point of the impostor or false, if the impostor is not affected by the force/impulse.
      * @param impostor A physics imposter
      * @param origin the origin of the explosion
+     * @param data the data of the hit
      * @returns A physics force and contact point, or null
      */
     public getImpostorHitData(impostor: PhysicsImpostor, origin: Vector3, data: PhysicsHitData): boolean {
@@ -834,8 +835,8 @@ class PhysicsVortexEvent {
     private _cylinder: Mesh;
     private _cylinderPosition: Vector3 = Vector3.Zero(); // to keep the cylinders position, because normally the origin is in the center and not on the bottom
     private _dataFetched: boolean = false; // check if the has been fetched the data. If not, do cleanup
-    private static originOnPlane: Vector3 = Vector3.Zero();
-    private static hitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
+    private static _OriginOnPlane: Vector3 = Vector3.Zero();
+    private static _HitData: PhysicsHitData = { force: new Vector3(), contactPoint: new Vector3(), distanceFromOrigin: 0 };
 
     /**
      * Initializes the physics vortex event
@@ -908,7 +909,7 @@ class PhysicsVortexEvent {
     }
 
     private _getHitData(mesh: AbstractMesh, center: Vector3, data: PhysicsHitData): boolean {
-        const originOnPlane = PhysicsVortexEvent.originOnPlane;
+        const originOnPlane = PhysicsVortexEvent._OriginOnPlane;
         originOnPlane.set(this._origin.x, center.y, this._origin.z); // the distance to the origin as if both objects were on a plane (Y-axis)
         const originToImpostorDirection = TmpVectors.Vector3[0];
         center.subtractToRef(originOnPlane, originToImpostorDirection);
@@ -989,7 +990,7 @@ class PhysicsVortexEvent {
     }
 
     private _tick() {
-        const hitData = PhysicsVortexEvent.hitData;
+        const hitData = PhysicsVortexEvent._HitData;
         if (this._physicsEngine.getPluginVersion() === 1) {
             (<PhysicsEngineV1>this._physicsEngine).getImpostors().forEach((impostor: PhysicsImpostor) => {
                 if (!this._getImpostorHitData(impostor, hitData)) {

@@ -204,6 +204,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     /**
      * Adds new points to the line. It doesn't rerenders the line if in lazy mode.
      * @param points points table
+     * @param options optional options
      */
     public addPoints(points: number[][], options?: GreasedLineMeshOptions) {
         for (const p of points) {
@@ -217,9 +218,11 @@ export abstract class GreasedLineBaseMesh extends Mesh {
 
     /**
      * Dispose the line and it's resources
+     * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
+     * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose() {
-        super.dispose();
+    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false) {
+        super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
     /**
@@ -328,6 +331,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     /**
      * Sets line points and rerenders the line.
      * @param points points table
+     * @param options optional options
      */
     public setPoints(points: number[][], options?: GreasedLineMeshOptions) {
         this._points = points;

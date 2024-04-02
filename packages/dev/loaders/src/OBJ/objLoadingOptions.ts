@@ -42,4 +42,8 @@ export type OBJLoadingOptions = {
      * When a material fails to load OBJ loader will silently fail and onSuccess() callback will be triggered.
      */
     materialLoadingFailsSilently: boolean;
+    /**
+     * Loads assets without handedness conversions. This flag is for compatibility. Use it only if absolutely required. Defaults to false.
+     */
+    useLegacyBehavior: boolean;
 };

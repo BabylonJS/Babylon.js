@@ -25,8 +25,6 @@ export class InputTextArea extends InputText {
 
     private _lines: any[];
     private _lineSpacing: ValueAndUnit = new ValueAndUnit(0);
-    private _outlineWidth: number = 0;
-    private _outlineColor: string = "white";
     private _maxHeight = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
 
     private _clipTextTop: number;
@@ -52,42 +50,6 @@ export class InputTextArea extends InputText {
     private _scrollTop: Nullable<number>;
 
     private _autoStretchHeight: boolean;
-
-    /**
-     * Gets or sets outlineWidth of the text to display
-     */
-    public get outlineWidth(): number {
-        return this._outlineWidth;
-    }
-
-    /**
-     * Gets or sets outlineWidth of the text to display
-     */
-    public set outlineWidth(value: number) {
-        if (this._outlineWidth === value) {
-            return;
-        }
-        this._outlineWidth = value;
-        this._markAsDirty();
-    }
-
-    /**
-     * Gets or sets outlineColor of the text to display
-     */
-    public get outlineColor(): string {
-        return this._outlineColor;
-    }
-
-    /**
-     * Gets or sets outlineColor of the text to display
-     */
-    public set outlineColor(value: string) {
-        if (this._outlineColor === value) {
-            return;
-        }
-        this._outlineColor = value;
-        this._markAsDirty();
-    }
 
     /** Gets or sets a boolean indicating if the control can auto stretch its height to adapt to the text */
     @serialize()
@@ -1010,14 +972,6 @@ export class InputTextArea extends InputText {
             this._blinkIsEven = !this._blinkIsEven;
             this._markAsDirty();
         }, 500);
-    }
-
-    protected _applyStates(context: ICanvasRenderingContext): void {
-        super._applyStates(context);
-        if (this.outlineWidth) {
-            context.lineWidth = this.outlineWidth;
-            context.strokeStyle = this.outlineColor;
-        }
     }
 
     public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {

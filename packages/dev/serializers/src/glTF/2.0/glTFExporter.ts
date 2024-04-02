@@ -19,8 +19,7 @@ import type {
 import { AccessorType, ImageMimeType, MeshPrimitiveMode, AccessorComponentType, CameraType } from "babylonjs-gltf2interface";
 
 import type { FloatArray, IndicesArray, Nullable } from "core/types";
-import { Matrix, TmpVectors } from "core/Maths/math.vector";
-import { Vector2, Vector3, Vector4, Quaternion } from "core/Maths/math.vector";
+import { Matrix, TmpVectors, Vector2, Vector3, Vector4, Quaternion } from "core/Maths/math.vector";
 import { Color3, Color4 } from "core/Maths/math.color";
 import { Tools } from "core/Misc/tools";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -871,9 +870,8 @@ export class _Exporter {
      * Writes mesh attribute data to a data buffer
      * Returns the bytelength of the data
      * @param vertexBufferKind Indicates what kind of vertex data is being passed in
-     * @param attributeComponentKind
-     * @param meshPrimitive
-     * @param morphTarget
+     * @param attributeComponentKind attribute component type
+     * @param meshPrimitive the mesh primitive
      * @param meshAttributeArray Array containing the attribute data
      * @param morphTargetAttributeArray
      * @param stride Specifies the space between data
@@ -1436,6 +1434,7 @@ export class _Exporter {
     /**
      * The primitive mode of the Babylon mesh
      * @param babylonMesh The BabylonJS mesh
+     * @returns Unsigned integer of the primitive mode or null
      */
     private _getMeshPrimitiveMode(babylonMesh: AbstractMesh): number {
         if (babylonMesh instanceof LinesMesh) {
@@ -1496,7 +1495,6 @@ export class _Exporter {
      * Sets the vertex attribute accessor based of the glTF mesh primitive
      * @param meshPrimitive glTF mesh primitive
      * @param attributeKind vertex attribute
-     * @returns boolean specifying if uv coordinates are present
      */
     private _setAttributeKind(meshPrimitive: IMeshPrimitive, attributeKind: string): void {
         switch (attributeKind) {
@@ -1551,6 +1549,7 @@ export class _Exporter {
      * @param mesh glTF Mesh object to store the primitive attribute information
      * @param babylonTransformNode Babylon mesh to get the primitive attribute data from
      * @param binaryWriter Buffer to write the attribute data to
+     * @returns promise that resolves when done setting the primitive attributes
      */
     private _setPrimitiveAttributesAsync(mesh: IMesh, babylonTransformNode: TransformNode, binaryWriter: _BinaryWriter): Promise<void> {
         const promises: Promise<IMeshPrimitive>[] = [];
@@ -1760,8 +1759,8 @@ export class _Exporter {
     /**
      * Creates a glTF scene based on the array of meshes
      * Returns the total byte offset
-     * @param babylonScene Babylon scene to get the mesh data from
      * @param binaryWriter Buffer to write binary data to
+     * @returns a promise that resolves when done
      */
     private _createSceneAsync(binaryWriter: _BinaryWriter): Promise<void> {
         const scene: IScene = { nodes: [] };
@@ -1901,7 +1900,6 @@ export class _Exporter {
     /**
      * Getting the nodes and materials that would be exported.
      * @param nodes Babylon transform nodes
-     * @returns Array of nodes which would be exported.
      * @returns Set of materials which would be exported.
      */
     private _getExportNodes(nodes: Node[]): [Node[], Set<Material>] {
@@ -2074,7 +2072,6 @@ export class _Exporter {
 
     /**
      * Creates a glTF skin from a Babylon skeleton
-     * @param babylonScene Babylon Scene
      * @param nodeMap Babylon transform nodes
      * @param binaryWriter Buffer to write binary data to
      * @returns Node mapping of unique id to index
@@ -2180,7 +2177,8 @@ export class _BinaryWriter {
     }
     /**
      * Resize the array buffer to the specified byte length
-     * @param byteLength
+     * @param byteLength The new byte length
+     * @returns The resized array buffer
      */
     private _resizeBuffer(byteLength: number): ArrayBuffer {
         const newBuffer = new ArrayBuffer(byteLength);
@@ -2255,6 +2253,7 @@ export class _BinaryWriter {
     /**
      * Gets an UInt32 in the array buffer
      * @param byteOffset If defined, specifies where to set the value as an offset.
+     * @returns entry
      */
     public getUInt32(byteOffset: number): number {
         if (byteOffset < this._byteOffset) {

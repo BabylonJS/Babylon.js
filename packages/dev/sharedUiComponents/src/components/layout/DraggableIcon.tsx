@@ -22,6 +22,8 @@ export interface IDraggableIconProps {
 
 /**
  * An icon that can be dragged by the user
+ * @param props properties
+ * @returns draggable icon element
  */
 export const DraggableIcon: FC<IDraggableIconProps> = (props) => {
     const [, drag] = useDrag(() => ({

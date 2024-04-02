@@ -357,6 +357,7 @@ export class Engine extends ThinEngine {
         }
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Method called to create the default loading screen.
      * This can be overridden in your own app.
@@ -1192,21 +1193,43 @@ export class Engine extends ThinEngine {
         this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
+    /**
+     * sets the object from which width and height will be taken from when getting render width and height
+     * Will fallback to the gl object
+     * @param dimensions the framebuffer width and height that will be used.
+     */
+    public set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>) {
+        this._framebufferDimensionsObject = dimensions;
+        if (this._framebufferDimensionsObject) {
+            this.onResizeObservable.notifyObservers(this);
+        }
+    }
+
     protected _rebuildBuffers(): void {
         // Index / Vertex
         for (const scene of this.scenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         for (const scene of this._virtualScenes) {
             scene.resetCachedMaterial();
             scene._rebuildGeometries();
-            scene._rebuildTextures();
         }
 
         super._rebuildBuffers();
+    }
+
+    protected _rebuildTextures(): void {
+        for (const scene of this.scenes) {
+            scene._rebuildTextures();
+        }
+
+        for (const scene of this._virtualScenes) {
+            scene._rebuildTextures();
+        }
+
+        super._rebuildTextures();
     }
 
     /** @internal */
@@ -1219,11 +1242,13 @@ export class Engine extends ThinEngine {
     }
 
     protected _cancelFrame() {
-        if (this._renderingQueueLaunched && this.customAnimationFrameRequester) {
-            this._renderingQueueLaunched = false;
-            const { cancelAnimationFrame } = this.customAnimationFrameRequester;
-            if (cancelAnimationFrame) {
-                cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
+        if (this.customAnimationFrameRequester) {
+            if (this._frameHandler !== 0) {
+                this._frameHandler = 0;
+                const { cancelAnimationFrame } = this.customAnimationFrameRequester;
+                if (cancelAnimationFrame) {
+                    cancelAnimationFrame(this.customAnimationFrameRequester.requestID);
+                }
             }
         } else {
             super._cancelFrame();
@@ -1231,6 +1256,8 @@ export class Engine extends ThinEngine {
     }
 
     public _renderLoop(): void {
+        this._frameHandler = 0;
+
         if (!this._contextWasLost) {
             let shouldRender = true;
             if (this.isDisposed || (!this.renderEvenInBackground && this._windowIsBackground)) {
@@ -1252,7 +1279,7 @@ export class Engine extends ThinEngine {
             }
         }
 
-        if (this._activeRenderLoops.length > 0) {
+        if (this._frameHandler === 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
                 this.customAnimationFrameRequester.requestID = this._queueNewFrame(
@@ -1263,8 +1290,6 @@ export class Engine extends ThinEngine {
             } else {
                 this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
             }
-        } else {
-            this._renderingQueueLaunched = false;
         }
     }
 

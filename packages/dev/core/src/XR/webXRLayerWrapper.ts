@@ -5,15 +5,17 @@ import type { WebXRSessionManager } from "./webXRSessionManager";
 /** Covers all supported subclasses of WebXR's XRCompositionLayer */
 // TODO (rgerd): Extend for all other subclasses of XRCompositionLayer.
 export type WebXRCompositionLayerType = "XRProjectionLayer";
+export type WebXRQuadLayerType = "XRQuadLayer";
 
 /** Covers all supported subclasses of WebXR's XRLayer */
-export type WebXRLayerType = "XRWebGLLayer" | WebXRCompositionLayerType;
+export type WebXRLayerType = "XRWebGLLayer" | WebXRCompositionLayerType | WebXRQuadLayerType;
 
 /**
  * Wrapper over subclasses of XRLayer.
  * @internal
  */
 export class WebXRLayerWrapper {
+    private _rttWrapper: Nullable<WebXRLayerRenderTargetTextureProvider> = null;
     /**
      * Check if fixed foveation is supported on this device
      */
@@ -43,6 +45,23 @@ export class WebXRLayerWrapper {
         }
     }
 
+    /**
+     * Create a render target provider for the wrapped layer.
+     * @param xrSessionManager The XR Session Manager
+     * @returns A new render target texture provider for the wrapped layer.
+     */
+    public createRenderTargetTextureProvider(xrSessionManager: WebXRSessionManager): WebXRLayerRenderTargetTextureProvider {
+        this._rttWrapper = this._createRenderTargetTextureProvider(xrSessionManager);
+        return this._rttWrapper;
+    }
+
+    public dispose(): void {
+        if (this._rttWrapper) {
+            this._rttWrapper.dispose();
+            this._rttWrapper = null;
+        }
+    }
+
     protected constructor(
         /** The width of the layer's framebuffer. */
         public getWidth: () => number,
@@ -53,6 +72,6 @@ export class WebXRLayerWrapper {
         /** The type of XR layer that is being wrapped. */
         public readonly layerType: WebXRLayerType,
         /** Create a render target provider for the wrapped layer. */
-        public createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider
+        private _createRenderTargetTextureProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider
     ) {}
 }

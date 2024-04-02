@@ -1,5 +1,6 @@
 import { Vector2, Vector3, Vector4, Matrix, Quaternion } from "../Maths/math.vector";
 import { Color3, Color4 } from "../Maths/math.color";
+import { FlowGraphInteger } from "./flowGraphInteger";
 
 /**
  * A rich type represents extra information about a type,
@@ -8,15 +9,30 @@ import { Color3, Color4 } from "../Maths/math.color";
  */
 export class RichType<T> {
     constructor(
+        /**
+         * The name given to the type.
+         */
         public typeName: string,
+        /**
+         * The default value of the type.
+         */
         public defaultValue: T
     ) {}
 
+    /**
+     * Serializes this rich type into a serialization object.
+     * @param serializationObject the object to serialize to
+     */
     serialize(serializationObject: any) {
         serializationObject.typeName = this.typeName;
         serializationObject.defaultValue = this.defaultValue;
     }
 
+    /**
+     * Parses a rich type from a serialization object.
+     * @param serializationObject a serialization object
+     * @returns the parsed rich type
+     */
     static Parse(serializationObject: any): RichType<any> {
         return new RichType(serializationObject.typeName, serializationObject.defaultValue);
     }
@@ -44,6 +60,8 @@ export const RichTypeColor4: RichType<Color4> = new RichType("Color4", new Color
 
 export const RichTypeQuaternion: RichType<Quaternion> = new RichType("Quaternion", Quaternion.Identity());
 
+export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType("FlowGraphInteger", new FlowGraphInteger(0));
+
 /**
  * Given a value, try to deduce its rich type.
  * @param value the value to deduce the rich type from
@@ -70,6 +88,8 @@ export function getRichTypeFromValue<T>(value: T): RichType<T> {
                 return RichTypeColor4 as RichType<T>;
             } else if (value instanceof Quaternion) {
                 return RichTypeQuaternion as RichType<T>;
+            } else if (value instanceof FlowGraphInteger) {
+                return RichTypeFlowGraphInteger as RichType<T>;
             } else {
                 return RichTypeAny as RichType<T>;
             }

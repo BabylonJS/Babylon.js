@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray } from "../types";
+import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } from "../types";
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -166,7 +166,7 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32(commandArg);
     }
 
-    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+    public encodeCommandArgAsFloat32s(commandArg: DeepImmutable<FloatArray>) {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
@@ -221,6 +221,14 @@ export class NativeEngine extends Engine {
 
         if (_native.Engine.PROTOCOL_VERSION !== NativeEngine.PROTOCOL_VERSION) {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
+        }
+
+        if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(() => {
+                this.onContextLostObservable.notifyObservers(this);
+                this._contextWasLost = true;
+                this._restoreEngineAfterContextLost();
+            });
         }
 
         this._webGLVersion = 2;
@@ -278,6 +286,7 @@ export class NativeEngine extends Engine {
             textureMaxLevel: false,
             texture2DArrayMaxLayerCount: _native.Engine.CAPS_LIMITS_MAX_TEXTURE_LAYERS,
             disableMorphTargetTexture: false,
+            parallelShaderCompile: { COMPLETION_STATUS_KHR: 0 },
         };
 
         this._features = {
@@ -304,7 +313,7 @@ export class NativeEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
-            forceVertexBufferStrideMultiple4Bytes: false,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -421,6 +430,24 @@ export class NativeEngine extends Engine {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
+    }
+
+    protected _restoreEngineAfterContextLost(): void {
+        this._clearEmptyResources();
+
+        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = this._depthCullingState.depthFunc;
+        const depthMask = this._depthCullingState.depthMask;
+        const stencilTest = this._stencilState.stencilTest;
+
+        this._rebuildGraphicsResources();
+
+        this._depthCullingState.depthTest = depthTest;
+        this._depthCullingState.depthFunc = depthFunc;
+        this._depthCullingState.depthMask = depthMask;
+        this._stencilState.stencilTest = stencilTest;
+
+        this._flagContextRestored();
     }
 
     /**
@@ -575,7 +602,7 @@ export class NativeEngine extends Engine {
 
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._engine.getAttributes(nativePipelineContext.nativeProgram, attributesNames);
+        return this._engine.getAttributes(nativePipelineContext.program, attributesNames);
     }
 
     /**
@@ -635,7 +662,8 @@ export class NativeEngine extends Engine {
     }
 
     public createPipelineContext(): IPipelineContext {
-        return new NativePipelineContext(this);
+        const isAsync = !!(this._caps.parallelShaderCompile && this._engine.createProgramAsync);
+        return new NativePipelineContext(this, isAsync);
     }
 
     public createMaterialContext(): IMaterialContext | undefined {
@@ -646,6 +674,9 @@ export class NativeEngine extends Engine {
         return undefined;
     }
 
+    /**
+     * @internal
+     */
     public _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
@@ -656,17 +687,11 @@ export class NativeEngine extends Engine {
         _rebuildRebind: any,
         defines: Nullable<string>
     ) {
-        const nativePipelineContext = pipelineContext as NativePipelineContext;
-
         if (createAsRaw) {
-            nativePipelineContext.nativeProgram = this.createRawShaderProgram();
+            this.createRawShaderProgram();
         } else {
-            nativePipelineContext.nativeProgram = this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
+            this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
-    }
-
-    public isAsync(pipelineContext: IPipelineContext): boolean {
-        return !!(pipelineContext.isAsync && this._engine.createProgramAsync);
     }
 
     /**
@@ -674,21 +699,18 @@ export class NativeEngine extends Engine {
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-
-        if (!this.isAsync(pipelineContext)) {
-            action();
-            return;
-        }
-
-        const oldHandler = nativePipelineContext.onCompiled;
-
-        if (oldHandler) {
-            nativePipelineContext.onCompiled = () => {
-                oldHandler!();
-                action();
-            };
+        if (nativePipelineContext.isAsync) {
+            if (nativePipelineContext.onCompiled) {
+                const oldHandler = nativePipelineContext.onCompiled;
+                nativePipelineContext.onCompiled = () => {
+                    oldHandler();
+                    action();
+                };
+            } else {
+                nativePipelineContext.onCompiled = action;
+            }
         } else {
-            nativePipelineContext.onCompiled = action;
+            action();
         }
     }
 
@@ -698,10 +720,6 @@ export class NativeEngine extends Engine {
 
     public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: Nullable<string>): WebGLProgram {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-
-        if (nativePipelineContext.nativeProgram) {
-            throw new Error("Tried to create a second program in the same NativePipelineContext");
-        }
 
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
@@ -722,20 +740,21 @@ export class NativeEngine extends Engine {
             this.onAfterShaderCompilationObservable.notifyObservers(this);
         };
 
-        if (this.isAsync(pipelineContext)) {
-            return this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
+        if (pipelineContext.isAsync) {
+            nativePipelineContext.program = this._engine.createProgramAsync(vertexCode, fragmentCode, onSuccess, (error: Error) => {
                 nativePipelineContext.compilationError = error;
-            }) as WebGLProgram;
+            });
         } else {
             try {
-                const program = (nativePipelineContext.nativeProgram = this._engine.createProgram(vertexCode, fragmentCode));
+                nativePipelineContext.program = this._engine.createProgram(vertexCode, fragmentCode);
                 onSuccess();
-                return program as WebGLProgram;
-            } catch (e: any) {
+            } catch (e) {
                 const message = e?.message;
                 throw new Error("SHADER ERROR" + (typeof message === "string" ? "\n" + message : ""));
             }
         }
+
+        return nativePipelineContext.program as WebGLProgram;
     }
 
     /**
@@ -761,16 +780,16 @@ export class NativeEngine extends Engine {
 
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        if (nativePipelineContext && nativePipelineContext.nativeProgram) {
+        if (nativePipelineContext && nativePipelineContext.program) {
             this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DELETEPROGRAM);
-            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.nativeProgram);
+            this._commandBufferEncoder.encodeCommandArgAsNativeData(nativePipelineContext.program);
             this._commandBufferEncoder.finishEncodingCommand();
         }
     }
 
     public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): WebGLUniformLocation[] {
         const nativePipelineContext = pipelineContext as NativePipelineContext;
-        return this._engine.getUniforms(nativePipelineContext.nativeProgram, uniformsNames);
+        return this._engine.getUniforms(nativePipelineContext.program, uniformsNames);
     }
 
     public bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void {
@@ -780,7 +799,7 @@ export class NativeEngine extends Engine {
 
     public bindSamplers(effect: Effect): void {
         const nativePipelineContext = effect.getPipelineContext() as NativePipelineContext;
-        this._setProgram(nativePipelineContext.nativeProgram);
+        this._setProgram(nativePipelineContext.program as WebGLProgram);
 
         // TODO: share this with engine?
         const samplers = effect.getSamplers();
@@ -1372,7 +1391,7 @@ export class NativeEngine extends Engine {
         return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }
@@ -1871,6 +1890,7 @@ export class NativeEngine extends Engine {
         return internalTexture;
     }
 
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Wraps an external web gl texture in a Babylon texture.
      * @returns the babylon internal texture
@@ -2196,7 +2216,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRenderTargetTexture(size: number | { width: number; height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    public createRenderTargetTexture(size: number | { width: number; height: number; depth: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         let generateDepthBuffer = true;
@@ -2300,10 +2320,11 @@ export class NativeEngine extends Engine {
         this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset = 0, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
-        this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, data.buffer, data.byteOffset + (byteOffset ?? 0), byteLength ?? data.byteLength);
+        const dataView = data instanceof Array ? new Float32Array(data) : data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        const byteView = new Uint8Array(dataView.buffer, dataView.byteOffset, byteLength ?? dataView.byteLength);
+        this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, byteView.buffer, byteView.byteOffset, byteView.byteLength, byteOffset);
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.
@@ -2535,6 +2556,11 @@ export class NativeEngine extends Engine {
         const result = { ascent: 0, height: 0, descent: 0 };
         return result;
     }
+
+    /**
+     * No equivalent for native. Do nothing.
+     */
+    public flushFramebuffer(): void {}
 
     public _readTexturePixels(
         texture: InternalTexture,

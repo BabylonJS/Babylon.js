@@ -3,15 +3,15 @@ import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
+import type { NativeProgram } from "./nativeInterfaces";
 
 export class NativePipelineContext implements IPipelineContext {
-    public isParallelCompiled: boolean = true;
     public isCompiled: boolean = false;
     public compilationError?: Error;
 
-    public get isAsync(): boolean {
-        return this.isParallelCompiled;
-    }
+    public readonly isAsync: boolean;
+
+    public program: NativeProgram;
 
     public get isReady(): boolean {
         if (this.compilationError) {
@@ -31,19 +31,13 @@ export class NativePipelineContext implements IPipelineContext {
         return null;
     }
 
-    // TODO: what should this do?
-    public _handlesSpectorRebuildCallback(onCompiled: (compiledObject: any) => void): void {
-        throw new Error("Not implemented");
-    }
-
-    public nativeProgram: any;
-
     private _engine: NativeEngine;
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    constructor(engine: NativeEngine) {
+    constructor(engine: NativeEngine, isAsync: boolean) {
         this._engine = engine;
+        this.isAsync = isAsync;
     }
 
     public _fillEffectInformation(
@@ -457,7 +451,6 @@ export class NativePipelineContext implements IPipelineContext {
      * Sets an array 3 on a uniform variable. (Array is specified as single array eg. [1,2,3,4,5,6] will result in [[1,2,3],[4,5,6]] in the shader)
      * @param uniformName Name of the variable.
      * @param array array to be set.
-     * @returns this effect.
      */
     public setArray3(uniformName: string, array: number[]): void {
         this._valueCache[uniformName] = null;
@@ -495,7 +488,7 @@ export class NativePipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this._engine.setMatrices(this._uniforms[uniformName]!, matrix.toArray() as Float32Array)) {
+            if (!this._engine.setMatrices(this._uniforms[uniformName]!, matrix.asArray())) {
                 this._valueCache[uniformName] = null;
             }
         }
@@ -525,7 +518,6 @@ export class NativePipelineContext implements IPipelineContext {
      * Sets a float on a uniform variable.
      * @param uniformName Name of the variable.
      * @param value value to be set.
-     * @returns this effect.
      */
     public setFloat(uniformName: string, value: number): void {
         const cache = this._valueCache[uniformName];
@@ -642,7 +634,6 @@ export class NativePipelineContext implements IPipelineContext {
      * @param y Second float in float4.
      * @param z Third float in float4.
      * @param w Fourth float in float4.
-     * @returns this effect.
      */
     public setFloat4(uniformName: string, x: number, y: number, z: number, w: number): void {
         if (this._cacheFloat4(uniformName, x, y, z, w)) {

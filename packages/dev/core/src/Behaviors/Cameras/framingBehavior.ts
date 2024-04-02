@@ -10,6 +10,7 @@ import { PointerEventTypes } from "../../Events/pointerEvents";
 import { PrecisionDate } from "../../Misc/precisionDate";
 
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { TransformNode } from "../../Meshes/transformNode";
 import { Vector3 } from "../../Maths/math.vector";
 import type { Animatable } from "../../Animations/animatable";
 import { Animation } from "../../Animations/animation";
@@ -175,7 +176,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
     // Default behavior functions
     private _onPrePointerObservableObserver: Nullable<Observer<PointerInfoPre>>;
     private _onAfterCheckInputsObserver: Nullable<Observer<Camera>>;
-    private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<AbstractMesh>>>;
+    private _onMeshTargetChangedObserver: Nullable<Observer<Nullable<TransformNode>>>;
     private _attachedCamera: Nullable<ArcRotateCamera>;
     private _isPointerDown = false;
     private _lastInteractionTime = -Infinity;
@@ -208,9 +209,9 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
             }
         });
 
-        this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((mesh) => {
-            if (mesh) {
-                this.zoomOnMesh(mesh, undefined, () => {
+        this._onMeshTargetChangedObserver = camera.onMeshTargetChangedObservable.add((transformNode) => {
+            if (transformNode && (transformNode as AbstractMesh).getBoundingInfo) {
+                this.zoomOnMesh(transformNode as AbstractMesh, undefined, () => {
                     this.onTargetFramingAnimationEndObservable.notifyObservers();
                 });
             }

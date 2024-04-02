@@ -182,7 +182,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * attach this feature
      * Will usually be called by the features manager
-     *
+     * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
     public attach(force?: boolean | undefined): boolean {

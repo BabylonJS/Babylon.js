@@ -10,10 +10,12 @@ import type { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
 import { WebGPUCacheRenderPipelineTree } from "./webgpuCacheRenderPipelineTree";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
-import { renderableTextureFormatToIndex, WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { WebGPUTextureHelper } from "./webgpuTextureHelper";
+import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
-import "../../Shaders/clearQuad.vertex";
-import "../../Shaders/clearQuad.fragment";
+import "../../ShadersWGSL/clearQuad.vertex";
+import "../../ShadersWGSL/clearQuad.fragment";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 /** @internal */
 export class WebGPUClearQuad {
@@ -48,7 +50,7 @@ export class WebGPUClearQuad {
         this._cacheRenderPipeline.setDepthTestEnabled(false);
         this._cacheRenderPipeline.setStencilReadMask(0xff);
 
-        this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"]);
+        this._effect = engine.createEffect("clearQuad", [], ["color", "depthValue"], undefined, undefined, undefined, undefined, undefined, undefined, ShaderLanguage.WGSL);
     }
 
     public clear(

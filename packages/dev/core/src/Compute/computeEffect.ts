@@ -11,6 +11,29 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { Engine } from "../Engines/engine";
 
 /**
+ * Defines the route to the shader code. The priority is as follows:
+ *  * object: `{ computeSource: "compute shader code string"}` for directly passing the shader code
+ *  * object: `{ computeElement: "vertexShaderCode" }`, used with shader code in script tags
+ *  * object: `{ compute: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
+ *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+ */
+export type IComputeShaderPath = {
+    /**
+     * Directly pass the shader code
+     */
+    computeSource?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
+     */
+    compute?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    computeElement?: string;
+};
+
+/**
  * Options to be used when creating a compute effect.
  */
 export interface IComputeEffectCreationOptions {
@@ -49,7 +72,7 @@ export class ComputeEffect {
     /**
      * Name of the effect.
      */
-    public name: any = null;
+    public name: IComputeShaderPath | string;
     /**
      * String container all the define statements that should be set on the shader.
      */
@@ -110,7 +133,7 @@ export class ComputeEffect {
      * @param engine The engine the effect is created for
      * @param key Effect Key identifying uniquely compiled shader variants
      */
-    constructor(baseName: any, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
+    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
         this.name = baseName;
         this._key = key;
 
@@ -126,18 +149,16 @@ export class ComputeEffect {
         this._shaderRepository = ShaderStore.GetShadersRepository(this._shaderLanguage);
         this._includeShaderStore = ShaderStore.GetIncludesShadersStore(this._shaderLanguage);
 
-        let computeSource: any;
+        let computeSource: IComputeShaderPath | HTMLElement | string;
 
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
-        if (baseName.computeSource) {
+        if (typeof baseName === "string") {
+            computeSource = baseName;
+        } else if (baseName.computeSource) {
             computeSource = "source:" + baseName.computeSource;
         } else if (baseName.computeElement) {
-            computeSource = hostDocument ? hostDocument.getElementById(baseName.computeElement) : null;
-
-            if (!computeSource) {
-                computeSource = baseName.computeElement;
-            }
+            computeSource = hostDocument?.getElementById(baseName.computeElement) || baseName.computeElement;
         } else {
             computeSource = baseName.compute || baseName;
         }

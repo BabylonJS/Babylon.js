@@ -143,7 +143,8 @@ export class RenderingManager {
     }
 
     /**
-     * Gets the rendering group with the specified id.
+     * @returns the rendering group with the specified id.
+     * @param id the id of the rendering group (0 by default)
      */
     public getRenderingGroup(id: number): RenderingGroup {
         const renderingGroupId = id || 0;
@@ -200,7 +201,7 @@ export class RenderingManager {
                 continue;
             }
 
-            const renderingGroupMask = Math.pow(2, index);
+            const renderingGroupMask = 1 << index;
             info.renderingGroupId = index;
 
             // Before Observable

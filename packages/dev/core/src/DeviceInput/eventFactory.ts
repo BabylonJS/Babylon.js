@@ -18,6 +18,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
+     * @param pointerId PointerId to use for pointer events
      * @returns IUIEvent object
      */
     public static CreateDeviceEvent(
@@ -40,6 +41,7 @@ export class DeviceEventFactory {
             case DeviceType.Touch:
                 return this._CreatePointerEvent(deviceType, deviceSlot, inputIndex, currentState, deviceInputSystem, elementToAttachTo, pointerId);
             default:
+                // eslint-disable-next-line no-throw-literal
                 throw `Unable to generate event for device ${DeviceType[deviceType]}`;
         }
     }
@@ -53,6 +55,7 @@ export class DeviceEventFactory {
      * @param currentState Current value for given input
      * @param deviceInputSystem Reference to DeviceInputSystem
      * @param elementToAttachTo HTMLElement to reference as target for inputs
+     * @param pointerId PointerId to use for pointer events
      * @returns IUIEvent object (Pointer)
      */
     private static _CreatePointerEvent(

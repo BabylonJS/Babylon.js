@@ -249,11 +249,21 @@ class Playground {
         let snapshot = "";
         // see if a snapshot should be used
         if (window.location.search.indexOf("snapshot=") !== -1) {
-            snapshot = window.location.search.split("=")[1];
+            snapshot = window.location.search.split("snapshot=")[1];
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
                 declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
+            }
+        }
+
+        let version = "";
+        if (window.location.search.indexOf("version=") !== -1) {
+            version = window.location.search.split("version=")[1];
+            // cleanup, just in case
+            version = version.split("&")[0];
+            for (let index = 0; index < declarations.length; index++) {
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version);
             }
         }
 
@@ -268,8 +278,9 @@ class Playground {
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
         // Check for Unity Toolkit
-        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false)) {
-            declarations.push("https://playground.babylonjs.com/libs/babylon.manager.d.ts");
+        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false) || Utilities.ReadBoolFromStore("unity-toolkit-used", false)) {
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.d.ts");
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/unity.playground.d.ts");
         }
 
         const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;
