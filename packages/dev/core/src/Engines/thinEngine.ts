@@ -2109,9 +2109,10 @@ export class ThinEngine {
      * @param texture texture to generate the mipmaps for
      */
     public generateMipmaps(texture: InternalTexture): void {
-        this._bindTextureDirectly(this._gl.TEXTURE_2D, texture, true);
-        this._gl.generateMipmap(this._gl.TEXTURE_2D);
-        this._bindTextureDirectly(this._gl.TEXTURE_2D, null);
+        const target = this._getTextureTarget(texture);
+        this._bindTextureDirectly(target, texture, true);
+        this._gl.generateMipmap(target);
+        this._bindTextureDirectly(target, null);
     }
 
     /**
