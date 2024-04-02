@@ -148,6 +148,10 @@ declare module BABYLON.GLTF2 {
          * WEBP Mime-type
          */
         WEBP = "image/webp",
+        /**
+         * AVIF Mime-type
+         */
+        AVIF = "image/avif",
     }
 
     /**
@@ -1201,6 +1205,15 @@ declare module BABYLON.GLTF2 {
 
     /** @internal */
     interface IEXTTextureWebP {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the EXT_texture_avif extension
+     */
+
+    /** @internal */
+    interface IEXTTextureAVIF {
         source: number;
     }
 
