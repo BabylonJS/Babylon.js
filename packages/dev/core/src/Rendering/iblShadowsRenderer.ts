@@ -27,7 +27,6 @@ import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 
-
 class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
     /**
      * Is this effect enabled
@@ -78,7 +77,7 @@ export class IblShadowsRenderer {
     private _excludedMeshes: number[] = [];
 
     private _voxelRenderer: IblShadowsVoxelRenderer;
-    
+
     /**
      * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
      */
@@ -148,7 +147,7 @@ export class IblShadowsRenderer {
         }
     }
 
-    private _resolution: number = 128;
+    private _resolution: number = 64;
     public get resolution() {
         return this._resolution;
     }
@@ -181,6 +180,10 @@ export class IblShadowsRenderer {
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
         this._createTextures();
         this._createEffects();
+
+        this._scene.onNewMeshAddedObservable.add(() => {
+            this._voxelizationDirty = true;
+        });
     }
 
     private _createTextures() {}
@@ -266,36 +269,6 @@ export class IblShadowsRenderer {
         return prePassRenderer.addEffectConfiguration(this._prePassEffectConfiguration);
     }
 
-    private _finalCompose() {
-        // const output = this._scene.prePassRenderer?.setCustomOutput(this._outputRT);
-        // if (output) {
-        //     this._engine.bindFramebuffer(this._outputRT.renderTarget!);
-        // } else {
-        this._engine.restoreDefaultFramebuffer();
-        // }
-
-        // this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
-        // this._engine.applyStates();
-
-        // this._engine.enableEffect(this._finalEffectWrapper._drawWrapper);
-
-        const prePassRenderer = this._scene.prePassRenderer;
-        if (!prePassRenderer) {
-            return;
-        }
-
-        // Retrieve opaque color texture
-        // const normalTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-        // const positionTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
-        // const velocityTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
-        // const depthTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-        // this._finalEffectWrapper.effect.setTexture("worldNormalSampler", this._thinTextures[normalTextureIndex]);
-        // this._finalEffectWrapper.effect.setTexture("localPositionSampler", this._thinTextures[positionTextureIndex]);
-        // this._finalEffectWrapper.effect.setTexture("velocitySampler", this._thinTextures[velocityTextureIndex]);
-        // this._finalEffectWrapper.effect.setTexture("depthSampler", this._thinTextures[depthTextureIndex]);
-        // this._effectRenderer.render(this._finalEffectWrapper);
-    }
-
     /**
      * Checks if the depth peeling renderer is ready to render transparent meshes
      * @returns true if the depth peeling renderer is ready to render the transparent meshes
@@ -314,6 +287,13 @@ export class IblShadowsRenderer {
      * @returns The array of submeshes that could not be handled by this renderer
      */
     public render(): SmartArray<SubMesh> {
+        // This is called for every MRT in the customRenderTargets structure during voxelization. That doesn't make
+        // sense. We only want this to run after voxelization so we should put in some state logic here to return
+        // if voxelization is happening.
+        if (this._voxelRenderer.isVoxelizationInProgress()) {
+            return this._excludedSubMeshes;
+        }
+
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
             this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
@@ -331,7 +311,7 @@ export class IblShadowsRenderer {
         // }
 
         // // Final composition on default FB
-        this._finalCompose();
+        // this._finalCompose();
 
         return this._excludedSubMeshes;
     }

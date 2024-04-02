@@ -33,24 +33,28 @@ export class IblShadowsVoxelRenderer {
 
     private _voxelGridRT: RenderTargetTexture;
     private _voxelMrts: MultiRenderTarget[] = [];
-    private _isVoxelGrid3D: boolean = false;
-
-    private _voxelResolution: number;
+    private _isVoxelGrid3D: boolean = true;
+    public getVoxelGrid(): RenderTargetTexture {
+        return this._voxelGridRT;
+    }
     private _maxDrawBuffers: number;
 
-    // private _voxelMaterial: ShaderMaterial;
-    // private _voxelEffectWrapper: EffectWrapper;
-    // private _voxelEffectRenderer: EffectRenderer;
+    private _voxelizationInProgress: boolean = false;
 
+    /**
+     * @returns Whether voxelization is currently happening.
+     */
+    public isVoxelizationInProgress(): boolean {
+        return this._voxelizationInProgress;
+    }
+
+    private _voxelResolution: number;
     /**
      * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
      */
     public get voxelResolution(): number {
         return this._voxelResolution;
     }
-
-    private _voxelDebugPass: PostProcess;
-    private _voxelDebugEnabled: boolean = false;
 
     public set voxelResolution(resolution: number) {
         if (this._voxelResolution === resolution) {
@@ -60,6 +64,9 @@ export class IblShadowsVoxelRenderer {
         this._disposeTextures();
         this._createTextures();
     }
+
+    private _voxelDebugPass: PostProcess;
+    private _voxelDebugEnabled: boolean = false;
 
     public get voxelDebugEnabled(): boolean {
         return this._voxelDebugEnabled;
@@ -75,7 +82,7 @@ export class IblShadowsVoxelRenderer {
                 "Final compose shader",
                 this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
                 ["slice"], // attributes
-                ["texture_array"], // textures
+                ["voxelTexture"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
                 Texture.BILINEAR_SAMPLINGMODE, // sampling
@@ -83,7 +90,7 @@ export class IblShadowsVoxelRenderer {
             );
             this._voxelDebugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
-                effect.setTexture("texture_array", this._voxelGridRT);
+                effect.setTexture("voxelTexture", this._voxelGridRT);
             };
         }
     }
@@ -106,7 +113,6 @@ export class IblShadowsVoxelRenderer {
         this._maxDrawBuffers = this._engine._gl.getParameter(this._engine._gl.MAX_DRAW_BUFFERS);
 
         this._createTextures();
-        // this._createEffects();
     }
 
     private _computeNumberOfSlabs(): number {
@@ -120,7 +126,7 @@ export class IblShadowsVoxelRenderer {
                 width: this._voxelResolution,
                 height: this._voxelResolution,
                 layers: this._isVoxelGrid3D ? undefined : this._voxelResolution,
-                // depth: this._isVoxelGrid3D ? this._voxelResolution : undefined
+                depth: this._isVoxelGrid3D ? this._voxelResolution : undefined,
             },
             this._scene,
             {
@@ -128,7 +134,7 @@ export class IblShadowsVoxelRenderer {
                 type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 format: Constants.TEXTUREFORMAT_R,
                 samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-                generateMipMaps: false,
+                generateMipMaps: true,
             }
         );
 
@@ -147,7 +153,7 @@ export class IblShadowsVoxelRenderer {
 
             const mrt = new MultiRenderTarget(
                 "mrt" + mrt_index,
-                { width: this._voxelResolution, height: this._voxelResolution },
+                { width: this._voxelResolution, height: this._voxelResolution, depth: this._isVoxelGrid3D ? this._voxelResolution : undefined },
                 this._maxDrawBuffers, // number of draw buffers
                 this._scene,
                 {
@@ -203,7 +209,6 @@ export class IblShadowsVoxelRenderer {
      * @param excludedMeshes
      */
     public updateVoxelGrid(excludedMeshes: number[]) {
-        
         // If the MRT's are already in the list of render targets, remove them.
         const currentRTs = this._scene.customRenderTargets;
         const mrtIdx = currentRTs.findIndex((rt) => {
@@ -213,6 +218,8 @@ export class IblShadowsVoxelRenderer {
         if (mrtIdx >= 0) {
             this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
         }
+
+        this._voxelizationInProgress = true;
 
         // Update render lists and scene scale for voxel rendering
         const bounds = this._scene.getWorldExtends((mesh) => {
@@ -229,7 +236,7 @@ export class IblShadowsVoxelRenderer {
         Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
 
         const meshes = this._scene.meshes;
-        
+
         // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
         this._voxelMrts.forEach((mrt, mrtIndex) => {
             mrt.renderList = [];
@@ -256,7 +263,6 @@ export class IblShadowsVoxelRenderer {
                     // TODO - if the mesh already has a voxel material applied, don't create a new one.
                     // mesh.getMaterialForRenderPass(mrt.renderPassIds)
                     mrt.setMaterialForRendering(mesh, voxelMaterial);
-                    Logger.Log("Setting voxel material for " + mesh.name);
                 }
             });
         });
@@ -267,9 +273,11 @@ export class IblShadowsVoxelRenderer {
         this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
             // Remove the MRTs from the array so they don't get rendered again.
             // TODO - this seems to be removing the MRT's too early??
-            this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
-                // this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
-            });
+            setTimeout(() => {
+                this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
+                this._voxelizationInProgress = false;
+                this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
+            }, 5000);
         });
     }
 
