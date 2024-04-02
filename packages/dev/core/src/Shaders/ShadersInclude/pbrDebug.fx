@@ -174,6 +174,8 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vec3(alpha);
     #elif DEBUGMODE == 88 && defined(ALBEDO)
         gl_FragColor.rgb = vec3(albedoTexture.a);
+    #elif DEBUGMODE == 89
+        gl_FragColor.rgb = aoOut.ambientOcclusionColor.rgb;
     // Does Not Exist
     #else
         float stripeWidth = 30.;

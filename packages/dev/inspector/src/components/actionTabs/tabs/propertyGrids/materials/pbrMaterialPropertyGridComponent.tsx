@@ -238,6 +238,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
             { label: "Albedo Alpha", value: 88 },
+            { label: "Ambient occlusion color", value: 89 },
         ];
 
         const realTimeFilteringQualityOptions = [
