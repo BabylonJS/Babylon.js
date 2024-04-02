@@ -96,7 +96,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             previousAndSideLength = 0;
         points.forEach((p) => {
             vertexPositionsLen += p.length * 2;
-            indicesLength += (p.length - 1) * 2;
+            indicesLength += (p.length - 3) * 2;
             uvLength += (p.length * 4) / 3;
             previousAndSideLength += (p.length * 8) / 3;
         });
@@ -138,7 +138,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
 
             indiceOffset += (p.length / 3) * 2;
             const currVertexPositionsOffsetLength = p.length * 2;
-            const positions = vertexPositionsArr.subarray(vertexPositionsOffset, currVertexPositionsOffsetLength);
+            const positions = vertexPositionsArr.subarray(vertexPositionsOffset, vertexPositionsOffset + currVertexPositionsOffsetLength);
             vertexPositionsOffset += currVertexPositionsOffsetLength;
             indicesOffset += (p.length - 1) * 2;
 
@@ -152,7 +152,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                 v = positions.subarray(0, 6);
             }
             previous.set(v);
-            previous.set(positions.subarray(6), 6);
+            previous.set(positions.subarray(0, positions.length - 6), 6);
             next.set(positions.subarray(6));
             if (GreasedLineMesh._CompareV3(l - 1, 0, positions)) {
                 v = positions.subarray(6, 12);
