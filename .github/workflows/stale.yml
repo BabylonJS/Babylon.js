@@ -13,14 +13,14 @@ jobs:
         uses: actions/stale@v9.0.0
         with:
           stale-issue-message: 'This issue has been automatically staled because it has been inactive for more than 14 days. Please update to "unstale".'
-          days-before-stale: 14
+          days-before-stale: 28
           days-before-close: 3650 # do not auto close yet
           stale-pr-message: 'This pull request has been marked as stale because it has been inactive for more than 14 days. Please update to "unstale".'
           stale-pr-label: stale
           # The labels that mean an issue is exempt from being marked stale. Separate multiple labels with commas (eg. "label1,label2").
-          exempt-issue-labels: no-stale
+          exempt-issue-labels: no-stale,stale
           # The labels that mean a pull request is exempt from being marked as stale. Separate multiple labels with commas (eg. "label1,label2").
-          exempt-pr-labels: no-stale
+          exempt-pr-labels: no-stale,stale
           # Run the processor in debug mode without actually performing any operations on live issues.
           # debug-only: true # optional, default is false
           # The maximum number of operations per run, used to control rate limiting (GitHub API CRUD related).
