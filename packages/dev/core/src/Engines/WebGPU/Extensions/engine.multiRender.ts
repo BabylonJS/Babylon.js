@@ -25,7 +25,7 @@ WebGPUEngine.prototype.unBindMultiColorAttachmentFramebuffer = function (
 
     for (let i = 0; i < count; i++) {
         const texture = rtWrapper.textures![i];
-        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube) {
+        if (texture.generateMipMaps && !disableGenerateMipMaps && !texture.isCube && !texture.is3D) {
             this._generateMipmaps(texture);
         }
     }
