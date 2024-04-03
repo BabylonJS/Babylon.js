@@ -363,12 +363,17 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         if (ribbonInfo.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
             const width = ribbonInfo.width! / 2;
             const pointVectors = GreasedLineTools.ToVector3Array(points) as Vector3[];
-            let direction: Vector3 = new Vector3();
+            let direction: Nullable<Vector3> = null;
             let fatDirection: Nullable<Vector3> = null;
 
             if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_FIRST_SEGMENT) {
                 // set the direction plane from the first line segment for the whole line
                 directionPlane = GreasedLineRibbonMesh._GetDirectionFromPoints(pointVectors[0], pointVectors[1], null);
+            }
+
+            if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO && !(ribbonInfo.directions instanceof Vector3)) {
+                // eslint-disable-next-line no-throw-literal
+                throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO 'GreasedLineMeshOptions.ribbonOptions.directions' must be a Vector3.";
             }
 
             TmpVectors.Vector3[1] = ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ;
@@ -378,7 +383,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
                 if (directionPlane) {
                     direction = <Vector3>directionPlane;
-                } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTION_FACE_TO) {
+                } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO) {
                     p2.subtractToRef(p1, TmpVectors.Vector3[0]);
                     direction = Vector3.CrossToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]).normalize();
                 } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_ALL_SEGMENTS) {
