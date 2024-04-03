@@ -24,7 +24,7 @@ Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  */
 export class GreasedLineMesh extends GreasedLineBaseMesh {
     private _previousAndSide: FloatArray;
-    private _nextAndCounters:FloatArray;
+    private _nextAndCounters: FloatArray;
 
     private static _V_START = new Vector3();
     private static _V_END = new Vector3();
