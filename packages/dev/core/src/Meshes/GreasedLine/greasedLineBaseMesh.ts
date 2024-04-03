@@ -8,6 +8,7 @@ import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import type { Engine } from "../../Engines/engine";
+import type { FloatArray, IndicesArray } from "../../types";
 
 /**
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
@@ -131,9 +132,9 @@ export interface GreasedLineMeshOptions {
  * GreasedLineBaseMesh
  */
 export abstract class GreasedLineBaseMesh extends Mesh {
-    protected _vertexPositions: number[];
-    protected _indices: number[];
-    protected _uvs: number[];
+    protected _vertexPositions: FloatArray;
+    protected _indices: IndicesArray;
+    protected _uvs: FloatArray;
     protected _points: number[][];
     protected _offsets: number[];
     protected _colorPointers: number[];
@@ -342,7 +343,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
             colorPointers: this._colorPointers,
             lazy: this._lazy,
             updatable: this._updatable,
-            uvs: this._uvs,
+            uvs: this._uvs instanceof Float32Array ? Array.from(this._uvs) : this._uvs,
             widths: this._widths,
             ribbonOptions: this._options.ribbonOptions,
         };
