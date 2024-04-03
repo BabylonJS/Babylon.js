@@ -289,7 +289,7 @@ struct subSurfaceOutParams
         float thickness = vThicknessParam.y;
     #endif
 
-    #ifdef SS_REFRACTIONINTENSITY_TEXTURE
+    #if defined(SS_REFRACTION) && defined(SS_REFRACTIONINTENSITY_TEXTURE)
         #ifdef SS_USE_GLTF_TEXTURES
             refractionIntensity *= refractionIntensityMap.r;
         #else
