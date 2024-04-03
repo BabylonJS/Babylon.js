@@ -362,6 +362,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             { label: "Sheen Reflectance", value: 85 },
             { label: "Luminance Over Alpha", value: 86 },
             { label: "Alpha", value: 87 },
+            { label: "Albedo color", value: 88 },
+            { label: "Ambient occlusion color", value: 89 },
         ],
     })
     public debugMode = 0;
