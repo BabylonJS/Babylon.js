@@ -102,7 +102,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             previousAndSideLength += (p.length * 8) / 3;
         });
         const vertexPositionsArr = new Float32Array(vertexPositionsLen);
-        const indicesArr = indicesLength > 65535 ? new Uint32Array(indicesLength) : new Uint16Array(indicesLength);
+        const indicesArr = vertexPositionsLen > 65535 ? new Uint32Array(indicesLength) : new Uint16Array(indicesLength);
         const uvArr = new Float32Array(uvLength);
         const previousAndSide = new Float32Array(previousAndSideLength);
         // it's the same length here
