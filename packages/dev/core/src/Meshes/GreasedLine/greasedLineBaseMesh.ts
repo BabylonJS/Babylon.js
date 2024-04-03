@@ -34,6 +34,7 @@ export enum GreasedLineRibbonFacesMode {
  * AUTO_DIRECTIONS_FROM_FIRST_SEGMENT sets the direction (slope) of the ribbon from the direction of the first line segment. Recommended.
  * AUTO_DIRECTIONS_FROM_ALL_SEGMENTS in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments. Slow method.
  * AUTO_DIRECTIONS_ENHANCED in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments using a more sophisitcaed algorithm. Slowest method.
+ * AUTO_DIRECTIONS_FACE_TO in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments and a direction (face-to) vector specified in direction. The resulting line will face to the direction of this face-to vector.
  * AUTO_DIRECTIONS_NONE you have to set the direction (slope) manually. Recommended.
  */
 export enum GreasedLineRibbonAutoDirectionMode {
@@ -92,7 +93,7 @@ export interface GreasedLineMeshOptions {
      */
     points: GreasedLinePoints;
     /**
-     * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
+     * Each line segment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
      * Defaults to empty array.
      */
     widths?: number[];
