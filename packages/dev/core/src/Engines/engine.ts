@@ -22,6 +22,10 @@ import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import "./Extensions/engine.alpha";
 import "./Extensions/engine.readTexture";
 import "./Extensions/engine.dynamicBuffer";
+import "./AbstractEngine/abstractEngine.loadingScreen";
+import "./AbstractEngine/abstractEngine.dom";
+import "./AbstractEngine/abstractEngine.states";
+import "./AbstractEngine/abstractEngine.renderPass";
 
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
@@ -38,6 +42,7 @@ import {
     _CommonInit,
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
+import { _ClearCommonObservables, _InitCommonObservables } from "./AbstractEngine/abstractEngine.observable";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -353,6 +358,8 @@ export class Engine extends ThinEngine {
         adaptToDeviceRatio: boolean = false
     ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
+
+        _InitCommonObservables(this);
 
         this._drawCalls = new PerfCounter();
 
@@ -1154,6 +1161,7 @@ export class Engine extends ThinEngine {
             this._rescalePostProcess.dispose();
         }
 
+        _ClearCommonObservables(this);
         _CommonDispose(this, this._renderingCanvas);
 
         super.dispose();

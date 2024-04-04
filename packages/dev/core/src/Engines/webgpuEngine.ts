@@ -83,6 +83,11 @@ import {
 } from "./engine.common";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { PerfCounter } from "../Misc/perfCounter";
+import "./AbstractEngine/abstractEngine.loadingScreen";
+import "./AbstractEngine/abstractEngine.dom";
+import "./AbstractEngine/abstractEngine.states";
+import "./AbstractEngine/abstractEngine.renderPass";
+import { _InitCommonObservables, _ClearCommonObservables } from "./AbstractEngine/abstractEngine.observable";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -616,6 +621,8 @@ export class WebGPUEngine extends AbstractEngine {
     public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
         super(options.antialias ?? true, options);
         this._name = "WebGPU";
+
+        _InitCommonObservables(this);
 
         this._drawCalls = new PerfCounter();
 
@@ -3880,6 +3887,8 @@ export class WebGPUEngine extends AbstractEngine {
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
         this._device.destroy();
+
+        _ClearCommonObservables(this);
 
         _CommonDispose(this, this._renderingCanvas);
 

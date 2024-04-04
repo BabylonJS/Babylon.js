@@ -1,11 +1,9 @@
 import type { Observer } from "../Misc/observable";
 import type { DataArray, FloatArray, ImageSource, IndicesArray, Nullable } from "../types";
 import type { PerfCounter } from "../Misc/perfCounter";
-import type { OcclusionQuery } from "./Extensions/engine.query";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ILoadingScreen } from "../Loading/loadingScreen";
 import type { ICanvas, IImage } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
@@ -41,6 +39,7 @@ import type { VertexBuffer } from "../Meshes/buffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 import type { WebRequest } from "core/Misc/webRequest";
 import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
+import type { ILoadingScreen } from "../Loading/loadingScreen";
 import { EngineStore } from "./engineStore";
 import { Logger } from "../Misc/logger";
 import { Effect } from "../Materials/effect";
@@ -61,11 +60,11 @@ import { Observable } from "../Misc/observable";
  * @internal
  */
 export interface ISceneLike {
+    /** Add pending data  (to load) */
     addPendingData(data: any): void;
+    /** Remove pending data */
     removePendingData(data: any): void;
-    /**
-     *
-     */
+    /** Offline provider */
     offlineProvider: IOfflineProvider;
 }
 
@@ -165,16 +164,6 @@ export interface AbstractEngineOptions {
 }
 
 /**
- * Defines the interface used by objects containing a viewport (like a camera)
- */
-interface IViewportOwnerLike {
-    /**
-     * Gets or sets the viewport
-     */
-    viewport: IViewportLike;
-}
-
-/**
  * Information about the current host
  */
 export interface HostInformation {
@@ -197,7 +186,7 @@ export abstract class AbstractEngine {
     /** @internal */
     protected _colorWriteChanged = true;
     /** @internal */
-    protected _depthCullingState = new DepthCullingState();
+    public _depthCullingState = new DepthCullingState();
     /** @internal */
     protected _stencilStateComposer = new StencilStateComposer();
     /** @internal */
@@ -219,8 +208,10 @@ export abstract class AbstractEngine {
     protected _compatibilityMode = true;
     /** @internal */
     public _pointerLockRequested: boolean;
-    private _loadingScreen: ILoadingScreen;
-    protected _renderingCanvas: Nullable<HTMLCanvasElement>;
+    /** @internal */
+    public _loadingScreen: ILoadingScreen;
+    /** @internal */
+    public _renderingCanvas: Nullable<HTMLCanvasElement>;
     /** @internal */
     public _internalTexturesCache = new Array<InternalTexture>();
     private _activeRequests = new Array<IFileRequest>();
@@ -267,6 +258,30 @@ export abstract class AbstractEngine {
     public _onCanvasContextMenu: (evt: Event) => void;
     /** @internal */
     public _onFullscreenChange: () => void;
+
+    /**
+     * Observable event triggered each time the canvas loses focus
+     */
+    public onCanvasBlurObservable: Observable<AbstractEngine>;
+    /**
+     * Observable event triggered each time the canvas gains focus
+     */
+    public onCanvasFocusObservable: Observable<AbstractEngine>;
+
+    /**
+     * Event raised when a new scene is created
+     */
+    public onNewSceneAddedObservable: Observable<Scene>;
+
+    /**
+     * Observable event triggered each time the rendering canvas is resized
+     */
+    public onResizeObservable: Observable<AbstractEngine>;
+
+    /**
+     * Observable event triggered each time the canvas receives pointerout event
+     */
+    public onCanvasPointerOutObservable: Observable<PointerEvent>;
 
     /**
      * Turn this value on if you want to pause FPS computation when in background
@@ -421,30 +436,6 @@ export abstract class AbstractEngine {
 
     /** Gets or sets the tab index to set to the rendering canvas. 1 is the minimum value to set to be able to capture keyboard events */
     public canvasTabIndex = 1;
-
-    /**
-     * Observable event triggered each time the canvas loses focus
-     */
-    public onCanvasBlurObservable = new Observable<AbstractEngine>();
-    /**
-     * Observable event triggered each time the canvas gains focus
-     */
-    public onCanvasFocusObservable = new Observable<AbstractEngine>();
-
-    /**
-     * Event raised when a new scene is created
-     */
-    public onNewSceneAddedObservable = new Observable<Scene>();
-
-    /**
-     * Observable event triggered each time the rendering canvas is resized
-     */
-    public onResizeObservable = new Observable<AbstractEngine>();
-
-    /**
-     * Observable event triggered each time the canvas receives pointerout event
-     */
-    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /** @internal */
     protected _onContextLost: (evt: Event) => void;
@@ -1039,36 +1030,6 @@ export abstract class AbstractEngine {
     }
 
     /**
-     * Gets the HTML element used to attach event listeners
-     * @returns a HTML element
-     */
-    public getInputElement(): Nullable<HTMLElement> {
-        return this._renderingCanvas;
-    }
-
-    /**
-     * Gets the client rect of the HTML canvas attached with the current webGL context
-     * @returns a client rectangle
-     */
-    public getRenderingCanvasClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this._renderingCanvas.getBoundingClientRect();
-    }
-
-    /**
-     * Gets the client rect of the HTML element used for events
-     * @returns a client rectangle
-     */
-    public getInputElementClientRect(): Nullable<ClientRect> {
-        if (!this._renderingCanvas) {
-            return null;
-        }
-        return this.getInputElement()!.getBoundingClientRect();
-    }
-
-    /**
      * (WebGPU only) True (default) to be in compatibility mode, meaning rendering all existing scenes without artifacts (same rendering than WebGL).
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
      * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
@@ -1080,65 +1041,6 @@ export abstract class AbstractEngine {
     public set compatibilityMode(mode: boolean) {
         // not supported in WebGL
         this._compatibilityMode = true;
-    }
-    /**
-     * Gets the current depth function
-     * @returns a number defining the depth function
-     */
-    public getDepthFunction(): Nullable<number> {
-        return this._depthCullingState.depthFunc;
-    }
-
-    /**
-     * Sets the current depth function
-     * @param depthFunc defines the function to use
-     */
-    public setDepthFunction(depthFunc: number) {
-        this._depthCullingState.depthFunc = depthFunc;
-    }
-
-    /**
-     * Sets the current depth function to GREATER
-     */
-    public setDepthFunctionToGreater(): void {
-        this.setDepthFunction(Constants.GREATER);
-    }
-
-    /**
-     * Sets the current depth function to GEQUAL
-     */
-    public setDepthFunctionToGreaterOrEqual(): void {
-        this.setDepthFunction(Constants.GEQUAL);
-    }
-
-    /**
-     * Sets the current depth function to LESS
-     */
-    public setDepthFunctionToLess(): void {
-        this.setDepthFunction(Constants.LESS);
-    }
-
-    /**
-     * Sets the current depth function to LEQUAL
-     */
-    public setDepthFunctionToLessOrEqual(): void {
-        this.setDepthFunction(Constants.LEQUAL);
-    }
-
-    /**
-     * Gets a boolean indicating if depth writing is enabled
-     * @returns the current depth writing state
-     */
-    public getDepthWrite(): boolean {
-        return this._depthCullingState.depthMask;
-    }
-
-    /**
-     * Enable or disable depth writing
-     * @param enable defines the state to set
-     */
-    public setDepthWrite(enable: boolean): void {
-        this._depthCullingState.depthMask = enable;
     }
 
     /**
@@ -1160,83 +1062,6 @@ export abstract class AbstractEngine {
      * Observable raised when the engine ends the current frame
      */
     public onEndFrameObservable = new Observable<AbstractEngine>();
-
-    /**
-     * Get the performance counter associated with the frame time computation
-     * @returns the perf counter
-     */
-    public getGPUFrameTimeCounter(): Nullable<PerfCounter> {
-        return null;
-    }
-
-    /**
-     * Enable or disable the GPU frame time capture
-     * @param value True to enable, false to disable
-     */
-    public captureGPUFrameTime(value: boolean): void {
-        // Do nothing. Must be implemented by child classes
-    }
-
-    /**
-     * Create a new webGL query (you must be sure that queries are supported by checking getCaps() function)
-     * @returns the new query
-     */
-    public createQuery(): Nullable<OcclusionQuery> {
-        return null;
-    }
-
-    /**
-     * Delete and release a webGL query
-     * @param query defines the query to delete
-     * @returns the current engine
-     */
-    public deleteQuery(query: OcclusionQuery): AbstractEngine {
-        // Do nothing. Must be implemented by child classes
-        return this;
-    }
-
-    /**
-     * Check if a given query has resolved and got its value
-     * @param query defines the query to check
-     * @returns true if the query got its value
-     */
-    public isQueryResultAvailable(query: OcclusionQuery): boolean {
-        // Do nothing. Must be implemented by child classes
-        return false;
-    }
-
-    /**
-     * Gets the value of a given query
-     * @param query defines the query to check
-     * @returns the value of the query
-     */
-    public getQueryResult(query: OcclusionQuery): number {
-        // Do nothing. Must be implemented by child classes
-        return 0;
-    }
-
-    /**
-     * Initiates an occlusion query
-     * @param algorithmType defines the algorithm to use
-     * @param query defines the query to use
-     * @returns the current engine
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
-     */
-    public beginOcclusionQuery(algorithmType: number, query: OcclusionQuery): boolean {
-        // Do nothing. Must be implemented by child classes
-        return false;
-    }
-
-    /**
-     * Ends an occlusion query
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/occlusionQueries
-     * @param algorithmType defines the algorithm to use
-     * @returns the current engine
-     */
-    public endOcclusionQuery(algorithmType: number): AbstractEngine {
-        // Do nothing. Must be implemented by child classes
-        return this;
-    }
 
     protected _rebuildTextures(): void {
         for (const scene of this.scenes) {
@@ -3055,142 +2880,12 @@ export abstract class AbstractEngine {
         }
     }
 
-    /**
-     * Gets current aspect ratio
-     * @param viewportOwner defines the camera to use to get the aspect ratio
-     * @param useScreen defines if screen size must be used (or the current render target if any)
-     * @returns a number defining the aspect ratio
-     */
-    public getAspectRatio(viewportOwner: IViewportOwnerLike, useScreen = false): number {
-        const viewport = viewportOwner.viewport;
-        return (this.getRenderWidth(useScreen) * viewport.width) / (this.getRenderHeight(useScreen) * viewport.height);
-    }
-
-    /**
-     * Gets current screen aspect ratio
-     * @returns a number defining the aspect ratio
-     */
-    public getScreenAspectRatio(): number {
-        return this.getRenderWidth(true) / this.getRenderHeight(true);
-    }
-
-    // Loading screen
-
-    /**
-     * Display the loading screen
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public displayLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this.loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.displayLoadingUI();
-        }
-    }
-
-    /**
-     * Hide the loading screen
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public hideLoadingUI(): void {
-        if (!IsWindowObjectExist()) {
-            return;
-        }
-        const loadingScreen = this._loadingScreen;
-        if (loadingScreen) {
-            loadingScreen.hideLoadingUI();
-        }
-    }
-
-    /**
-     * Gets the current loading screen object
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public get loadingScreen(): ILoadingScreen {
-        if (!this._loadingScreen && this._renderingCanvas) {
-            this._loadingScreen = AbstractEngine.DefaultLoadingScreenFactory(this._renderingCanvas);
-        }
-        return this._loadingScreen;
-    }
-
-    /**
-     * Sets the current loading screen object
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingScreen(loadingScreen: ILoadingScreen) {
-        this._loadingScreen = loadingScreen;
-    }
-
-    /**
-     * Sets the current loading screen text
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingUIText(text: string) {
-        this.loadingScreen.loadingUIText = text;
-    }
-
-    /**
-     * Sets the current loading screen background color
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
-     */
-    public set loadingUIBackgroundColor(color: string) {
-        this.loadingScreen.loadingUIBackgroundColor = color;
-    }
-
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static _RenderPassIdCounter = 0;
+    /** @internal */
+    public static _RenderPassIdCounter = 0;
 
-    private _renderPassNames: string[] = ["main"];
-    /**
-     * Gets the names of the render passes that are currently created
-     * @returns list of the render pass names
-     */
-    public getRenderPassNames(): string[] {
-        return this._renderPassNames;
-    }
-
-    /**
-     * Gets the name of the current render pass
-     * @returns name of the current render pass
-     */
-    public getCurrentRenderPassName(): string {
-        return this._renderPassNames[this.currentRenderPassId];
-    }
-
-    /**
-     * Creates a render pass id
-     * @param name Name of the render pass (for debug purpose only)
-     * @returns the id of the new render pass
-     */
-    public createRenderPassId(name?: string) {
-        // Note: render pass id == 0 is always for the main render pass
-        const id = ++AbstractEngine._RenderPassIdCounter;
-        this._renderPassNames[id] = name ?? "NONAME";
-        return id;
-    }
-
-    /**
-     * Releases a render pass id
-     * @param id id of the render pass to release
-     */
-    public releaseRenderPassId(id: number): void {
-        this._renderPassNames[id] = undefined as any;
-
-        for (let s = 0; s < this.scenes.length; ++s) {
-            const scene = this.scenes[s];
-            for (let m = 0; m < scene.meshes.length; ++m) {
-                const mesh = scene.meshes[m];
-                if (mesh.subMeshes) {
-                    for (let b = 0; b < mesh.subMeshes.length; ++b) {
-                        const subMesh = mesh.subMeshes[b];
-                        subMesh._removeDrawWrapper(id);
-                    }
-                }
-            }
-        }
-    }
+    /** @internal */
+    public _renderPassNames: string[] = ["main"];
 
     /** @internal */
     public abstract _createHardwareTexture(): HardwareTextureWrapper;
@@ -3599,8 +3294,6 @@ export abstract class AbstractEngine {
             this.postProcesses[0].dispose();
         }
 
-        this.onNewSceneAddedObservable.clear();
-
         // Release scenes
         while (this.scenes.length) {
             this.scenes[0].dispose();
@@ -3642,10 +3335,6 @@ export abstract class AbstractEngine {
         }
 
         // Observables
-        this.onResizeObservable.clear();
-        this.onCanvasBlurObservable.clear();
-        this.onCanvasFocusObservable.clear();
-        this.onCanvasPointerOutObservable.clear();
         this.onBeginFrameObservable.clear();
         this.onEndFrameObservable.clear();
     }
