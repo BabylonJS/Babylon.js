@@ -256,10 +256,9 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
             if (options.uvs) {
                 const currentUVs = instance.uvs;
                 if (currentUVs) {
-                    const newUVs = currentUVs.slice();
-                    for (const uv of options.uvs) {
-                        newUVs.push(uv);
-                    }
+                    const newUVs = new Float32Array(currentUVs.length + options.uvs.length);
+                    newUVs.set(currentUVs, 0);
+                    newUVs.set(options.uvs, currentUVs.length);
                     instance.uvs = newUVs;
                 } else {
                     instance.uvs = options.uvs;
