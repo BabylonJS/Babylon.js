@@ -1,42 +1,43 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import { Effect } from "../Materials/effect";
-import { _WarnImport } from "../Misc/devTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } from "../types";
-import { Constants } from "./constants";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { IColor4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import { Logger } from "../Misc/logger";
-import { IsWindowObjectExist } from "../Misc/domManagement";
-import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
-import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
-import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
 import type { IPipelineContext } from "./IPipelineContext";
-import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { VertexBuffer } from "../Buffers/buffer";
 import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IEffectFallbacks } from "../Materials/iEffectFallbacks";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
-import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import type { IMaterialContext } from "./IMaterialContext";
 import type { IDrawContext } from "./IDrawContext";
 import type { ICanvas, ICanvasRenderingContext } from "./ICanvas";
 import type { IStencilState } from "../States/IStencilState";
 import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
 import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
-import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
-import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
+import type { PerformanceMonitor } from "../Misc/performanceMonitor";
+import { IsWrapper } from "../Materials/drawWrapper.functions";
+import { Logger } from "../Misc/logger";
+import { IsWindowObjectExist } from "../Misc/domManagement";
+import { WebGLShaderProcessor } from "./WebGL/webGLShaderProcessors";
+import { WebGL2ShaderProcessor } from "./WebGL/webGL2ShaderProcessors";
+import { WebGLDataBuffer } from "../Meshes/WebGL/webGLDataBuffer";
+import { CeilingPOT, FloorPOT, GetExponentOfTwo, NearestPOT } from "../Misc/tools.functions";
+import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
+import { Constants } from "./constants";
+import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+import { ShaderLanguage } from "../Materials/shaderLanguage";
+import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { Effect } from "../Materials/effect";
+import { _WarnImport } from "../Misc/devTools";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -2268,7 +2269,7 @@ export class ThinEngine extends AbstractEngine {
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
-        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+        effect = effect !== null && IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         if (!effect || effect === this._currentEffect) {
             return;

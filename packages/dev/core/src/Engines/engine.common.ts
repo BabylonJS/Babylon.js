@@ -80,7 +80,7 @@ export function _CommonInit(commonEngine: AbstractEngine, canvas: HTMLCanvasElem
 
             // Pointer lock
             if (commonEngine.isFullscreen && commonEngine._pointerLockRequested && canvas) {
-                AbstractEngine._RequestPointerlock(canvas);
+                RequestPointerlock(canvas);
             }
         };
 
@@ -134,5 +134,131 @@ export function _CommonDispose(commonEngine: AbstractEngine, canvas: Nullable<HT
         document.removeEventListener("mspointerlockchange", commonEngine._onPointerLockChange);
         document.removeEventListener("mozpointerlockchange", commonEngine._onPointerLockChange);
         document.removeEventListener("webkitpointerlockchange", commonEngine._onPointerLockChange);
+    }
+}
+
+/**
+ * Get Font size information
+ * @param font font name
+ * @returns an object containing ascent, height and descent
+ */
+export function GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    const text = document.createElement("span");
+    text.innerHTML = "Hg";
+    text.setAttribute("style", `font: ${font} !important`);
+
+    const block = document.createElement("div");
+    block.style.display = "inline-block";
+    block.style.width = "1px";
+    block.style.height = "0px";
+    block.style.verticalAlign = "bottom";
+
+    const div = document.createElement("div");
+    div.style.whiteSpace = "nowrap";
+    div.appendChild(text);
+    div.appendChild(block);
+
+    document.body.appendChild(div);
+
+    let fontAscent = 0;
+    let fontHeight = 0;
+    try {
+        fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+        block.style.verticalAlign = "baseline";
+        fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
+    } finally {
+        document.body.removeChild(div);
+    }
+    return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
+}
+
+/** @internal */
+export function CreateImageBitmapFromSource(engine: AbstractEngine, imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    const promise = new Promise<ImageBitmap>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => {
+            image.decode().then(() => {
+                engine.createImageBitmap(image, options).then((imageBitmap) => {
+                    resolve(imageBitmap);
+                });
+            });
+        };
+        image.onerror = () => {
+            reject(`Error loading image ${image.src}`);
+        };
+
+        image.src = imageSource;
+    });
+
+    return promise;
+}
+
+/** @internal */
+export function ResizeImageBitmap(engine: AbstractEngine, image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+    const canvas = engine.createCanvas(bufferWidth, bufferHeight);
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+        throw new Error("Unable to get 2d context for resizeImageBitmap");
+    }
+
+    context.drawImage(image, 0, 0);
+
+    // Create VertexData from map data
+    // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
+    const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
+    return buffer;
+}
+
+/**
+ * Ask the browser to promote the current element to fullscreen rendering mode
+ * @param element defines the DOM element to promote
+ */
+export function RequestFullscreen(element: HTMLElement): void {
+    const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
+    if (!requestFunction) {
+        return;
+    }
+    requestFunction.call(element);
+}
+
+/**
+ * Asks the browser to exit fullscreen mode
+ */
+export function ExitFullscreen(): void {
+    const anyDoc = document as any;
+
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (anyDoc.webkitCancelFullScreen) {
+        anyDoc.webkitCancelFullScreen();
+    }
+}
+
+/**
+ * Ask the browser to promote the current element to pointerlock mode
+ * @param element defines the DOM element to promote
+ */
+export function RequestPointerlock(element: HTMLElement): void {
+    if (element.requestPointerLock) {
+        // In some browsers, requestPointerLock returns a promise.
+        // Handle possible rejections to avoid an unhandled top-level exception.
+        const promise: unknown = element.requestPointerLock();
+        if (promise instanceof Promise)
+            promise
+                .then(() => {
+                    element.focus();
+                })
+                .catch(() => {});
+        else element.focus();
+    }
+}
+
+/**
+ * Asks the browser to exit pointerlock mode
+ */
+export function ExitPointerlock(): void {
+    if (document.exitPointerLock) {
+        document.exitPointerLock();
     }
 }

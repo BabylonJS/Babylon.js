@@ -26,7 +26,18 @@ import "./Extensions/engine.dynamicBuffer";
 import type { Material } from "../Materials/material";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { AbstractEngine } from "./abstractEngine";
-import { _CommonDispose, _CommonInit } from "./engine.common";
+import {
+    CreateImageBitmapFromSource,
+    ExitFullscreen,
+    ExitPointerlock,
+    GetFontOffset,
+    RequestFullscreen,
+    RequestPointerlock,
+    ResizeImageBitmap,
+    _CommonDispose,
+    _CommonInit,
+} from "./engine.common";
+import { PerfCounter } from "../Misc/perfCounter";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -343,6 +354,8 @@ export class Engine extends ThinEngine {
     ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
 
+        this._drawCalls = new PerfCounter();
+
         if (!canvasOrContext) {
             return;
         }
@@ -372,6 +385,61 @@ export class Engine extends ThinEngine {
         super._sharedInit(canvas);
 
         _CommonInit(this, canvas, this._creationOptions);
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        return ResizeImageBitmap(this, image, bufferWidth, bufferHeight);
+    }
+
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return CreateImageBitmapFromSource(this, imageSource, options);
+    }
+
+    /**
+     * Toggle full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public switchFullscreen(requestPointerLock: boolean): void {
+        if (this.isFullscreen) {
+            this.exitFullscreen();
+        } else {
+            this.enterFullscreen(requestPointerLock);
+        }
+    }
+
+    /**
+     * Enters full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public enterFullscreen(requestPointerLock: boolean): void {
+        if (!this.isFullscreen) {
+            this._pointerLockRequested = requestPointerLock;
+            if (this._renderingCanvas) {
+                RequestFullscreen(this._renderingCanvas);
+            }
+        }
+    }
+
+    /**
+     * Exits full screen mode
+     */
+    public exitFullscreen(): void {
+        if (this.isFullscreen) {
+            ExitFullscreen();
+        }
     }
 
     public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
@@ -601,6 +669,15 @@ export class Engine extends ThinEngine {
         super._rebuildBuffers();
     }
 
+    /**
+     * Get Font size information
+     * @param font font name
+     * @returns an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+        return GetFontOffset(font);
+    }
+
     /** @internal */
     public _renderFrame() {
         for (let index = 0; index < this._activeRenderLoops.length; index++) {
@@ -672,7 +749,7 @@ export class Engine extends ThinEngine {
      */
     public enterPointerlock(): void {
         if (this._renderingCanvas) {
-            Engine._RequestPointerlock(this._renderingCanvas);
+            RequestPointerlock(this._renderingCanvas);
         }
     }
 
@@ -680,7 +757,7 @@ export class Engine extends ThinEngine {
      * Exits Pointerlock mode
      */
     public exitPointerlock(): void {
-        Engine._ExitPointerlock();
+        ExitPointerlock();
     }
 
     /**

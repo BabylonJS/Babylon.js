@@ -1,20 +1,11 @@
-import { Observable } from "../Misc/observable";
 import type { Observer } from "../Misc/observable";
-import { Constants } from "./constants";
 import type { DataArray, FloatArray, ImageSource, IndicesArray, Nullable } from "../types";
-import { PerfCounter } from "../Misc/perfCounter";
+import type { PerfCounter } from "../Misc/perfCounter";
 import type { OcclusionQuery } from "./Extensions/engine.query";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
-import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import type { ILoadingScreen } from "../Loading/loadingScreen";
-import { _WarnImport } from "../Misc/devTools";
-import { DepthCullingState } from "../States/depthCullingState";
-import { StencilStateComposer } from "../States/stencilStateComposer";
-import { StencilState } from "../States/stencilState";
-import { AlphaState } from "../States/alphaCullingState";
 import type { ICanvas, IImage } from "./ICanvas";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import type { EngineCapabilities } from "./engineCapabilities";
@@ -22,18 +13,14 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IShaderProcessor } from "./Processors/iShaderProcessor";
 import type { ShaderLanguage } from "../Materials/shaderLanguage";
-import { PrecisionDate } from "../Misc/precisionDate";
 import type { IAudioEngineOptions } from "../Audio/Interfaces/IAudioEngineOptions";
-import { PerformanceConfigurator } from "./performanceConfigurator";
 import type { EngineFeatures } from "./engineFeatures";
 import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import type { IEffectCreationOptions, IShaderPath } from "../Materials/effect";
-import { Effect } from "../Materials/effect";
 import type { IOfflineProvider } from "../Offline/IOfflineProvider";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import type { IFileRequest } from "../Misc/fileRequest";
-import { Logger } from "../Misc/logger";
 import type { Texture } from "../Materials/Textures/texture";
 import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
@@ -41,7 +28,6 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import { EngineStore } from "./engineStore";
 import type { ExternalTexture } from "../Materials/Textures/externalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DepthTextureCreationOptions, InternalTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
@@ -55,6 +41,20 @@ import type { VertexBuffer } from "../Meshes/buffer";
 import type { IAudioEngine } from "../Audio/Interfaces/IAudioEngine";
 import type { WebRequest } from "core/Misc/webRequest";
 import type { PerformanceMonitor } from "core/Misc/performanceMonitor";
+import { EngineStore } from "./engineStore";
+import { Logger } from "../Misc/logger";
+import { Effect } from "../Materials/effect";
+import { PerformanceConfigurator } from "./performanceConfigurator";
+import { PrecisionDate } from "../Misc/precisionDate";
+import { DepthCullingState } from "../States/depthCullingState";
+import { StencilStateComposer } from "../States/stencilStateComposer";
+import { StencilState } from "../States/stencilState";
+import { AlphaState } from "../States/alphaCullingState";
+import { _WarnImport } from "../Misc/devTools";
+import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
+import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
+import { Constants } from "./constants";
+import { Observable } from "../Misc/observable";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -488,6 +488,29 @@ export abstract class AbstractEngine {
         } else {
             this._depthCullingState.depthFunc = Constants.LEQUAL;
         }
+    }
+
+    /**
+     * Toggle full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public switchFullscreen(requestPointerLock: boolean): void {
+        // Does nothing. Needs to be implemented by children classes
+    }
+
+    /**
+     * Enters full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public enterFullscreen(requestPointerLock: boolean): void {
+        // Does nothing. Needs to be implemented by children classes
+    }
+
+    /**
+     * Exits full screen mode
+     */
+    public exitFullscreen(): void {
+        // Does nothing. Needs to be implemented by children classes
     }
 
     /**
@@ -3169,34 +3192,6 @@ export abstract class AbstractEngine {
         }
     }
 
-    /**
-     * Ask the browser to promote the current element to pointerlock mode
-     * @param element defines the DOM element to promote
-     */
-    static _RequestPointerlock(element: HTMLElement): void {
-        if (element.requestPointerLock) {
-            // In some browsers, requestPointerLock returns a promise.
-            // Handle possible rejections to avoid an unhandled top-level exception.
-            const promise: unknown = element.requestPointerLock();
-            if (promise instanceof Promise)
-                promise
-                    .then(() => {
-                        element.focus();
-                    })
-                    .catch(() => {});
-            else element.focus();
-        }
-    }
-
-    /**
-     * Asks the browser to exit pointerlock mode
-     */
-    static _ExitPointerlock(): void {
-        if (document.exitPointerLock) {
-            document.exitPointerLock();
-        }
-    }
-
     /** @internal */
     public abstract _createHardwareTexture(): HardwareTextureWrapper;
 
@@ -3215,13 +3210,13 @@ export abstract class AbstractEngine {
     protected _deltaTime = 0;
 
     /** @internal */
-    public _drawCalls = new PerfCounter();
+    public _drawCalls: PerfCounter;
 
     /**
      * @internal
      */
     public _reportDrawCall(numDrawCalls = 1) {
-        this._drawCalls.addCount(numDrawCalls, false);
+        this._drawCalls?.addCount(numDrawCalls, false);
     }
     /**
      * Gets the current framerate
@@ -3446,26 +3441,9 @@ export abstract class AbstractEngine {
      * Engine abstraction for loading and creating an image bitmap from a given source string.
      * @param imageSource source to load the image from.
      * @param options An object that sets options for the image's extraction.
-     * @returns ImageBitmap.
      */
     public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
-        const promise = new Promise<ImageBitmap>((resolve, reject) => {
-            const image = new Image();
-            image.onload = () => {
-                image.decode().then(() => {
-                    this.createImageBitmap(image, options).then((imageBitmap) => {
-                        resolve(imageBitmap);
-                    });
-                });
-            };
-            image.onerror = () => {
-                reject(`Error loading image ${image.src}`);
-            };
-
-            image.src = imageSource;
-        });
-
-        return promise;
+        throw new Error("createImageBitmapFromSource is not implemented");
     }
 
     /**
@@ -3483,22 +3461,9 @@ export abstract class AbstractEngine {
      * @param image image to resize
      * @param bufferWidth destination buffer width
      * @param bufferHeight destination buffer height
-     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
     public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
-        const canvas = this.createCanvas(bufferWidth, bufferHeight);
-        const context = canvas.getContext("2d");
-
-        if (!context) {
-            throw new Error("Unable to get 2d context for resizeImageBitmap");
-        }
-
-        context.drawImage(image, 0, 0);
-
-        // Create VertexData from map data
-        // Cast is due to wrong definition in lib.d.ts from ts 1.3 - https://github.com/Microsoft/TypeScript/issues/949
-        const buffer = <Uint8Array>(<any>context.getImageData(0, 0, bufferWidth, bufferHeight).data);
-        return buffer;
+        throw new Error("resizeImageBitmap is not implemented");
     }
 
     /**
@@ -3510,70 +3475,9 @@ export abstract class AbstractEngine {
     /**
      * Get Font size information
      * @param font font name
-     * @returns an object containing ascent, height and descent
      */
     public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
-        const text = document.createElement("span");
-        text.innerHTML = "Hg";
-        text.setAttribute("style", `font: ${font} !important`);
-
-        const block = document.createElement("div");
-        block.style.display = "inline-block";
-        block.style.width = "1px";
-        block.style.height = "0px";
-        block.style.verticalAlign = "bottom";
-
-        const div = document.createElement("div");
-        div.style.whiteSpace = "nowrap";
-        div.appendChild(text);
-        div.appendChild(block);
-
-        document.body.appendChild(div);
-
-        let fontAscent = 0;
-        let fontHeight = 0;
-        try {
-            fontHeight = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-            block.style.verticalAlign = "baseline";
-            fontAscent = block.getBoundingClientRect().top - text.getBoundingClientRect().top;
-        } finally {
-            document.body.removeChild(div);
-        }
-        return { ascent: fontAscent, height: fontHeight, descent: fontHeight - fontAscent };
-    }
-
-    /**
-     * Toggle full screen mode
-     * @param requestPointerLock defines if a pointer lock should be requested from the user
-     */
-    public switchFullscreen(requestPointerLock: boolean): void {
-        if (this.isFullscreen) {
-            this.exitFullscreen();
-        } else {
-            this.enterFullscreen(requestPointerLock);
-        }
-    }
-
-    /**
-     * Enters full screen mode
-     * @param requestPointerLock defines if a pointer lock should be requested from the user
-     */
-    public enterFullscreen(requestPointerLock: boolean): void {
-        if (!this.isFullscreen) {
-            this._pointerLockRequested = requestPointerLock;
-            if (this._renderingCanvas) {
-                AbstractEngine._RequestFullscreen(this._renderingCanvas);
-            }
-        }
-    }
-
-    /**
-     * Exits full screen mode
-     */
-    public exitFullscreen(): void {
-        if (this.isFullscreen) {
-            AbstractEngine._ExitFullscreen();
-        }
+        throw new Error("getFontOffset is not implemented");
     }
 
     protected static _CreateCanvas(width: number, height: number): ICanvas {
@@ -3744,31 +3648,6 @@ export abstract class AbstractEngine {
         this.onCanvasPointerOutObservable.clear();
         this.onBeginFrameObservable.clear();
         this.onEndFrameObservable.clear();
-    }
-
-    /**
-     * Ask the browser to promote the current element to fullscreen rendering mode
-     * @param element defines the DOM element to promote
-     */
-    static _RequestFullscreen(element: HTMLElement): void {
-        const requestFunction = element.requestFullscreen || (<any>element).webkitRequestFullscreen;
-        if (!requestFunction) {
-            return;
-        }
-        requestFunction.call(element);
-    }
-
-    /**
-     * Asks the browser to exit fullscreen mode
-     */
-    static _ExitFullscreen(): void {
-        const anyDoc = document as any;
-
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (anyDoc.webkitCancelFullScreen) {
-            anyDoc.webkitCancelFullScreen();
-        }
     }
 
     /**

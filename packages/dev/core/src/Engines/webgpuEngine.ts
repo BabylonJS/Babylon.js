@@ -35,7 +35,7 @@ import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeli
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
@@ -70,7 +70,19 @@ import type { AbstractEngineOptions } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
-import { _CommonDispose, _CommonInit } from "./engine.common";
+import {
+    CreateImageBitmapFromSource,
+    ExitFullscreen,
+    ExitPointerlock,
+    GetFontOffset,
+    RequestFullscreen,
+    RequestPointerlock,
+    ResizeImageBitmap,
+    _CommonDispose,
+    _CommonInit,
+} from "./engine.common";
+import { IsWrapper } from "../Materials/drawWrapper.functions";
+import { PerfCounter } from "../Misc/perfCounter";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -434,6 +446,23 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * Gets a boolean indicating if all created effects are ready
+     * @returns true if all effects are ready
+     */
+    public areAllEffectsReady(): boolean {
+        return true;
+    }
+
+    /**
+     * Get Font size information
+     * @param font font name
+     * @returns an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+        return GetFontOffset(font);
+    }
+
+    /**
      * Gets a Promise<boolean> indicating if the engine can be instantiated (ie. if a WebGPU context can be found)
      */
     public static get IsSupportedAsync(): Promise<boolean> {
@@ -587,6 +616,8 @@ export class WebGPUEngine extends AbstractEngine {
     public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
         super(options.antialias ?? true, options);
         this._name = "WebGPU";
+
+        this._drawCalls = new PerfCounter();
 
         this._creationOptions = options;
 
@@ -1050,6 +1081,77 @@ export class WebGPUEngine extends AbstractEngine {
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
         });
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        return ResizeImageBitmap(this, image, bufferWidth, bufferHeight);
+    }
+
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return CreateImageBitmapFromSource(this, imageSource, options);
+    }
+
+    /**
+     * Toggle full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public switchFullscreen(requestPointerLock: boolean): void {
+        if (this.isFullscreen) {
+            this.exitFullscreen();
+        } else {
+            this.enterFullscreen(requestPointerLock);
+        }
+    }
+
+    /**
+     * Enters full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public enterFullscreen(requestPointerLock: boolean): void {
+        if (!this.isFullscreen) {
+            this._pointerLockRequested = requestPointerLock;
+            if (this._renderingCanvas) {
+                RequestFullscreen(this._renderingCanvas);
+            }
+        }
+    }
+
+    /**
+     * Exits full screen mode
+     */
+    public exitFullscreen(): void {
+        if (this.isFullscreen) {
+            ExitFullscreen();
+        }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        ExitPointerlock();
     }
 
     protected _rebuildBuffers(): void {
@@ -2105,7 +2207,7 @@ export class WebGPUEngine extends AbstractEngine {
             return;
         }
 
-        if (!DrawWrapper.IsWrapper(effect)) {
+        if (!IsWrapper(effect)) {
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
@@ -3534,6 +3636,32 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * @internal
+     */
+    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+        // No parallel shader compilation.
+        // No Async, so direct launch
+        action();
+    }
+
+    /**
+     * @internal
+     */
+    public bindSamplers(): void {}
+
+    /** @internal */
+    public _getUnpackAlignement(): number {
+        return 1;
+    }
+
+    /**
+     * @internal
+     */
+    public _bindTextureDirectly(): boolean {
+        return false;
+    }
+
+    /**
      * Set various states to the webGL context
      * @param culling defines culling state: true to enable culling, false to disable it
      * @param zOffset defines the value to apply to zOffset (0 by default)
@@ -3799,186 +3927,5 @@ export class WebGPUEngine extends AbstractEngine {
     public getError(): number {
         // TODO WEBGPU. from the webgpu errors.
         return 0;
-    }
-
-    //------------------------------------------------------------------------------
-    //                              Unused WebGPU
-    //------------------------------------------------------------------------------
-
-    /**
-     * @internal
-     */
-    public bindSamplers(): void {}
-
-    /**
-     * @internal
-     */
-    public _bindTextureDirectly(): boolean {
-        return false;
-    }
-
-    /**
-     * Gets a boolean indicating if all created effects are ready
-     * @returns always true - No parallel shader compilation
-     */
-    public areAllEffectsReady(): boolean {
-        return true;
-    }
-
-    /**
-     * @internal
-     */
-    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // No parallel shader compilation.
-        // No Async, so direct launch
-        action();
-    }
-
-    /**
-     * @internal
-     */
-    public _isRenderingStateCompiled(): boolean {
-        // No parallel shader compilation.
-        return true;
-    }
-
-    /** @internal */
-    public _getUnpackAlignement(): number {
-        return 1;
-    }
-
-    /**
-     * @internal
-     */
-    public _unpackFlipY() {}
-
-    /**
-     * @internal
-     */
-    public _bindUnboundFramebuffer() {
-        // eslint-disable-next-line no-throw-literal
-        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
-    }
-
-    // TODO WEBGPU. All of the below should go once engine split with baseEngine.
-
-    /**
-     * @internal
-     */
-    public _getSamplingParameters(): { min: number; mag: number } {
-        // eslint-disable-next-line no-throw-literal
-        throw "_getSamplingParameters is not available in WebGPU";
-    }
-
-    /**
-     * @internal
-     */
-    public getUniforms(): Nullable<WebGLUniformLocation>[] {
-        return [];
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray4(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray4(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrices(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrix3x3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrix2x2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat4(): boolean {
-        return false;
     }
 }

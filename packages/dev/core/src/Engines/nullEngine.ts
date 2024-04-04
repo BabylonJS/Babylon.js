@@ -15,6 +15,7 @@ import { PerformanceConfigurator } from "./performanceConfigurator";
 import { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IStencilState } from "../States/IStencilState";
+import { IsWrapper } from "../Materials/drawWrapper.functions";
 
 declare const global: any;
 
@@ -314,7 +315,7 @@ export class NullEngine extends Engine {
      * @param effect defines the effect to activate
      */
     public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
-        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+        effect = effect !== null && IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         this._currentEffect = effect as Nullable<Effect>;
         if (!effect) {

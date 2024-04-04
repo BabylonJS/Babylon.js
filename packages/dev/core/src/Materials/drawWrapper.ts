@@ -31,9 +31,6 @@ export class DrawWrapper {
      */
     public _wasPreviouslyUsingInstances: Nullable<boolean> = null;
 
-    public static IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
-        return (effect as Effect).getPipelineContext === undefined;
-    }
 
     public static GetEffect(effect: Effect | DrawWrapper): Nullable<Effect> {
         return (effect as Effect).getPipelineContext === undefined ? (effect as DrawWrapper).effect : (effect as Effect);
