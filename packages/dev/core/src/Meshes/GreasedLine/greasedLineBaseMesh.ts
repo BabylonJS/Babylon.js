@@ -111,7 +111,7 @@ export interface GreasedLineMeshOptions {
     /**
      * UVs for the mesh
      */
-    uvs?: number[] | Float32Array;
+    uvs?: FloatArray;
     /**
      * If true, offsets and widths are updatable.
      * Defaults to false.
@@ -250,7 +250,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * Sets the UVs
      * @param uvs the UVs
      */
-    set uvs(uvs: number[] | FloatArray) {
+    set uvs(uvs: FloatArray) {
         this._uvs = uvs instanceof Float32Array ? uvs : new Float32Array(uvs);
         this._createVertexBuffers();
     }
