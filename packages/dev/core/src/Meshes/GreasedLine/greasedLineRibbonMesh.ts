@@ -300,8 +300,15 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             throw "No 'GreasedLineMeshOptions.widths' table is specified.";
         }
 
+        const vertexPositions = Array.isArray(this._vertexPositions) ? this._vertexPositions : Array.from(this._vertexPositions);
+        this._vertexPositions = vertexPositions;
+        const uvs = Array.isArray(this._uvs) ? this._uvs : Array.from(this._uvs);
+        this._uvs = uvs;
+        const indices = Array.isArray(this._indices) ? this._indices : Array.from(this._indices);
+        this._indices = indices;
+
         for (const p of positions) {
-            this._vertexPositions.push(p);
+            vertexPositions.push(p);
         }
 
         let pathArrayCopy = pathArray;
@@ -323,7 +330,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
             for (let pi = 0; pi < pathArrayLength; pi++) {
                 const counter = previousCounters[pi] + this._vSegmentLengths[pi][i] / this._vTotalLengths[pi];
                 this._counters.push(counter);
-                this._uvs.push(counter, v);
+                uvs.push(counter, v);
 
                 previousCounters[pi] = counter;
                 v += this._uSegmentLengths[i][pi] / this._uTotalLengths[i];
@@ -350,7 +357,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
 
         if (ribbonVertexData.indices) {
             for (let i = 0; i < ribbonVertexData.indices.length; i++) {
-                this._indices.push(ribbonVertexData.indices[i] + indiceOffset);
+                indices.push(ribbonVertexData.indices[i] + indiceOffset);
             }
         }
         indiceOffset += positions.length / 3;
