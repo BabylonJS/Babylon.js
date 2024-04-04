@@ -12,7 +12,7 @@ import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
 import type { ISceneLike } from "./abstractEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IStencilState } from "../States/IStencilState";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
