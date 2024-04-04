@@ -6,3 +6,4 @@ export * from "./abstractEngine.states";
 export * from "./abstractEngine.query";
 export * from "./abstractEngine.observable";
 export * from "./abstractEngine.renderPass";
+export * from "./abstractEngine.texture";

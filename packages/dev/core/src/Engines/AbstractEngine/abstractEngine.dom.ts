@@ -45,6 +45,29 @@ declare module "../../Engines/abstractEngine" {
          * @returns a number defining the aspect ratio
          */
         getScreenAspectRatio(): number;
+
+        /**
+         * Toggle full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         */
+        switchFullscreen(requestPointerLock: boolean): void;
+
+        /**
+         * Enters full screen mode
+         * @param requestPointerLock defines if a pointer lock should be requested from the user
+         */
+        enterFullscreen(requestPointerLock: boolean): void;
+
+        /**
+         * Exits full screen mode
+         */
+        exitFullscreen(): void;
+
+        /** @internal */
+        _onPointerLockChange: () => void;
+
+        /** @internal */
+        _verifyPointerLock(): void;
     }
 }
 
@@ -73,4 +96,8 @@ AbstractEngine.prototype.getAspectRatio = function (viewportOwner: IViewportOwne
 
 AbstractEngine.prototype.getScreenAspectRatio = function (): number {
     return this.getRenderWidth(true) / this.getRenderHeight(true);
+};
+
+AbstractEngine.prototype._verifyPointerLock = function (): void {
+    this._onPointerLockChange?.();
 };

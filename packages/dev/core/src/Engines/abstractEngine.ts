@@ -190,7 +190,7 @@ export abstract class AbstractEngine {
     /** @internal */
     protected _stencilStateComposer = new StencilStateComposer();
     /** @internal */
-    protected _stencilState = new StencilState();
+    public _stencilState = new StencilState();
     /** @internal */
     public _alphaState = new AlphaState();
     /** @internal */
@@ -482,29 +482,6 @@ export abstract class AbstractEngine {
     }
 
     /**
-     * Toggle full screen mode
-     * @param requestPointerLock defines if a pointer lock should be requested from the user
-     */
-    public switchFullscreen(requestPointerLock: boolean): void {
-        // Does nothing. Needs to be implemented by children classes
-    }
-
-    /**
-     * Enters full screen mode
-     * @param requestPointerLock defines if a pointer lock should be requested from the user
-     */
-    public enterFullscreen(requestPointerLock: boolean): void {
-        // Does nothing. Needs to be implemented by children classes
-    }
-
-    /**
-     * Exits full screen mode
-     */
-    public exitFullscreen(): void {
-        // Does nothing. Needs to be implemented by children classes
-    }
-
-    /**
      * Enable or disable color writing
      * @param enable defines the state to set
      */
@@ -709,14 +686,6 @@ export abstract class AbstractEngine {
     public _virtualScenes = new Array<Scene>();
 
     /** @internal */
-    public _onPointerLockChange: () => void;
-
-    /** @internal */
-    public _verifyPointerLock(): void {
-        this._onPointerLockChange?.();
-    }
-
-    /** @internal */
     public _features: EngineFeatures;
 
     /**
@@ -728,7 +697,7 @@ export abstract class AbstractEngine {
     }
 
     public set snapshotRendering(activate) {
-        // WebGL engine does not support snapshot rendering
+        // Do nothing
     }
 
     /**
@@ -1413,34 +1382,6 @@ export abstract class AbstractEngine {
     public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
 
     /**
-     * Sets alpha constants used by some alpha blending modes
-     * @param r defines the red component
-     * @param g defines the green component
-     * @param b defines the blue component
-     * @param a defines the alpha component
-     */
-    public setAlphaConstants(r: number, g: number, b: number, a: number): void {
-        this._alphaState.setAlphaBlendConstants(r, g, b, a);
-    }
-
-    /**
-     * Gets the current alpha mode
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-     * @returns the current alpha mode
-     */
-    public getAlphaMode(): number {
-        return this._alphaMode;
-    }
-
-    /**
-     * Gets the current alpha equation.
-     * @returns the current alpha equation
-     */
-    public getAlphaEquation(): number {
-        return this._alphaEquation;
-    }
-
-    /**
      * Sets the current alpha mode
      * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
@@ -1506,23 +1447,6 @@ export abstract class AbstractEngine {
      * @returns The cube texture
      */
     public abstract _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
-
-    /**
-     * Creates a depth stencil texture.
-     * This is only available in WebGL 2 or with the depth texture extension available.
-     * @param size The size of face edge in the texture.
-     * @param options The options defining the texture.
-     * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
-     * @returns The texture
-     */
-    public createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
-        if (options.isCube) {
-            const width = (<{ width: number; height: number }>size).width || <number>size;
-            return this._createDepthStencilCubeTexture(width, options);
-        } else {
-            return this._createDepthStencilTexture(size, options, rtWrapper);
-        }
-    }
 
     /**
      * Update the sample count for a given multiple render target texture
@@ -2969,168 +2893,6 @@ export abstract class AbstractEngine {
      * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
      */
     public abstract generateMipMapsForCubemap(texture: InternalTexture, unbind: boolean): void;
-
-    /**
-     * Gets a boolean indicating if stencil buffer is enabled
-     * @returns the current stencil buffer state
-     */
-    public getStencilBuffer(): boolean {
-        return this._stencilState.stencilTest;
-    }
-
-    /**
-     * Enable or disable the stencil buffer
-     * @param enable defines if the stencil buffer must be enabled or disabled
-     */
-    public setStencilBuffer(enable: boolean): void {
-        this._stencilState.stencilTest = enable;
-    }
-
-    /**
-     * Gets the current stencil mask
-     * @returns a number defining the new stencil mask to use
-     */
-    public getStencilMask(): number {
-        return this._stencilState.stencilMask;
-    }
-
-    /**
-     * Sets the current stencil mask
-     * @param mask defines the new stencil mask to use
-     */
-    public setStencilMask(mask: number): void {
-        this._stencilState.stencilMask = mask;
-    }
-
-    /**
-     * Gets the current stencil function
-     * @returns a number defining the stencil function to use
-     */
-    public getStencilFunction(): number {
-        return this._stencilState.stencilFunc;
-    }
-
-    /**
-     * Gets the current stencil reference value
-     * @returns a number defining the stencil reference value to use
-     */
-    public getStencilFunctionReference(): number {
-        return this._stencilState.stencilFuncRef;
-    }
-
-    /**
-     * Gets the current stencil mask
-     * @returns a number defining the stencil mask to use
-     */
-    public getStencilFunctionMask(): number {
-        return this._stencilState.stencilFuncMask;
-    }
-
-    /**
-     * Sets the current stencil function
-     * @param stencilFunc defines the new stencil function to use
-     */
-    public setStencilFunction(stencilFunc: number) {
-        this._stencilState.stencilFunc = stencilFunc;
-    }
-
-    /**
-     * Sets the current stencil reference
-     * @param reference defines the new stencil reference to use
-     */
-    public setStencilFunctionReference(reference: number) {
-        this._stencilState.stencilFuncRef = reference;
-    }
-
-    /**
-     * Sets the current stencil mask
-     * @param mask defines the new stencil mask to use
-     */
-    public setStencilFunctionMask(mask: number) {
-        this._stencilState.stencilFuncMask = mask;
-    }
-
-    /**
-     * Gets the current stencil operation when stencil fails
-     * @returns a number defining stencil operation to use when stencil fails
-     */
-    public getStencilOperationFail(): number {
-        return this._stencilState.stencilOpStencilFail;
-    }
-
-    /**
-     * Gets the current stencil operation when depth fails
-     * @returns a number defining stencil operation to use when depth fails
-     */
-    public getStencilOperationDepthFail(): number {
-        return this._stencilState.stencilOpDepthFail;
-    }
-
-    /**
-     * Gets the current stencil operation when stencil passes
-     * @returns a number defining stencil operation to use when stencil passes
-     */
-    public getStencilOperationPass(): number {
-        return this._stencilState.stencilOpStencilDepthPass;
-    }
-
-    /**
-     * Sets the stencil operation to use when stencil fails
-     * @param operation defines the stencil operation to use when stencil fails
-     */
-    public setStencilOperationFail(operation: number): void {
-        this._stencilState.stencilOpStencilFail = operation;
-    }
-
-    /**
-     * Sets the stencil operation to use when depth fails
-     * @param operation defines the stencil operation to use when depth fails
-     */
-    public setStencilOperationDepthFail(operation: number): void {
-        this._stencilState.stencilOpDepthFail = operation;
-    }
-
-    /**
-     * Sets the stencil operation to use when stencil passes
-     * @param operation defines the stencil operation to use when stencil passes
-     */
-    public setStencilOperationPass(operation: number): void {
-        this._stencilState.stencilOpStencilDepthPass = operation;
-    }
-
-    private _cachedStencilBuffer: boolean;
-    private _cachedStencilFunction: number;
-    private _cachedStencilMask: number;
-    private _cachedStencilOperationPass: number;
-    private _cachedStencilOperationFail: number;
-    private _cachedStencilOperationDepthFail: number;
-    private _cachedStencilReference: number;
-
-    /**
-     * Caches the state of the stencil buffer
-     */
-    public cacheStencilState() {
-        this._cachedStencilBuffer = this.getStencilBuffer();
-        this._cachedStencilFunction = this.getStencilFunction();
-        this._cachedStencilMask = this.getStencilMask();
-        this._cachedStencilOperationPass = this.getStencilOperationPass();
-        this._cachedStencilOperationFail = this.getStencilOperationFail();
-        this._cachedStencilOperationDepthFail = this.getStencilOperationDepthFail();
-        this._cachedStencilReference = this.getStencilFunctionReference();
-    }
-
-    /**
-     * Restores the state of the stencil buffer
-     */
-    public restoreStencilState() {
-        this.setStencilFunction(this._cachedStencilFunction);
-        this.setStencilMask(this._cachedStencilMask);
-        this.setStencilBuffer(this._cachedStencilBuffer);
-        this.setStencilOperationPass(this._cachedStencilOperationPass);
-        this.setStencilOperationFail(this._cachedStencilOperationFail);
-        this.setStencilOperationDepthFail(this._cachedStencilOperationDepthFail);
-        this.setStencilFunctionReference(this._cachedStencilReference);
-    }
 
     /**
      * Engine abstraction for loading and creating an image bitmap from a given source string.
