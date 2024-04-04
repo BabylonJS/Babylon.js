@@ -25,7 +25,6 @@ export class MaterialIridescenceDefines extends MaterialDefines {
     public IRIDESCENCE_TEXTUREDIRECTUV = 0;
     public IRIDESCENCE_THICKNESS_TEXTURE = false;
     public IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
-    public IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
 }
 
 /**
@@ -145,8 +144,6 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
     public prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.IRIDESCENCE = true;
-            defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE =
-                this._texture !== null && this._texture._texture === this._thicknessTexture?._texture && this._texture.checkTransformsAreIdentical(this._thicknessTexture);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -156,7 +153,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                         defines.IRIDESCENCE_TEXTURE = false;
                     }
 
-                    if (!defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE && this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
+                    if (this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
                         PrepareDefinesForMergedUV(this._thicknessTexture, defines, "IRIDESCENCE_THICKNESS_TEXTURE");
                     } else {
                         defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
@@ -167,7 +164,6 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
             defines.IRIDESCENCE = false;
             defines.IRIDESCENCE_TEXTURE = false;
             defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
-            defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
             defines.IRIDESCENCE_TEXTUREDIRECTUV = 0;
             defines.IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
         }
@@ -182,13 +178,8 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
 
         const isFrozen = this._material.isFrozen;
 
-        const identicalTextures = defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE;
-
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures && MaterialFlags.IridescenceTextureEnabled) {
-                uniformBuffer.updateFloat4("vIridescenceInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                BindTextureMatrix(this._texture!, uniformBuffer, "iridescence");
-            } else if ((this._texture || this._thicknessTexture) && MaterialFlags.IridescenceTextureEnabled) {
+            if ((this._texture || this._thicknessTexture) && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vIridescenceInfos",
                     this._texture?.coordinatesIndex ?? 0,
@@ -199,7 +190,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                 if (this._texture) {
                     BindTextureMatrix(this._texture, uniformBuffer, "iridescence");
                 }
-                if (this._thicknessTexture && !identicalTextures && !defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE) {
+                if (this._thicknessTexture) {
                     BindTextureMatrix(this._thicknessTexture, uniformBuffer, "iridescenceThickness");
                 }
             }
@@ -214,7 +205,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                 uniformBuffer.setTexture("iridescenceSampler", this._texture);
             }
 
-            if (this._thicknessTexture && !identicalTextures && !defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE && MaterialFlags.IridescenceTextureEnabled) {
+            if (this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.setTexture("iridescenceThicknessSampler", this._thicknessTexture);
             }
         }

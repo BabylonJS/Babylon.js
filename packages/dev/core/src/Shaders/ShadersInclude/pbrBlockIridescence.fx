@@ -37,10 +37,6 @@ struct iridescenceOutParams
 
         #ifdef IRIDESCENCE_TEXTURE
             iridescenceIntensity *= iridescenceMapData.x;
-
-            #ifdef IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE
-                iridescenceThicknessWeight = iridescenceMapData.g;
-            #endif
         #endif
 
         #if defined(IRIDESCENCE_THICKNESS_TEXTURE)
