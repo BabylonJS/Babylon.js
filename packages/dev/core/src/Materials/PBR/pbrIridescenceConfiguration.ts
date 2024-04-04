@@ -169,12 +169,10 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
         }
-
-        const defines = subMesh!.materialDefines as unknown as MaterialIridescenceDefines;
 
         const isFrozen = this._material.isFrozen;
 
