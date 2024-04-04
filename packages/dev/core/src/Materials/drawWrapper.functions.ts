@@ -1,6 +1,7 @@
-import { DrawWrapper } from "./drawWrapper";
-import { Effect } from "./effect";
+import type { DrawWrapper } from "./drawWrapper";
+import type { Effect } from "./effect";
 
-    export function IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
-        return (effect as Effect).getPipelineContext === undefined;
-    }
+export function IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
+    return (effect as Effect).getPipelineContext === undefined;
+}
+

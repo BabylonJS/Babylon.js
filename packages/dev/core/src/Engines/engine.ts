@@ -43,7 +43,6 @@ import {
     _CommonInit,
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
-import { _ClearCommonObservables, _InitCommonObservables } from "./AbstractEngine/abstractEngine.observable";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
@@ -359,8 +358,6 @@ export class Engine extends ThinEngine {
         adaptToDeviceRatio: boolean = false
     ) {
         super(canvasOrContext, antialias, options, adaptToDeviceRatio);
-
-        _InitCommonObservables(this);
 
         this._drawCalls = new PerfCounter();
 
@@ -1162,7 +1159,6 @@ export class Engine extends ThinEngine {
             this._rescalePostProcess.dispose();
         }
 
-        _ClearCommonObservables(this);
         _CommonDispose(this, this._renderingCanvas);
 
         super.dispose();

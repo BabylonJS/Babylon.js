@@ -262,26 +262,26 @@ export abstract class AbstractEngine {
     /**
      * Observable event triggered each time the canvas loses focus
      */
-    public onCanvasBlurObservable: Observable<AbstractEngine>;
+    public onCanvasBlurObservable = new Observable<AbstractEngine>();
     /**
      * Observable event triggered each time the canvas gains focus
      */
-    public onCanvasFocusObservable: Observable<AbstractEngine>;
+    public onCanvasFocusObservable = new Observable<AbstractEngine>();
 
     /**
      * Event raised when a new scene is created
      */
-    public onNewSceneAddedObservable: Observable<Scene>;
+    public onNewSceneAddedObservable = new Observable<Scene>();
 
     /**
      * Observable event triggered each time the rendering canvas is resized
      */
-    public onResizeObservable: Observable<AbstractEngine>;
+    public onResizeObservable = new Observable<AbstractEngine>();
 
     /**
      * Observable event triggered each time the canvas receives pointerout event
      */
-    public onCanvasPointerOutObservable: Observable<PointerEvent>;
+    public onCanvasPointerOutObservable = new Observable<PointerEvent>();
 
     /**
      * Turn this value on if you want to pause FPS computation when in background
@@ -3079,6 +3079,12 @@ export abstract class AbstractEngine {
 
         this.onDisposeObservable.notifyObservers(this);
         this.onDisposeObservable.clear();
+
+        this.onResizeObservable.clear();
+        this.onCanvasBlurObservable.clear();
+        this.onCanvasFocusObservable.clear();
+        this.onCanvasPointerOutObservable.clear();
+        this.onNewSceneAddedObservable.clear();
 
         if (IsWindowObjectExist()) {
             window.removeEventListener("resize", this._checkForMobile);
