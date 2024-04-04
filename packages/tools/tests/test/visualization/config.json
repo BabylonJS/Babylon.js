@@ -726,10 +726,8 @@
         },
         {
             "title": "GLTF ClearCoat",
-            "playgroundId": "#YG3BBF#4",
-            "referenceImage": "glTFClearCoat.png",
-            "renderCount": 50,
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#YG3BBF#33",
+            "referenceImage": "glTFClearCoat.png"
         },
         {
             "title": "GLTF Alpha Blend",
