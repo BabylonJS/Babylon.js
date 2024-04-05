@@ -1390,12 +1390,6 @@ export abstract class AbstractEngine {
     public abstract setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
 
     /**
-     * Sets the current alpha equation
-     * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
-     */
-    public abstract setAlphaEquation(equation: number): void;
-
-    /**
      * Gets a boolean indicating that only power of 2 textures are supported
      * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
      */

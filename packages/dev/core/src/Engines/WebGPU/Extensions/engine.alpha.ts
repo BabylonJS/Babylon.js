@@ -1,5 +1,5 @@
+import { AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../../constants";
-import { Engine } from "../../engine";
 import { WebGPUEngine } from "../../webgpuEngine";
 
 declare module "../../webgpuEngine" {
@@ -145,8 +145,8 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             break;
     }
     if (!noDepthWriteChange) {
-        this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
-        this._cacheRenderPipeline.setDepthWriteEnabled(mode === Engine.ALPHA_DISABLE);
+        this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
+        this._cacheRenderPipeline.setDepthWriteEnabled(mode === Constants.ALPHA_DISABLE);
     }
     this._alphaMode = mode;
     this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
@@ -154,7 +154,7 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
 };
 
 WebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
-    Engine.prototype.setAlphaEquation.call(this, equation);
+    AbstractEngine.prototype.setAlphaEquation.call(this, equation);
 
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
 };
