@@ -198,7 +198,7 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
             <div id="root">
                 <span>
                     <p id="droptext" ref={this._dropTextRef}>
-                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj or babylon files to view them"}
+                        {this._globalState.reflector ? "" : "Drag and drop gltf, glb, obj, ply, splat or babylon files to view them"}
                     </p>
                     {this._globalState.reflector ? (
                         <ReflectorZone globalState={this._globalState} expanded={!this.state.isFooterVisible} />

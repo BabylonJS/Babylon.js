@@ -18,7 +18,7 @@ import { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateShared
 import type { SubMesh } from "../../Meshes/subMesh";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import type { NodeMaterialOptimizer } from "./Optimizers/nodeMaterialOptimizer";
-import type { ImageProcessingConfiguration, IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration";
+import type { ImageProcessingConfiguration } from "../imageProcessingConfiguration";
 import type { Nullable } from "../../types";
 import { VertexBuffer } from "../../Buffers/buffer";
 import { Tools } from "../../Misc/tools";
@@ -27,7 +27,8 @@ import { VertexOutputBlock } from "./Blocks/Vertex/vertexOutputBlock";
 import { FragmentOutputBlock } from "./Blocks/Fragment/fragmentOutputBlock";
 import { InputBlock } from "./Blocks/Input/inputBlock";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import { serialize, SerializationHelper } from "../../Misc/decorators";
+import { serialize } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 import type { TextureBlock } from "./Blocks/Dual/textureBlock";
 import type { ReflectionTextureBaseBlock } from "./Blocks/Dual/reflectionTextureBaseBlock";
 import type { RefractionBlock } from "./Blocks/PBR/refractionBlock";
@@ -57,7 +58,6 @@ import { NodeMaterialSystemValues } from "./Enums/nodeMaterialSystemValues";
 import type { ImageSourceBlock } from "./Blocks/Dual/imageSourceBlock";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Material } from "../material";
-import { MaterialHelper } from "../materialHelper";
 import type { TriPlanarBlock } from "./Blocks/triPlanarBlock";
 import type { BiPlanarBlock } from "./Blocks/biPlanarBlock";
 import type { PrePassRenderer } from "../../Rendering/prePassRenderer";
@@ -66,6 +66,8 @@ import type { PrePassOutputBlock } from "./Blocks/Fragment/prePassOutputBlock";
 import type { NodeMaterialTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
 import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
 import { Logger } from "core/Misc/logger";
+import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
+import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -268,6 +270,8 @@ export class NodeMaterial extends PushMaterial {
         return (
             block.getClassName() === "TextureBlock" ||
             block.getClassName() === "ReflectionTextureBaseBlock" ||
+            block.getClassName() === "ReflectionTextureBlock" ||
+            block.getClassName() === "ReflectionBlock" ||
             block.getClassName() === "RefractionBlock" ||
             block.getClassName() === "CurrentScreenBlock" ||
             block.getClassName() === "ParticleTextureBlock" ||
@@ -935,7 +939,7 @@ export class NodeMaterial extends PushMaterial {
 
         // PrePass
         const oit = this.needAlphaBlendingForMesh(mesh) && this.getScene().useOrderIndependentTransparency;
-        MaterialHelper.PrepareDefinesForPrePass(this.getScene(), defines, !oit);
+        PrepareDefinesForPrePass(this.getScene(), defines, !oit);
 
         if (oldNormal !== defines["NORMAL"] || oldTangent !== defines["TANGENT"] || oldColor !== defines["VERTEXCOLOR_NME"] || uvChanged) {
             defines.markAsAttributesDirty();
@@ -1417,7 +1421,7 @@ export class NodeMaterial extends PushMaterial {
 
         // Global defines
         const scene = this.getScene();
-        if (MaterialHelper.PrepareDefinesForCamera(scene, defines)) {
+        if (PrepareDefinesForCamera(scene, defines)) {
             defines.markAsMiscDirty();
         }
 
@@ -2288,6 +2292,10 @@ export class NodeMaterial extends PushMaterial {
 
         if (source.forceAlphaBlending !== undefined) {
             this.forceAlphaBlending = source.forceAlphaBlending;
+        }
+
+        if (source.alphaMode !== undefined) {
+            this.alphaMode = source.alphaMode;
         }
 
         if (!merge) {

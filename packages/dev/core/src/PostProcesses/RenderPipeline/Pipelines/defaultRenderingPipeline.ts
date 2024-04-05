@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "../../../types";
-import { serialize, SerializationHelper } from "../../../Misc/decorators";
+import { serialize } from "../../../Misc/decorators";
+import { SerializationHelper } from "../../../Misc/decorators.serialization";
 import type { Observer } from "../../../Misc/observable";
 import { Observable } from "../../../Misc/observable";
 import type { IAnimatable } from "../../../Animations/animatable.interface";

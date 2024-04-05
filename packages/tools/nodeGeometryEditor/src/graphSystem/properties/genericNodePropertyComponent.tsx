@@ -181,8 +181,9 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                     {block.outputs.map((output) => {
                         return (
                             <>
-                                <TextLineComponent label="Call count" value={output.callCount.toString()} />
-                                <TextLineComponent label="Execution count" value={output.executionCount.toString()} />
+                                <TextLineComponent label={(output.displayName || output.name) + ":"} ignoreValue={true} additionalClass="bold" />
+                                <TextLineComponent label="> Call count" value={output.callCount.toString()} />
+                                <TextLineComponent label="> Execution count" value={output.executionCount.toString()} />
                             </>
                         );
                     })}

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Nullable, IndicesArray, DataArray } from "../types";
+import type { Nullable, IndicesArray, DataArray, FloatArray, DeepImmutable } from "../types";
 import { Engine } from "../Engines/engine";
 import type { VertexBuffer } from "../Buffers/buffer";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
@@ -166,7 +166,7 @@ class CommandBufferEncoder {
         this._commandStream.writeFloat32(commandArg);
     }
 
-    public encodeCommandArgAsFloat32s(commandArg: Float32Array) {
+    public encodeCommandArgAsFloat32s(commandArg: DeepImmutable<FloatArray>) {
         this._commandStream.writeFloat32Array(commandArg);
     }
 
@@ -221,6 +221,14 @@ export class NativeEngine extends Engine {
 
         if (_native.Engine.PROTOCOL_VERSION !== NativeEngine.PROTOCOL_VERSION) {
             throw new Error(`Protocol version mismatch: ${_native.Engine.PROTOCOL_VERSION} (Native) !== ${NativeEngine.PROTOCOL_VERSION} (JS)`);
+        }
+
+        if (this._engine.setDeviceLostCallback) {
+            this._engine.setDeviceLostCallback(() => {
+                this.onContextLostObservable.notifyObservers(this);
+                this._contextWasLost = true;
+                this._restoreEngineAfterContextLost();
+            });
         }
 
         this._webGLVersion = 2;
@@ -305,7 +313,7 @@ export class NativeEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
-            forceVertexBufferStrideMultiple4Bytes: false,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
             _collectUbosUpdatedInFrame: false,
         };
 
@@ -422,6 +430,24 @@ export class NativeEngine extends Engine {
             this._engine.requestAnimationFrame(bindedRenderFunction);
         }
         return 0;
+    }
+
+    protected _restoreEngineAfterContextLost(): void {
+        this._clearEmptyResources();
+
+        const depthTest = this._depthCullingState.depthTest; // backup those values because the call to initEngine / wipeCaches will reset them
+        const depthFunc = this._depthCullingState.depthFunc;
+        const depthMask = this._depthCullingState.depthMask;
+        const stencilTest = this._stencilState.stencilTest;
+
+        this._rebuildGraphicsResources();
+
+        this._depthCullingState.depthTest = depthTest;
+        this._depthCullingState.depthFunc = depthFunc;
+        this._depthCullingState.depthMask = depthMask;
+        this._stencilState.stencilTest = stencilTest;
+
+        this._flagContextRestored();
     }
 
     /**
@@ -1365,7 +1391,7 @@ export class NativeEngine extends Engine {
         return this.setFloatArray4(uniform, new Float32Array(array));
     }
 
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public setMatrices(uniform: WebGLUniformLocation, matrices: DeepImmutable<FloatArray>): boolean {
         if (!uniform) {
             return false;
         }
@@ -2190,7 +2216,7 @@ export class NativeEngine extends Engine {
         return texture;
     }
 
-    public createRenderTargetTexture(size: number | { width: number; height: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    public createRenderTargetTexture(size: number | { width: number; height: number; depth: number }, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size) as NativeRenderTargetWrapper;
 
         let generateDepthBuffer = true;
@@ -2294,10 +2320,11 @@ export class NativeEngine extends Engine {
         this._engine.updateDynamicIndexBuffer(buffer.nativeIndexBuffer!, data.buffer, data.byteOffset, data.byteLength, offset);
     }
 
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, verticies: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset = 0, byteLength?: number): void {
         const buffer = vertexBuffer as NativeDataBuffer;
-        const data = ArrayBuffer.isView(verticies) ? verticies : new Float32Array(verticies);
-        this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, data.buffer, data.byteOffset + (byteOffset ?? 0), byteLength ?? data.byteLength);
+        const dataView = data instanceof Array ? new Float32Array(data) : data instanceof ArrayBuffer ? new Uint8Array(data) : data;
+        const byteView = new Uint8Array(dataView.buffer, dataView.byteOffset, byteLength ?? dataView.byteLength);
+        this._engine.updateDynamicVertexBuffer(buffer.nativeVertexBuffer!, byteView.buffer, byteView.byteOffset, byteView.byteLength, byteOffset);
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.

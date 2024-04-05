@@ -1,10 +1,9 @@
 /**
  * Reflective Shadow Maps were first described in http://www.klayge.org/material/3_12/GI/rsm.pdf by Carsten Dachsbacher and Marc Stamminger
- * The ReflectiveShadowMap class only implements the geometry buffer generation part.
+ * The ReflectiveShadowMap class only implements the position / normal / flux texture generation part.
  * For the global illumination effect, see the GIRSMManager class.
  */
 import { Constants } from "core/Engines/constants";
-import type { ShadowLight } from "core/Lights/shadowLight";
 import { MultiRenderTarget } from "core/Materials/Textures/multiRenderTarget";
 import type { UniformBuffer } from "core/Materials/uniformBuffer";
 import { Color3, Color4 } from "core/Maths/math.color";
@@ -21,6 +20,7 @@ import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { expandToProperty, serialize } from "core/Misc/decorators";
 import { RegisterClass } from "core/Misc/typeStore";
 import { Light } from "core/Lights/light";
+import type { DirectionalLight } from "core/Lights/directionalLight";
 
 /**
  * Class used to generate the RSM (Reflective Shadow Map) textures for a given light.
@@ -28,7 +28,7 @@ import { Light } from "core/Lights/light";
  */
 export class ReflectiveShadowMap {
     private _scene: Scene;
-    private _light: ShadowLight;
+    private _light: DirectionalLight | SpotLight;
     private _lightTransformMatrix: Matrix = Matrix.Identity();
     private _mrt: MultiRenderTarget;
     private _textureDimensions: { width: number; height: number };
@@ -101,7 +101,7 @@ export class ReflectiveShadowMap {
      * @param light The light to use to generate the RSM textures
      * @param textureDimensions The dimensions of the textures to generate. Default: \{ width: 512, height: 512 \}
      */
-    constructor(scene: Scene, light: ShadowLight, textureDimensions = { width: 512, height: 512 }) {
+    constructor(scene: Scene, light: DirectionalLight | SpotLight, textureDimensions = { width: 512, height: 512 }) {
         this._scene = scene;
         this._light = light;
         this._textureDimensions = textureDimensions;
@@ -334,7 +334,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
      * Defines the light that should be used to generate the RSM textures.
      */
     @serialize()
-    public light: ShadowLight;
+    public light: DirectionalLight | SpotLight;
 
     private _isEnabled = false;
     /**
@@ -394,7 +394,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
                     uniform mat4 rsmTextureProjectionMatrix;
                     uniform vec4 rsmSpotInfo;
                     uniform vec3 rsmLightColor;
-                    unfiorm vec3 rsmLightPosition;
+                    uniform vec3 rsmLightPosition;
                 #endif`,
         };
     }

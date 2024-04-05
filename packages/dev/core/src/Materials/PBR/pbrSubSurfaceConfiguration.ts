@@ -8,7 +8,6 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Scalar } from "../../Maths/math.scalar";
 import type { CubeTexture } from "../Textures/cubeTexture";
@@ -21,6 +20,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Engine } from "../../Engines/engine";
 import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
@@ -425,45 +425,27 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             defines.SS_USE_LOCAL_REFRACTIONMAP_CUBIC = false;
             defines.SS_USE_THICKNESS_AS_DEPTH = false;
 
-            const refractionIntensityTextureIsThicknessTexture =
-                !!this._thicknessTexture &&
-                !!this._refractionIntensityTexture &&
-                this._refractionIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) &&
-                this._refractionIntensityTexture._texture === this._thicknessTexture._texture;
-
-            const translucencyIntensityTextureIsThicknessTexture =
-                !!this._thicknessTexture &&
-                !!this._translucencyIntensityTexture &&
-                this._translucencyIntensityTexture.checkTransformsAreIdentical(this._thicknessTexture) &&
-                this._translucencyIntensityTexture._texture === this._thicknessTexture._texture;
-
-            // if true, it means the refraction/translucency textures are the same than the thickness texture so there's no need to pass them to the shader, only thicknessTexture
-            const useOnlyThicknessTexture =
-                (refractionIntensityTextureIsThicknessTexture || !this._refractionIntensityTexture) &&
-                (translucencyIntensityTextureIsThicknessTexture || !this._translucencyIntensityTexture);
-
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
                     if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
+                        PrepareDefinesForMergedUV(this._thicknessTexture, defines, "SS_THICKNESSANDMASK_TEXTURE");
                     }
 
-                    if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
+                    if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled) {
+                        PrepareDefinesForMergedUV(this._refractionIntensityTexture, defines, "SS_REFRACTIONINTENSITY_TEXTURE");
                     }
 
-                    if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && !useOnlyThicknessTexture) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
+                    if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled) {
+                        PrepareDefinesForMergedUV(this._translucencyIntensityTexture, defines, "SS_TRANSLUCENCYINTENSITY_TEXTURE");
                     }
                 }
             }
 
             defines.SS_HAS_THICKNESS = this.maximumThickness - this.minimumThickness !== 0.0;
-            defines.SS_MASK_FROM_THICKNESS_TEXTURE =
-                (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
+            defines.SS_MASK_FROM_THICKNESS_TEXTURE = this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture || !!this._translucencyIntensityTexture;
             defines.SS_USE_GLTF_TEXTURES = this._useGltfStyleTextures;
-            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture) && useOnlyThicknessTexture;
-            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = (this._useMaskFromThicknessTexture || !!this._translucencyIntensityTexture) && useOnlyThicknessTexture;
+            defines.SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE = this._useMaskFromThicknessTexture || !!this._refractionIntensityTexture;
+            defines.SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE = this._useMaskFromThicknessTexture || !!this._translucencyIntensityTexture;
 
             if (this._isRefractionEnabled) {
                 if (scene.texturesEnabled) {
@@ -525,17 +507,17 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
             if (this._thicknessTexture && MaterialFlags.ThicknessTextureEnabled) {
                 uniformBuffer.updateFloat2("vThicknessInfos", this._thicknessTexture.coordinatesIndex, this._thicknessTexture.level);
-                MaterialHelper.BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
+                BindTextureMatrix(this._thicknessTexture, uniformBuffer, "thickness");
             }
 
             if (this._refractionIntensityTexture && MaterialFlags.RefractionIntensityTextureEnabled && defines.SS_REFRACTIONINTENSITY_TEXTURE) {
                 uniformBuffer.updateFloat2("vRefractionIntensityInfos", this._refractionIntensityTexture.coordinatesIndex, this._refractionIntensityTexture.level);
-                MaterialHelper.BindTextureMatrix(this._refractionIntensityTexture, uniformBuffer, "refractionIntensity");
+                BindTextureMatrix(this._refractionIntensityTexture, uniformBuffer, "refractionIntensity");
             }
 
             if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && defines.SS_TRANSLUCENCYINTENSITY_TEXTURE) {
                 uniformBuffer.updateFloat2("vTranslucencyIntensityInfos", this._translucencyIntensityTexture.coordinatesIndex, this._translucencyIntensityTexture.level);
-                MaterialHelper.BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
+                BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
             }
 
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
@@ -650,6 +632,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
 
         if (this._refractionTexture === texture) {
+            return true;
+        }
+
+        if (this._refractionIntensityTexture === texture) {
+            return true;
+        }
+
+        if (this._translucencyIntensityTexture === texture) {
             return true;
         }
 

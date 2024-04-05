@@ -794,7 +794,7 @@ export class WebGPUTextureManager {
             this.updateTexture(imageBitmap, gpuTexture, imageBitmap.width, imageBitmap.height, layerCount, format, 0, 0, invertY, premultiplyAlpha, 0, 0);
 
             if (hasMipmaps && generateMipmaps) {
-                this.generateMipmaps(gpuTexture, format, mipLevelCount, 0, commandEncoder);
+                this.generateMipmaps(gpuTexture, format, mipLevelCount, 0, is3D, commandEncoder);
             }
         }
 
@@ -868,7 +868,7 @@ export class WebGPUTextureManager {
         commandEncoder!.pushDebugGroup?.(`create cube mipmaps - ${mipLevelCount} levels`);
 
         for (let f = 0; f < 6; ++f) {
-            this.generateMipmaps(gpuTexture, format, mipLevelCount, f, commandEncoder);
+            this.generateMipmaps(gpuTexture, format, mipLevelCount, f, false, commandEncoder);
         }
 
         commandEncoder!.popDebugGroup?.();
@@ -884,6 +884,7 @@ export class WebGPUTextureManager {
         format: GPUTextureFormat,
         mipLevelCount: number,
         faceIndex = 0,
+        is3D = false,
         commandEncoder?: GPUCommandEncoder
     ): void {
         const useOwnCommandEncoder = commandEncoder === undefined;
@@ -918,7 +919,7 @@ export class WebGPUTextureManager {
                     {
                         view: gpuTexture.createView({
                             format,
-                            dimension: WebGPUConstants.TextureViewDimension.E2d,
+                            dimension: is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                             baseMipLevel: i,
                             mipLevelCount: 1,
                             arrayLayerCount: 1,
@@ -948,7 +949,7 @@ export class WebGPUTextureManager {
                             binding: 1,
                             resource: gpuTexture.createView({
                                 format,
-                                dimension: WebGPUConstants.TextureViewDimension.E2d,
+                                dimension: is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
                                 baseMipLevel: i - 1,
                                 mipLevelCount: 1,
                                 arrayLayerCount: 1,
@@ -1082,7 +1083,7 @@ export class WebGPUTextureManager {
                 {
                     label: `BabylonWebGPUDevice${this._engine.uniqueId}_TextureView${texture.is3D ? "3D" : "2D"}${
                         texture.is2DArray ? "_Array" + arrayLayerCount : ""
-                    }_${width}x${height}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
+                    }_${width}x${height}${texture.is3D ? "x" + layerCount : ""}_${hasMipMaps ? "wmips" : "womips"}_${format}_${dimension}_${aspect}`,
                     format,
                     dimension,
                     mipLevelCount: mipmapCount,

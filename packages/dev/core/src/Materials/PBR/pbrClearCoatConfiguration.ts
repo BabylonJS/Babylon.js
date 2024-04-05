@@ -5,7 +5,6 @@ import { Color3 } from "../../Maths/math.color";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
 import type { SubMesh } from "../../Meshes/subMesh";
@@ -16,6 +15,7 @@ import { MaterialDefines } from "../materialDefines";
 import type { Engine } from "../../Engines/engine";
 import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
+import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
 
 /**
  * @internal
@@ -30,7 +30,6 @@ export class MaterialClearCoatDefines extends MaterialDefines {
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
     public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
     public CLEARCOAT_REMAP_F0 = false;
 
     public CLEARCOAT_TINT = false;
@@ -224,26 +223,24 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL =
-                this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
             defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
                     if (this._texture && MaterialFlags.ClearCoatTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._texture, defines, "CLEARCOAT_TEXTURE");
+                        PrepareDefinesForMergedUV(this._texture, defines, "CLEARCOAT_TEXTURE");
                     } else {
                         defines.CLEARCOAT_TEXTURE = false;
                     }
 
                     if (this._textureRoughness && MaterialFlags.ClearCoatTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._textureRoughness, defines, "CLEARCOAT_TEXTURE_ROUGHNESS");
+                        PrepareDefinesForMergedUV(this._textureRoughness, defines, "CLEARCOAT_TEXTURE_ROUGHNESS");
                     } else {
                         defines.CLEARCOAT_TEXTURE_ROUGHNESS = false;
                     }
 
                     if (this._bumpTexture && MaterialFlags.ClearCoatBumpTextureEnabled) {
-                        MaterialHelper.PrepareDefinesForMergedUV(this._bumpTexture, defines, "CLEARCOAT_BUMP");
+                        PrepareDefinesForMergedUV(this._bumpTexture, defines, "CLEARCOAT_BUMP");
                     } else {
                         defines.CLEARCOAT_BUMP = false;
                     }
@@ -253,7 +250,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                     if (this._isTintEnabled) {
                         defines.CLEARCOAT_TINT = true;
                         if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
-                            MaterialHelper.PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
+                            PrepareDefinesForMergedUV(this._tintTexture, defines, "CLEARCOAT_TINT_TEXTURE");
                             defines.CLEARCOAT_TINT_GAMMATEXTURE = this._tintTexture.gammaSpace;
                         } else {
                             defines.CLEARCOAT_TINT_TEXTURE = false;
@@ -272,7 +269,6 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             defines.CLEARCOAT_TINT = false;
             defines.CLEARCOAT_TINT_TEXTURE = false;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
             defines.CLEARCOAT_DEFAULTIOR = false;
             defines.CLEARCOAT_TEXTUREDIRECTUV = 0;
             defines.CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
@@ -296,13 +292,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         const invertNormalMapX = this._material._invertNormalMapX;
         const invertNormalMapY = this._material._invertNormalMapY;
 
-        const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
-
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures && MaterialFlags.ClearCoatTextureEnabled) {
-                uniformBuffer.updateFloat4("vClearCoatInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                MaterialHelper.BindTextureMatrix(this._texture!, uniformBuffer, "clearCoat");
-            } else if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
+            if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vClearCoatInfos",
                     this._texture?.coordinatesIndex ?? 0,
@@ -311,16 +302,16 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                     this._textureRoughness?.level ?? 0
                 );
                 if (this._texture) {
-                    MaterialHelper.BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
+                    BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
                 }
-                if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE) {
-                    MaterialHelper.BindTextureMatrix(this._textureRoughness, uniformBuffer, "clearCoatRoughness");
+                if (this._textureRoughness && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                    BindTextureMatrix(this._textureRoughness, uniformBuffer, "clearCoatRoughness");
                 }
             }
 
             if (this._bumpTexture && engine.getCaps().standardDerivatives && MaterialFlags.ClearCoatTextureEnabled && !disableBumpMap) {
                 uniformBuffer.updateFloat2("vClearCoatBumpInfos", this._bumpTexture.coordinatesIndex, this._bumpTexture.level);
-                MaterialHelper.BindTextureMatrix(this._bumpTexture, uniformBuffer, "clearCoatBump");
+                BindTextureMatrix(this._bumpTexture, uniformBuffer, "clearCoatBump");
 
                 if (scene._mirroredCameraPosition) {
                     uniformBuffer.updateFloat2("vClearCoatTangentSpaceParams", invertNormalMapX ? 1.0 : -1.0, invertNormalMapY ? 1.0 : -1.0);
@@ -331,7 +322,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
 
             if (this._tintTexture && MaterialFlags.ClearCoatTintTextureEnabled) {
                 uniformBuffer.updateFloat2("vClearCoatTintInfos", this._tintTexture.coordinatesIndex, this._tintTexture.level);
-                MaterialHelper.BindTextureMatrix(this._tintTexture, uniformBuffer, "clearCoatTint");
+                BindTextureMatrix(this._tintTexture, uniformBuffer, "clearCoatTint");
             }
 
             // Clear Coat General params
@@ -356,7 +347,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                 uniformBuffer.setTexture("clearCoatSampler", this._texture);
             }
 
-            if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.ClearCoatTextureEnabled) {
+            if (this._textureRoughness && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.setTexture("clearCoatRoughnessSampler", this._textureRoughness);
             }
 

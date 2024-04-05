@@ -5,9 +5,8 @@ import type { IEffectCreationOptions } from "../../Materials/effect";
 import type { Scene } from "../../scene";
 import type { Matrix } from "../../Maths/math.vector";
 import type { GaussianSplattingMesh } from "core/Meshes";
-import { SerializationHelper } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 import { VertexBuffer } from "../../Buffers/buffer";
-import { MaterialHelper } from "../../Materials/materialHelper";
 import { MaterialDefines } from "../../Materials/materialDefines";
 import { PushMaterial } from "../../Materials/pushMaterial";
 import { RegisterClass } from "../../Misc/typeStore";
@@ -16,6 +15,15 @@ import { Camera } from "core/Cameras/camera";
 
 import "../../Shaders/gaussianSplatting.fragment";
 import "../../Shaders/gaussianSplatting.vertex";
+import {
+    BindFogParameters,
+    BindLogDepth,
+    PrepareAttributesForInstances,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForMisc,
+    PrepareUniformsAndSamplersList,
+} from "../materialHelper.functions";
 
 /**
  * @internal
@@ -110,13 +118,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
         const engine = scene.getEngine();
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, false, defines);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances, null, true);
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, false, false);
+        PrepareDefinesForAttributes(mesh, defines, false, false);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -126,13 +134,13 @@ export class GaussianSplattingMaterial extends PushMaterial {
             //Attributes
             const attribs = [VertexBuffer.PositionKind, "splatIndex"];
 
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForInstances(attribs, defines);
 
             const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize", "focal"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
             const uniformBuffers = ["Scene", "Mesh"];
 
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -240,11 +248,11 @@ export class GaussianSplattingMaterial extends PushMaterial {
         }
 
         // Fog
-        MaterialHelper.BindFogParameters(scene, mesh, effect);
+        BindFogParameters(scene, mesh, effect);
 
         // Log. depth
         if (this.useLogarithmicDepth) {
-            MaterialHelper.BindLogDepth(defines, effect, scene);
+            BindLogDepth(defines, effect, scene);
         }
 
         this._afterBind(mesh, this._activeEffect, subMesh);

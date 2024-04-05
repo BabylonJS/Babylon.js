@@ -217,7 +217,7 @@ export class DynamicTexture extends Texture {
         super.dispose();
 
         if (this._ownCanvas) {
-            this._canvas?.remove();
+            this._canvas?.remove?.();
         }
         (this._canvas as any) = null;
         (this._context as any) = null;

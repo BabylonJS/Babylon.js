@@ -6,7 +6,6 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
-import { MaterialHelper } from "../../../materialHelper";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
@@ -15,6 +14,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import "../../../../Shaders/ShadersInclude/bonesDeclaration";
 import "../../../../Shaders/ShadersInclude/bonesVertex";
 import type { EffectFallbacks } from "../../../effectFallbacks";
+import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -134,14 +134,14 @@ export class BonesBlock extends NodeMaterialBlock {
     }
 
     public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        MaterialHelper.BindBonesParameters(mesh, effect);
+        BindBonesParameters(mesh, effect);
     }
 
     public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areAttributesDirty) {
             return;
         }
-        MaterialHelper.PrepareDefinesForBones(mesh, defines);
+        PrepareDefinesForBones(mesh, defines);
     }
 
     protected _buildBlock(state: NodeMaterialBuildState) {

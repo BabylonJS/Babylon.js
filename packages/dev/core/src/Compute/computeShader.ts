@@ -2,9 +2,10 @@ import type { UniformBuffer } from "../Materials/uniformBuffer";
 import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import type { Scene } from "../scene";
 import type { Nullable } from "../types";
-import { SerializationHelper, serialize } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
-import type { ComputeEffect, IComputeEffectCreationOptions } from "./computeEffect";
+import type { ComputeEffect, IComputeEffectCreationOptions, IComputeShaderPath } from "./computeEffect";
 import type { ComputeBindingMapping } from "../Engines/Extensions/engine.computeShader";
 import { ComputeBindingType } from "../Engines/Extensions/engine.computeShader";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
@@ -54,7 +55,7 @@ type ComputeBindingListInternal = { [key: string]: { type: ComputeBindingType; o
  */
 export class ComputeShader {
     private _engine: ThinEngine;
-    private _shaderPath: any;
+    private _shaderPath: IComputeShaderPath | string;
     private _options: IComputeShaderOptions;
     private _effect: ComputeEffect;
     private _cachedDefines: string;
@@ -115,14 +116,14 @@ export class ComputeShader {
      * Instantiates a new compute shader.
      * @param name Defines the name of the compute shader in the scene
      * @param engine Defines the engine the compute shader belongs to
-     * @param shaderPath Defines  the route to the shader code in one of three ways:
+     * @param shaderPath Defines the route to the shader code in one of three ways:
      *  * object: \{ compute: "custom" \}, used with ShaderStore.ShadersStoreWGSL["customComputeShader"]
      *  * object: \{ computeElement: "HTMLElementId" \}, used with shader code in script tags
      *  * object: \{ computeSource: "compute shader code string" \}, where the string contains the shader code
      *  * string: try first to find the code in ShaderStore.ShadersStoreWGSL[shaderPath + "ComputeShader"]. If not, assumes it is a file with name shaderPath.compute.fx in index.html folder.
      * @param options Define the options used to create the shader
      */
-    constructor(name: string, engine: ThinEngine, shaderPath: any, options: Partial<IComputeShaderOptions> = {}) {
+    constructor(name: string, engine: ThinEngine, shaderPath: IComputeShaderPath | string, options: Partial<IComputeShaderOptions> = {}) {
         this.name = name;
         this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;
@@ -229,13 +230,13 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setUniformBuffer(name: string, buffer: UniformBuffer): void {
+    public setUniformBuffer(name: string, buffer: UniformBuffer | DataBuffer): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
         this._bindings[name] = {
-            type: ComputeBindingType.UniformBuffer,
+            type: ComputeShader._BufferIsDataBuffer(buffer) ? ComputeBindingType.DataBuffer : ComputeBindingType.UniformBuffer,
             object: buffer,
             indexInGroupEntries: current?.indexInGroupEntries,
         };
@@ -246,13 +247,13 @@ export class ComputeShader {
      * @param name Binding name of the buffer
      * @param buffer Buffer to bind
      */
-    public setStorageBuffer(name: string, buffer: StorageBuffer): void {
+    public setStorageBuffer(name: string, buffer: StorageBuffer | DataBuffer): void {
         const current = this._bindings[name];
 
         this._contextIsDirty ||= !current || current.object !== buffer;
 
         this._bindings[name] = {
-            type: ComputeBindingType.StorageBuffer,
+            type: ComputeShader._BufferIsDataBuffer(buffer) ? ComputeBindingType.DataBuffer : ComputeBindingType.StorageBuffer,
             object: buffer,
             indexInGroupEntries: current?.indexInGroupEntries,
         };
@@ -496,6 +497,10 @@ export class ComputeShader {
         }
 
         return compute;
+    }
+
+    protected static _BufferIsDataBuffer(buffer: UniformBuffer | StorageBuffer | DataBuffer): buffer is DataBuffer {
+        return (buffer as DataBuffer).underlyingResource !== undefined;
     }
 }
 

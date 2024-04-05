@@ -347,6 +347,15 @@ export enum PhysicsMotionType {
 }
 
 /**
+ * Controls the body sleep mode.
+ */
+export enum PhysicsActivationControl {
+    SIMULATION_CONTROLLED,
+    ALWAYS_ACTIVE,
+    ALWAYS_INACTIVE,
+}
+
+/**
  * Represents a pair of bodies connected by a constraint.
  */
 export type ConstrainedBodyPair = { parentBody: PhysicsBody; parentBodyIndex: number; childBody: PhysicsBody; childBodyIndex: number };

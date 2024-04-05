@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Nullable } from "core/types";
-import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3, SerializationHelper } from "core/Misc/decorators";
+import { serializeAsTexture, serialize, expandToProperty, serializeAsColor3 } from "core/Misc/decorators";
+import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { Matrix } from "core/Maths/math.vector";
 import { Color3 } from "core/Maths/math.color";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IEffectCreationOptions } from "core/Materials/effect";
 import { MaterialDefines } from "core/Materials/materialDefines";
-import { MaterialHelper } from "core/Materials/materialHelper";
 import { PushMaterial } from "core/Materials/pushMaterial";
 import { MaterialFlags } from "core/Materials/materialFlags";
 import { VertexBuffer } from "core/Buffers/buffer";
@@ -21,6 +21,20 @@ import "./cell.fragment";
 import "./cell.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLights,
+    BindLogDepth,
+    HandleFallbacksForShadows,
+    PrepareAttributesForBones,
+    PrepareAttributesForInstances,
+    PrepareDefinesForAttributes,
+    PrepareDefinesForFrameBoundValues,
+    PrepareDefinesForLights,
+    PrepareDefinesForMisc,
+    PrepareUniformsAndSamplersList,
+} from "core/Materials/materialHelper.functions";
 
 class CellMaterialDefines extends MaterialDefines {
     public DIFFUSE = false;
@@ -138,16 +152,16 @@ export class CellMaterial extends PushMaterial {
         defines.CELLBASIC = !this.computeHighLevel;
 
         // Misc.
-        MaterialHelper.PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
         // Lights
-        defines._needNormals = MaterialHelper.PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+        defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
         // Values that need to be evaluated on every frame
-        MaterialHelper.PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
+        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
         // Attribs
-        MaterialHelper.PrepareDefinesForAttributes(mesh, defines, true, true);
+        PrepareDefinesForAttributes(mesh, defines, true, true);
 
         // Get correct effect
         if (defines.isDirty) {
@@ -160,7 +174,7 @@ export class CellMaterial extends PushMaterial {
                 fallbacks.addFallback(1, "FOG");
             }
 
-            MaterialHelper.HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
+            HandleFallbacksForShadows(defines, fallbacks, this.maxSimultaneousLights);
 
             if (defines.NUM_BONE_INFLUENCERS > 0) {
                 fallbacks.addCPUSkinningFallback(0, mesh);
@@ -187,8 +201,8 @@ export class CellMaterial extends PushMaterial {
                 attribs.push(VertexBuffer.ColorKind);
             }
 
-            MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            MaterialHelper.PrepareAttributesForInstances(attribs, defines);
+            PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+            PrepareAttributesForInstances(attribs, defines);
 
             const shaderName = "cell";
             const join = defines.toString();
@@ -211,7 +225,7 @@ export class CellMaterial extends PushMaterial {
             const uniformBuffers: string[] = [];
 
             addClipPlaneUniforms(uniforms);
-            MaterialHelper.PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
                 uniformsNames: uniforms,
                 uniformBuffersNames: uniformBuffers,
                 samplers: samplers,
@@ -268,7 +282,7 @@ export class CellMaterial extends PushMaterial {
         this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
         // Bones
-        MaterialHelper.BindBonesParameters(mesh, this._activeEffect);
+        BindBonesParameters(mesh, this._activeEffect);
 
         if (this._mustRebind(scene, effect, subMesh)) {
             // Textures
@@ -289,7 +303,7 @@ export class CellMaterial extends PushMaterial {
 
             // Log. depth
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(defines, effect, scene);
+                BindLogDepth(defines, effect, scene);
             }
 
             scene.bindEyePosition(effect);
@@ -299,7 +313,7 @@ export class CellMaterial extends PushMaterial {
 
         // Lights
         if (scene.lightsEnabled && !this.disableLighting) {
-            MaterialHelper.BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
+            BindLights(scene, mesh, this._activeEffect, defines, this._maxSimultaneousLights);
         }
 
         // View
@@ -308,7 +322,7 @@ export class CellMaterial extends PushMaterial {
         }
 
         // Fog
-        MaterialHelper.BindFogParameters(scene, mesh, this._activeEffect);
+        BindFogParameters(scene, mesh, this._activeEffect);
 
         this._afterBind(mesh, this._activeEffect, subMesh);
     }

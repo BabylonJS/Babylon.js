@@ -22,6 +22,42 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { PostProcess } from "../PostProcesses/postProcess";
 
 /**
+ * Defines the route to the shader code. The priority is as follows:
+ *  * object: `{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" }` for directly passing the shader code
+ *  * object: `{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }`, used with shader code in script tags
+ *  * object: `{ vertex: "custom", fragment: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
+ *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+ */
+export type IShaderPath = {
+    /**
+     * Directly pass the shader code
+     */
+    vertexSource?: string;
+    /**
+     * Directly pass the shader code
+     */
+    fragmentSource?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
+     */
+    vertex?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `fragment` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customFragmentShader"]
+     */
+    fragment?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    vertexElement?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    fragmentElement?: string;
+};
+
+/**
  * Options to be used when creating an effect.
  */
 export interface IEffectCreationOptions {
@@ -107,7 +143,7 @@ export class Effect implements IDisposable {
     /**
      * Name of the effect.
      */
-    public name: any = null;
+    public name: IShaderPath | string;
     /**
      * String container all the define statements that should be set on the shader.
      */
@@ -237,7 +273,7 @@ export class Effect implements IDisposable {
      * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     constructor(
-        baseName: any,
+        baseName: IShaderPath | string,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | ThinEngine,
         samplers: Nullable<string[]> = null,
@@ -303,32 +339,27 @@ export class Effect implements IDisposable {
 
     /** @internal */
     public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        let vertexSource: any;
-        let fragmentSource: any;
+        let vertexSource: string | HTMLElement | IShaderPath;
+        let fragmentSource: string | HTMLElement | IShaderPath;
 
         const baseName = this.name;
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
-        if (baseName.vertexSource) {
+        if (typeof baseName === "string") {
+            vertexSource = baseName;
+        } else if (baseName.vertexSource) {
             vertexSource = "source:" + baseName.vertexSource;
         } else if (baseName.vertexElement) {
-            vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
-
-            if (!vertexSource) {
-                vertexSource = baseName.vertexElement;
-            }
+            vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
         } else {
             vertexSource = baseName.vertex || baseName;
         }
-
-        if (baseName.fragmentSource) {
+        if (typeof baseName === "string") {
+            fragmentSource = baseName;
+        } else if (baseName.fragmentSource) {
             fragmentSource = "source:" + baseName.fragmentSource;
         } else if (baseName.fragmentElement) {
-            fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
-
-            if (!fragmentSource) {
-                fragmentSource = baseName.fragmentElement;
-            }
+            fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
         } else {
             fragmentSource = baseName.fragment || baseName;
         }

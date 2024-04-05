@@ -1,4 +1,4 @@
-import { serialize, SerializationHelper } from "../Misc/decorators";
+import { serialize } from "../Misc/decorators";
 import { Tools } from "../Misc/tools";
 import type { IAnimatable } from "../Animations/animatable.interface";
 import type { SmartArray } from "../Misc/smartArray";
@@ -19,7 +19,6 @@ import { Logger } from "../Misc/logger";
 import type { IInspectable } from "../Misc/iInspectable";
 import { Plane } from "../Maths/math.plane";
 import type { ShadowDepthWrapper } from "./shadowDepthWrapper";
-import { MaterialHelper } from "./materialHelper";
 import type { IMaterialContext } from "../Engines/IMaterialContext";
 import { DrawWrapper } from "./drawWrapper";
 import { MaterialStencilState } from "./materialStencilState";
@@ -50,6 +49,8 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { Mesh } from "../Meshes/mesh";
 import type { Animation } from "../Animations/animation";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
+import { BindSceneUniformBuffer } from "./materialHelper.functions";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 
 declare let BABYLON: any;
 
@@ -1301,7 +1302,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         if (this._needToBindSceneUbo) {
             if (effect) {
                 this._needToBindSceneUbo = false;
-                MaterialHelper.BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
+                BindSceneUniformBuffer(effect, this.getScene().getSceneUniformBuffer());
                 this._scene.finalizeSceneUbo();
             }
         }

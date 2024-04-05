@@ -1,5 +1,246 @@
 # Changelog
 
+## 7.1.0
+
+### Core
+
+- Optimizing performance of GreasedLineMesh._setPoints - by [kzhsw](https://github.com/kzhsw) ([#14934](https://github.com/BabylonJS/Babylon.js/pull/14934))
+- WebGPU: Add support for the predeclared alias in WGSL - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14944](https://github.com/BabylonJS/Babylon.js/pull/14944))
+- 3d RT mipmaps in WebGPU - by [MiiBond](https://github.com/MiiBond) ([#14941](https://github.com/BabylonJS/Babylon.js/pull/14941))
+- Allow mipmaps for 3D RT's - by [MiiBond](https://github.com/MiiBond) ([#14940](https://github.com/BabylonJS/Babylon.js/pull/14940))
+- Ribbon builder: Fix vertical uvs for closed paths - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14939](https://github.com/BabylonJS/Babylon.js/pull/14939))
+- Make NME and NGE math blocks agnostic to order of operations and left vs. right input - [_New Feature_] by [ryantrem](https://github.com/ryantrem) ([#14857](https://github.com/BabylonJS/Babylon.js/pull/14857))
+- PBR materials: Add ambient occlusion color to debug mode - by [Popov72](https://github.com/Popov72) ([#14937](https://github.com/BabylonJS/Babylon.js/pull/14937))
+- PBR: Fix crash when using refraction - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14938](https://github.com/BabylonJS/Babylon.js/pull/14938))
+- Fix glTF animation pointer of metallic roughness texture - by [bghgary](https://github.com/bghgary) ([#14936](https://github.com/BabylonJS/Babylon.js/pull/14936))
+- 3D Render Targets - by [MiiBond](https://github.com/MiiBond) ([#14897](https://github.com/BabylonJS/Babylon.js/pull/14897))
+- Remove the need for cache.Parent - by [deltakosh](https://github.com/deltakosh) ([#14888](https://github.com/BabylonJS/Babylon.js/pull/14888))
+- Allow CreateFromBase64String and LoadFromDataString to specifiy exten… - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14932](https://github.com/BabylonJS/Babylon.js/pull/14932))
+- Avoid "dirtyfication" of the defines when not required - by [deltakosh](https://github.com/deltakosh) ([#14918](https://github.com/BabylonJS/Babylon.js/pull/14918))
+- Ported clearQuad to avoid using twgsl by default - by [deltakosh](https://github.com/deltakosh) ([#14933](https://github.com/BabylonJS/Babylon.js/pull/14933))
+- ReflectiveShadowMap: Fix typo in the "no ubo support" path - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14925](https://github.com/BabylonJS/Babylon.js/pull/14925))
+- allow simple casting to IComputeShaderPath - by [RaananW](https://github.com/RaananW) ([#14924](https://github.com/BabylonJS/Babylon.js/pull/14924))
+
+### Inspector
+
+- EXT_texture_avif implementation - [_New Feature_] by [leon](https://github.com/leon) ([#13370](https://github.com/BabylonJS/Babylon.js/pull/13370))
+- PBR materials: Add ambient occlusion color to debug mode - by [Popov72](https://github.com/Popov72) ([#14937](https://github.com/BabylonJS/Babylon.js/pull/14937))
+
+### Loaders
+
+- EXT_texture_avif implementation - [_New Feature_] by [leon](https://github.com/leon) ([#13370](https://github.com/BabylonJS/Babylon.js/pull/13370))
+- Fix glTF animation pointer of metallic roughness texture - by [bghgary](https://github.com/bghgary) ([#14936](https://github.com/BabylonJS/Babylon.js/pull/14936))
+
+### Playground
+
+- new playground engine version (latest 6) - by [RaananW](https://github.com/RaananW) ([#14923](https://github.com/BabylonJS/Babylon.js/pull/14923))
+
+### Serializers
+
+- EXT_texture_avif implementation - [_New Feature_] by [leon](https://github.com/leon) ([#13370](https://github.com/BabylonJS/Babylon.js/pull/13370))
+
+## 7.0.0
+
+### Core
+
+- WebGPU: Fix typo when declaring "highp sampler2DArray" in the NME - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14922](https://github.com/BabylonJS/Babylon.js/pull/14922))
+- Add type to shader material constructor - by [stefnotch](https://github.com/stefnotch) ([#14908](https://github.com/BabylonJS/Babylon.js/pull/14908))
+
+## 6.49.0
+
+### Core
+
+- Fix PBR sub surface Dirty mecanism on textures - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14917](https://github.com/BabylonJS/Babylon.js/pull/14917))
+- Fix matrix usage on pbr sheen roughness - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14912](https://github.com/BabylonJS/Babylon.js/pull/14912))
+- fix: add `actualBoundingBoxAscent` and `actualBoundingBoxDescent` props to `ITextMetrics` - by [yedpodtrzitko](https://github.com/yedpodtrzitko) ([#14913](https://github.com/BabylonJS/Babylon.js/pull/14913))
+- Some fixes for 6DoF - by [RaananW](https://github.com/RaananW) ([#14911](https://github.com/BabylonJS/Babylon.js/pull/14911))
+- PBR: fix the "eho" debug mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14910](https://github.com/BabylonJS/Babylon.js/pull/14910))
+- Fixed `Tensor` value typing - by [dr-vortex](https://github.com/dr-vortex) ([#14876](https://github.com/BabylonJS/Babylon.js/pull/14876))
+- Fixed `Tensor` value typing - by [dr-vortex](https://github.com/dr-vortex) ([#14876](https://github.com/BabylonJS/Babylon.js/pull/14876))
+- Add interpolation option for varying in WGSL - by [XanthosXanthopoulos](https://github.com/XanthosXanthopoulos) ([#14893](https://github.com/BabylonJS/Babylon.js/pull/14893))
+- Thin instances: Automatic buffer recreation when static buffer changes - by [Popov72](https://github.com/Popov72) ([#14901](https://github.com/BabylonJS/Babylon.js/pull/14901))
+- fix in PointsCloudSystem: uniform distribution in triangle - by [hcschuetz](https://github.com/hcschuetz) ([#14900](https://github.com/BabylonJS/Babylon.js/pull/14900))
+- PointsCloudSystem: simplified triangle area calculation - by [hcschuetz](https://github.com/hcschuetz) ([#14903](https://github.com/BabylonJS/Babylon.js/pull/14903))
+- fix in PointsCloudSystem: uniform distribution across triangles - by [hcschuetz](https://github.com/hcschuetz) ([#14902](https://github.com/BabylonJS/Babylon.js/pull/14902))
+
+### Loaders
+
+- Add legacy behavior flag to obj loader - by [bghgary](https://github.com/bghgary) ([#14920](https://github.com/BabylonJS/Babylon.js/pull/14920))
+- Update glTF animation pointer property tree - by [bghgary](https://github.com/bghgary) ([#14915](https://github.com/BabylonJS/Babylon.js/pull/14915))
+- Fix obj loader and exporter to support handedness correctly - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#14884](https://github.com/BabylonJS/Babylon.js/pull/14884))
+
+### Serializers
+
+- Fix obj loader and exporter to support handedness correctly - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#14884](https://github.com/BabylonJS/Babylon.js/pull/14884))
+
+## 6.48.1
+
+### Core
+
+- Allow Draco in NullEngine on node - by [RaananW](https://github.com/RaananW) ([#14887](https://github.com/BabylonJS/Babylon.js/pull/14887))
+
+### GUI Editor
+
+- add ?version to NGE, NME, GUIEditor - by [RaananW](https://github.com/RaananW) ([#14894](https://github.com/BabylonJS/Babylon.js/pull/14894))
+
+### Node Editor
+
+- add ?version to NGE, NME, GUIEditor - by [RaananW](https://github.com/RaananW) ([#14894](https://github.com/BabylonJS/Babylon.js/pull/14894))
+
+### Playground
+
+- add ?version to NGE, NME, GUIEditor - by [RaananW](https://github.com/RaananW) ([#14894](https://github.com/BabylonJS/Babylon.js/pull/14894))
+
+## 6.48.0
+
+### Core
+
+- Add native device loss handle - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#14885](https://github.com/BabylonJS/Babylon.js/pull/14885))
+- fix cancel render loop - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14868](https://github.com/BabylonJS/Babylon.js/pull/14868))
+- Mesh: Fix missing serialization for some properties - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14886](https://github.com/BabylonJS/Babylon.js/pull/14886))
+- Simplify worker code in local dependency scenarios - by [RaananW](https://github.com/RaananW) ([#14882](https://github.com/BabylonJS/Babylon.js/pull/14882))
+- Relax `AssetContainer` heirarchy check to allow `InstancedMesh` parents - [_Bug Fix_] by [docEdub](https://github.com/docEdub) ([#14881](https://github.com/BabylonJS/Babylon.js/pull/14881))
+- Pointer selection for transient pointers - by [RaananW](https://github.com/RaananW) ([#14864](https://github.com/BabylonJS/Babylon.js/pull/14864))
+- Disable Physics Sync for static/kinematic bodies - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14880](https://github.com/BabylonJS/Babylon.js/pull/14880))
+- Changed Array Buffer View import to randomize name to avoid bad caching - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#14879](https://github.com/BabylonJS/Babylon.js/pull/14879))
+- WebGPU: Fix vertex buffer creation when byte offset is not a multiple of 4 - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14878](https://github.com/BabylonJS/Babylon.js/pull/14878))
+- fix: dispose subEmitters - [_Bug Fix_] by [wy-luke](https://github.com/wy-luke) ([#14858](https://github.com/BabylonJS/Babylon.js/pull/14858))
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### GUI
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### Inspector
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### Loaders
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### Materials
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### Playground
+
+- Save engine type when storing snippet - by [RaananW](https://github.com/RaananW) ([#14877](https://github.com/BabylonJS/Babylon.js/pull/14877))
+
+### Procedural Textures
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+### Serializers
+
+- Enable prettier ESLint plugin/rules and formatters and format on save - by [ryantrem](https://github.com/ryantrem) ([#14872](https://github.com/BabylonJS/Babylon.js/pull/14872))
+
+## 6.47.0
+
+### Core
+
+- Update physicsPointProximityQuery.ts - by [RaananW](https://github.com/RaananW) ([#14866](https://github.com/BabylonJS/Babylon.js/pull/14866))
+
+## 6.46.1
+
+### Core
+
+- Fix signature of update dynamic vertex buffer of native engine - by [bghgary](https://github.com/bghgary) ([#14862](https://github.com/BabylonJS/Babylon.js/pull/14862))
+- Only trigger near pointer up if down was triggered - by [RaananW](https://github.com/RaananW) ([#14860](https://github.com/BabylonJS/Babylon.js/pull/14860))
+- Fix UMD declaration and add project to test - by [RaananW](https://github.com/RaananW) ([#14855](https://github.com/BabylonJS/Babylon.js/pull/14855))
+- fix: fix property name error - by [wy-luke](https://github.com/wy-luke) ([#14854](https://github.com/BabylonJS/Babylon.js/pull/14854))
+- Fix NME Preview loading with reflectionTexture - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14853](https://github.com/BabylonJS/Babylon.js/pull/14853))
+- sandbox label, unsupported field error and importmesh consistency - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14852](https://github.com/BabylonJS/Babylon.js/pull/14852))
+- Baked Vertex Animations: allows you to pass a skeleton instead of a mesh - by [Popov72](https://github.com/Popov72) ([#14847](https://github.com/BabylonJS/Babylon.js/pull/14847))
+- Fix `additionalTransformNode` type - by [alecmev](https://github.com/alecmev) ([#14848](https://github.com/BabylonJS/Babylon.js/pull/14848))
+- Teleportation fixes - by [RaananW](https://github.com/RaananW) ([#14850](https://github.com/BabylonJS/Babylon.js/pull/14850))
+- AnimationGroup: Fix usage of mask - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14849](https://github.com/BabylonJS/Babylon.js/pull/14849))
+
+### GUI
+
+- fix clone for ADT - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#14851](https://github.com/BabylonJS/Babylon.js/pull/14851))
+
+### Inspector
+
+- Update soundPropertyGridComponent.tsx - by [RaananW](https://github.com/RaananW) ([#14859](https://github.com/BabylonJS/Babylon.js/pull/14859))
+
+### Loaders
+
+- Fix signature of update dynamic vertex buffer of native engine - by [bghgary](https://github.com/bghgary) ([#14862](https://github.com/BabylonJS/Babylon.js/pull/14862))
+- Fix UMD declaration and add project to test - by [RaananW](https://github.com/RaananW) ([#14855](https://github.com/BabylonJS/Babylon.js/pull/14855))
+- sandbox label, unsupported field error and importmesh consistency - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14852](https://github.com/BabylonJS/Babylon.js/pull/14852))
+
+## 6.46.0
+
+### Core
+
+- Fix Scene sprites serialize/parse - by [sebavan](https://github.com/sebavan) ([#14838](https://github.com/BabylonJS/Babylon.js/pull/14838))
+- Adding two new parameters to teleportation - by [RaananW](https://github.com/RaananW) ([#14840](https://github.com/BabylonJS/Babylon.js/pull/14840))
+- Tensor: Standardize Vector2, Vector3, Vector4, Color3, Color4, Quaternion, and Matrix - [_New Feature_] by [dr-vortex](https://github.com/dr-vortex) ([#14235](https://github.com/BabylonJS/Babylon.js/pull/14235))
+- ComputeShader: Allow DataBuffer to be passed for uniform / storage buffer - by [Popov72](https://github.com/Popov72) ([#14833](https://github.com/BabylonJS/Babylon.js/pull/14833))
+- Mesh: Fix setPivotMatrix when cloning mesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14832](https://github.com/BabylonJS/Babylon.js/pull/14832))
+- TargetCamera: Add Node Constructor code for TargetCamera - [_Bug Fix_] by [PolygonalSun](https://github.com/PolygonalSun) ([#14827](https://github.com/BabylonJS/Babylon.js/pull/14827))
+- Decoupling SerializationHelper and ImageProcessing - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14826](https://github.com/BabylonJS/Babylon.js/pull/14826))
+- New ThinParticleSystem - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14824](https://github.com/BabylonJS/Babylon.js/pull/14824))
+
+### GUI
+
+- Decoupling SerializationHelper and ImageProcessing - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14826](https://github.com/BabylonJS/Babylon.js/pull/14826))
+
+### Loaders
+
+- Fix Scene sprites serialize/parse - by [sebavan](https://github.com/sebavan) ([#14838](https://github.com/BabylonJS/Babylon.js/pull/14838))
+
+### Materials
+
+- Decoupling SerializationHelper and ImageProcessing - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14826](https://github.com/BabylonJS/Babylon.js/pull/14826))
+
+### Node Editor
+
+
+### Procedural Textures
+
+- Decoupling SerializationHelper and ImageProcessing - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#14826](https://github.com/BabylonJS/Babylon.js/pull/14826))
+
+## 6.45.1
+
+### Core
+
+- NME: Fix missing alphaMode property parsing - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14818](https://github.com/BabylonJS/Babylon.js/pull/14818))
+- WebGPU: Simplify error handling during engine creation/initialization - by [Popov72](https://github.com/Popov72) ([#14815](https://github.com/BabylonJS/Babylon.js/pull/14815))
+
+### GUI
+
+- GUI - Allow InputText text outline - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#14819](https://github.com/BabylonJS/Babylon.js/pull/14819))
+
+### Playground
+
+- WebGPU: Simplify error handling during engine creation/initialization - by [Popov72](https://github.com/Popov72) ([#14815](https://github.com/BabylonJS/Babylon.js/pull/14815))
+
+## 6.45.0
+
+### Core
+
+- Preparation for the external dependencies package - by [RaananW](https://github.com/RaananW) ([#14773](https://github.com/BabylonJS/Babylon.js/pull/14773))
+- Add function to control sleep activation mode for havok physics - by [FlorentMasson](https://github.com/FlorentMasson) ([#14816](https://github.com/BabylonJS/Babylon.js/pull/14816))
+- Unplugging MaterialHelper - by [deltakosh](https://github.com/deltakosh) ([#14804](https://github.com/BabylonJS/Babylon.js/pull/14804))
+- TrailMesh: Fix wrong starting position when the generator is a TransformNode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14813](https://github.com/BabylonJS/Babylon.js/pull/14813))
+- OffscreenCanvas doesn't have the remove function - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#14807](https://github.com/BabylonJS/Babylon.js/pull/14807))
+- Particle systems: serialize worldOffset - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14806](https://github.com/BabylonJS/Babylon.js/pull/14806))
+- Gizmos: add additional transform property - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14795](https://github.com/BabylonJS/Babylon.js/pull/14795))
+
+### GUI
+
+- Unplugging MaterialHelper - by [deltakosh](https://github.com/deltakosh) ([#14804](https://github.com/BabylonJS/Babylon.js/pull/14804))
+
+### Inspector
+
+- Gizmos: add additional transform property - [_New Feature_] by [Popov72](https://github.com/Popov72) ([#14795](https://github.com/BabylonJS/Babylon.js/pull/14795))
+
+### Materials
+
+- Unplugging MaterialHelper - by [deltakosh](https://github.com/deltakosh) ([#14804](https://github.com/BabylonJS/Babylon.js/pull/14804))
+
 ## 6.44.0
 
 ### Core

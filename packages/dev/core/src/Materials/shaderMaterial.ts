@@ -1,4 +1,4 @@
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
 import { Matrix, Vector3, Vector2, Vector4, Quaternion } from "../Maths/math.vector";
@@ -8,8 +8,7 @@ import type { SubMesh } from "../Meshes/subMesh";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
-import { MaterialHelper } from "./materialHelper";
-import type { Effect, IEffectCreationOptions } from "./effect";
+import type { Effect, IEffectCreationOptions, IShaderPath } from "./effect";
 import { RegisterClass } from "../Misc/typeStore";
 import { Color3, Color4 } from "../Maths/math.color";
 import { EffectFallbacks } from "./effectFallbacks";
@@ -24,6 +23,15 @@ import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
+import {
+    BindBonesParameters,
+    BindFogParameters,
+    BindLogDepth,
+    BindMorphTargetParameters,
+    BindSceneUniformBuffer,
+    PrepareAttributesForBakedVertexAnimation,
+    PushAttributesForInstances,
+} from "./materialHelper.functions";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -100,7 +108,7 @@ export interface IShaderMaterialOptions {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
  */
 export class ShaderMaterial extends PushMaterial {
-    private _shaderPath: any;
+    private _shaderPath: IShaderPath | string;
     private _options: IShaderMaterialOptions;
     private _textures: { [name: string]: BaseTexture } = {};
     private _textureArrays: { [name: string]: BaseTexture[] } = {};
@@ -150,15 +158,11 @@ export class ShaderMaterial extends PushMaterial {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/shaders/shaderMaterial
      * @param name Define the name of the material in the scene
      * @param scene Define the scene the material belongs to
-     * @param shaderPath Defines  the route to the shader code in one of three ways:
-     *  * object: \{ vertex: "custom", fragment: "custom" \}, used with Effect.ShadersStore["customVertexShader"] and Effect.ShadersStore["customFragmentShader"]
-     *  * object: \{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" \}, used with shader code in script tags
-     *  * object: \{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" \} using with strings containing the shaders code
-     *  * string: "./COMMON_NAME", used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+     * @param shaderPath Defines  the route to the shader code.
      * @param options Define the options used to create the shader
      * @param storeEffectOnSubMeshes true to store effect on submeshes, false to store the effect directly in the material class.
      */
-    constructor(name: string, scene: Scene, shaderPath: any, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
+    constructor(name: string, scene: Scene, shaderPath: IShaderPath | string, options: Partial<IShaderMaterialOptions> = {}, storeEffectOnSubMeshes = true) {
         super(name, scene, storeEffectOnSubMeshes);
         this._shaderPath = shaderPath;
 
@@ -182,7 +186,7 @@ export class ShaderMaterial extends PushMaterial {
      * Gets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public get shaderPath(): any {
+    public get shaderPath() {
         return this._shaderPath;
     }
 
@@ -190,7 +194,7 @@ export class ShaderMaterial extends PushMaterial {
      * Sets the shader path used to define the shader code
      * It can be modified to trigger a new compilation
      */
-    public set shaderPath(shaderPath: any) {
+    public set shaderPath(shaderPath: IShaderPath | string) {
         this._shaderPath = shaderPath;
     }
 
@@ -702,7 +706,7 @@ export class ShaderMaterial extends PushMaterial {
 
         if (useInstances) {
             defines.push("#define INSTANCES");
-            MaterialHelper.PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
+            PushAttributesForInstances(attribs, this._materialHelperNeedsPreviousMatrices);
             if (mesh?.hasThinInstances) {
                 defines.push("#define THIN_INSTANCES");
                 if (mesh && mesh.isVerticesDataPresent(VertexBuffer.ColorInstanceKind)) {
@@ -826,7 +830,7 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
-            MaterialHelper.PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
+            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
         }
 
         // Textures
@@ -874,7 +878,7 @@ export class ShaderMaterial extends PushMaterial {
             uniforms = uniforms.slice();
             uniformBuffers = uniformBuffers.slice();
             samplers = samplers.slice();
-            shaderName = this.customShaderNameResolve(shaderName, uniforms, uniformBuffers, samplers, defines, attribs);
+            shaderName = this.customShaderNameResolve(this.name, uniforms, uniformBuffers, samplers, defines, attribs);
         }
 
         const drawWrapper = storeEffectOnSubMeshes ? subMesh._getDrawWrapper(undefined, true) : this._drawWrapper;
@@ -1009,7 +1013,7 @@ export class ShaderMaterial extends PushMaterial {
                         }
                         break;
                     case "Scene":
-                        MaterialHelper.BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
+                        BindSceneUniformBuffer(effect, scene.getSceneUniformBuffer());
                         scene.finalizeSceneUbo();
                         useSceneUBO = true;
                         break;
@@ -1040,19 +1044,19 @@ export class ShaderMaterial extends PushMaterial {
             }
 
             // Bones
-            MaterialHelper.BindBonesParameters(mesh, effect);
+            BindBonesParameters(mesh, effect);
 
             // Clip plane
             bindClipPlane(effect, this, scene);
 
             // Misc
             if (this._useLogarithmicDepth) {
-                MaterialHelper.BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
+                BindLogDepth(storeEffectOnSubMeshes ? subMesh.materialDefines : effect.defines, effect, scene);
             }
 
             // Fog
             if (mesh) {
-                MaterialHelper.BindFogParameters(scene, mesh, effect);
+                BindFogParameters(scene, mesh, effect);
             }
 
             let name: string;
@@ -1195,7 +1199,7 @@ export class ShaderMaterial extends PushMaterial {
             // Morph targets
             const manager = (<Mesh>mesh).morphTargetManager;
             if (manager && manager.numInfluencers > 0) {
-                MaterialHelper.BindMorphTargetParameters(<Mesh>mesh, effect);
+                BindMorphTargetParameters(<Mesh>mesh, effect);
             }
 
             const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;

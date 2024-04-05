@@ -66,3 +66,4 @@ export * from "./copyTextureToTexture";
 export * from "./dumpTools";
 export * from "./greasedLineTools";
 export * from "./equirectangularCapture";
+export * from "./decorators.serialization";

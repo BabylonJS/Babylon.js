@@ -31,7 +31,7 @@ import { MultiMaterial } from "../Materials/multiMaterial";
 import { SceneLoaderFlags } from "../Loading/sceneLoaderFlags";
 import type { Skeleton } from "../Bones/skeleton";
 import { Constants } from "../Engines/constants";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import { Logger } from "../Misc/logger";
 import { GetClass, RegisterClass } from "../Misc/typeStore";
 import { _WarnImport } from "../Misc/devTools";
@@ -671,7 +671,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.parent = source.parent;
 
             // Pivot
-            this.setPivotMatrix(source.getPivotMatrix());
+            this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
 
             this.id = name + "." + source.id;
 
@@ -3665,8 +3665,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         serializationObject.billboardMode = this.billboardMode;
         serializationObject.visibility = this.visibility;
+        serializationObject.alwaysSelectAsActiveMesh = this.alwaysSelectAsActiveMesh;
 
         serializationObject.checkCollisions = this.checkCollisions;
+        serializationObject.ellipsoid = this.ellipsoid.asArray();
+        serializationObject.ellipsoidOffset = this.ellipsoidOffset.asArray();
+        serializationObject.doNotSyncBoundingInfo = this.doNotSyncBoundingInfo;
         serializationObject.isBlocker = this.isBlocker;
         serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
 
@@ -4017,6 +4021,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         mesh.setEnabled(parsedMesh.isEnabled);
         mesh.isVisible = parsedMesh.isVisible;
         mesh.infiniteDistance = parsedMesh.infiniteDistance;
+        mesh.alwaysSelectAsActiveMesh = !!parsedMesh.alwaysSelectAsActiveMesh;
 
         mesh.showBoundingBox = parsedMesh.showBoundingBox;
         mesh.showSubMeshesBoundingBox = parsedMesh.showSubMeshesBoundingBox;
@@ -4044,6 +4049,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         mesh.checkCollisions = parsedMesh.checkCollisions;
+        mesh.doNotSyncBoundingInfo = !!parsedMesh.doNotSyncBoundingInfo;
+
+        if (parsedMesh.ellipsoid) {
+            mesh.ellipsoid = Vector3.FromArray(parsedMesh.ellipsoid);
+        }
+
+        if (parsedMesh.ellipsoidOffset) {
+            mesh.ellipsoidOffset = Vector3.FromArray(parsedMesh.ellipsoidOffset);
+        }
 
         if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
             mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;

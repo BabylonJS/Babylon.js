@@ -1,7 +1,5 @@
 {
-    "cSpell.words": [
-        "babylonjs"
-    ],
+    "cSpell.words": ["babylonjs"],
     "files.exclude": {
         "**/node_modules": true,
         "**/dist": false,
@@ -12,9 +10,28 @@
         "**/packages/dev/**/ShadersWGSL/**/*.ts": true,
         "**/*.fragment.ts": true,
         "**/*.vertex.ts": true,
-        "**/*.compute.ts": true,
+        "**/*.compute.ts": true
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[jsonc]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[scss]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[css]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "editor.formatOnSave": true
 }

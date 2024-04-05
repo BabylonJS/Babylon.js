@@ -1,5 +1,5 @@
 import { Logger } from "../Misc/logger";
-import { SerializationHelper } from "../Misc/decorators";
+import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { Nullable } from "../types";
 import { Camera } from "./camera";
 /**
