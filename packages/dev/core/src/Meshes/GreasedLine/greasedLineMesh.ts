@@ -141,7 +141,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             const currVertexPositionsOffsetLength = p.length * 2;
             const positions = vertexPositionsArr.subarray(vertexPositionsOffset, vertexPositionsOffset + currVertexPositionsOffsetLength);
             vertexPositionsOffset += currVertexPositionsOffsetLength;
-            indicesOffset += (p.length - 1) * 2;
+            indicesOffset += (p.length - 3) * 2;
 
             const previous = new Float32Array(positions.length);
             const next = new Float32Array(positions.length);
