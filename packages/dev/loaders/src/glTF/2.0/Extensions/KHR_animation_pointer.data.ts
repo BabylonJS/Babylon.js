@@ -186,6 +186,16 @@ const materialsTree = {
                 iridescenceIor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.indexOfRefraction", getFloat, () => 1)],
                 iridescenceThicknessMinimum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.minimumThickness", getFloat, () => 1)],
                 iridescenceThicknessMaximum: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "iridescence.maximumThickness", getFloat, () => 1)],
+                iridescenceTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("iridescence.texture"),
+                    },
+                },
+                iridescenceThicknessTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("iridescence.thicknessTexture"),
+                    },
+                },
             },
             KHR_materials_sheen: {
                 sheenColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "sheen.color", getColor3, () => 3)],
