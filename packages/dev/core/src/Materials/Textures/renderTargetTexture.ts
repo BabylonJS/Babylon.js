@@ -583,15 +583,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
      * @param samples sample count of the depth/stencil texture (default: 1)
      * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+     * @param label defines the label of the texture (for debugging purpose)
      */
     public createDepthStencilTexture(
         comparisonFunction: number = 0,
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
     ): void {
-        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format);
+        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
     private _releaseRenderPassId(): void {

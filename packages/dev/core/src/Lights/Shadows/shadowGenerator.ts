@@ -934,7 +934,14 @@ export class ShadowGenerator implements IShadowGenerator {
                 undefined,
                 this._useRedTextureType ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA
             );
-            this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
+            this._shadowMap.createDepthStencilTexture(
+                engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS,
+                true,
+                undefined,
+                undefined,
+                undefined,
+                `DepthStencilForShadowGenerator-${this._light.name}`
+            );
         } else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
         }
