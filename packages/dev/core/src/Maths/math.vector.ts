@@ -2911,7 +2911,11 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
 
         const viewportMatrix = MathTmp.Matrix[1];
 
-        Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, 0.5, 0, cx + cw / 2.0, ch / 2.0 + cy, 0.5, 1, viewportMatrix);
+        const isNDCHalfZRange = EngineStore.LastCreatedEngine?.isNDCHalfZRange;
+        const zScale = isNDCHalfZRange ? 1 : 0.5;
+        const zOffset = isNDCHalfZRange ? 0 : 0.5;
+
+        Matrix.FromValuesToRef(cw / 2.0, 0, 0, 0, 0, -ch / 2.0, 0, 0, 0, 0, zScale, 0, cx + cw / 2.0, ch / 2.0 + cy, zOffset, 1, viewportMatrix);
 
         const matrix = MathTmp.Matrix[0];
         world.multiplyToRef(transform, matrix);
