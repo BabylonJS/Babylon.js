@@ -18,6 +18,30 @@ export type ComputeBindingLocation = { group: number; binding: number };
  */
 export type ComputeBindingMapping = { [key: string]: ComputeBindingLocation };
 
+/**
+ * Types of messages that can be generated during compilation
+ */
+export type ComputeCompilationMessageType = "error" | "warning" | "info";
+
+/**
+ * Messages generated during compilation
+ */
+export interface ComputeCompilationMessages {
+    /**
+     * Number of errors generated during compilation
+     */
+    numErrors: number;
+    /**
+     * List of messages generated during compilation
+     */
+    messages: {
+        type: ComputeCompilationMessageType;
+        text: string;
+        line?: number;
+        column?: number;
+    }[];
+}
+
 /** @internal */
 export enum ComputeBindingType {
     Texture = 0,
@@ -111,7 +135,7 @@ declare module "../../Engines/thinEngine" {
         _rebuildComputeEffects(): void;
 
         /** @internal */
-        _executeWhenComputeStateIsCompiled(pipelineContext: IComputePipelineContext, action: () => void): void;
+        _executeWhenComputeStateIsCompiled(pipelineContext: IComputePipelineContext, action: (messages: Nullable<ComputeCompilationMessages>) => void): void;
 
         /** @internal */
         _releaseComputeEffect(effect: ComputeEffect): void;
@@ -161,8 +185,11 @@ ThinEngine.prototype._prepareComputePipelineContext = function (
 
 ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
-ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (pipelineContext: IComputePipelineContext, action: () => void): void {
-    action();
+ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (
+    pipelineContext: IComputePipelineContext,
+    action: (messages: Nullable<ComputeCompilationMessages>) => void
+): void {
+    action(null);
 };
 
 ThinEngine.prototype._releaseComputeEffect = function (effect: ComputeEffect): void {};
