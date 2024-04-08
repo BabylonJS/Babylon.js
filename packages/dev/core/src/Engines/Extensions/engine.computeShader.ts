@@ -39,6 +39,8 @@ export interface ComputeCompilationMessages {
         text: string;
         line?: number;
         column?: number;
+        length?: number;
+        offset?: number;
     }[];
 }
 
