@@ -934,7 +934,14 @@ export class ShadowGenerator implements IShadowGenerator {
                 undefined,
                 this._useRedTextureType ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA
             );
-            this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
+            this._shadowMap.createDepthStencilTexture(
+                engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS,
+                true,
+                undefined,
+                undefined,
+                undefined,
+                `DepthStencilForShadowGenerator-${this._light.name}`
+            );
         } else {
             this._shadowMap = new RenderTargetTexture(this._light.name + "_shadowMap", this._mapSize, this._scene, false, true, this._textureType, this._light.needCube());
         }
@@ -1274,6 +1281,12 @@ export class ShadowGenerator implements IShadowGenerator {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
 
+                // Baked vertex animations
+                const bvaManager = (<Mesh>subMesh.getMesh()).bakedVertexAnimationManager;
+                if (hardwareInstancedRendering && bvaManager && bvaManager.isEnabled) {
+                    bvaManager.bind(effect, true);
+                }
+
                 // Clip planes
                 bindClipPlane(effect, material, scene);
             }
@@ -1585,6 +1598,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
             }
 
+            // Baked vertex animations
+            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
+            if (useInstances && bvaManager && bvaManager.isEnabled) {
+                defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+
             // Get correct effect
             const join = defines.join("\n");
             if (cachedDefines !== join) {
@@ -1605,8 +1625,12 @@ export class ShadowGenerator implements IShadowGenerator {
                     "softTransparentShadowSM",
                     "morphTargetTextureInfo",
                     "morphTargetTextureIndices",
+                    "bakedVertexAnimationSettings",
+                    "bakedVertexAnimationTextureSizeInverted",
+                    "bakedVertexAnimationTime",
+                    "bakedVertexAnimationTexture",
                 ];
-                const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
+                const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
                 addClipPlaneUniforms(uniforms);

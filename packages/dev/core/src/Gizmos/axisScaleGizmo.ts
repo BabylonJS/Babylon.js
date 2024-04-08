@@ -294,7 +294,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
             if (this._customMeshSet) {
                 return;
             }
-            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            // axis mesh cache
+            let meshCache = this._parent?.getAxisCache(this._gizmoMesh);
+            this._isHovered = !!meshCache && !!(meshCache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            // uniform mesh cache
+            meshCache = this._parent?.getAxisCache(this._rootMesh);
+            this._isHovered ||= !!meshCache && !!(meshCache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = this.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
                 this._setGizmoMeshMaterial(cache.gizmoMeshes, material);

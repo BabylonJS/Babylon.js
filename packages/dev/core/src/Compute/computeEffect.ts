@@ -9,6 +9,7 @@ import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { Engine } from "../Engines/engine";
+import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -381,7 +382,11 @@ export class ComputeEffect {
                 this._entryPoint
             );
 
-            engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
+            engine._executeWhenComputeStateIsCompiled(this._pipelineContext, (messages: Nullable<ComputeCompilationMessages>) => {
+                if (messages && messages.numErrors > 0) {
+                    this._processCompilationErrors(messages, previousPipelineContext);
+                    return;
+                }
                 this._compilationError = "";
                 this._isReady = true;
                 if (this.onCompiled) {
@@ -403,54 +408,56 @@ export class ComputeEffect {
         }
     }
 
-    private _getShaderCodeAndErrorLine(code: Nullable<string>, error: Nullable<string>): [Nullable<string>, Nullable<string>] {
-        const regexp = /COMPUTE SHADER ERROR: 0:(\d+?):/;
+    private _processCompilationErrors(e: ComputeCompilationMessages | string, previousPipelineContext: Nullable<IComputePipelineContext> = null) {
+        this._compilationError = "";
 
-        let errorLine = null;
-
-        if (error && code) {
-            const res = error.match(regexp);
-            if (res && res.length === 2) {
-                const lineNumber = parseInt(res[1]);
-                const lines = code.split("\n", -1);
-                if (lines.length >= lineNumber) {
-                    errorLine = `Offending line [${lineNumber}] in compute code: ${lines[lineNumber - 1]}`;
-                }
-            }
-        }
-
-        return [code, errorLine];
-    }
-
-    private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IComputePipelineContext> = null) {
-        this._compilationError = e.message;
-
-        // Let's go through fallbacks then
         Logger.Error("Unable to compile compute effect:");
-        Logger.Error("Defines:\n" + this.defines);
+        if (this.defines) {
+            Logger.Error("Defines:\n" + this.defines);
+        }
+
         if (ComputeEffect.LogShaderCodeOnCompilationError) {
-            let lineErrorVertex = null,
-                code = null;
-            if (this._pipelineContext?._getComputeShaderCode()) {
-                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getComputeShaderCode(), this._compilationError);
-                if (code) {
-                    Logger.Error("Compute code:");
-                    Logger.Error(code);
-                }
-            }
-            if (lineErrorVertex) {
-                Logger.Error(lineErrorVertex);
+            const code = this._pipelineContext?._getComputeShaderCode();
+            if (code) {
+                Logger.Error("Compute code:");
+                Logger.Error(code);
             }
         }
-        Logger.Error("Error: " + this._compilationError);
+
+        if (typeof e === "string") {
+            this._compilationError = e;
+            Logger.Error("Error: " + this._compilationError);
+        } else {
+            for (const message of e.messages) {
+                let msg = "";
+                if (message.line !== undefined) {
+                    msg += "Line " + message.line + ", ";
+                }
+                if (message.offset !== undefined) {
+                    msg += "Offset " + message.offset + ", ";
+                }
+                if (message.length !== undefined) {
+                    msg += "Length " + message.length + ", ";
+                }
+                msg += message.type + ": " + message.text;
+
+                if (this._compilationError) {
+                    this._compilationError += "\n";
+                }
+                this._compilationError += msg;
+                Logger.Error(msg);
+            }
+        }
+
         if (previousPipelineContext) {
             this._pipelineContext = previousPipelineContext;
             this._isReady = true;
-            if (this.onError) {
-                this.onError(this, this._compilationError);
-            }
-            this.onErrorObservable.notifyObservers(this);
         }
+
+        if (this.onError) {
+            this.onError(this, this._compilationError);
+        }
+        this.onErrorObservable.notifyObservers(this);
     }
 
     /**

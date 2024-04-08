@@ -4,7 +4,7 @@ import { ComputeEffect } from "../../../Compute/computeEffect";
 import type { IComputeContext } from "../../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
 import type { Nullable } from "../../../types";
-import type { ComputeBindingList, ComputeBindingMapping } from "../../Extensions/engine.computeShader";
+import type { ComputeBindingList, ComputeBindingMapping, ComputeCompilationMessages } from "../../Extensions/engine.computeShader";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
@@ -155,6 +155,32 @@ WebGPUEngine.prototype._rebuildComputeEffects = function (): void {
         effect._wasPreviouslyReady = false;
         effect._prepareEffect();
     }
+};
+
+WebGPUEngine.prototype._executeWhenComputeStateIsCompiled = function (
+    pipelineContext: WebGPUComputePipelineContext,
+    action: (messages: Nullable<ComputeCompilationMessages>) => void
+): void {
+    pipelineContext.stage!.module.getCompilationInfo().then((info) => {
+        const compilationMessages: ComputeCompilationMessages = {
+            numErrors: 0,
+            messages: [],
+        };
+        for (const message of info.messages) {
+            if (message.type === "error") {
+                compilationMessages.numErrors++;
+            }
+            compilationMessages.messages.push({
+                type: message.type,
+                text: message.message,
+                line: message.lineNum,
+                column: message.linePos,
+                length: message.length,
+                offset: message.offset,
+            });
+        }
+        action(compilationMessages);
+    });
 };
 
 WebGPUEngine.prototype._deleteComputePipelineContext = function (pipelineContext: IComputePipelineContext): void {
