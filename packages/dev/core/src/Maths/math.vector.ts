@@ -6557,6 +6557,12 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return result;
     }
 
+    /**
+     * This method performs component-by-component in-place multiplication, rather than true matrix multiplication.
+     * Use multiply or multiplyToRef for matrix multiplication.
+     * @param other defines the second operand
+     * @returns the current updated matrix
+     */
     public multiplyInPlace(other: DeepImmutable<this>): this {
         const m = this._m,
             otherM = other.m;
@@ -6567,10 +6573,16 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
+    /**
+     * This method performs a component-by-component multiplication of the current matrix with the array of transmitted numbers.
+     * Use multiply or multiplyToRef for matrix multiplication.
+     * @param floats defines the array of numbers to multiply the matrix by
+     * @returns the current updated matrix
+     */
     public multiplyByFloats(...floats: Tuple<number, 16>): this {
         const m = this._m;
         for (let i = 0; i < 16; i++) {
-            m[i] = floats[i];
+            m[i] *= floats[i];
         }
         this.markAsUpdated();
         return this;
