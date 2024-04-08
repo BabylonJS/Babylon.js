@@ -31,7 +31,6 @@ export class MaterialSheenDefines extends MaterialDefines {
     public SHEEN_ROUGHNESS = false;
     public SHEEN_ALBEDOSCALING = false;
     public SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-    public SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
 }
 
 /**
@@ -161,8 +160,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             defines.SHEEN_ROUGHNESS = this._roughness !== null;
             defines.SHEEN_ALBEDOSCALING = this._albedoScaling;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL =
-                this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -188,7 +185,6 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
             defines.SHEEN_ROUGHNESS = false;
             defines.SHEEN_ALBEDOSCALING = false;
             defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-            defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL = false;
             defines.SHEEN_GAMMATEXTURE = false;
             defines.SHEEN_TEXTUREDIRECTUV = 0;
             defines.SHEEN_TEXTURE_ROUGHNESSDIRECTUV = 0;
@@ -204,13 +200,8 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
 
         const isFrozen = this._material.isFrozen;
 
-        const identicalTextures = defines.SHEEN_TEXTURE_ROUGHNESS_IDENTICAL;
-
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures && MaterialFlags.SheenTextureEnabled) {
-                uniformBuffer.updateFloat4("vSheenInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                BindTextureMatrix(this._texture!, uniformBuffer, "sheen");
-            } else if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
+            if ((this._texture || this._textureRoughness) && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vSheenInfos",
                     this._texture?.coordinatesIndex ?? 0,
@@ -221,7 +212,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                 if (this._texture) {
                     BindTextureMatrix(this._texture, uniformBuffer, "sheen");
                 }
-                if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                if (this._textureRoughness && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE) {
                     BindTextureMatrix(this._textureRoughness, uniformBuffer, "sheenRoughness");
                 }
             }
@@ -240,7 +231,7 @@ export class PBRSheenConfiguration extends MaterialPluginBase {
                 uniformBuffer.setTexture("sheenSampler", this._texture);
             }
 
-            if (this._textureRoughness && !identicalTextures && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.SheenTextureEnabled) {
+            if (this._textureRoughness && !defines.SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.SheenTextureEnabled) {
                 uniformBuffer.setTexture("sheenRoughnessSampler", this._textureRoughness);
             }
         }

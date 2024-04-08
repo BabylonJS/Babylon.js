@@ -1274,6 +1274,12 @@ export class ShadowGenerator implements IShadowGenerator {
                     renderingMesh.morphTargetManager._bind(effect);
                 }
 
+                // Baked vertex animations
+                const bvaManager = (<Mesh>subMesh.getMesh()).bakedVertexAnimationManager;
+                if (hardwareInstancedRendering && bvaManager && bvaManager.isEnabled) {
+                    bvaManager.bind(effect, true);
+                }
+
                 // Clip planes
                 bindClipPlane(effect, material, scene);
             }
@@ -1585,6 +1591,13 @@ export class ShadowGenerator implements IShadowGenerator {
                 }
             }
 
+            // Baked vertex animations
+            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
+            if (useInstances && bvaManager && bvaManager.isEnabled) {
+                defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+                attribs.push("bakedVertexAnimationSettingsInstanced");
+            }
+
             // Get correct effect
             const join = defines.join("\n");
             if (cachedDefines !== join) {
@@ -1605,8 +1618,12 @@ export class ShadowGenerator implements IShadowGenerator {
                     "softTransparentShadowSM",
                     "morphTargetTextureInfo",
                     "morphTargetTextureIndices",
+                    "bakedVertexAnimationSettings",
+                    "bakedVertexAnimationTextureSizeInverted",
+                    "bakedVertexAnimationTime",
+                    "bakedVertexAnimationTexture",
                 ];
-                const samplers = ["diffuseSampler", "boneSampler", "morphTargets"];
+                const samplers = ["diffuseSampler", "boneSampler", "morphTargets", "bakedVertexAnimationTexture"];
                 const uniformBuffers = ["Scene", "Mesh"];
 
                 addClipPlaneUniforms(uniforms);
