@@ -175,6 +175,8 @@ WebGPUEngine.prototype._executeWhenComputeStateIsCompiled = function (
                 text: message.message,
                 line: message.lineNum,
                 column: message.linePos,
+                length: message.length,
+                offset: message.offset,
             });
         }
         action(compilationMessages);

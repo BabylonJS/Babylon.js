@@ -430,8 +430,14 @@ export class ComputeEffect {
         } else {
             for (const message of e.messages) {
                 let msg = "";
-                if (message.line) {
+                if (message.line !== undefined) {
                     msg += "Line " + message.line + ", ";
+                }
+                if (message.offset !== undefined) {
+                    msg += "Offset " + message.offset + ", ";
+                }
+                if (message.length !== undefined) {
+                    msg += "Length " + message.length + ", ";
                 }
                 msg += message.type + ": " + message.text;
 
