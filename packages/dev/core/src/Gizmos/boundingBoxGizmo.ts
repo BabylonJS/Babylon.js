@@ -969,6 +969,8 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         if (this._dragMesh) {
             this._dragMesh.dispose();
         }
+        this._scaleBoxesDragBehaviors.length = 0;
+        this._rotateSpheresDragBehaviors.length = 0;
         super.dispose();
     }
 
