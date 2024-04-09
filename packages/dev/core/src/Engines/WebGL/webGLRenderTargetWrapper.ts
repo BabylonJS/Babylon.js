@@ -113,7 +113,6 @@ export class WebGLRenderTargetWrapper extends RenderTargetWrapper {
 
     /**
      * Shares the depth buffer of this render target with another render target.
-     * @internal
      * @param renderTarget Destination renderTarget
      */
     public shareDepth(renderTarget: WebGLRenderTargetWrapper): void {
