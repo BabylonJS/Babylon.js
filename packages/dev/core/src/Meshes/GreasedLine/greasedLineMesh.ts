@@ -5,14 +5,13 @@ import { Mesh } from "../mesh";
 import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
 import { Buffer, VertexBuffer } from "../../Buffers/buffer";
 import { PickingInfo } from "../../Collisions/pickingInfo";
-import type { Nullable } from "../../types";
+import type { Nullable, FloatArray } from "../../types";
 import type { Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
 import type { GreasedLineMeshOptions } from "./greasedLineBaseMesh";
 import { GreasedLineBaseMesh } from "./greasedLineBaseMesh";
 import type { VertexData } from "../mesh.vertexData";
-import type { FloatArray } from "../../types";
 
 Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
     return GreasedLineMesh.Parse(parsedMesh, scene);
@@ -141,7 +140,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             const currVertexPositionsOffsetLength = p.length * 2;
             const positions = vertexPositionsArr.subarray(vertexPositionsOffset, vertexPositionsOffset + currVertexPositionsOffsetLength);
             vertexPositionsOffset += currVertexPositionsOffsetLength;
-            indicesOffset += (p.length - 1) * 2;
+            indicesOffset += (p.length - 3) * 2;
 
             const previous = new Float32Array(positions.length);
             const next = new Float32Array(positions.length);
@@ -176,9 +175,8 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                 nextAndCounters[nextAndCountersOffset++] = lengthArray[i >> 1] / totalLength;
             }
             if (this._options.uvs) {
-                const uvs = this._options.uvs;
-                for (const uv of uvs) {
-                    uvArr[uvOffset++] = uv;
+                for (let i = 0; i < this._options.uvs.length; i++) {
+                    uvArr[uvOffset++] = this._options.uvs[i];
                 }
             } else {
                 for (let j = 0; j < l; j++) {

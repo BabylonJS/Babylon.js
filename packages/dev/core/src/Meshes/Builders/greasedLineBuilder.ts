@@ -238,8 +238,8 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
         if (instance instanceof GreasedLineRibbonMesh) {
             instance.addPoints(allPoints, initialGreasedLineOptions);
         } else {
+            // add widths
             const currentWidths = instance.widths;
-
             if (currentWidths) {
                 const newWidths = currentWidths.slice();
                 for (const w of widths) {
@@ -249,7 +249,21 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
             } else {
                 instance.widths = widths;
             }
+
             instance.addPoints(allPoints);
+
+            // add UVs
+            if (options.uvs) {
+                const currentUVs = instance.uvs;
+                if (currentUVs) {
+                    const newUVs = new Float32Array(currentUVs.length + options.uvs.length);
+                    newUVs.set(currentUVs, 0);
+                    newUVs.set(options.uvs, currentUVs.length);
+                    instance.uvs = newUVs;
+                } else {
+                    instance.uvs = options.uvs;
+                }
+            }
         }
     }
 

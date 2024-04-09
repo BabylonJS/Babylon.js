@@ -119,10 +119,8 @@ WebGPUEngine.prototype._setupDepthStencilTexture = function (
 ): void {
     const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
     const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-
-    // Only 2D textures are supported for depth/stencil
-    const layers = 0;
-    const depth = 0;
+    const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
+    const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
 
     internalTexture.baseWidth = width;
     internalTexture.baseHeight = height;

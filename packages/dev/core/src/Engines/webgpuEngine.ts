@@ -3201,10 +3201,10 @@ export class WebGPUEngine extends Engine {
         }
         this._currentRenderTarget = texture;
 
+        const depthStencilTexture = this._currentRenderTarget._depthStencilTexture;
+
         this._rttRenderPassWrapper.colorAttachmentGPUTextures[0] = hardwareTexture;
-        this._rttRenderPassWrapper.depthTextureFormat = this._currentRenderTarget._depthStencilTexture
-            ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, this._currentRenderTarget._depthStencilTexture.format)
-            : undefined;
+        this._rttRenderPassWrapper.depthTextureFormat = depthStencilTexture ? WebGPUTextureHelper.GetWebGPUTextureFormat(-1, depthStencilTexture.format) : undefined;
 
         this._setDepthTextureFormat(this._rttRenderPassWrapper);
         this._setColorFormat(this._rttRenderPassWrapper);
@@ -3221,9 +3221,9 @@ export class WebGPUEngine extends Engine {
 
         this._rttRenderPassWrapper.depthAttachmentViewDescriptor = {
             format: this._depthTextureFormat!,
-            dimension: WebGPUConstants.TextureViewDimension.E2d,
+            dimension: depthStencilTexture && depthStencilTexture.is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
             mipLevelCount: 1,
-            baseArrayLayer: 0,
+            baseArrayLayer: depthStencilTexture ? (depthStencilTexture.isCube ? layer * 6 + faceIndex : layer) : 0,
             baseMipLevel: 0,
             arrayLayerCount: 1,
             aspect: WebGPUConstants.TextureAspect.All,
