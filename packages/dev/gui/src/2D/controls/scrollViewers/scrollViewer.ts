@@ -229,6 +229,8 @@ export class ScrollViewer extends Rectangle {
         this._dragSpace.thickness = 1;
         this._grid.addControl(this._dragSpace, 1, 1);
 
+        this._grid.clipChildren = false;
+
         // Colors
         if (!this._useImageBar) {
             this.barColor = "grey";
