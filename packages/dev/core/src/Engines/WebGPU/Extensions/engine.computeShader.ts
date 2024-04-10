@@ -21,7 +21,7 @@ declare module "../../webgpuEngine" {
             effect: ComputeEffect,
             context: IComputeContext,
             bindings: ComputeBindingList,
-            options: { x: number; y: number; z: number } | { buffer: DataBuffer },
+            options: { x: number; y: number; z: number } | { buffer: DataBuffer; offset: number },
             bindingsMapping?: ComputeBindingMapping,
             gpuPerfCounter?: WebGPUPerfCounter
         ): void;
@@ -86,17 +86,18 @@ WebGPUEngine.prototype.computeDispatchIndirect = function (
     context: IComputeContext,
     bindings: ComputeBindingList,
     buffer: DataBuffer,
+    offset: number = 0,
     bindingsMapping?: ComputeBindingMapping,
     gpuPerfCounter?: WebGPUPerfCounter
 ): void {
-    this._computeDispatch(effect, context, bindings, { buffer }, bindingsMapping, gpuPerfCounter);
+    this._computeDispatch(effect, context, bindings, { buffer, offset }, bindingsMapping, gpuPerfCounter);
 };
 
 WebGPUEngine.prototype._computeDispatch = function (
     effect: ComputeEffect,
     context: IComputeContext,
     bindings: ComputeBindingList,
-    options: { x: number; y: number; z: number } | { buffer: DataBuffer },
+    options: { x: number; y: number; z: number } | { buffer: DataBuffer; offset: number },
     bindingsMapping?: ComputeBindingMapping,
     gpuPerfCounter?: WebGPUPerfCounter
 ): void {
@@ -130,7 +131,7 @@ WebGPUEngine.prototype._computeDispatch = function (
     }
 
     if ("buffer" in options) {
-        computePass.dispatchWorkgroupsIndirect(options.buffer.underlyingResource(), 0);
+        computePass.dispatchWorkgroupsIndirect(options.buffer.underlyingResource(), options.offset ?? 0);
     } else {
         if (options.x + options.y + options.z > 0) {
             computePass.dispatchWorkgroups(options.x, options.y, options.z);

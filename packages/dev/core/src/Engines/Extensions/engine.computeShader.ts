@@ -130,6 +130,7 @@ declare module "../../Engines/thinEngine" {
             context: IComputeContext,
             bindings: ComputeBindingList,
             buffer: DataBuffer,
+            offset?: number,
             bindingsMapping?: ComputeBindingMapping,
             gpuPerfCounter?: WebGPUPerfCounter
         ): void;
@@ -196,6 +197,7 @@ ThinEngine.prototype.computeDispatchIndirect = function (
     context: IComputeContext,
     bindings: ComputeBindingList,
     buffer: DataBuffer,
+    offset?: number,
     bindingsMapping?: ComputeBindingMapping
 ): void {
     throw new Error("computeDispatchIndirect: This engine does not support compute shaders!");
