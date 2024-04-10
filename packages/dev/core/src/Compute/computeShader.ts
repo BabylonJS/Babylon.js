@@ -12,7 +12,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import type { IComputeContext } from "./IComputeContext";
-import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
@@ -348,6 +348,19 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatch(x: number, y?: number, z?: number): boolean {
+        return this._dispatchInternal({ x, y, z });
+    }
+
+    /**
+     * Dispatches (executes) the compute shader.
+     * @param buffer Buffer containing the number of workgroups to execute on the X, Y and Z dimensions
+     * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
+     */
+    public dispatchIndirect(buffer: StorageBuffer | DataBuffer): boolean {
+        return this._dispatchInternal({ buffer });
+    }
+
+    private _dispatchInternal(options: { x: number; y?: number; z?: number } | { buffer: StorageBuffer | DataBuffer }): boolean {
         if (!this.fastMode) {
             if (!this.isReady()) {
                 return false;
@@ -402,8 +415,12 @@ export class ComputeShader {
             }
         }
 
-        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this.gpuTimeInFrame);
-
+        if ("buffer" in options) {
+            const buffer = options.buffer instanceof StorageBuffer ? options.buffer.getBuffer() : options.buffer;
+            this._engine.computeDispatchIndirect(this._effect, this._context, this._bindings, buffer, this._options.bindingsMapping, this.gpuTimeInFrame);
+        } else {
+            this._engine.computeDispatch(this._effect, this._context, this._bindings, options.x, options.y, options.z, this._options.bindingsMapping, this.gpuTimeInFrame);
+        }
         return true;
     }
 

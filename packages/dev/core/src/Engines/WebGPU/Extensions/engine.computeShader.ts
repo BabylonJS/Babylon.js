@@ -10,11 +10,21 @@ import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import * as WebGPUConstants from "../webgpuConstants";
 import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
         /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
+        /** @internal */
+        _computeDispatch(
+            effect: ComputeEffect,
+            context: IComputeContext,
+            bindings: ComputeBindingList,
+            options: { x: number; y: number; z: number } | { buffer: DataBuffer },
+            bindingsMapping?: ComputeBindingMapping,
+            gpuPerfCounter?: WebGPUPerfCounter
+        ): void;
     }
 }
 
@@ -68,6 +78,28 @@ WebGPUEngine.prototype.computeDispatch = function (
     bindingsMapping?: ComputeBindingMapping,
     gpuPerfCounter?: WebGPUPerfCounter
 ): void {
+    this._computeDispatch(effect, context, bindings, { x, y, z }, bindingsMapping, gpuPerfCounter);
+};
+
+WebGPUEngine.prototype.computeDispatchIndirect = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    buffer: DataBuffer,
+    bindingsMapping?: ComputeBindingMapping,
+    gpuPerfCounter?: WebGPUPerfCounter
+): void {
+    this._computeDispatch(effect, context, bindings, { buffer }, bindingsMapping, gpuPerfCounter);
+};
+
+WebGPUEngine.prototype._computeDispatch = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    options: { x: number; y: number; z: number } | { buffer: DataBuffer },
+    bindingsMapping?: ComputeBindingMapping,
+    gpuPerfCounter?: WebGPUPerfCounter
+): void {
     this._endCurrentRenderPass();
 
     const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
@@ -97,8 +129,12 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    if (x + y + z > 0) {
-        computePass.dispatchWorkgroups(x, y, z);
+    if ("buffer" in options) {
+        computePass.dispatchWorkgroupsIndirect(options.buffer.underlyingResource(), 0);
+    } else {
+        if (options.x + options.y + options.z > 0) {
+            computePass.dispatchWorkgroups(options.x, options.y, options.z);
+        }
     }
     computePass.end();
 
