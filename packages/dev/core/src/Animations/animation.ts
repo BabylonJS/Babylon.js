@@ -744,8 +744,8 @@ export class Animation {
     }
 
     /**
-     * Gets the highest frame rate of the animation
-     * @returns Highest frame rate of the animation
+     * Gets the highest frame of the animation
+     * @returns Highest frame of the animation
      */
     public getHighestFrame(): number {
         let ret = 0;
