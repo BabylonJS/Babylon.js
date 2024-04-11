@@ -1027,6 +1027,21 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Applies an angular impulse(torque) to a physics body
+     * @param body - The physics body to apply the impulse to.
+     * @param angularImpulse - The torque value
+     * @param instanceIndex - The index of the instance to apply the impulse to. If not specified, the impulse will be applied to all instances.
+     */
+    public applyAngularImpulse(body: PhysicsBody, angularImpulse: Vector3, instanceIndex?: number): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_ApplyAngularImpulse(pluginRef.hpBodyId, this._bVecToV3(angularImpulse));
+            },
+            instanceIndex
+        );
+    }
+    /**
      * Applies a force to a physics body at a given location.
      * @param body - The physics body to apply the impulse to.
      * @param force - The force vector to apply.
