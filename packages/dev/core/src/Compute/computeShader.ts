@@ -12,7 +12,7 @@ import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Texture } from "../Materials/Textures/texture";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import type { IComputeContext } from "./IComputeContext";
-import { StorageBuffer } from "../Buffers/storageBuffer";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { Logger } from "../Misc/logger";
 import { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
@@ -348,7 +348,12 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatch(x: number, y?: number, z?: number): boolean {
-        return this._dispatchInternal({ x, y, z });
+        if (!this.fastMode && !this._checkContext()) {
+            return false;
+        }
+        this._engine.computeDispatch(this._effect, this._context, this._bindings, x, y, z, this._options.bindingsMapping, this.gpuTimeInFrame);
+
+        return true;
     }
 
     /**
@@ -358,69 +363,65 @@ export class ComputeShader {
      * @returns True if the dispatch could be done, else false (meaning either the compute effect or at least one of the bound resources was not ready)
      */
     public dispatchIndirect(buffer: StorageBuffer | DataBuffer, offset: number = 0): boolean {
-        return this._dispatchInternal({ buffer, offset });
+        if (!this.fastMode && !this._checkContext()) {
+            return false;
+        }
+        const dataBuffer = ComputeShader._BufferIsDataBuffer(buffer) ? buffer : buffer.getBuffer();
+        this._engine.computeDispatchIndirect(this._effect, this._context, this._bindings, dataBuffer, offset, this._options.bindingsMapping, this.gpuTimeInFrame);
+        return true;
     }
 
-    private _dispatchInternal(options: { x: number; y?: number; z?: number } | { buffer: StorageBuffer | DataBuffer; offset: number }): boolean {
-        if (!this.fastMode) {
-            if (!this.isReady()) {
-                return false;
+    private _checkContext(): boolean {
+        if (!this.isReady()) {
+            return false;
+        }
+
+        // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
+        // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
+        for (const key in this._bindings) {
+            const binding = this._bindings[key];
+
+            if (!this._options.bindingsMapping[key]) {
+                throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
             }
 
-            // If the sampling parameters of a texture bound to the shader have changed, we must clear the compute context so that it is recreated with the updated values
-            // Also, if the actual (gpu) buffer used by a uniform buffer has changed, we must clear the compute context so that it is recreated with the updated value
-            for (const key in this._bindings) {
-                const binding = this._bindings[key];
+            switch (binding.type) {
+                case ComputeBindingType.Texture: {
+                    const sampler = this._samplers[key];
+                    const texture = binding.object as BaseTexture;
 
-                if (!this._options.bindingsMapping[key]) {
-                    throw new Error("ComputeShader ('" + this.name + "'): No binding mapping has been provided for the property '" + key + "'");
-                }
-
-                switch (binding.type) {
-                    case ComputeBindingType.Texture: {
-                        const sampler = this._samplers[key];
-                        const texture = binding.object as BaseTexture;
-
-                        if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
-                            this._samplers[key] = new TextureSampler().setParameters(
-                                texture.wrapU,
-                                texture.wrapV,
-                                texture.wrapR,
-                                texture.anisotropicFilteringLevel,
-                                texture._texture!.samplingMode,
-                                texture._texture?._comparisonFunction
-                            );
-                            this._contextIsDirty = true;
-                        }
-                        break;
-                    }
-                    case ComputeBindingType.ExternalTexture: {
-                        // we must recreate the bind groups each time if there's an external texture, because device.importExternalTexture must be called each frame
+                    if (!sampler || !texture._texture || !sampler.compareSampler(texture._texture)) {
+                        this._samplers[key] = new TextureSampler().setParameters(
+                            texture.wrapU,
+                            texture.wrapV,
+                            texture.wrapR,
+                            texture.anisotropicFilteringLevel,
+                            texture._texture!.samplingMode,
+                            texture._texture?._comparisonFunction
+                        );
                         this._contextIsDirty = true;
-                        break;
                     }
-                    case ComputeBindingType.UniformBuffer: {
-                        const ubo = binding.object as UniformBuffer;
-                        if (ubo.getBuffer() !== binding.buffer) {
-                            binding.buffer = ubo.getBuffer();
-                            this._contextIsDirty = true;
-                        }
-                        break;
-                    }
+                    break;
                 }
-            }
-
-            if (this._contextIsDirty) {
-                this._contextIsDirty = false;
-                this._context.clear();
+                case ComputeBindingType.ExternalTexture: {
+                    // we must recreate the bind groups each time if there's an external texture, because device.importExternalTexture must be called each frame
+                    this._contextIsDirty = true;
+                    break;
+                }
+                case ComputeBindingType.UniformBuffer: {
+                    const ubo = binding.object as UniformBuffer;
+                    if (ubo.getBuffer() !== binding.buffer) {
+                        binding.buffer = ubo.getBuffer();
+                        this._contextIsDirty = true;
+                    }
+                    break;
+                }
             }
         }
 
-        if ("buffer" in options) {
-            const buffer = options.buffer instanceof StorageBuffer ? options.buffer.getBuffer() : options.buffer;
-            this._engine.computeDispatchIndirect(this._effect, this._context, this._bindings, buffer, offset, this._options.bindingsMapping, this.gpuTimeInFrame);
-        } else {
-            this._engine.computeDispatch(this._effect, this._context, this._bindings, options.x, options.y, options.z, this._options.bindingsMapping, this.gpuTimeInFrame);
+        if (this._contextIsDirty) {
+            this._contextIsDirty = false;
+            this._context.clear();
         }
         return true;
     }
