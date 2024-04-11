@@ -1,348 +1,41 @@
 {
-    "fromTag": "7.1.0",
+    "fromTag": "7.2.0",
     "changelog": {
-        "7.1.0": [
+        "7.2.1": [
             {
-                "pr": "14934",
-                "title": "Optimizing performance of GreasedLineMesh._setPoints",
-                "description": "See detailed context at forum post <https://forum.babylonjs.com/t/optimizing-performance-of-greasedlinemesh-setpoints/49168>.\r\nThis proposal adds a static method `GreasedLineTools.GetLineLengthArray` which does almost the same as `GreasedLineTools.GetLineLength`, but instead of computing for the whole line, it computes the length from the beginning of the line to each point, and collect results to array.\r\nThis should simplify the loop in `GreasedLineMesh._setPoints`, eliminates the need to slice array and compute length in each loop, reducing the time complexity from `O(n^2)` to `O(n)`.",
+                "pr": "14974",
+                "title": "Set the XR camera's fov",
+                "description": "This is important for features requiring fov, like gaussian splatting.\n\nThough it will probably not change on ech frame, this is computed on each frame in case the camera's projection matrix changes during the session.\n\nNote that it is also expected that left fov === right fov, but the XR camera's parent is taking the first camera's fov (left)/",
                 "author": {
-                    "name": "kzhsw",
-                    "url": "https://github.com/kzhsw"
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
-                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
-                    "packages/dev/core/src/Misc/greasedLineTools.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14944",
-                "title": "WebGPU: Add support for the predeclared alias in WGSL",
-                "description": "This will fix the \"clear quad\" issue in https://playground.babylonjs.com/#W7E7CF#12.",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuClearQuad.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "WebGPU"
-                ]
-            },
-            {
-                "pr": "14942",
-                "title": "Fix typo in glTF animation pointer data",
-                "description": "See  https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/23",
-                "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
-                },
-                "files": [
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "13370",
-                "title": "EXT_texture_avif implementation",
-                "description": "My Christmas contribution is trying to get AVIF support in GLTF, Babylon and Three.\r\n\r\nI Did a PR for the GLTF spec which you can find here\r\nhttps://github.com/KhronosGroup/glTF/pull/2235\r\n\r\nI have also done a PR for three here\r\nhttps://github.com/mrdoob/three.js/issues/25171\r\n\r\nMy thoughts are the following.\r\nChrome recently gave up on jpeg xl which I personally thought was the superior replacement for gif, png, jpeg, webp.\r\n\r\nThe next best format after jpeg xl is avif, and since jpeg xl isn't happening I thought I could do a drive trying to improve the file size of gltf files by getting avif support.\r\n\r\nSolution\r\nAdd the not yet merged https://github.com/KhronosGroup/glTF/pull/2235 EXT_texture_avif as a supported extension.",
-                "author": {
-                    "name": "leon",
-                    "url": "https://github.com/leon"
-                },
-                "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
-                    "packages/dev/inspector/src/components/globalState.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_avif.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
-                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
-                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
-                ],
-                "tags": [
-                    "loaders",
-                    "glTF",
-                    "new feature",
-                    "stale"
-                ]
-            },
-            {
-                "pr": "14941",
-                "title": "3d RT mipmaps in WebGPU",
-                "description": "This adds mipmap support for 3D RT's in WebGPU (which was missing in the last PR).",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14940",
-                "title": "Allow mipmaps for 3D RT's",
-                "description": "This PR prevents `gl.generateMipmap(gl.TEXTURE_2D);` from being called for each layer in a 3D texture.\r\nIt also adds support for `engine.generateMipmaps` to generate mips for other texture types, including 3D textures.",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14939",
-                "title": "Ribbon builder: Fix vertical uvs for closed paths",
-                "description": "See https://forum.babylonjs.com/t/issue-with-extrusion-ribbon-closepath-uv-mapping/49215",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/Builders/ribbonBuilder.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "breaking change",
-                    "geometry"
-                ]
-            },
-            {
-                "pr": "14857",
-                "title": "Make NME and NGE math blocks agnostic to order of operations and left vs. right input",
-                "description": "Trying out NGE, I found it a bit confusing that the left and right inputs of math nodes were treated differently and that the order of operations mattered. For example:\r\n\r\n![NGE-Connection](https://github.com/BabylonJS/Babylon.js/assets/5084643/228a93c3-7bd6-4da0-8310-d0db9ac3dc54)\r\n\r\nIn this change, I made it so that it is equivalent whether an output of another node is connected to the left or right input of a math node, and also the order of operations doesn't matter. Each time the connection state changes, it re-evaluates the accepted types for each input (left and right), as well as the output type based on those input types.\r\n\r\n![NGE-Flexible-Multiply](https://github.com/BabylonJS/Babylon.js/assets/5084643/3be45105-d06c-45a8-9151-7725b3c306b2)\r\n\r\n~~I realized part way through doing this that mathBlock is NGE specific, and the set of math related blocks for NME have the same limitations, so ideally these changes would be made for both (or the same mathBlock would be shared between the two if possible).~~\r\nEDIT: There are differences between the NME and NGE math related blocks, so while I didn't end up sharing the code between the two, I did factor out a `MathBlock` base class for the NME Add/Subtract/Multiply/Divide blocks that has logic similar to what I added to the NGE `MathBlock`.",
-                "author": {
-                    "name": "ryantrem",
-                    "url": "https://github.com/ryantrem"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/addBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/baseMathBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/divideBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/multiplyBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/subtractBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
-                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
-                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts"
+                    "packages/dev/core/src/XR/webXRCamera.ts"
                 ],
                 "tags": [
                     "new feature"
                 ]
             },
             {
-                "pr": "14937",
-                "title": "PBR materials: Add ambient occlusion color to debug mode",
-                "description": "See https://forum.babylonjs.com/t/debug-occlusion-channel-in-orm-texture-pbrmaterial/49245",
+                "pr": "14972",
+                "title": "Physics Angular Impulse + Misc",
+                "description": "Follow up:\r\n\r\nFor angular velocity:\r\nhttps://forum.babylonjs.com/t/havok-how-to-apply-torque/40599/12\r\n\r\nFor instances/body creation order\r\nhttps://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/10\r\n",
                 "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx"
-                ],
-                "tags": [
-                    "enhancement",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "14938",
-                "title": "PBR: Fix crash when using refraction",
-                "description": "See https://forum.babylonjs.com/t/shader-compilation-error-when-loading-gltf-model-using-assetcontainer/49249",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts"
                 ],
                 "tags": [
                     "bug",
-                    "materials"
-                ]
-            },
-            {
-                "pr": "14936",
-                "title": "Fix glTF animation pointer of metallic roughness texture",
-                "description": "Also adds some checks to runtime animation to throw an error if the given property path is invalid.\r\n\r\nSee forum: https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/18",
-                "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
-                },
-                "files": [
-                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
-                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14897",
-                "title": "3D Render Targets",
-                "description": "Enabling 3D render targets for things like voxel rendering.\r\n\r\nI'm treating a texture with a non-zero `size.depth` as a 3D texture while a non-zero `size.layers` means a 2D texture array.\r\n\r\nI'm using this to test:\r\nhttps://playground.babylonjs.com/#XSNYAU#78",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
-                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
-                    "packages/dev/core/src/Engines/nativeEngine.ts",
-                    "packages/dev/core/src/Engines/nullEngine.ts",
-                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
-                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
-                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/Render to 3D RT.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14888",
-                "title": "Remove the need for cache.Parent",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/node.ts",
-                    "packages/dev/core/test/unit/Meshes/babylon.mesh.bake.test.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14932",
-                "title": "Allow CreateFromBase64String and LoadFromDataString to specifiy exten…",
-                "description": "…sion",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/texture.ts"
-                ],
-                "tags": [
                     "enhancement",
-                    "new feature"
+                    "physics"
                 ]
-            },
-            {
-                "pr": "14918",
-                "title": "Avoid \"dirtyfication\" of the defines when not required",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/texture.ts"
-                ],
-                "tags": [
-                    "optimizations"
-                ]
-            },
-            {
-                "pr": "14933",
-                "title": "Ported clearQuad to avoid using twgsl by default",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuClearQuad.ts",
-                    "packages/dev/core/src/Shaders/clearQuad.fragment.fx",
-                    "packages/dev/core/src/Shaders/clearQuad.vertex.fx",
-                    "packages/dev/core/src/ShadersWGSL/clearQuad.fragment.fx",
-                    "packages/dev/core/src/ShadersWGSL/clearQuad.vertex.fx"
-                ],
-                "tags": [
-                    "WebGPU"
-                ]
-            },
-            {
-                "pr": "14926",
-                "title": "Fix obj loader tests",
-                "description": "The PG test had a `BABYLON.OBJFileLoader.USE_LEGACY_BEHAVIOR = true` which was bleeding into other PG tests.",
-                "author": {
-                    "name": "bghgary",
-                    "url": "https://github.com/bghgary"
-                },
-                "files": [
-                    ".vscode/launch.json",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14925",
-                "title": "ReflectiveShadowMap: Fix typo in the \"no ubo support\" path",
-                "description": null,
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "rendering engine"
-                ]
-            },
-            {
-                "pr": "14924",
-                "title": "allow simple casting to IComputeShaderPath",
-                "description": "Without this change, casting to IComputeShaderPath would not allow to use the properties from the object. so if we do this:\n\n```\n(computeShader.shaderPath as IComputeShaderPath).computeSource\n```\n\nit will still fail, saying it doesn't exist on string. I avoid using generics here, this is just a simple solution to a simple problem :-)",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Compute/computeEffect.ts",
-                    "packages/dev/core/src/Compute/computeShader.ts",
-                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
-                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
-                    "packages/dev/core/src/Engines/thinEngine.ts",
-                    "packages/dev/core/src/Engines/webgpuEngine.ts",
-                    "packages/dev/core/src/Materials/effect.ts",
-                    "packages/dev/core/src/Materials/shaderMaterial.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14923",
-                "title": "new playground engine version (latest 6)",
-                "description": null,
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/tools/playground/public/index.js"
-                ],
-                "tags": []
             }
         ],
         "7.2.0": [
@@ -729,6 +422,350 @@
                     "enhancement",
                     "gui"
                 ]
+            }
+        ],
+        "7.1.0": [
+            {
+                "pr": "14934",
+                "title": "Optimizing performance of GreasedLineMesh._setPoints",
+                "description": "See detailed context at forum post <https://forum.babylonjs.com/t/optimizing-performance-of-greasedlinemesh-setpoints/49168>.\r\nThis proposal adds a static method `GreasedLineTools.GetLineLengthArray` which does almost the same as `GreasedLineTools.GetLineLength`, but instead of computing for the whole line, it computes the length from the beginning of the line to each point, and collect results to array.\r\nThis should simplify the loop in `GreasedLineMesh._setPoints`, eliminates the need to slice array and compute length in each loop, reducing the time complexity from `O(n^2)` to `O(n)`.",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineRibbonMesh.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14944",
+                "title": "WebGPU: Add support for the predeclared alias in WGSL",
+                "description": "This will fix the \"clear quad\" issue in https://playground.babylonjs.com/#W7E7CF#12.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuClearQuad.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14942",
+                "title": "Fix typo in glTF animation pointer data",
+                "description": "See  https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/23",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "13370",
+                "title": "EXT_texture_avif implementation",
+                "description": "My Christmas contribution is trying to get AVIF support in GLTF, Babylon and Three.\r\n\r\nI Did a PR for the GLTF spec which you can find here\r\nhttps://github.com/KhronosGroup/glTF/pull/2235\r\n\r\nI have also done a PR for three here\r\nhttps://github.com/mrdoob/three.js/issues/25171\r\n\r\nMy thoughts are the following.\r\nChrome recently gave up on jpeg xl which I personally thought was the superior replacement for gif, png, jpeg, webp.\r\n\r\nThe next best format after jpeg xl is avif, and since jpeg xl isn't happening I thought I could do a drive trying to improve the file size of gltf files by getting avif support.\r\n\r\nSolution\r\nAdd the not yet merged https://github.com/KhronosGroup/glTF/pull/2235 EXT_texture_avif as a supported extension.",
+                "author": {
+                    "name": "leon",
+                    "url": "https://github.com/leon"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/EXT_texture_avif.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts"
+                ],
+                "tags": [
+                    "loaders",
+                    "glTF",
+                    "new feature",
+                    "stale"
+                ]
+            },
+            {
+                "pr": "14941",
+                "title": "3d RT mipmaps in WebGPU",
+                "description": "This adds mipmap support for 3D RT's in WebGPU (which was missing in the last PR).",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14940",
+                "title": "Allow mipmaps for 3D RT's",
+                "description": "This PR prevents `gl.generateMipmap(gl.TEXTURE_2D);` from being called for each layer in a 3D texture.\r\nIt also adds support for `engine.generateMipmaps` to generate mips for other texture types, including 3D textures.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14939",
+                "title": "Ribbon builder: Fix vertical uvs for closed paths",
+                "description": "See https://forum.babylonjs.com/t/issue-with-extrusion-ribbon-closepath-uv-mapping/49215",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/ribbonBuilder.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "breaking change",
+                    "geometry"
+                ]
+            },
+            {
+                "pr": "14857",
+                "title": "Make NME and NGE math blocks agnostic to order of operations and left vs. right input",
+                "description": "Trying out NGE, I found it a bit confusing that the left and right inputs of math nodes were treated differently and that the order of operations mattered. For example:\r\n\r\n![NGE-Connection](https://github.com/BabylonJS/Babylon.js/assets/5084643/228a93c3-7bd6-4da0-8310-d0db9ac3dc54)\r\n\r\nIn this change, I made it so that it is equivalent whether an output of another node is connected to the left or right input of a math node, and also the order of operations doesn't matter. Each time the connection state changes, it re-evaluates the accepted types for each input (left and right), as well as the output type based on those input types.\r\n\r\n![NGE-Flexible-Multiply](https://github.com/BabylonJS/Babylon.js/assets/5084643/3be45105-d06c-45a8-9151-7725b3c306b2)\r\n\r\n~~I realized part way through doing this that mathBlock is NGE specific, and the set of math related blocks for NME have the same limitations, so ideally these changes would be made for both (or the same mathBlock would be shared between the two if possible).~~\r\nEDIT: There are differences between the NME and NGE math related blocks, so while I didn't end up sharing the code between the two, I did factor out a `MathBlock` base class for the NME Add/Subtract/Multiply/Divide blocks that has logic similar to what I added to the NGE `MathBlock`.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/addBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/baseMathBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/divideBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/multiplyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/subtractBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/Node/Blocks/mathBlock.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14937",
+                "title": "PBR materials: Add ambient occlusion color to debug mode",
+                "description": "See https://forum.babylonjs.com/t/debug-occlusion-channel-in-orm-texture-pbrmaterial/49245",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14938",
+                "title": "PBR: Fix crash when using refraction",
+                "description": "See https://forum.babylonjs.com/t/shader-compilation-error-when-loading-gltf-model-using-assetcontainer/49249",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14936",
+                "title": "Fix glTF animation pointer of metallic roughness texture",
+                "description": "Also adds some checks to runtime animation to throw an error if the given property path is invalid.\r\n\r\nSee forum: https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/18",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14897",
+                "title": "3D Render Targets",
+                "description": "Enabling 3D render targets for things like voxel rendering.\r\n\r\nI'm treating a texture with a non-zero `size.depth` as a 3D texture while a non-zero `size.layers` means a 2D texture array.\r\n\r\nI'm using this to test:\r\nhttps://playground.babylonjs.com/#XSNYAU#78",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuTextureManager.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/textureCreationOptions.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/Render to 3D RT.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14888",
+                "title": "Remove the need for cache.Parent",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/node.ts",
+                    "packages/dev/core/test/unit/Meshes/babylon.mesh.bake.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14932",
+                "title": "Allow CreateFromBase64String and LoadFromDataString to specifiy exten…",
+                "description": "…sion",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14918",
+                "title": "Avoid \"dirtyfication\" of the defines when not required",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/texture.ts"
+                ],
+                "tags": [
+                    "optimizations"
+                ]
+            },
+            {
+                "pr": "14933",
+                "title": "Ported clearQuad to avoid using twgsl by default",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuClearQuad.ts",
+                    "packages/dev/core/src/Shaders/clearQuad.fragment.fx",
+                    "packages/dev/core/src/Shaders/clearQuad.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/clearQuad.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/clearQuad.vertex.fx"
+                ],
+                "tags": [
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14926",
+                "title": "Fix obj loader tests",
+                "description": "The PG test had a `BABYLON.OBJFileLoader.USE_LEGACY_BEHAVIOR = true` which was bleeding into other PG tests.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14925",
+                "title": "ReflectiveShadowMap: Fix typo in the \"no ubo support\" path",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/reflectiveShadowMap.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "14924",
+                "title": "allow simple casting to IComputeShaderPath",
+                "description": "Without this change, casting to IComputeShaderPath would not allow to use the properties from the object. so if we do this:\n\n```\n(computeShader.shaderPath as IComputeShaderPath).computeSource\n```\n\nit will still fail, saying it doesn't exist on string. I avoid using generics here, this is just a simple solution to a simple problem :-)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14923",
+                "title": "new playground engine version (latest 6)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/public/index.js"
+                ],
+                "tags": []
             }
         ],
         "7.0.0": [

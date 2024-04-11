@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.2.1
+
+### Core
+
+- Set the XR camera's fov - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#14974](https://github.com/BabylonJS/Babylon.js/pull/14974))
+- Physics Angular Impulse + Misc - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14972](https://github.com/BabylonJS/Babylon.js/pull/14972))
+
 ## 7.2.0
 
 ### Core
