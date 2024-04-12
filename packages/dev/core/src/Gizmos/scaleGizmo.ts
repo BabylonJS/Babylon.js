@@ -177,7 +177,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * True when the mouse pointer is hovering a gizmo mesh
      */
     public get isHovered() {
-        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered;
+        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered || this.uniformScaleGizmo.isHovered;
     }
 
     /**
@@ -267,7 +267,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
 
         const cache: GizmoAxisCache = {
             gizmoMeshes: [this._octahedron, this._uniformScalingMesh],
-            colliderMeshes: [this._uniformScalingMesh],
+            colliderMeshes: [this._octahedron, this._uniformScalingMesh],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
@@ -405,6 +405,15 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      */
     public addToAxisCache(mesh: Mesh, cache: GizmoAxisCache) {
         this._gizmoAxisCache.set(mesh, cache);
+    }
+
+    /**
+     * Get the cache set with addToAxisCache for a specific mesh
+     * @param mesh Axis gizmo mesh
+     * @returns Gizmo axis definition used for reactive gizmo UI
+     */
+    public getAxisCache(mesh: Mesh): GizmoAxisCache | undefined {
+        return this._gizmoAxisCache.get(mesh);
     }
 
     /**

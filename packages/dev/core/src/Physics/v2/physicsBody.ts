@@ -1,4 +1,5 @@
-import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties, PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties } from "./IPhysicsEnginePlugin";
+import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -54,6 +55,11 @@ export class PhysicsBody {
     disablePreStep: boolean = true;
 
     /**
+     * Disable sync from physics to transformNode. This value is set to true at body creation or at motionType setting when the body is not dynamic.
+     */
+    disableSync: boolean = false;
+
+    /**
      * Physics engine will try to make this body sleeping and not active
      */
     public startAsleep: boolean;
@@ -105,6 +111,9 @@ export class PhysicsBody {
         this.startAsleep = startsAsleep;
 
         this._motionType = motionType;
+
+        // only dynamic body needs sync from physics to transformNode
+        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
 
         // instances?
         const m = transformNode as Mesh;
@@ -233,6 +242,7 @@ export class PhysicsBody {
      * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for.
      */
     public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
+        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
         this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
     }
 
@@ -430,6 +440,15 @@ export class PhysicsBody {
      */
     public applyImpulse(impulse: Vector3, location: Vector3, instanceIndex?: number): void {
         this._physicsPlugin.applyImpulse(this, impulse, location, instanceIndex);
+    }
+
+    /**
+     * Add torque to a physics body
+     * @param angularImpulse The angular impulse vector.
+     * @param instanceIndex For a instanced body, the instance to where the impulse should be applied. If not specified, the impulse is applied to all instances.
+     */
+    public applyAngularImpulse(angularImpulse: Vector3, instanceIndex?: number): void {
+        this._physicsPlugin.applyAngularImpulse(this, angularImpulse, instanceIndex);
     }
 
     /**

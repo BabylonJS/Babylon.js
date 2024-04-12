@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-ktx2decoder",
-    "version": "6.45.1",
+    "version": "7.2.1",
     "main": "babylon.ktx2Decoder.js",
     "types": "babylon.ktx2Decoder.module.d.ts",
     "files": [
@@ -14,11 +14,10 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^6.45.1"
+        "babylonjs": "^7.2.1"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",
-        "@lts/gui": "1.0.0",
         "@tools/ktx2decoder": "1.0.0",
         "source-map-loader": "^4.0.0",
         "ts-loader": "^9.2.6",

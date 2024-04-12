@@ -283,6 +283,12 @@ const handPartsDefinition: { [key in HandPart]: WebXRHandJoint[] } = {
  * Representing a single hand (with its corresponding native XRHand object)
  */
 export class WebXRHand implements IDisposable {
+    /**
+     * This observable will notify registered observers when the hand object has been set with a new mesh.
+     * you can get the hand mesh using `webxrHand.handMesh`
+     */
+    public onHandMeshSetObservable = new Observable<WebXRHand>();
+
     private _scene: Scene;
 
     /**
@@ -405,6 +411,8 @@ export class WebXRHand implements IDisposable {
                 }
             });
         }
+
+        this.onHandMeshSetObservable.notifyObservers(this);
     }
 
     /**

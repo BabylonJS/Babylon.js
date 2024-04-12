@@ -346,6 +346,14 @@ export class SceneSerializer {
             component.serialize(serializationObject);
         }
 
+        // Sprites
+        if (scene.spriteManagers) {
+            serializationObject.spriteManagers = [];
+            for (index = 0; index < scene.spriteManagers.length; index++) {
+                serializationObject.spriteManagers.push(scene.spriteManagers[index].serialize(true));
+            }
+        }
+
         return serializationObject;
     }
 

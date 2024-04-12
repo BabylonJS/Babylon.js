@@ -124,7 +124,7 @@ export class NodeMaterialBuildState {
         }
 
         this.compilationString = "precision highp float;\n" + this.compilationString;
-        this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
+        this.compilationString = "#if defined(WEBGL2) || defined(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
 
         if (isFragmentMode) {
             this.compilationString =

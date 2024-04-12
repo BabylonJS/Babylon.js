@@ -5,8 +5,8 @@ import { NodeGeometryBlockConnectionPointTypes } from "../../Enums/nodeGeometryC
 import type { NodeGeometryBuildState } from "../../nodeGeometryBuildState";
 import type { INodeGeometryExecutionContext } from "../../Interfaces/nodeGeometryExecutionContext";
 import type { VertexData } from "../../../mesh.vertexData";
-import type { Vector4 } from "../../../../Maths/math.vector";
-import { PropertyTypeForEdition, editableInPropertyPage } from "core/Decorators/nodeDecorator";
+import type { Vector3, Vector4 } from "../../../../Maths/math.vector";
+import { PropertyTypeForEdition, editableInPropertyPage } from "../../../../Decorators/nodeDecorator";
 
 /**
  * Block used to set colors for a geometry
@@ -30,9 +30,15 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
         super(name);
 
         this.registerInput("geometry", NodeGeometryBlockConnectionPointTypes.Geometry);
-        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.Vector4);
+        this.registerInput("colors", NodeGeometryBlockConnectionPointTypes.AutoDetect);
 
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
+
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Int);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Vector2);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
+        this._inputs[1].excludedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Texture);
     }
 
     /**
@@ -121,9 +127,19 @@ export class SetColorsBlock extends NodeGeometryBlock implements INodeGeometryEx
             // Processing
             const vertexCount = this._vertexData.positions.length / 3;
             for (this._currentIndex = 0; this._currentIndex < vertexCount; this._currentIndex++) {
-                const tempVector4 = this.colors.getConnectedValue(state) as Vector4;
-                if (tempVector4) {
-                    tempVector4.toArray(this._vertexData.colors, this._currentIndex * 4);
+                if (this.colors.connectedPoint?.type === NodeGeometryBlockConnectionPointTypes.Vector3) {
+                    const tempVector3 = this.colors.getConnectedValue(state) as Vector3;
+                    if (tempVector3) {
+                        tempVector3.toArray(this._vertexData.colors, this._currentIndex * 4);
+                        this._vertexData.colors[this._currentIndex * 4 + 3] = 1; // Alpha
+                        this._vertexData.hasVertexAlpha = false;
+                    }
+                } else {
+                    const tempVector4 = this.colors.getConnectedValue(state) as Vector4;
+                    if (tempVector4) {
+                        tempVector4.toArray(this._vertexData.colors, this._currentIndex * 4);
+                        this._vertexData.hasVertexAlpha = true;
+                    }
                 }
             }
 

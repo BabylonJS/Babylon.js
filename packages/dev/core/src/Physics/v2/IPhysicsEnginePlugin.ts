@@ -414,6 +414,7 @@ export interface IPhysicsEnginePluginV2 {
     setLinearVelocity(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
     getLinearVelocityToRef(body: PhysicsBody, linVel: Vector3, instanceIndex?: number): void;
     applyImpulse(body: PhysicsBody, impulse: Vector3, location: Vector3, instanceIndex?: number): void;
+    applyAngularImpulse(body: PhysicsBody, angularImpulse: Vector3, instanceIndex?: number): void;
     applyForce(body: PhysicsBody, force: Vector3, location: Vector3, instanceIndex?: number): void;
     setAngularVelocity(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;
     getAngularVelocityToRef(body: PhysicsBody, angVel: Vector3, instanceIndex?: number): void;

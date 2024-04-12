@@ -21,6 +21,42 @@ import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext } from "./effect.functions";
 
 /**
+ * Defines the route to the shader code. The priority is as follows:
+ *  * object: `{ vertexSource: "vertex shader code string", fragmentSource: "fragment shader code string" }` for directly passing the shader code
+ *  * object: `{ vertexElement: "vertexShaderCode", fragmentElement: "fragmentShaderCode" }`, used with shader code in script tags
+ *  * object: `{ vertex: "custom", fragment: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
+ *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+ */
+export type IShaderPath = {
+    /**
+     * Directly pass the shader code
+     */
+    vertexSource?: string;
+    /**
+     * Directly pass the shader code
+     */
+    fragmentSource?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
+     */
+    vertex?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `fragment` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customFragmentShader"]
+     */
+    fragment?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    vertexElement?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    fragmentElement?: string;
+};
+
+/**
  * Options to be used when creating an effect.
  */
 export interface IEffectCreationOptions {
@@ -111,7 +147,7 @@ export class Effect implements IDisposable {
     /**
      * Name of the effect.
      */
-    public name: any = null;
+    public name: IShaderPath | string;
     /**
      * String container all the define statements that should be set on the shader.
      */
@@ -241,7 +277,7 @@ export class Effect implements IDisposable {
      * @param shaderLanguage the language the shader is written in (default: GLSL)
      */
     constructor(
-        baseName: any,
+        baseName: IShaderPath | string,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
         uniformsNamesOrEngine: string[] | ThinEngine,
         samplers: Nullable<string[]> = null,

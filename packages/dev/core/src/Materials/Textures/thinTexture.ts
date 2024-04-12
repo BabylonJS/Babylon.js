@@ -151,7 +151,7 @@ export class ThinTexture {
     private _cachedBaseSize: ISize = Size.Zero();
 
     private static _IsRenderTargetWrapper(texture: Nullable<InternalTexture> | Nullable<RenderTargetWrapper>): texture is RenderTargetWrapper {
-        return (texture as RenderTargetWrapper)?._shareDepth !== undefined;
+        return (texture as RenderTargetWrapper)?.shareDepth !== undefined;
     }
 
     /**

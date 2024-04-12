@@ -20,9 +20,9 @@ interface MeshData {
     totalVertices: number;
 }
 
-function createDecoderAsync(wasmBinary?: ArrayBuffer): Promise<{ module: DecoderModule }> {
+function createDecoderAsync(wasmBinary?: ArrayBuffer, jsModule?: DracoDecoderModule): Promise<{ module: DecoderModule }> {
     return new Promise((resolve) => {
-        DracoDecoderModule({ wasmBinary }).then((module) => {
+        (jsModule || DracoDecoderModule)({ wasmBinary }).then((module) => {
             resolve({ module });
         });
     });
@@ -50,6 +50,19 @@ export interface IDracoCompressionConfiguration {
          * The url to the fallback JavaScript module.
          */
         fallbackUrl?: string;
+        /**
+         * Optional worker pool to use for async decoding instead of creating a new worker pool.
+         */
+        workerPool?: AutoReleaseWorkerPool;
+        /**
+         * Optional ArrayBuffer of the WebAssembly binary
+         */
+        wasmBinary?: ArrayBuffer;
+
+        /**
+         * The decoder module if already available.
+         */
+        jsModule?: any /* DecoderModule */;
     };
 }
 
@@ -167,31 +180,31 @@ export class DracoCompression implements IDisposable {
      * @param numWorkers The number of workers for async operations Or an options object. Specify `0` to disable web workers and run synchronously in the current context.
      */
     constructor(numWorkers: number | IDracoCompressionOptions = DracoCompression.DefaultNumWorkers) {
+        const decoder = DracoCompression.Configuration.decoder;
         // check if the decoder binary and worker pool was injected
         // Note - it is expected that the developer checked if WebWorker, WebAssembly and the URL object are available
-        if (typeof numWorkers === "object" && numWorkers.workerPool) {
+        if (decoder.workerPool || (typeof numWorkers === "object" && numWorkers.workerPool)) {
             // set the promise accordingly
-            this._workerPoolPromise = Promise.resolve(numWorkers.workerPool);
+            this._workerPoolPromise = Promise.resolve(decoder.workerPool || (numWorkers as IDracoCompressionOptions).workerPool!);
         } else {
             // to avoid making big changes to the decider, if wasmBinary is provided use it in the wasmBinaryPromise
-            const wasmBinaryProvided = typeof numWorkers === "object" && numWorkers.wasmBinary;
-
+            const wasmBinaryProvided = decoder.wasmBinary || (typeof numWorkers === "object" && numWorkers.wasmBinary);
+            const numberOfWorkers = typeof numWorkers === "number" ? numWorkers : numWorkers.numWorkers;
+            const useWorkers = numberOfWorkers && typeof Worker === "function" && typeof URL === "function";
+            const urlNeeded = useWorkers || (!useWorkers && !decoder.jsModule);
             // code maintained here for back-compat with no changes
-            const decoder = DracoCompression.Configuration.decoder;
 
             const decoderInfo: { url: string | undefined; wasmBinaryPromise: Promise<ArrayBuffer | undefined> } =
                 decoder.wasmUrl && decoder.wasmBinaryUrl && typeof WebAssembly === "object"
                     ? {
-                          url: Tools.GetBabylonScriptURL(decoder.wasmUrl, true),
+                          url: urlNeeded ? Tools.GetBabylonScriptURL(decoder.wasmUrl, true) : "",
                           wasmBinaryPromise: wasmBinaryProvided ? Promise.resolve(wasmBinaryProvided) : Tools.LoadFileAsync(Tools.GetBabylonScriptURL(decoder.wasmBinaryUrl, true)),
                       }
                     : {
-                          url: Tools.GetBabylonScriptURL(decoder.fallbackUrl!),
+                          url: urlNeeded ? Tools.GetBabylonScriptURL(decoder.fallbackUrl!) : "",
                           wasmBinaryPromise: Promise.resolve(undefined),
                       };
-
-            const numberOfWorkers = typeof numWorkers === "number" ? numWorkers : numWorkers.numWorkers;
-            if (numberOfWorkers && typeof Worker === "function" && typeof URL === "function") {
+            if (useWorkers) {
                 this._workerPoolPromise = decoderInfo.wasmBinaryPromise.then((decoderWasmBinary) => {
                     const workerContent = `${decodeMesh}(${workerFunction})()`;
                     const workerBlobUrl = URL.createObjectURL(new Blob([workerContent], { type: "application/javascript" }));
@@ -203,12 +216,15 @@ export class DracoCompression implements IDisposable {
                 });
             } else {
                 this._decoderModulePromise = decoderInfo.wasmBinaryPromise.then(async (decoderWasmBinary) => {
-                    if (!decoderInfo.url) {
-                        throw new Error("Draco decoder module is not available");
+                    if (typeof DracoDecoderModule === "undefined") {
+                        if (!decoder.jsModule) {
+                            if (!decoderInfo.url) {
+                                throw new Error("Draco decoder module is not available");
+                            }
+                            await Tools.LoadBabylonScriptAsync(decoderInfo.url);
+                        }
                     }
-
-                    await Tools.LoadBabylonScriptAsync(decoderInfo.url);
-                    return await createDecoderAsync(decoderWasmBinary as ArrayBuffer);
+                    return await createDecoderAsync(decoderWasmBinary as ArrayBuffer, decoder.jsModule);
                 });
             }
         }

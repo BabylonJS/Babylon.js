@@ -270,6 +270,8 @@ export class NodeMaterial extends PushMaterial {
         return (
             block.getClassName() === "TextureBlock" ||
             block.getClassName() === "ReflectionTextureBaseBlock" ||
+            block.getClassName() === "ReflectionTextureBlock" ||
+            block.getClassName() === "ReflectionBlock" ||
             block.getClassName() === "RefractionBlock" ||
             block.getClassName() === "CurrentScreenBlock" ||
             block.getClassName() === "ParticleTextureBlock" ||

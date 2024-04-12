@@ -27,12 +27,12 @@ https.get("https://cdn.babylonjs.com/fileSizes.json", (res) => {
             if (fileSizes[filename] < sizes[filename]) {
                 // check if increase is more than 10%
                 if (sizes[filename] > fileSizes[filename] * 1.1) {
-                    console.log(`[error] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 10%`);
+                    console.log(`##[error] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 10%`);
                     error = true;
                 } else if (sizes[filename] > fileSizes[filename] * 1.05) {
-                    console.log(`[warn] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 5%`);
+                    console.log(`##[warning] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 5%`);
                 } else {
-                    console.log(`[info] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]}`);
+                    console.log(`##[info] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]}`);
                 }
             }
         }

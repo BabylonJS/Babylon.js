@@ -51,11 +51,11 @@ describe("TransformNode", () => {
             // set not default pivot
             child.setPivotMatrix(Matrix.Translation(1, -1, -0.5));
 
-            expect(child.getPivotMatrix().toArray()).not.toEqual(Matrix.Identity().toArray());
+            expect(child.getPivotMatrix().asArray()).not.toEqual(Matrix.Identity().asArray());
 
             child.setParent(parent, true, true);
 
-            expect(child.getPivotMatrix().toArray()).toEqual(Matrix.Identity().toArray());
+            expect(child.getPivotMatrix().asArray()).toEqual(Matrix.Identity().asArray());
         });
 
         it('should not update pivot when it no need', () => {
@@ -68,7 +68,7 @@ describe("TransformNode", () => {
 
             child.setParent(parent, true, false);
 
-            expect(child.getPivotMatrix().toArray()).not.toEqual(Matrix.Identity().toArray());
+            expect(child.getPivotMatrix().asArray()).not.toEqual(Matrix.Identity().asArray());
         });
     });
 });

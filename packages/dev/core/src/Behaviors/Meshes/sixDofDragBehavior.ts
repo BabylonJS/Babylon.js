@@ -66,12 +66,17 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
     /**
      * Attaches the six DoF drag behavior
+     * In XR mode the mesh and its children will have their isNearGrabbable property set to true
      * @param ownerNode The mesh that will be dragged around once attached
      */
     public attach(ownerNode: Mesh): void {
         super.attach(ownerNode);
 
         ownerNode.isNearGrabbable = true;
+        // if it has children, make sure they are grabbable too
+        ownerNode.getChildMeshes().forEach((m) => {
+            m.isNearGrabbable = true;
+        });
 
         // Node that will save the owner's transform
         this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);
@@ -255,7 +260,6 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         super.detach();
 
         if (this._ownerNode) {
-            (this._ownerNode as Mesh).isNearGrabbable = false;
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
 

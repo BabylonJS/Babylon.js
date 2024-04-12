@@ -176,7 +176,7 @@ const rules = {
     },
     plugins: [
         //   "react"
-        // "prettier", // add this if we want to use prettier error reporting
+        "prettier",
         "jest",
         // "@typescript-eslint"
         "babylonjs",
@@ -190,7 +190,7 @@ const rules = {
         "plugin:import/typescript",
         "plugin:jest/recommended",
         // "plugin:jsdoc/recommended",
-        "prettier",
+        "plugin:prettier/recommended",
     ],
     settings: {
         react: {
@@ -263,7 +263,6 @@ const rules = {
         "no-fallthrough": "warn",
         "no-async-promise-executor": "warn",
         "no-throw-literal": "error",
-        // "prettier/prettier": "error" // add this if we want to use prettier error reporting.
     },
 };
 

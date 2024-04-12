@@ -9,6 +9,30 @@ import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
 import type { Engine } from "../Engines/engine";
+import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
+
+/**
+ * Defines the route to the shader code. The priority is as follows:
+ *  * object: `{ computeSource: "compute shader code string"}` for directly passing the shader code
+ *  * object: `{ computeElement: "vertexShaderCode" }`, used with shader code in script tags
+ *  * object: `{ compute: "custom" }`, used with `Effect.ShadersStore["customVertexShader"]` and `Effect.ShadersStore["customFragmentShader"]`
+ *  * string: `"./COMMON_NAME"`, used with external files COMMON_NAME.vertex.fx and COMMON_NAME.fragment.fx in index.html folder.
+ */
+export type IComputeShaderPath = {
+    /**
+     * Directly pass the shader code
+     */
+    computeSource?: string;
+    /**
+     * Used with Effect.ShadersStore. If the `vertex` is set to `"custom`, then
+     * Babylon.js will read from Effect.ShadersStore["customVertexShader"]
+     */
+    compute?: string;
+    /**
+     * Used with shader code in script tags
+     */
+    computeElement?: string;
+};
 
 /**
  * Options to be used when creating a compute effect.
@@ -49,7 +73,7 @@ export class ComputeEffect {
     /**
      * Name of the effect.
      */
-    public name: any = null;
+    public name: IComputeShaderPath | string;
     /**
      * String container all the define statements that should be set on the shader.
      */
@@ -110,7 +134,7 @@ export class ComputeEffect {
      * @param engine The engine the effect is created for
      * @param key Effect Key identifying uniquely compiled shader variants
      */
-    constructor(baseName: any, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
+    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
         this.name = baseName;
         this._key = key;
 
@@ -126,18 +150,16 @@ export class ComputeEffect {
         this._shaderRepository = ShaderStore.GetShadersRepository(this._shaderLanguage);
         this._includeShaderStore = ShaderStore.GetIncludesShadersStore(this._shaderLanguage);
 
-        let computeSource: any;
+        let computeSource: IComputeShaderPath | HTMLElement | string;
 
         const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
 
-        if (baseName.computeSource) {
+        if (typeof baseName === "string") {
+            computeSource = baseName;
+        } else if (baseName.computeSource) {
             computeSource = "source:" + baseName.computeSource;
         } else if (baseName.computeElement) {
-            computeSource = hostDocument ? hostDocument.getElementById(baseName.computeElement) : null;
-
-            if (!computeSource) {
-                computeSource = baseName.computeElement;
-            }
+            computeSource = hostDocument?.getElementById(baseName.computeElement) || baseName.computeElement;
         } else {
             computeSource = baseName.compute || baseName;
         }
@@ -360,7 +382,11 @@ export class ComputeEffect {
                 this._entryPoint
             );
 
-            engine._executeWhenComputeStateIsCompiled(this._pipelineContext, () => {
+            engine._executeWhenComputeStateIsCompiled(this._pipelineContext, (messages: Nullable<ComputeCompilationMessages>) => {
+                if (messages && messages.numErrors > 0) {
+                    this._processCompilationErrors(messages, previousPipelineContext);
+                    return;
+                }
                 this._compilationError = "";
                 this._isReady = true;
                 if (this.onCompiled) {
@@ -382,54 +408,56 @@ export class ComputeEffect {
         }
     }
 
-    private _getShaderCodeAndErrorLine(code: Nullable<string>, error: Nullable<string>): [Nullable<string>, Nullable<string>] {
-        const regexp = /COMPUTE SHADER ERROR: 0:(\d+?):/;
+    private _processCompilationErrors(e: ComputeCompilationMessages | string, previousPipelineContext: Nullable<IComputePipelineContext> = null) {
+        this._compilationError = "";
 
-        let errorLine = null;
-
-        if (error && code) {
-            const res = error.match(regexp);
-            if (res && res.length === 2) {
-                const lineNumber = parseInt(res[1]);
-                const lines = code.split("\n", -1);
-                if (lines.length >= lineNumber) {
-                    errorLine = `Offending line [${lineNumber}] in compute code: ${lines[lineNumber - 1]}`;
-                }
-            }
-        }
-
-        return [code, errorLine];
-    }
-
-    private _processCompilationErrors(e: any, previousPipelineContext: Nullable<IComputePipelineContext> = null) {
-        this._compilationError = e.message;
-
-        // Let's go through fallbacks then
         Logger.Error("Unable to compile compute effect:");
-        Logger.Error("Defines:\n" + this.defines);
+        if (this.defines) {
+            Logger.Error("Defines:\n" + this.defines);
+        }
+
         if (ComputeEffect.LogShaderCodeOnCompilationError) {
-            let lineErrorVertex = null,
-                code = null;
-            if (this._pipelineContext?._getComputeShaderCode()) {
-                [code, lineErrorVertex] = this._getShaderCodeAndErrorLine(this._pipelineContext._getComputeShaderCode(), this._compilationError);
-                if (code) {
-                    Logger.Error("Compute code:");
-                    Logger.Error(code);
-                }
-            }
-            if (lineErrorVertex) {
-                Logger.Error(lineErrorVertex);
+            const code = this._pipelineContext?._getComputeShaderCode();
+            if (code) {
+                Logger.Error("Compute code:");
+                Logger.Error(code);
             }
         }
-        Logger.Error("Error: " + this._compilationError);
+
+        if (typeof e === "string") {
+            this._compilationError = e;
+            Logger.Error("Error: " + this._compilationError);
+        } else {
+            for (const message of e.messages) {
+                let msg = "";
+                if (message.line !== undefined) {
+                    msg += "Line " + message.line + ", ";
+                }
+                if (message.offset !== undefined) {
+                    msg += "Offset " + message.offset + ", ";
+                }
+                if (message.length !== undefined) {
+                    msg += "Length " + message.length + ", ";
+                }
+                msg += message.type + ": " + message.text;
+
+                if (this._compilationError) {
+                    this._compilationError += "\n";
+                }
+                this._compilationError += msg;
+                Logger.Error(msg);
+            }
+        }
+
         if (previousPipelineContext) {
             this._pipelineContext = previousPipelineContext;
             this._isReady = true;
-            if (this.onError) {
-                this.onError(this, this._compilationError);
-            }
-            this.onErrorObservable.notifyObservers(this);
         }
+
+        if (this.onError) {
+            this.onError(this, this._compilationError);
+        }
+        this.onErrorObservable.notifyObservers(this);
     }
 
     /**

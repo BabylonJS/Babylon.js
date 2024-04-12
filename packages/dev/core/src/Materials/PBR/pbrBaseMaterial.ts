@@ -1739,12 +1739,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                     }
 
                     if (this._metallicReflectanceTexture || this._reflectanceTexture) {
-                        const identicalTextures =
-                            this._metallicReflectanceTexture !== null &&
-                            this._metallicReflectanceTexture._texture === this._reflectanceTexture?._texture &&
-                            this._metallicReflectanceTexture.checkTransformsAreIdentical(this._reflectanceTexture);
-
-                        defines.METALLIC_REFLECTANCE_USE_ALPHA_ONLY = this._useOnlyMetallicFromMetallicReflectanceTexture && !identicalTextures;
+                        defines.METALLIC_REFLECTANCE_USE_ALPHA_ONLY = this._useOnlyMetallicFromMetallicReflectanceTexture;
                         if (this._metallicReflectanceTexture) {
                             PrepareDefinesForMergedUV(this._metallicReflectanceTexture, defines, "METALLIC_REFLECTANCE");
                             defines.METALLIC_REFLECTANCE_GAMMA = this._metallicReflectanceTexture.gammaSpace;
@@ -1753,7 +1748,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                         }
                         if (
                             this._reflectanceTexture &&
-                            !identicalTextures &&
                             (!this._metallicReflectanceTexture || (this._metallicReflectanceTexture && this._useOnlyMetallicFromMetallicReflectanceTexture))
                         ) {
                             PrepareDefinesForMergedUV(this._reflectanceTexture, defines, "REFLECTANCE");

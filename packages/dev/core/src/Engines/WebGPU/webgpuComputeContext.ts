@@ -1,3 +1,4 @@
+import type { DataBuffer } from "core/Buffers/dataBuffer";
 import type { StorageBuffer } from "../../Buffers/storageBuffer";
 import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
@@ -116,9 +117,14 @@ export class WebGPUComputeContext implements IComputeContext {
                     }
 
                     case ComputeBindingType.UniformBuffer:
-                    case ComputeBindingType.StorageBuffer: {
-                        const buffer = type === ComputeBindingType.UniformBuffer ? (object as UniformBuffer) : (object as StorageBuffer);
-                        const dataBuffer = buffer.getBuffer()!;
+                    case ComputeBindingType.StorageBuffer:
+                    case ComputeBindingType.DataBuffer: {
+                        const dataBuffer =
+                            type === ComputeBindingType.DataBuffer
+                                ? (object as DataBuffer)
+                                : type === ComputeBindingType.UniformBuffer
+                                  ? (object as UniformBuffer).getBuffer()!
+                                  : (object as StorageBuffer).getBuffer()!;
                         const webgpuBuffer = dataBuffer.underlyingResource as GPUBuffer;
                         if (indexInGroupEntries !== undefined && bindGroupEntriesExist) {
                             (entries[indexInGroupEntries].resource as GPUBufferBinding).buffer = webgpuBuffer;

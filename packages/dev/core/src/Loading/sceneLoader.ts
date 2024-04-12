@@ -20,6 +20,8 @@ import type { TransformNode } from "../Meshes/transformNode";
 import type { Geometry } from "../Meshes/geometry";
 import type { Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
+import type { ISpriteManager } from "../Sprites/spriteManager";
+import { RandomGUID } from "../Misc/guid";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -31,7 +33,8 @@ export type SceneLoaderSuccessCallback = (
     animationGroups: AnimationGroup[],
     transformNodes: TransformNode[],
     geometries: Geometry[],
-    lights: Light[]
+    lights: Light[],
+    spriteManagers: ISpriteManager[]
 ) => void;
 
 /**
@@ -72,6 +75,11 @@ export interface ISceneLoaderAsyncResult {
      * The array of loaded lights
      */
     readonly lights: Light[];
+
+    /**
+     * The array of loaded sprite managers
+     */
+    readonly spriteManagers: ISpriteManager[];
 }
 
 /**
@@ -653,7 +661,7 @@ export class SceneLoader {
             file = sceneFile;
         } else if (ArrayBuffer.isView(sceneFilename)) {
             url = "";
-            name = "arrayBuffer";
+            name = RandomGUID();
             rawData = sceneFilename as ArrayBufferView;
         } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
             url = sceneFilename;
@@ -784,12 +792,12 @@ export class SceneLoader {
               }
             : undefined;
 
-        const successHandler: SceneLoaderSuccessCallback = (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights) => {
+        const successHandler: SceneLoaderSuccessCallback = (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
             scene.importedMeshesFiles.push(fileInfo.url);
 
             if (onSuccess) {
                 try {
-                    onSuccess(meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights);
+                    onSuccess(meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers);
                 } catch (e) {
                     errorHandler("Error in onSuccess callback: " + e, e);
                 }
@@ -817,7 +825,7 @@ export class SceneLoader {
                     }
 
                     scene.loadingPluginName = plugin.name;
-                    successHandler(meshes, particleSystems, skeletons, [], [], [], []);
+                    successHandler(meshes, particleSystems, skeletons, [], [], [], [], []);
                 } else {
                     const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin
@@ -831,7 +839,8 @@ export class SceneLoader {
                                 result.animationGroups,
                                 result.transformNodes,
                                 result.geometries,
-                                result.lights
+                                result.lights,
+                                result.spriteManagers
                             );
                         })
                         .catch((error) => {
@@ -873,7 +882,7 @@ export class SceneLoader {
                 rootUrl,
                 sceneFilename,
                 scene,
-                (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights) => {
+                (meshes, particleSystems, skeletons, animationGroups, transformNodes, geometries, lights, spriteManagers) => {
                     resolve({
                         meshes: meshes,
                         particleSystems: particleSystems,
@@ -882,6 +891,7 @@ export class SceneLoader {
                         transformNodes: transformNodes,
                         geometries: geometries,
                         lights: lights,
+                        spriteManagers: spriteManagers,
                     });
                 },
                 onProgress,

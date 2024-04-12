@@ -672,7 +672,7 @@ export class Spherical {
      * @param ref the Vector3 to update
      * @returns the updated Vector3
      */
-    public toVector3ToRef(ref: DeepImmutable<Vector3>): Vector3 {
+    public toVector3ToRef(ref: Vector3): Vector3 {
         const x = this.radius * Math.sin(this.theta) * Math.cos(this.phi);
         const y = this.radius * Math.cos(this.theta);
         const z = this.radius * Math.sin(this.theta) * Math.sin(this.phi);

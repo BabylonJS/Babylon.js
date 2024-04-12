@@ -125,11 +125,7 @@ struct clearcoatOutParams
 
 
         #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            #ifdef CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL
-                clearCoatRoughness *= clearCoatMapData.y;
-            #else
-                clearCoatRoughness *= clearCoatMapRoughnessData.y;
-            #endif
+           clearCoatRoughness *= clearCoatMapRoughnessData.y;
         #endif
 
         outParams.clearCoatIntensity = clearCoatIntensity;

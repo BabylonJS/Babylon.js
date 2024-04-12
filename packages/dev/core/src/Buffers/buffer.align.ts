@@ -13,19 +13,19 @@ declare module "./buffer" {
     export interface VertexBuffer {
         /**
          * Gets the effective byte stride, that is the byte stride of the buffer that is actually sent to the GPU.
-         * It could be different from VertexBuffer.byteStride if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
+         * It could be different from VertexBuffer.byteStride if a new buffer must be created under the hood because of the forceVertexBufferStrideAndOffsetMultiple4Bytes engine flag.
          */
         effectiveByteStride: number;
 
         /**
          * Gets the effective byte offset, that is the byte offset of the buffer that is actually sent to the GPU.
-         * It could be different from VertexBuffer.byteOffset if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
+         * It could be different from VertexBuffer.byteOffset if a new buffer must be created under the hood because of the forceVertexBufferStrideAndOffsetMultiple4Bytes engine flag.
          */
         effectiveByteOffset: number;
 
         /**
          * Gets the effective buffer, that is the buffer that is actually sent to the GPU.
-         * It could be different from VertexBuffer.getBuffer() if a new buffer must be created under the hood because of the forceVertexBufferStrideMultiple4Bytes engine flag.
+         * It could be different from VertexBuffer.getBuffer() if a new buffer must be created under the hood because of the forceVertexBufferStrideAndOffsetMultiple4Bytes engine flag.
          */
         effectiveBuffer: Nullable<DataBuffer>;
 
@@ -84,7 +84,7 @@ VertexBuffer.prototype.getWrapperBuffer = function (): Buffer {
 VertexBuffer.prototype._alignBuffer = function (): void {
     const data = this._buffer.getData();
 
-    if (!this.engine._features.forceVertexBufferStrideMultiple4Bytes || this.byteStride % 4 === 0 || !data) {
+    if (!this.engine._features.forceVertexBufferStrideAndOffsetMultiple4Bytes || (this.byteStride % 4 === 0 && this.byteOffset % 4 === 0) || !data) {
         return;
     }
 

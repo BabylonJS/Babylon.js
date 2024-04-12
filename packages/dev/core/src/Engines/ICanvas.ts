@@ -116,6 +116,16 @@ export interface ITextMetrics {
      * property to the right side of the bounding rectangle of the given text
      */
     readonly actualBoundingBoxRight: number;
+    /**
+     * distance (in pixels) from the horizontal line indicated by the CanvasRenderingContext2D.textBaseline
+     * property to the top side of the bounding rectangle of the given text
+     */
+    readonly actualBoundingBoxAscent: number;
+    /**
+     * distance (in pixels) from the horizontal line indicated by the CanvasRenderingContext2D.textBaseline
+     * property to the bottom side of the bounding rectangle of the given text
+     */
+    readonly actualBoundingBoxDescent: number;
 }
 
 /**
