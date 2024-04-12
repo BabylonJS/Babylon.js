@@ -2,17 +2,10 @@ import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessin
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import {
-    _executeWhenRenderingStateIsCompiled,
-    _getGlobalDefines,
-    _loadFile,
-    _preparePipelineContext,
-    createPipelineContext,
-    getHostDocument,
-} from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _getGlobalDefines, _loadFile, _preparePipelineContext, createPipelineContext } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { ThinEngine } from "core/Engines/thinEngine";
-import type { Effect } from "./effect";
+import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
@@ -32,7 +25,7 @@ export interface IPipelineGenerationOptions {
      * The definition of the shader content.
      * Can be either a unified name, name per vertex and frament or the shader code content itself
      */
-    shaderNameOrContent: string | { vertex: string; fragment: string } | { vertexSource: string; fragmentSource: string };
+    shaderNameOrContent: string | IShaderPath;
     /**
      * Unique key to identify the pipeline.
      * Note that though not mandatory, it's recommended to provide a key to be able to use the automated pipeline loading system.
@@ -172,31 +165,27 @@ export function _processShaderCode(
     engine?: ThinEngine,
     effectContext?: Effect
 ) {
-    let vertexSource: any;
-    let fragmentSource: any;
+    let vertexSource: string | HTMLElement | IShaderPath;
+    let fragmentSource: string | HTMLElement | IShaderPath;
 
-    const hostDocument = IsWindowObjectExist() ? getHostDocument(engine?.getRenderingCanvas()) : null; // TODO - rendering canvas?
+    // const baseName = this.name;
+    const hostDocument = IsWindowObjectExist() ? engine?.getHostDocument() : null;
 
-    if (baseName.vertexSource) {
+    if (typeof baseName === "string") {
+        vertexSource = baseName;
+    } else if (baseName.vertexSource) {
         vertexSource = "source:" + baseName.vertexSource;
     } else if (baseName.vertexElement) {
-        vertexSource = hostDocument ? hostDocument.getElementById(baseName.vertexElement) : null;
-
-        if (!vertexSource) {
-            vertexSource = baseName.vertexElement;
-        }
+        vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
     } else {
         vertexSource = baseName.vertex || baseName;
     }
-
-    if (baseName.fragmentSource) {
+    if (typeof baseName === "string") {
+        fragmentSource = baseName;
+    } else if (baseName.fragmentSource) {
         fragmentSource = "source:" + baseName.fragmentSource;
     } else if (baseName.fragmentElement) {
-        fragmentSource = hostDocument ? hostDocument.getElementById(baseName.fragmentElement) : null;
-
-        if (!fragmentSource) {
-            fragmentSource = baseName.fragmentElement;
-        }
+        fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
     } else {
         fragmentSource = baseName.fragment || baseName;
     }
@@ -377,4 +366,3 @@ export const createAndPreparePipelineContext = (options: {
         throw e;
     }
 };
-
