@@ -7,6 +7,7 @@
         "declaration": true,
         "target": "ES2020",
         "importHelpers": true,
+        "stripInternal": true,
         "plugins": [
             {
                 "transform": "@dev/build-tools/dist/pathTransform.js",
@@ -25,7 +26,7 @@
         ],
         "paths": {
             "core/*": ["dev/core/src/*"],
-            "@lts/core/*": ["lts/core/src/*"],
+            "@lts/core/*": ["lts/core/src/*"]
         }
     },
 

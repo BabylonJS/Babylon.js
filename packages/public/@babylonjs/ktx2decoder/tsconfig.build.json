@@ -6,6 +6,7 @@
         "rootDir": "../../../tools/ktx2Decoder/src",
         "declaration": true,
         "importHelpers": true,
+        "stripInternal": true,
         "target": "ES2020",
         "plugins": [
             {

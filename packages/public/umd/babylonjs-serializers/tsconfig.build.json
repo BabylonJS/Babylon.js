@@ -7,10 +7,11 @@
         "target": "ES5",
         "declaration": false,
         "importHelpers": true,
+        "stripInternal": true,
         "paths": {
             "core/*": ["dev/core/dist/*"],
             "serializers/*": ["dev/serializers/src/*"],
-            "@lts/serializers/*": ["lts/serializers/src/*"],
+            "@lts/serializers/*": ["lts/serializers/src/*"]
         }
     },
     "include": ["./src/**/*", "../../../dev/serializers/src/**/*", "../../../lts/serializers/src/**/*"]

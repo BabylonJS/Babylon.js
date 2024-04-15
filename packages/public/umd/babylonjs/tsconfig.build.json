@@ -7,6 +7,7 @@
         "rootDir": "../../../",
         "declaration": false,
         "importHelpers": true,
+        "stripInternal": true,
         "paths": {
             "core/*": ["dev/core/src/*"],
             "@lts/core/*": ["lts/core/src/*"]

@@ -6,6 +6,7 @@
         "rootDir": "./src",
         "target": "es2018",
         "declaration": false,
+        "stripInternal": true
     },
     "include": ["./src/**/*"]
 }
