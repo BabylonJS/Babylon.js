@@ -4,10 +4,10 @@ import type { IMatrixLike, IVector3Like, IVector4Like, IColor3Like, IColor4Like 
 import type { Effect } from "./effect";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import type { ThinEngine } from "../Engines/thinEngine";
 import type { InternalTexture } from "./Textures/internalTexture";
 import { Tools } from "../Misc/tools";
 import "../Engines/Extensions/engine.uniformBuffer";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Uniform buffer objects.
@@ -23,7 +23,7 @@ export class UniformBuffer {
     /** @internal */
     public static _UpdatedUbosInFrame: { [name: string]: number } = {};
 
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
     private _buffer: Nullable<DataBuffer>;
     private _buffers: Array<[DataBuffer, Float32Array | undefined]>;
     private _bufferIndex: number;
@@ -238,7 +238,7 @@ export class UniformBuffer {
      * @param name to assign to the buffer (debugging purpose)
      * @param forceNoUniformBuffer define that this object must not rely on UBO objects
      */
-    constructor(engine: ThinEngine, data?: number[], dynamic?: boolean, name?: string, forceNoUniformBuffer = false) {
+    constructor(engine: AbstractEngine, data?: number[], dynamic?: boolean, name?: string, forceNoUniformBuffer = false) {
         this._engine = engine;
         this._noUBO = !engine.supportsUniformBuffers || forceNoUniformBuffer;
         this._dynamic = dynamic;

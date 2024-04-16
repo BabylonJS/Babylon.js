@@ -6,8 +6,8 @@ import { NativeDeviceInputSystem } from "./nativeDeviceInputSystem";
 import { WebDeviceInputSystem } from "./webDeviceInputSystem";
 import { DeviceSource } from "./InputDevices/deviceSource";
 import type { INative } from "../Engines/Native/nativeInterfaces";
-import type { Engine } from "../Engines/engine";
 import type { IUIEvent } from "../Events/deviceInputEvents";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 type Distribute<T> = T extends DeviceType ? DeviceSource<T> : never;
 
@@ -15,8 +15,8 @@ export type DeviceSourceType = Distribute<DeviceType>;
 
 declare const _native: INative;
 
-declare module "../Engines/engine" {
-    interface Engine {
+declare module "../Engines/abstractEngine" {
+    interface AbstractEngine {
         /** @internal */
         _deviceSourceManager?: InternalDeviceSourceManager;
     }
@@ -46,7 +46,7 @@ export class InternalDeviceSourceManager implements IDisposable {
 
     public _refCount = 0;
 
-    public constructor(engine: Engine) {
+    public constructor(engine: AbstractEngine) {
         const numberOfDeviceTypes = Object.keys(DeviceType).length / 2;
         this._devices = new Array<Array<number>>(numberOfDeviceTypes);
 

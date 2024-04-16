@@ -4,11 +4,11 @@ import type { FollowCamera } from "../../Cameras/followCamera";
 import { serialize } from "../../Misc/decorators";
 import type { Nullable } from "../../types";
 import type { Observer } from "../../Misc/observable";
-import type { Engine } from "../../Engines/engine";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import type { Scene } from "../../scene";
 import { Tools } from "../../Misc/tools";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Manage the keyboard inputs to control the movement of a follow camera.
@@ -132,9 +132,9 @@ export class FollowCameraKeyboardMoveInput implements ICameraInput<FollowCamera>
     private _ctrlPressed: boolean;
     private _altPressed: boolean;
     private _shiftPressed: boolean;
-    private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
+    private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _scene: Scene;
 
     /**

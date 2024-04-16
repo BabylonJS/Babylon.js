@@ -3,7 +3,6 @@ import type { Scene } from "../scene";
 import type { Vector2 } from "../Maths/math.vector";
 import { Vector3 } from "../Maths/math.vector";
 import { Color4 } from "../Maths/math.color";
-import type { Engine } from "../Engines/engine";
 import type { IGetSetVerticesData } from "../Meshes/mesh.vertexData";
 import { VertexData } from "../Meshes/mesh.vertexData";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -23,6 +22,8 @@ import { CompatibilityOptions } from "../Compat/compatibilityOptions";
 
 import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -52,7 +53,7 @@ export class Geometry implements IGetSetVerticesData {
 
     // Private
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _meshes: Mesh[];
     private _totalVertices = 0;
     private _totalIndices?: number;
@@ -189,7 +190,7 @@ export class Geometry implements IGetSetVerticesData {
      * Gets the hosting engine
      * @returns the hosting Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
@@ -418,13 +419,14 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         const vaos = overrideVertexArrayObjects ? overrideVertexArrayObjects : this._vertexArrayObjects;
+        const engine = this._engine as ThinEngine;
 
         // Using VAO
         if (!vaos[effect.key]) {
-            vaos[effect.key] = this._engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
+            vaos[effect.key] = engine.recordVertexArrayObject(vbs, indexToBind, effect, overrideVertexBuffers);
         }
 
-        this._engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
+        engine.bindVertexArrayObject(vaos[effect.key], indexToBind);
     }
 
     /**
@@ -658,7 +660,7 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         if (this._vertexArrayObjects[effect.key]) {
-            this._engine.releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObjects[effect.key]);
             delete this._vertexArrayObjects[effect.key];
         }
     }
@@ -928,7 +930,7 @@ export class Geometry implements IGetSetVerticesData {
     private _disposeVertexArrayObjects(): void {
         if (this._vertexArrayObjects) {
             for (const kind in this._vertexArrayObjects) {
-                this._engine.releaseVertexArrayObject(this._vertexArrayObjects[kind]);
+                (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObjects[kind]);
             }
             this._vertexArrayObjects = {}; // Will trigger a rebuild of the VAO if supported
 

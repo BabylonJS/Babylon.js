@@ -14,7 +14,6 @@ import { Texture } from "core/Materials/Textures/texture";
 import { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { Layer } from "core/Layers/layer";
-import type { Engine } from "core/Engines/engine";
 import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
@@ -32,6 +31,7 @@ import { GetClass } from "core/Misc/typeStore";
 import { DecodeBase64ToBinary } from "core/Misc/stringTools";
 
 import type { StandardMaterial } from "core/Materials/standardMaterial";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Class used to create texture to support 2D GUI elements
@@ -52,13 +52,13 @@ export class AdvancedDynamicTexture extends DynamicTexture {
 
     private _isDirty = false;
     private _renderObserver: Nullable<Observer<Camera>>;
-    private _resizeObserver: Nullable<Observer<Engine>>;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>>;
     private _preKeyboardObserver: Nullable<Observer<KeyboardInfoPre>>;
     private _prePointerObserver: Nullable<Observer<PointerInfoPre>>;
     private _sceneRenderObserver: Nullable<Observer<Scene>>;
     private _pointerObserver: Nullable<Observer<PointerInfo>>;
     private _canvasPointerOutObserver: Nullable<Observer<PointerEvent>>;
-    private _canvasBlurObserver: Nullable<Observer<Engine>>;
+    private _canvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _controlAddedObserver: Nullable<Observer<Nullable<Control>>>;
     private _controlRemovedObserver: Nullable<Observer<Nullable<Control>>>;
     private _background: string;

@@ -35,16 +35,16 @@ const getNewVersion = () => {
 
 const updateEngineVersion = async (version) => {
     // get thinEngine.ts
-    const thinEngineFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Engines", "thinEngine.ts");
-    const thinEngineData = fs.readFileSync(thinEngineFile, "utf-8");
-    const array = /"babylonjs@(.*)"/.exec(thinEngineData);
+    const abstractEngineFile = path.join(baseDirectory, "packages", "dev", "core", "src", "Engines", "abstractEngine.ts");
+    const abstractEngineData = fs.readFileSync(abstractEngineFile, "utf-8");
+    const array = /"babylonjs@(.*)"/.exec(abstractEngineData);
     if (!array) {
-        throw new Error("Could not find babylonjs version in thinEngine.ts");
+        throw new Error("Could not find babylonjs version in abstractEngine.ts");
     }
 
     const regexp = new RegExp(array[1] + '"', "g");
-    const newThinEngineData = thinEngineData.replace(regexp, version + '"');
-    fs.writeFileSync(thinEngineFile, newThinEngineData);
+    const newAbstractEngineData = abstractEngineData.replace(regexp, version + '"');
+    fs.writeFileSync(abstractEngineFile, newAbstractEngineData);
 };
 
 const updateSinceTag = (version) => {

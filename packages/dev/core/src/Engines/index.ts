@@ -2,10 +2,12 @@
 export * from "./constants";
 export * from "./engineCapabilities";
 export * from "./instancingAttributeInfo";
+export * from "./abstractEngine";
 export * from "./thinEngine";
 export * from "./engine";
 export * from "./engineStore";
 export * from "./nullEngine";
+export * from "./AbstractEngine/index";
 export * from "./Extensions/index";
 export * from "./Native/index";
 export * from "./WebGPU/Extensions/index";
@@ -33,3 +35,4 @@ export * from "./IDrawContext";
 export * from "./shaderStore";
 export * from "./renderTargetWrapper";
 export * from "./Processors/iShaderProcessor";
+export * from "./engine.common";

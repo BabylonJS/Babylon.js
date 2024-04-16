@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import { Engine } from "../Engines/engine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 /**
  * Interface used to present a loading screen while loading a scene
  * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/customLoadingScreen
@@ -256,6 +256,6 @@ export class DefaultLoadingScreen implements ILoadingScreen {
     };
 }
 
-Engine.DefaultLoadingScreenFactory = (canvas: HTMLCanvasElement) => {
+AbstractEngine.DefaultLoadingScreenFactory = (canvas: HTMLCanvasElement) => {
     return new DefaultLoadingScreen(canvas);
 };

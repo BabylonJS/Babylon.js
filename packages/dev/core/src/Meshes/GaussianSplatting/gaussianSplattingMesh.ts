@@ -498,7 +498,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         let height = 1;
 
-        if (engine.webGLVersion === 1 && !engine.isWebGPU) {
+        if (engine.version === 1 && !engine.isWebGPU) {
             while (width * height < length) {
                 height *= 2;
             }

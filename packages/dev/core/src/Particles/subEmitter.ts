@@ -1,6 +1,6 @@
 import { Vector3 } from "../Maths/math.vector";
 import { _WarnImport } from "../Misc/devTools";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
 
 import type { Scene } from "../scene";
@@ -105,7 +105,7 @@ export class SubEmitter {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false): ParticleSystem {
+    public static _ParseParticleSystem(system: any, sceneOrEngine: Scene | AbstractEngine, rootUrl: string, doNotStart = false): ParticleSystem {
         throw _WarnImport("ParseParticle");
     }
 
@@ -116,7 +116,7 @@ export class SubEmitter {
      * @param rootUrl defines the rootUrl for data loading
      * @returns a new SubEmitter
      */
-    public static Parse(serializationObject: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string): SubEmitter {
+    public static Parse(serializationObject: any, sceneOrEngine: Scene | AbstractEngine, rootUrl: string): SubEmitter {
         const system = serializationObject.particleSystem;
         const subEmitter = new SubEmitter(SubEmitter._ParseParticleSystem(system, sceneOrEngine, rootUrl, true));
         subEmitter.type = serializationObject.type;

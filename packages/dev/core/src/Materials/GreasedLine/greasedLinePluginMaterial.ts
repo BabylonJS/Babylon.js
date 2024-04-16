@@ -1,4 +1,4 @@
-import type { Engine } from "../../Engines/engine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { RawTexture } from "../Textures/rawTexture";
 import { MaterialPluginBase } from "../materialPluginBase";
 import type { Scene } from "../../scene";
@@ -118,7 +118,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     private _cameraFacing: boolean;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     /**
      * Creates a new instance of the GreasedLinePluginMaterial

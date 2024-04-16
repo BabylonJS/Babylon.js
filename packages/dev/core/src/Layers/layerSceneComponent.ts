@@ -1,6 +1,6 @@
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { Layer } from "./layer";
@@ -32,7 +32,7 @@ export class LayerSceneComponent implements ISceneComponent {
      */
     public scene: Scene;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     /**
      * Creates a new instance of the component for the given scene
