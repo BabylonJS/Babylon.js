@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { Vector2 } from "../../../../Maths/math.vector";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to generate a twirl
@@ -116,12 +117,12 @@ export class TwirlBlock extends NodeMaterialBlock {
         const tempY = state._getFreeVariableName("y");
         const tempResult = state._getFreeVariableName("result");
 
-        state.compilationString += `
-            vec2 ${tempDelta} = ${this.input.associatedVariableName} - ${this.center.associatedVariableName};
-            float ${tempAngle} = ${this.strength.associatedVariableName} * length(${tempDelta});
-            float ${tempX} = cos(${tempAngle}) * ${tempDelta}.x - sin(${tempAngle}) * ${tempDelta}.y;
-            float ${tempY} = sin(${tempAngle}) * ${tempDelta}.x + cos(${tempAngle}) * ${tempDelta}.y;
-            vec2 ${tempResult} = vec2(${tempX} + ${this.center.associatedVariableName}.x + ${this.offset.associatedVariableName}.x, ${tempY} + ${this.center.associatedVariableName}.y + ${this.offset.associatedVariableName}.y);
+        state.compilationString += `        
+            ${state._declareLocalVar(tempDelta, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.input.associatedVariableName} - ${this.center.associatedVariableName};
+            ${state._declareLocalVar(tempAngle, NodeMaterialBlockConnectionPointTypes.Float)} = ${this.strength.associatedVariableName} * length(${tempDelta});
+            ${state._declareLocalVar(tempX, NodeMaterialBlockConnectionPointTypes.Float)} = cos(${tempAngle}) * ${tempDelta}.x - sin(${tempAngle}) * ${tempDelta}.y;
+            ${state._declareLocalVar(tempY, NodeMaterialBlockConnectionPointTypes.Float)} = sin(${tempAngle}) * ${tempDelta}.x + cos(${tempAngle}) * ${tempDelta}.y;
+            ${state._declareLocalVar(tempResult, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2(${tempX} + ${this.center.associatedVariableName}.x + ${this.offset.associatedVariableName}.x, ${tempY} + ${this.center.associatedVariableName}.y + ${this.offset.associatedVariableName}.y);
         `;
 
         if (this.output.hasEndpoints) {

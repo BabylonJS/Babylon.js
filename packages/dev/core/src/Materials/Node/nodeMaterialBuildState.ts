@@ -502,8 +502,8 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _generateTertiary(trueStatement: string, falseStatement: string, condition: string, state: NodeMaterialBuildState) {
-        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+    public _generateTertiary(trueStatement: string, falseStatement: string, condition: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
             return `select(${falseStatement}, ${trueStatement}, ${condition})`;
         }
 

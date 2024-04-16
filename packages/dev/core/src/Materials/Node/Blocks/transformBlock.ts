@@ -8,6 +8,7 @@ import type { Scene } from "../../../scene";
 import type { InputBlock } from "./Input/inputBlock";
 import type { AbstractMesh } from "../../../Meshes/abstractMesh";
 import type { NodeMaterial, NodeMaterialDefines } from "../nodeMaterial";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to transform a vector (2, 3 or 4) with a matrix. It will generate a Vector4
@@ -101,7 +102,11 @@ export class TransformBlock extends NodeMaterialBlock {
                 state.sharedData.blocksWithDefines.push(this);
 
                 const transformName = state._getFreeVariableName(`${transform.associatedVariableName}_NUS`);
-                state.compilationString += `mat3 ${transformName} = mat3(${transform.associatedVariableName});\n`;
+                if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    state.compilationString += `let ${transformName}: mat3x3f = mat3x3f(${transform.associatedVariableName}[0].xyz, ${transform.associatedVariableName}[1].xyz, ${transform.associatedVariableName}[2].xyz);\n`;
+                } else {
+                    state.compilationString += `mat3 ${transformName} = mat3(${transform.associatedVariableName});\n`;
+                }
                 state.compilationString += `#ifdef NONUNIFORMSCALING\n`;
                 state.compilationString += `${transformName} = transposeMat3(inverseMat3(${transformName}));\n`;
                 state.compilationString += `#endif\n`;
