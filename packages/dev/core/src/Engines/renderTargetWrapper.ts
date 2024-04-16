@@ -303,17 +303,25 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Shares the depth buffer of this render target with another render target.
-     * @internal
+     * @deprecated Use shareDepth instead
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: RenderTargetWrapper): void {
+        this.shareDepth(renderTarget);
+    }
+
+    /**
+     * Shares the depth buffer of this render target with another render target.
+     * @param renderTarget Destination renderTarget
+     */
+    public shareDepth(renderTarget: RenderTargetWrapper): void {
         if (this._depthStencilTexture) {
             if (renderTarget._depthStencilTexture) {
                 renderTarget._depthStencilTexture.dispose();
             }
 
             renderTarget._depthStencilTexture = this._depthStencilTexture;
+            renderTarget._depthStencilTextureWithStencil = this._depthStencilTextureWithStencil;
             this._depthStencilTexture.incrementReferences();
         }
     }

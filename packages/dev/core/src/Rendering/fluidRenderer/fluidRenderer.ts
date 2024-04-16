@@ -441,7 +441,7 @@ export class FluidRenderer {
                         if (!copyDepthTexture) {
                             copyDepthTexture = copyDepthTextures[key] = new FluidRenderingDepthTextureCopy(this._engine, thicknessTexture.width, thicknessTexture.height);
                         }
-                        copyDepthTexture.depthRTWrapper._shareDepth(thicknessRT);
+                        copyDepthTexture.depthRTWrapper.shareDepth(thicknessRT);
                     }
                 }
             });

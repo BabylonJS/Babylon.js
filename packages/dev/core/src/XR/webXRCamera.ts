@@ -319,8 +319,12 @@ export class WebXRCamera extends FreeCamera {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
+            // fov
+            const fov = Math.atan2(1, view.projectionMatrix[5]) * 2;
+            currentRig.fov = fov;
             // first camera?
             if (i === 0) {
+                this.fov = fov;
                 this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 

@@ -310,7 +310,7 @@ export class DepthPeelingRenderer {
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
-            prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
+            prePassRenderer.defaultRT.renderTarget!.shareDepth(this._depthMrts[0].renderTarget!);
         }
 
         return true;

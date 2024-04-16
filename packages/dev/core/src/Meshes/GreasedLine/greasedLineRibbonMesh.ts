@@ -1,5 +1,5 @@
 import type { Scene } from "../../scene";
-import { Quaternion, Vector3 } from "../../Maths/math.vector";
+import { Quaternion, TmpVectors, Vector3 } from "../../Maths/math.vector";
 import { Mesh } from "../mesh";
 import { Buffer } from "../../Buffers/buffer";
 import type { Nullable } from "../../types";
@@ -383,12 +383,21 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
                 directionPlane = GreasedLineRibbonMesh._GetDirectionFromPoints(pointVectors[0], pointVectors[1], null);
             }
 
+            if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO && !(ribbonInfo.directions instanceof Vector3)) {
+                // eslint-disable-next-line no-throw-literal
+                throw "In GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO 'GreasedLineMeshOptions.ribbonOptions.directions' must be a Vector3.";
+            }
+
+            TmpVectors.Vector3[1] = ribbonInfo.directions instanceof Vector3 ? ribbonInfo.directions : GreasedLineRibbonMesh.DIRECTION_XZ;
             for (let i = 0; i < pointVectors.length - (directionPlane ? 0 : 1); i++) {
                 const p1 = pointVectors[i];
                 const p2 = pointVectors[i + 1];
 
                 if (directionPlane) {
                     direction = <Vector3>directionPlane;
+                } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FACE_TO) {
+                    p2.subtractToRef(p1, TmpVectors.Vector3[0]);
+                    direction = Vector3.CrossToRef(TmpVectors.Vector3[0], TmpVectors.Vector3[1], TmpVectors.Vector3[2]).normalize();
                 } else if (ribbonInfo.directionsAutoMode === GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_ALL_SEGMENTS) {
                     direction = GreasedLineRibbonMesh._GetDirectionFromPoints(p1, p2, direction);
                 } else {
