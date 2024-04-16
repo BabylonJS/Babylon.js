@@ -167,17 +167,11 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
     materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
 
-    let length = 0;
-    if (Array.isArray(allPoints[0])) {
-        allPoints.forEach((points) => {
-            length += points.length / 3;
-        });
-    }
-
-    const widths = CompleteGreasedLineWidthTable(length, options.widths ?? [], options.widthDistribution);
+    const pointsCount = GetPointsCount(allPoints);
+    const widths = CompleteGreasedLineWidthTable(pointsCount, options.widths ?? [], options.widthDistribution);
 
     const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(length, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
+        ? CompleteGreasedLineColorTable(pointsCount, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
         : undefined;
 
     // create new mesh if instance is not defined
@@ -280,6 +274,19 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
     }
 
     return instance;
+}
+
+/**
+ * Counts the number of points
+ * @param allPoints Array of points [[x, y, z], [x, y, z], ...] or Array of points [x, y, z, x, y, z, ...]
+ * @returns total number of points
+ */
+export function GetPointsCount(allPoints: number[][]) {
+    let pointCount = 0;
+    for (const points of allPoints) {
+        pointCount += (<number[]>points).length / 3;
+    }
+    return pointCount;
 }
 
 /**
