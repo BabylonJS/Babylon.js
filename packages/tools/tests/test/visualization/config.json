@@ -726,10 +726,8 @@
         },
         {
             "title": "GLTF ClearCoat",
-            "playgroundId": "#YG3BBF#4",
-            "referenceImage": "glTFClearCoat.png",
-            "renderCount": 50,
-            "excludeFromAutomaticTesting": true
+            "playgroundId": "#YG3BBF#33",
+            "referenceImage": "glTFClearCoat.png"
         },
         {
             "title": "GLTF Alpha Blend",
@@ -1096,6 +1094,11 @@
             "referenceImage": "realtimeFiltering.png"
         },
         {
+            "title": "OBJ loader test (legacy)",
+            "playgroundId": "#SYQW69#1213",
+            "referenceImage": "objTestLoaderLegacy.png"
+        },
+        {
             "title": "OBJ loader test",
             "playgroundId": "#SYQW69#1209",
             "referenceImage": "objTestLoader.png"
@@ -1372,24 +1375,23 @@
         },
         {
             "title": "Scissor test",
-            "renderCount": 10,
-            "playgroundId": "#W7E7CF#12",
+            "playgroundId": "#W7E7CF#34",
             "excludedEngines": ["webgl1"],
             "referenceImage": "scissor-test.png"
         },
         {
             "title": "Scissor test with 0.9 hardware scaling",
-            "renderCount": 10,
-            "playgroundId": "#W7E7CF#27",
+            "playgroundId": "#W7E7CF#34",
+            "replace": "//options//, hardwareScalingLevel = 0.9;",
             "excludedEngines": ["webgl1"],
-            "referenceImage": "scissor-test.png"
+            "referenceImage": "scissor-test-2.png"
         },
         {
             "title": "Scissor test with 1.5 hardware scaling",
-            "renderCount": 10,
-            "playgroundId": "#W7E7CF#28",
+            "playgroundId": "#W7E7CF#34",
+            "replace": "//options//, hardwareScalingLevel = 1.5;",
             "excludedEngines": ["webgl1"],
-            "referenceImage": "scissor-test.png"
+            "referenceImage": "scissor-test-3.png"
         },
         {
             "title": "Scissor test with negative x and y",
@@ -2007,6 +2009,12 @@
             "renderCount": 10,
             "playgroundId": "#2I28SC#25",
             "excludeFromAutomaticTesting": true
+        },
+        {
+            "title": "Render to 3D RT",
+            "renderCount": 5,
+            "playgroundId": "#XSNYAU#83",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "Interleaved buffers test",

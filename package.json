@@ -93,7 +93,7 @@
         "format": "npm run format:check && npm run format:fix",
         "format:check": "prettier --check \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
         "format:fix": "prettier --write \"packages/**/src/**/*.{ts,tsx,js,json,scss,css}\"",
-        "lint": "npm run lint:check && npm run lint:fix",
+        "lint": "npm run lint:check",
         "lint:check": "eslint \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "lint:check-ci": "eslint -f node_modules/eslint-formatter-azure-devops/index.js \"packages/**/src/**/*.{ts,tsx,js,json}\" --quiet",
         "update-all-dependencies": "npm update -ws",

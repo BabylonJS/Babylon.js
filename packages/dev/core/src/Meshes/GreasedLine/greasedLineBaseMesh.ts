@@ -8,6 +8,7 @@ import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
 import type { Engine } from "../../Engines/engine";
+import type { FloatArray, IndicesArray } from "../../types";
 
 /**
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
@@ -34,12 +35,14 @@ export enum GreasedLineRibbonFacesMode {
  * AUTO_DIRECTIONS_FROM_FIRST_SEGMENT sets the direction (slope) of the ribbon from the direction of the first line segment. Recommended.
  * AUTO_DIRECTIONS_FROM_ALL_SEGMENTS in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments. Slow method.
  * AUTO_DIRECTIONS_ENHANCED in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments using a more sophisitcaed algorithm. Slowest method.
+ * AUTO_DIRECTIONS_FACE_TO in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments and a direction (face-to) vector specified in direction. The resulting line will face to the direction of this face-to vector.
  * AUTO_DIRECTIONS_NONE you have to set the direction (slope) manually. Recommended.
  */
 export enum GreasedLineRibbonAutoDirectionMode {
     AUTO_DIRECTIONS_FROM_FIRST_SEGMENT = 0,
     AUTO_DIRECTIONS_FROM_ALL_SEGMENTS = 1,
     AUTO_DIRECTIONS_ENHANCED = 2,
+    AUTO_DIRECTIONS_FACE_TO = 3,
     AUTO_DIRECTIONS_NONE = 99,
 }
 
@@ -91,7 +94,7 @@ export interface GreasedLineMeshOptions {
      */
     points: GreasedLinePoints;
     /**
-     * Each line segmment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
+     * Each line segment (from point to point) can have it's width multiplier. Final width = widths[segmentIdx] * width.
      * Defaults to empty array.
      */
     widths?: number[];
@@ -108,7 +111,7 @@ export interface GreasedLineMeshOptions {
     /**
      * UVs for the mesh
      */
-    uvs?: number[];
+    uvs?: FloatArray;
     /**
      * If true, offsets and widths are updatable.
      * Defaults to false.
@@ -131,9 +134,9 @@ export interface GreasedLineMeshOptions {
  * GreasedLineBaseMesh
  */
 export abstract class GreasedLineBaseMesh extends Mesh {
-    protected _vertexPositions: number[];
-    protected _indices: number[];
-    protected _uvs: number[];
+    protected _vertexPositions: FloatArray;
+    protected _indices: IndicesArray;
+    protected _uvs: FloatArray;
     protected _points: number[][];
     protected _offsets: number[];
     protected _colorPointers: number[];
@@ -230,7 +233,6 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
-     *
      * @returns true if the mesh was created in lazy mode
      */
     public isLazy(): boolean {
@@ -238,6 +240,23 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     }
 
     /**
+     * Returns the UVs
+     */
+    get uvs() {
+        return this._uvs;
+    }
+
+    /**
+     * Sets the UVs
+     * @param uvs the UVs
+     */
+    set uvs(uvs: FloatArray) {
+        this._uvs = uvs instanceof Float32Array ? uvs : new Float32Array(uvs);
+        this._createVertexBuffers();
+    }
+
+    /**
+     * Returns the points offsets
      * Return the points offsets
      */
     get offsets() {

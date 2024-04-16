@@ -173,6 +173,27 @@ export class Slider3D extends Control3D {
         return this._sliderBackplateMaterial;
     }
 
+    /**
+     * Gets the slider bar mesh used by this control
+     */
+    public get sliderBar(): AbstractMesh {
+        return this._sliderBar;
+    }
+
+    /**
+     * Gets the slider thumb mesh used by this control
+     */
+    public get sliderThumb(): AbstractMesh {
+        return this._sliderThumb;
+    }
+
+    /**
+     * Gets the slider backplate mesh used by this control
+     */
+    public get sliderBackplate(): AbstractMesh {
+        return this._sliderBackplate;
+    }
+
     /** Sets a boolean indicating if the control is visible */
     public set isVisible(value: boolean) {
         if (this._isVisible === value) {
