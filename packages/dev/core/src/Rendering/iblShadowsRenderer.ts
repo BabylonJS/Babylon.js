@@ -26,6 +26,7 @@ import { IblShadowsVoxelRenderer } from "../Rendering/iblShadowsVoxelRenderer";
 import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
+import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 
 class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
     /**
@@ -77,10 +78,20 @@ export class IblShadowsRenderer {
     private _excludedMeshes: number[] = [];
 
     private _voxelRenderer: IblShadowsVoxelRenderer;
+    private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
 
-    /**
-     * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
-     */
+    public setIblTexture(iblSource: Texture) {
+        this._importanceSamplingRenderer.iblSource = iblSource;
+    }
+
+    public get importanceSamplingDebugEnabled(): boolean {
+        return this._importanceSamplingRenderer.debugEnabled;
+    }
+
+    public set importanceSamplingDebugEnabled(enabled: boolean) {
+        this._importanceSamplingRenderer.debugEnabled = enabled;
+    }
+
     public get gbufferDebugEnabled(): boolean {
         return this._gbufferDebugEnabled;
     }
@@ -127,8 +138,8 @@ export class IblShadowsRenderer {
     }
 
     /**
-     * Add a mesh in the exclusion list to prevent it to be handled by the depth peeling renderer
-     * @param mesh The mesh to exclude from the depth peeling renderer
+     * Add a mesh in the exclusion list to prevent it to be handled by the IBL shadow renderer
+     * @param mesh The mesh to exclude from the IBL shadow renderer
      */
     public addExcludedMesh(mesh: AbstractMesh): void {
         if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
@@ -137,7 +148,7 @@ export class IblShadowsRenderer {
     }
 
     /**
-     * Remove a mesh from the exclusion list of the depth peeling renderer
+     * Remove a mesh from the exclusion list of the IBL shadow renderer
      * @param mesh The mesh to remove
      */
     public removeExcludedMesh(mesh: AbstractMesh): void {
@@ -161,9 +172,9 @@ export class IblShadowsRenderer {
     }
 
     /**
-     * Instanciates the depth peeling renderer
+     * Instanciates the IBL Shadow renderer
      * @param scene Scene to attach to
-     * @returns The depth peeling renderer
+     * @returns The IBL shadow renderer
      */
     constructor(scene: Scene) {
         this._scene = scene;
@@ -178,6 +189,7 @@ export class IblShadowsRenderer {
 
         this._prePassEffectConfiguration = new IblShadowsEffectConfiguration();
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
+        this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
         this._createTextures();
         this._createEffects();
 
@@ -270,16 +282,11 @@ export class IblShadowsRenderer {
     }
 
     /**
-     * Checks if the depth peeling renderer is ready to render transparent meshes
-     * @returns true if the depth peeling renderer is ready to render the transparent meshes
+     * Checks if the IBL shadow renderer is ready to render shadows
+     * @returns true if the IBL shadow renderer is ready to render the shadows
      */
     public isReady() {
-        return (
-            //     this._blendBackEffectWrapper.effect.isReady() &&
-            this._voxelRenderer.isReady() &&
-            // this._finalEffectWrapper.effect.isReady() &&
-            this._updateTextures()
-        );
+        return this._voxelRenderer.isReady() && this._importanceSamplingRenderer.isReady() && this._updateTextures();
     }
 
     /**
@@ -300,30 +307,20 @@ export class IblShadowsRenderer {
             this._voxelizationDirty = false;
         }
 
-        // this._candidateSubMeshes.length = 0;
         this._excludedSubMeshes.length = 0;
         if (!this.isReady()) {
             return this._excludedSubMeshes;
         }
 
-        // if (this._scene.activeCamera) {
-        //     this._engine.setViewport(this._scene.activeCamera.viewport);
-        // }
-
-        // // Final composition on default FB
-        // this._finalCompose();
-
         return this._excludedSubMeshes;
     }
 
     /**
-     * Disposes the depth peeling renderer and associated ressources
+     * Disposes the IBL shadow renderer and associated resources
      */
     public dispose() {
-        // this._disposeTextures();
-        // this._blendBackEffectWrapper.dispose();
-        // this._finalEffectWrapper.dispose();
         this._effectRenderer.dispose();
         this._voxelRenderer.dispose();
+        this._importanceSamplingRenderer.dispose();
     }
 }
