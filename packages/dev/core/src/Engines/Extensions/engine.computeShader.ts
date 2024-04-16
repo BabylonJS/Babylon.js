@@ -4,6 +4,7 @@ import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { Nullable } from "../../types";
+import { AbstractEngine } from "../abstractEngine";
 import type { WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 
@@ -60,8 +61,8 @@ export enum ComputeBindingType {
 /** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a new compute effect
          * @param baseName Name of the effect
@@ -219,7 +220,7 @@ ThinEngine.prototype._prepareComputePipelineContext = function (
 
 ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
-ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (
+AbstractEngine.prototype._executeWhenComputeStateIsCompiled = function (
     pipelineContext: IComputePipelineContext,
     action: (messages: Nullable<ComputeCompilationMessages>) => void
 ): void {

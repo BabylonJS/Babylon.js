@@ -260,7 +260,14 @@ export class DracoCompression implements IDisposable {
         }
     }
 
-    private _decodeMeshAsync(
+    /**
+     * Decode Draco compressed mesh data to mesh data.
+     * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+     * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+     * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
+     * @returns A promise that resolves with the decoded mesh data
+     */
+    public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
         gltfNormalizedOverride?: { [kind: string]: boolean }
@@ -373,7 +380,7 @@ export class DracoCompression implements IDisposable {
      * @returns A promise that resolves with the decoded geometry
      */
     public async decodeMeshToGeometryAsync(name: string, scene: Scene, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<Geometry> {
-        const meshData = await this._decodeMeshAsync(data, attributes);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes);
         const geometry = new Geometry(name, scene);
         if (meshData.indices) {
             geometry.setIndices(meshData.indices);
@@ -408,7 +415,7 @@ export class DracoCompression implements IDisposable {
         attributes: { [kind: string]: number },
         gltfNormalizedOverride: { [kind: string]: boolean }
     ): Promise<Geometry> {
-        const meshData = await this._decodeMeshAsync(data, attributes, gltfNormalizedOverride);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes, gltfNormalizedOverride);
         const geometry = new Geometry(name, scene);
         if (meshData.indices) {
             geometry.setIndices(meshData.indices);
@@ -443,7 +450,7 @@ export class DracoCompression implements IDisposable {
      * @deprecated Use {@link decodeMeshToGeometryAsync} for better performance in some cases
      */
     public async decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
-        const meshData = await this._decodeMeshAsync(data, attributes);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes);
         const vertexData = new VertexData();
         if (meshData.indices) {
             vertexData.indices = meshData.indices;

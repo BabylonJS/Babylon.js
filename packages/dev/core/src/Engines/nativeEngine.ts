@@ -21,7 +21,7 @@ import type { IPipelineContext } from "./IPipelineContext";
 import type { IColor3Like, IColor4Like, IViewportLike } from "../Maths/math.like";
 import { Logger } from "../Misc/logger";
 import { Constants } from "./constants";
-import type { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./abstractEngine";
 import { ThinEngine } from "./thinEngine";
 import type { IWebRequest } from "../Misc/interfaces/iWebRequest";
 import { EngineStore } from "./engineStore";
@@ -50,6 +50,7 @@ import {
     getNativeStencilOpFail,
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
+import { AbstractEngine } from "./abstractEngine";
 
 declare const _native: INative;
 
@@ -1740,7 +1741,7 @@ export class NativeEngine extends Engine {
         const extension = forcedExtension ? forcedExtension : lastDot > -1 ? url.substring(lastDot).toLowerCase() : "";
 
         let loader: Nullable<IInternalTextureLoader> = null;
-        for (const availableLoader of Engine._TextureLoaders) {
+        for (const availableLoader of AbstractEngine._TextureLoaders) {
             if (availableLoader.canLoad(extension)) {
                 loader = availableLoader;
                 break;

@@ -6,7 +6,7 @@ import type { WebGPUBufferDescription } from "./webgpuShaderProcessingContext";
 import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
-import type { ThinEngine } from "../thinEngine";
+import type { AbstractEngine } from "../abstractEngine";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
@@ -275,7 +275,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return uniformBuffer;
     }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: AbstractEngine) {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions

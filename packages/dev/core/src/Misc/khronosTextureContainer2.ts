@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import { AutoReleaseWorkerPool } from "./workerPool";
 import { Tools } from "./tools";
@@ -256,7 +256,7 @@ export class KhronosTextureContainer2 {
         return Math.min(Math.floor(navigator.hardwareConcurrency * 0.5), 4);
     }
 
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
 
     private static _Initialize(numWorkers: number): void {
         if (KhronosTextureContainer2._WorkerPoolPromise || KhronosTextureContainer2._DecoderModulePromise) {
@@ -304,7 +304,7 @@ export class KhronosTextureContainer2 {
      * @param engine The engine to use
      * @param numWorkersOrOptions The number of workers for async operations. Specify `0` to disable web workers and run synchronously in the current context.
      */
-    public constructor(engine: ThinEngine, numWorkersOrOptions: number | IKhronosTextureContainer2Options = KhronosTextureContainer2.DefaultNumWorkers) {
+    public constructor(engine: AbstractEngine, numWorkersOrOptions: number | IKhronosTextureContainer2Options = KhronosTextureContainer2.DefaultNumWorkers) {
         this._engine = engine;
         if (typeof numWorkersOrOptions === "object" && numWorkersOrOptions.workerPool) {
             KhronosTextureContainer2._WorkerPoolPromise = Promise.resolve(numWorkersOrOptions.workerPool);

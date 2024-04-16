@@ -3,13 +3,13 @@ import type { Nullable } from "../../types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
 import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
 
-import type { ThinEngine } from "../thinEngine";
+import type { AbstractEngine } from "../abstractEngine";
 
 /** @internal */
 export class WebGLShaderProcessor implements IShaderProcessor {
     public shaderLanguage = ShaderLanguage.GLSL;
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: AbstractEngine) {
         // Remove extensions
         if (!engine.getCaps().drawBuffersExtension) {
             // even if enclosed in #if/#endif, IE11 does parse the #extension declaration, so we need to remove it altogether

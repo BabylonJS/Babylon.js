@@ -1,6 +1,5 @@
 import type { Nullable, IndicesArray, DeepImmutable, FloatArray } from "../types";
 import type { Matrix, Vector3 } from "../Maths/math.vector";
-import type { Engine } from "../Engines/engine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { IntersectionInfo } from "../Collisions/intersectionInfo";
 import type { ICullable } from "../Culling/boundingInfo";
@@ -21,12 +20,13 @@ import type { AbstractMesh } from "./abstractMesh";
 import type { Mesh } from "./mesh";
 import type { Ray } from "../Culling/ray";
 import type { TrianglePickingPredicate } from "../Culling/ray";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Defines a subdivision inside a mesh
  */
 export class SubMesh implements ICullable {
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     /** @internal */
     public _drawWrappers: Array<DrawWrapper>; // index in this array = pass id
     private _mainDrawWrapperOverride: Nullable<DrawWrapper> = null;
@@ -431,7 +431,7 @@ export class SubMesh implements ICullable {
     /**
      * @internal
      */
-    public _getLinesIndexBuffer(indices: IndicesArray, engine: Engine): DataBuffer {
+    public _getLinesIndexBuffer(indices: IndicesArray, engine: AbstractEngine): DataBuffer {
         if (!this._linesIndexBuffer) {
             const linesIndices = [];
 

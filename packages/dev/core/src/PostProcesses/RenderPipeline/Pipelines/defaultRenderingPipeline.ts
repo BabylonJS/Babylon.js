@@ -9,7 +9,7 @@ import { Logger } from "../../../Misc/logger";
 import type { Camera } from "../../../Cameras/camera";
 import type { ImageProcessingConfiguration } from "../../../Materials/imageProcessingConfiguration";
 import { Texture } from "../../../Materials/Textures/texture";
-import type { Engine } from "../../../Engines/engine";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import { Constants } from "../../../Engines/constants";
 import type { IDisposable, Scene } from "../../../scene";
 import { GlowLayer } from "../../../Layers/glowLayer";
@@ -156,7 +156,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
         return this._sharpenEnabled;
     }
 
-    private _resizeObserver: Nullable<Observer<Engine>> = null;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _hardwareScaleLevel = 1.0;
     private _bloomKernel: number = 64;
     /**

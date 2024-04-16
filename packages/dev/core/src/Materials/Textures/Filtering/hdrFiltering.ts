@@ -1,7 +1,7 @@
 import { Vector3 } from "../../../Maths/math";
 import { Scalar } from "../../../Maths/math.scalar";
 import type { BaseTexture } from "../baseTexture";
-import type { ThinEngine } from "../../../Engines/thinEngine";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import type { Effect } from "../../../Materials/effect";
 import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
@@ -31,7 +31,7 @@ interface IHDRFilteringOptions {
  * Filters HDR maps to get correct renderings of PBR reflections
  */
 export class HDRFiltering {
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
     private _effectRenderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
 
@@ -55,7 +55,7 @@ export class HDRFiltering {
      * @param engine Thin engine
      * @param options Options
      */
-    constructor(engine: ThinEngine, options: IHDRFilteringOptions = {}) {
+    constructor(engine: AbstractEngine, options: IHDRFilteringOptions = {}) {
         // pass
         this._engine = engine;
         this.hdrScale = options.hdrScale || this.hdrScale;

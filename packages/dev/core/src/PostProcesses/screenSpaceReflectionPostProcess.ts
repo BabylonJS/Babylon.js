@@ -13,7 +13,7 @@ import { ScreenSpaceReflectionsConfiguration } from "../Rendering/screenSpaceRef
 import "../Shaders/screenSpaceReflection.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 import { Logger } from "core/Misc/logger";
 
@@ -98,7 +98,7 @@ export class ScreenSpaceReflectionPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,

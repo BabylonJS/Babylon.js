@@ -1,5 +1,52 @@
 # Changelog
 
+## 7.2.2
+
+### Core
+
+- Fix NME MatrixTransposeBlock - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14985](https://github.com/BabylonJS/Babylon.js/pull/14985))
+- Fix pasring CylinderDirectedParticleEmitter - by [RaananW](https://github.com/RaananW) ([#14984](https://github.com/BabylonJS/Babylon.js/pull/14984))
+- Changes to Draco module - by [RaananW](https://github.com/RaananW) ([#14978](https://github.com/BabylonJS/Babylon.js/pull/14978))
+- FIX PBR Sub surface configuration - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14977](https://github.com/BabylonJS/Babylon.js/pull/14977))
+- docs: fix comment for getHighestFrame - by [wy-luke](https://github.com/wy-luke) ([#14975](https://github.com/BabylonJS/Babylon.js/pull/14975))
+
+## 7.2.1
+
+### Core
+
+- Set the XR camera's fov - [_New Feature_] by [RaananW](https://github.com/RaananW) ([#14974](https://github.com/BabylonJS/Babylon.js/pull/14974))
+- Physics Angular Impulse + Misc - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14972](https://github.com/BabylonJS/Babylon.js/pull/14972))
+
+## 7.2.0
+
+### Core
+
+- Add observable when a hand mesh was set - by [RaananW](https://github.com/RaananW) ([#14967](https://github.com/BabylonJS/Babylon.js/pull/14967))
+- GreasedLine changes - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#14943](https://github.com/BabylonJS/Babylon.js/pull/14943))
+- fix releaseDrag for bbox gizmo - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14962](https://github.com/BabylonJS/Babylon.js/pull/14962))
+- RenderTargetWrapper: Make shareDepth visible - by [Popov72](https://github.com/Popov72) ([#14961](https://github.com/BabylonJS/Babylon.js/pull/14961))
+- WebGPU: fix when depth texture is 2DArray - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14959](https://github.com/BabylonJS/Babylon.js/pull/14959))
+- Fix scale gizmo isHovered flag - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14958](https://github.com/BabylonJS/Babylon.js/pull/14958))
+- ComputeEffect: Implement onError callback - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14952](https://github.com/BabylonJS/Babylon.js/pull/14952))
+- Fix Matrix.multiplyByFloats and Vector3.Project in WebGPU - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14954](https://github.com/BabylonJS/Babylon.js/pull/14954))
+- ComputeEffect: Implement onError callback - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#14952](https://github.com/BabylonJS/Babylon.js/pull/14952))
+- Baked Vertex Animations: Add shadow support - by [Popov72](https://github.com/Popov72) ([#14953](https://github.com/BabylonJS/Babylon.js/pull/14953))
+- WGSL varying identification and interpolation - by [XanthosXanthopoulos](https://github.com/XanthosXanthopoulos) ([#14935](https://github.com/BabylonJS/Babylon.js/pull/14935))
+- docs: add comments to goToFrame function - by [wy-luke](https://github.com/wy-luke) ([#14951](https://github.com/BabylonJS/Babylon.js/pull/14951))
+- GreasedLineMesh: fix index offset of instanced line - by [kzhsw](https://github.com/kzhsw) ([#14950](https://github.com/BabylonJS/Babylon.js/pull/14950))
+- Simplify types used in math - by [RaananW](https://github.com/RaananW) ([#14928](https://github.com/BabylonJS/Babylon.js/pull/14928))
+- Fix UV Animations Remove checkTransformsAreIdentical - by [sebavan](https://github.com/sebavan) ([#14947](https://github.com/BabylonJS/Babylon.js/pull/14947))
+
+### GUI
+
+- Don't clip the grid's children in a scrollview - by [RaananW](https://github.com/RaananW) ([#14969](https://github.com/BabylonJS/Babylon.js/pull/14969))
+- Slider3D: Add getters for internal meshes - by [Popov72](https://github.com/Popov72) ([#14946](https://github.com/BabylonJS/Babylon.js/pull/14946))
+
+### Loaders
+
+- Fix khr-animation-pointer with uv transforms - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14964](https://github.com/BabylonJS/Babylon.js/pull/14964))
+- Add missing iridescence textures to animation pointer data - by [bghgary](https://github.com/bghgary) ([#14945](https://github.com/BabylonJS/Babylon.js/pull/14945))
+
 ## 7.1.0
 
 ### Core

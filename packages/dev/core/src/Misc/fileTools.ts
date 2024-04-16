@@ -10,11 +10,11 @@ import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
 import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
-import { ThinEngine } from "../Engines/thinEngine";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import type { INative } from "../Engines/Native/nativeInterfaces";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
 declare const _native: INative;
@@ -773,8 +773,8 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  * @internal
  */
 const initSideEffects = () => {
-    ThinEngine._FileToolsLoadImage = LoadImage;
-    ThinEngine._FileToolsLoadFile = LoadFile;
+    AbstractEngine._FileToolsLoadImage = LoadImage;
+    AbstractEngine._FileToolsLoadFile = LoadFile;
     ShaderProcessor._FileToolsLoadFile = LoadFile;
 };
 

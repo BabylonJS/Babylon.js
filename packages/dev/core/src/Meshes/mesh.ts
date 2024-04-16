@@ -15,7 +15,6 @@ import type { Vector4 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import type { Color4 } from "../Maths/math.color";
 import { Color3 } from "../Maths/math.color";
-import type { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import type { IGetSetVerticesData } from "./mesh.vertexData";
@@ -50,6 +49,7 @@ import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * @internal
@@ -1906,7 +1906,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
+    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
         const visibleInstances = batch.visibleInstances[subMesh._id];
         const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
@@ -2066,7 +2066,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
+    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: AbstractEngine) {
         // Stats
         const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
 

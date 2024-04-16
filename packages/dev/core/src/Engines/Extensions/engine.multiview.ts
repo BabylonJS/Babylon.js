@@ -10,6 +10,7 @@ import { MultiviewRenderTarget } from "../../Materials/Textures/MultiviewRenderT
 import { Frustum } from "../../Maths/math.frustum";
 import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper";
 import type { RenderTargetWrapper } from "../renderTargetWrapper";
+import type { AbstractEngine } from "../abstractEngine";
 
 declare module "../../Engines/engine" {
     export interface Engine {
@@ -179,7 +180,7 @@ declare module "../../scene" {
     }
 }
 
-function createMultiviewUbo(engine: Engine, name?: string) {
+function createMultiviewUbo(engine: AbstractEngine, name?: string) {
     const ubo = new UniformBuffer(engine, undefined, true, name);
     ubo.addUniform("viewProjection", 16);
     ubo.addUniform("viewProjectionR", 16);

@@ -13,10 +13,10 @@ import { Constants } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Material } from "../../Materials/material";
-
 import "../../Shaders/velocity.fragment";
 import "../../Shaders/velocity.vertex";
-import type { Observer } from "core/Misc/observable";
+import type { Observer } from "../../Misc/observable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 /**
  * Used for Space Warp render process
@@ -36,9 +36,12 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
      */
     constructor(motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture, scene?: Scene, size: number | { width: number; height: number } | { ratio: number } = 512) {
         super("spacewarp rtt", size, scene, false, true, Constants.TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
-        this._renderTarget = this.getScene()!
-            .getEngine()
-            .createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight(), motionVectorTexture, depthStencilTexture);
+        this._renderTarget = (this.getScene()!.getEngine() as Engine).createMultiviewRenderTargetTexture(
+            this.getRenderWidth(),
+            this.getRenderHeight(),
+            motionVectorTexture,
+            depthStencilTexture
+        );
         (this._renderTarget as WebGLRenderTargetWrapper)._disposeOnlyFramebuffers = true;
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
@@ -103,7 +106,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         if (!this._renderTarget) {
             return;
         }
-        this.getScene()!.getEngine().bindSpaceWarpFramebuffer(this._renderTarget);
+        (this.getScene()!.getEngine() as Engine).bindSpaceWarpFramebuffer(this._renderTarget);
     }
 
     /**
@@ -137,7 +140,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         protected readonly _xrSessionManager: WebXRSessionManager,
         protected readonly _xrWebGLBinding: XRWebGLBinding
     ) {
-        this._engine = _scene.getEngine();
+        this._engine = _scene.getEngine() as Engine;
     }
 
     private _getSubImageForView(view: XRView): XRWebGLSubImage {
@@ -297,7 +300,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         }
 
         const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = engine._gl;
+        this._glContext = (engine as ThinEngine)._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
 
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);

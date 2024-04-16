@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { WebXRRenderTarget } from "./webXRTypes";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
@@ -30,7 +30,7 @@ export class WebXRManagedOutputCanvasOptions {
      * @param engine defines the engine to use (can be null)
      * @returns default values of this configuration object
      */
-    public static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions {
+    public static GetDefaults(engine?: AbstractEngine): WebXRManagedOutputCanvasOptions {
         const defaults = new WebXRManagedOutputCanvasOptions();
         defaults.canvasOptions = {
             antialias: true,
@@ -50,7 +50,7 @@ export class WebXRManagedOutputCanvasOptions {
  */
 export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
-    private _engine: Nullable<ThinEngine> = null;
+    private _engine: Nullable<AbstractEngine> = null;
     private _originalCanvasSize: {
         width: number;
         height: number;

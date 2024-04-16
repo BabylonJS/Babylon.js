@@ -2,7 +2,7 @@
 import type { Scene } from "./scene";
 import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
-import type { Engine } from "./Engines/engine";
+import type { AbstractEngine } from "./Engines/abstractEngine";
 import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import type { Observer } from "./Misc/observable";
@@ -370,7 +370,7 @@ export class Node implements IBehaviorAware<Node> {
      * Gets the engine of the node
      * @returns a Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._scene.getEngine();
     }
 

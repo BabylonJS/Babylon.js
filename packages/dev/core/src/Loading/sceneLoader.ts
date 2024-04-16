@@ -2,7 +2,6 @@ import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
-import { Engine } from "../Engines/engine";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { AnimationGroup } from "../Animations/animationGroup";
@@ -22,6 +21,8 @@ import type { Light } from "../Lights/light";
 import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
+import { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -919,7 +920,7 @@ export class SceneLoader {
     public static Load(
         rootUrl: string,
         sceneFilename: string | File | ArrayBufferView = "",
-        engine: Nullable<Engine> = EngineStore.LastCreatedEngine,
+        engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
@@ -947,7 +948,7 @@ export class SceneLoader {
     public static LoadAsync(
         rootUrl: string,
         sceneFilename: string | File | ArrayBufferView = "",
-        engine: Nullable<Engine> = EngineStore.LastCreatedEngine,
+        engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         pluginExtension: Nullable<string> = null,
         name: string = ""

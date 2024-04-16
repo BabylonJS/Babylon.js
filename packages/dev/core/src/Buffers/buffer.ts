@@ -1,5 +1,5 @@
 import type { Nullable, DataArray, FloatArray } from "../types";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { DataBuffer } from "./dataBuffer";
 import type { Mesh } from "../Meshes/mesh";
 import { Logger } from "../Misc/logger";
@@ -9,7 +9,7 @@ import { Constants } from "../Engines/constants";
  * Class used to store data that will be store in GPU memory
  */
 export class Buffer {
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
     private _buffer: Nullable<DataBuffer>;
     /** @internal */
     public _data: Nullable<DataArray>;
@@ -45,7 +45,7 @@ export class Buffer {
      * @param label defines the label of the buffer (for debug purpose)
      */
     constructor(
-        engine: ThinEngine,
+        engine: AbstractEngine,
         data: DataArray | DataBuffer,
         updatable: boolean,
         stride = 0,
@@ -446,7 +446,7 @@ export class VertexBuffer {
     /**
      * Gets the engine associated with the buffer
      */
-    public readonly engine: ThinEngine;
+    public readonly engine: AbstractEngine;
 
     /**
      * Gets the max possible amount of vertices stored within the current vertex buffer.
@@ -485,7 +485,7 @@ export class VertexBuffer {
      * @param takeBufferOwnership defines if the buffer should be released when the vertex buffer is disposed
      */
     constructor(
-        engine: ThinEngine,
+        engine: AbstractEngine,
         data: DataArray | Buffer | DataBuffer,
         kind: string,
         updatable: boolean,
@@ -508,11 +508,11 @@ export class VertexBuffer {
      * @param kind the vertex buffer kind
      * @param options defines the rest of the options used to create the buffer
      */
-    constructor(engine: ThinEngine, data: DataArray | Buffer | DataBuffer, kind: string, options?: IVertexBufferOptions);
+    constructor(engine: AbstractEngine, data: DataArray | Buffer | DataBuffer, kind: string, options?: IVertexBufferOptions);
 
     /** @internal */
     constructor(
-        engine: ThinEngine,
+        engine: AbstractEngine,
         data: DataArray | Buffer | DataBuffer,
         kind: string,
         updatableOrOptions?: boolean | IVertexBufferOptions,

@@ -7,7 +7,7 @@ import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import type { IInspectable } from "../../Misc/iInspectable";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
@@ -392,7 +392,7 @@ export class Texture extends BaseTexture {
      */
     constructor(
         url: Nullable<string>,
-        sceneOrEngine?: Nullable<Scene | ThinEngine>,
+        sceneOrEngine?: Nullable<Scene | AbstractEngine>,
         noMipmapOrOptions?: boolean | ITextureCreationOptions,
         invertY?: boolean,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
