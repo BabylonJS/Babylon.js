@@ -80,7 +80,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateWidths(): void {
-        super._updateWidthsWithValue(0);
+        // intentionally left blank
     }
 
     protected _setPoints(points: number[][]) {
