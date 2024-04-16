@@ -502,6 +502,17 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
+    public _generateTertiary(trueStatement: string, falseStatement: string, condition: string, state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `select(${falseStatement}, ${trueStatement}, ${condition})`;
+        }
+
+        return `${condition} ? ${trueStatement} : ${falseStatement}`;
+    }
+
+    /**
+     * @internal
+     */
     public _emitFloat(value: number) {
         if (value.toString() === value.toFixed(0)) {
             return `${value}.0`;
@@ -514,7 +525,7 @@ export class NodeMaterialBuildState {
      * @internal
      */
     public _declareOutput(output: NodeMaterialConnectionPoint): string {
-        return this, this._declareLocalVar(output.associatedVariableName, output.type);
+        return this._declareLocalVar(output.associatedVariableName, output.type);
     }
 
     /**
