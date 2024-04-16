@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.2.0",
+    "fromTag": "7.2.1",
     "changelog": {
         "7.2.1": [
             {
@@ -36,6 +36,84 @@
                     "enhancement",
                     "physics"
                 ]
+            }
+        ],
+        "7.2.2": [
+            {
+                "pr": "14985",
+                "title": "Fix NME MatrixTransposeBlock",
+                "description": "https://forum.babylonjs.com/t/error-with-matrixtranspose-node-in-nme/49637",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixTransposeBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14984",
+                "title": "Fix pasring CylinderDirectedParticleEmitter",
+                "description": "Fixing #14983",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14978",
+                "title": "Changes to Draco module",
+                "description": "* Included the non-glTF draco assets\n* exposed decode to mesh-data (was private)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/tools/babylonServer/public/draco_decoder.js",
+                    "packages/tools/babylonServer/public/draco_decoder.wasm",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14977",
+                "title": "FIX PBR Sub surface configuration",
+                "description": "https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/38",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14975",
+                "title": "docs: fix comment for getHighestFrame",
+                "description": "I assume that the result of `getHighestFrame()` should be the frame, rather the frame **rate**.",
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts"
+                ],
+                "tags": []
             }
         ],
         "7.2.0": [

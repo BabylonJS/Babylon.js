@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.2.2
+
+### Core
+
+- Fix NME MatrixTransposeBlock - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14985](https://github.com/BabylonJS/Babylon.js/pull/14985))
+- Fix pasring CylinderDirectedParticleEmitter - by [RaananW](https://github.com/RaananW) ([#14984](https://github.com/BabylonJS/Babylon.js/pull/14984))
+- Changes to Draco module - by [RaananW](https://github.com/RaananW) ([#14978](https://github.com/BabylonJS/Babylon.js/pull/14978))
+- FIX PBR Sub surface configuration - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#14977](https://github.com/BabylonJS/Babylon.js/pull/14977))
+- docs: fix comment for getHighestFrame - by [wy-luke](https://github.com/wy-luke) ([#14975](https://github.com/BabylonJS/Babylon.js/pull/14975))
+
 ## 7.2.1
 
 ### Core
