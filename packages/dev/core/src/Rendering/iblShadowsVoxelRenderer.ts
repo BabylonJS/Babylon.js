@@ -49,9 +49,7 @@ export class IblShadowsVoxelRenderer {
     }
 
     private _voxelResolution: number;
-    /**
-     * Number of depth peeling passes. As we are using dual depth peeling, each pass two levels of transparency are processed.
-     */
+
     public get voxelResolution(): number {
         return this._voxelResolution;
     }
@@ -96,10 +94,10 @@ export class IblShadowsVoxelRenderer {
     }
 
     /**
-     * Instanciates the depth peeling renderer
+     * Instanciates the voxel renderer
      * @param scene Scene to attach to
      * @param resolution Number of depth layers to peel
-     * @returns The depth peeling renderer
+     * @returns The voxel renderer
      */
     constructor(scene: Scene, resolution: number = 64) {
         this._scene = scene;
@@ -197,8 +195,8 @@ export class IblShadowsVoxelRenderer {
     }
 
     /**
-     * Checks if the depth peeling renderer is ready to render transparent meshes
-     * @returns true if the depth peeling renderer is ready to render the transparent meshes
+     * Checks if the voxel renderer is ready to voxelize scene
+     * @returns true if the voxel renderer is ready to voxelize scene
      */
     public isReady() {
         return true;
@@ -282,13 +280,10 @@ export class IblShadowsVoxelRenderer {
     }
 
     /**
-     * Disposes the depth peeling renderer and associated ressources
+     * Disposes the voxel renderer and associated resources
      */
     public dispose() {
         this._disposeTextures();
         // TODO - dispose all created voxel materials.
-        // this._blendBackEffectWrapper.dispose();
-        // this._voxelEffectWrapper.dispose();
-        // this._voxelEffectRenderer.dispose();
     }
 }
