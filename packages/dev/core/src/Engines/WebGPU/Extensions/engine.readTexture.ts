@@ -3,6 +3,38 @@ import type { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
+declare module "../../webgpuEngine" {
+    export interface WebGPUEngine {
+        /** @internal */
+        _readTexturePixels(
+            texture: InternalTexture,
+            width: number,
+            height: number,
+            faceIndex?: number,
+            level?: number,
+            buffer?: Nullable<ArrayBufferView>,
+            flushRenderer?: boolean,
+            noDataConversion?: boolean,
+            x?: number,
+            y?: number
+        ): Promise<ArrayBufferView>;
+
+        /** @internal */
+        _readTexturePixelsSync(
+            texture: InternalTexture,
+            width: number,
+            height: number,
+            faceIndex?: number,
+            level?: number,
+            buffer?: Nullable<ArrayBufferView>,
+            flushRenderer?: boolean,
+            noDataConversion?: boolean,
+            x?: number,
+            y?: number
+        ): ArrayBufferView;
+    }
+}
+
 WebGPUEngine.prototype._readTexturePixels = function (
     texture: InternalTexture,
     width: number,

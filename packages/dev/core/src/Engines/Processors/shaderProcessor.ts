@@ -16,8 +16,8 @@ import type { WebRequest } from "../../Misc/webRequest";
 import type { LoadFileError } from "../../Misc/fileTools";
 import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import type { IFileRequest } from "../../Misc/fileRequest";
-import type { ThinEngine } from "../thinEngine";
 import { _getGlobalDefines } from "../thinEngine.functions";
+import type { AbstractEngine } from "../abstractEngine";
 
 const regexSE = /defined\s*?\((.+?)\)/g;
 const regexSERevert = /defined\s*?\[(.+?)\]/g;
@@ -36,7 +36,7 @@ export function Initialize(options: ProcessingOptions): void {
 }
 
 /** @internal */
-export function Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: ThinEngine) {
+export function Process(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine?: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
@@ -50,7 +50,7 @@ export function Process(sourceCode: string, options: ProcessingOptions, callback
 }
 
 /** @internal */
-export function PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: ThinEngine) {
+export function PreProcess(sourceCode: string, options: ProcessingOptions, callback: (migratedCode: string, codeBeforeMigration: string) => void, engine: AbstractEngine) {
     if (options.processor?.preProcessShaderCode) {
         sourceCode = options.processor.preProcessShaderCode(sourceCode, options.isFragment);
     }
@@ -288,7 +288,7 @@ function _EvaluatePreProcessors(sourceCode: string, preprocessors: { [key: strin
     return rootNode.process(preprocessors, options);
 }
 
-function _PreparePreProcessors(options: ProcessingOptions, engine?: ThinEngine): { [key: string]: string } {
+function _PreparePreProcessors(options: ProcessingOptions, engine?: AbstractEngine): { [key: string]: string } {
     const defines = options.defines;
     const preprocessors: { [key: string]: string } = {};
 
@@ -309,7 +309,7 @@ function _PreparePreProcessors(options: ProcessingOptions, engine?: ThinEngine):
     return preprocessors;
 }
 
-function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine?: ThinEngine): string {
+function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions, engine?: AbstractEngine): string {
     let preparedSourceCode = _ProcessPrecision(sourceCode, options);
 
     if (!options.processor) {
@@ -348,7 +348,7 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
     return preparedSourceCode;
 }
 
-function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: ThinEngine): string {
+function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, engine: AbstractEngine): string {
     let preparedSourceCode = sourceCode;
 
     const defines = options.defines;

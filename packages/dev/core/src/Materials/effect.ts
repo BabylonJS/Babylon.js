@@ -8,11 +8,10 @@ import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
-import type { Engine } from "../Engines/engine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -205,7 +204,7 @@ export class Effect implements IDisposable {
 
     private static _UniqueIdSeed = 0;
     /** @internal */
-    public _engine: Engine;
+    public _engine: AbstractEngine;
     private _uniformBuffersNamesList: string[];
     private _uniformsNames: string[];
     private _samplers: { [key: string]: number } = {};
@@ -279,9 +278,9 @@ export class Effect implements IDisposable {
     constructor(
         baseName: IShaderPath | string,
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
-        uniformsNamesOrEngine: string[] | ThinEngine,
+        uniformsNamesOrEngine: string[] | AbstractEngine,
         samplers: Nullable<string[]> = null,
-        engine?: ThinEngine,
+        engine?: AbstractEngine,
         defines: Nullable<string> = null,
         fallbacks: Nullable<IEffectFallbacks> = null,
         onCompiled: Nullable<(effect: Effect) => void> = null,
@@ -297,7 +296,7 @@ export class Effect implements IDisposable {
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
-            this._engine = <Engine>uniformsNamesOrEngine;
+            this._engine = <AbstractEngine>uniformsNamesOrEngine;
 
             this._attributesNames = options.attributes;
             this._uniformsNames = options.uniformsNames.concat(options.samplers);
@@ -323,7 +322,7 @@ export class Effect implements IDisposable {
 
             cachedPipline = cachedPipline || options.existingPipelineContext;
         } else {
-            this._engine = <Engine>engine;
+            this._engine = <AbstractEngine>engine;
             this.defines = defines == null ? "" : defines;
             this._uniformsNames = (<string[]>uniformsNamesOrEngine).concat(<string[]>samplers);
             this._samplerList = samplers ? <string[]>samplers.slice() : [];
@@ -423,7 +422,7 @@ export class Effect implements IDisposable {
      * The engine the effect was initialized with.
      * @returns the engine.
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
@@ -734,32 +733,35 @@ export class Effect implements IDisposable {
             const vertex = overrides ? this._vertexSourceCodeOverride : this._vertexSourceCode;
             const fragment = overrides ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
             const engine = this._engine;
-            this._pipelineContext = createAndPreparePipelineContext({
-                existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
-                vertex,
-                fragment,
-                context: engine._gl,
-                rebuildRebind: (
-                    vertexSourceCode: string,
-                    fragmentSourceCode: string,
-                    onCompiled: (pipelineContext: IPipelineContext) => void,
-                    onError: (message: string) => void
-                ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
-                defines,
-                transformFeedbackVaryings: this._transformFeedbackVaryings,
-                name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
-                createAsRaw: overrides,
-                parallelShaderCompile: engine._caps.parallelShaderCompile,
-                shaderProcessingContext: this._processingContext,
-                onRenderingStateCompiled: (pipelineContext) => {
-                    if (previousPipelineContext && !keepExistingPipelineContext) {
-                        this._engine._deletePipelineContext(previousPipelineContext);
-                    }
-                    if (pipelineContext) {
-                        this._onRenderingStateCompiled(pipelineContext);
-                    }
+            this._pipelineContext = createAndPreparePipelineContext(
+                {
+                    existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
+                    vertex,
+                    fragment,
+                    rebuildRebind: (
+                        vertexSourceCode: string,
+                        fragmentSourceCode: string,
+                        onCompiled: (pipelineContext: IPipelineContext) => void,
+                        onError: (message: string) => void
+                    ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
+                    defines,
+                    transformFeedbackVaryings: this._transformFeedbackVaryings,
+                    name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
+                    createAsRaw: overrides,
+                    parallelShaderCompile: engine._caps.parallelShaderCompile,
+                    shaderProcessingContext: this._processingContext,
+                    onRenderingStateCompiled: (pipelineContext) => {
+                        if (previousPipelineContext && !keepExistingPipelineContext) {
+                            this._engine._deletePipelineContext(previousPipelineContext);
+                        }
+                        if (pipelineContext) {
+                            this._onRenderingStateCompiled(pipelineContext);
+                        }
+                    },
                 },
-            });
+                this._engine.createPipelineContext.bind(this._engine),
+                this._engine._preparePipelineContext.bind(this._engine)
+            );
 
             if (this._pipelineContext.isAsync) {
                 this._checkIsReady(previousPipelineContext);

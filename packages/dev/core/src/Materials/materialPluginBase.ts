@@ -4,7 +4,7 @@ import { MaterialPluginManager } from "./materialPluginManager";
 import type { SmartArray } from "../Misc/smartArray";
 import { Constants } from "../Engines/constants";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { SubMesh } from "../Meshes/subMesh";
@@ -115,7 +115,7 @@ export class MaterialPluginBase {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: Engine, subMesh: SubMesh): boolean {
+    public isReadyForSubMesh(defines: MaterialDefines, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): boolean {
         return true;
     }
 
@@ -127,7 +127,7 @@ export class MaterialPluginBase {
      * @param subMesh the submesh to bind data for
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {}
+    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
 
     /**
      * Binds the material data.
@@ -137,7 +137,7 @@ export class MaterialPluginBase {
      * @param subMesh the submesh to bind data for
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {}
+    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: AbstractEngine, subMesh: SubMesh): void {}
 
     /**
      * Disposes the resources of the material.

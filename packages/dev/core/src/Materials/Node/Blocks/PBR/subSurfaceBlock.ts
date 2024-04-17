@@ -134,7 +134,6 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         defines.setValue("SS_THICKNESSANDMASK_TEXTURE", false, true);
         defines.setValue("SS_REFRACTIONINTENSITY_TEXTURE", false, true);
         defines.setValue("SS_TRANSLUCENCYINTENSITY_TEXTURE", false, true);
-        defines.setValue("SS_MASK_FROM_THICKNESS_TEXTURE", false, true);
         defines.setValue("SS_USE_GLTF_TEXTURES", false, true);
         defines.setValue("SS_DISPERSION", this.dispersion.isConnected, true);
     }

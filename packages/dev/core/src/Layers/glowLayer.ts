@@ -18,7 +18,6 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
-import { Engine } from "../Engines/engine";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
@@ -26,6 +25,7 @@ import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -260,8 +260,8 @@ export class GlowLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         let blurTextureWidth = this._mainTextureDesiredSize.width;
         let blurTextureHeight = this._mainTextureDesiredSize.height;
-        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {

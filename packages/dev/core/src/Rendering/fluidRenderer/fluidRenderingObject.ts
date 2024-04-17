@@ -1,7 +1,7 @@
 import type { VertexBuffer } from "core/Buffers/buffer";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
 import { Constants } from "core/Engines/constants";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { EffectWrapper } from "core/Materials/effectRenderer";
 import { Observable } from "core/Misc/observable";
 import type { Scene } from "core/scene";
@@ -13,7 +13,7 @@ import type { Nullable } from "core/types";
  */
 export abstract class FluidRenderingObject {
     protected _scene: Scene;
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
     protected _effectsAreDirty: boolean;
     protected _depthEffectWrapper: Nullable<EffectWrapper>;
     protected _thicknessEffectWrapper: Nullable<EffectWrapper>;

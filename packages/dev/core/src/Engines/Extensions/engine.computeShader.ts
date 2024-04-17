@@ -4,7 +4,9 @@ import type { IComputeContext } from "../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../Compute/IComputePipelineContext";
 import { ThinEngine } from "../../Engines/thinEngine";
 import type { Nullable } from "../../types";
+import { AbstractEngine } from "../abstractEngine";
 import type { WebGPUPerfCounter } from "../WebGPU/webgpuPerfCounter";
+import type { DataBuffer } from "../../Buffers/dataBuffer";
 
 /**
  * Type used to locate a resource in a compute shader.
@@ -59,8 +61,8 @@ export enum ComputeBindingType {
 /** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a new compute effect
          * @param baseName Name of the effect
@@ -109,6 +111,27 @@ declare module "../../Engines/thinEngine" {
             x: number,
             y?: number,
             z?: number,
+            bindingsMapping?: ComputeBindingMapping,
+            gpuPerfCounter?: WebGPUPerfCounter
+        ): void;
+
+        /**
+         * Dispatches a compute shader
+         * @param effect The compute effect
+         * @param context The compute context
+         * @param bindings The list of resources to bind to the shader
+         * @param x The number of workgroups to execute on the X dimension
+         * @param y The number of workgroups to execute on the Y dimension
+         * @param z The number of workgroups to execute on the Z dimension
+         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
+         * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
+         */
+        computeDispatchIndirect(
+            effect: ComputeEffect,
+            context: IComputeContext,
+            bindings: ComputeBindingList,
+            buffer: DataBuffer,
+            offset?: number,
             bindingsMapping?: ComputeBindingMapping,
             gpuPerfCounter?: WebGPUPerfCounter
         ): void;
@@ -170,6 +193,16 @@ ThinEngine.prototype.computeDispatch = function (
 ): void {
     throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
+ThinEngine.prototype.computeDispatchIndirect = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    buffer: DataBuffer,
+    offset?: number,
+    bindingsMapping?: ComputeBindingMapping
+): void {
+    throw new Error("computeDispatchIndirect: This engine does not support compute shaders!");
+};
 
 ThinEngine.prototype.areAllComputeEffectsReady = function (): boolean {
     return true;
@@ -187,7 +220,7 @@ ThinEngine.prototype._prepareComputePipelineContext = function (
 
 ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
-ThinEngine.prototype._executeWhenComputeStateIsCompiled = function (
+AbstractEngine.prototype._executeWhenComputeStateIsCompiled = function (
     pipelineContext: IComputePipelineContext,
     action: (messages: Nullable<ComputeCompilationMessages>) => void
 ): void {

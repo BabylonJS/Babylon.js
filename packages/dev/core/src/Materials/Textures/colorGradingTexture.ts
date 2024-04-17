@@ -5,7 +5,7 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 // Ensures Raw texture are included
 import "../../Engines/Extensions/engine.rawTexture";
@@ -39,7 +39,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param sceneOrEngine The scene or engine the texture will be used in
      * @param onLoad defines a callback triggered when the texture has been loaded
      */
-    constructor(url: string, sceneOrEngine: Scene | ThinEngine, onLoad: Nullable<() => void> = null) {
+    constructor(url: string, sceneOrEngine: Scene | AbstractEngine, onLoad: Nullable<() => void> = null) {
         super(sceneOrEngine);
 
         if (!url) {

@@ -1,4 +1,4 @@
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { IPointerEvent, IUIEvent } from "../Events/deviceInputEvents";
 import { IsNavigatorAvailable } from "../Misc/domManagement";
 import type { Observer } from "../Misc/observable";
@@ -22,7 +22,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _pointerActive: boolean = false;
     private _elementToAttachTo: HTMLElement;
     private _metaKeys: Array<number>;
-    private readonly _engine: Engine;
+    private readonly _engine: AbstractEngine;
     private readonly _usingSafari: boolean = Tools.IsSafari();
     // Found solution for determining if MacOS is being used here:
     // https://stackoverflow.com/questions/10527983/best-way-to-detect-mac-os-x-or-windows-computers-with-javascript-or-jquery
@@ -64,7 +64,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
     private _activeTouchIds: Array<number>;
     private _maxTouchPoints: number = 0;
 
-    private _pointerInputClearObserver: Nullable<Observer<Engine>> = null;
+    private _pointerInputClearObserver: Nullable<Observer<AbstractEngine>> = null;
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     private _gamepadConnectedEvent = (evt: any) => {};
@@ -81,7 +81,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
      * @param onInputChanged Callback to execute when input changes on device
      */
     constructor(
-        engine: Engine,
+        engine: AbstractEngine,
         onDeviceConnected: (deviceType: DeviceType, deviceSlot: number) => void,
         onDeviceDisconnected: (deviceType: DeviceType, deviceSlot: number) => void,
         onInputChanged: (deviceType: DeviceType, deviceSlot: number, eventData: IUIEvent) => void

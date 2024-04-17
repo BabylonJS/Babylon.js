@@ -7,8 +7,9 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
+import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../../Engines/Extensions/engine.cubeTexture";
 import { Observable } from "../../Misc/observable";
 
@@ -179,7 +180,7 @@ export class CubeTexture extends BaseTexture {
      */
     constructor(
         rootUrl: string,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         extensions: Nullable<string[]> = null,
         noMipmap: boolean = false,
         files: Nullable<string[]> = null,

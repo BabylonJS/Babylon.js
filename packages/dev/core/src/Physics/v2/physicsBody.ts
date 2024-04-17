@@ -112,8 +112,8 @@ export class PhysicsBody {
 
         this._motionType = motionType;
 
-        // only dynamic body needs sync from physics to transformNode
-        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
+        // only dynamic and animated body needs sync from physics to transformNode
+        this.disableSync = motionType == PhysicsMotionType.STATIC;
 
         // instances?
         const m = transformNode as Mesh;
@@ -242,7 +242,7 @@ export class PhysicsBody {
      * @param instanceIndex - If this body is instanced, the index of the instance to set the motion type for.
      */
     public setMotionType(motionType: PhysicsMotionType, instanceIndex?: number) {
-        this.disableSync = motionType != PhysicsMotionType.DYNAMIC;
+        this.disableSync = motionType == PhysicsMotionType.STATIC;
         this._physicsPlugin.setMotionType(this, motionType, instanceIndex);
     }
 

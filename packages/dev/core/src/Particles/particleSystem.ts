@@ -7,7 +7,7 @@ import type { IParticleSystem } from "./IParticleSystem";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { ThinEngine } from "../Engines/thinEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
@@ -319,10 +319,10 @@ export class ParticleSystem extends ThinParticleSystem {
     /**
      * @internal
      */
-    public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string) {
+    public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | AbstractEngine, rootUrl: string) {
         let scene: Nullable<Scene>;
 
-        if (sceneOrEngine instanceof ThinEngine) {
+        if (sceneOrEngine instanceof AbstractEngine) {
             scene = null;
         } else {
             scene = sceneOrEngine as Scene;
@@ -620,14 +620,14 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the Parsed particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | AbstractEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
         const name = parsedParticleSystem.name;
         let custom: Nullable<Effect> = null;
         let program: any = null;
-        let engine: ThinEngine;
+        let engine: AbstractEngine;
         let scene: Nullable<Scene>;
 
-        if (sceneOrEngine instanceof ThinEngine) {
+        if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
             scene = sceneOrEngine as Scene;

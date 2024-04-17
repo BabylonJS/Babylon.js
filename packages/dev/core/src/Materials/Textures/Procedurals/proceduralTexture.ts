@@ -4,7 +4,7 @@ import type { Nullable } from "../../../types";
 import type { Scene } from "../../../scene";
 import type { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
 import type { Color4, Color3 } from "../../../Maths/math.color";
-import type { Engine } from "../../../Engines/engine";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
@@ -109,7 +109,7 @@ export class ProceduralTexture extends Texture {
     private _matrices: { [key: string]: Matrix } = {};
 
     private _fallbackTextureUsed = false;
-    private _fullEngine: Engine;
+    private _fullEngine: AbstractEngine;
 
     private _cachedDefines: Nullable<string> = null;
 
@@ -697,7 +697,7 @@ export class ProceduralTexture extends Texture {
 
         // Mipmaps
         if (this.isCube) {
-            engine.generateMipMapsForCubemap(this._texture);
+            engine.generateMipMapsForCubemap(this._texture, true);
         }
 
         engine._debugPopGroup?.(1);

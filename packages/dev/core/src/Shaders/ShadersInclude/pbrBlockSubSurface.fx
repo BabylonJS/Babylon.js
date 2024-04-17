@@ -273,17 +273,16 @@ struct subSurfaceOutParams
             outParams.thicknessMap = thicknessMap;
         #endif
 
-        #ifdef SS_MASK_FROM_THICKNESS_TEXTURE
-            #if defined(SS_REFRACTION) && defined(SS_REFRACTION_USE_INTENSITY_FROM_TEXTURE)
-                #if defined(SS_USE_GLTF_TEXTURES)
-                    refractionIntensity *= thicknessMap.r;
-                #else
-                    refractionIntensity *= thicknessMap.g;
-                #endif
+        #if defined(SS_REFRACTION) && defined(SS_REFRACTION_USE_INTENSITY_FROM_THICKNESS)
+            #if defined(SS_USE_GLTF_TEXTURES)
+                refractionIntensity *= thicknessMap.r;
+            #else
+                refractionIntensity *= thicknessMap.g;
             #endif
-            #if defined(SS_TRANSLUCENCY) && defined(SS_TRANSLUCENCY_USE_INTENSITY_FROM_TEXTURE)
-                translucencyIntensity *= thicknessMap.b;
-            #endif
+        #endif
+
+        #if defined(SS_TRANSLUCENCY) && defined(SS_TRANSLUCENCY_USE_INTENSITY_FROM_THICKNESS)
+            translucencyIntensity *= thicknessMap.b;
         #endif
     #else
         float thickness = vThicknessParam.y;
@@ -297,7 +296,7 @@ struct subSurfaceOutParams
         #endif
     #endif
 
-    #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
+    #if defined(SS_TRANSLUCENCY) && defined(SS_TRANSLUCENCYINTENSITY_TEXTURE)
         translucencyIntensity *= translucencyIntensityMap.b;
     #endif
 
