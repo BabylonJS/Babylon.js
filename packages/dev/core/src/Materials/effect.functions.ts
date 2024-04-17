@@ -353,7 +353,6 @@ export const createAndPreparePipelineContext = (
     try {
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
         pipelineContext._name = options.name;
-        (pipelineContext as any).context = options.context;
         if (options.name) {
             cachedPiplines[options.name] = pipelineContext;
         }
