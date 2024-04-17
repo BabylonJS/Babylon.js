@@ -1,4 +1,4 @@
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 import type { ISceneLoaderProgressEvent } from "../Loading/sceneLoader";
 import { SceneLoader } from "../Loading/sceneLoader";
@@ -39,7 +39,7 @@ export class FilesInput {
     public loadAsync: (sceneFile: File, onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void>) => Promise<Scene> = (sceneFile, onProgress) =>
         this.useAppend ? SceneLoader.AppendAsync("file:", sceneFile, this._currentScene, onProgress) : SceneLoader.LoadAsync("file:", sceneFile, this._engine, onProgress);
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _currentScene: Nullable<Scene>;
     private _sceneLoadedCallback: Nullable<(sceneFile: File, scene: Scene) => void>;
     private _progressCallback: Nullable<(progress: ISceneLoaderProgressEvent) => void>;
@@ -67,7 +67,7 @@ export class FilesInput {
      * @param useAppend defines if the file loaded must be appended (true) or have the scene replaced (false, default behavior)
      */
     constructor(
-        engine: Engine,
+        engine: AbstractEngine,
         scene: Nullable<Scene>,
         sceneLoadedCallback: Nullable<(sceneFile: File, scene: Scene) => void>,
         progressCallback: Nullable<(progress: ISceneLoaderProgressEvent) => void>,

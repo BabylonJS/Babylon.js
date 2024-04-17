@@ -21,6 +21,7 @@ import "../scss/renderingZone.scss";
 import { PBRBaseMaterial } from "core/Materials/PBR/pbrBaseMaterial";
 import { Texture } from "core/Materials/Textures/texture";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 function isTextureAsset(name: string): boolean {
     const queryStringIndex = name.indexOf("?");
@@ -41,7 +42,7 @@ interface IRenderingZoneProps {
 
 export class RenderingZone extends React.Component<IRenderingZoneProps> {
     private _currentPluginName?: string;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _scene: Scene;
     private _canvas: HTMLCanvasElement;
 
