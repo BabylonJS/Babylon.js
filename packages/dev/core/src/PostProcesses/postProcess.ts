@@ -197,7 +197,6 @@ export class PostProcess {
     public _outputTexture: Nullable<RenderTargetWrapper> = null;
     /**
      * Sampling mode used by the shader
-     * See https://doc.babylonjs.com/classes/3.1/texture
      */
     @serialize()
     public renderTargetSamplingMode: number;
