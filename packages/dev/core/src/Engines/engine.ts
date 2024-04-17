@@ -43,6 +43,7 @@ import {
     _CommonInit,
 } from "./engine.common";
 import { PerfCounter } from "../Misc/perfCounter";
+import "../Audio/audioEngine";
 
 /**
  * The engine class is responsible for interfacing with all lower-level APIs such as WebGL and Audio
