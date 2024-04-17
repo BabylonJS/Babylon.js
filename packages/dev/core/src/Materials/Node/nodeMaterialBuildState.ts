@@ -552,7 +552,7 @@ export class NodeMaterialBuildState {
     }
 
     private _convertFunctionsToWGSL(source: string): string {
-        const regex = /var\s+(\w+)\\s*:\\s*(\w+)\((.*)\)/;
+        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/;
         const match = source.match(regex);
 
         if (match) {
