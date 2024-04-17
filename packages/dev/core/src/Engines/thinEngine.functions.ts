@@ -12,6 +12,16 @@ import { IsDocumentAvailable } from "core/Misc/domManagement";
 
 export const _activeRequests: IFileRequest[] = [];
 
+export const _stateObject: {
+    _contextWasLost?: boolean;
+    validateShaderPrograms?: boolean;
+    _webGLVersion: number;
+    parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
+    _context?: WebGLContext;
+} = {
+    _webGLVersion: 2,
+};
+
 export const EngineFunctionContext: {
     /**
      * Loads a file from a url
@@ -42,8 +52,6 @@ export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
  * @param fragmentCode defines the fragment shader code to use
  * @param context defines the webGL context to use (if not set, the current one will be used)
  * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
- * @param validateShaderPrograms defines if the shader program should be validated after linking
- * @param _contextWasLost defines if the webgl context was lost
  * @returns the new webGL program
  */
 export function createRawShaderProgram(
@@ -51,16 +59,14 @@ export function createRawShaderProgram(
     vertexCode: string,
     fragmentCode: string,
     context: WebGLRenderingContext,
-    transformFeedbackVaryings: Nullable<string[]>,
-    validateShaderPrograms?: boolean,
-    _contextWasLost?: boolean
+    transformFeedbackVaryings: Nullable<string[]>
 ): WebGLProgram {
     // context = context || gl;
 
-    const vertexShader = _compileRawShader(vertexCode, "vertex", context, _contextWasLost);
-    const fragmentShader = _compileRawShader(fragmentCode, "fragment", context, _contextWasLost);
+    const vertexShader = _compileRawShader(vertexCode, "vertex", context, _stateObject._contextWasLost);
+    const fragmentShader = _compileRawShader(fragmentCode, "fragment", context, _stateObject._contextWasLost);
 
-    return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings, validateShaderPrograms);
+    return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings, _stateObject.validateShaderPrograms);
 }
 
 /**
@@ -71,9 +77,6 @@ export function createRawShaderProgram(
  * @param defines defines the string containing the defines to use to compile the shaders
  * @param context defines the webGL context to use (if not set, the current one will be used)
  * @param transformFeedbackVaryings defines the list of transform feedback varyings to use
- * @param _webGLVersion defines the webgl version to use
- * @param validateShaderPrograms defines if the shader program should be validated after linking
- * @param _contextWasLost defines if the webgl context was lost
  * @returns the new webGL program
  */
 export function createShaderProgram(
@@ -82,38 +85,26 @@ export function createShaderProgram(
     fragmentCode: string,
     defines: Nullable<string>,
     context: WebGLContext,
-    transformFeedbackVaryings: Nullable<string[]> = null,
-    _webGLVersion: number = 2,
-    validateShaderPrograms?: boolean,
-    _contextWasLost?: boolean
+    transformFeedbackVaryings: Nullable<string[]> = null
 ): WebGLProgram {
-    const shaderVersion = _webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-    const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, _contextWasLost);
-    const fragmentShader = _compileShader(fragmentCode, "fragment", defines, shaderVersion, context, _contextWasLost);
+    const shaderVersion = _stateObject._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
+    const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, _stateObject._contextWasLost);
+    const fragmentShader = _compileShader(fragmentCode, "fragment", defines, shaderVersion, context, _stateObject._contextWasLost);
 
-    return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings, validateShaderPrograms);
+    return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings, _stateObject.validateShaderPrograms);
 }
 
 /**
  * Creates a new pipeline context. Note, make sure to attach an engine instance to the created context
  * @param _shaderProcessingContext defines the shader processing context used during the processing if available
- * @param parallelShaderCompile defines whether to compile shaders in parallel
- * @param name defines the name of the pipeline context
  * @returns the new pipeline
  */
-export function createPipelineContext(
-    _shaderProcessingContext: Nullable<ShaderProcessingContext>,
-    parallelShaderCompile?: { COMPLETION_STATUS_KHR: number },
-    name: string = ""
-): IPipelineContext {
+export function createPipelineContext(_shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
-    // pipelineContext.engine = this;
-
-    if (/*this._caps.*/ parallelShaderCompile) {
+    if (_stateObject.parallelShaderCompile) {
         pipelineContext.isParallelCompiled = true;
     }
-    (pipelineContext as IPipelineContext)._name = name;
-
+    pipelineContext.context = _stateObject._context;
     return pipelineContext;
 }
 
@@ -221,26 +212,17 @@ export function _preparePipelineContext(
     vertexSourceCode: string,
     fragmentSourceCode: string,
     createAsRaw: boolean,
+    _rawVertexSourceCode: string,
+    _rawFragmentSourceCode: string,
     rebuildRebind: any,
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
-    // key: string = "",
-    validateShaderPrograms?: boolean,
-    _contextWasLost?: boolean,
-    _webGLVersion?: number
+    _key: string = ""
 ) {
     const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
     if (createAsRaw) {
-        webGLRenderingState.program = createRawShaderProgram(
-            webGLRenderingState,
-            vertexSourceCode,
-            fragmentSourceCode,
-            webGLRenderingState.context!,
-            transformFeedbackVaryings,
-            validateShaderPrograms,
-            _contextWasLost
-        );
+        webGLRenderingState.program = createRawShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, webGLRenderingState.context!, transformFeedbackVaryings);
     } else {
         webGLRenderingState.program = createShaderProgram(
             webGLRenderingState,
@@ -248,10 +230,7 @@ export function _preparePipelineContext(
             fragmentSourceCode,
             defines,
             webGLRenderingState.context!,
-            transformFeedbackVaryings,
-            _webGLVersion,
-            validateShaderPrograms,
-            _contextWasLost
+            transformFeedbackVaryings
         );
     }
     webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;

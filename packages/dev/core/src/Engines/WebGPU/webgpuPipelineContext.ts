@@ -8,7 +8,7 @@ import type { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingCont
 import { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import type { ThinEngine } from "../thinEngine";
+import type { AbstractEngine } from "../abstractEngine";
 
 /** @internal */
 export interface IWebGPURenderPipelineStageDescriptor {
@@ -146,7 +146,7 @@ export class WebGPUPipelineContext implements IPipelineContext {
         this.uniformBuffer.create();
     }
 
-    public setEngine(engine: ThinEngine): void {
+    public setEngine(engine: AbstractEngine): void {
         this.engine = engine as WebGPUEngine;
     }
 

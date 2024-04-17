@@ -2,9 +2,9 @@ import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessin
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _executeWhenRenderingStateIsCompiled, _getGlobalDefines, _loadFile, _preparePipelineContext, createPipelineContext } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _getGlobalDefines, _loadFile } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
-import type { ThinEngine } from "core/Engines/thinEngine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
@@ -68,11 +68,15 @@ export interface IPipelineGenerationOptions {
  * Note - at the moment only WebGL is supported
  * @param options the options to be used when generating the pipeline
  * @param context the context to be used when creating the pipeline
+ * @param createPipelineContext the function to create the pipeline context
+ * @param _preparePipelineContext the function to prepare the pipeline context
  * @returns a promise that resolves to the pipeline context
  */
 export async function generatePipelineContext(
     options: IPipelineGenerationOptions,
-    context: WebGL2RenderingContext | WebGLRenderingContext /* | GPUCanvasContext*/
+    context: WebGL2RenderingContext | WebGLRenderingContext | GPUCanvasContext,
+    createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext
 ): Promise<IPipelineContext> {
     const platformName = options.platformName || "WEBGL2";
     let processor = options.extendedProcessingOptions?.processor;
@@ -128,16 +132,20 @@ export async function generatePipelineContext(
                 undefined,
                 function (vertexCode, fragmentCode) {
                     try {
-                        const pipeline = createAndPreparePipelineContext({
-                            name: key,
-                            vertex: vertexCode,
-                            fragment: fragmentCode,
-                            context,
-                            defines: defines.length ? defines.join("\n") : null,
-                            shaderProcessingContext: options.extendedProcessingOptions?.processingContext || null,
-                            transformFeedbackVaryings: null,
-                            ...options.extendedCreatePipelineOptions,
-                        });
+                        const pipeline = createAndPreparePipelineContext(
+                            {
+                                name: key,
+                                vertex: vertexCode,
+                                fragment: fragmentCode,
+                                context,
+                                defines: defines.length ? defines.join("\n") : null,
+                                shaderProcessingContext: options.extendedProcessingOptions?.processingContext || null,
+                                transformFeedbackVaryings: null,
+                                ...options.extendedCreatePipelineOptions,
+                            },
+                            createPipelineContext,
+                            _preparePipelineContext
+                        );
                         resolve(pipeline);
                     } catch (e) {
                         reject(e);
@@ -162,7 +170,7 @@ export function _processShaderCode(
     processFinalCode?: Nullable<ShaderCustomProcessingFunction>,
     onFinalCodeReady?: (vertexCode: string, fragmentCode: string) => void,
     shaderLanguage?: ShaderLanguage,
-    engine?: ThinEngine,
+    engine?: AbstractEngine,
     effectContext?: Effect
 ) {
     let vertexSource: string | HTMLElement | IShaderPath;
@@ -323,25 +331,29 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
  * Creates and prepares a pipeline context
  * @internal
  */
-export const createAndPreparePipelineContext = (options: {
-    parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
-    shaderProcessingContext: Nullable<ShaderProcessingContext>;
-    existingPipelineContext?: Nullable<IPipelineContext>;
-    name?: string;
-    rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
-    onRenderingStateCompiled?: (pipelineContext?: IPipelineContext) => void;
-    context?: WebGL2RenderingContext | WebGLRenderingContext /* | GPUCanvasContext*/;
-    // preparePipeline options
-    createAsRaw?: boolean;
-    vertex: string;
-    fragment: string;
-    defines: Nullable<string>;
-    transformFeedbackVaryings: Nullable<string[]>;
-}) => {
+export const createAndPreparePipelineContext = (
+    options: {
+        parallelShaderCompile?: { COMPLETION_STATUS_KHR: number };
+        shaderProcessingContext: Nullable<ShaderProcessingContext>;
+        existingPipelineContext?: Nullable<IPipelineContext>;
+        name?: string;
+        rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
+        onRenderingStateCompiled?: (pipelineContext?: IPipelineContext) => void;
+        context?: WebGL2RenderingContext | WebGLRenderingContext | GPUCanvasContext;
+        // preparePipeline options
+        createAsRaw?: boolean;
+        vertex: string;
+        fragment: string;
+        defines: Nullable<string>;
+        transformFeedbackVaryings: Nullable<string[]>;
+    },
+    createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext
+) => {
     try {
-        const pipelineContext: IPipelineContext =
-            options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext, options.parallelShaderCompile, options.name);
-        (pipelineContext as WebGLPipelineContext).context = options.context;
+        const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
+        pipelineContext._name = options.name;
+        (pipelineContext as any).context = options.context;
         if (options.name) {
             cachedPiplines[options.name] = pipelineContext;
         }
@@ -351,9 +363,12 @@ export const createAndPreparePipelineContext = (options: {
             options.vertex,
             options.fragment,
             !!options.createAsRaw,
+            "",
+            "",
             options.rebuildRebind,
             options.defines,
-            options.transformFeedbackVaryings
+            options.transformFeedbackVaryings,
+            ""
         );
 
         _executeWhenRenderingStateIsCompiled(pipelineContext, (pipelineContext) => {
