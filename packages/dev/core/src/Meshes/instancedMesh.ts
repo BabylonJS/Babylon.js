@@ -13,6 +13,7 @@ import { TransformNode } from "./transformNode";
 import type { Light } from "../Lights/light";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Tools } from "../Misc/tools";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 Mesh._instancedMeshFactory = (name: string, mesh: Mesh): InstancedMesh => {
     const instance = new InstancedMesh(name, mesh);
@@ -788,7 +789,7 @@ Mesh.prototype._invalidateInstanceVertexArrayObject = function () {
     }
 
     for (const kind in this._userInstancedBuffersStorage.vertexArrayObjects) {
-        this.getEngine().releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
+        (this.getEngine() as ThinEngine).releaseVertexArrayObject(this._userInstancedBuffersStorage.vertexArrayObjects[kind]);
     }
 
     this._userInstancedBuffersStorage.vertexArrayObjects = {};

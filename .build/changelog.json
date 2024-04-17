@@ -1,43 +1,6 @@
 {
-    "fromTag": "7.2.1",
+    "fromTag": "7.2.2",
     "changelog": {
-        "7.2.1": [
-            {
-                "pr": "14974",
-                "title": "Set the XR camera's fov",
-                "description": "This is important for features requiring fov, like gaussian splatting.\n\nThough it will probably not change on ech frame, this is computed on each frame in case the camera's projection matrix changes during the session.\n\nNote that it is also expected that left fov === right fov, but the XR camera's parent is taking the first camera's fov (left)/",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/XR/webXRCamera.ts"
-                ],
-                "tags": [
-                    "new feature"
-                ]
-            },
-            {
-                "pr": "14972",
-                "title": "Physics Angular Impulse + Misc",
-                "description": "Follow up:\r\n\r\nFor angular velocity:\r\nhttps://forum.babylonjs.com/t/havok-how-to-apply-torque/40599/12\r\n\r\nFor instances/body creation order\r\nhttps://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/10\r\n",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
-                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
-                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
-                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "enhancement",
-                    "physics"
-                ]
-            }
-        ],
         "7.2.2": [
             {
                 "pr": "14985",
@@ -114,6 +77,298 @@
                     "packages/dev/core/src/Animations/animation.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.2.3": [
+            {
+                "pr": "14998",
+                "title": "Fix void checks in Geometry Buffers",
+                "description": "https://forum.babylonjs.com/t/when-the-ssr-forcegeometrybuffer-value-is-set-to-true-the-program-encounters-an-error/49757/4",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "14997",
+                "title": "Fix missing audio init",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14987",
+                "title": "BoneLookController: Fix bone scaling being lost",
+                "description": "See https://forum.babylonjs.com/t/why-is-bone-scale-resetting-during-bonelookcontroller-update/49667\r\n\r\nThis PR fixes the problem, **HOWEVER** I don't understand where in the calculation in `BoneLookController` or in `Bone` the bone scaling is lost.... It would be better to understand, to be sure it's the right fix...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/boneLookController.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "bones"
+                ]
+            },
+            {
+                "pr": "14991",
+                "title": "Allow setting a static worker pool in the ktx2container  instead of passing it in the constructor",
+                "description": "This will allow using the @babylonjs/ktx2decoder package when using ktx2 in glTF without first constructing the class.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14994",
+                "title": "Yoyo animations trigger onAnimationGroupLoopedObservable multiple times per loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14970",
+                "title": "Add compute dispatch indirect API",
+                "description": "Fix https://forum.babylonjs.com/t/compute-shader-indirect-dispatching/49542\r\n\r\nUnderlying API is https://developer.mozilla.org/en-US/docs/Web/API/GPUComputePassEncoder/dispatchWorkgroupsIndirect",
+                "author": {
+                    "name": "stefnotch",
+                    "url": "https://github.com/stefnotch"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts"
+                ],
+                "tags": [
+                    "new feature",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "14993",
+                "title": "Fix particle cell ID computation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/particle.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "14931",
+                "title": "Remove WebGPUEngine dependency on Engine",
+                "description": "Please bear with me folks ;)\r\nIt will be long and painful but at the end it should be great as WebGPU will not get ANY webgl related content ;)\r\n\r\nWish me luck!\r\n\r\nStep 1: Make `WebGPUEngine` inherits from `ThinEngine`\r\nStep 2: Move the hierarchy to be like this:\r\n\r\n- AbstractEngine\r\n  - WebgpuEngine\r\n  - ThinEngine\r\n     - Engine\r\n\r\nThis way we have full isolation. But I want to apologize to reviewers. This is a monster PR like none before :(\r\n\r\nThe only breaking change I'm anticipating is that every .engine properties across the lib will now be of `AbstractEngine` instead of `Engine` (but same methods so the impact should be almost non existent).\r\n\r\nThinEngine and Engine are almost unchanged. The big rework is two folds:\r\n- Declare all specific methods (the one different between webgl and webgpu) as `abstract` methods on `AbstractEngine`\r\n- Move Common functions from `ThinEngine` to `AbstractEngine`\r\n\r\nWith that in place, we will have a clear and easy way to implements `ThinWebGPUEngine`.\r\n\r\n@RaananW: I would need your help as I moved NpmPackage and Version from `ThinEngine` to `AbstractEngine`.\r\nEdit: I did it but want to be sure with your approval ;)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/updateEngineVersion.ts",
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraKeyboardInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraKeyboardMoveInput.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Compute/computeShader.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/internalDeviceSourceManager.ts",
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.alpha.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.dom.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.loadingScreen.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.query.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.renderPass.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.states.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.texture.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.debugging.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiview.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts",
+                    "packages/dev/core/src/Engines/Processors/iShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLShaderProcessors.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.externalTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.query.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.textureSampler.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.common.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/engineFactory.ts",
+                    "packages/dev/core/src/Engines/engineStore.ts",
+                    "packages/dev/core/src/Engines/index.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/renderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Instrumentation/engineInstrumentation.ts",
+                    "packages/dev/core/src/Layers/effectLayer.ts",
+                    "packages/dev/core/src/Layers/effectLayerSceneComponent.ts",
+                    "packages/dev/core/src/Layers/glowLayer.ts",
+                    "packages/dev/core/src/Layers/highlightLayer.ts",
+                    "packages/dev/core/src/Layers/layerSceneComponent.ts",
+                    "packages/dev/core/src/Loading/loadingScreen.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/MultiviewRenderTarget.ts",
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/colorGradingTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/hdrCubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/texture.ts",
+                    "packages/dev/core/src/Materials/Textures/thinTexture.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.functions.ts",
+                    "packages/dev/core/src/Materials/drawWrapper.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Materials/index.ts",
+                    "packages/dev/core/src/Materials/materialHelper.functions.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/dev/core/src/Materials/uniformBuffer.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Misc/PerformanceViewer/performanceViewerCollectionStrategies.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine",
+                    "WebGPU",
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "14990",
+                "title": "Sync physics with animated bodies",
+                "description": null,
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14988",
+                "title": "Added GetPointsCount",
+                "description": "Added a new helper method. More info here:\r\nhttps://forum.babylonjs.com/t/greasedlinemesh-setpoints-wont-create-additional-lines/49664\r\n\r\n",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.2.1": [
+            {
+                "pr": "14974",
+                "title": "Set the XR camera's fov",
+                "description": "This is important for features requiring fov, like gaussian splatting.\n\nThough it will probably not change on ech frame, this is computed on each frame in case the camera's projection matrix changes during the session.\n\nNote that it is also expected that left fov === right fov, but the XR camera's parent is taking the first camera's fov (left)/",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRCamera.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "14972",
+                "title": "Physics Angular Impulse + Misc",
+                "description": "Follow up:\r\n\r\nFor angular velocity:\r\nhttps://forum.babylonjs.com/t/havok-how-to-apply-torque/40599/12\r\n\r\nFor instances/body creation order\r\nhttps://forum.babylonjs.com/t/instanced-physics-static-mesh/49031/10\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngineComponent.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "physics"
+                ]
             }
         ],
         "7.2.0": [

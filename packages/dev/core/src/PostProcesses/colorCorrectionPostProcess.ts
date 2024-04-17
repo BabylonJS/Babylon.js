@@ -2,7 +2,7 @@ import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Camera } from "../Cameras/camera";
 
 import "../Shaders/colorCorrection.fragment";
@@ -45,7 +45,15 @@ export class ColorCorrectionPostProcess extends PostProcess {
         return "ColorCorrectionPostProcess";
     }
 
-    constructor(name: string, colorTableUrl: string, options: number | PostProcessOptions, camera: Nullable<Camera>, samplingMode?: number, engine?: Engine, reusable?: boolean) {
+    constructor(
+        name: string,
+        colorTableUrl: string,
+        options: number | PostProcessOptions,
+        camera: Nullable<Camera>,
+        samplingMode?: number,
+        engine?: AbstractEngine,
+        reusable?: boolean
+    ) {
         super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
 
         const scene = camera?.getScene() || null;

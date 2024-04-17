@@ -6,7 +6,7 @@ import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -31,6 +31,7 @@ import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
 import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -65,7 +66,7 @@ class GlowBlurPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean
     ) {
         super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
@@ -355,8 +356,8 @@ export class HighlightLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         let blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
         let blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {

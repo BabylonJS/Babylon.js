@@ -15,6 +15,17 @@ declare module "../../../Materials/effect" {
     }
 }
 
+declare module "../../webgpuEngine" {
+    export interface WebGPUEngine {
+        /**
+         * Sets a texture sampler to the according uniform.
+         * @param name The name of the uniform in the effect
+         * @param sampler The sampler to apply
+         */
+        setTextureSampler(name: string, sampler: Nullable<TextureSampler>): void;
+    }
+}
+
 Effect.prototype.setTextureSampler = function (name: string, sampler: Nullable<TextureSampler>): void {
     this._engine.setTextureSampler(name, sampler);
 };

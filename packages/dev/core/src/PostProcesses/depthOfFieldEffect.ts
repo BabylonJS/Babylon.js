@@ -109,7 +109,7 @@ export class DepthOfFieldEffect extends PostProcessRenderEffect {
         // Use R-only formats if supported to store the circle of confusion values.
         // This should be more space and bandwidth efficient than using RGBA.
         const engine = scene.getEngine();
-        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.webGLVersion > 1 ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA;
+        const circleOfConfusionTextureFormat = engine.isWebGPU || engine.version > 1 ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA;
 
         // Circle of confusion value for each pixel is used to determine how much to blur that pixel
         this._circleOfConfusion = new CircleOfConfusionPostProcess(

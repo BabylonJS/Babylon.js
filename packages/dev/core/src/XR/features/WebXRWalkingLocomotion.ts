@@ -429,7 +429,7 @@ export class WebXRWalkingLocomotion extends WebXRAbstractFeature {
             return false;
         }
 
-        this._walker = new Walker(this._sessionManager.scene.getEngine());
+        this._walker = new Walker(this._sessionManager.scene.getEngine() as Engine);
         return true;
     }
 

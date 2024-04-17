@@ -9,7 +9,7 @@ import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEm
 import { Constants } from "../Engines/constants";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
 import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
@@ -656,7 +656,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /**
      * The engine the particle system belongs to.
      */
-    protected _engine: ThinEngine;
+    protected _engine: AbstractEngine;
 
     /**
      * Local cache of defines for image processing.

@@ -24,7 +24,7 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import type { ISceneLike, ThinEngineOptions } from "./thinEngine";
+import { type ISceneLike, AbstractEngine } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -35,7 +35,7 @@ import type { WebGPUCacheRenderPipeline } from "./WebGPU/webgpuCacheRenderPipeli
 import { WebGPUCacheRenderPipelineTree } from "./WebGPU/webgpuCacheRenderPipelineTree";
 import { WebGPUStencilStateComposer } from "./WebGPU/webgpuStencilStateComposer";
 import { WebGPUDepthCullingState } from "./WebGPU/webgpuDepthCullingState";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import { WebGPUMaterialContext } from "./WebGPU/webgpuMaterialContext";
 import { WebGPUDrawContext } from "./WebGPU/webgpuDrawContext";
 import { WebGPUCacheBindGroups } from "./WebGPU/webgpuCacheBindGroups";
@@ -64,7 +64,30 @@ import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
-import type { Scene } from "core/scene";
+import type { Scene } from "../scene";
+import type { AbstractEngineOptions } from "./abstractEngine";
+
+import type { PostProcess } from "../PostProcesses/postProcess";
+import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
+import { PerformanceMonitor } from "../Misc/performanceMonitor";
+import {
+    CreateImageBitmapFromSource,
+    ExitFullscreen,
+    ExitPointerlock,
+    GetFontOffset,
+    RequestFullscreen,
+    RequestPointerlock,
+    ResizeImageBitmap,
+    _CommonDispose,
+    _CommonInit,
+} from "./engine.common";
+import { IsWrapper } from "../Materials/drawWrapper.functions";
+import { PerfCounter } from "../Misc/perfCounter";
+import "./AbstractEngine/abstractEngine.loadingScreen";
+import "./AbstractEngine/abstractEngine.dom";
+import "./AbstractEngine/abstractEngine.states";
+import "./AbstractEngine/abstractEngine.renderPass";
+import "../Audio/audioEngine";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -117,7 +140,7 @@ export interface GlslangOptions {
 /**
  * Options to create the WebGPU engine
  */
-export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapterOptions {
+export interface WebGPUEngineOptions extends AbstractEngineOptions, GPURequestAdapterOptions {
     /**
      * Defines the category of adapter to use.
      * Is it the discrete or integrated device.
@@ -173,7 +196,7 @@ export interface WebGPUEngineOptions extends ThinEngineOptions, GPURequestAdapte
  * The web GPU engine class provides support for WebGPU version of babylon.js.
  * @since 5.0.0
  */
-export class WebGPUEngine extends Engine {
+export class WebGPUEngine extends AbstractEngine {
     // Default glslang options.
     private static readonly _GLSLslangDefaultOptions: GlslangOptions = {
         jsPath: `${Tools._DefaultCdnUrl}/glslang/glslang.js`,
@@ -273,6 +296,14 @@ export class WebGPUEngine extends Engine {
      */
     public numMaxUncapturedErrors = 20;
 
+    /**
+     * Gets the list of created scenes
+     */
+    public scenes: Scene[] = [];
+
+    /** @internal */
+    public _virtualScenes = new Array<Scene>();
+
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
     // And when the frame starts to swap the target texture from the swap chain
@@ -348,6 +379,7 @@ export class WebGPUEngine extends Engine {
     public dbgShowEmptyEnableEffectCalls = true;
 
     private _snapshotRendering: WebGPUSnapshotRendering;
+    protected _snapshotRenderingMode = Constants.SNAPSHOTRENDERING_STANDARD;
 
     /**
      * Gets or sets the snapshot rendering mode
@@ -416,6 +448,23 @@ export class WebGPUEngine extends Engine {
         if (this._cacheBindGroups) {
             this._cacheBindGroups.disabled = disable;
         }
+    }
+
+    /**
+     * Gets a boolean indicating if all created effects are ready
+     * @returns true if all effects are ready
+     */
+    public areAllEffectsReady(): boolean {
+        return true;
+    }
+
+    /**
+     * Get Font size information
+     * @param font font name
+     * @returns an object containing ascent, height and descent
+     */
+    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+        return GetFontOffset(font);
     }
 
     /**
@@ -567,8 +616,10 @@ export class WebGPUEngine extends Engine {
      * @param options Defines the options passed to the engine to create the GPU context dependencies
      */
     public constructor(canvas: HTMLCanvasElement | OffscreenCanvas, options: WebGPUEngineOptions = {}) {
-        super(null, options.antialias ?? true, options);
+        super(options.antialias ?? true, options);
         this._name = "WebGPU";
+
+        this._drawCalls = new PerfCounter();
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
@@ -589,7 +640,9 @@ export class WebGPUEngine extends Engine {
 
         this._mainPassSampleCount = options.antialias ? this._defaultSampleCount : 1;
 
-        this._setupMobileChecks();
+        if (navigator && navigator.userAgent) {
+            this._setupMobileChecks();
+        }
 
         this._sharedInit(this._renderingCanvas);
 
@@ -1011,6 +1064,16 @@ export class WebGPUEngine extends Engine {
         };
     }
 
+    /**
+     * Shared initialization across engines types.
+     * @param canvas The canvas associated with this instance of the engine.
+     */
+    protected _sharedInit(canvas: HTMLCanvasElement) {
+        super._sharedInit(canvas);
+
+        _CommonInit(this, canvas, this._creationOptions);
+    }
+
     private _configureContext(): void {
         this._context.configure({
             device: this._device,
@@ -1018,6 +1081,77 @@ export class WebGPUEngine extends Engine {
             usage: WebGPUConstants.TextureUsage.RenderAttachment | WebGPUConstants.TextureUsage.CopySrc,
             alphaMode: this.premultipliedAlpha ? WebGPUConstants.CanvasAlphaMode.Premultiplied : WebGPUConstants.CanvasAlphaMode.Opaque,
         });
+    }
+
+    /**
+     * Resize an image and returns the image data as an uint8array
+     * @param image image to resize
+     * @param bufferWidth destination buffer width
+     * @param bufferHeight destination buffer height
+     * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
+     */
+    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+        return ResizeImageBitmap(this, image, bufferWidth, bufferHeight);
+    }
+
+    /**
+     * Engine abstraction for loading and creating an image bitmap from a given source string.
+     * @param imageSource source to load the image from.
+     * @param options An object that sets options for the image's extraction.
+     * @returns ImageBitmap
+     */
+    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+        return CreateImageBitmapFromSource(this, imageSource, options);
+    }
+
+    /**
+     * Toggle full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public switchFullscreen(requestPointerLock: boolean): void {
+        if (this.isFullscreen) {
+            this.exitFullscreen();
+        } else {
+            this.enterFullscreen(requestPointerLock);
+        }
+    }
+
+    /**
+     * Enters full screen mode
+     * @param requestPointerLock defines if a pointer lock should be requested from the user
+     */
+    public enterFullscreen(requestPointerLock: boolean): void {
+        if (!this.isFullscreen) {
+            this._pointerLockRequested = requestPointerLock;
+            if (this._renderingCanvas) {
+                RequestFullscreen(this._renderingCanvas);
+            }
+        }
+    }
+
+    /**
+     * Exits full screen mode
+     */
+    public exitFullscreen(): void {
+        if (this.isFullscreen) {
+            ExitFullscreen();
+        }
+    }
+
+    /**
+     * Enters Pointerlock mode
+     */
+    public enterPointerlock(): void {
+        if (this._renderingCanvas) {
+            RequestPointerlock(this._renderingCanvas);
+        }
+    }
+
+    /**
+     * Exits Pointerlock mode
+     */
+    public exitPointerlock(): void {
+        ExitPointerlock();
     }
 
     protected _rebuildBuffers(): void {
@@ -1067,6 +1201,54 @@ export class WebGPUEngine extends Engine {
         this._uniformBuffers = uboList;
 
         super._restoreEngineAfterContextLost(initEngine);
+    }
+
+    /**
+     * Sets a depth stencil texture from a render target to the according uniform.
+     * @param channel The texture channel
+     * @param uniform The uniform to set
+     * @param texture The render target texture containing the depth stencil texture to apply
+     * @param name The texture name
+     */
+    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
+        if (channel === undefined) {
+            return;
+        }
+
+        if (!texture || !texture.depthStencilTexture) {
+            this._setTexture(channel, null, undefined, undefined, name);
+        } else {
+            this._setTexture(channel, texture, false, true, name);
+        }
+    }
+
+    /**
+     * Sets a texture to the context from a postprocess
+     * @param channel defines the channel to use
+     * @param postProcess defines the source postprocess
+     * @param name name of the channel
+     */
+    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        let postProcessInput = null;
+        if (postProcess) {
+            if (postProcess._forcedOutputTexture) {
+                postProcessInput = postProcess._forcedOutputTexture;
+            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
+                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
+            }
+        }
+
+        this._bindTexture(channel, postProcessInput?.texture ?? null, name);
+    }
+
+    /**
+     * Binds the output of the passed in post process to the texture channel specified
+     * @param channel The channel the texture should be bound to
+     * @param postProcess The post process which's output should be bound
+     * @param name name of the channel
+     */
+    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+        this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
     /**
@@ -1641,6 +1823,13 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * Unbind all instance attributes
+     */
+    public unbindInstanceAttributes(): void {
+        // Does nothing
+    }
+
+    /**
      * Bind a list of vertex buffers with the engine
      * @param vertexBuffers defines the list of vertex buffers to bind
      * @param indexBuffer defines the index buffer to bind
@@ -1768,7 +1957,7 @@ export class WebGPUEngine extends Engine {
     public createEffect(
         baseName: string | (IShaderPath & { vertexToken?: string; fragmentToken?: string }),
         attributesNamesOrOptions: string[] | IEffectCreationOptions,
-        uniformsNamesOrEngine: string[] | Engine,
+        uniformsNamesOrEngine: string[] | AbstractEngine,
         samplers?: string[],
         defines?: string,
         fallbacks?: EffectFallbacks,
@@ -2018,7 +2207,7 @@ export class WebGPUEngine extends Engine {
             return;
         }
 
-        if (!DrawWrapper.IsWrapper(effect)) {
+        if (!IsWrapper(effect)) {
             this._currentEffect = effect;
             this._currentMaterialContext = this._defaultMaterialContext;
             this._currentDrawContext = this._defaultDrawContext;
@@ -2375,6 +2564,13 @@ export class WebGPUEngine extends Engine {
     }
 
     /**
+     * @internal
+     */
+    public _getUseSRGBBuffer(useSRGBBuffer: boolean, noMipmap: boolean): boolean {
+        return useSRGBBuffer && this._caps.supportSRGBBuffers;
+    }
+
+    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
@@ -2448,6 +2644,54 @@ export class WebGPUEngine extends Engine {
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
+    }
+
+    /**
+     * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
+     * @param rootUrl defines the url where the file to load is located
+     * @param scene defines the current scene
+     * @param lodScale defines scale to apply to the mip map selection
+     * @param lodOffset defines offset to apply to the mip map selection
+     * @param onLoad defines an optional callback raised when the texture is loaded
+     * @param onError defines an optional callback raised if there is an issue to load the texture
+     * @param format defines the format of the data
+     * @param forcedExtension defines the extension to use to pick the right loader
+     * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
+     * @returns the cube texture as an InternalTexture
+     */
+    createPrefilteredCubeTexture(
+        rootUrl: string,
+        scene: Nullable<Scene>,
+        lodScale: number,
+        lodOffset: number,
+        onLoad: Nullable<(internalTexture: Nullable<InternalTexture>) => void> = null,
+        onError: Nullable<(message?: string, exception?: any) => void> = null,
+        format?: number,
+        forcedExtension: any = null,
+        createPolynomials: boolean = true
+    ): InternalTexture {
+        const callback = (loadData: any) => {
+            if (!loadData) {
+                if (onLoad) {
+                    onLoad(null);
+                }
+                return;
+            }
+
+            const texture = loadData.texture as InternalTexture;
+            if (!createPolynomials) {
+                texture._sphericalPolynomial = new SphericalPolynomial();
+            } else if (loadData.info.sphericalPolynomial) {
+                texture._sphericalPolynomial = loadData.info.sphericalPolynomial;
+            }
+            texture._source = InternalTextureSource.CubePrefiltered;
+
+            if (onLoad) {
+                onLoad(texture);
+            }
+        };
+
+        return this.createCubeTexture(rootUrl, scene, null, false, callback, onError, format, forcedExtension, createPolynomials, lodScale, lodOffset);
     }
 
     /**
@@ -2567,7 +2811,7 @@ export class WebGPUEngine extends Engine {
     /**
      * @internal
      */
-    public _bindTexture(channel: number, texture: InternalTexture, name: string): void {
+    public _bindTexture(channel: number, texture: Nullable<InternalTexture>, name: string): void {
         if (channel === undefined) {
             return;
         }
@@ -2784,10 +3028,26 @@ export class WebGPUEngine extends Engine {
     //                              Frame management
     //------------------------------------------------------------------------------
 
+    private _measureFps(): void {
+        this._performanceMonitor.sampleFrame();
+        this._fps = this._performanceMonitor.averageFPS;
+        this._deltaTime = this._performanceMonitor.instantaneousFrameTime || 0;
+    }
+
+    private _performanceMonitor = new PerformanceMonitor();
+    /**
+     * Gets the performance monitor attached to this engine
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
+     */
+    public get performanceMonitor(): PerformanceMonitor {
+        return this._performanceMonitor;
+    }
+
     /**
      * Begin a new frame
      */
     public beginFrame(): void {
+        this._measureFps();
         super.beginFrame();
     }
 
@@ -2837,8 +3097,6 @@ export class WebGPUEngine extends Engine {
 
         this._pendingDebugCommands.length = 0;
 
-        super.endFrame();
-
         if (this.dbgVerboseLogsForFirstFrames) {
             if ((this as any)._count === undefined) {
                 (this as any)._count = 0;
@@ -2853,6 +3111,13 @@ export class WebGPUEngine extends Engine {
                 }
             }
         }
+
+        super.endFrame();
+    }
+
+    /**Gets driver info if available */
+    public extractDriverInfo() {
+        return "";
     }
 
     /**
@@ -3288,7 +3553,7 @@ export class WebGPUEngine extends Engine {
     public unBindFramebuffer(texture: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         const saveCRT = this._currentRenderTarget;
 
-        this._currentRenderTarget = null; // to be iso with thinEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
+        this._currentRenderTarget = null; // to be iso with abstractEngine, this._currentRenderTarget must be null when onBeforeUnbind is called
 
         if (onBeforeUnbind) {
             onBeforeUnbind();
@@ -3368,6 +3633,32 @@ export class WebGPUEngine extends Engine {
 
     public setRasterizerState(): void {
         // Does not exist in WebGPU
+    }
+
+    /**
+     * @internal
+     */
+    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
+        // No parallel shader compilation.
+        // No Async, so direct launch
+        action();
+    }
+
+    /**
+     * @internal
+     */
+    public bindSamplers(): void {}
+
+    /** @internal */
+    public _getUnpackAlignement(): number {
+        return 1;
+    }
+
+    /**
+     * @internal
+     */
+    public _bindTextureDirectly(): boolean {
+        return false;
     }
 
     /**
@@ -3589,6 +3880,9 @@ export class WebGPUEngine extends Engine {
         this._textureHelper.destroyDeferredTextures();
         this._bufferManager.destroyDeferredBuffers();
         this._device.destroy();
+
+        _CommonDispose(this, this._renderingCanvas);
+
         super.dispose();
     }
 
@@ -3633,186 +3927,5 @@ export class WebGPUEngine extends Engine {
     public getError(): number {
         // TODO WEBGPU. from the webgpu errors.
         return 0;
-    }
-
-    //------------------------------------------------------------------------------
-    //                              Unused WebGPU
-    //------------------------------------------------------------------------------
-
-    /**
-     * @internal
-     */
-    public bindSamplers(): void {}
-
-    /**
-     * @internal
-     */
-    public _bindTextureDirectly(): boolean {
-        return false;
-    }
-
-    /**
-     * Gets a boolean indicating if all created effects are ready
-     * @returns always true - No parallel shader compilation
-     */
-    public areAllEffectsReady(): boolean {
-        return true;
-    }
-
-    /**
-     * @internal
-     */
-    public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        // No parallel shader compilation.
-        // No Async, so direct launch
-        action();
-    }
-
-    /**
-     * @internal
-     */
-    public _isRenderingStateCompiled(): boolean {
-        // No parallel shader compilation.
-        return true;
-    }
-
-    /** @internal */
-    public _getUnpackAlignement(): number {
-        return 1;
-    }
-
-    /**
-     * @internal
-     */
-    public _unpackFlipY() {}
-
-    /**
-     * @internal
-     */
-    public _bindUnboundFramebuffer() {
-        // eslint-disable-next-line no-throw-literal
-        throw "_bindUnboundFramebuffer is not implementedin WebGPU! You probably want to use restoreDefaultFramebuffer or unBindFramebuffer instead";
-    }
-
-    // TODO WEBGPU. All of the below should go once engine split with baseEngine.
-
-    /**
-     * @internal
-     */
-    public _getSamplingParameters(): { min: number; mag: number } {
-        // eslint-disable-next-line no-throw-literal
-        throw "_getSamplingParameters is not available in WebGPU";
-    }
-
-    /**
-     * @internal
-     */
-    public getUniforms(): Nullable<WebGLUniformLocation>[] {
-        return [];
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setIntArray4(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setArray4(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrices(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrix3x3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setMatrix2x2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat2(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat3(): boolean {
-        return false;
-    }
-
-    /**
-     * @internal
-     */
-    public setFloat4(): boolean {
-        return false;
     }
 }

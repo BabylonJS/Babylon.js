@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import type { IMatrixLike } from "../Maths/math.like";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -16,6 +16,7 @@ import "../Engines/Extensions/engine.dynamicBuffer";
 
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Class used to render sprites.
@@ -89,7 +90,7 @@ export class SpriteRenderer {
         this._createEffects();
     }
 
-    private readonly _engine: ThinEngine;
+    private readonly _engine: AbstractEngine;
     private readonly _useVAO: boolean = false;
     private readonly _useInstancing: boolean = false;
     private readonly _scene: Nullable<Scene>;
@@ -116,7 +117,7 @@ export class SpriteRenderer {
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param scene defines the hosting scene
      */
-    constructor(engine: ThinEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
+    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
         this._capacity = capacity;
         this._epsilon = epsilon;
 
@@ -308,9 +309,9 @@ export class SpriteRenderer {
 
         if (this._useVAO) {
             if (!this._vertexArrayObject) {
-                this._vertexArrayObject = engine.recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
+                this._vertexArrayObject = (engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
             }
-            engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
+            (engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
         } else {
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
@@ -484,7 +485,7 @@ export class SpriteRenderer {
         }
 
         if (this._vertexArrayObject) {
-            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
             (<any>this._vertexArrayObject) = null;
         }
 

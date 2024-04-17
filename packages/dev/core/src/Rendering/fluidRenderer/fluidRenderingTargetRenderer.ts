@@ -1,6 +1,6 @@
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
@@ -33,7 +33,7 @@ export enum FluidRenderingDebug {
 export class FluidRenderingTargetRenderer {
     protected _scene: Scene;
     protected _camera: Nullable<Camera>;
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
 
     protected _invProjectionMatrix: Matrix;
     protected _depthClearColor: Color4;

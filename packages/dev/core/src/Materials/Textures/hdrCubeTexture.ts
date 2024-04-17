@@ -10,7 +10,7 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { ToGammaSpace } from "../../Maths/math.constants";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
@@ -117,7 +117,7 @@ export class HDRCubeTexture extends BaseTexture {
      */
     constructor(
         url: string,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         size: number,
         noMipmap = false,
         generateHarmonics = true,

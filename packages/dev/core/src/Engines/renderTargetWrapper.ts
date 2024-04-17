@@ -3,7 +3,7 @@ import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
-import type { ThinEngine } from "./thinEngine";
+import type { AbstractEngine } from "./abstractEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 
 /**
@@ -20,7 +20,7 @@ export interface IRenderTargetTexture {
  * Wrapper around a render target (either single or multi textures)
  */
 export class RenderTargetWrapper {
-    protected _engine: ThinEngine;
+    protected _engine: AbstractEngine;
     private _size: TextureSize;
     private _isCube: boolean;
     private _isMulti: boolean;
@@ -187,7 +187,7 @@ export class RenderTargetWrapper {
      * @param engine engine used to create the render target
      * @param label defines the label to use for the wrapper (for debugging purpose only)
      */
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, label?: string) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: AbstractEngine, label?: string) {
         this._isMulti = isMulti;
         this._isCube = isCube;
         this._size = size;

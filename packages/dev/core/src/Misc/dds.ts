@@ -8,10 +8,12 @@ import { Logger } from "../Misc/logger";
 import { CubeMapToSphericalPolynomialTools } from "../Misc/HighDynamicRange/cubemapToSphericalPolynomial";
 import type { Scene } from "../scene";
 import { BaseTexture } from "../Materials/Textures/baseTexture";
-import { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { FromHalfFloat, ToHalfFloat } from "./textureTools";
 
+import "../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../Engines/Extensions/engine.cubeTexture";
+import { ThinEngine } from "../Engines/thinEngine";
 
 // Based on demo done by Brandon Jones - http://media.tojicode.com/webgl-samples/dds.html
 // All values and structures referenced from:
@@ -419,7 +421,7 @@ export class DDSTools {
      * @internal
      */
     public static UploadDDSLevels(
-        engine: ThinEngine,
+        engine: AbstractEngine,
         texture: InternalTexture,
         data: ArrayBufferView,
         info: DDSInfo,

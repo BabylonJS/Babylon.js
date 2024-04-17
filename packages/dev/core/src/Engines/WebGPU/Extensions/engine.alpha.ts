@@ -1,6 +1,46 @@
+import { AbstractEngine } from "core/Engines/abstractEngine";
 import { Constants } from "../../constants";
-import { Engine } from "../../engine";
 import { WebGPUEngine } from "../../webgpuEngine";
+
+declare module "../../webgpuEngine" {
+    export interface WebGPUEngine {
+        /**
+         * Sets alpha constants used by some alpha blending modes
+         * @param r defines the red component
+         * @param g defines the green component
+         * @param b defines the blue component
+         * @param a defines the alpha component
+         */
+        setAlphaConstants(r: number, g: number, b: number, a: number): void;
+
+        /**
+         * Sets the current alpha mode
+         * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
+         * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+         */
+        setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
+
+        /**
+         * Gets the current alpha mode
+         * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
+         * @returns the current alpha mode
+         */
+        getAlphaMode(): number;
+
+        /**
+         * Sets the current alpha equation
+         * @param equation defines the equation to use (one of the Engine.ALPHA_EQUATION_XXX)
+         */
+        setAlphaEquation(equation: number): void;
+
+        /**
+         * Gets the current alpha equation.
+         * @returns the current alpha equation
+         */
+        getAlphaEquation(): number;
+    }
+}
 
 WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange: boolean = false): void {
     if (this._alphaMode === mode && ((mode === Constants.ALPHA_DISABLE && !this._alphaState.alphaBlend) || (mode !== Constants.ALPHA_DISABLE && this._alphaState.alphaBlend))) {
@@ -105,8 +145,8 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
             break;
     }
     if (!noDepthWriteChange) {
-        this.setDepthWrite(mode === Engine.ALPHA_DISABLE);
-        this._cacheRenderPipeline.setDepthWriteEnabled(mode === Engine.ALPHA_DISABLE);
+        this.setDepthWrite(mode === Constants.ALPHA_DISABLE);
+        this._cacheRenderPipeline.setDepthWriteEnabled(mode === Constants.ALPHA_DISABLE);
     }
     this._alphaMode = mode;
     this._cacheRenderPipeline.setAlphaBlendEnabled(this._alphaState.alphaBlend);
@@ -114,7 +154,7 @@ WebGPUEngine.prototype.setAlphaMode = function (mode: number, noDepthWriteChange
 };
 
 WebGPUEngine.prototype.setAlphaEquation = function (equation: number): void {
-    Engine.prototype.setAlphaEquation.call(this, equation);
+    AbstractEngine.prototype.setAlphaEquation.call(this, equation);
 
     this._cacheRenderPipeline.setAlphaBlendFactors(this._alphaState._blendFunctionParameters, this._alphaState._blendEquationParameters);
 };

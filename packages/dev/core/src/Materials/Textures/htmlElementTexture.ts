@@ -9,7 +9,7 @@ import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.externalTexture";
 
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 
 /**
@@ -31,7 +31,7 @@ export interface IHtmlElementTextureOptions {
     /**
      * Defines the engine instance to use the texture with. It is not mandatory if you define a scene.
      */
-    engine: Nullable<ThinEngine>;
+    engine: Nullable<AbstractEngine>;
     /**
      * Defines the scene the texture belongs to. It is not mandatory if you define an engine.
      */
