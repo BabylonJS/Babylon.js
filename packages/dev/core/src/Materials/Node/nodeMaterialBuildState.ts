@@ -548,11 +548,11 @@ export class NodeMaterialBuildState {
     }
 
     private _convertOutParametersToWGSL(source: string): string {
-        return source.replace(new RegExp(`out\\s+var\\s+(\\w+):\\s+(\\w+)`, "g"), `$1: ptr<function, $2>`);
+        return source.replace(new RegExp(`out\\s+var\\s+(\\w+)\\s*:\\s*(\\w+)`, "g"), `$1: ptr<function, $2>`);
     }
 
     private _convertFunctionsToWGSL(source: string): string {
-        const regex = /var\s+(\w+):\s+(\w+)\((.*)\)/;
+        const regex = /var\s+(\w+)\\s*:\\s*(\w+)\((.*)\)/;
         const match = source.match(regex);
 
         if (match) {
@@ -573,6 +573,7 @@ export class NodeMaterialBuildState {
         // variable declarations
         code = this._convertVariableDeclarationToWGSL("void", "voidnull", code);
         code = this._convertVariableDeclarationToWGSL("int", "i32", code);
+        code = this._convertVariableDeclarationToWGSL("uint", "u32", code);
         code = this._convertVariableDeclarationToWGSL("float", "f32", code);
         code = this._convertVariableDeclarationToWGSL("vec2", "vec2f", code);
         code = this._convertVariableDeclarationToWGSL("vec3", "vec3f", code);
