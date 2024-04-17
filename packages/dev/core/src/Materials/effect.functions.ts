@@ -88,13 +88,6 @@ export async function generatePipelineContext(
             case "WEBGL1":
                 processor = new (await import("core/Engines/WebGL/webGLShaderProcessors")).WebGLShaderProcessor();
                 break;
-            /*case "WEBGPU":
-                if (language !== ShaderLanguage.WGSL) {
-                    processor = new (await import("core/Engines/WebGPU/webgpuShaderProcessorsWGSL")).WebGPUShaderProcessorWGSL();
-                } else {
-                    processor = new (await import("core/Engines/WebGPU/webgpuShaderProcessorsGLSL")).WebGPUShaderProcessorGLSL();
-                }
-                break;*/
             case "WEBGL2":
             default:
                 processor = new (await import("core/Engines/WebGL/webGL2ShaderProcessors")).WebGL2ShaderProcessor();

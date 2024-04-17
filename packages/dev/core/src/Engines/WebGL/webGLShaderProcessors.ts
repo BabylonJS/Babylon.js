@@ -9,7 +9,7 @@ import type { AbstractEngine } from "../abstractEngine";
 export class WebGLShaderProcessor implements IShaderProcessor {
     public shaderLanguage = ShaderLanguage.GLSL;
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: AbstractEngine) {
+    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine?: AbstractEngine) {
         // Remove extensions
         if (engine && !engine.getCaps().drawBuffersExtension) {
             // even if enclosed in #if/#endif, IE11 does parse the #extension declaration, so we need to remove it altogether

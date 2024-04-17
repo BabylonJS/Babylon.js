@@ -336,7 +336,7 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
     preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
     // Post processing
-    if (options.processor.postProcessor && engine) {
+    if (options.processor.postProcessor) {
         preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
     }
 

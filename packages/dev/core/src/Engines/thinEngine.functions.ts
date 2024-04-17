@@ -5,6 +5,9 @@ import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import { _WarnImport } from "core/Misc/devTools";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
+/**
+ * @internal
+ */
 export const _stateObject: {
     _contextWasLost?: boolean;
     validateShaderPrograms?: boolean;
