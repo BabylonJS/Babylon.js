@@ -2,14 +2,14 @@ import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessin
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _executeWhenRenderingStateIsCompiled, _getGlobalDefines, _loadFile } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
-import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
+import { _getGlobalDefines, _loadFile } from "core/Engines/abstractEngine.functions";
 
 /**
  * If pipelines were created prior to the effect, they can be cached here and be used when creating the effect

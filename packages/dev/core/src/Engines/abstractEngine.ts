@@ -54,6 +54,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
+import { EngineFunctionContext, _activeRequests, _loadFile } from "./abstractEngine.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -214,7 +215,6 @@ export abstract class AbstractEngine {
     public _renderingCanvas: Nullable<HTMLCanvasElement>;
     /** @internal */
     public _internalTexturesCache = new Array<InternalTexture>();
-    private _activeRequests = new Array<IFileRequest>();
     protected _currentEffect: Nullable<Effect>;
     /** @internal */
     protected _cachedVertexBuffers: any;
@@ -3063,7 +3063,7 @@ export abstract class AbstractEngine {
         Effect.ResetCache();
 
         // Abort active requests
-        for (const request of this._activeRequests) {
+        for (const request of _activeRequests) {
             request.abort();
         }
 

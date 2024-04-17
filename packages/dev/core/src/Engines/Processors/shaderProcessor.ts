@@ -16,7 +16,7 @@ import type { WebRequest } from "../../Misc/webRequest";
 import type { LoadFileError } from "../../Misc/fileTools";
 import type { IOfflineProvider } from "../../Offline/IOfflineProvider";
 import type { IFileRequest } from "../../Misc/fileRequest";
-import { _getGlobalDefines } from "../thinEngine.functions";
+import { _getGlobalDefines } from "../abstractEngine.functions";
 import type { AbstractEngine } from "../abstractEngine";
 
 const regexSE = /defined\s*?\((.+?)\)/g;
@@ -336,7 +336,7 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
     preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
 
     // Post processing
-    if (options.processor.postProcessor) {
+    if (options.processor.postProcessor && engine) {
         preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
     }
 

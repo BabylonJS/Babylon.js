@@ -21,23 +21,13 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { WebRequest } from "../Misc/webRequest";
-import type { LoadFileError } from "../Misc/fileTools";
-import type { Texture } from "../Materials/Textures/texture";
-import { PrecisionDate } from "../Misc/precisionDate";
 import {
     createPipelineContext,
     createRawShaderProgram,
     createShaderProgram,
     _finalizePipelineContext,
     _preparePipelineContext,
-    _ConcatenateShader,
     _setProgram,
-    _activeRequests,
-    _loadFile,
-    EngineFunctionContext,
-    getHostDocument,
-    _getGlobalDefines,
     _executeWhenRenderingStateIsCompiled,
     _stateObject,
 } from "./thinEngine.functions";
@@ -59,6 +49,7 @@ import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
+import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 
 /**
  * Keeps track of all the buffer info used in engine.

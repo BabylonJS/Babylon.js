@@ -14,7 +14,7 @@ import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import type { INative } from "../Engines/Native/nativeInterfaces";
-import { EngineFunctionContext } from "core/Engines/thinEngine.functions";
+import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
 import { AbstractEngine } from "../Engines/abstractEngine";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
@@ -775,7 +775,7 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  */
 const initSideEffects = () => {
     AbstractEngine._FileToolsLoadImage = LoadImage;
-    AbstractEngine._FileToolsLoadFile = LoadFile;
+    EngineFunctionContext.loadFile = LoadFile;
     _functionContainer.loadFile = LoadFile;
 };
 
