@@ -2,7 +2,7 @@ import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessin
 import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement";
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
-import { _executeWhenRenderingStateIsCompiled } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _stateObject } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect, IShaderPath } from "./effect";
@@ -74,10 +74,13 @@ export interface IPipelineGenerationOptions {
  */
 export async function generatePipelineContext(
     options: IPipelineGenerationOptions,
-    context: WebGL2RenderingContext | WebGLRenderingContext | GPUCanvasContext,
+    context: WebGL2RenderingContext | WebGLRenderingContext,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
     _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext
 ): Promise<IPipelineContext> {
+    if (!_stateObject._context) {
+        _stateObject._context = context;
+    }
     const platformName = options.platformName || "WEBGL2";
     let processor = options.extendedProcessingOptions?.processor;
     const language = options.shaderLanguage || ShaderLanguage.GLSL;
@@ -332,7 +335,7 @@ export const createAndPreparePipelineContext = (
         name?: string;
         rebuildRebind?: (vertexSourceCode: string, fragmentSourceCode: string, onCompiled: (pipelineContext: IPipelineContext) => void, onError: (message: string) => void) => void;
         onRenderingStateCompiled?: (pipelineContext?: IPipelineContext) => void;
-        context?: WebGL2RenderingContext | WebGLRenderingContext | GPUCanvasContext;
+        context?: WebGL2RenderingContext | WebGLRenderingContext;
         // preparePipeline options
         createAsRaw?: boolean;
         vertex: string;
