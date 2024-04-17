@@ -923,6 +923,15 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 step={0.01}
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
+                            <TextureLinkLineComponent
+                                label="Intensity"
+                                texture={material.subSurface.translucencyIntensityTexture}
+                                onTextureCreated={(texture) => (material.subSurface.translucencyIntensityTexture = texture)}
+                                onTextureRemoved={() => (material.subSurface.translucencyIntensityTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
                             <Color3LineComponent
                                 lockObject={this.props.lockObject}
                                 label="Diffusion Distance"
