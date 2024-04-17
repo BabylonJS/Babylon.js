@@ -87,6 +87,7 @@ import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.renderPass";
+import "../Audio/audioEngine";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
