@@ -6,7 +6,6 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { InputBlock } from "../Input/inputBlock";
 import { Vector2 } from "../../../../Maths/math.vector";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to generate a twirl

@@ -59,7 +59,7 @@ export class PreviewManager {
     private _onDepthPrePassChangedObserver: Nullable<Observer<void>>;
     private _onLightUpdatedObserver: Nullable<Observer<void>>;
     private _onBackgroundHDRUpdatedObserver: Nullable<Observer<void>>;
-    private _engine: Engine;
+    private _engine: Engine | WebGPUEngine;
     private _scene: Scene;
     private _meshes: AbstractMesh[];
     private _camera: ArcRotateCamera;

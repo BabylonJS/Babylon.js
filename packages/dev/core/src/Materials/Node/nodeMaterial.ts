@@ -6,7 +6,6 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import type { Mesh } from "../../Meshes/mesh";
-import { Engine } from "../../Engines/engine";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
@@ -69,6 +68,7 @@ import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
 import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
 import { ShaderLanguage } from "../shaderLanguage";
+import { AbstractEngine } from "../../Engines/abstractEngine";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -256,7 +256,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -1059,7 +1059,7 @@ export class NodeMaterial extends PushMaterial {
         camera: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
@@ -1084,7 +1084,7 @@ export class NodeMaterial extends PushMaterial {
         camera?: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         textureFormat = Constants.TEXTUREFORMAT_RGBA

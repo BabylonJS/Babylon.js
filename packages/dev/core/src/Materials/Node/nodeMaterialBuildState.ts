@@ -538,4 +538,74 @@ export class NodeMaterialBuildState {
             return `${this._getShaderType(type)} ${name}`;
         }
     }
+
+    private _convertVariableDeclarationToWGSL(type: string, dest: string, source: string): string {
+        return source.replace(new RegExp(`(${type})\\s+(\\w+)`, "g"), `var $2: ${dest}`);
+    }
+
+    private _convertVariableConstructorsToWGSL(type: string, dest: string, source: string): string {
+        return source.replace(new RegExp(`(${type})\\(`, "g"), ` ${dest}(`);
+    }
+
+    private _convertOutParametersToWGSL(source: string): string {
+        return source.replace(new RegExp(`out\\s+var\\s+(\\w+):\\s+(\\w+)`, "g"), `$1: ptr<function, $2>`);
+    }
+
+    private _convertFunctionsToWGSL(source: string): string {
+        const regex = /var\s+(\w+):\s+(\w+)\((.*)\)/;
+        const match = source.match(regex);
+
+        if (match) {
+            const funcName = match[1];
+            const funcType = match[2];
+            const params = match[3]; // All parameters as a single string
+
+            // Processing the parameters to match 'name: type' format
+            const formattedParams = params.replace(/var\s/g, "");
+
+            // Constructing the final output string
+            return source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
+        }
+        return source;
+    }
+
+    public _babylonSLtoWGSL(code: string) {
+        // variable declarations
+        code = this._convertVariableDeclarationToWGSL("void", "voidnull", code);
+        code = this._convertVariableDeclarationToWGSL("int", "i32", code);
+        code = this._convertVariableDeclarationToWGSL("float", "f32", code);
+        code = this._convertVariableDeclarationToWGSL("vec2", "vec2f", code);
+        code = this._convertVariableDeclarationToWGSL("vec3", "vec3f", code);
+        code = this._convertVariableDeclarationToWGSL("vec4", "vec4f", code);
+        code = this._convertVariableDeclarationToWGSL("mat2", "mat2x2f", code);
+        code = this._convertVariableDeclarationToWGSL("mat3", "mat3x3f", code);
+        code = this._convertVariableDeclarationToWGSL("mat4", "mat4x4f", code);
+
+        // Type constructors
+        code = this._convertVariableConstructorsToWGSL("float", "f32", code);
+        code = this._convertVariableConstructorsToWGSL("vec2", "vec2f", code);
+        code = this._convertVariableConstructorsToWGSL("vec3", "vec3f", code);
+        code = this._convertVariableConstructorsToWGSL("vec4", "vec4f", code);
+        code = this._convertVariableConstructorsToWGSL("mat2", "mat2x2f", code);
+        code = this._convertVariableConstructorsToWGSL("mat3", "mat3x3f", code);
+        code = this._convertVariableConstructorsToWGSL("mat4", "mat4x4f", code);
+
+        // Out paramters
+        code = this._convertOutParametersToWGSL(code);
+        code = code.replace(/\[\*\]/g, "*");
+
+        // Functions
+        code = this._convertFunctionsToWGSL(code);
+
+        // Remove voidnull
+        code = code.replace(/\s->\svoidnull/g, "");
+
+        return code;
+    }
+
+    public _babylonSLtoGLSL(code: string) {
+        code = code.replace(/\[\*\]/g, "");
+
+        return code;
+    }
 }
