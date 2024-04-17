@@ -144,6 +144,11 @@ uniform float pointSize;
         uniform vec2 vTranslucencyIntensityInfos;
         uniform mat4 translucencyIntensityMatrix;
     #endif
+
+    #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+        uniform vec2 vTranslucencyColorInfos;
+        uniform mat4 translucencyColorMatrix;
+    #endif
 #endif
 
 #ifdef NORMAL

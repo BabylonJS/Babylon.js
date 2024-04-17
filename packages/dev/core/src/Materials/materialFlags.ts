@@ -331,7 +331,7 @@ export class MaterialFlags {
      * Are translucency intensity textures enabled in the application.
      */
     public static get TranslucencyIntensityTextureEnabled(): boolean {
-        return this._ThicknessTextureEnabled;
+        return this._TranslucencyIntensityTextureEnabled;
     }
     public static set TranslucencyIntensityTextureEnabled(value: boolean) {
         if (this._TranslucencyIntensityTextureEnabled === value) {
@@ -339,6 +339,22 @@ export class MaterialFlags {
         }
 
         this._TranslucencyIntensityTextureEnabled = value;
+        Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
+    }
+
+    private static _TranslucencyColorTextureEnabled = true;
+    /**
+     * Are translucency tint textures enabled in the application.
+     */
+    public static get TranslucencyColorTextureEnabled(): boolean {
+        return this._TranslucencyColorTextureEnabled;
+    }
+    public static set TranslucencyColorTextureEnabled(value: boolean) {
+        if (this._TranslucencyColorTextureEnabled === value) {
+            return;
+        }
+
+        this._TranslucencyColorTextureEnabled = value;
         Engine.MarkAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag);
     }
 

@@ -937,6 +937,23 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                                 propertyName="useAlbedoToTintTranslucency"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
+                            <Color3LineComponent
+                                lockObject={this.props.lockObject}
+                                label="Translucency Tint"
+                                target={material.subSurface}
+                                propertyName="translucencyColor"
+                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                                isLinear={true}
+                            />
+                            <TextureLinkLineComponent
+                                label="Translucency Tint"
+                                texture={material.subSurface.translucencyColorTexture}
+                                onTextureCreated={(texture) => (material.subSurface.translucencyColorTexture = texture)}
+                                onTextureRemoved={() => (material.subSurface.translucencyColorTexture = null)}
+                                material={material}
+                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+                                onDebugSelectionChangeObservable={this._onDebugSelectionChangeObservable}
+                            />
                         </div>
                     )}
                 </LineContainerComponent>
