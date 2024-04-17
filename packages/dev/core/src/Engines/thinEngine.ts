@@ -2090,7 +2090,9 @@ export class ThinEngine extends AbstractEngine {
             rebuildRebind,
             defines,
             transformFeedbackVaryings,
-            _key
+            _key,
+            this.createRawShaderProgram.bind(this),
+            this.createShaderProgram.bind(this)
         );
     }
 

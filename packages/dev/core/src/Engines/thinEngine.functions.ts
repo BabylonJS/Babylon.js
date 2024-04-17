@@ -191,14 +191,22 @@ export function _preparePipelineContext(
     rebuildRebind: any,
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
-    _key: string = ""
+    _key: string = "",
+    createRawShaderProgramInjection: typeof createRawShaderProgram = createRawShaderProgram,
+    createShaderProgramInjection: typeof createShaderProgram = createShaderProgram
 ) {
     const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
     if (createAsRaw) {
-        webGLRenderingState.program = createRawShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, webGLRenderingState.context!, transformFeedbackVaryings);
+        webGLRenderingState.program = createRawShaderProgramInjection(
+            webGLRenderingState,
+            vertexSourceCode,
+            fragmentSourceCode,
+            webGLRenderingState.context!,
+            transformFeedbackVaryings
+        );
     } else {
-        webGLRenderingState.program = createShaderProgram(
+        webGLRenderingState.program = createShaderProgramInjection(
             webGLRenderingState,
             vertexSourceCode,
             fragmentSourceCode,
