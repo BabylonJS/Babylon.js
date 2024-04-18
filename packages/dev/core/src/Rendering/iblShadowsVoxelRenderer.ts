@@ -3,24 +3,16 @@ import { Engine } from "../Engines/engine";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-// import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
 import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
-
-// import type { SubMesh } from "../Meshes/subMesh";
 import { Mesh } from "../Meshes/mesh";
-// import type { AbstractMesh } from "../Meshes/abstractMesh";
-// import type { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
-// import { ThinTexture } from "../Materials/Textures/thinTexture";
-// import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import { Logger } from "../Misc/logger";
 import "../Shaders/voxelGrid.fragment";
 import "../Shaders/voxelGrid.vertex";
 import "../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../Shaders/voxelGrid3dDebug.fragment";
-// import { ShaderStore } from "../Engines/shaderStore";
 import { PostProcess } from "../PostProcesses/postProcess";
 
 /**
@@ -101,14 +93,14 @@ export class IblShadowsVoxelRenderer {
      */
     constructor(scene: Scene, resolution: number = 64) {
         this._scene = scene;
-        this._engine = scene.getEngine();
+        this._engine = scene.getEngine() as Engine;
         this._voxelResolution = resolution;
 
         if (!this._engine.getCaps().drawBuffersExtension) {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
 
-        this._maxDrawBuffers = this._engine._gl.getParameter(this._engine._gl.MAX_DRAW_BUFFERS);
+        this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
 
         this._createTextures();
     }

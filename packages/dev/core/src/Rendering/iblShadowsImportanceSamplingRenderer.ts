@@ -1,5 +1,5 @@
 import { Constants } from "../Engines/constants";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
@@ -148,7 +148,7 @@ const icdfxFragment = `
  */
 export class IblShadowsImportanceSamplingRenderer {
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     private _cdfyPT: CustomProceduralTexture;
     private _icdfyPT: CustomProceduralTexture;

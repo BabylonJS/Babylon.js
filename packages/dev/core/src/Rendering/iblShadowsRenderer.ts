@@ -1,12 +1,7 @@
 import { Constants } from "../Engines/constants";
-import type { Engine } from "../Engines/engine";
-// import type { Effect } from "../Materials/effect";
-// import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
-// import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
-// import { Color4 } from "../Maths/math.color";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-// import { GroundMesh } from "../Meshes/groundMesh";
 import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
@@ -14,14 +9,8 @@ import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import type { PrePassRenderer } from "./prePassRenderer";
-// import type { InternalTexture } from "../Materials/Textures/internalTexture";
-// import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Logger } from "../Misc/logger";
 import { IblShadowsVoxelRenderer } from "../Rendering/iblShadowsVoxelRenderer";
-// import type { IMaterialContext } from "../Engines/IMaterialContext";
-// import type { DrawWrapper } from "../Materials/drawWrapper";
-// import { Material } from "../Materials/material";
-// import type { Nullable } from "../types";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
@@ -60,7 +49,7 @@ class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
  */
 export class IblShadowsRenderer {
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     private _voxelizationDirty: boolean = true;
     private _thinTextures: ThinTexture[] = [];
