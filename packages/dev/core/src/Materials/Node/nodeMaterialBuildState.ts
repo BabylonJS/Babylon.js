@@ -551,6 +551,22 @@ export class NodeMaterialBuildState {
         return source.replace(new RegExp(`out\\s+var\\s+(\\w+)\\s*:\\s*(\\w+)`, "g"), `$1: ptr<function, $2>`);
     }
 
+    private _convertTertiaryOperandsToWGSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `select(${trueCase}, ${falseCase}, ${condition})`);
+    }
+
+    private _convertModOperatorsToWGSL(source: string): string {
+        return source.replace(new RegExp(`mod\\((.*?),\\s*(.*?)\\)`, "g"), (match, left, right) => `((${left})%(${right}))`);
+    }
+
+    private _convertConstToWGSL(source: string): string {
+        return source.replace(new RegExp(`const var`, "g"), `const`);
+    }
+
+    private _convertInnerFunctionsToWGSL(source: string): string {
+        return source.replace(new RegExp(`inversesqrt`, "g"), `inverseSqrt`);
+    }
+
     private _convertFunctionsToWGSL(source: string): string {
         const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/g;
         const matches = source.matchAll(regex);
@@ -572,6 +588,7 @@ export class NodeMaterialBuildState {
     public _babylonSLtoWGSL(code: string) {
         // variable declarations
         code = this._convertVariableDeclarationToWGSL("void", "voidnull", code);
+        code = this._convertVariableDeclarationToWGSL("bool", "bool", code);
         code = this._convertVariableDeclarationToWGSL("int", "i32", code);
         code = this._convertVariableDeclarationToWGSL("uint", "u32", code);
         code = this._convertVariableDeclarationToWGSL("float", "f32", code);
@@ -591,6 +608,18 @@ export class NodeMaterialBuildState {
         code = this._convertVariableConstructorsToWGSL("mat3", "mat3x3f", code);
         code = this._convertVariableConstructorsToWGSL("mat4", "mat4x4f", code);
 
+        // Tertiary operands
+        code = this._convertTertiaryOperandsToWGSL(code);
+
+        // Mod operators
+        code = this._convertModOperatorsToWGSL(code);
+
+        // Const
+        code = this._convertConstToWGSL(code);
+
+        // Inner functions
+        code = this._convertInnerFunctionsToWGSL(code);
+
         // Out paramters
         code = this._convertOutParametersToWGSL(code);
         code = code.replace(/\[\*\]/g, "*");
@@ -604,8 +633,14 @@ export class NodeMaterialBuildState {
         return code;
     }
 
+    private _convertTertiaryOperandsToGLSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `${condition} ? ${trueCase} : ${falseCase}`);
+    }
+
     public _babylonSLtoGLSL(code: string) {
+        /** Remove BSL specifics */
         code = code.replace(/\[\*\]/g, "");
+        code = this._convertTertiaryOperandsToGLSL(code);
 
         return code;
     }
