@@ -1,56 +1,11 @@
 {
-    "fromTag": "7.2.2",
+    "fromTag": "7.2.3",
     "changelog": {
-        "7.2.2": [
+        "7.3.0": [
             {
-                "pr": "14985",
-                "title": "Fix NME MatrixTransposeBlock",
-                "description": "https://forum.babylonjs.com/t/error-with-matrixtranspose-node-in-nme/49637",
-                "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/matrixTransposeBlock.ts"
-                ],
-                "tags": [
-                    "bug",
-                    "nme"
-                ]
-            },
-            {
-                "pr": "14984",
-                "title": "Fix pasring CylinderDirectedParticleEmitter",
-                "description": "Fixing #14983",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14978",
-                "title": "Changes to Draco module",
-                "description": "* Included the non-glTF draco assets\n* exposed decode to mesh-data (was private)",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
-                    "packages/tools/babylonServer/public/draco_decoder.js",
-                    "packages/tools/babylonServer/public/draco_decoder.wasm",
-                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "14977",
-                "title": "FIX PBR Sub surface configuration",
-                "description": "https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/38",
+                "pr": "15001",
+                "title": "Replace KHR_materials_translucency with KHR_materials_diffuse_transmission",
+                "description": "https://github.com/KhronosGroup/glTF/pull/1825",
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
@@ -58,25 +13,194 @@
                 "files": [
                     "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
                     "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
-                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                    "packages/dev/core/src/Materials/materialFlags.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrFragmentSamplersDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/Shaders/pbr.vertex.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/globalState.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_animation_pointer.data.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_diffuse_transmission.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_dispersion.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/loaders/src/glTF/2.0/Extensions/index.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_diffuse_transmission.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/KHR_materials_volume.ts",
+                    "packages/dev/serializers/src/glTF/2.0/Extensions/index.ts",
+                    "packages/public/glTF2Interface/babylon.glTF2Interface.d.ts",
+                    "packages/tools/devHost/src/babylon.glTF2Interface.ts",
+                    "packages/tools/tests/test/visualization/config.json"
                 ],
                 "tags": [
-                    "bug",
-                    "materials"
+                    "enhancement",
+                    "glTF"
                 ]
             },
             {
-                "pr": "14975",
-                "title": "docs: fix comment for getHighestFrame",
-                "description": "I assume that the result of `getHighestFrame()` should be the frame, rather the frame **rate**.",
+                "pr": "14916",
+                "title": "Allow NME to compile WebGPU shaders",
+                "description": "Fix #14929",
                 "author": {
-                    "name": "wy-luke",
-                    "url": "https://github.com/wy-luke"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Animations/animation.ts"
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/lightBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/derivativeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragCoordBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/frontFacingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/imageProcessingBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/twirlBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleBlendMultiplyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleRampGradientBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Particle/particleTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportOutBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/bonesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/instancesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/vertexOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/addBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/arcTan2Block.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/clampBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/cloudBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/colorMergerBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/colorSplitterBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/conditionalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/crossBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/curveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/customBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/desaturateBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/distanceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/divideBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/dotBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/elbowBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/fresnelBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/gradientBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/lengthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/lerpBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixBuilderBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixDeterminantBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixTransposeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/maxBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/minBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/modBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/multiplyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/nLerpBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/negateBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/normalBlendBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/normalizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/oneMinusBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/posterizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/powBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/randomNumberBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/reciprocalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/reflectBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/refractBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/remapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/replaceColorBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/rotate2dBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/scaleBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/simplexPerlin3DBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/smoothStepBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/stepBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/subtractBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/transformBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/trigonometryBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/vectorMergerBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/vectorSplitterBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/viewDirectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/voronoiNoiseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/waveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/worleyNoise3DBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/fresnelFunction.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeEditor/src/components/preview/previewManager.ts"
+                ],
+                "tags": [
+                    "WebGPU",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15002",
+                "title": "remove dead link",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/postProcess.ts"
                 ],
                 "tags": []
+            },
+            {
+                "pr": "14995",
+                "title": "Fix memory leak in MeshoptCompression",
+                "description": "As discussed in https://forum.babylonjs.com/t/meshoptdecoder-memory-leak/49696\r\n\r\nBy using web workers to decode the buffer we can terminate the web worker which releases the wasm heap. In the future, `memory.discard` may be a better way of solving this, but this API is not available yet.",
+                "author": {
+                    "name": "OrigamiDev-Pete",
+                    "url": "https://github.com/OrigamiDev-Pete"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/meshoptCompression.ts",
+                    "packages/tools/babylonServer/public/meshopt_decoder.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14999",
+                "title": "Fix sandbox",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Misc/filesInput.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
             }
         ],
         "7.2.3": [
@@ -330,6 +454,84 @@
                 "files": [
                     "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
                     "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.2.2": [
+            {
+                "pr": "14985",
+                "title": "Fix NME MatrixTransposeBlock",
+                "description": "https://forum.babylonjs.com/t/error-with-matrixtranspose-node-in-nme/49637",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/matrixTransposeBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "14984",
+                "title": "Fix pasring CylinderDirectedParticleEmitter",
+                "description": "Fixing #14983",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14978",
+                "title": "Changes to Draco module",
+                "description": "* Included the non-glTF draco assets\n* exposed decode to mesh-data (was private)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/tools/babylonServer/public/draco_decoder.js",
+                    "packages/tools/babylonServer/public/draco_decoder.wasm",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14977",
+                "title": "FIX PBR Sub surface configuration",
+                "description": "https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/38",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "14975",
+                "title": "docs: fix comment for getHighestFrame",
+                "description": "I assume that the result of `getHighestFrame()` should be the frame, rather the frame **rate**.",
+                "author": {
+                    "name": "wy-luke",
+                    "url": "https://github.com/wy-luke"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animation.ts"
                 ],
                 "tags": []
             }

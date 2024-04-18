@@ -1,5 +1,30 @@
 # Changelog
 
+## 7.3.0
+
+### Core
+
+- Replace KHR_materials_translucency with KHR_materials_diffuse_transmission - by [sebavan](https://github.com/sebavan) ([#15001](https://github.com/BabylonJS/Babylon.js/pull/15001))
+- Allow NME to compile WebGPU shaders - by [deltakosh](https://github.com/deltakosh) ([#14916](https://github.com/BabylonJS/Babylon.js/pull/14916))
+- remove dead link - by [deltakosh](https://github.com/deltakosh) ([#15002](https://github.com/BabylonJS/Babylon.js/pull/15002))
+- Fix memory leak in MeshoptCompression - by [OrigamiDev-Pete](https://github.com/OrigamiDev-Pete) ([#14995](https://github.com/BabylonJS/Babylon.js/pull/14995))
+
+### Inspector
+
+- Replace KHR_materials_translucency with KHR_materials_diffuse_transmission - by [sebavan](https://github.com/sebavan) ([#15001](https://github.com/BabylonJS/Babylon.js/pull/15001))
+
+### Loaders
+
+- Replace KHR_materials_translucency with KHR_materials_diffuse_transmission - by [sebavan](https://github.com/sebavan) ([#15001](https://github.com/BabylonJS/Babylon.js/pull/15001))
+
+### Node Editor
+
+- Allow NME to compile WebGPU shaders - by [deltakosh](https://github.com/deltakosh) ([#14916](https://github.com/BabylonJS/Babylon.js/pull/14916))
+
+### Serializers
+
+- Replace KHR_materials_translucency with KHR_materials_diffuse_transmission - by [sebavan](https://github.com/sebavan) ([#15001](https://github.com/BabylonJS/Babylon.js/pull/15001))
+
 ## 7.2.3
 
 ### Core
