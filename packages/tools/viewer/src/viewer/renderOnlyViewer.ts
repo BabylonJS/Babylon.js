@@ -5,7 +5,7 @@ import { Logger } from "core/Misc/logger";
 
 export class RenderOnlyViewer extends AbstractViewer {
     constructor(
-        public containerElement: Element,
+        public override containerElement: Element,
         initialConfiguration: ViewerConfiguration = {}
     ) {
         super(containerElement, initialConfiguration);
