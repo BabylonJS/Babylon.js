@@ -29,7 +29,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const inputBlock = this.props.nodeData.data as InputBlock;
         this._onValueChangedObserver = inputBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
@@ -37,7 +37,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const inputBlock = this.props.nodeData.data as InputBlock;
         if (this._onValueChangedObserver) {
             inputBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
@@ -185,7 +185,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
         inputBlock.setDefaultValue();
     }
 
-    render() {
+    override render() {
         const inputBlock = this.props.nodeData.data as InputBlock;
 
         let systemValuesOptions: { label: string; value: NodeMaterialSystemValues }[] = [];

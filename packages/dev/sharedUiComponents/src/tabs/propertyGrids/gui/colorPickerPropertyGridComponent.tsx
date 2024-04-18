@@ -18,7 +18,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
         super(props);
     }
 
-    render() {
+    override render() {
         const colorPicker = this.props.colorPicker;
 
         return (

@@ -14,17 +14,17 @@ export class DebugPropertyTabComponent extends React.Component<IPropertyComponen
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onUpdateRequiredObserver = this.props.stateManager.onUpdateRequiredObservable.add(() => {
             this.forceUpdate();
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
     }
 
-    render() {
+    override render() {
         const debugBlock = this.props.nodeData.data as DebugBlock;
 
         return (

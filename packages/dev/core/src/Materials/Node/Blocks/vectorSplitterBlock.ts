@@ -35,7 +35,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VectorSplitterBlock";
     }
 
@@ -109,7 +109,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         switch (name) {
             case "xy ":
                 return "xyIn";
@@ -120,7 +120,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _outputRename(name: string) {
+    protected override _outputRename(name: string) {
         switch (name) {
             case "xy":
                 return "xyOut";
@@ -131,7 +131,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;

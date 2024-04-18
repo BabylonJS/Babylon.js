@@ -22,7 +22,7 @@ export class PointLightPropertyGridComponent extends React.Component<IPointLight
         super(props);
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
 
         return (

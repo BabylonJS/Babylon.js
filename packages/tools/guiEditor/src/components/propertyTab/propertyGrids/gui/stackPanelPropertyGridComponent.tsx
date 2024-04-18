@@ -31,7 +31,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
         super(props);
     }
 
-    render() {
+    override render() {
         const { stackPanels, lockObject, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(stackPanels, onPropertyChangedObservable);
 

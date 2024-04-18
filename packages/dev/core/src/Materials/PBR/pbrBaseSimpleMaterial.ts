@@ -135,7 +135,7 @@ export abstract class PBRBaseSimpleMaterial extends PBRBaseMaterial {
         this._useAmbientInGrayScale = true;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRBaseSimpleMaterial";
     }
 }

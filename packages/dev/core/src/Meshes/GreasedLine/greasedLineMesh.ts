@@ -42,7 +42,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param _options mesh options
      */
     constructor(
-        public readonly name: string,
+        public override readonly name: string,
         scene: Scene,
         _options: GreasedLineMeshOptions
     ) {
@@ -60,7 +60,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * "GreasedLineMesh"
      * @returns "GreasedLineMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GreasedLineMesh";
     }
 
@@ -211,7 +211,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param newParent new parent node
      * @returns cloned line
      */
-    public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
+    public override clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions = {};
         DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"], undefined, true);
@@ -230,7 +230,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * Serializes this GreasedLineMesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
 
@@ -243,14 +243,14 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param scene the scene to create the GreasedLineMesh in
      * @returns the created GreasedLineMesh
      */
-    public static Parse(parsedMesh: any, scene: Scene): Mesh {
+    public static override Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
         const result = new GreasedLineMesh(name, scene, lineOptions);
         return result;
     }
 
-    protected _initGreasedLine() {
+    protected override _initGreasedLine() {
         super._initGreasedLine();
 
         this._previousAndSide = [];
@@ -266,7 +266,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
      * @returns the picking info
      */
-    public intersects(
+    public override intersects(
         ray: Ray,
         fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate,
@@ -366,7 +366,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         return positions[arrayIdx1] === positions[arrayIdx2] && positions[arrayIdx1 + 1] === positions[arrayIdx2 + 1] && positions[arrayIdx1 + 2] === positions[arrayIdx2 + 2];
     }
 
-    protected _createVertexBuffers() {
+    protected override _createVertexBuffers() {
         const vertexData: VertexData = super._createVertexBuffers();
 
         const engine = this._scene.getEngine();

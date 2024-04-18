@@ -152,7 +152,7 @@ export class SkyMaterial extends PushMaterial {
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1.0;
     }
 
@@ -160,7 +160,7 @@ export class SkyMaterial extends PushMaterial {
      * Specifies if this material should be rendered in alpha test mode
      * @returns false as the sky material doesn't need alpha testing.
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
@@ -168,7 +168,7 @@ export class SkyMaterial extends PushMaterial {
      * Get the texture used for alpha test purpose.
      * @returns null as the sky material has no texture.
      */
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
@@ -179,7 +179,7 @@ export class SkyMaterial extends PushMaterial {
      * @param subMesh defines which submesh to check
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -275,7 +275,7 @@ export class SkyMaterial extends PushMaterial {
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <SkyMaterialDefines>subMesh.materialDefines;
@@ -359,7 +359,7 @@ export class SkyMaterial extends PushMaterial {
      * Get the list of animatables in the material.
      * @returns the list of animatables object used in the material
      */
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         return [];
     }
 
@@ -367,7 +367,7 @@ export class SkyMaterial extends PushMaterial {
      * Disposes the material
      * @param forceDisposeEffect specifies if effects should be forcefully disposed
      */
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
     }
 
@@ -376,7 +376,7 @@ export class SkyMaterial extends PushMaterial {
      * @param name defines the new name for the duplicated material
      * @returns the cloned material
      */
-    public clone(name: string): SkyMaterial {
+    public override clone(name: string): SkyMaterial {
         return SerializationHelper.Clone<SkyMaterial>(() => new SkyMaterial(name, this.getScene()), this);
     }
 
@@ -384,7 +384,7 @@ export class SkyMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.SkyMaterial";
         return serializationObject;
@@ -395,7 +395,7 @@ export class SkyMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SkyMaterial";
     }
 
@@ -406,7 +406,7 @@ export class SkyMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new sky material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): SkyMaterial {
         return SerializationHelper.Parse(() => new SkyMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

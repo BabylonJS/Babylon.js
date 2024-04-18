@@ -17,7 +17,7 @@ export class SpriteTreeItemComponent extends React.Component<ISpriteTreeItemComp
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="spriteTools">
                 <TreeItemLabelComponent label={this.props.sprite.name || "No name"} onClick={() => this.props.onClick()} icon={faGhost} color="blanchedalmond" />

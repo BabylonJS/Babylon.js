@@ -33,7 +33,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
         super(props);
     }
 
-    render() {
+    override render() {
         const { displayGrids, lockObject, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(displayGrids, onPropertyChangedObservable);
 

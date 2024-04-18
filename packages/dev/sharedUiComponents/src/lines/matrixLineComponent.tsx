@@ -52,7 +52,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
         this.state = { value: matrix, mode: this.props.mode || 0, angle: angle };
     }
 
-    shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix; mode: number; angle: number }) {
+    override shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix; mode: number; angle: number }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -115,7 +115,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
         this.setState({ angle: value });
     }
 
-    render() {
+    override render() {
         const modeOptions = [
             { label: "User-defined", value: 0 },
             { label: "Rotation over X axis", value: 1 },

@@ -38,9 +38,9 @@ export class StereoscopicArcRotateCamera extends ArcRotateCamera {
      * Gets camera class name
      * @returns StereoscopicArcRotateCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicArcRotateCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => setStereoscopicRigMode(this);
 }

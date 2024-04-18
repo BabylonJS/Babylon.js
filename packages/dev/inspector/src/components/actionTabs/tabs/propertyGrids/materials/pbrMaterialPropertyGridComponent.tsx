@@ -168,7 +168,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         const debugMode = [

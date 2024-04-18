@@ -25,7 +25,7 @@ export class MultiLine extends Control {
      * Creates a new MultiLine
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
 
         this._automaticSize = true;
@@ -165,19 +165,19 @@ export class MultiLine extends Control {
         this._markAsDirty();
     }
 
-    public set horizontalAlignment(value: number) {
+    public override set horizontalAlignment(value: number) {
         return;
     }
 
-    public set verticalAlignment(value: number) {
+    public override set verticalAlignment(value: number) {
         return;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "MultiLine";
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -222,7 +222,7 @@ export class MultiLine extends Control {
         context.restore();
     }
 
-    protected _additionalProcessing(): void {
+    protected override _additionalProcessing(): void {
         this._minX = null;
         this._minY = null;
         this._maxX = null;
@@ -263,7 +263,7 @@ export class MultiLine extends Control {
         }
     }
 
-    public _measure(): void {
+    public override _measure(): void {
         if (this._minX == null || this._maxX == null || this._minY == null || this._maxY == null) {
             return;
         }
@@ -272,7 +272,7 @@ export class MultiLine extends Control {
         this._currentMeasure.height = Math.abs(this._maxY - this._minY) + this._lineWidth;
     }
 
-    protected _computeAlignment(): void {
+    protected override _computeAlignment(): void {
         if (this._minX == null || this._minY == null) {
             return;
         }
@@ -281,7 +281,7 @@ export class MultiLine extends Control {
         this._currentMeasure.top = this._minY - this._lineWidth / 2;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         this.reset();
 
         super.dispose();

@@ -219,7 +219,7 @@ export class HolographicButton extends Button3D {
         };
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "HolographicButton";
     }
 
@@ -256,7 +256,7 @@ export class HolographicButton extends Button3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         this._backPlate = CreateBox(
             this.name + "BackMesh",
             {
@@ -290,7 +290,7 @@ export class HolographicButton extends Button3D {
         return this._backPlate;
     }
 
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+    protected override _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
     }
@@ -320,7 +320,7 @@ export class HolographicButton extends Button3D {
         this._plateMaterial.specularColor = Color3.Black();
     }
 
-    protected _affectMaterial(mesh: Mesh) {
+    protected override _affectMaterial(mesh: Mesh) {
         // Back
         if (this._shareMaterials) {
             if (!this._host._sharedMaterials["backFluentMaterial"]) {
@@ -353,7 +353,7 @@ export class HolographicButton extends Button3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose(); // will dispose main mesh ie. back plate
 
         this._disposeTooltip();

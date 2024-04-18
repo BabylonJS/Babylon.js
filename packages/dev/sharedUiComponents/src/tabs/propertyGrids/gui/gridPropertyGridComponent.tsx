@@ -44,7 +44,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         });
     }
 
-    render() {
+    override render() {
         const grid = this.props.grid;
 
         const cols = [];

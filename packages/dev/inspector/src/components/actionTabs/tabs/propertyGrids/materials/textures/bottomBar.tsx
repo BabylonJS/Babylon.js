@@ -7,7 +7,7 @@ interface IBottomBarProps {
 }
 
 export class BottomBar extends React.PureComponent<IBottomBarProps> {
-    render() {
+    override render() {
         const factor = Math.pow(2, this.props.mipLevel);
         const width = Math.ceil(this.props.texture.getSize().width / factor);
         const height = Math.ceil(this.props.texture.getSize().height / factor);

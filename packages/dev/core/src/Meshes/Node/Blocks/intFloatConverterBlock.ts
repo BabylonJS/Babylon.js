@@ -25,7 +25,7 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "IntFloatConverterBlock";
     }
 
@@ -57,7 +57,7 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
         return this._outputs[1];
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "float ") {
             return "floatIn";
         }
@@ -67,7 +67,7 @@ export class IntFloatConverterBlock extends NodeGeometryBlock {
         return name;
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         this.floatOut._storedFunction = (state) => {
             if (this.floatIn.isConnected) {
                 return this.floatIn.getConnectedValue(state);

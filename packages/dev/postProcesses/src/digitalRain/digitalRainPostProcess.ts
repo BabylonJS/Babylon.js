@@ -146,7 +146,7 @@ export class DigitalRainFontTexture extends BaseTexture {
      * Clones the current DigitalRainFontTexture.
      * @returns the clone of the texture.
      */
-    public clone(): DigitalRainFontTexture {
+    public override clone(): DigitalRainFontTexture {
         return new DigitalRainFontTexture(this.name, this._font, this._text, this.getScene());
     }
 

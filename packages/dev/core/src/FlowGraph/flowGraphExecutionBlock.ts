@@ -70,7 +70,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
      * Serializes this block
      * @param serializationObject the object to serialize in
      */
-    public serialize(serializationObject: any = {}) {
+    public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.signalInputs = [];
         serializationObject.signalOutputs = [];
@@ -112,7 +112,7 @@ export abstract class FlowGraphExecutionBlock extends FlowGraphBlock {
     /**
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGExecutionBlock";
     }
 }

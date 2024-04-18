@@ -398,7 +398,7 @@ export class Xbox360Pad extends Gamepad {
     /**
      * Force the gamepad to synchronize with device values
      */
-    public update() {
+    public override update() {
         super.update();
         if (this._isXboxOnePad) {
             this.buttonA = this.browserGamepad.buttons[0].value;
@@ -440,7 +440,7 @@ export class Xbox360Pad extends Gamepad {
     /**
      * Disposes the gamepad
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this.onButtonDownObservable.clear();
         this.onButtonUpObservable.clear();

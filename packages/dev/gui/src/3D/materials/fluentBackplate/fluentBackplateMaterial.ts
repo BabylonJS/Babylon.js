@@ -229,19 +229,19 @@ export class FluentBackplateMaterial extends PushMaterial {
         this._iridescentMap = new Texture(FluentBackplateMaterial.IM_TEXTURE_URL, this.getScene(), true, false, Texture.NEAREST_SAMPLINGMODE);
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return false;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -398,7 +398,7 @@ export class FluentBackplateMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const defines = <FluentBackplateMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
@@ -496,33 +496,33 @@ export class FluentBackplateMaterial extends PushMaterial {
      * Get the list of animatables in the material.
      * @returns the list of animatables object used in the material
      */
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         return [];
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
 
         this._blobTexture.dispose();
         this._iridescentMap.dispose();
     }
 
-    public clone(name: string): FluentBackplateMaterial {
+    public override clone(name: string): FluentBackplateMaterial {
         return SerializationHelper.Clone(() => new FluentBackplateMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FluentBackplateMaterial";
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FluentBackplateMaterial";
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): FluentBackplateMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): FluentBackplateMaterial {
         return SerializationHelper.Parse(() => new FluentBackplateMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

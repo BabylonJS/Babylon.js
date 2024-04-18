@@ -20,7 +20,7 @@ export class HemisphericEmitterGridComponent extends React.Component<IHemispheri
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
         return (
             <>

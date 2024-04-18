@@ -21,7 +21,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "SubSurfaceScatteringPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SubSurfaceScatteringPostProcess";
     }
 

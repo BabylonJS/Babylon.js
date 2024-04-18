@@ -53,11 +53,11 @@ export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentP
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._isMounted = true;
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._isMounted = false;
     }
 
@@ -108,7 +108,7 @@ export class MediaPlayerComponent extends React.Component<IMediaPlayerComponentP
         this.forceUpdate();
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="media-player">
                 <ControlButtonComponent

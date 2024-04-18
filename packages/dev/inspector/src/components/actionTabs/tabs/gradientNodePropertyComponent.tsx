@@ -50,7 +50,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceRebuild();
     }
 
-    render() {
+    override render() {
         return (
             <div>
                 <ButtonLineComponent label="Add new step" onClick={() => this.addNewStep()} />

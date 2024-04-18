@@ -32,7 +32,7 @@ export class ArtBoardComponent extends React.Component<IArtBoardProps, IArtBoard
         });
     }
 
-    render() {
+    override render() {
         const style = {
             top: `${this.state.bounds.top}px`,
             left: `${this.state.bounds.left}px`,

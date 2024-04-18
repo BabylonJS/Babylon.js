@@ -21,7 +21,7 @@ export class ConeEmitterGridComponent extends React.Component<IConeEmitterGridCo
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
         return (
             <>

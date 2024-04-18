@@ -37,7 +37,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         this.updateObservers([], props.images);
     }
 
-    shouldComponentUpdate(nextProps: IImagePropertyGridComponentProps) {
+    override shouldComponentUpdate(nextProps: IImagePropertyGridComponentProps) {
         this.updateObservers(this.props.images, nextProps.images);
         return true;
     }
@@ -56,7 +56,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.updateObservers(this.props.images, []);
     }
 
@@ -94,7 +94,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const images = this.props.images;
         const image = images[0]; // for nine slice
 

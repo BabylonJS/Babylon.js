@@ -54,7 +54,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
         this.setFloat("timeScale", this.time);
     }
 
-    protected _getDefines(): string {
+    protected override _getDefines(): string {
         return "#define OCTAVES " + (this.octaves | 0);
     }
 
@@ -62,7 +62,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * Generate the current state of the procedural texture
      * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
-    public render(useCameraPostProcess?: boolean) {
+    public override render(useCameraPostProcess?: boolean) {
         this._updateShaderUniforms();
         super.render(useCameraPostProcess);
     }
@@ -71,7 +71,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * Serializes this noise procedural texture
      * @returns a serialized noise procedural texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject: any = {};
         serializationObject.customType = "BABYLON.NoiseProceduralTexture";
 
@@ -90,7 +90,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * Clone the texture.
      * @returns the cloned texture
      */
-    public clone(): NoiseProceduralTexture {
+    public override clone(): NoiseProceduralTexture {
         const textureSize = this.getSize();
         const newTexture = new NoiseProceduralTexture(
             this.name,
@@ -123,7 +123,7 @@ export class NoiseProceduralTexture extends ProceduralTexture {
      * @param scene defines the current scene
      * @returns a parsed NoiseProceduralTexture
      */
-    public static Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {
+    public static override Parse(parsedTexture: any, scene: Scene): NoiseProceduralTexture {
         const texture = new NoiseProceduralTexture(parsedTexture.name, parsedTexture.size, scene, undefined, parsedTexture.generateMipMaps);
 
         texture.brightness = parsedTexture.brightness;

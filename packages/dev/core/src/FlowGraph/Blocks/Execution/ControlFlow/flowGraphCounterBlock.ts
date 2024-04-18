@@ -42,7 +42,7 @@ export class FlowGraphCounterBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGCounterBlock";
     }
 }

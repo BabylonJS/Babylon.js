@@ -100,12 +100,12 @@ export class FollowCamera extends TargetCamera {
      * Define the target of the camera.
      */
     @serializeAsMeshReference("lockedTargetId")
-    public lockedTarget: Nullable<AbstractMesh>;
+    public override lockedTarget: Nullable<AbstractMesh>;
 
     /**
      * Defines the input associated with the camera.
      */
-    public inputs: FollowCameraInputsManager;
+    public override inputs: FollowCameraInputsManager;
 
     /**
      * Instantiates the follow camera.
@@ -166,13 +166,13 @@ export class FollowCamera extends TargetCamera {
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(noPreventDefault?: boolean): void;
+    public override attachControl(noPreventDefault?: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored: any, noPreventDefault?: boolean): void {
+    public override attachControl(ignored: any, noPreventDefault?: boolean): void {
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -183,7 +183,7 @@ export class FollowCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public override detachControl(): void {
         this.inputs.detachElement();
 
         if (this._reset) {
@@ -192,7 +192,7 @@ export class FollowCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         this.inputs.checkInputs();
         this._checkLimits();
         super._checkInputs();
@@ -228,7 +228,7 @@ export class FollowCamera extends TargetCamera {
      * Gets the camera class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FollowCamera";
     }
 }
@@ -293,7 +293,7 @@ export class ArcFollowCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         super._checkInputs();
         this._follow();
     }
@@ -303,7 +303,7 @@ export class ArcFollowCamera extends TargetCamera {
      * It is mostly used internally for serialization purposes.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ArcFollowCamera";
     }
 }

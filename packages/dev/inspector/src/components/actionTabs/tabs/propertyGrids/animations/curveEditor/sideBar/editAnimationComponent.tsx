@@ -40,7 +40,7 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onEditAnimationRequiredObserver) {
             this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
         }
@@ -100,7 +100,7 @@ export class EditAnimationComponent extends React.Component<IEditAnimationCompon
         this.close();
     }
 
-    public render() {
+    public override render() {
         if (!this.state.isVisible) {
             return null;
         }

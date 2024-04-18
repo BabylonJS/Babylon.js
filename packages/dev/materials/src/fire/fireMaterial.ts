@@ -90,20 +90,20 @@ export class FireMaterial extends PushMaterial {
         super(name, scene);
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return false;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return true;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -246,7 +246,7 @@ export class FireMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <FireMaterialDefines>subMesh.materialDefines;
@@ -315,7 +315,7 @@ export class FireMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         const results = [];
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
@@ -331,7 +331,7 @@ export class FireMaterial extends PushMaterial {
         return results;
     }
 
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
@@ -349,7 +349,7 @@ export class FireMaterial extends PushMaterial {
         return activeTextures;
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -369,11 +369,11 @@ export class FireMaterial extends PushMaterial {
         return false;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FireMaterial";
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         if (this._diffuseTexture) {
             this._diffuseTexture.dispose();
         }
@@ -384,11 +384,11 @@ export class FireMaterial extends PushMaterial {
         super.dispose(forceDisposeEffect);
     }
 
-    public clone(name: string): FireMaterial {
+    public override clone(name: string): FireMaterial {
         return SerializationHelper.Clone<FireMaterial>(() => new FireMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FireMaterial";
         serializationObject.diffuseColor = this.diffuseColor.asArray();
@@ -409,7 +409,7 @@ export class FireMaterial extends PushMaterial {
         return serializationObject;
     }
 
-    public static Parse(source: any, scene: Scene, rootUrl: string): FireMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): FireMaterial {
         const material = new FireMaterial(source.name, scene);
 
         material.diffuseColor = Color3.FromArray(source.diffuseColor);

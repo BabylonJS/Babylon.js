@@ -20,7 +20,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
         super(props);
     }
 
-    render() {
+    override render() {
         const meshEmitters = this.props.scene.meshes.filter((m) => !!m.name);
         meshEmitters.sort((a, b) => a.name.localeCompare(b.name));
 

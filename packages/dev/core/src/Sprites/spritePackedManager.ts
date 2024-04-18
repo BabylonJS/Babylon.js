@@ -22,7 +22,7 @@ export class SpritePackedManager extends SpriteManager {
 
     constructor(
         /** defines the packed manager's name */
-        public name: string,
+        public override name: string,
         imgUrl: string,
         capacity: number,
         scene: Scene,

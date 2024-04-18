@@ -50,7 +50,7 @@ export class MeshBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MeshBlock";
     }
 
@@ -76,7 +76,7 @@ export class MeshBlock extends NodeGeometryBlock {
         this._cachedVertexData = null;
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this._mesh) {
             if (this._cachedVertexData) {
                 this.geometry._storedValue = this._cachedVertexData.clone();
@@ -106,7 +106,7 @@ export class MeshBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.serializedCachedData = this.serializedCachedData;
 
@@ -123,7 +123,7 @@ export class MeshBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         if (serializationObject.cachedVertexData) {

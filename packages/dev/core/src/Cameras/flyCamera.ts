@@ -49,13 +49,13 @@ export class FlyCamera extends TargetCamera {
     /**
      * Define the current direction the camera is moving to.
      */
-    public cameraDirection = Vector3.Zero();
+    public override cameraDirection = Vector3.Zero();
 
     /**
      * Define the current local rotation of the camera as a quaternion to prevent Gimbal lock.
      * This overrides and empties cameraRotation.
      */
-    public rotationQuaternion: Quaternion;
+    public override rotationQuaternion: Quaternion;
 
     /**
      * Track Roll to maintain the wanted Rolling when looking around.
@@ -87,7 +87,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * The inputs manager loads all the input sources, such as keyboard and mouse.
      */
-    public inputs: FlyCameraInputsManager;
+    public override inputs: FlyCameraInputsManager;
 
     /**
      * Gets the input sensibility for mouse input.
@@ -277,13 +277,13 @@ export class FlyCamera extends TargetCamera {
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(noPreventDefault?: boolean): void;
+    public override attachControl(noPreventDefault?: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored: any, noPreventDefault?: boolean): void {
+    public override attachControl(ignored: any, noPreventDefault?: boolean): void {
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -293,7 +293,7 @@ export class FlyCamera extends TargetCamera {
      * Detach a control from the HTML DOM element.
      * The camera will stop reacting to that input.
      */
-    public detachControl(): void {
+    public override detachControl(): void {
         this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
@@ -372,7 +372,7 @@ export class FlyCamera extends TargetCamera {
     };
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         if (!this._localDirection) {
             this._localDirection = Vector3.Zero();
             this._transformedDirection = Vector3.Zero();
@@ -398,12 +398,12 @@ export class FlyCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _decideIfNeedsToMove(): boolean {
+    public override _decideIfNeedsToMove(): boolean {
         return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public override _updatePosition(): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
             this._collideWithWorld(this.cameraDirection);
         } else {
@@ -438,7 +438,7 @@ export class FlyCamera extends TargetCamera {
     /**
      * Destroy the camera and release the current resources held by it.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.inputs.clear();
         super.dispose();
     }
@@ -447,7 +447,7 @@ export class FlyCamera extends TargetCamera {
      * Get the current object class name.
      * @returns the class name.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FlyCamera";
     }
 }

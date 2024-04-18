@@ -36,7 +36,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
         super(props);
     }
 
-    render() {
+    override render() {
         const { onPropertyChangedObservable } = this.props;
         const textBlocks = this.props.textBlocks;
         const proxy = makeTargetsProxy(textBlocks, onPropertyChangedObservable);

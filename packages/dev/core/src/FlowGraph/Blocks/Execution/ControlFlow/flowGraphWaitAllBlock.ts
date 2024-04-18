@@ -33,7 +33,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphWaitAllBlockConfiguration
+        public override config: IFlowGraphWaitAllBlockConfiguration
     ) {
         super(config);
 
@@ -88,7 +88,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGWaitAllBlock";
     }
 
@@ -96,7 +96,7 @@ export class FlowGraphWaitAllBlock extends FlowGraphExecutionBlockWithOutSignal 
      * Serializes this block into a object
      * @param serializationObject the object to serialize to
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.numberInputFlows = this.config.numberInputFlows;
     }

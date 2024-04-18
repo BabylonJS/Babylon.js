@@ -80,7 +80,7 @@ export class BlurPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "BlurPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "BlurPostProcess";
     }
 
@@ -152,7 +152,7 @@ export class BlurPostProcess extends PostProcess {
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
      */
-    public updateEffect(
+    public override updateEffect(
         defines: Nullable<string> = null,
         uniforms: Nullable<string[]> = null,
         samplers: Nullable<string[]> = null,
@@ -321,7 +321,7 @@ export class BlurPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlurPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new BlurPostProcess(

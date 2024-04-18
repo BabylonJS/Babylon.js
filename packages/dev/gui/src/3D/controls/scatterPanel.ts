@@ -60,7 +60,7 @@ export class ScatterPanel extends VolumeBasedPanel {
         return source;
     }
 
-    protected _finalProcessing() {
+    protected override _finalProcessing() {
         const meshes = [];
         for (const child of this._children) {
             if (!child.mesh) {

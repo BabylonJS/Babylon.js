@@ -45,7 +45,7 @@ export class DirectionalLightPropertyGridComponent extends React.Component<IDire
         }
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
 
         const generator = (light.getShadowGenerator() as ShadowGenerator | CascadedShadowGenerator) || null;

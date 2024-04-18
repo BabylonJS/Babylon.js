@@ -47,7 +47,7 @@ export class FlowGraphThrottleBlock extends FlowGraphExecutionBlockWithOutSignal
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGThrottleBlock";
     }
 }

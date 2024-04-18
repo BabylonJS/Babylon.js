@@ -14,7 +14,7 @@ export class BooleanLineComponent extends React.Component<IBooleanLineComponentP
         super(props);
     }
 
-    render() {
+    override render() {
         const check = this.props.value ? <FontAwesomeIcon icon={faCheck} /> : <FontAwesomeIcon icon={faTimesCircle} />;
         const className = this.props.value ? "value check" : "value uncheck";
 

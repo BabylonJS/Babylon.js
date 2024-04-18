@@ -79,7 +79,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         }
     }
 
-    public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
+    public override render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
         // Swap to use velocity material
         this._originalPairing.length = 0;
         const scene = this.getScene();
@@ -102,7 +102,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
     /**
      * @internal
      */
-    public _bindFrameBuffer() {
+    public override _bindFrameBuffer() {
         if (!this._renderTarget) {
             return;
         }
@@ -113,11 +113,11 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
      * Gets the number of views the corresponding to the texture (eg. a SpaceWarpRenderTarget will have > 1)
      * @returns the view count
      */
-    public getViewCount() {
+    public override getViewCount() {
         return 2;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._velocityMaterial.dispose();
         this._previousTransforms.length = 0;
@@ -294,7 +294,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -310,7 +310,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         this._xrSessionManager.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
         return super.detach();
     }
@@ -321,13 +321,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         }
     }
 
-    public dependsOn: string[] = [WebXRFeatureName.LAYERS];
+    public override dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
     }
 

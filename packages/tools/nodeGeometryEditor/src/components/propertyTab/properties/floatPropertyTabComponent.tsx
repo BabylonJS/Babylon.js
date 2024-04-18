@@ -10,7 +10,7 @@ interface IFloatPropertyTabComponentProps {
 }
 
 export class FloatPropertyTabComponent extends React.Component<IFloatPropertyTabComponentProps> {
-    render() {
+    override render() {
         return (
             <FloatLineComponent
                 lockObject={this.props.globalState.lockObject}

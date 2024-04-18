@@ -10,7 +10,7 @@ export class TransformPropertyTabComponent extends React.Component<IPropertyComp
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />

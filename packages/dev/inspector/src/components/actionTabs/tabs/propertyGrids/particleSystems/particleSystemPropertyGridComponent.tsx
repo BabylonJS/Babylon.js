@@ -310,7 +310,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         );
     }
 
-    render() {
+    override render() {
         const system = this.props.system;
 
         const blendModeOptions = [

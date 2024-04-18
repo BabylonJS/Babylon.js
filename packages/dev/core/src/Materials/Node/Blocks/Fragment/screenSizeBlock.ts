@@ -30,7 +30,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ScreenSizeBlock";
     }
 
@@ -55,7 +55,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public bind(effect: Effect) {
+    public override bind(effect: Effect) {
         const engine = this._scene.getEngine();
 
         effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderHeight());
@@ -74,7 +74,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         this._scene = state.sharedData.scene;

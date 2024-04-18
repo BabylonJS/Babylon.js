@@ -256,14 +256,14 @@ export class Engine extends ThinEngine {
      * Returns the current npm package of the sdk
      */
     // Not mixed with Version for tooling purpose.
-    public static get NpmPackage(): string {
+    public static override get NpmPackage(): string {
         return AbstractEngine.NpmPackage;
     }
 
     /**
      * Returns the current version of the framework
      */
-    public static get Version(): string {
+    public static override get Version(): string {
         return AbstractEngine.Version;
     }
 
@@ -311,7 +311,7 @@ export class Engine extends ThinEngine {
      * @returns The loading screen
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
+    public static override DefaultLoadingScreenFactory(canvas: HTMLCanvasElement): ILoadingScreen {
         return AbstractEngine.DefaultLoadingScreenFactory(canvas);
     }
 
@@ -324,7 +324,7 @@ export class Engine extends ThinEngine {
 
     private _rescalePostProcess: Nullable<PostProcess>;
 
-    protected get _supportsHardwareTextureRescaling() {
+    protected override get _supportsHardwareTextureRescaling() {
         return !!Engine._RescalePostProcessFactory;
     }
 
@@ -339,7 +339,7 @@ export class Engine extends ThinEngine {
      * Gets the performance monitor attached to this engine
      * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/optimize_your_scene#engineinstrumentation
      */
-    public get performanceMonitor(): PerformanceMonitor {
+    public override get performanceMonitor(): PerformanceMonitor {
         return this._performanceMonitor;
     }
 
@@ -377,7 +377,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    protected _initGLContext(): void {
+    protected override _initGLContext(): void {
         super._initGLContext();
 
         this._rescalePostProcess = null;
@@ -387,7 +387,7 @@ export class Engine extends ThinEngine {
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
      */
-    protected _sharedInit(canvas: HTMLCanvasElement) {
+    protected override _sharedInit(canvas: HTMLCanvasElement) {
         super._sharedInit(canvas);
 
         _CommonInit(this, canvas, this._creationOptions);
@@ -400,7 +400,7 @@ export class Engine extends ThinEngine {
      * @param bufferHeight destination buffer height
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
-    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+    public override resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
         return ResizeImageBitmap(this, image, bufferWidth, bufferHeight);
     }
 
@@ -410,7 +410,7 @@ export class Engine extends ThinEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return CreateImageBitmapFromSource(this, imageSource, options);
     }
 
@@ -418,7 +418,7 @@ export class Engine extends ThinEngine {
      * Toggle full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
-    public switchFullscreen(requestPointerLock: boolean): void {
+    public override switchFullscreen(requestPointerLock: boolean): void {
         if (this.isFullscreen) {
             this.exitFullscreen();
         } else {
@@ -430,7 +430,7 @@ export class Engine extends ThinEngine {
      * Enters full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
-    public enterFullscreen(requestPointerLock: boolean): void {
+    public override enterFullscreen(requestPointerLock: boolean): void {
         if (!this.isFullscreen) {
             this._pointerLockRequested = requestPointerLock;
             if (this._renderingCanvas) {
@@ -442,13 +442,13 @@ export class Engine extends ThinEngine {
     /**
      * Exits full screen mode
      */
-    public exitFullscreen(): void {
+    public override exitFullscreen(): void {
         if (this.isFullscreen) {
             ExitFullscreen();
         }
     }
 
-    public generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
+    public override generateMipMapsForCubemap(texture: InternalTexture, unbind = true) {
         if (texture.generateMipMaps) {
             const gl = this._gl;
             this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
@@ -603,7 +603,7 @@ export class Engine extends ThinEngine {
      * @param texture The render target texture containing the depth stencil texture to apply
      * @param name The texture name
      */
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
+    public override setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
         if (channel === undefined) {
             return;
         }
@@ -625,7 +625,7 @@ export class Engine extends ThinEngine {
      * @param postProcess defines the source postprocess
      * @param name name of the channel
      */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+    public override setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         let postProcessInput = null;
         if (postProcess) {
             if (postProcess._forcedOutputTexture) {
@@ -644,7 +644,7 @@ export class Engine extends ThinEngine {
      * @param postProcess The post process which's output should be bound
      * @param name name of the channel
      */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
+    public override setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
         this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
@@ -653,14 +653,14 @@ export class Engine extends ThinEngine {
      * Will fallback to the gl object
      * @param dimensions the framebuffer width and height that will be used.
      */
-    public set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>) {
+    public override set framebufferDimensionsObject(dimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>) {
         this._framebufferDimensionsObject = dimensions;
         if (this._framebufferDimensionsObject) {
             this.onResizeObservable.notifyObservers(this);
         }
     }
 
-    protected _rebuildBuffers(): void {
+    protected override _rebuildBuffers(): void {
         // Index / Vertex
         for (const scene of this.scenes) {
             scene.resetCachedMaterial();
@@ -680,7 +680,7 @@ export class Engine extends ThinEngine {
      * @param font font name
      * @returns an object containing ascent, height and descent
      */
-    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    public override getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         return GetFontOffset(font);
     }
 
@@ -693,7 +693,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    protected _cancelFrame() {
+    protected override _cancelFrame() {
         if (this.customAnimationFrameRequester) {
             if (this._frameHandler !== 0) {
                 this._frameHandler = 0;
@@ -707,7 +707,7 @@ export class Engine extends ThinEngine {
         }
     }
 
-    public _renderLoop(): void {
+    public override _renderLoop(): void {
         this._frameHandler = 0;
 
         if (!this._contextWasLost) {
@@ -769,7 +769,7 @@ export class Engine extends ThinEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void {
+    public override beginFrame(): void {
         this._measureFps();
         super.beginFrame();
     }
@@ -781,7 +781,7 @@ export class Engine extends ThinEngine {
      * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number, forceSetSize = false): boolean {
+    public override setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!this._renderingCanvas) {
             return false;
         }
@@ -809,7 +809,7 @@ export class Engine extends ThinEngine {
         return true;
     }
 
-    public _deletePipelineContext(pipelineContext: IPipelineContext): void {
+    public override _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             if (webGLPipelineContext.transformFeedback) {
@@ -820,7 +820,7 @@ export class Engine extends ThinEngine {
         super._deletePipelineContext(pipelineContext);
     }
 
-    public createShaderProgram(
+    public override createShaderProgram(
         pipelineContext: IPipelineContext,
         vertexCode: string,
         fragmentCode: string,
@@ -838,7 +838,7 @@ export class Engine extends ThinEngine {
         return program;
     }
 
-    protected _createShaderProgram(
+    protected override _createShaderProgram(
         pipelineContext: WebGLPipelineContext,
         vertexShader: WebGLShader,
         fragmentShader: WebGLShader,
@@ -883,14 +883,14 @@ export class Engine extends ThinEngine {
     /**
      * @internal
      */
-    public _releaseTexture(texture: InternalTexture): void {
+    public override _releaseTexture(texture: InternalTexture): void {
         super._releaseTexture(texture);
     }
 
     /**
      * @internal
      */
-    public _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
+    public override _releaseRenderTargetWrapper(rtWrapper: RenderTargetWrapper): void {
         super._releaseRenderTargetWrapper(rtWrapper);
 
         // Set output texture of post process to null if the framebuffer has been released/disposed
@@ -921,7 +921,7 @@ export class Engine extends ThinEngine {
      * @param internalFormat format to use when resizing
      * @param onComplete callback to be called when resize has completed
      */
-    public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {
+    public override _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MAG_FILTER, this._gl.LINEAR);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_MIN_FILTER, this._gl.LINEAR);
         this._gl.texParameteri(this._gl.TEXTURE_2D, this._gl.TEXTURE_WRAP_S, this._gl.CLAMP_TO_EDGE);
@@ -1154,7 +1154,7 @@ export class Engine extends ThinEngine {
         });
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         // Rescale PP
         if (this._rescalePostProcess) {
             this._rescalePostProcess.dispose();

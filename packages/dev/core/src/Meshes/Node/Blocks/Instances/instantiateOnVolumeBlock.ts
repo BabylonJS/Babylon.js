@@ -92,7 +92,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateOnVolumeBlock";
     }
 
@@ -145,7 +145,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
             state.pushInstancingContext(this);
@@ -244,7 +244,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         }
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
@@ -253,7 +253,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
@@ -261,7 +261,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         if (serializationObject.evaluateContext !== undefined) {

@@ -13,7 +13,7 @@ export class HTMLTwinNodeItem extends HTMLTwinItem {
     /**
      * The corresponding BabylonJS entity. Can be a Node or a Control.
      */
-    public entity: Node;
+    public override entity: Node;
 
     constructor(entity: Node, scene: Scene) {
         super(entity, scene);

@@ -61,7 +61,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /**
      * The layer mask we are rendering the particles through.
      */
-    public layerMask: number = 0x0fffffff;
+    public override layerMask: number = 0x0fffffff;
 
     private _capacity: number;
     private _maxActiveParticleCount: number;
@@ -144,7 +144,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Forces the particle to write their depth information to the depth buffer. This can help preventing other draw calls
      * to override the particles.
      */
-    public forceDepthWrite = false;
+    public override forceDepthWrite = false;
 
     /**
      * Gets or set the number of active particles
@@ -189,7 +189,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
      * @returns the emitter
      */
-    public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
+    public override createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
         const particleEmitter = CreatePointEmitter(direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -201,7 +201,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
      * @returns the emitter
      */
-    public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
+    public override createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
         const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -213,7 +213,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
      * @returns the emitter
      */
-    public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
+    public override createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
         const particleEmitter = CreateSphereEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -226,7 +226,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
      * @returns the emitter
      */
-    public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
+    public override createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
         const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -240,7 +240,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param directionRandomizer How much to randomize the particle direction [0-1]
      * @returns the emitter
      */
-    public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
+    public override createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
         const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -255,7 +255,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @returns the emitter
      */
-    public createDirectedCylinderEmitter(
+    public override createDirectedCylinderEmitter(
         radius = 1,
         height = 1,
         radiusRange = 1,
@@ -273,7 +273,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param angle The base angle of the cone
      * @returns the emitter
      */
-    public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+    public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
         const particleEmitter = CreateConeEmitter(radius, angle);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -287,7 +287,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
      * @returns the emitter
      */
-    public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
+    public override createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
         const particleEmitter = new BoxParticleEmitter();
         this.particleEmitterType = particleEmitter;
         this.direction1 = direction1;
@@ -485,7 +485,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
     /** @internal */
     public _colorGradientsTexture: RawTexture;
 
-    protected _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
+    protected override _removeGradientAndTexture(gradient: number, gradients: Nullable<IValueGradient[]>, texture: RawTexture): BaseParticleSystem {
         super._removeGradientAndTexture(gradient, gradients, texture);
         this._releaseBuffers();
 
@@ -1033,7 +1033,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         this._randomTextureSize = maxTextureSize;
     }
 
-    protected _reset() {
+    protected override _reset() {
         this._releaseBuffers();
     }
 

@@ -92,7 +92,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         });
     }
 
-    public render() {
+    public override render() {
         const isPasteDisabled = this.props.globalState.workbench ? this.props.globalState.workbench.pasteDisabled : true;
         const size = this.props.globalState.workbench ? { ...this.props.globalState.workbench.guiSize } : { width: 0, height: 0 };
         const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;

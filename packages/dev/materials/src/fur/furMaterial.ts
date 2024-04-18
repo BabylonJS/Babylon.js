@@ -146,15 +146,15 @@ export class FurMaterial extends PushMaterial {
         this._furTime = furTime;
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1.0;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
@@ -177,7 +177,7 @@ export class FurMaterial extends PushMaterial {
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -352,7 +352,7 @@ export class FurMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <FurMaterialDefines>subMesh.materialDefines;
@@ -436,7 +436,7 @@ export class FurMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         const results = [];
 
         if (this.diffuseTexture && this.diffuseTexture.animations && this.diffuseTexture.animations.length > 0) {
@@ -450,7 +450,7 @@ export class FurMaterial extends PushMaterial {
         return results;
     }
 
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
@@ -464,7 +464,7 @@ export class FurMaterial extends PushMaterial {
         return activeTextures;
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -480,7 +480,7 @@ export class FurMaterial extends PushMaterial {
         return false;
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         if (this.diffuseTexture) {
             this.diffuseTexture.dispose();
         }
@@ -499,11 +499,11 @@ export class FurMaterial extends PushMaterial {
         super.dispose(forceDisposeEffect);
     }
 
-    public clone(name: string): FurMaterial {
+    public override clone(name: string): FurMaterial {
         return SerializationHelper.Clone(() => new FurMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.FurMaterial";
 
@@ -515,12 +515,12 @@ export class FurMaterial extends PushMaterial {
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FurMaterial";
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): FurMaterial {
         const material = SerializationHelper.Parse(() => new FurMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.sourceMeshName && material.highLevelFur) {

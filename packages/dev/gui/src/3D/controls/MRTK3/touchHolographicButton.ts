@@ -214,7 +214,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Gets the mesh used to render this control
      */
-    public get mesh(): Nullable<AbstractMesh> {
+    public override get mesh(): Nullable<AbstractMesh> {
         return this._backPlate as AbstractMesh;
     }
 
@@ -449,7 +449,7 @@ export class TouchHolographicButton extends TouchButton3D {
         });
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "TouchHolographicButton";
     }
 
@@ -574,7 +574,7 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         this.name = this.name ?? "TouchHolographicButton";
 
         const backPlateMesh = this._createBackPlate(scene);
@@ -746,7 +746,7 @@ export class TouchHolographicButton extends TouchButton3D {
         return backGlowMesh;
     }
 
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+    protected override _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
         this._plateMaterial.diffuseColor = this.plateMaterialColor;
@@ -958,11 +958,11 @@ export class TouchHolographicButton extends TouchButton3D {
         this._plateMaterial.specularColor = Color3.Black();
     }
 
-    protected _onToggle(newState: boolean) {
+    protected override _onToggle(newState: boolean) {
         super._onToggle(newState);
     }
 
-    protected _affectMaterial(mesh: Mesh) {
+    protected override _affectMaterial(mesh: Mesh) {
         if (this._shareMaterials) {
             // Back
             if (!this._host._touchSharedMaterials["mrdlBackplateMaterial"]) {
@@ -1028,7 +1028,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose(); // will dispose main mesh ie. back plate
 
         this._disposeTooltip();

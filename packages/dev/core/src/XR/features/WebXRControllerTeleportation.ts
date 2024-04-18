@@ -377,7 +377,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         this._snapToPositions.push(newSnapPoint);
     }
 
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -395,7 +395,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -411,7 +411,7 @@ export class WebXRMotionControllerTeleportation extends WebXRAbstractFeature {
         return true;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._options.teleportationTargetMesh && this._options.teleportationTargetMesh.dispose(false, true);
         if (this._worldScaleObserver) {

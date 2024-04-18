@@ -182,7 +182,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader attributes
      * @param attributes array which will be filled with the attributes
      */
-    getAttributes(attributes: string[]) {
+    override getAttributes(attributes: string[]) {
         attributes.push("grl_offsets");
         attributes.push("grl_widths");
         attributes.push("grl_colorPointers");
@@ -199,7 +199,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader samplers
      * @param samplers
      */
-    getSamplers(samplers: string[]) {
+    override getSamplers(samplers: string[]) {
         samplers.push("grl_colors");
     }
 
@@ -207,7 +207,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader textures
      * @param activeTextures array which will be filled with the textures
      */
-    public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this.colorsTexture) {
             activeTextures.push(this.colorsTexture);
         }
@@ -217,7 +217,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader uniforms
      * @returns uniforms
      */
-    getUniforms() {
+    override getUniforms() {
         const ubo = [
             { name: "grl_singleColor", size: 3, type: "vec3" },
             { name: "grl_dashOptions", size: 4, type: "vec4" },
@@ -253,7 +253,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Bind the uniform buffer
      * @param uniformBuffer
      */
-    bindForSubMesh(uniformBuffer: UniformBuffer) {
+    override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._cameraFacing) {
             const activeCamera = this._scene.activeCamera;
 
@@ -299,7 +299,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param _scene
      * @param _mesh
      */
-    prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
+    override prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         defines.GREASED_LINE_HAS_COLOR = !!this.color && !this.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
@@ -311,7 +311,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the class name
      * @returns class name
      */
-    getClassName() {
+    override getClassName() {
         return GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME;
     }
 
@@ -320,7 +320,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param shaderType vertex/fragment
      * @returns shader code
      */
-    getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             const obj: any = {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -480,7 +480,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     /**
      * Disposes the plugin material.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.colorsTexture?.dispose();
         super.dispose();
     }
@@ -636,7 +636,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Serializes this plugin material
      * @returns serializationObjec
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         const greasedLineMaterialOptions: GreasedLineMaterialOptions = {
@@ -668,7 +668,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param scene scene
      * @param rootUrl root url for textures
      */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
+    public override parse(source: any, scene: Scene, rootUrl: string): void {
         super.parse(source, scene, rootUrl);
         const greasedLineMaterialOptions = <GreasedLineMaterialOptions>source.greasedLineMaterialOptions;
 
@@ -702,7 +702,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Makes a duplicate of the current configuration into another one.
      * @param plugin define the config where to copy the info
      */
-    public copyTo(plugin: MaterialPluginBase): void {
+    public override copyTo(plugin: MaterialPluginBase): void {
         const dest = plugin as GreasedLinePluginMaterial;
 
         dest.colorsTexture?.dispose();

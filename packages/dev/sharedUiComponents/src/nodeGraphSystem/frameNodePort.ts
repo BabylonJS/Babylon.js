@@ -44,8 +44,8 @@ export class FrameNodePort extends NodePort {
 
     public constructor(
         portContainer: HTMLElement,
-        public portData: IPortData,
-        public node: GraphNode,
+        public override portData: IPortData,
+        public override node: GraphNode,
         stateManager: StateManager,
         isInput: boolean,
         framePortId: number,

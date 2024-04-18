@@ -27,7 +27,7 @@ export class ConvolutionPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "ConvolutionPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ConvolutionPostProcess";
     }
 
@@ -63,7 +63,7 @@ export class ConvolutionPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ConvolutionPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new ConvolutionPostProcess(

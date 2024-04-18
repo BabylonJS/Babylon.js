@@ -158,7 +158,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -194,7 +194,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -213,7 +213,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onHitTestResultObservable.clear();
     }

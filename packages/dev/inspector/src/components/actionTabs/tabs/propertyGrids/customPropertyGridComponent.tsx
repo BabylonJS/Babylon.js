@@ -164,7 +164,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         return null;
     }
 
-    render() {
+    override render() {
         const inspectables: IInspectable[] = this.props.target.inspectableCustomProperties;
 
         if (!inspectables || inspectables.length === 0) {

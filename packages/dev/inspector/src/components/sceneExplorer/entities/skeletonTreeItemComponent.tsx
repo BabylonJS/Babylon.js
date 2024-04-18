@@ -16,7 +16,7 @@ export class SkeletonTreeItemComponent extends React.Component<ISkeletonTreeItem
         super(props);
     }
 
-    render() {
+    override render() {
         const skeleton = this.props.skeleton;
         return (
             <div className="skeletonTools">

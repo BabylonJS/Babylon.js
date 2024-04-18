@@ -44,7 +44,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         this.setState({ isActive: true });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const scene = this.props.camera.getScene();
 
         this._onBeforeRenderObserver = scene.onBeforeRenderObservable.add(() => {
@@ -61,7 +61,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onBeforeRenderObserver) {
             const camera = this.props.camera;
             const scene = camera.getScene();
@@ -84,7 +84,7 @@ export class CameraTreeItemComponent extends React.Component<ICameraTreeItemComp
         }
     }
 
-    render() {
+    override render() {
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faVideo} /> : <FontAwesomeIcon icon={faVideo} className="isNotActive" />;
         const scene = this.props.camera.getScene()!;
         const isGizmoEnabled =

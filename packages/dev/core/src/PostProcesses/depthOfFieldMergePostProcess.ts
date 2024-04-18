@@ -16,7 +16,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "DepthOfFieldMergePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DepthOfFieldMergePostProcess";
     }
 
@@ -86,7 +86,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
      */
-    public updateEffect(
+    public override updateEffect(
         defines: Nullable<string> = null,
         uniforms: Nullable<string[]> = null,
         samplers: Nullable<string[]> = null,

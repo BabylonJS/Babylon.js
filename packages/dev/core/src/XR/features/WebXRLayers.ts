@@ -70,7 +70,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -88,7 +88,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -331,7 +331,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
     }
 
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         // TODO (rgerd): Add native support.
         return !this._xrSessionManager.isNative && typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
     }
@@ -339,7 +339,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
     }
 

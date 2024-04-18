@@ -44,7 +44,7 @@ export class RefractionTexture extends RenderTargetTexture {
      * Clone the refraction texture.
      * @returns the cloned texture
      */
-    public clone(): RefractionTexture {
+    public override clone(): RefractionTexture {
         const scene = this.getScene();
 
         if (!scene) {
@@ -72,7 +72,7 @@ export class RefractionTexture extends RenderTargetTexture {
      * Serialize the texture to a JSON representation you could use in Parse later on
      * @returns the serialized JSON representation
      */
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }

@@ -85,7 +85,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "camera-access";
     }
 
-    public attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean | undefined): boolean {
         if (!super.attach(force)) {
             return false;
         }
@@ -96,7 +96,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -114,7 +114,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onTexturesUpdatedObservable.clear();
     }

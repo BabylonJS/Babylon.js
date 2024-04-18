@@ -18,7 +18,7 @@ export class StereoscopicInterlacePostProcessI extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "StereoscopicInterlacePostProcessI" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicInterlacePostProcessI";
     }
 
@@ -69,7 +69,7 @@ export class StereoscopicInterlacePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "StereoscopicInterlacePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicInterlacePostProcess";
     }
 

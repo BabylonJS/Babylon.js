@@ -28,7 +28,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
     }
 
-    render() {
+    override render() {
         const extension = this._getVariantsExtension();
         if (!extension) {
             return null;

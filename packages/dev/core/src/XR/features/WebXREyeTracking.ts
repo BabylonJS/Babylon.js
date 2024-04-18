@@ -57,7 +57,7 @@ export class WebXREyeTracking extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this._xrSessionManager.session.removeEventListener("eyetrackingstart", this._eyeTrackingStartListener);

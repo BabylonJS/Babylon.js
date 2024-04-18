@@ -33,7 +33,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         return Math.abs(Tools.ToDegrees(a)) + Math.abs(Tools.ToDegrees(b)) === 360;
     }
 
-    shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean; value: Quaternion; eulerValue: Vector3 }) {
+    override shouldComponentUpdate(nextProps: IQuaternionLineComponentProps, nextState: { isExpanded: boolean; value: Quaternion; eulerValue: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -141,7 +141,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.updateQuaternionFromEuler();
     }
 
-    render() {
+    override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         const quat = this.state.value;

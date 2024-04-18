@@ -46,7 +46,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         this._store = currentValue;
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.unlock();
     }
 
@@ -63,7 +63,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         return "0";
     }
 
-    shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string; dragging: boolean }) {
+    override shouldComponentUpdate(nextProps: IFloatLineComponentProps, nextState: { value: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -191,7 +191,7 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
-    render() {
+    override render() {
         let valueAsNumber: number;
 
         if (this.props.isInteger) {

@@ -22,7 +22,7 @@ export class LinkButtonComponent extends React.Component<ILinkButtonComponentPro
         }
     }
 
-    render() {
+    override render() {
         return (
             <div className={"linkButtonLine"}>
                 <div className="link" title={this.props.label} onClick={() => this.onLink()}>

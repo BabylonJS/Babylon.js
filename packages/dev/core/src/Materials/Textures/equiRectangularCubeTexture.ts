@@ -217,7 +217,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "EquiRectangularCubeTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "EquiRectangularCubeTexture";
     }
 
@@ -225,7 +225,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
      * Create a clone of the current EquiRectangularCubeTexture and return it.
      * @returns A clone of the current EquiRectangularCubeTexture.
      */
-    public clone(): EquiRectangularCubeTexture {
+    public override clone(): EquiRectangularCubeTexture {
         const scene = this.getScene();
         if (!scene) {
             return this;

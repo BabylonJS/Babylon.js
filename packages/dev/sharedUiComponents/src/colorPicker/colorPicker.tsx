@@ -46,7 +46,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         this._hueRef = React.createRef();
     }
 
-    shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState) {
+    override shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState) {
         return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     }
 
@@ -122,7 +122,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         this.setState({ color: this.state.color });
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.raiseOnColorChanged();
     }
 
@@ -142,7 +142,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         this.props.onColorChanged(this.state.color.clone());
     }
 
-    public render() {
+    public override render() {
         const color4 = Color4.FromColor3(this.state.color);
         color4.a = this.state.alpha;
         const colorHex = color4.toHexString();

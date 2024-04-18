@@ -50,7 +50,7 @@ export class LightTreeItemComponent extends React.Component<ILightTreeItemCompon
         }
     }
 
-    render() {
+    override render() {
         const isEnabledElement = this.state.isEnabled ? <FontAwesomeIcon icon={faLightbubRegular} /> : <FontAwesomeIcon icon={faLightbubRegular} className="isNotActive" />;
         const isGizmoEnabled =
             this.state.isGizmoEnabled || (this.props.light && this.props.light.reservedDataStore && this.props.light.reservedDataStore.lightGizmo) ? (

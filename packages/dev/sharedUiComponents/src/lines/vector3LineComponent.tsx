@@ -43,7 +43,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         return this.props.target[this.props.propertyName];
     }
 
-    shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean; value: Vector3 }) {
+    override shouldComponentUpdate(nextProps: IVector3LineComponentProps, nextState: { isExpanded: boolean; value: Vector3 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -105,7 +105,7 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this.updateVector3();
     }
 
-    render() {
+    override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (

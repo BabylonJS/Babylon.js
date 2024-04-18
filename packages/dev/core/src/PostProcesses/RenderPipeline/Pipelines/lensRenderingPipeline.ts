@@ -176,7 +176,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * Get the class name
      * @returns "LensRenderingPipeline"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "LensRenderingPipeline";
     }
 
@@ -450,7 +450,7 @@ export class LensRenderingPipeline extends PostProcessRenderPipeline {
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      * @param disableDepthRender If the scene's depth rendering should be disabled (default: false)
      */
-    public dispose(disableDepthRender: boolean = false): void {
+    public override dispose(disableDepthRender: boolean = false): void {
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._scene.cameras);
 
         (<any>this._chromaticAberrationPostProcess) = null;

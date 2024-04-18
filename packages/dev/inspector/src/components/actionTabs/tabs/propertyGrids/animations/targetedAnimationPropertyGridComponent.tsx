@@ -77,19 +77,19 @@ export class TargetedAnimationGridComponent extends React.Component<ITargetedAni
         }
     };
 
-    componentDidMount() {
+    override componentDidMount() {
         this.findAnimationGroup();
         this.updateContextFromProps();
     }
 
-    componentDidUpdate(prevProps: Readonly<ITargetedAnimationGridComponentProps>, prevState: Readonly<{}>, snapshot?: any): void {
+    override componentDidUpdate(prevProps: Readonly<ITargetedAnimationGridComponentProps>, prevState: Readonly<{}>, snapshot?: any): void {
         if (prevProps.targetedAnimation !== this.props.targetedAnimation) {
             this.findAnimationGroup();
             this.updateContextFromProps();
         }
     }
 
-    render() {
+    override render() {
         const targetedAnimation = this.props.targetedAnimation;
 
         return (

@@ -13,7 +13,7 @@ export class MessageLineComponent extends React.Component<IMessageLineComponentP
         super(props);
     }
 
-    render() {
+    override render() {
         if (this.props.icon) {
             return (
                 <div className="iconMessageLine">

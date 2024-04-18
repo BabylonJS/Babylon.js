@@ -47,7 +47,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
-    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
+    override shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -99,7 +99,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
-    render() {
+    override render() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}

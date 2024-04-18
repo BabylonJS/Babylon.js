@@ -18,7 +18,7 @@ export class DisplayPassPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "DisplayPassPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DisplayPassPostProcess";
     }
 
@@ -38,7 +38,7 @@ export class DisplayPassPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<DisplayPassPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new DisplayPassPostProcess(

@@ -45,7 +45,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
     private _rootRef: React.RefObject<HTMLDivElement>;
     private _onErrorMessageObserver: Nullable<Observer<string>>;
 
-    componentDidMount() {
+    override componentDidMount() {
         if (navigator.userAgent.indexOf("Mobile") !== -1) {
             ((this.props.globalState.hostDocument || document).querySelector(".blocker") as HTMLElement).style.visibility = "visible";
         }
@@ -53,7 +53,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         document.addEventListener("keyup", this.removePressToolControls);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         document.removeEventListener("keydown", this.addToolControls);
         document.removeEventListener("keyup", this.removePressToolControls);
         if (this._onErrorMessageObserver) {
@@ -260,7 +260,7 @@ export class WorkbenchEditor extends React.Component<IGraphEditorProps, IGraphEd
         }
     }
 
-    render() {
+    override render() {
         const classForElement = this.state.toolbarExpand ? "left-panel" : "left-panel expand";
         return (
             <Portal globalState={this.props.globalState}>

@@ -27,7 +27,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as GeometryTextureBlock;
 
         return (

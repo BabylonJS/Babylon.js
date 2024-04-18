@@ -17,7 +17,7 @@ import eyeOpen from "./assets/eyeOpen.svg";
 import eyeClosed from "./assets/eyeClosed.svg";
 
 export class ChannelsBar extends React.PureComponent<IChannelsBarProps> {
-    render() {
+    override render() {
         return (
             <div id="channels-bar">
                 {this.props.channels.map((channel, index) => {

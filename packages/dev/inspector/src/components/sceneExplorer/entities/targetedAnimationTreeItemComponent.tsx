@@ -17,7 +17,7 @@ export class TargetedAnimationItemComponent extends React.Component<ITargetedAni
         super(props);
     }
 
-    render() {
+    override render() {
         const targetedAnimation = this.props.targetedAnimation;
         return (
             <div className="targetedAnimationTools">
