@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
@@ -234,15 +234,15 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         this._tangentSpaceParameterName = state._getFreeDefineName("tangentSpaceParameter");
 
-        state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
+        state._emitUniformFromString(this._tangentSpaceParameterName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
 
-        state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+        state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
 
         this._worldMatrixName = state._getFreeDefineName("perturbNormalWorldMatrix");
 
-        state._emitUniformFromString(this._worldMatrixName, "mat4");
+        state._emitUniformFromString(this._worldMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let normalSamplerName = null;
         if (this.normalMapColor.connectedPoint) {
@@ -301,7 +301,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const uvForPerturbNormal =
             !useParallax || !normalSamplerName ? this.normalMapColor.associatedVariableName : `texture2D(${normalSamplerName}, ${uv.associatedVariableName} + uvOffset).xyz`;
 
-        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\n";
+        state.compilationString += state._declareOutput(this.output) + " = vec4(0.);\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },

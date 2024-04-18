@@ -1,5 +1,5 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { BaseTexture } from "../../../Textures/baseTexture";
@@ -21,6 +21,7 @@ import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { SubMesh } from "../../../..//Meshes/subMesh";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -288,21 +289,21 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
 
-        state._emitUniformFromString(this._reflectionMatrixName, "mat4");
+        state._emitUniformFromString(this._reflectionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let code = "";
 
         this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
 
         const worldPosVaryingName = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName;
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, NodeMaterialBlockConnectionPointTypes.Vector3, this._defineSkyboxName)) {
             code += `#ifdef ${this._defineSkyboxName}\n`;
             code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\n`;
             code += `#endif\n`;
@@ -312,7 +313,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             this.generateOnlyFragmentCode ||
             state._emitVaryingFromString(
                 this._directionWName,
-                "vec3",
+                NodeMaterialBlockConnectionPointTypes.Vector3,
                 `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
             )
         ) {
@@ -362,10 +363,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
 
         this._reflectionPositionName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionPositionName, "vec3");
+        state._emitUniformFromString(this._reflectionPositionName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._reflectionSizeName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionSizeName, "vec3");
+        state._emitUniformFromString(this._reflectionSizeName, NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
     /**
@@ -495,7 +496,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             for (const output of this._outputs) {
                 if (output.hasEndpoints) {
-                    code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                    code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
                 }
             }
         }

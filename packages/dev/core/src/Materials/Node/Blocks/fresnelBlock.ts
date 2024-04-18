@@ -100,7 +100,7 @@ export class FresnelBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("fresnelFunction", comments, { removeIfDef: true });
 
         state.compilationString +=
-            this._declareOutput(this.fresnel, state) +
+            state._declareOutput(this.fresnel) +
             ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName}.xyz, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\n`;
 
         return this;

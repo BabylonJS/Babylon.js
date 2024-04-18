@@ -63,10 +63,11 @@ export class SmoothStepBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const output = this._outputs[0];
+        const cast = state._getShaderType(this.value.type);
 
         state.compilationString +=
-            this._declareOutput(output, state) +
-            ` = smoothstep(${this.edge0.associatedVariableName}, ${this.edge1.associatedVariableName}, ${this.value.associatedVariableName});\n`;
+            state._declareOutput(output) +
+            ` = smoothstep(${cast}(${this.edge0.associatedVariableName}), ${cast}(${this.edge1.associatedVariableName}), ${this.value.associatedVariableName});\n`;
 
         return this;
     }

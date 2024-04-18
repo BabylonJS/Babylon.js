@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -893,7 +893,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+        if (state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
         }
 
@@ -905,7 +905,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state.compilationString += reflectionBlock?.handleVertexSide(state) ?? "";
 
-        if (state._emitVaryingFromString("vClipSpacePosition", "vec4", "defined(IGNORE) || DEBUGMODE > 0")) {
+        if (state._emitVaryingFromString("vClipSpacePosition", NodeMaterialBlockConnectionPointTypes.Vector4, "defined(IGNORE) || DEBUGMODE > 0")) {
             state._injectAtEnd += `#if DEBUGMODE > 0\n`;
             state._injectAtEnd += `vClipSpacePosition = gl_Position;\n`;
             state._injectAtEnd += `#endif\n`;
@@ -976,7 +976,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const aoIntensity = "1.";
 
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
-        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, "vec4");
+        state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         code += `vec3 baseColor = surfaceAlbedo;
 
@@ -1077,8 +1077,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state._emitExtension("lod", "#extension GL_EXT_shader_texture_lod : enable", "defined(LODBASEDMICROSFURACE)");
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
 
-        state._emitUniformFromString("vDebugMode", "vec2", "defined(IGNORE) || DEBUGMODE > 0");
-        state._emitUniformFromString("ambientFromScene", "vec3");
+        state._emitUniformFromString("vDebugMode", NodeMaterialBlockConnectionPointTypes.Vector2, "defined(IGNORE) || DEBUGMODE > 0");
+        state._emitUniformFromString("ambientFromScene", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         // Image processing uniforms
         state.uniforms.push("exposureLinear");
@@ -1147,7 +1147,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // code
         //
 
-        state._emitUniformFromString("vLightingIntensity", "vec4");
+        state._emitUniformFromString("vLightingIntensity", NodeMaterialBlockConnectionPointTypes.Vector4);
 
         if (reflectionBlock?.generateOnlyFragmentCode) {
             state.compilationString += reflectionBlock.handleVertexSide(state);
@@ -1168,7 +1168,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         this._invertNormalName = state._getFreeVariableName("invertNormal");
 
-        state._emitUniformFromString(this._invertNormalName, "float");
+        state._emitUniformFromString(this._invertNormalName, NodeMaterialBlockConnectionPointTypes.Float);
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
@@ -1395,10 +1395,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                     if (conditions) {
                         state.compilationString += `#if ${conditions}\n`;
                     }
-                    state.compilationString += `${this._declareOutput(output, state)} = ${varName};\n`;
+                    state.compilationString += `${state._declareOutput(output)} = ${varName};\n`;
                     if (conditions) {
                         state.compilationString += `#else\n`;
-                        state.compilationString += `${this._declareOutput(output, state)} = vec3(0.);\n`;
+                        state.compilationString += `${state._declareOutput(output)} = vec3(0.);\n`;
                         state.compilationString += `#endif\n`;
                     }
                 } else {

@@ -88,7 +88,7 @@ export class FragCoordBlock extends NodeMaterialBlock {
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${this._declareOutput(output, state)} = gl_FragCoord.${output.name};\n`;
+                code += `${state._declareOutput(output)} = gl_FragCoord.${output.name};\n`;
             }
         }
 

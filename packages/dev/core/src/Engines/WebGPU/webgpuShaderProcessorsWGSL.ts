@@ -20,6 +20,8 @@ import "../../ShadersWGSL/ShadersInclude/clipPlaneVertex";
 import "../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration";
 import "../../ShadersWGSL/ShadersInclude/instancesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/instancesVertex";
+import "../../ShadersWGSL/ShadersInclude/helperFunctions";
+import "../../ShadersWGSL/ShadersInclude/fresnelFunction";
 import "../../ShadersWGSL/ShadersInclude/meshUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertex";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";

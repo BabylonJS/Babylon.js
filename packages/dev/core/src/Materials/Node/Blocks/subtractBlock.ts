@@ -25,7 +25,9 @@ export class SubtractBlock extends BaseMathBlock {
     protected _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        state.compilationString += this._declareOutput(this.output, state) + ` = ${this.left.associatedVariableName} - ${this.right.associatedVariableName};\n`;
+        const output = this._outputs[0];
+
+        state.compilationString += state._declareOutput(output) + ` = ${this.left.associatedVariableName} - ${this.right.associatedVariableName};\n`;
 
         return this;
     }
