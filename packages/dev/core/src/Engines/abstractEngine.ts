@@ -1471,6 +1471,12 @@ export abstract class AbstractEngine {
     public abstract drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
 
     /**
+     * Force the engine to release all cached effects.
+     * This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+     */
+    public abstract releaseEffects(): void;
+
+    /**
      * @internal
      */
     public abstract _viewport(x: number, y: number, width: number, height: number): void;
@@ -3035,6 +3041,8 @@ export abstract class AbstractEngine {
      */
     public dispose(): void {
         this.hideLoadingUI();
+
+        this.releaseEffects();
 
         this._isDisposed = true;
         this.stopRenderLoop();

@@ -4058,9 +4058,6 @@ export class ThinEngine extends AbstractEngine {
             this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
 
-        // Release effects
-        this.releaseEffects();
-
         // Unbind
         this.unbindAllAttributes();
         this._boundUniforms = {};
