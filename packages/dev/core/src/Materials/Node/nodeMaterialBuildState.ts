@@ -569,9 +569,9 @@ export class NodeMaterialBuildState {
 
     private _convertFunctionsToWGSL(source: string): string {
         const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/g;
-        const matches = source.matchAll(regex);
 
-        for (const match of matches) {
+        let match: RegExpMatchArray | null;
+        while ((match = regex.exec(source)) !== null) {
             const funcName = match[1];
             const funcType = match[2];
             const params = match[3]; // All parameters as a single string
