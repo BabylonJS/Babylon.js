@@ -87,6 +87,7 @@ import "./AbstractEngine/abstractEngine.loadingScreen";
 import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.renderPass";
+import "../Audio/audioEngine";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -609,9 +610,6 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public readonly hasOriginBottomLeft: boolean = false;
 
-    /** @internal */
-    protected _creationOptions: WebGPUEngineOptions;
-
     /**
      * Create a new instance of the gpu engine.
      * @param canvas Defines the canvas to use to display the result
@@ -622,8 +620,6 @@ export class WebGPUEngine extends AbstractEngine {
         this._name = "WebGPU";
 
         this._drawCalls = new PerfCounter();
-
-        this._creationOptions = options;
 
         options.deviceDescriptor = options.deviceDescriptor || {};
         options.enableGPUDebugMarkers = options.enableGPUDebugMarkers ?? false;
@@ -2001,7 +1997,7 @@ export class WebGPUEngine extends AbstractEngine {
             onError,
             indexParameters,
             name,
-            shaderLanguage
+            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage
         );
         this._compiledEffects[name] = effect;
 

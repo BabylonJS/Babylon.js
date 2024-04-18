@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -193,34 +193,34 @@ export class LightInformationBlock extends NodeMaterialBlock {
         this._lightShadowExtraUniformName = state._getFreeVariableName("shadowExtraData");
         this._lightTypeDefineName = state._getFreeDefineName("LIGHTPOINTTYPE");
 
-        state._emitUniformFromString(this._lightDataUniformName, "vec3");
-        state._emitUniformFromString(this._lightColorUniformName, "vec4");
+        state._emitUniformFromString(this._lightDataUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString(this._lightColorUniformName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         state.compilationString += `#ifdef ${this._lightTypeDefineName}\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
+        state.compilationString += state._declareOutput(direction) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\n`;
+        state.compilationString += state._declareOutput(direction) + ` = ${this._lightDataUniformName};\n`;
         state.compilationString += `#endif\n`;
 
-        state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\n`;
-        state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\n`;
+        state.compilationString += state._declareOutput(color) + ` = ${this._lightColorUniformName}.rgb;\n`;
+        state.compilationString += state._declareOutput(intensity) + ` = ${this._lightColorUniformName}.a;\n`;
 
         if (shadowBias.hasEndpoints || shadowNormalBias.hasEndpoints || shadowDepthScale.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowUniformName, "vec3");
+            state._emitUniformFromString(this._lightShadowUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
             if (shadowBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\n`;
+                state.compilationString += state._declareOutput(shadowBias) + ` = ${this._lightShadowUniformName}.x;\n`;
             }
             if (shadowNormalBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowNormalBias, state) + ` = ${this._lightShadowUniformName}.y;\n`;
+                state.compilationString += state._declareOutput(shadowNormalBias) + ` = ${this._lightShadowUniformName}.y;\n`;
             }
             if (shadowDepthScale.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowDepthScale, state) + ` = ${this._lightShadowUniformName}.z;\n`;
+                state.compilationString += state._declareOutput(shadowDepthScale) + ` = ${this._lightShadowUniformName}.z;\n`;
             }
         }
 
         if (shadowDepthRange.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowExtraUniformName, "vec2");
-            state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\n`;
+            state._emitUniformFromString(this._lightShadowExtraUniformName, NodeMaterialBlockConnectionPointTypes.Vector2);
+            state.compilationString += state._declareOutput(shadowDepthRange) + ` = ${this._lightShadowUniformName};\n`;
         }
 
         return this;

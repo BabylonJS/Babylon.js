@@ -319,21 +319,21 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             repeatKey: "maxSimultaneousMorphTargets",
         });
 
-        state.compilationString += `${this._declareOutput(positionOutput, state)} = ${position.associatedVariableName};\n`;
+        state.compilationString += `${state._declareOutput(positionOutput)} = ${position.associatedVariableName};\n`;
         state.compilationString += `#ifdef NORMAL\n`;
-        state.compilationString += `${this._declareOutput(normalOutput, state)} = ${normal.associatedVariableName};\n`;
+        state.compilationString += `${state._declareOutput(normalOutput)} = ${normal.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += `${this._declareOutput(normalOutput, state)} = vec3(0., 0., 0.);\n`;
+        state.compilationString += `${state._declareOutput(normalOutput)} = vec3(0., 0., 0.);\n`;
         state.compilationString += `#endif\n`;
         state.compilationString += `#ifdef TANGENT\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = ${tangent.associatedVariableName};\n`;
+        state.compilationString += `${state._declareOutput(tangentOutput)} = ${tangent.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += `${this._declareOutput(tangentOutput, state)} = vec4(0., 0., 0., 0.);\n`;
+        state.compilationString += `${state._declareOutput(tangentOutput)} = vec4(0., 0., 0., 0.);\n`;
         state.compilationString += `#endif\n`;
         state.compilationString += `#ifdef UV1\n`;
-        state.compilationString += `${this._declareOutput(uvOutput, state)} = ${uv.associatedVariableName};\n`;
+        state.compilationString += `${state._declareOutput(uvOutput)} = ${uv.associatedVariableName};\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += `${this._declareOutput(uvOutput, state)} = vec2(0., 0.);\n`;
+        state.compilationString += `${state._declareOutput(uvOutput)} = vec2(0., 0.);\n`;
         state.compilationString += `#endif\n`;
 
         // Repeatable content

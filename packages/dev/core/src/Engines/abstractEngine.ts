@@ -1993,14 +1993,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.0.0";
+        return "babylonjs@7.3.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.0.0";
+        return "7.3.0";
     }
 
     /**
@@ -2098,6 +2098,17 @@ export abstract class AbstractEngine {
         return this._isStencilEnable;
     }
 
+    /** @internal */
+    protected _creationOptions: AbstractEngineOptions;
+
+    /**
+     * Gets the options used for engine creation
+     * @returns EngineOptions object
+     */
+    public getCreationOptions() {
+        return this._creationOptions;
+    }
+
     /**
      * Creates a new engine
      * @param antialias defines enable antialiasing (default: false)
@@ -2144,6 +2155,8 @@ export abstract class AbstractEngine {
         adaptToDeviceRatio = adaptToDeviceRatio || options.adaptToDeviceRatio || false;
         this._hardwareScalingLevel = adaptToDeviceRatio ? 1.0 / Math.min(limitDeviceRatio, devicePixelRatio) : 1.0;
         this._lastDevicePixelRatio = devicePixelRatio;
+
+        this._creationOptions = options;
     }
 
     /**

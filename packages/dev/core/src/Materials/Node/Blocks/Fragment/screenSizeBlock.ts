@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -67,7 +67,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
             }
         }
 
@@ -87,7 +87,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
 
         this._varName = state._getFreeVariableName("screenSize");
-        state._emitUniformFromString(this._varName, "vec2");
+        state._emitUniformFromString(this._varName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += this.writeOutputs(state, this._varName);
 

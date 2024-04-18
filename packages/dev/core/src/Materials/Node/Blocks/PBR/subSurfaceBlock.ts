@@ -55,6 +55,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         state._excludeVariableName("subSurfaceOut");
         state._excludeVariableName("vThicknessParam");
         state._excludeVariableName("vTintColor");
+        state._excludeVariableName("vTranslucencyColor");
         state._excludeVariableName("vSubSurfaceIntensity");
         state._excludeVariableName("dispersion");
     }
@@ -248,6 +249,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
+                vTintColor,
+                #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+                    vec4(0.),
+                #endif
             #endif
                 subSurfaceOut
             );

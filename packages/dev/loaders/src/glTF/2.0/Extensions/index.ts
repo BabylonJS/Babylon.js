@@ -16,7 +16,7 @@ export * from "./KHR_materials_specular";
 export * from "./KHR_materials_ior";
 export * from "./KHR_materials_variants";
 export * from "./KHR_materials_transmission";
-export * from "./KHR_materials_translucency";
+export * from "./KHR_materials_diffuse_transmission";
 export * from "./KHR_materials_volume";
 export * from "./KHR_materials_dispersion";
 export * from "./KHR_mesh_quantization";

@@ -1,5 +1,5 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -306,7 +306,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._refractionMatrixName = state._getFreeVariableName("refractionMatrix");
 
-        state._emitUniformFromString(this._refractionMatrixName, "mat4");
+        state._emitUniformFromString(this._refractionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         state._emitFunction(
             "sampleRefraction",
@@ -332,18 +332,18 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec4");
+        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
-        state._emitUniformFromString(this._vRefractionInfosName, "vec4");
+        state._emitUniformFromString(this._vRefractionInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 
-        state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
+        state._emitUniformFromString(this._vRefractionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
-        state._emitUniformFromString("vRefractionPosition", "vec3");
-        state._emitUniformFromString("vRefractionSize", "vec3");
+        state._emitUniformFromString("vRefractionPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("vRefractionSize", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         return code;
     }

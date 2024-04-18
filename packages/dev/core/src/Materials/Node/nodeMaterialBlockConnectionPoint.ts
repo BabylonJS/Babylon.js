@@ -120,6 +120,21 @@ export class NodeMaterialConnectionPoint {
     public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
+     * Gets the declaration variable name in the shader
+     */
+    public get declarationVariableName(): string {
+        if (this._ownerBlock.isInput) {
+            return (this._ownerBlock as InputBlock).declarationVariableName;
+        }
+
+        if ((!this._enforceAssociatedVariableName || !this._associatedVariableName) && this._connectedPoint) {
+            return this._connectedPoint.declarationVariableName;
+        }
+
+        return this._associatedVariableName;
+    }
+
+    /**
      * Observable triggered when this point is disconnected
      */
     public onDisconnectionObservable = new Observable<NodeMaterialConnectionPoint>();

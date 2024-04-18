@@ -57,7 +57,7 @@ export class MinBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = min(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = min(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
 
         return this;
     }

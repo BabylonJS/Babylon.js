@@ -128,9 +128,6 @@ export class ThinEngine extends AbstractEngine {
     ];
 
     /** @internal */
-    protected _creationOptions: EngineOptions;
-
-    /** @internal */
     protected _name = "WebGL";
 
     /**
@@ -202,13 +199,6 @@ export class ThinEngine extends AbstractEngine {
         SRGB8: typeof WebGL2RenderingContext.SRGB8 | EXT_sRGB["SRGB_ALPHA_EXT"];
         SRGB8_ALPHA8: typeof WebGL2RenderingContext.SRGB8_ALPHA8 | EXT_sRGB["SRGB_ALPHA_EXT"];
     };
-    /**
-     * Gets the options used for engine creation
-     * @returns EngineOptions object
-     */
-    public getCreationOptions() {
-        return this._creationOptions;
-    }
 
     /**
      * Gets a boolean indicating that only power of 2 textures are supported
@@ -291,8 +281,6 @@ export class ThinEngine extends AbstractEngine {
     ) {
         options = options || {};
         super((antialias ?? options.antialias) || false, options, adaptToDeviceRatio);
-
-        this._creationOptions = options;
 
         if (!canvasOrContext) {
             return;
@@ -752,7 +740,7 @@ export class ThinEngine extends AbstractEngine {
             }
             // take into account the forced state that was provided in options
             // When the issue in angle/chrome is fixed the flag should be taken into account only when it is explicitly defined
-            this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && this._creationOptions.forceSRGBBufferSupportState);
+            this._caps.supportSRGBBuffers = this._caps.supportSRGBBuffers && !!(this._creationOptions && (this._creationOptions as EngineOptions).forceSRGBBufferSupportState);
         }
 
         // Depth buffer
@@ -1958,7 +1946,7 @@ export class ThinEngine extends AbstractEngine {
             onError,
             indexParameters,
             name,
-            shaderLanguage
+            (<IEffectCreationOptions>attributesNamesOrOptions).shaderLanguage ?? shaderLanguage
         );
         this._compiledEffects[name] = effect;
 
@@ -4092,7 +4080,7 @@ export class ThinEngine extends AbstractEngine {
         this._currentBufferPointers.length = 0;
         this._currentProgram = null;
 
-        if (this._creationOptions.loseContextOnDispose) {
+        if ((this._creationOptions as EngineOptions).loseContextOnDispose) {
             this._gl.getExtension("WEBGL_lose_context")?.loseContext();
         }
     }

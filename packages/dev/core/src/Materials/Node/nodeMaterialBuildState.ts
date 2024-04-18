@@ -2,6 +2,9 @@ import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
+import { ShaderLanguage } from "../shaderLanguage";
+import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 
 /**
  * Class used to store node based material build state
@@ -78,6 +81,13 @@ export class NodeMaterialBuildState {
     public compilationString = "";
 
     /**
+     * Gets the current shader language to use
+     */
+    public get shaderLanguage() {
+        return this.sharedData.nodeMaterial.shaderLanguage;
+    }
+
+    /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
      */
@@ -85,7 +95,15 @@ export class NodeMaterialBuildState {
         const emitComments = state.sharedData.emitComments;
         const isFragmentMode = this.target === NodeMaterialBlockTargets.Fragment;
 
-        this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (isFragmentMode) {
+                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@fragment\nfn main(input: FragmentInputs) -> FragmentOutputs {\n${this.compilationString}`;
+            } else {
+                this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}@vertex\nfn main(input: VertexInputs) -> FragmentInputs{\n${this.compilationString}`;
+            }
+        } else {
+            this.compilationString = `\n${emitComments ? "//Entry point\n" : ""}void main(void) {\n${this.compilationString}`;
+        }
 
         if (this._constantDeclaration) {
             this.compilationString = `\n${emitComments ? "//Constants\n" : ""}${this._constantDeclaration}\n${this.compilationString}`;
@@ -123,18 +141,20 @@ export class NodeMaterialBuildState {
             this.compilationString = `\n${emitComments ? "//Attributes\n" : ""}${this._attributeDeclaration}\n${this.compilationString}`;
         }
 
-        this.compilationString = "precision highp float;\n" + this.compilationString;
-        this.compilationString = "#if defined(WEBGL2) || defined(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
+        if (this.shaderLanguage !== ShaderLanguage.WGSL) {
+            this.compilationString = "precision highp float;\n" + this.compilationString;
+            this.compilationString = "#if defined(WEBGL2) || defines(WEBGPU)\nprecision highp sampler2DArray;\n#endif\n" + this.compilationString;
 
-        if (isFragmentMode) {
-            this.compilationString =
-                "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
-                this.compilationString;
-        }
+            if (isFragmentMode) {
+                this.compilationString =
+                    "#if defined(PREPASS)\r\n#extension GL_EXT_draw_buffers : require\r\nlayout(location = 0) out highp vec4 glFragData[SCENE_MRT_COUNT];\r\nhighp vec4 gl_FragColor;\r\n#endif\r\n" +
+                    this.compilationString;
+            }
 
-        for (const extensionName in this.extensions) {
-            const extension = this.extensions[extensionName];
-            this.compilationString = `\n${extension}\n${this.compilationString}`;
+            for (const extensionName in this.extensions) {
+                const extension = this.extensions[extensionName];
+                this.compilationString = `\n${extension}\n${this.compilationString}`;
+            }
         }
 
         this._builtCompilationString = this.compilationString;
@@ -190,9 +210,14 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string) {
+    public _emit2DSampler(name: string, textureName = "") {
         if (this.samplers.indexOf(name) < 0) {
-            this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                this._samplerDeclaration += `var ${name}: sampler;\n`;
+                this._samplerDeclaration += `var ${textureName}: texture_2d<f32>;\n`;
+            } else {
+                this._samplerDeclaration += `uniform sampler2D ${name};\n`;
+            }
             this.samplers.push(name);
         }
     }
@@ -226,6 +251,32 @@ export class NodeMaterialBuildState {
                 return "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
                 return "mat4";
+        }
+
+        return "";
+    }
+
+    /**
+     * @internal
+     */
+    public _getShaderType(type: NodeMaterialBlockConnectionPointTypes) {
+        const isWGSL = this.shaderLanguage === ShaderLanguage.WGSL;
+
+        switch (type) {
+            case NodeMaterialBlockConnectionPointTypes.Float:
+                return isWGSL ? "f32" : "float";
+            case NodeMaterialBlockConnectionPointTypes.Int:
+                return isWGSL ? "i32" : "int";
+            case NodeMaterialBlockConnectionPointTypes.Vector2:
+                return isWGSL ? "vec2<f32>" : "vec2";
+            case NodeMaterialBlockConnectionPointTypes.Color3:
+            case NodeMaterialBlockConnectionPointTypes.Vector3:
+                return isWGSL ? "vec3<f32>" : "vec3";
+            case NodeMaterialBlockConnectionPointTypes.Color4:
+            case NodeMaterialBlockConnectionPointTypes.Vector4:
+                return isWGSL ? "vec4<f32>" : "vec4";
+            case NodeMaterialBlockConnectionPointTypes.Matrix:
+                return isWGSL ? "mat4x4<f32>" : "mat4";
         }
 
         return "";
@@ -332,7 +383,9 @@ export class NodeMaterialBuildState {
             return;
         }
 
-        this.functions[key] = Effect.IncludesShadersStore[includeName];
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
+
+        this.functions[key] = store[includeName];
 
         if (this.sharedData.emitComments) {
             this.functions[key] = comments + `\n` + this.functions[key];
@@ -380,7 +433,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitVaryingFromString(name: string, type: string, define: string = "", notDefine = false) {
+    public _emitVaryingFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.sharedData.varyings.indexOf(name) !== -1) {
             return false;
         }
@@ -394,7 +447,12 @@ export class NodeMaterialBuildState {
                 this.sharedData.varyingDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this.sharedData.varyingDeclaration += `varying ${type} ${name};\n`;
+        const shaderType = this._getShaderType(type);
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            this.sharedData.varyingDeclaration += `varying ${name}: ${shaderType};\n`;
+        } else {
+            this.sharedData.varyingDeclaration += `varying ${shaderType} ${name};\n`;
+        }
         if (define) {
             this.sharedData.varyingDeclaration += `#endif\n`;
         }
@@ -405,7 +463,18 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emitUniformFromString(name: string, type: string, define: string = "", notDefine = false) {
+    public _getVaryingName(name: string): string {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return (this.target !== NodeMaterialBlockTargets.Fragment ? "vertexOutputs." : "fragmentInputs.") + name;
+        }
+
+        return name;
+    }
+
+    /**
+     * @internal
+     */
+    public _emitUniformFromString(name: string, type: NodeMaterialBlockConnectionPointTypes, define: string = "", notDefine = false) {
         if (this.uniforms.indexOf(name) !== -1) {
             return;
         }
@@ -419,10 +488,26 @@ export class NodeMaterialBuildState {
                 this._uniformDeclaration += `${notDefine ? "#ifndef" : "#ifdef"} ${define}\n`;
             }
         }
-        this._uniformDeclaration += `uniform ${type} ${name};\n`;
+        const shaderType = this._getShaderType(type);
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            this._uniformDeclaration += `uniform ${name}: ${shaderType};\n`;
+        } else {
+            this._uniformDeclaration += `uniform ${shaderType} ${name};\n`;
+        }
         if (define) {
             this._uniformDeclaration += `#endif\n`;
         }
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTertiary(trueStatement: string, falseStatement: string, condition: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `select(${falseStatement}, ${trueStatement}, ${condition})`;
+        }
+
+        return `${condition} ? ${trueStatement} : ${falseStatement}`;
     }
 
     /**
@@ -434,5 +519,94 @@ export class NodeMaterialBuildState {
         }
 
         return value.toString();
+    }
+
+    /**
+     * @internal
+     */
+    public _declareOutput(output: NodeMaterialConnectionPoint): string {
+        return this._declareLocalVar(output.associatedVariableName, output.type);
+    }
+
+    /**
+     * @internal
+     */
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes): string {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `var ${name}: ${this._getShaderType(type)}`;
+        } else {
+            return `${this._getShaderType(type)} ${name}`;
+        }
+    }
+
+    private _convertVariableDeclarationToWGSL(type: string, dest: string, source: string): string {
+        return source.replace(new RegExp(`(${type})\\s+(\\w+)`, "g"), `var $2: ${dest}`);
+    }
+
+    private _convertVariableConstructorsToWGSL(type: string, dest: string, source: string): string {
+        return source.replace(new RegExp(`(${type})\\(`, "g"), ` ${dest}(`);
+    }
+
+    private _convertOutParametersToWGSL(source: string): string {
+        return source.replace(new RegExp(`out\\s+var\\s+(\\w+)\\s*:\\s*(\\w+)`, "g"), `$1: ptr<function, $2>`);
+    }
+
+    private _convertFunctionsToWGSL(source: string): string {
+        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/;
+        const match = source.match(regex);
+
+        if (match) {
+            const funcName = match[1];
+            const funcType = match[2];
+            const params = match[3]; // All parameters as a single string
+
+            // Processing the parameters to match 'name: type' format
+            const formattedParams = params.replace(/var\s/g, "");
+
+            // Constructing the final output string
+            return source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
+        }
+        return source;
+    }
+
+    public _babylonSLtoWGSL(code: string) {
+        // variable declarations
+        code = this._convertVariableDeclarationToWGSL("void", "voidnull", code);
+        code = this._convertVariableDeclarationToWGSL("int", "i32", code);
+        code = this._convertVariableDeclarationToWGSL("uint", "u32", code);
+        code = this._convertVariableDeclarationToWGSL("float", "f32", code);
+        code = this._convertVariableDeclarationToWGSL("vec2", "vec2f", code);
+        code = this._convertVariableDeclarationToWGSL("vec3", "vec3f", code);
+        code = this._convertVariableDeclarationToWGSL("vec4", "vec4f", code);
+        code = this._convertVariableDeclarationToWGSL("mat2", "mat2x2f", code);
+        code = this._convertVariableDeclarationToWGSL("mat3", "mat3x3f", code);
+        code = this._convertVariableDeclarationToWGSL("mat4", "mat4x4f", code);
+
+        // Type constructors
+        code = this._convertVariableConstructorsToWGSL("float", "f32", code);
+        code = this._convertVariableConstructorsToWGSL("vec2", "vec2f", code);
+        code = this._convertVariableConstructorsToWGSL("vec3", "vec3f", code);
+        code = this._convertVariableConstructorsToWGSL("vec4", "vec4f", code);
+        code = this._convertVariableConstructorsToWGSL("mat2", "mat2x2f", code);
+        code = this._convertVariableConstructorsToWGSL("mat3", "mat3x3f", code);
+        code = this._convertVariableConstructorsToWGSL("mat4", "mat4x4f", code);
+
+        // Out paramters
+        code = this._convertOutParametersToWGSL(code);
+        code = code.replace(/\[\*\]/g, "*");
+
+        // Functions
+        code = this._convertFunctionsToWGSL(code);
+
+        // Remove voidnull
+        code = code.replace(/\s->\svoidnull/g, "");
+
+        return code;
+    }
+
+    public _babylonSLtoGLSL(code: string) {
+        code = code.replace(/\[\*\]/g, "");
+
+        return code;
     }
 }

@@ -1,18 +1,18 @@
-import type { IMaterial, IKHRMaterialsVolume } from "babylonjs-gltf2interface";
+import type { IMaterial, IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
 import type { IGLTFExporterExtensionV2 } from "../glTFExporterExtension";
 import { _Exporter } from "../glTFExporter";
 import type { Material } from "core/Materials/material";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
-import { Color3 } from "core/Maths/math.color";
 
-const NAME = "KHR_materials_volume";
+const NAME = "KHR_materials_diffuse_transmission";
 
 /**
- * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_materials_volume/README.md)
+ * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
+ * !!! Experimental Extension Subject to Changes !!!
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
+export class KHR_materials_diffuse_transmission implements IGLTFExporterExtensionV2 {
     /** Name of this extension */
     public readonly name = NAME;
 
@@ -65,20 +65,22 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
             return false;
         }
         const subs = mat.subSurface;
-        // this extension requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
-        if (!subs.isRefractionEnabled && !subs.isTranslucencyEnabled) {
+        if (!subs.isTranslucencyEnabled) {
             return false;
         }
+
         return (
-            (subs.maximumThickness != undefined && subs.maximumThickness != 0) ||
-            (subs.tintColorAtDistance != undefined && subs.tintColorAtDistance != Number.POSITIVE_INFINITY) ||
-            (subs.tintColor != undefined && subs.tintColor != Color3.White()) ||
-            this._hasTexturesExtension(mat)
+            !mat.unlit &&
+            !subs.useAlbedoToTintTranslucency &&
+            subs.useGltfStyleTextures &&
+            subs.volumeIndexOfRefraction === 1 &&
+            subs.minimumThickness === 0 &&
+            subs.maximumThickness === 0
         );
     }
 
     private _hasTexturesExtension(mat: PBRMaterial): boolean {
-        return mat.subSurface.thicknessTexture != null;
+        return mat.subSurface.translucencyIntensityTexture != null || mat.subSurface.translucencyColorTexture != null;
     }
 
     /**
@@ -94,26 +96,27 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
                 this._wasUsed = true;
 
                 const subs = babylonMaterial.subSurface;
-                const thicknessFactor = subs.maximumThickness == 0 ? undefined : subs.maximumThickness;
-                const thicknessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.thicknessTexture) ?? undefined;
-                const attenuationDistance = subs.tintColorAtDistance == Number.POSITIVE_INFINITY ? undefined : subs.tintColorAtDistance;
-                const attenuationColor = subs.tintColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : subs.tintColor.asArray();
 
-                const volumeInfo: IKHRMaterialsVolume = {
-                    thicknessFactor: thicknessFactor,
-                    thicknessTexture: thicknessTexture,
-                    attenuationDistance: attenuationDistance,
-                    attenuationColor: attenuationColor,
+                const diffuseTransmissionFactor = subs.translucencyIntensity == 1 ? undefined : subs.translucencyIntensity;
+                const diffuseTransmissionTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.translucencyIntensityTexture) ?? undefined;
+                const diffuseTransmissionColorFactor = !subs.translucencyColor || subs.translucencyColor.equalsFloats(1.0, 1.0, 1.0) ? undefined : subs.translucencyColor.asArray();
+                const diffuseTransmissionColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(subs.translucencyColorTexture) ?? undefined;
+
+                const diffuseTransmissionInfo: IKHRMaterialsDiffuseTransmission = {
+                    diffuseTransmissionFactor,
+                    diffuseTransmissionTexture,
+                    diffuseTransmissionColorFactor,
+                    diffuseTransmissionColorTexture,
                     hasTextures: () => {
                         return this._hasTexturesExtension(babylonMaterial);
                     },
                 };
                 node.extensions = node.extensions || {};
-                node.extensions[NAME] = volumeInfo;
+                node.extensions[NAME] = diffuseTransmissionInfo;
             }
             resolve(node);
         });
     }
 }
 
-_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_volume(exporter));
+_Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_diffuse_transmission(exporter));

@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -106,12 +106,12 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
                 replaceStrings: [{ search: /worldPos/g, replace: worldPos.associatedVariableName }],
             });
 
-            state._emitUniformFromString("vClipPlane", "vec4");
-            state._emitUniformFromString("vClipPlane2", "vec4");
-            state._emitUniformFromString("vClipPlane3", "vec4");
-            state._emitUniformFromString("vClipPlane4", "vec4");
-            state._emitUniformFromString("vClipPlane5", "vec4");
-            state._emitUniformFromString("vClipPlane6", "vec4");
+            state._emitUniformFromString("vClipPlane", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClipPlane2", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClipPlane3", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClipPlane4", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClipPlane5", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClipPlane6", NodeMaterialBlockConnectionPointTypes.Vector4);
 
             return;
         }
