@@ -1555,27 +1555,6 @@ export class NodeMaterial extends PushMaterial {
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
-        // //*********************** */
-        // const tempA = `
-        // uniform u_World : mat4x4<f32>;
-        // uniform u_ViewProjection : mat4x4<f32>;
-        // attribute position : vec3<f32>;
-
-        // @vertex
-        // fn main(input : VertexInputs) -> FragmentInputs {
-        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
-        // }
-        // `;
-
-        // const tempB = `
-        // uniform u_color : vec4<f32>;
-
-        // @fragment
-        // fn main(input : FragmentInputs) -> FragmentOutputs {
-        //     fragmentOutputs.color = uniforms.u_color;
-        // }`;
-        // /*********************** */
-
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation

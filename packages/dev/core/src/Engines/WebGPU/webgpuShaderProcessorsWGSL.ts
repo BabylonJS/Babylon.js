@@ -28,6 +28,10 @@ import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/lightFragment";
+import "../../ShadersWGSL/ShadersInclude/lightUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
