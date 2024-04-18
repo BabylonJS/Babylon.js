@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.3.1
+
+### Core
+
+- Fix material helper AbstractEngine type - by [kinetifex](https://github.com/kinetifex) ([#15004](https://github.com/BabylonJS/Babylon.js/pull/15004))
+
 ## 7.3.0
 
 ### Core
