@@ -1,6 +1,6 @@
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Light } from "../Lights/light";
 import type { PrePassConfiguration } from "../Materials/prePassConfiguration";
@@ -128,7 +128,7 @@ export class MaterialHelper {
      */
     public static PrepareDefinesForFrameBoundValues: (
         scene: Scene,
-        engine: Engine,
+        engine: AbstractEngine,
         material: Material,
         defines: any,
         useInstances: boolean,
