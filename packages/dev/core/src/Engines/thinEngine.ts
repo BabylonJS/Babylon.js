@@ -50,6 +50,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
+import { resetCachedPipeline } from "core/Materials/effect.functions";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -1890,7 +1891,7 @@ export class ThinEngine extends AbstractEngine {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
-
+            resetCachedPipeline(webGLPipelineContext);
             this._gl.deleteProgram(webGLPipelineContext.program);
         }
     }

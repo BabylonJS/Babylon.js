@@ -17,7 +17,7 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext } from "./effect.functions";
+import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -292,7 +292,7 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
-        let cachedPipline = getCachedPipeline(pipelineName);
+        let cachedPipeline = getCachedPipeline(pipelineName);
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -320,7 +320,7 @@ export class Effect implements IDisposable {
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
 
-            cachedPipline = cachedPipline || options.existingPipelineContext;
+            cachedPipeline = cachedPipeline || options.existingPipelineContext;
         } else {
             this._engine = <AbstractEngine>engine;
             this.defines = defines == null ? "" : defines;
@@ -340,10 +340,10 @@ export class Effect implements IDisposable {
         this._attributeLocationByName = {};
 
         this.uniqueId = Effect._UniqueIdSeed++;
-        if (!cachedPipline) {
+        if (!cachedPipeline) {
             this._processShaderCode();
         } else {
-            this._pipelineContext = cachedPipline;
+            this._pipelineContext = cachedPipeline;
             this._pipelineContext.setEngine(this._engine);
             this._onRenderingStateCompiled(this._pipelineContext);
             // rebuildRebind for spector
@@ -1448,7 +1448,7 @@ export class Effect implements IDisposable {
      **/
     public dispose() {
         if (this._pipelineContext) {
-            this._pipelineContext.dispose();
+            resetCachedPipeline(this._pipelineContext);
         }
         this._engine._releaseEffect(this);
 

@@ -15,7 +15,7 @@ import { _getGlobalDefines, _loadFile } from "core/Engines/abstractEngine.functi
  * If pipelines were created prior to the effect, they can be cached here and be used when creating the effect
  * They will be used automatically.
  */
-const cachedPiplines: { [name: string]: IPipelineContext } = {};
+const cachedPipelines: { [name: string]: IPipelineContext } = {};
 
 /**
  * Options to be used when creating a pipeline
@@ -156,7 +156,16 @@ export async function generatePipelineContext(
 }
 
 export function getCachedPipeline(name: string): IPipelineContext | undefined {
-    return cachedPiplines[name];
+    return cachedPipelines[name];
+}
+
+export function resetCachedPipeline(pipeline: IPipelineContext | string): void {
+    const name = typeof pipeline === "string" ? pipeline : pipeline._name;
+    if (name) {
+        const cachedPipeline = cachedPipelines[name];
+        cachedPipeline?.dispose();
+        delete cachedPipelines[name];
+    }
 }
 
 /** @internal */
@@ -350,7 +359,7 @@ export const createAndPreparePipelineContext = (
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
         pipelineContext._name = options.name;
         if (options.name) {
-            cachedPiplines[options.name] = pipelineContext;
+            cachedPipelines[options.name] = pipelineContext;
         }
 
         _preparePipelineContext(
