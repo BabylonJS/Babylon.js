@@ -2571,6 +2571,11 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * @internal
+     */
+    public _unpackFlipY(value: boolean) {}
+
+    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
