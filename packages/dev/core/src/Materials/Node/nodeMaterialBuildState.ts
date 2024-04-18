@@ -552,10 +552,10 @@ export class NodeMaterialBuildState {
     }
 
     private _convertFunctionsToWGSL(source: string): string {
-        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/;
-        const match = source.match(regex);
+        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/g;
+        const matches = source.matchAll(regex);
 
-        if (match) {
+        for (const match of matches) {
             const funcName = match[1];
             const funcType = match[2];
             const params = match[3]; // All parameters as a single string
@@ -564,7 +564,7 @@ export class NodeMaterialBuildState {
             const formattedParams = params.replace(/var\s/g, "");
 
             // Constructing the final output string
-            return source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
+            source = source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
         }
         return source;
     }
