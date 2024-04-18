@@ -6,7 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../scene";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 /**
  * block used to Generate Fractal Brownian Motion Clouds
  */

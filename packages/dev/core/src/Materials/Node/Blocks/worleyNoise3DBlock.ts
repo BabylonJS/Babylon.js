@@ -6,7 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 
 /**
  * block used to Generate a Worley Noise 3D Noise Pattern
