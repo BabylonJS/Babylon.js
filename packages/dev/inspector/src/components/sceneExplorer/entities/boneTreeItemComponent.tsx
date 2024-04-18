@@ -16,7 +16,7 @@ export class BoneTreeItemComponent extends React.Component<IBoneTreeItemComponen
         super(props);
     }
 
-    render() {
+    override render() {
         const bone = this.props.bone;
         return (
             <div className="skeletonTools">

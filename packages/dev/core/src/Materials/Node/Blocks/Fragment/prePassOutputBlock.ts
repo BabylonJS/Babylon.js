@@ -35,7 +35,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "PrePassOutputBlock";
     }
 
@@ -67,7 +67,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[3];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const worldPosition = this.worldPosition;

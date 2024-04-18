@@ -65,7 +65,7 @@ export class TreeItemSpecializedComponent extends React.Component<ITreeItemSpeci
         this.props.onClick();
     }
 
-    render() {
+    override render() {
         const entity = this.props.entity;
 
         if (entity && entity.getClassName) {

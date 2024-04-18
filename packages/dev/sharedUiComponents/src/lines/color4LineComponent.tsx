@@ -17,7 +17,7 @@ export interface IColor4LineComponentProps {
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps> {
-    render() {
+    override render() {
         const props = this.props;
         return <ColorLineComponent {...props} />;
     }

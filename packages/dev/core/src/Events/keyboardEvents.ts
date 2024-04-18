@@ -67,11 +67,11 @@ export class KeyboardInfoPre extends KeyboardInfo {
         /**
          * Defines the type of event (KeyboardEventTypes)
          */
-        public type: number,
+        public override type: number,
         /**
          * Defines the related dom event
          */
-        public event: IKeyboardEvent
+        public override event: IKeyboardEvent
     ) {
         super(type, event);
         this.skipOnKeyboardObservable = false;

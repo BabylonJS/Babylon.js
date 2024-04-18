@@ -244,7 +244,7 @@ export class SpotLight extends ShadowLight {
      * Returns the string "SpotLight".
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SpotLight";
     }
 
@@ -252,7 +252,7 @@ export class SpotLight extends ShadowLight {
      * Returns the integer 2.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
-    public getTypeID(): number {
+    public override getTypeID(): number {
         return Light.LIGHTTYPEID_SPOTLIGHT;
     }
 
@@ -260,7 +260,7 @@ export class SpotLight extends ShadowLight {
      * Overrides the direction setter to recompute the projection texture view light Matrix.
      * @param value
      */
-    protected _setDirection(value: Vector3) {
+    protected override _setDirection(value: Vector3) {
         super._setDirection(value);
         this._projectionTextureViewLightDirty = true;
     }
@@ -269,7 +269,7 @@ export class SpotLight extends ShadowLight {
      * Overrides the position setter to recompute the projection texture view light Matrix.
      * @param value
      */
-    protected _setPosition(value: Vector3) {
+    protected override _setPosition(value: Vector3) {
         super._setPosition(value);
         this._projectionTextureViewLightDirty = true;
     }
@@ -370,7 +370,7 @@ export class SpotLight extends ShadowLight {
      * @param lightIndex The index of the light in the effect to update
      * @returns The light
      */
-    public transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
+    public override transferTexturesToEffect(effect: Effect, lightIndex: string): Light {
         if (this.projectionTexture && this.projectionTexture.isReady()) {
             if (this._projectionTextureViewLightDirty) {
                 this._computeProjectionTextureViewLightMatrix();
@@ -433,7 +433,7 @@ export class SpotLight extends ShadowLight {
     /**
      * Disposes the light and the associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         if (this._projectionTexture) {
             this._projectionTexture.dispose();
@@ -445,7 +445,7 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the min for
      * @returns the depth min z
      */
-    public getDepthMinZ(activeCamera: Camera): number {
+    public override getDepthMinZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         const minZ = this.shadowMinZ !== undefined ? this.shadowMinZ : activeCamera.minZ;
 
@@ -457,7 +457,7 @@ export class SpotLight extends ShadowLight {
      * @param activeCamera The camera we are returning the max for
      * @returns the depth max z
      */
-    public getDepthMaxZ(activeCamera: Camera): number {
+    public override getDepthMaxZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         const maxZ = this.shadowMaxZ !== undefined ? this.shadowMaxZ : activeCamera.maxZ;
 

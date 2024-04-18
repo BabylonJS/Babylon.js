@@ -132,7 +132,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ReflectionTextureBaseBlock";
     }
 
@@ -175,7 +175,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @param material defines the material to configure
      * @param additionalFilteringInfo defines additional info to be used when filtering inputs (we might want to skip some non relevant blocks)
      */
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
 
@@ -207,7 +207,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -232,7 +232,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
     }
 
-    public isReady() {
+    public override isReady() {
         const texture = this._getTexture();
 
         if (texture && !texture.isReadyOrNotBlocking()) {
@@ -242,7 +242,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
         const texture = this._getTexture();
 
         if (!mesh || !texture) {
@@ -504,12 +504,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (!this.texture) {
@@ -529,7 +529,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget) {
@@ -541,7 +541,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {

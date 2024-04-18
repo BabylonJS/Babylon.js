@@ -35,7 +35,7 @@ export class SwitchBooleanAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {
+    public override _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
     }
@@ -43,7 +43,7 @@ export class SwitchBooleanAction extends Action {
     /**
      * Execute the action toggle the boolean value.
      */
-    public execute(): void {
+    public override execute(): void {
         this._effectiveTarget[this._property] = !this._effectiveTarget[this._property];
     }
 
@@ -52,7 +52,7 @@ export class SwitchBooleanAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "SwitchBooleanAction",
@@ -92,7 +92,7 @@ export class SetStateAction extends Action {
     /**
      * Execute the action and store the value on the target state property.
      */
-    public execute(): void {
+    public override execute(): void {
         this._target.state = this.value;
     }
 
@@ -101,7 +101,7 @@ export class SetStateAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "SetStateAction",
@@ -148,7 +148,7 @@ export class SetValueAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {
+    public override _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
     }
@@ -156,7 +156,7 @@ export class SetValueAction extends Action {
     /**
      * Execute the action and set the targeted property to the desired value.
      */
-    public execute(): void {
+    public override execute(): void {
         this._effectiveTarget[this._property] = this.value;
 
         if (this._target.markAsDirty) {
@@ -169,7 +169,7 @@ export class SetValueAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "SetValueAction",
@@ -220,7 +220,7 @@ export class IncrementValueAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {
+    public override _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
 
@@ -232,7 +232,7 @@ export class IncrementValueAction extends Action {
     /**
      * Execute the action and increment the target of the value amount.
      */
-    public execute(): void {
+    public override execute(): void {
         this._effectiveTarget[this._property] += this.value;
 
         if (this._target.markAsDirty) {
@@ -245,7 +245,7 @@ export class IncrementValueAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "IncrementValueAction",
@@ -300,12 +300,12 @@ export class PlayAnimationAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {}
+    public override _prepare(): void {}
 
     /**
      * Execute the action and play the animation.
      */
-    public execute(): void {
+    public override execute(): void {
         const scene = this._actionManager.getScene();
         scene.beginAnimation(this._target, this.from, this.to, this.loop);
     }
@@ -315,7 +315,7 @@ export class PlayAnimationAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "PlayAnimationAction",
@@ -350,12 +350,12 @@ export class StopAnimationAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {}
+    public override _prepare(): void {}
 
     /**
      * Execute the action and stop the animation.
      */
-    public execute(): void {
+    public override execute(): void {
         const scene = this._actionManager.getScene();
         scene.stopAnimation(this._target);
     }
@@ -365,7 +365,7 @@ export class StopAnimationAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "StopAnimationAction",
@@ -393,14 +393,14 @@ export class DoNothingAction extends Action {
     /**
      * Execute the action and do nothing.
      */
-    public execute(): void {}
+    public override execute(): void {}
 
     /**
      * Serializes the actions and its related information.
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "DoNothingAction",
@@ -440,7 +440,7 @@ export class CombineAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {
+    public override _prepare(): void {
         for (let index = 0; index < this.children.length; index++) {
             this.children[index]._actionManager = this._actionManager;
             this.children[index]._prepare();
@@ -451,7 +451,7 @@ export class CombineAction extends Action {
      * Execute the action and executes all the aggregated actions.
      * @param evt event to execute
      */
-    public execute(evt: ActionEvent): void {
+    public override execute(evt: ActionEvent): void {
         for (const action of this.children) {
             if (!this.enableChildrenConditions || action._evaluateConditionForCurrentFrame()) {
                 action.execute(evt);
@@ -464,7 +464,7 @@ export class CombineAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         const serializationObject = super._serialize(
             {
                 name: "CombineAction",
@@ -507,7 +507,7 @@ export class ExecuteCodeAction extends Action {
      * Execute the action and run the attached code.
      * @param evt event to execute
      */
-    public execute(evt: ActionEvent): void {
+    public override execute(evt: ActionEvent): void {
         this.func(evt);
     }
 }
@@ -534,12 +534,12 @@ export class SetParentAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {}
+    public override _prepare(): void {}
 
     /**
      * Execute the action and set the parent property.
      */
-    public execute(): void {
+    public override execute(): void {
         if (this._target.parent === this._parent) {
             return;
         }
@@ -557,7 +557,7 @@ export class SetParentAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "SetParentAction",

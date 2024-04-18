@@ -21,7 +21,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
         super(props);
     }
 
-    render() {
+    override render() {
         const inputText = this.props.inputText;
 
         return (

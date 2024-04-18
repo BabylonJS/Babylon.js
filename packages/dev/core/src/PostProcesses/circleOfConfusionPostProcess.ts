@@ -41,7 +41,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "CircleOfConfusionPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "CircleOfConfusionPostProcess";
     }
 

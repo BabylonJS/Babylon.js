@@ -28,7 +28,7 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VoronoiNoiseBlock";
     }
 
@@ -67,7 +67,7 @@ export class VoronoiNoiseBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (!this.seed.isConnected) {

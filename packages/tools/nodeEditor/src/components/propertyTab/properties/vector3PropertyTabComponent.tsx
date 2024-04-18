@@ -11,7 +11,7 @@ interface IVector3PropertyTabComponentProps {
 }
 
 export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-    render() {
+    override render() {
         return (
             <Vector3LineComponent
                 lockObject={this.props.lockObject}

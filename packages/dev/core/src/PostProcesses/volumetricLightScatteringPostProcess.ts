@@ -188,7 +188,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Returns the string "VolumetricLightScatteringPostProcess"
      * @returns "VolumetricLightScatteringPostProcess"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VolumetricLightScatteringPostProcess";
     }
 
@@ -292,7 +292,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Disposes the internal assets and detaches the post-process from the camera
      * @param camera The camera from which to detach the post-process
      */
-    public dispose(camera: Camera): void {
+    public override dispose(camera: Camera): void {
         const rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
         if (rttIndex !== -1) {
             camera.getScene().customRenderTargets.splice(rttIndex, 1);

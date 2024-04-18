@@ -34,7 +34,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
         /**
          * the configuration of the block
          */
-        public config?: IFlowGraphWhileLoopBlockConfiguration
+        public override config?: IFlowGraphWhileLoopBlockConfiguration
     ) {
         super(config);
 
@@ -57,7 +57,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphWhileLoopBlock.ClassName;
     }
 
@@ -70,7 +70,7 @@ export class FlowGraphWhileLoopBlock extends FlowGraphExecutionBlockWithOutSigna
      * Serializes the block to a JSON object.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.isDo = this.config?.isDo;
     }

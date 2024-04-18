@@ -291,7 +291,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         xmlHttp.send(JSON.stringify(dataToSend));
     }
 
-    render() {
+    override render() {
         const system = this.props.system;
 
         const blendModeOptions = [

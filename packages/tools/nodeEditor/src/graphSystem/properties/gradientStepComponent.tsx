@@ -43,7 +43,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
         this.props.onCheckForReOrder();
     }
 
-    render() {
+    override render() {
         const step = this.props.step;
 
         return (

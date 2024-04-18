@@ -35,7 +35,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         });
     }
 
-    render() {
+    override render() {
         const line = this.props.line;
 
         return (

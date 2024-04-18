@@ -141,7 +141,7 @@ export class DirectionalLight extends ShadowLight {
      * Returns the string "DirectionalLight".
      * @returns The class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DirectionalLight";
     }
 
@@ -149,7 +149,7 @@ export class DirectionalLight extends ShadowLight {
      * Returns the integer 1.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
-    public getTypeID(): number {
+    public override getTypeID(): number {
         return Light.LIGHTTYPEID_DIRECTIONALLIGHT;
     }
 
@@ -323,7 +323,7 @@ export class DirectionalLight extends ShadowLight {
      * @returns the depth min z
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getDepthMinZ(activeCamera: Camera): number {
+    public override getDepthMinZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         return !engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
     }
@@ -338,7 +338,7 @@ export class DirectionalLight extends ShadowLight {
      * @returns the depth max z
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public getDepthMaxZ(activeCamera: Camera): number {
+    public override getDepthMaxZ(activeCamera: Camera): number {
         const engine = this._scene.getEngine();
         return engine.useReverseDepthBuffer && engine.isNDCHalfZRange ? 0 : 1;
     }

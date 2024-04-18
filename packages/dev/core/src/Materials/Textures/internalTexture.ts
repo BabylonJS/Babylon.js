@@ -113,10 +113,10 @@ export class InternalTexture extends TextureSampler {
      * Gets a boolean indicating if the texture uses mipmaps
      * TODO implements useMipMaps as a separate setting from generateMipMaps
      */
-    public get useMipMaps() {
+    public override get useMipMaps() {
         return this.generateMipMaps;
     }
-    public set useMipMaps(value: boolean) {
+    public override set useMipMaps(value: boolean) {
         this.generateMipMaps = value;
     }
     /**

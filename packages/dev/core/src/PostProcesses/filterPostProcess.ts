@@ -25,7 +25,7 @@ export class FilterPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "FilterPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FilterPostProcess";
     }
 
@@ -59,7 +59,7 @@ export class FilterPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<FilterPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new FilterPostProcess(

@@ -12,15 +12,15 @@ export interface IGizmoWrapperProps {
 
 export class GizmoWrapper extends React.Component<IGizmoWrapperProps> {
     observer: Nullable<Observer<void>>;
-    componentWillMount() {
+    override componentWillMount() {
         this.observer = this.props.globalState.onSelectionChangedObservable.add(() => this.forceUpdate());
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this.observer);
     }
 
-    render() {
+    override render() {
         const controls = this.props.globalState.selectedControls;
         return (
             <>

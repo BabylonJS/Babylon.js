@@ -53,7 +53,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         }
     }
 
-    protected _createNode(scene: Scene): Nullable<TransformNode> {
+    protected override _createNode(scene: Scene): Nullable<TransformNode> {
         const node = new Mesh(`menu_${this.name}`, scene);
 
         this._backPlate = CreateBox("backPlate" + this.name, { size: 1 }, scene);
@@ -62,7 +62,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         return node;
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
+    protected override _affectMaterial(mesh: AbstractMesh) {
         this._backPlateMaterial = new FluentMaterial(this.name + "backPlateMaterial", mesh.getScene());
         this._backPlateMaterial.albedoColor = new Color3(0.08, 0.15, 0.55);
         this._backPlateMaterial.renderBorders = true;
@@ -93,7 +93,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
         this._updateCurrentMinMax(nodePosition);
     }
 
-    protected _finalProcessing() {
+    protected override _finalProcessing() {
         this._updateMargins();
     }
 
@@ -168,7 +168,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
      * @param _control the control to add
      * @returns the current container
      */
-    public addControl(_control: Control3D): Container3D {
+    public override addControl(_control: Control3D): Container3D {
         Logger.Warn("TouchHolographicMenu can only contain buttons. Please use the method `addButton` instead.");
 
         return this;
@@ -177,7 +177,7 @@ export class TouchHolographicMenu extends VolumeBasedPanel {
     /**
      * Disposes the menu
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this._host.onPickedPointChangedObservable.remove(this._pickedPointObserver);

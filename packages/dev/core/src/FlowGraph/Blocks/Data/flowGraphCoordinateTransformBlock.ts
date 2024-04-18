@@ -41,7 +41,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
         this.outputCoordinates = this.registerDataOutput("outputCoordinates", RichTypeVector3);
     }
 
-    public _updateOutputs(_context: FlowGraphContext): void {
+    public override _updateOutputs(_context: FlowGraphContext): void {
         const sourceSystemValue = this.sourceSystem.getValue(_context);
         const destinationSystemValue = this.destinationSystem.getValue(_context);
         const inputCoordinatesValue = this.inputCoordinates.getValue(_context);
@@ -66,7 +66,7 @@ export class FlowGraphCoordinateTransformBlock extends FlowGraphBlock {
      * Gets the class name of this block
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGCoordinateTransformBlock";
     }
 }

@@ -14,7 +14,7 @@ export class DraggableLineWithButtonComponent extends React.Component<IDraggable
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div
                 className="draggableLine withButton"

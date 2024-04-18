@@ -11,7 +11,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
         super(props);
     }
 
-    render() {
+    override render() {
         const conditionBlock = this.props.nodeData.data as ConditionalBlock;
 
         const conditionOptions: { label: string; value: ConditionalBlockConditions }[] = [

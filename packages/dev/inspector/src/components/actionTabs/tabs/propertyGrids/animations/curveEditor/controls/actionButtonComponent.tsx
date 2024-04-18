@@ -22,7 +22,7 @@ export class ActionButtonComponent extends React.Component<IActionButtonComponen
         this.state = {};
     }
 
-    public render() {
+    public override render() {
         return (
             <div
                 title={this.props.tooltip}

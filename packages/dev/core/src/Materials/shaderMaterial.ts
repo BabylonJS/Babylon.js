@@ -218,7 +218,7 @@ export class ShaderMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ShaderMaterial";
     }
 
@@ -226,7 +226,7 @@ export class ShaderMaterial extends PushMaterial {
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1.0 || this._options.needAlphaBlending;
     }
 
@@ -234,7 +234,7 @@ export class ShaderMaterial extends PushMaterial {
      * Specifies if this material should be rendered in alpha test mode
      * @returns a boolean specifying if an alpha test is needed.
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return this._options.needAlphaTesting;
     }
 
@@ -645,7 +645,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         return this.isReady(mesh, useInstances, subMesh);
     }
 
@@ -656,7 +656,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param subMesh defines which submesh to render
      * @returns true if ready, otherwise false
      */
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
+    public override isReady(mesh?: AbstractMesh, useInstances?: boolean, subMesh?: SubMesh): boolean {
         const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
 
         if (this.isFrozen) {
@@ -938,7 +938,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param world defines the world transformation matrix
      * @param effectOverride - If provided, use this effect instead of internal effect
      */
-    public bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
+    public override bindOnlyWorldMatrix(world: Matrix, effectOverride?: Nullable<Effect>): void {
         const scene = this.getScene();
 
         const effect = effectOverride ?? this.getEffect();
@@ -972,7 +972,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         this.bind(world, mesh, subMesh._drawWrapperOverride?.effect, subMesh);
     }
 
@@ -983,7 +983,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param effectOverride - If provided, use this effect instead of internal effect
      * @param subMesh defines the submesh to bind the material to
      */
-    public bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
+    public override bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
         // Std values
         const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
         const effect = effectOverride ?? (storeEffectOnSubMeshes ? subMesh.effect : this.getEffect());
@@ -1217,7 +1217,7 @@ export class ShaderMaterial extends PushMaterial {
      * Gets the active textures from the material
      * @returns an array of textures
      */
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         for (const name in this._textures) {
@@ -1239,7 +1239,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param texture defines the texture to check against the material
      * @returns a boolean specifying if the material uses the texture
      */
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -1267,7 +1267,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param name defines the new name for the duplicated material
      * @returns the cloned material
      */
-    public clone(name: string): ShaderMaterial {
+    public override clone(name: string): ShaderMaterial {
         const result = SerializationHelper.Clone(() => new ShaderMaterial(name, this.getScene(), this._shaderPath, this._options, this._storeEffectOnSubMeshes), this);
 
         result.name = name;
@@ -1430,7 +1430,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
         if (forceDisposeTextures) {
             let name: string;
             for (name in this._textures) {
@@ -1454,7 +1454,7 @@ export class ShaderMaterial extends PushMaterial {
      * Serializes this material in a JSON representation
      * @returns the serialized material object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.ShaderMaterial";
         serializationObject.uniqueId = this.uniqueId;
@@ -1614,7 +1614,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): ShaderMaterial {
         const material = SerializationHelper.Parse(
             () => new ShaderMaterial(source.name, scene, source.shaderPath, source.options, source.storeEffectOnSubMeshes),
             source,

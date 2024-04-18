@@ -30,7 +30,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
         this.state = { mode: this.props.camera.mode };
     }
 
-    render() {
+    override render() {
         const camera = this.props.camera;
 
         const modeOptions = [

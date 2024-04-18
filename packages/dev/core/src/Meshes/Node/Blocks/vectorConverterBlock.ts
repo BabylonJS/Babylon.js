@@ -39,7 +39,7 @@ export class VectorConverterBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VectorConverterBlock";
     }
 
@@ -155,7 +155,7 @@ export class VectorConverterBlock extends NodeGeometryBlock {
         return this._outputs[7];
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "xyzw ") {
             return "xyzwIn";
         }
@@ -183,7 +183,7 @@ export class VectorConverterBlock extends NodeGeometryBlock {
         return name;
     }
 
-    protected _outputRename(name: string) {
+    protected override _outputRename(name: string) {
         switch (name) {
             case "x":
                 return "xOut";
@@ -206,7 +206,7 @@ export class VectorConverterBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         const xInput = this.xIn;

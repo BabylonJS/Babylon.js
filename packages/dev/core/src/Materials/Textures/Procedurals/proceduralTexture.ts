@@ -266,7 +266,7 @@ export class ProceduralTexture extends Texture {
     }
 
     /** @internal */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (vb) {
@@ -316,7 +316,7 @@ export class ProceduralTexture extends Texture {
      * Is the texture ready to be used ? (rendered at least once)
      * @returns true if ready, otherwise, false.
      */
-    public isReady(): boolean {
+    public override isReady(): boolean {
         const engine = this._fullEngine;
 
         if (this.nodeMaterialSource) {
@@ -713,7 +713,7 @@ export class ProceduralTexture extends Texture {
      * Clone the texture.
      * @returns the cloned texture
      */
-    public clone(): ProceduralTexture {
+    public override clone(): ProceduralTexture {
         const textureSize = this.getSize();
         const newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
@@ -730,7 +730,7 @@ export class ProceduralTexture extends Texture {
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         const scene = this.getScene();
 
         if (!scene) {

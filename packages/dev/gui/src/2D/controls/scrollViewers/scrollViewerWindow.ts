@@ -178,14 +178,14 @@ export class _ScrollViewerWindow extends Container {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "ScrollViewerWindow";
     }
 
     /**
      * @internal
      */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._parentMeasure = parentMeasure;
@@ -200,7 +200,7 @@ export class _ScrollViewerWindow extends Container {
     /**
      * @internal
      */
-    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
+    public override _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (this._freezeControls) {
             this.invalidateRect(); // will trigger a redraw of the window
             return false;
@@ -250,7 +250,7 @@ export class _ScrollViewerWindow extends Container {
     /**
      * @internal
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
+    public override _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         if (!this._freezeControls) {
             super._draw(context, invalidatedRectangle);
             return;
@@ -287,7 +287,7 @@ export class _ScrollViewerWindow extends Container {
         }
     }
 
-    protected _postMeasure(): void {
+    protected override _postMeasure(): void {
         if (this._freezeControls) {
             super._postMeasure();
             return;

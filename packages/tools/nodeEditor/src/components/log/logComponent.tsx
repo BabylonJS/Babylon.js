@@ -26,7 +26,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         this._logConsoleRef = React.createRef();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.globalState.onLogRequiredObservable.add((log) => {
             const currentLogs = this.state.logs;
             currentLogs.push(log);
@@ -35,7 +35,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         });
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         if (!this._logConsoleRef.current) {
             return;
         }
@@ -43,7 +43,7 @@ export class LogComponent extends React.Component<ILogComponentProps, { logs: Lo
         this._logConsoleRef.current.scrollTop = this._logConsoleRef.current.scrollHeight;
     }
 
-    render() {
+    override render() {
         return (
             <div id="nme-log-console" ref={this._logConsoleRef}>
                 {this.state.logs.map((l, i) => {

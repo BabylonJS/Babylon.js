@@ -130,7 +130,7 @@ export class HtmlElementTexture extends BaseTexture {
     /**
      * @returns the texture matrix used in most of the material.
      */
-    public getTextureMatrix(): Matrix {
+    public override getTextureMatrix(): Matrix {
         return this._textureMatrix;
     }
 
@@ -165,7 +165,7 @@ export class HtmlElementTexture extends BaseTexture {
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.onLoadObservable.clear();
         super.dispose();
     }

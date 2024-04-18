@@ -299,10 +299,10 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Gets the list of created scenes
      */
-    public scenes: Scene[] = [];
+    public override scenes: Scene[] = [];
 
     /** @internal */
-    public _virtualScenes = new Array<Scene>();
+    public override _virtualScenes = new Array<Scene>();
 
     // Some of the internal state might change during the render pass.
     // This happens mainly during clear for the state
@@ -356,7 +356,7 @@ export class WebGPUEngine extends AbstractEngine {
     private _defaultDrawContext: WebGPUDrawContext;
     private _defaultMaterialContext: WebGPUMaterialContext;
     /** @internal */
-    public _currentDrawContext: WebGPUDrawContext;
+    public override _currentDrawContext: WebGPUDrawContext;
     /** @internal */
     public _currentMaterialContext: WebGPUMaterialContext;
     private _currentOverrideVertexBuffers: Nullable<{ [key: string]: Nullable<VertexBuffer> }> = null;
@@ -384,11 +384,11 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Gets or sets the snapshot rendering mode
      */
-    public get snapshotRenderingMode(): number {
+    public override get snapshotRenderingMode(): number {
         return this._snapshotRendering.mode;
     }
 
-    public set snapshotRenderingMode(mode: number) {
+    public override set snapshotRenderingMode(mode: number) {
         this._snapshotRendering.mode = mode;
     }
 
@@ -403,11 +403,11 @@ export class WebGPUEngine extends AbstractEngine {
      * Enables or disables the snapshot rendering mode
      * Note that the WebGL engine does not support snapshot rendering so setting the value won't have any effect for this engine
      */
-    public get snapshotRendering(): boolean {
+    public override get snapshotRendering(): boolean {
         return this._snapshotRendering.enabled;
     }
 
-    public set snapshotRendering(activate) {
+    public override set snapshotRendering(activate) {
         this._snapshotRendering.enabled = activate;
     }
 
@@ -463,7 +463,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param font font name
      * @returns an object containing ascent, height and descent
      */
-    public getFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    public override getFontOffset(font: string): { ascent: number; height: number; descent: number } {
         return GetFontOffset(font);
     }
 
@@ -520,7 +520,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Returns a string describing the current engine
      */
-    public get description(): string {
+    public override get description(): string {
         const description = this.name + this.version;
 
         return description;
@@ -550,11 +550,11 @@ export class WebGPUEngine extends AbstractEngine {
      * Setting the property to false will improve performances but may not work in some scenes if some precautions are not taken.
      * See https://doc.babylonjs.com/setup/support/webGPU/webGPUOptimization/webGPUNonCompatibilityMode for more details
      */
-    public get compatibilityMode() {
+    public override get compatibilityMode() {
         return this._compatibilityMode;
     }
 
-    public set compatibilityMode(mode: boolean) {
+    public override set compatibilityMode(mode: boolean) {
         this._compatibilityMode = mode;
     }
 
@@ -603,12 +603,12 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Indicates if the z range in NDC space is 0..1 (value: true) or -1..1 (value: false)
      */
-    public readonly isNDCHalfZRange: boolean = true;
+    public override readonly isNDCHalfZRange: boolean = true;
 
     /**
      * Indicates that the origin of the texture/framebuffer space is the bottom left corner. If false, the origin is top left
      */
-    public readonly hasOriginBottomLeft: boolean = false;
+    public override readonly hasOriginBottomLeft: boolean = false;
 
     /**
      * Create a new instance of the gpu engine.
@@ -1068,7 +1068,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Shared initialization across engines types.
      * @param canvas The canvas associated with this instance of the engine.
      */
-    protected _sharedInit(canvas: HTMLCanvasElement) {
+    protected override _sharedInit(canvas: HTMLCanvasElement) {
         super._sharedInit(canvas);
 
         _CommonInit(this, canvas, this._creationOptions);
@@ -1090,7 +1090,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param bufferHeight destination buffer height
      * @returns an uint8array containing RGBA values of bufferWidth * bufferHeight size
      */
-    public resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
+    public override resizeImageBitmap(image: HTMLImageElement | ImageBitmap, bufferWidth: number, bufferHeight: number): Uint8Array {
         return ResizeImageBitmap(this, image, bufferWidth, bufferHeight);
     }
 
@@ -1100,7 +1100,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param options An object that sets options for the image's extraction.
      * @returns ImageBitmap
      */
-    public _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
+    public override _createImageBitmapFromSource(imageSource: string, options?: ImageBitmapOptions): Promise<ImageBitmap> {
         return CreateImageBitmapFromSource(this, imageSource, options);
     }
 
@@ -1108,7 +1108,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Toggle full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
-    public switchFullscreen(requestPointerLock: boolean): void {
+    public override switchFullscreen(requestPointerLock: boolean): void {
         if (this.isFullscreen) {
             this.exitFullscreen();
         } else {
@@ -1120,7 +1120,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Enters full screen mode
      * @param requestPointerLock defines if a pointer lock should be requested from the user
      */
-    public enterFullscreen(requestPointerLock: boolean): void {
+    public override enterFullscreen(requestPointerLock: boolean): void {
         if (!this.isFullscreen) {
             this._pointerLockRequested = requestPointerLock;
             if (this._renderingCanvas) {
@@ -1132,7 +1132,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Exits full screen mode
      */
-    public exitFullscreen(): void {
+    public override exitFullscreen(): void {
         if (this.isFullscreen) {
             ExitFullscreen();
         }
@@ -1154,7 +1154,7 @@ export class WebGPUEngine extends AbstractEngine {
         ExitPointerlock();
     }
 
-    protected _rebuildBuffers(): void {
+    protected override _rebuildBuffers(): void {
         super._rebuildBuffers();
 
         for (const storageBuffer of this._storageBuffers) {
@@ -1165,7 +1165,7 @@ export class WebGPUEngine extends AbstractEngine {
         }
     }
 
-    protected _restoreEngineAfterContextLost(initEngine: () => void) {
+    protected override _restoreEngineAfterContextLost(initEngine: () => void) {
         WebGPUCacheRenderPipelineTree.ResetCache();
         WebGPUCacheBindGroups.ResetCache();
 
@@ -1258,7 +1258,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param forceSetSize true to force setting the sizes of the underlying canvas
      * @returns true if the size was changed
      */
-    public setSize(width: number, height: number, forceSetSize = false): boolean {
+    public override setSize(width: number, height: number, forceSetSize = false): boolean {
         if (!super.setSize(width, height, forceSetSize)) {
             return false;
         }
@@ -1287,7 +1287,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
+    public override _getShaderProcessor(shaderLanguage: ShaderLanguage): Nullable<IShaderProcessor> {
         if (shaderLanguage === ShaderLanguage.WGSL) {
             return this._shaderProcessorWGSL;
         }
@@ -1372,7 +1372,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Enable or disable color writing
      * @param enable defines the state to set
      */
-    public setColorWrite(enable: boolean): void {
+    public override setColorWrite(enable: boolean): void {
         this._colorWriteLocal = enable;
         this._cacheRenderPipeline.setWriteMask(enable ? 0xf : 0);
     }
@@ -1381,7 +1381,7 @@ export class WebGPUEngine extends AbstractEngine {
      * Gets a boolean indicating if color writing is enabled
      * @returns the current color writing state
      */
-    public getColorWrite(): boolean {
+    public override getColorWrite(): boolean {
         return this._colorWriteLocal;
     }
 
@@ -3051,7 +3051,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Begin a new frame
      */
-    public beginFrame(): void {
+    public override beginFrame(): void {
         this._measureFps();
         super.beginFrame();
     }
@@ -3059,7 +3059,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * End the current frame
      */
-    public endFrame() {
+    public override endFrame() {
         this._endCurrentRenderPass();
 
         this._snapshotRendering.endFrame();
@@ -3877,7 +3877,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * Dispose and release all associated resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         this._isDisposed = true;
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();

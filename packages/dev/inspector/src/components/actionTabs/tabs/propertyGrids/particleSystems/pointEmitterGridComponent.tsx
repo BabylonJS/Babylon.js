@@ -19,7 +19,7 @@ export class PointEmitterGridComponent extends React.Component<IPointEmitterGrid
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
         return (
             <>

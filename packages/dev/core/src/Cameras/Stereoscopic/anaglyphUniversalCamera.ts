@@ -32,9 +32,9 @@ export class AnaglyphUniversalCamera extends UniversalCamera {
      * Gets camera class name
      * @returns AnaglyphUniversalCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AnaglyphUniversalCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
+    protected override _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

@@ -77,7 +77,7 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
         this.setState({ clipLength: newClipLength.toFixed(0) });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onAnimationsLoadedObserver) {
             this.props.context.onAnimationsLoaded.remove(this._onAnimationsLoadedObserver);
         }
@@ -95,7 +95,7 @@ export class BottomBarComponent extends React.Component<IBottomBarComponentProps
         }
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="bottom-bar">
                 <MediaPlayerComponent globalState={this.props.globalState} context={this.props.context} />

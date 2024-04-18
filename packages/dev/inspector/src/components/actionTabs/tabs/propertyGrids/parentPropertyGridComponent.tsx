@@ -26,7 +26,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
         return typeof node.name === "string" ? node.name : "no name";
     }
 
-    render() {
+    override render() {
         const node = this.props.node;
         const scene = node.getScene();
 

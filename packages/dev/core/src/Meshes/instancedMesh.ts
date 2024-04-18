@@ -84,24 +84,24 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * @returns the string "InstancedMesh".
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "InstancedMesh";
     }
 
     /** Gets the list of lights affecting that mesh */
-    public get lightSources(): Light[] {
+    public override get lightSources(): Light[] {
         return this._sourceMesh._lightSources;
     }
 
-    public _resyncLightSources(): void {
+    public override _resyncLightSources(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _resyncLightSource(): void {
+    public override _resyncLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
-    public _removeLightSource(): void {
+    public override _removeLightSource(): void {
         // Do nothing as all the work will be done by source mesh
     }
 
@@ -109,11 +109,11 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * If the source mesh receives shadows
      */
-    public get receiveShadows(): boolean {
+    public override get receiveShadows(): boolean {
         return this._sourceMesh.receiveShadows;
     }
 
-    public set receiveShadows(_value: boolean) {
+    public override set receiveShadows(_value: boolean) {
         if (this._sourceMesh?.receiveShadows !== _value) {
             Tools.Warn("Setting receiveShadows on an instanced mesh has no effect");
         }
@@ -122,11 +122,11 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * The material of the source mesh
      */
-    public get material(): Nullable<Material> {
+    public override get material(): Nullable<Material> {
         return this._sourceMesh.material;
     }
 
-    public set material(_value: Nullable<Material>) {
+    public override set material(_value: Nullable<Material>) {
         if (this._sourceMesh?.material !== _value) {
             Tools.Warn("Setting material on an instanced mesh has no effect");
         }
@@ -135,11 +135,11 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Visibility of the source mesh
      */
-    public get visibility(): number {
+    public override get visibility(): number {
         return this._sourceMesh.visibility;
     }
 
-    public set visibility(_value: number) {
+    public override set visibility(_value: number) {
         if (this._sourceMesh?.visibility !== _value) {
             Tools.Warn("Setting visibility on an instanced mesh has no effect");
         }
@@ -148,11 +148,11 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Skeleton of the source mesh
      */
-    public get skeleton(): Nullable<Skeleton> {
+    public override get skeleton(): Nullable<Skeleton> {
         return this._sourceMesh.skeleton;
     }
 
-    public set skeleton(_value: Nullable<Skeleton>) {
+    public override set skeleton(_value: Nullable<Skeleton>) {
         if (this._sourceMesh?.skeleton !== _value) {
             Tools.Warn("Setting skeleton on an instanced mesh has no effect");
         }
@@ -161,11 +161,11 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * Rendering ground id of the source mesh
      */
-    public get renderingGroupId(): number {
+    public override get renderingGroupId(): number {
         return this._sourceMesh.renderingGroupId;
     }
 
-    public set renderingGroupId(value: number) {
+    public override set renderingGroupId(value: number) {
         if (!this._sourceMesh || value === this._sourceMesh.renderingGroupId) {
             return;
         }
@@ -177,7 +177,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * @returns the total number of vertices (integer).
      */
-    public getTotalVertices(): number {
+    public override getTotalVertices(): number {
         return this._sourceMesh ? this._sourceMesh.getTotalVertices() : 0;
     }
 
@@ -185,7 +185,7 @@ export class InstancedMesh extends AbstractMesh {
      * Returns a positive integer : the total number of indices in this mesh geometry.
      * @returns the number of indices or zero if the mesh has no geometry.
      */
-    public getTotalIndices(): number {
+    public override getTotalIndices(): number {
         return this._sourceMesh.getTotalIndices();
     }
 
@@ -211,7 +211,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param completeCheck defines if a complete check (including materials and lights) has to be done (false by default)
      * @returns {boolean} is it ready
      */
-    public isReady(completeCheck = false): boolean {
+    public override isReady(completeCheck = false): boolean {
         return this._sourceMesh.isReady(completeCheck, true);
     }
 
@@ -222,7 +222,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param forceCopy defines a boolean forcing the copy of the buffer no matter what the value of copyWhenShared is
      * @returns a float array or a Float32Array of the requested kind of data : positions, normals, uvs, etc.
      */
-    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
+    public override getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean): Nullable<FloatArray> {
         return this._sourceMesh.getVerticesData(kind, copyWhenShared, forceCopy);
     }
 
@@ -256,7 +256,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param stride defines the vertex stride (optional)
      * @returns the current mesh
      */
-    public setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
+    public override setVerticesData(kind: string, data: FloatArray, updatable?: boolean, stride?: number): AbstractMesh {
         if (this.sourceMesh) {
             this.sourceMesh.setVerticesData(kind, data, updatable, stride);
         }
@@ -292,7 +292,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param makeItUnique defines it the updated vertex buffer must be flagged as unique (false by default)
      * @returns the source mesh
      */
-    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
+    public override updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): Mesh {
         if (this.sourceMesh) {
             this.sourceMesh.updateVerticesData(kind, data, updateExtends, makeItUnique);
         }
@@ -309,7 +309,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param totalVertices defines the total number of vertices referenced by indices (could be null)
      * @returns source mesh
      */
-    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
+    public override setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null): Mesh {
         if (this.sourceMesh) {
             this.sourceMesh.setIndices(indices, totalVertices);
         }
@@ -333,18 +333,18 @@ export class InstancedMesh extends AbstractMesh {
      * - VertexBuffer.MatricesWeightsExtraKind
      * @returns true if data kind is present
      */
-    public isVerticesDataPresent(kind: string): boolean {
+    public override isVerticesDataPresent(kind: string): boolean {
         return this._sourceMesh.isVerticesDataPresent(kind);
     }
 
     /**
      * @returns an array of indices (IndicesArray).
      */
-    public getIndices(): Nullable<IndicesArray> {
+    public override getIndices(): Nullable<IndicesArray> {
         return this._sourceMesh.getIndices();
     }
 
-    public get _positions(): Nullable<Vector3[]> {
+    public override get _positions(): Nullable<Vector3[]> {
         return this._sourceMesh._positions;
     }
 
@@ -355,7 +355,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
+    public override refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
@@ -366,7 +366,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @internal */
-    public _preActivate(): InstancedMesh {
+    public override _preActivate(): InstancedMesh {
         if (this._currentLOD) {
             this._currentLOD._preActivate();
         }
@@ -376,7 +376,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * @internal
      */
-    public _activate(renderId: number, intermediateRendering: boolean): boolean {
+    public override _activate(renderId: number, intermediateRendering: boolean): boolean {
         super._activate(renderId, intermediateRendering);
 
         if (!this._sourceMesh.subMeshes) {
@@ -409,7 +409,7 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @internal */
-    public _postActivate(): void {
+    public override _postActivate(): void {
         if (this._sourceMesh.edgesShareWithInstances && this._sourceMesh._edgesRenderer && this._sourceMesh._edgesRenderer.isEnabled && this._sourceMesh._renderingGroup) {
             // we are using the edge renderer of the source mesh
             this._sourceMesh._renderingGroup._edgesRenderers.pushNoDuplicate(this._sourceMesh._edgesRenderer);
@@ -420,7 +420,7 @@ export class InstancedMesh extends AbstractMesh {
         }
     }
 
-    public getWorldMatrix(): Matrix {
+    public override getWorldMatrix(): Matrix {
         if (this._currentLOD && this._currentLOD.billboardMode !== TransformNode.BILLBOARDMODE_NONE && this._currentLOD._masterMesh !== this) {
             if (!this._billboardWorldMatrix) {
                 this._billboardWorldMatrix = new Matrix();
@@ -438,7 +438,7 @@ export class InstancedMesh extends AbstractMesh {
         return super.getWorldMatrix();
     }
 
-    public get isAnInstance(): boolean {
+    public override get isAnInstance(): boolean {
         return true;
     }
 
@@ -447,7 +447,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param camera defines the camera to use to pick the LOD level
      * @returns a Mesh or `null` if no LOD is associated with the AbstractMesh
      */
-    public getLOD(camera: Camera): AbstractMesh {
+    public override getLOD(camera: Camera): AbstractMesh {
         if (!camera) {
             return this;
         }
@@ -466,7 +466,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * @internal
      */
-    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+    public override _preActivateForIntermediateRendering(renderId: number): Mesh {
         return <Mesh>this.sourceMesh._preActivateForIntermediateRendering(renderId);
     }
 
@@ -482,12 +482,12 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     /** @internal */
-    public _generatePointsArray(): boolean {
+    public override _generatePointsArray(): boolean {
         return this._sourceMesh._generatePointsArray();
     }
 
     /** @internal */
-    public _updateBoundingInfo(): AbstractMesh {
+    public override _updateBoundingInfo(): AbstractMesh {
         if (this.hasBoundingInfo) {
             this.getBoundingInfo().update(this.worldMatrixFromCache);
         } else {
@@ -507,7 +507,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param newSourceMesh if set this mesh will be used as the source mesh instead of ths instance's one
      * @returns the clone
      */
-    public clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, newSourceMesh?: Mesh): InstancedMesh {
+    public override clone(name: string, newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, newSourceMesh?: Mesh): InstancedMesh {
         const result = (newSourceMesh || this._sourceMesh).createInstance(name);
 
         // Deep copy
@@ -581,7 +581,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         // Remove from mesh
         this._sourceMesh.removeInstance(this);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
@@ -590,7 +590,7 @@ export class InstancedMesh extends AbstractMesh {
     /**
      * @internal
      */
-    public _serializeAsParent(serializationObject: any) {
+    public override _serializeAsParent(serializationObject: any) {
         super._serializeAsParent(serializationObject);
 
         serializationObject.parentId = this._sourceMesh.uniqueId;
@@ -606,7 +606,7 @@ export class InstancedMesh extends AbstractMesh {
      * @param onNewNodeCreated defines an option callback to call when a clone or an instance is created
      * @returns an instance (or a clone) of the current node with its hierarchy
      */
-    public instantiateHierarchy(
+    public override instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean); newSourcedMesh?: Mesh },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void

@@ -19,7 +19,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
         this._onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
@@ -27,7 +27,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
         if (this._onValueChangedObserver) {
             gradientBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
@@ -93,7 +93,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
 
         const typeOptions = [

@@ -75,12 +75,12 @@ export class TouchCamera extends FreeCamera {
      * Gets the current object class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "TouchCamera";
     }
 
     /** @internal */
-    public _setupInputs() {
+    public override _setupInputs() {
         const touch = <FreeCameraTouchInput>this.inputs.attached["touch"];
         const mouse = <FreeCameraMouseInput>this.inputs.attached["mouse"];
         if (mouse) {

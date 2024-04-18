@@ -42,7 +42,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         this._timelineRef = React.createRef();
     }
 
-    componentDidMount(): void {
+    override componentDidMount(): void {
         this.connect(this.props.animationGroup);
 
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
@@ -86,7 +86,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         }
     }
 
-    shouldComponentUpdate(nextProps: IAnimationGroupGridComponentProps): boolean {
+    override shouldComponentUpdate(nextProps: IAnimationGroupGridComponentProps): boolean {
         if (this.props.animationGroup !== nextProps.animationGroup) {
             this.disconnect(this.props.animationGroup);
             this.connect(nextProps.animationGroup);
@@ -94,7 +94,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         return true;
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.disconnect(this.props.animationGroup);
 
         if (this._onBeforeRenderObserver) {
@@ -129,7 +129,7 @@ export class AnimationGroupGridComponent extends React.Component<IAnimationGroup
         this.setState({ currentFrame: value });
     }
 
-    render() {
+    override render() {
         const animationGroup = this.props.animationGroup;
 
         const playButtonText = animationGroup.isPlaying ? "Pause" : "Play";

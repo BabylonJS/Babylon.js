@@ -196,7 +196,7 @@ export class TransformNode extends Node {
      * Gets a string identifying the name of the class
      * @returns "TransformNode" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "TransformNode";
     }
 
@@ -320,7 +320,7 @@ export class TransformNode extends Node {
     }
 
     /** @internal */
-    public _isSynchronized(): boolean {
+    public override _isSynchronized(): boolean {
         const cache = this._cache;
 
         if (this._billboardMode !== cache.billboardMode || this._billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
@@ -351,7 +351,7 @@ export class TransformNode extends Node {
     }
 
     /** @internal */
-    public _initCache() {
+    public override _initCache() {
         super._initCache();
 
         const cache = this._cache;
@@ -751,7 +751,7 @@ export class TransformNode extends Node {
      * @param property if set to "rotation" the objects rotationQuaternion will be set to null
      * @returns this  node
      */
-    public markAsDirty(property?: string): Node {
+    public override markAsDirty(property?: string): Node {
         if (this._isDirty) {
             return this;
         }
@@ -1049,7 +1049,7 @@ export class TransformNode extends Node {
      * @param camera defines the camera used if different from the scene active camera (This is used with modes like Billboard or infinite distance)
      * @returns the world matrix
      */
-    public computeWorldMatrix(force: boolean = false, camera: Nullable<Camera> = null): Matrix {
+    public override computeWorldMatrix(force: boolean = false, camera: Nullable<Camera> = null): Matrix {
         if (this._isWorldMatrixFrozen && !this._isDirty) {
             return this._worldMatrix;
         }
@@ -1391,7 +1391,7 @@ export class TransformNode extends Node {
      * @param doNotCloneChildren Do not clone children hierarchy
      * @returns the new transform node
      */
-    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode> {
+    public override clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<TransformNode> {
         const result = SerializationHelper.Clone(() => new TransformNode(name, this.getScene()), this);
 
         result.name = name;
@@ -1516,7 +1516,7 @@ export class TransformNode extends Node {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         // Animations
         this.getScene().stopAnimation(this);
 

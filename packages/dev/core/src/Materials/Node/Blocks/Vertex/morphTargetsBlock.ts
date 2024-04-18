@@ -45,7 +45,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MorphTargetsBlock";
     }
 
@@ -105,11 +105,11 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         return this._outputs[3];
     }
 
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
 
@@ -148,7 +148,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if ((<Mesh>mesh).morphTargetManager) {
             const morphTargetManager = (<Mesh>mesh).morphTargetManager;
 
@@ -164,7 +164,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         PrepareDefinesForMorphTargets(mesh, defines);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (mesh && mesh.morphTargetManager && mesh.morphTargetManager.numInfluencers > 0) {
             BindMorphTargetParameters(mesh, effect);
 
@@ -174,7 +174,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    public replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
+    public override replaceRepeatableContent(vertexShaderState: NodeMaterialBuildState, fragmentShaderState: NodeMaterialBuildState, mesh: AbstractMesh, defines: NodeMaterialDefines) {
         const position = this.position;
         const normal = this.normal;
         const tangent = this.tangent;
@@ -285,7 +285,7 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         // Register for defines

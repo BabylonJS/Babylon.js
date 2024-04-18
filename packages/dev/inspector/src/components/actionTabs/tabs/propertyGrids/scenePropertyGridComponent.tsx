@@ -128,7 +128,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         });
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         const physicsEngine = scene.getPhysicsEngine();

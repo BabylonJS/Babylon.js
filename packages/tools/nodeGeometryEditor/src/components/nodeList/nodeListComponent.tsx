@@ -161,7 +161,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
@@ -217,7 +217,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
-    render() {
+    override render() {
         const customFrameNames: string[] = [];
         for (const frame in this._customFrameList) {
             customFrameNames.push(frame);

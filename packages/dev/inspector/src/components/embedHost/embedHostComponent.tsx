@@ -38,7 +38,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         this._bottomPartRef = React.createRef();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const container = this._splitRef.current;
 
         if (!container) {
@@ -93,7 +93,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         );
     }
 
-    render() {
+    override render() {
         if (this.props.popupMode) {
             return (
                 <div id="embed">

@@ -89,7 +89,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /** @internal */
     public _followButton: TouchHolographicButton;
     protected _closeButton: TouchHolographicButton;
-    protected _contentScaleRatio = 1;
+    protected override _contentScaleRatio = 1;
 
     /**
      * 2D dimensions of the slate
@@ -185,7 +185,7 @@ export class HolographicSlate extends ContentDisplay3D {
      * This function can be overloaded by child classes
      * @param facadeTexture defines the AdvancedDynamicTexture to use
      */
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+    protected override _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._contentMaterial.albedoTexture = facadeTexture;
         this._resetContentPositionAndZoom();
         this._applyContentViewport();
@@ -200,7 +200,7 @@ export class HolographicSlate extends ContentDisplay3D {
         }
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "HolographicSlate";
     }
 
@@ -294,7 +294,7 @@ export class HolographicSlate extends ContentDisplay3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         const node = new Mesh("slate_" + this.name, scene);
 
         this._titleBar = CreateBox("titleBar_" + this.name, { size: 1 }, scene);
@@ -409,7 +409,7 @@ export class HolographicSlate extends ContentDisplay3D {
         });
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
+    protected override _affectMaterial(mesh: AbstractMesh) {
         // TODO share materials
         this._titleBarMaterial = new FluentBackplateMaterial(`${this.name} plateMaterial`, mesh.getScene());
 
@@ -432,7 +432,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * @internal
      */
-    public _prepareNode(scene: Scene): void {
+    public override _prepareNode(scene: Scene): void {
         super._prepareNode(scene);
         this._gizmo = new SlateGizmo(this._host.utilityLayer!);
         this._gizmo.attachedSlate = this;
@@ -478,7 +478,7 @@ export class HolographicSlate extends ContentDisplay3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this._titleBarMaterial.dispose();
         this._contentMaterial.dispose();

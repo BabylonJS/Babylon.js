@@ -200,7 +200,7 @@ export class InputBlock extends NodeMaterialBlock {
      * @param newName the new name to be given to the node.
      * @returns false if the name is a reserve word, else true.
      */
-    public validateBlockName(newName: string) {
+    public override validateBlockName(newName: string) {
         if (!this.isAttribute) {
             return super.validateBlockName(newName);
         }
@@ -373,7 +373,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InputBlock";
     }
 
@@ -406,7 +406,7 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\n`;
     }
 
-    public initialize() {
+    public override initialize() {
         this.associatedVariableName = "";
     }
 
@@ -703,7 +703,7 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.isUniform || this.isSystemValue) {
@@ -713,7 +713,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._emit(state);
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
 
         if (this.isAttribute) {
@@ -787,13 +787,13 @@ export class InputBlock extends NodeMaterialBlock {
         return super._dumpPropertiesCode();
     }
 
-    public dispose() {
+    public override dispose() {
         this.onValueChangedObservable.clear();
 
         super.dispose();
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.type = this.type;
@@ -822,7 +822,7 @@ export class InputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 

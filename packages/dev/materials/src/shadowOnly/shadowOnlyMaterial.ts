@@ -68,15 +68,15 @@ export class ShadowOnlyMaterial extends PushMaterial {
 
     public shadowColor = Color3.Black();
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this._needAlphaBlending;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
@@ -98,7 +98,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -248,7 +248,7 @@ export class ShadowOnlyMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <ShadowOnlyMaterialDefines>subMesh.materialDefines;
@@ -316,22 +316,22 @@ export class ShadowOnlyMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
-    public clone(name: string): ShadowOnlyMaterial {
+    public override clone(name: string): ShadowOnlyMaterial {
         return SerializationHelper.Clone<ShadowOnlyMaterial>(() => new ShadowOnlyMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.ShadowOnlyMaterial";
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ShadowOnlyMaterial";
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): ShadowOnlyMaterial {
         return SerializationHelper.Parse(() => new ShadowOnlyMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

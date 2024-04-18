@@ -52,7 +52,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "LightInformationBlock";
     }
 
@@ -112,7 +112,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
@@ -162,7 +162,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areLightsDirty && !this._forcePrepareDefines) {
             return;
         }
@@ -173,7 +173,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false, true);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.bindableBlocks.push(this);
@@ -226,7 +226,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.light) {
@@ -236,7 +236,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.lightId) {

@@ -22,7 +22,7 @@ export class FollowCameraPropertyGridComponent extends React.Component<IFollowCa
         super(props);
     }
 
-    render() {
+    override render() {
         const camera = this.props.camera;
 
         return (

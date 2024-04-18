@@ -804,7 +804,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Get if the texture can be rescaled or not.
      */
-    public get canRescale(): boolean {
+    public override get canRescale(): boolean {
         return this._canRescale;
     }
 
@@ -812,7 +812,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Resize the texture using a ratio.
      * @param ratio the ratio to apply to the texture size in order to compute the new target size
      */
-    public scale(ratio: number): void {
+    public override scale(ratio: number): void {
         const newSize = Math.max(1, this.getRenderSize() * ratio);
 
         this.resize(newSize);
@@ -822,7 +822,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Get the texture reflection matrix used to rotate/transform the reflection.
      * @returns the reflection matrix
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         if (this.isCube) {
             return this._textureMatrix;
         }
@@ -1335,7 +1335,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): RenderTargetTexture {
+    public override clone(): RenderTargetTexture {
         const textureSize = this.getSize();
         const newTexture = new RenderTargetTexture(
             this.name,
@@ -1371,7 +1371,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }
@@ -1400,7 +1400,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Release and destroy the underlying lower level texture aka internalTexture.
      */
-    public releaseInternalTexture(): void {
+    public override releaseInternalTexture(): void {
         this._renderTarget?.releaseTextures();
         this._texture = null;
     }
@@ -1408,7 +1408,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.onResizeObservable.clear();
         this.onClearObservable.clear();
         this.onAfterRenderObservable.clear();
@@ -1464,7 +1464,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /** @internal */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
             this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
         }

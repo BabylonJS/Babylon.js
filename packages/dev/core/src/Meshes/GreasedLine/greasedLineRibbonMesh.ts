@@ -60,7 +60,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param _pathOptions used internaly when parsing a serialized GreasedLineRibbonMesh
      */
     constructor(
-        public readonly name: string,
+        public override readonly name: string,
         scene: Scene,
         _options: GreasedLineMeshOptions,
         _pathOptions?: { options: GreasedLineMeshOptions; pathCount: number }[]
@@ -107,7 +107,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * "GreasedLineRibbonMesh"
      * @returns "GreasedLineRibbonMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GreasedLineRibbonMesh";
     }
 
@@ -448,7 +448,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param newParent new parent node
      * @returns cloned line
      */
-    public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
+    public override clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions: any = {};
         const pathOptionsCloned: any = [];
@@ -469,7 +469,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * Serializes this GreasedLineRibbonMesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
 
@@ -483,7 +483,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
      * @param scene the scene to create the GreasedLineRibbonMesh in
      * @returns the created GreasedLineRibbonMesh
      */
-    public static Parse(parsedMesh: any, scene: Scene): Mesh {
+    public static override Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
         const pathOptions = parsedMesh.pathOptions;
@@ -491,7 +491,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return result;
     }
 
-    protected _initGreasedLine() {
+    protected override _initGreasedLine() {
         super._initGreasedLine();
 
         this._paths = [];
@@ -554,7 +554,7 @@ export class GreasedLineRibbonMesh extends GreasedLineBaseMesh {
         return slopes;
     }
 
-    protected _createVertexBuffers(): VertexData {
+    protected override _createVertexBuffers(): VertexData {
         this._uvs = this._options.uvs ?? this._uvs;
         const vertexData = super._createVertexBuffers(this._options.ribbonOptions?.smoothShading);
 

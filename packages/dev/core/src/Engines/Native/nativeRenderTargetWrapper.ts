@@ -39,7 +39,7 @@ export class NativeRenderTargetWrapper extends RenderTargetWrapper {
         this._engine = engine;
     }
 
-    public dispose(disposeOnlyFramebuffers = false): void {
+    public override dispose(disposeOnlyFramebuffers = false): void {
         this._framebuffer = null;
         this._framebufferDepthStencil = null;
 

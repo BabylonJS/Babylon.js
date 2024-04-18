@@ -73,7 +73,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this.setState({ expand: !this.state.expand });
     }
 
-    shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
+    override shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isSelected: boolean }) {
         //if the next entity is going to be selected then we want to highlight it so update
         if (nextProps.selectedEntities.includes(nextProps.entity)) {
             nextState.isSelected = true;
@@ -96,7 +96,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangedObservable);
         this.props.globalState.onDraggingEndObservable.remove(this._onDraggingEndObservable);
         this.props.globalState.onDraggingStartObservable.remove(this._onDraggingStartObservable);
@@ -139,7 +139,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         });
     }
 
-    render() {
+    override render() {
         if (
             this.props.entity === this.props.globalState.workbench.trueRootContainer ||
             this.props.entity === this.props.globalState.workbench.visibleRegionContainer ||

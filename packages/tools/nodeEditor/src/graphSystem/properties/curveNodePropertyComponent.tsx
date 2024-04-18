@@ -11,7 +11,7 @@ export class CurvePropertyTabComponent extends React.Component<IPropertyComponen
         super(props);
     }
 
-    render() {
+    override render() {
         const curveBlock = this.props.nodeData.data as CurveBlock;
 
         const typeOptions: { label: string; value: CurveBlockTypes }[] = [];

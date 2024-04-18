@@ -263,7 +263,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -298,7 +298,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         const detached = super.detach();
 
         if (this._xrLightProbe !== null && !this.options.disableCubeMapReflection) {
@@ -317,7 +317,7 @@ export class WebXRLightEstimation extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this.onReflectionCubeMapUpdatedObservable.clear();

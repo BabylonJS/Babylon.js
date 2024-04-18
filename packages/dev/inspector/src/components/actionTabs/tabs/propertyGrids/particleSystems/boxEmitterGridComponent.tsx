@@ -19,7 +19,7 @@ export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComp
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
         return (
             <>

@@ -150,7 +150,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
         xmlHttp.send(JSON.stringify(dataToSend));
     }
 
-    render() {
+    override render() {
         const spriteManager = this.props.spriteManager;
 
         const alphaModeOptions = [

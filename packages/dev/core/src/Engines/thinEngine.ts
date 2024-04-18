@@ -115,16 +115,16 @@ export class ThinEngine extends AbstractEngine {
     ];
 
     /** @internal */
-    protected _name = "WebGL";
+    protected override _name = "WebGL";
 
     /**
      * Gets or sets the name of the engine
      */
-    public get name(): string {
+    public override get name(): string {
         return this._name;
     }
 
-    public set name(value: string) {
+    public override set name(value: string) {
         this._name = value;
     }
 
@@ -444,7 +444,7 @@ export class ThinEngine extends AbstractEngine {
         }
     }
 
-    protected _clearEmptyResources(): void {
+    protected override _clearEmptyResources(): void {
         this._dummyFramebuffer = null;
         super._clearEmptyResources();
     }
@@ -783,7 +783,7 @@ export class ThinEngine extends AbstractEngine {
      * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ThinEngine";
     }
 
@@ -941,7 +941,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * End the current frame
      */
-    public endFrame(): void {
+    public override endFrame(): void {
         super.endFrame();
         // Force a flush in case we are using a bad OS.
         if (this._badOS) {
@@ -4157,7 +4157,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Dispose and release all associated resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         if (this._dummyFramebuffer) {

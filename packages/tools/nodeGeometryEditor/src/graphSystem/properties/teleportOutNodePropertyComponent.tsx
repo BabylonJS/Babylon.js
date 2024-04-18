@@ -16,17 +16,17 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onUpdateRequiredObserver = this.props.stateManager.onUpdateRequiredObservable.add(() => {
             this.forceUpdate();
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as TeleportOutBlock;
 
         const options = [{ label: "None", value: -1 }];

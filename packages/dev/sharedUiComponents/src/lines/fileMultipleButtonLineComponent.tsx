@@ -27,7 +27,7 @@ export class FileMultipleButtonLineComponent extends React.Component<IFileMultip
         evt.target.value = "";
     }
 
-    render() {
+    override render() {
         return (
             <div className="buttonLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

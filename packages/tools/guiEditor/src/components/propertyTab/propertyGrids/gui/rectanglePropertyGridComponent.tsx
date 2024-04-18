@@ -28,7 +28,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
         super(props);
     }
 
-    render() {
+    override render() {
         const { rectangles, lockObject, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(rectangles, onPropertyChangedObservable);
 

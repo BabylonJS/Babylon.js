@@ -65,15 +65,15 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         this.props.onSelectionChangedObservable?.notifyObservers(null);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.updatePreview();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.updatePreview();
     }
 
-    shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps) {
+    override shouldComponentUpdate(nextProps: ISpritePropertyGridComponentProps) {
         if (nextProps.sprite !== this.props.sprite) {
             this._imageData = null;
         }
@@ -132,7 +132,7 @@ export class SpritePropertyGridComponent extends React.Component<ISpriteProperty
         }
     }
 
-    render() {
+    override render() {
         const sprite = this.props.sprite;
         const manager = sprite.manager;
         const textureSize = manager.texture.getSize();

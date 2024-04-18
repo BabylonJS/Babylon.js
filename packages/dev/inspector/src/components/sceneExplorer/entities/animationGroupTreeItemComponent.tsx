@@ -17,7 +17,7 @@ export class AnimationGroupItemComponent extends React.Component<IAnimationGroup
         super(props);
     }
 
-    render() {
+    override render() {
         const animationGroup = this.props.animationGroup;
         return (
             <div className="animationGroupTools">

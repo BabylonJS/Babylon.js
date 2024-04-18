@@ -20,7 +20,7 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
@@ -35,7 +35,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
-    render() {
+    override render() {
         const targetOptions = [
             { label: "Neutral", value: NodeMaterialBlockTargets.Neutral },
             { label: "Vertex", value: NodeMaterialBlockTargets.Vertex },
@@ -123,7 +123,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeMaterialBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 

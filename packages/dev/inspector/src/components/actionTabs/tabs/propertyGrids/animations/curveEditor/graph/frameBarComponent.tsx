@@ -51,7 +51,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -129,7 +129,7 @@ export class FrameBarComponent extends React.Component<IFrameBarComponentProps, 
         });
     }
 
-    public render() {
+    public override render() {
         const viewBox = `${-this._offsetX} 0 ${Math.round(this._viewWidth * this._viewScale)} ${Math.round(30 * this._viewScale)}`;
 
         return (

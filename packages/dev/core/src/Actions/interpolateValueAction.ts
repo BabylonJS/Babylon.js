@@ -80,7 +80,7 @@ export class InterpolateValueAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {
+    public override _prepare(): void {
         this._effectiveTarget = this._getEffectiveTarget(this._effectiveTarget, this.propertyPath);
         this._property = this._getProperty(this.propertyPath);
     }
@@ -88,7 +88,7 @@ export class InterpolateValueAction extends Action {
     /**
      * Execute the action starts the value interpolation.
      */
-    public execute(): void {
+    public override execute(): void {
         const scene = this._actionManager.getScene();
         const keys = [
             {
@@ -141,7 +141,7 @@ export class InterpolateValueAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "InterpolateValueAction",

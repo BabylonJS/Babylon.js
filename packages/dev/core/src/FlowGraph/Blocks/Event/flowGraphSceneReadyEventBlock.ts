@@ -32,7 +32,7 @@ export class FlowGraphSceneReadyEventBlock extends FlowGraphEventBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName() {
+    public override getClassName() {
         return FlowGraphSceneReadyEventBlock.ClassName;
     }
 

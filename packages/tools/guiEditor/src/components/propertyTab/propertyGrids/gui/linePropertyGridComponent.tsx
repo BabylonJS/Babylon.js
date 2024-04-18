@@ -48,7 +48,7 @@ export class LinePropertyGridComponent extends React.Component<ILinePropertyGrid
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const { lines, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(lines, onPropertyChangedObservable);
         let dashes = lines[0].dash;

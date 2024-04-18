@@ -60,7 +60,7 @@ export class CommonShadowLightPropertyGridComponent extends React.Component<ICom
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
         const internals = this._internals;
         const generator = (light.getShadowGenerator() as ShadowGenerator | CascadedShadowGenerator) || null;

@@ -83,10 +83,10 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
      * It will return the attached mesh (if any) and setting an attached node will log
      * a warning
      */
-    public get attachedNode() {
+    public override get attachedNode() {
         return this.attachedMesh;
     }
-    public set attachedNode(value: Nullable<Node>) {
+    public override set attachedNode(value: Nullable<Node>) {
         Logger.Warn("Nodes cannot be attached to LightGizmo. Attach to a mesh instead.");
     }
 
@@ -174,7 +174,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
      * @internal
      * Updates the gizmo to match the attached mesh's position/rotation
      */
-    protected _update() {
+    protected override _update() {
         super._update();
         if (!this._light) {
             return;
@@ -298,7 +298,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
     /**
      * Disposes of the light gizmo
      */
-    public dispose() {
+    public override dispose() {
         this.onClickedObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this._material.dispose();

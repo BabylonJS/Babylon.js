@@ -111,11 +111,11 @@ export class Slider extends BaseSlider {
      * Creates a new Slider
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Slider";
     }
 
@@ -123,7 +123,7 @@ export class Slider extends BaseSlider {
         return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -269,7 +269,7 @@ export class Slider extends BaseSlider {
         context.restore();
     }
 
-    public serialize(serializationObject: any) {
+    public override serialize(serializationObject: any) {
         super.serialize(serializationObject);
 
         if (this.backgroundGradient) {
@@ -279,7 +279,7 @@ export class Slider extends BaseSlider {
     }
 
     /** @internal */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
 
         if (serializedObject.backgroundGradient) {

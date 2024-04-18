@@ -134,7 +134,7 @@ export class HandleMaterial extends ShaderMaterial {
     /**
      * Disposes the handle material
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this.getScene().onBeforeRenderObservable.remove(this._onBeforeRender);
     }

@@ -86,7 +86,7 @@ export class NearMenu extends TouchHolographicMenu {
         return control;
     }
 
-    protected _createNode(scene: Scene): Nullable<TransformNode> {
+    protected override _createNode(scene: Scene): Nullable<TransformNode> {
         const node = super._createNode(scene)! as Mesh;
 
         this._pinButton = this._createPinButton(node);
@@ -105,7 +105,7 @@ export class NearMenu extends TouchHolographicMenu {
         return node;
     }
 
-    protected _finalProcessing() {
+    protected override _finalProcessing() {
         super._finalProcessing();
 
         this._pinButton.position.copyFromFloats((this._backPlate.scaling.x + TouchHolographicMenu.MENU_BUTTON_SCALE) / 2, this._backPlate.scaling.y / 2, 0);
@@ -129,7 +129,7 @@ export class NearMenu extends TouchHolographicMenu {
     /**
      * Disposes the near menu
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this._defaultBehavior.sixDofDragBehavior.onDragObservable.remove(this._dragObserver);

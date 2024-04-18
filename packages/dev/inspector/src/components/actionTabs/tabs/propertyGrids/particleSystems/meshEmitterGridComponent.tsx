@@ -24,7 +24,7 @@ export class MeshEmitterGridComponent extends React.Component<IMeshEmitterGridCo
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
 
         return (

@@ -20,7 +20,7 @@ export class NullBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NullBlock";
     }
 
@@ -31,7 +31,7 @@ export class NullBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         this.geometry._storedValue = null;
     }
 }

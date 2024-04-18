@@ -41,7 +41,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onIsVisibleChangedObserver) {
             this.props.control.onIsVisibleChangedObservable.remove(this._onIsVisibleChangedObserver);
         }
@@ -65,7 +65,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         this.props.globalState.onPropertyGridUpdateRequiredObservable.notifyObservers();
     }
 
-    render() {
+    override render() {
         const control = this.props.control;
 
         let bracket = "";

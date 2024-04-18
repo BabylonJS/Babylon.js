@@ -63,7 +63,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -92,7 +92,7 @@ export class AnimationSubEntryComponent extends React.Component<IAnimationSubEnt
         this.props.context.onActiveAnimationChanged.notifyObservers({});
     }
 
-    public render() {
+    public override render() {
         const isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1 && this.props.context.isChannelEnabled(this.props.animation, this.props.color);
         return (
             <>

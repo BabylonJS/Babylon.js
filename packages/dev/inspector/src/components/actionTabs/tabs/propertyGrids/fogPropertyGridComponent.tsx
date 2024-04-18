@@ -22,7 +22,7 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
         this.state = { mode: this.props.scene.fogMode };
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         const fogModeOptions = [

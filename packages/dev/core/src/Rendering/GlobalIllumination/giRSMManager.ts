@@ -882,15 +882,15 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         this._isPBR = material instanceof PBRBaseMaterial;
     }
 
-    public prepareDefines(defines: MaterialGIRSMRenderDefines) {
+    public override prepareDefines(defines: MaterialGIRSMRenderDefines) {
         defines.RENDER_WITH_GIRSM = this._isEnabled;
     }
 
-    public getClassName() {
+    public override getClassName() {
         return "GIRSMRenderPluginMaterial";
     }
 
-    public getUniforms() {
+    public override getUniforms() {
         return {
             ubo: [{ name: "girsmTextureOutputSize", size: 2, type: "vec2" }],
             fragment: `#ifdef RENDER_WITH_GIRSM
@@ -899,18 +899,18 @@ export class GIRSMRenderPluginMaterial extends MaterialPluginBase {
         };
     }
 
-    public getSamplers(samplers: string[]) {
+    public override getSamplers(samplers: string[]) {
         samplers.push("girsmTextureGIContrib");
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer) {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._isEnabled) {
             uniformBuffer.bindTexture("girsmTextureGIContrib", this.textureGIContrib);
             uniformBuffer.updateFloat2("girsmTextureOutputSize", this.outputTextureWidth, this.outputTextureHeight);
         }
     }
 
-    public getCustomCode(shaderType: string) {
+    public override getCustomCode(shaderType: string) {
         const frag: { [name: string]: string } = {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             CUSTOM_FRAGMENT_DEFINITIONS: `

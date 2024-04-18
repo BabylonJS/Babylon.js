@@ -18,23 +18,23 @@ export class LiteTranscoder_UASTC_RGBA_SRGB extends LiteTranscoder {
      */
     public static WasmBinary: ArrayBuffer | null = null;
 
-    public static CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
+    public static override CanTranscode(src: KTX2.SourceTextureFormat, dst: KTX2.TranscodeTarget, isInGammaSpace: boolean): boolean {
         return src === KTX2.SourceTextureFormat.UASTC4x4 && dst === KTX2.TranscodeTarget.RGBA32 && isInGammaSpace;
     }
 
-    public static Name = "UniversalTranscoder_UASTC_RGBA_SRGB";
+    public static override Name = "UniversalTranscoder_UASTC_RGBA_SRGB";
 
-    public getName(): string {
+    public override getName(): string {
         return LiteTranscoder_UASTC_RGBA_SRGB.Name;
     }
 
-    public initialize(): void {
+    public override initialize(): void {
         super.initialize();
         this._transcodeInPlace = false;
         this.setModulePath(LiteTranscoder_UASTC_RGBA_SRGB.WasmModuleURL, LiteTranscoder_UASTC_RGBA_SRGB.WasmBinary);
     }
 
-    public transcode(
+    public override transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

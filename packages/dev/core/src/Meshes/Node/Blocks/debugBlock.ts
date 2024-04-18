@@ -34,7 +34,7 @@ export class DebugBlock extends NodeGeometryBlock {
     /**
      * Gets the time spent to build this block (in ms)
      */
-    public get buildExecutionTime() {
+    public override get buildExecutionTime() {
         return 0;
     }
 
@@ -42,7 +42,7 @@ export class DebugBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DebugBlock";
     }
 
@@ -60,7 +60,7 @@ export class DebugBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         if (!this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;

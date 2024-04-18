@@ -86,14 +86,14 @@ export class ToolsTabComponent extends PaneComponent {
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!GLTF2Export) {
             Tools.Warn("GLTF2Export is not available. Make sure to load the serializers library");
             return;
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._videoRecorder) {
             this._videoRecorder.stopRecording();
             this._videoRecorder.dispose();
@@ -347,7 +347,7 @@ export class ToolsTabComponent extends PaneComponent {
         this._reflector = new Reflector(this.props.scene, this._reflectorHostname, this._reflectorPort);
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         if (!scene) {

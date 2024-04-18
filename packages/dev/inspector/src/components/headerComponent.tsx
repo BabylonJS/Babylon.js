@@ -25,7 +25,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         this.state = { isBackVisible: false };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this.props.onSelectionChangedObservable) {
             return;
         }
@@ -38,7 +38,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onSelectionChangeObserver) {
             this.props.onSelectionChangedObservable!.remove(this._onSelectionChangeObserver);
         }
@@ -75,7 +75,7 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps, { is
         return <img id="logo" style={{ top: "0%" }} src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />;
     }
 
-    render() {
+    override render() {
         return (
             <div id="header">
                 {this.renderLogo()}

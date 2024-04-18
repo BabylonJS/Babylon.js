@@ -7,7 +7,7 @@ interface IPortalProps {
 }
 
 export class Portal extends React.Component<IPortalProps> {
-    render() {
+    override render() {
         return ReactDOM.createPortal(this.props.children, this.props.globalState.hostElement);
     }
 }

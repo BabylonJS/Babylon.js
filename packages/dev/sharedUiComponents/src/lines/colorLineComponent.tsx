@@ -40,7 +40,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         target._isLinearColor = props.isLinear; // so that replayRecorder can append toLinearSpace() as appropriate
     }
 
-    shouldComponentUpdate(nextProps: IColorLineComponentProps, nextState: IColorLineComponentState) {
+    override shouldComponentUpdate(nextProps: IColorLineComponentProps, nextState: IColorLineComponentState) {
         const stateColor = nextState.color;
         const propsColor = this.getValue(nextProps);
         if (stateColor !== this.state.color) {
@@ -180,7 +180,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         return new Color3(color.r, color.g, color.b);
     }
 
-    render() {
+    override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (

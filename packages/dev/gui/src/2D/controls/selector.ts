@@ -340,7 +340,7 @@ export class SelectionPanel extends Rectangle {
      */
     constructor(
         /** name of SelectionPanel */
-        public name: string,
+        public override name: string,
         /** an array of SelectionGroups */
         public groups: SelectorGroup[] = []
     ) {
@@ -363,7 +363,7 @@ export class SelectionPanel extends Rectangle {
         this.addControl(this._panel);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "SelectionPanel";
     }
 

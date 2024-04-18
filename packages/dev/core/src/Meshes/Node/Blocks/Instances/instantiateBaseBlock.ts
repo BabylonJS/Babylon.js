@@ -69,7 +69,7 @@ export abstract class InstantiateBaseBlock extends NodeGeometryBlock implements 
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateBaseBlock";
     }
 
@@ -94,7 +94,7 @@ export abstract class InstantiateBaseBlock extends NodeGeometryBlock implements 
         return this._outputs[0];
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
@@ -103,7 +103,7 @@ export abstract class InstantiateBaseBlock extends NodeGeometryBlock implements 
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
@@ -111,7 +111,7 @@ export abstract class InstantiateBaseBlock extends NodeGeometryBlock implements 
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         if (serializationObject.evaluateContext !== undefined) {

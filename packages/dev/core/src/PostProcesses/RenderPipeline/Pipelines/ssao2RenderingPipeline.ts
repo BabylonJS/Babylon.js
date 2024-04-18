@@ -377,7 +377,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * Get the class name
      * @returns "SSAO2RenderingPipeline"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SSAO2RenderingPipeline";
     }
 
@@ -385,7 +385,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      * @param disableGeometryBufferRenderer Set to true if you want to disable the Geometry Buffer renderer
      */
-    public dispose(disableGeometryBufferRenderer: boolean = false): void {
+    public override dispose(disableGeometryBufferRenderer: boolean = false): void {
         for (let i = 0; i < this._scene.cameras.length; i++) {
             const camera = this._scene.cameras[i];
 
@@ -410,7 +410,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     // Private Methods
 
     /** @internal */
-    public _rebuild() {
+    public override _rebuild() {
         super._rebuild();
     }
 

@@ -139,7 +139,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         }
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -160,7 +160,7 @@ export class WebXRMeshDetector extends WebXRAbstractFeature {
         return true;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onMeshAddedObservable.clear();
         this.onMeshRemovedObservable.clear();

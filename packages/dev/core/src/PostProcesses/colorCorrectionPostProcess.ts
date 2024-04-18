@@ -41,7 +41,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "ColorCorrectionPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ColorCorrectionPostProcess";
     }
 
@@ -72,7 +72,7 @@ export class ColorCorrectionPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new ColorCorrectionPostProcess(

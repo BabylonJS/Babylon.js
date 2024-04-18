@@ -21,7 +21,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         super(props);
     }
 
-    render() {
+    override render() {
         const image = this.props.image;
 
         const stretchOptions = [

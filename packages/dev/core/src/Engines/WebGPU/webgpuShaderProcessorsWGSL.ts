@@ -65,7 +65,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     protected _varyingNamesWGSL: string[];
     protected _stridedUniformArrays: string[];
 
-    public shaderLanguage = ShaderLanguage.WGSL;
+    public override shaderLanguage = ShaderLanguage.WGSL;
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
     public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;

@@ -28,7 +28,7 @@ export class NormalizeVectorBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NormalizeVectorBlock";
     }
 
@@ -46,7 +46,7 @@ export class NormalizeVectorBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
         this.output._storedFunction = null;
 

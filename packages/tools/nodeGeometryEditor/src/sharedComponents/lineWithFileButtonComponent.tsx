@@ -35,7 +35,7 @@ export class LineWithFileButtonComponent extends React.Component<ILineWithFileBu
         this.setState({ isExpanded: newState });
     }
 
-    render() {
+    override render() {
         return (
             <div className="nonDraggableLine withButton">
                 {this.props.label}

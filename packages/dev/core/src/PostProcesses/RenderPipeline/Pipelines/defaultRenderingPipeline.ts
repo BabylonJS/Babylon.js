@@ -541,7 +541,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
      * Get the class name
      * @returns "DefaultRenderingPipeline"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DefaultRenderingPipeline";
     }
 
@@ -827,7 +827,7 @@ export class DefaultRenderingPipeline extends PostProcessRenderPipeline implemen
     /**
      * Dispose of the pipeline and stop all post processes
      */
-    public dispose(): void {
+    public override dispose(): void {
         this._buildAllowed = false;
         this.onBuildObservable.clear();
         this._disposePostProcesses(true);

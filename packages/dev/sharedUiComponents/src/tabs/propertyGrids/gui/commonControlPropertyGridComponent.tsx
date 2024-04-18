@@ -52,7 +52,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         );
     }
 
-    render() {
+    override render() {
         let controls: Control[];
         if (this.props.controls) {
             controls = this.props.controls;

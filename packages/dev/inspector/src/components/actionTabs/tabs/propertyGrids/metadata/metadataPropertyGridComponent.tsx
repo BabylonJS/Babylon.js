@@ -57,7 +57,7 @@ export class MetadataGridComponent extends React.Component<
     }
 
     /** @ignorenaming */
-    componentDidMount() {
+    override componentDidMount() {
         if (this.props.globalState) {
             this.refreshSelected();
         }
@@ -66,7 +66,7 @@ export class MetadataGridComponent extends React.Component<
     /**
      * @param prevProps - previous component props
      */
-    componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
+    override componentDidUpdate(prevProps: Readonly<IMetadataComponentProps>): void {
         if (this.props.entity) {
             if (!prevProps.entity || prevProps.entity.id !== this.props.entity.id) {
                 this.refreshSelected();
@@ -308,7 +308,7 @@ export class MetadataGridComponent extends React.Component<
     /** render
      * @returns the component
      */
-    render() {
+    override render() {
         const protectObj = this.state.preventObjCorruption && this.state.metadataPropType === MetadataTypes.OBJECT;
         return (
             <LineContainerComponent title="METADATA" closed={true} selection={this.props.globalState}>

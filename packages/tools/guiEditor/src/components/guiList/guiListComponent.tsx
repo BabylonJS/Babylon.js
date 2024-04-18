@@ -29,7 +29,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
@@ -37,7 +37,7 @@ export class GuiListComponent extends React.Component<IGuiListComponentProps, { 
         this.setState({ filter: filter });
     }
 
-    render() {
+    override render() {
         // Block types used to create the menu from
         const allBlocks: any = {
             Buttons: ["TextButton", "ImageButton"],
