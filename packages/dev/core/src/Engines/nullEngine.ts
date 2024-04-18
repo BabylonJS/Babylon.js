@@ -275,7 +275,13 @@ export class NullEngine extends Engine {
         this._cachedViewport = viewport;
     }
 
-    public override createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+    public override createShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        defines: string,
+        context?: WebGLRenderingContext
+    ): WebGLProgram {
         return {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             __SPECTOR_rebuildProgram: null,

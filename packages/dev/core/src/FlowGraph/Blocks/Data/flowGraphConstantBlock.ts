@@ -53,7 +53,10 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
      * @param serializationObject the object to serialize to
      * @param valueSerializeFunction the function to use to serialize the value
      */
-    public override serialize(serializationObject: any = {}, valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
+    public override serialize(
+        serializationObject: any = {},
+        valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction
+    ) {
         super.serialize(serializationObject);
         valueSerializeFunction("value", this.config.value, serializationObject.config);
     }
