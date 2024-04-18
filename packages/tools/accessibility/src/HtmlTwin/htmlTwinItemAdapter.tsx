@@ -40,7 +40,7 @@ export function HTMLTwinItemAdapter(props: { node: AccessibilityEntity; scene: S
     const [isVisibleState, setIsVisibleState] = useState(isVisible(props.node));
     const sceneContext = useContext(SceneContext);
     const [description, setDescription] = useState(twinItem?.getDescription(options));
-    const [children, setChildren] = useState(getDirectChildrenOf(props.node));
+    const children = getDirectChildrenOf(props.node);
 
     useEffect(() => {
         setDescription(twinItem?.getDescription(options));
