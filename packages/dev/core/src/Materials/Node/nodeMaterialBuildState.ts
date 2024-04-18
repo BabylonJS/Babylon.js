@@ -559,6 +559,14 @@ export class NodeMaterialBuildState {
         return source.replace(new RegExp(`mod\\((.*?),\\s*(.*?)\\)`, "g"), (match, left, right) => `((${left})%(${right}))`);
     }
 
+    private _convertConstToWGSL(source: string): string {
+        return source.replace(new RegExp(`const var`, "g"), `const`);
+    }
+
+    private _convertInnerFunctionsToWGSL(source: string): string {
+        return source.replace(new RegExp(`inversesqrt`, "g"), `inverseSqrt`);
+    }
+
     private _convertFunctionsToWGSL(source: string): string {
         const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/g;
         const matches = source.matchAll(regex);
@@ -603,8 +611,14 @@ export class NodeMaterialBuildState {
         // Tertiary operands
         code = this._convertTertiaryOperandsToWGSL(code);
 
-        // Mod operatros
+        // Mod operators
         code = this._convertModOperatorsToWGSL(code);
+
+        // Const
+        code = this._convertConstToWGSL(code);
+
+        // Inner functions
+        code = this._convertInnerFunctionsToWGSL(code);
 
         // Out paramters
         code = this._convertOutParametersToWGSL(code);

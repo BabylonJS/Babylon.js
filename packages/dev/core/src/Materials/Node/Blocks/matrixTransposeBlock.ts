@@ -48,7 +48,7 @@ export class MatrixTransposeBlock extends NodeMaterialBlock {
         const output = this.output;
         const input = this.input;
 
-        state.compilationString += state._declareOutput(output) + `${output.associatedVariableName} = transpose(${input.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = transpose(${input.associatedVariableName});\n`;
 
         return this;
     }
