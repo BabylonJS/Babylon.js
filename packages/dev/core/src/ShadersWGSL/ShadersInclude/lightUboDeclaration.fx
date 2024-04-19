@@ -21,33 +21,33 @@ var<uniform> light{X} : Light{X};
 
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform textureProjectionMatrix{X}: mat4x4f;
-	uniform projectionLightSampler{X}: sampler;
+	var projectionLightSampler{X}: sampler;
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
-		uniform lightMatrix: mat4x4f{X}[SHADOWCSMNUM_CASCADES{X}];
-		uniform viewFrustumZ: f32{X}[SHADOWCSMNUM_CASCADES{X}];
-        uniform frustumLengths: f32{X}[SHADOWCSMNUM_CASCADES{X}];
-        uniform cascadeBlendFactor: f32{X};
+		uniform lightMatrix{X}: mat4x4f[SHADOWCSMNUM_CASCADES{X}];
+		uniform viewFrustumZ{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+        uniform frustumLengths{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+        uniform cascadeBlendFactor{X}: f32;
 
-		varying vPositionFromLight: vec4f{X}[SHADOWCSMNUM_CASCADES{X}];
-		varying vDepthMetric: f32{X}[SHADOWCSMNUM_CASCADES{X}];
-		varying vPositionFromCamera: vec4f{X};
+		varying vPositionFromLight{X}: vec4f[SHADOWCSMNUM_CASCADES{X}];
+		varying vDepthMetric{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+		varying vPositionFromCamera{X}: vec4f;
 
 		#if defined(SHADOWPCSS{X})
-			uniform highp sampler2DArrayShadow shadowSampler{X};
+			var highp sampler2DArrayShadow shadowSampler{X};
 			uniform highp sampler2DArray depthSampler{X};
-            uniform lightSizeUVCorrection: vec2f{X}[SHADOWCSMNUM_CASCADES{X}];
-            uniform depthCorrection: f32{X}[SHADOWCSMNUM_CASCADES{X}];
-            uniform penumbraDarkness: f32{X};
+            uniform lightSizeUVCorrection{X}: vec2f[SHADOWCSMNUM_CASCADES{X}];
+            uniform depthCorrection{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+            uniform penumbraDarkness{X}: f32;
 		#elif defined(SHADOWPCF{X})
-			uniform highp sampler2DArrayShadow shadowSampler{X};
+			var highp sampler2DArrayShadow shadowSampler{X};
 		#else
-			uniform highp sampler2DArray shadowSampler{X};
+			var highp sampler2DArray shadowSampler{X};
 		#endif
 
         #ifdef SHADOWCSMDEBUG{X}
-            const vCascadeColorsMultiplier: vec3f{X}[8] = vec3[8]
+            const vCascadeColorsMultiplier{X}: vec3f[8] = vec3f[8]
             (
                 vec3 ( 1.5, 0.0, 0.0 ),
                 vec3 ( 0.0, 1.5, 0.0 ),
@@ -58,31 +58,31 @@ var<uniform> light{X} : Light{X};
                 vec3 ( 0.0, 1.0, 5.5 ),
                 vec3 ( 0.5, 3.5, 0.75 )
             );
-            var shadowDebug: vec3f{X};
+            var shadowDebug{X}: vec3f;
         #endif
 
         #ifdef SHADOWCSMUSESHADOWMAXZ{X}
-            var index: i32{X} = -1;
+            var index{X}: i32 = -1;
         #else
-            var index: i32{X} = SHADOWCSMNUM_CASCADES{X} - 1;
+            var index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
         #endif
 
-        var diff: f32{X} = 0.;
+        var diff{X}: f32 = 0.;
 	#elif defined(SHADOWCUBE{X})
-		uniform shadowSampler{X}: sampler;		
+		var shadowSampler{X}: sampler;		
 	#else
-		varying vPositionFromLight: vec4f{X};
-		varying vDepthMetric: f32{X};
+		varying vPositionFromLight{X}: vec4f;
+		varying vDepthMetric{X}: f32;
 
 		#if defined(SHADOWPCSS{X})
-			uniform shadowSampler{X}: sampler;
-			uniform depthSampler{X}: sampler;
+			var shadowSampler{X}: sampler;
+			var depthSampler{X}: sampler;
 		#elif defined(SHADOWPCF{X})
-			uniform shadowSampler{X}: sampler;
+			var shadowSampler{X}: sampler;
 		#else
-			uniform shadowSampler{X}: sampler;
+			var shadowSampler{X}: sampler;
 		#endif
-		uniform lightMatrix: mat4x4f{X};
+		uniform lightMatrix{X}: mat4x4f;
 	#endif
 #endif
 

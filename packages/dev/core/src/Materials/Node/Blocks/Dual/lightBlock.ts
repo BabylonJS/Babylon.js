@@ -314,15 +314,11 @@ export class LightBlock extends NodeMaterialBlock {
 
         const comments = `//${this.name}`;
 
-        if (isWGSL) {
-            this._injectUBODeclaration(state);
-        }
-
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
             this._injectVertexCode(state);
 
-            return;
+            return; //#KLCBNM#1
         }
 
         if (this.generateOnlyFragmentCode) {
@@ -358,9 +354,7 @@ export class LightBlock extends NodeMaterialBlock {
             replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
         });
 
-        if (!isWGSL) {
-            this._injectUBODeclaration(state);
-        }
+        this._injectUBODeclaration(state);
 
         // Code
         if (this._lightId === 0) {
