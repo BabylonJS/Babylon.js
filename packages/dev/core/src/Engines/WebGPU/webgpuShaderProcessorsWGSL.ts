@@ -32,6 +32,8 @@ import "../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions";
 import "../../ShadersWGSL/ShadersInclude/lightFragment";
 import "../../ShadersWGSL/ShadersInclude/lightUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/shadowsVertex";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";

@@ -268,72 +268,26 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         if (this.light) {
-            // state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
-            //     replaceStrings: [
-            //         { search: /{X}/g, replace: this._lightId.toString() },
-            //         { search: /worldPos/g, replace: worldPos.associatedVariableName },
-            //     ],
-            // });
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                replaceStrings: [
+                    { search: /{X}/g, replace: this._lightId.toString() },
+                    { search: /worldPos/g, replace: worldPos.associatedVariableName },
+                ],
+            });
         } else {
             state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldPos.associatedVariableName};\n`;
             if (this.view.isConnected) {
                 state.compilationString += `${state._declareLocalVar("view", NodeMaterialBlockConnectionPointTypes.Matrix)} = ${this.view.associatedVariableName};\n`;
             }
-            // state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
-            //     repeatKey: "maxSimultaneousLights",
-            // });
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+            });
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
-
-        const isWGSL = state.shaderLanguage === ShaderLanguage.WGSL;
-        const addF = isWGSL ? "f" : "";
-
-        if (state.target !== NodeMaterialBlockTargets.Fragment) {
-            // Vertex
-            this._injectVertexCode(state);
-
-            return;
-        }
-
-        if (this.generateOnlyFragmentCode) {
-            state.sharedData.dynamicUniformBlocks.push(this);
-        }
-
-        // Fragment
-        const accessor = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
-        state.sharedData.forcedBindableBlocks.push(this);
-        state.sharedData.blocksWithDefines.push(this);
-
+    private _injectUBODeclaration(state: NodeMaterialBuildState) {
         const comments = `//${this.name}`;
-        const worldPos = this.worldPosition;
 
-        let worldPosVariableName = worldPos.associatedVariableName;
-        if (this.generateOnlyFragmentCode) {
-            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction("light_globalworldpos", `${state._declareLocalVar(worldPosVariableName, NodeMaterialBlockConnectionPointTypes.Vector3)};\n`, comments);
-            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\n`;
-
-            // state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
-            //     repeatKey: "maxSimultaneousLights",
-            //     substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
-            // });
-        } else {
-            worldPosVariableName = accessor + "v_" + worldPosVariableName + ".xyz";
-        }
-
-        state._emitFunctionFromInclude("helperFunctions", comments);
-
-        state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
-        });
-
-        /*      state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
-        });
-*/
         if (!this.light) {
             // Emit for all lights
             state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
@@ -349,6 +303,63 @@ export class LightBlock extends NodeMaterialBlock {
                 },
                 this._lightId.toString()
             );
+        }
+    }
+
+    protected _buildBlock(state: NodeMaterialBuildState) {
+        super._buildBlock(state);
+
+        const isWGSL = state.shaderLanguage === ShaderLanguage.WGSL;
+        const addF = isWGSL ? "f" : "";
+
+        const comments = `//${this.name}`;
+
+        if (isWGSL) {
+            this._injectUBODeclaration(state);
+        }
+
+        if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            // Vertex
+            this._injectVertexCode(state);
+
+            return;
+        }
+
+        if (this.generateOnlyFragmentCode) {
+            state.sharedData.dynamicUniformBlocks.push(this);
+        }
+        // Fragment
+        const accessor = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+        state.sharedData.forcedBindableBlocks.push(this);
+        state.sharedData.blocksWithDefines.push(this);
+        const worldPos = this.worldPosition;
+
+        let worldPosVariableName = worldPos.associatedVariableName;
+        if (this.generateOnlyFragmentCode) {
+            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction("light_globalworldpos", `${state._declareLocalVar(worldPosVariableName, NodeMaterialBlockConnectionPointTypes.Vector3)};\n`, comments);
+            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\n`;
+
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
+            });
+        } else {
+            worldPosVariableName = accessor + "v_" + worldPosVariableName + ".xyz";
+        }
+
+        state._emitFunctionFromInclude("helperFunctions", comments);
+
+        state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+        });
+
+        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+        });
+
+        if (!isWGSL) {
+            this._injectUBODeclaration(state);
         }
 
         // Code
