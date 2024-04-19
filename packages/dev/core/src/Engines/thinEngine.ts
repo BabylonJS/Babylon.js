@@ -1885,8 +1885,10 @@ export class ThinEngine extends AbstractEngine {
         }
     }
 
-    /** @internal */
-    public _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
+    /**
+     * @internal
+     */
+    public override _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
         return _getGlobalDefines(defines, this.isNDCHalfZRange, this.useReverseDepthBuffer, this.useExactSrgbConversions);
     }
 
@@ -1935,6 +1937,7 @@ export class ThinEngine extends AbstractEngine {
 
             return compiledEffect;
         }
+        _stateObject._context = this._gl;
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
