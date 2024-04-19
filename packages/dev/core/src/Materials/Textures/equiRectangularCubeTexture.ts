@@ -114,7 +114,7 @@ export class EquiRectangularCubeTexture extends BaseTexture {
                 this._size,
                 Constants.TEXTUREFORMAT_RGB,
                 scene.getEngine().getCaps().textureFloat ? Constants.TEXTURETYPE_FLOAT : Constants.TEXTURETYPE_UNSIGNED_INTEGER,
-                this._noMipmap,
+                !this._noMipmap,
                 false,
                 Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
             );

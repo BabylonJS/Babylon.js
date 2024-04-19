@@ -414,6 +414,11 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
 
     this._textureHelper.createGPUTextureForInternalTexture(texture);
 
+    if (format === Constants.TEXTUREFORMAT_RGB) {
+        const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
+        gpuTextureWrapper._originalFormatIsRGB = true;
+    }
+
     if (data) {
         this.updateRawCubeTexture(texture, data, format, type, invertY, compression);
     }
@@ -426,7 +431,7 @@ WebGPUEngine.prototype.createRawCubeTexture = function (
 WebGPUEngine.prototype.updateRawCubeTexture = function (
     texture: InternalTexture,
     bufferView: ArrayBufferView[],
-    format: number,
+    _format: number,
     type: number,
     invertY: boolean,
     compression: Nullable<string> = null
@@ -436,13 +441,15 @@ WebGPUEngine.prototype.updateRawCubeTexture = function (
     texture._compression = compression;
 
     const gpuTextureWrapper = texture._hardwareTexture as WebGPUHardwareTexture;
-    const needConversion = format === Constants.TEXTUREFORMAT_RGB;
+    const needConversion = gpuTextureWrapper._originalFormatIsRGB;
+
+    const faces = [0, 2, 4, 1, 3, 5];
 
     const data = [];
     for (let i = 0; i < bufferView.length; ++i) {
-        let faceData = bufferView[i];
+        let faceData = bufferView[faces[i]];
         if (needConversion) {
-            faceData = _convertRGBtoRGBATextureData(bufferView[i], texture.width, texture.height, type);
+            faceData = _convertRGBtoRGBATextureData(faceData, texture.width, texture.height, type);
         }
         data.push(new Uint8Array(faceData.buffer, faceData.byteOffset, faceData.byteLength));
     }
@@ -490,8 +497,6 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
             return;
         }
 
-        const faces = [0, 2, 4, 1, 3, 5];
-
         if (mipmapGenerator) {
             const needConversion = format === Constants.TEXTUREFORMAT_RGB;
             const mipData = mipmapGenerator(faceDataArrays);
@@ -510,11 +515,7 @@ WebGPUEngine.prototype.createRawCubeTextureFromUrl = function (
                 this._textureHelper.updateCubeTextures(allFaces, gpuTextureWrapper.underlyingResource!, mipSize, mipSize, gpuTextureWrapper.format, invertY, false, 0, 0);
             }
         } else {
-            const allFaces = [];
-            for (let faceIndex = 0; faceIndex < 6; faceIndex++) {
-                allFaces.push(faceDataArrays[faces[faceIndex]]);
-            }
-            this.updateRawCubeTexture(texture, allFaces, format, type, invertY);
+            this.updateRawCubeTexture(texture, faceDataArrays, format, type, invertY);
         }
 
         texture.isReady = true;
