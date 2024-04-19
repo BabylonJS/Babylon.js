@@ -1936,7 +1936,9 @@ export class ThinEngine extends AbstractEngine {
 
             return compiledEffect;
         }
-        getStateObject(this._gl);
+        if (this._gl) {
+            getStateObject(this._gl);
+        }
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
@@ -2029,8 +2031,10 @@ export class ThinEngine extends AbstractEngine {
      * @returns the new pipeline
      */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        const stateObject = getStateObject(this._gl);
-        stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
+        if (this._gl) {
+            const stateObject = getStateObject(this._gl);
+            stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
+        }
         const context = createPipelineContext(this._gl, shaderProcessingContext) as WebGLPipelineContext;
         context.engine = this;
         return context;
