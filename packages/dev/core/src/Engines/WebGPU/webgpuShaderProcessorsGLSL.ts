@@ -275,7 +275,13 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         return uniformBuffer;
     }
 
-    public postProcessor(code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine?: AbstractEngine) {
+    public postProcessor(
+        code: string,
+        defines: string[],
+        isFragment: boolean,
+        _processingContext: Nullable<ShaderProcessingContext>,
+        _parameters?: { [key: string]: number | string | boolean | undefined }
+    ): string {
         const hasDrawBuffersExtension = code.search(/#extension.+GL_EXT_draw_buffers.+require/) !== -1;
 
         // Remove extensions

@@ -29,7 +29,7 @@ import {
     _preparePipelineContext,
     _setProgram,
     _executeWhenRenderingStateIsCompiled,
-    _stateObject,
+    getStateObject,
     _createShaderProgram,
 } from "./thinEngine.functions";
 
@@ -456,12 +456,10 @@ export class ThinEngine extends AbstractEngine {
         if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
             this._renderingCanvas.setAttribute("data-engine", versionToLog);
         }
-
-        // update state object
-        _stateObject._context = this._gl;
-        _stateObject._webGLVersion = this._webGLVersion;
-        _stateObject.validateShaderPrograms = this.validateShaderPrograms;
-        _stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
+        const stateObject = getStateObject(this._gl);
+        // update state object with the current engine state
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
     }
 
     protected override _clearEmptyResources(): void {
@@ -1937,7 +1935,7 @@ export class ThinEngine extends AbstractEngine {
 
             return compiledEffect;
         }
-        _stateObject._context = this._gl;
+        getStateObject(this._gl);
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
@@ -1983,8 +1981,9 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        _stateObject._contextWasLost = this._contextWasLost;
-        _stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        const stateObject = getStateObject(this._gl);
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
         return createRawShaderProgram(pipelineContext, vertexCode, fragmentCode, context || this._gl, transformFeedbackVaryings);
     }
 
@@ -2006,10 +2005,10 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
+        const stateObject = getStateObject(this._gl);
         // assure the state object is correct
-        _stateObject._contextWasLost = this._contextWasLost;
-        _stateObject.validateShaderPrograms = this.validateShaderPrograms;
-        _stateObject._webGLVersion = this._webGLVersion;
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
         return createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
     }
 
@@ -2029,8 +2028,9 @@ export class ThinEngine extends AbstractEngine {
      * @returns the new pipeline
      */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        _stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
-        const context = createPipelineContext(shaderProcessingContext) as WebGLPipelineContext;
+        const stateObject = getStateObject(this._gl);
+        stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
+        const context = createPipelineContext(shaderProcessingContext, this._gl) as WebGLPipelineContext;
         context.engine = this;
         return context;
     }
@@ -2070,12 +2070,12 @@ export class ThinEngine extends AbstractEngine {
         transformFeedbackVaryings: Nullable<string[]>,
         _key: string
     ) {
-        _stateObject._contextWasLost = this._contextWasLost;
-        _stateObject.validateShaderPrograms = this.validateShaderPrograms;
-        _stateObject._webGLVersion = this._webGLVersion;
-        _stateObject._createShaderProgramInjection = this._createShaderProgram.bind(this);
-        _stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
-        _stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
+        const stateObject = getStateObject(this._gl);
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        stateObject._createShaderProgramInjection = this._createShaderProgram.bind(this);
+        stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
+        stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
         return _preparePipelineContext(
             pipelineContext as WebGLPipelineContext,
             vertexSourceCode,

@@ -292,7 +292,7 @@ export class Effect implements IDisposable {
         this.name = baseName;
         this._key = key;
         const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
-        let cachedPipeline = getCachedPipeline(pipelineName);
+        let cachedPipeline: IPipelineContext | undefined = undefined;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -320,7 +320,7 @@ export class Effect implements IDisposable {
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
 
-            cachedPipeline = cachedPipeline || options.existingPipelineContext;
+            cachedPipeline = options.existingPipelineContext;
         } else {
             this._engine = <AbstractEngine>engine;
             this.defines = defines == null ? "" : defines;
@@ -335,6 +335,11 @@ export class Effect implements IDisposable {
 
             this._indexParameters = indexParameters;
             this._fallbacks = fallbacks;
+        }
+
+        // Use the cache if we can. For now, WebGL2 only.
+        if (this._engine.shaderPlatformName === "WEBGL2") {
+            cachedPipeline = getCachedPipeline(pipelineName, (this._engine as any)._gl) ?? cachedPipeline;
         }
 
         this._attributeLocationByName = {};
@@ -738,6 +743,7 @@ export class Effect implements IDisposable {
                     existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
                     vertex,
                     fragment,
+                    context: engine.shaderPlatformName === "WEBGL2" ? (engine as any)._gl : undefined,
                     rebuildRebind: (
                         vertexSourceCode: string,
                         fragmentSourceCode: string,

@@ -337,7 +337,17 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
 
     // Post processing
     if (options.processor.postProcessor) {
-        preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        preparedSourceCode = options.processor.postProcessor(
+            preparedSourceCode,
+            defines,
+            options.isFragment,
+            options.processingContext,
+            engine
+                ? {
+                      drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
+                  }
+                : {}
+        );
     }
 
     // Inline functions tagged with #define inline
@@ -364,7 +374,17 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
 
     // Post processing
     if (options.processor?.postProcessor) {
-        preparedSourceCode = options.processor.postProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext, engine);
+        preparedSourceCode = options.processor.postProcessor(
+            preparedSourceCode,
+            defines,
+            options.isFragment,
+            options.processingContext,
+            engine
+                ? {
+                      drawBuffersExtensionDisabled: engine.getCaps().drawBuffersExtension ? false : true,
+                  }
+                : {}
+        );
     }
 
     // Inline functions tagged with #define inline

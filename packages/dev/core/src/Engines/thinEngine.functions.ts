@@ -2,13 +2,12 @@ import type { Nullable } from "../types";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import { _WarnImport } from "core/Misc/devTools";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
 /**
  * @internal
  */
-export const _stateObject: {
+export interface IThinEngineStateObject {
     _contextWasLost?: boolean;
     validateShaderPrograms?: boolean;
     _webGLVersion: number;
@@ -17,9 +16,25 @@ export const _stateObject: {
     _createShaderProgramInjection?: typeof _createShaderProgram;
     createRawShaderProgramInjection?: typeof createRawShaderProgram;
     createShaderProgramInjection?: typeof createShaderProgram;
-} = {
-    _webGLVersion: 2,
-};
+    cachedPipelines: { [name: string]: IPipelineContext };
+}
+/**
+ * @internal
+ */
+const _stateObject: WeakMap<WebGLContext, IThinEngineStateObject> = new WeakMap();
+
+export function getStateObject(context: WebGLContext): IThinEngineStateObject {
+    let state = _stateObject.get(context);
+    if (!state) {
+        state = {
+            _webGLVersion: context instanceof WebGL2RenderingContext ? 2 : 1,
+            _context: context,
+            cachedPipelines: {},
+        };
+        _stateObject.set(context, state);
+    }
+    return state;
+}
 
 export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
 /**
@@ -36,14 +51,17 @@ export function createRawShaderProgram(
     pipelineContext: IPipelineContext,
     vertexCode: string,
     fragmentCode: string,
-    context: WebGLRenderingContext,
+    context: WebGLContext,
     transformFeedbackVaryings: Nullable<string[]>,
-    _createShaderProgramInjection: typeof _createShaderProgram = _stateObject._createShaderProgramInjection ?? _createShaderProgram
+    _createShaderProgramInjection?: typeof _createShaderProgram
 ): WebGLProgram {
-    // context = context || gl;
+    const stateObject = getStateObject(context);
+    if (!_createShaderProgramInjection) {
+        _createShaderProgramInjection = stateObject._createShaderProgramInjection ?? _createShaderProgram;
+    }
 
-    const vertexShader = _compileRawShader(vertexCode, "vertex", context, _stateObject._contextWasLost);
-    const fragmentShader = _compileRawShader(fragmentCode, "fragment", context, _stateObject._contextWasLost);
+    const vertexShader = _compileRawShader(vertexCode, "vertex", context, stateObject._contextWasLost);
+    const fragmentShader = _compileRawShader(fragmentCode, "fragment", context, stateObject._contextWasLost);
 
     return _createShaderProgramInjection(
         pipelineContext as WebGLPipelineContext,
@@ -51,7 +69,7 @@ export function createRawShaderProgram(
         fragmentShader,
         context,
         transformFeedbackVaryings,
-        _stateObject.validateShaderPrograms
+        stateObject.validateShaderPrograms
     );
 }
 
@@ -73,11 +91,15 @@ export function createShaderProgram(
     defines: Nullable<string>,
     context: WebGLContext,
     transformFeedbackVaryings: Nullable<string[]> = null,
-    _createShaderProgramInjection: typeof _createShaderProgram = _stateObject._createShaderProgramInjection ?? _createShaderProgram
+    _createShaderProgramInjection?: typeof _createShaderProgram
 ): WebGLProgram {
-    const shaderVersion = _stateObject._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-    const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, _stateObject._contextWasLost);
-    const fragmentShader = _compileShader(fragmentCode, "fragment", defines, shaderVersion, context, _stateObject._contextWasLost);
+    const stateObject = getStateObject(context);
+    if (!_createShaderProgramInjection) {
+        _createShaderProgramInjection = stateObject._createShaderProgramInjection ?? _createShaderProgram;
+    }
+    const shaderVersion = stateObject._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
+    const vertexShader = _compileShader(vertexCode, "vertex", defines, shaderVersion, context, stateObject._contextWasLost);
+    const fragmentShader = _compileShader(fragmentCode, "fragment", defines, shaderVersion, context, stateObject._contextWasLost);
 
     return _createShaderProgramInjection(
         pipelineContext as WebGLPipelineContext,
@@ -85,21 +107,23 @@ export function createShaderProgram(
         fragmentShader,
         context,
         transformFeedbackVaryings,
-        _stateObject.validateShaderPrograms
+        stateObject.validateShaderPrograms
     );
 }
 
 /**
  * Creates a new pipeline context. Note, make sure to attach an engine instance to the created context
  * @param _shaderProcessingContext defines the shader processing context used during the processing if available
+ * @param context defines the webGL context to use (if not set, the current one will be used)
  * @returns the new pipeline
  */
-export function createPipelineContext(_shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
+export function createPipelineContext(_shaderProcessingContext: Nullable<ShaderProcessingContext>, context: WebGLContext): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
-    if (_stateObject.parallelShaderCompile) {
+    const stateObject = getStateObject(context);
+    if (stateObject.parallelShaderCompile) {
         pipelineContext.isParallelCompiled = true;
     }
-    pipelineContext.context = _stateObject._context;
+    pipelineContext.context = stateObject._context;
     return pipelineContext;
 }
 
@@ -213,9 +237,16 @@ export function _preparePipelineContext(
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
     _key: string = "",
-    createRawShaderProgramInjection: typeof createRawShaderProgram = _stateObject.createRawShaderProgramInjection ?? createRawShaderProgram,
-    createShaderProgramInjection: typeof createShaderProgram = _stateObject.createShaderProgramInjection ?? createShaderProgram
+    createRawShaderProgramInjection?: typeof createRawShaderProgram,
+    createShaderProgramInjection?: typeof createShaderProgram
 ) {
+    const stateObject = getStateObject((pipelineContext as WebGLPipelineContext).context!);
+    if (!createRawShaderProgramInjection) {
+        createRawShaderProgramInjection = stateObject.createRawShaderProgramInjection ?? createRawShaderProgram;
+    }
+    if (!createShaderProgramInjection) {
+        createShaderProgramInjection = stateObject.createShaderProgramInjection ?? createShaderProgram;
+    }
     const webGLRenderingState = pipelineContext as WebGLPipelineContext;
 
     if (createAsRaw) {
