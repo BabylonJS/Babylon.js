@@ -30,6 +30,7 @@ import {
     _setProgram,
     _executeWhenRenderingStateIsCompiled,
     _stateObject,
+    _createShaderProgram,
 } from "./thinEngine.functions";
 
 import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
@@ -2069,6 +2070,9 @@ export class ThinEngine extends AbstractEngine {
         _stateObject._contextWasLost = this._contextWasLost;
         _stateObject.validateShaderPrograms = this.validateShaderPrograms;
         _stateObject._webGLVersion = this._webGLVersion;
+        _stateObject._createShaderProgramInjection = this._createShaderProgram.bind(this);
+        _stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
+        _stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
         return _preparePipelineContext(
             pipelineContext as WebGLPipelineContext,
             vertexSourceCode,
@@ -2079,10 +2083,18 @@ export class ThinEngine extends AbstractEngine {
             rebuildRebind,
             defines,
             transformFeedbackVaryings,
-            _key,
-            this.createRawShaderProgram.bind(this),
-            this.createShaderProgram.bind(this)
+            _key
         );
+    }
+
+    protected _createShaderProgram(
+        pipelineContext: WebGLPipelineContext,
+        vertexShader: WebGLShader,
+        fragmentShader: WebGLShader,
+        context: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): WebGLProgram {
+        return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
     }
 
     /**
