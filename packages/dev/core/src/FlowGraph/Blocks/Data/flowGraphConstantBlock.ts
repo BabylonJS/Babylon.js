@@ -29,14 +29,14 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphConstantBlockConfiguration<T>
+        public override config: IFlowGraphConstantBlockConfiguration<T>
     ) {
         super(config);
 
         this.output = this.registerDataOutput("output", getRichTypeFromValue(config.value));
     }
 
-    public _updateOutputs(context: FlowGraphContext): void {
+    public override _updateOutputs(context: FlowGraphContext): void {
         this.output.setValue(this.config.value, context);
     }
 
@@ -44,7 +44,7 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
      * Gets the class name of this block
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGConstantBlock";
     }
 
@@ -53,7 +53,10 @@ export class FlowGraphConstantBlock<T> extends FlowGraphBlock {
      * @param serializationObject the object to serialize to
      * @param valueSerializeFunction the function to use to serialize the value
      */
-    public serialize(serializationObject: any = {}, valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction) {
+    public override serialize(
+        serializationObject: any = {},
+        valueSerializeFunction: (key: string, value: any, serializationObject: any) => any = defaultValueSerializationFunction
+    ) {
         super.serialize(serializationObject);
         valueSerializeFunction("value", this.config.value, serializationObject.config);
     }

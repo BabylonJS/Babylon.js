@@ -19,7 +19,7 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
         super(props);
     }
 
-    render() {
+    override render() {
         const controls = this.props.controls;
 
         return (

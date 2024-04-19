@@ -18,7 +18,7 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
         super(props);
     }
 
-    public render() {
+    public override render() {
         let divClassName = this.props.altStyle ? `command-button-alt${this.props.disabled ? "-disabled" : ""}${this.props.isActive ? "-" : ""}` : `command-button`;
 
         let iconClassName = `command-button-icon `;

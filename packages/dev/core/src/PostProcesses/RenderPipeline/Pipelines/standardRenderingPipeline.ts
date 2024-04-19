@@ -1630,7 +1630,7 @@ export class StandardRenderingPipeline extends PostProcessRenderPipeline impleme
     /**
      * Dispose of the pipeline and stop all post processes
      */
-    public dispose(): void {
+    public override dispose(): void {
         this._disposePostProcesses();
 
         this._scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this._name, this._cameras);

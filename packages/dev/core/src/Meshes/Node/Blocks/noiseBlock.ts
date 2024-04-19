@@ -30,7 +30,7 @@ export class NoiseBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NoiseBlock";
     }
 
@@ -198,7 +198,7 @@ export class NoiseBlock extends NodeGeometryBlock {
         return (1.0 - rmd) * sum + rmd * sum2;
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         this.output._storedFunction = (state) => {
             const position = state.getContextualValue(NodeGeometryContextualSources.Positions) as Vector3;
             const octaves = this.octaves.getConnectedValue(state);

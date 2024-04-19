@@ -74,7 +74,7 @@ export class SearchBoxComponent extends React.Component<ISearchBoxComponentProps
         }
     }
 
-    render() {
+    override render() {
         if (!this.state.isVisible) {
             return null;
         }

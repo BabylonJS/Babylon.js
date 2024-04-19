@@ -39,7 +39,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "IcoSphereBlock";
     }
 
@@ -85,7 +85,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.radius.isConnected) {
             const radiusInput = new GeometryInputBlock("Radius");
             radiusInput.value = 0.2;
@@ -93,7 +93,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const options: {
             radius?: number;
             radiusX?: number;
@@ -128,7 +128,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
     }
@@ -137,7 +137,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
@@ -145,7 +145,7 @@ export class IcoSphereBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;

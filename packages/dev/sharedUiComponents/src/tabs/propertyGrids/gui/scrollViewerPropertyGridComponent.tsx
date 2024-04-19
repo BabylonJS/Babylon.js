@@ -19,7 +19,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
         super(props);
     }
 
-    render() {
+    override render() {
         const scrollViewer = this.props.scrollViewer;
 
         return (

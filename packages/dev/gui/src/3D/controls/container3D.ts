@@ -104,7 +104,7 @@ export class Container3D extends Control3D {
      */
     protected _arrangeChildren() {}
 
-    protected _createNode(scene: Scene): Nullable<TransformNode> {
+    protected override _createNode(scene: Scene): Nullable<TransformNode> {
         return new TransformNode("ContainerNode", scene);
     }
 
@@ -126,14 +126,14 @@ export class Container3D extends Control3D {
         return this;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Container3D";
     }
 
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         for (const control of this._children) {
             control.dispose();
         }

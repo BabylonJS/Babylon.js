@@ -431,7 +431,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "AdvancedDynamicTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AdvancedDynamicTexture";
     }
     /**
@@ -569,7 +569,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Release all resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         const scene = this.getScene();
         if (!scene) {
             return;
@@ -1284,7 +1284,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param attachToMesh defines if the new ADT should be attached to a mesh
      * @returns the clone of the ADT
      */
-    public clone(newName?: string, attachToMesh?: AbstractMesh): AdvancedDynamicTexture {
+    public override clone(newName?: string, attachToMesh?: AbstractMesh): AdvancedDynamicTexture {
         const scene = this.getScene();
 
         if (!scene) {
@@ -1529,7 +1529,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Scales the texture
      * @param ratio the scale factor to apply to both width and height
      */
-    public scale(ratio: number): void {
+    public override scale(ratio: number): void {
         super.scale(ratio);
         this.markAsDirty();
     }
@@ -1539,7 +1539,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param width the new width
      * @param height the new height
      */
-    public scaleTo(width: number, height: number): void {
+    public override scaleTo(width: number, height: number): void {
         super.scaleTo(width, height);
         this.markAsDirty();
     }

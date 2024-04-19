@@ -48,7 +48,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ColorMergerBlock";
     }
 
@@ -109,7 +109,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this.rgbOut;
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "rgb ") {
             return "rgbIn";
         }
@@ -121,7 +121,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return "." + swizzle.substr(0, len);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const rInput = this.r;
@@ -167,7 +167,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.rSwizzle = this.rSwizzle;
@@ -178,7 +178,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.rSwizzle = serializationObject.rSwizzle ?? "r";
@@ -187,7 +187,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         this.aSwizzle = serializationObject.aSwizzle ?? "a";
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.rSwizzle = "${this.rSwizzle}";\n`;
         codeString += `${this._codeVariableName}.gSwizzle = "${this.gSwizzle}";\n`;

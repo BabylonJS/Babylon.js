@@ -18,7 +18,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
     protected _vertexIsGLES3: boolean = false;
     protected _fragmentIsGLES3: boolean = false;
 
-    public shaderLanguage = ShaderLanguage.GLSL;
+    public override shaderLanguage = ShaderLanguage.GLSL;
     public parseGLES3 = true;
     public attributeKeywordName: string | undefined;
     public varyingVertexKeywordName: string | undefined;

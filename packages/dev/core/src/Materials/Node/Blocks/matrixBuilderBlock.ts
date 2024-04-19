@@ -29,7 +29,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MatrixBuilder";
     }
 
@@ -68,7 +68,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.row0.isConnected) {
             const row0Input = new InputBlock("row0");
             row0Input.value = new Vector4(1, 0, 0, 0);
@@ -94,7 +94,7 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];

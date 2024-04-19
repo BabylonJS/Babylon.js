@@ -46,7 +46,7 @@ export class BoneAxesViewer extends AxesViewer {
     /**
      * Force the viewer to update
      */
-    public update(): void {
+    public override update(): void {
         if (!this.mesh || !this.bone) {
             return;
         }
@@ -61,7 +61,7 @@ export class BoneAxesViewer extends AxesViewer {
     }
 
     /** Releases resources */
-    public dispose() {
+    public override dispose() {
         if (this.mesh) {
             this.mesh = null;
             this.bone = null;

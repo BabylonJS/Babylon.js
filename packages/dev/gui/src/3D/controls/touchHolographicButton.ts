@@ -95,7 +95,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Gets the mesh used to render this control
      */
-    public get mesh(): Nullable<AbstractMesh> {
+    public override get mesh(): Nullable<AbstractMesh> {
         return this._backPlate as AbstractMesh;
     }
 
@@ -287,7 +287,7 @@ export class TouchHolographicButton extends TouchButton3D {
         });
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "TouchHolographicButton";
     }
 
@@ -322,7 +322,7 @@ export class TouchHolographicButton extends TouchButton3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         this.name = this.name ?? "TouchHolographicButton";
         const collisionMesh = CreateBox(
             `${this.name}_collisionMesh`,
@@ -394,7 +394,7 @@ export class TouchHolographicButton extends TouchButton3D {
         return tn;
     }
 
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {
+    protected override _applyFacade(facadeTexture: AdvancedDynamicTexture) {
         this._plateMaterial.emissiveTexture = facadeTexture;
         this._plateMaterial.opacityTexture = facadeTexture;
         this._plateMaterial.diffuseColor = new Color3(0.4, 0.4, 0.4);
@@ -416,7 +416,7 @@ export class TouchHolographicButton extends TouchButton3D {
         this._plateMaterial.specularColor = Color3.Black();
     }
 
-    protected _onToggle(newState: boolean) {
+    protected override _onToggle(newState: boolean) {
         if (this._backMaterial) {
             if (newState) {
                 this._backMaterial.albedoColor = this._backplateToggledColor;
@@ -428,7 +428,7 @@ export class TouchHolographicButton extends TouchButton3D {
         super._onToggle(newState);
     }
 
-    protected _affectMaterial(mesh: Mesh) {
+    protected override _affectMaterial(mesh: Mesh) {
         if (this._shareMaterials) {
             // Back
             if (!this._host._touchSharedMaterials["backFluentMaterial"]) {
@@ -467,7 +467,7 @@ export class TouchHolographicButton extends TouchButton3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose(); // will dispose main mesh ie. back plate
 
         this._disposeTooltip();

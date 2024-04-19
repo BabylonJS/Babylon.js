@@ -56,7 +56,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryTextureBlock";
     }
 
@@ -157,7 +157,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         });
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this._data) {
             this.texture._storedValue = null;
             return;
@@ -176,7 +176,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.width = this._width;
@@ -189,7 +189,7 @@ export class GeometryTextureBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this._width = serializationObject.width;

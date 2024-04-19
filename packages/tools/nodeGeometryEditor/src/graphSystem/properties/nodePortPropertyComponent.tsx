@@ -21,7 +21,7 @@ export class NodePortPropertyTabComponent extends React.Component<IFrameNodePort
         this.props.stateManager.onExposePortOnFrameObservable.notifyObservers(this.props.nodePort.node);
     }
 
-    render() {
+    override render() {
         const info = this.props.nodePort.hasLabel() ? (
             <>
                 {this.props.nodePort.hasLabel() && (

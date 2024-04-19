@@ -24,7 +24,7 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryRotate2dBlock";
     }
 
@@ -49,7 +49,7 @@ export class GeometryRotate2dBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this.angle.isConnected || !this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;

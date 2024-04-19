@@ -194,13 +194,13 @@ export class BaseSlider extends Control {
      * Creates a new BaseSlider
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
 
         this.isPointerBlocker = true;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "BaseSlider";
     }
 
@@ -300,7 +300,7 @@ export class BaseSlider extends Control {
         this.value = this._step ? Math.round(value / this._step) * this._step : value;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
@@ -317,7 +317,7 @@ export class BaseSlider extends Control {
         return true;
     }
 
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+    public override _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         // Only listen to pointer move events coming from the last pointer to click on the element (To support dual vr controller interaction)
         if (pointerId != this._lastPointerDownId) {
             return;
@@ -330,14 +330,14 @@ export class BaseSlider extends Control {
         super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public override _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         this._pointerIsDown = false;
 
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
     }
 
-    public _onCanvasBlur(): void {
+    public override _onCanvasBlur(): void {
         this._forcePointerUp();
         super._onCanvasBlur();
     }

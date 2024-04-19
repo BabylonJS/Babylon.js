@@ -238,7 +238,7 @@ export class VideoTexture extends Texture {
      * Get the current class name of the video texture useful for serialization or dynamic coding.
      * @returns "VideoTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VideoTexture";
     }
 
@@ -355,7 +355,7 @@ export class VideoTexture extends Texture {
     /**
      * @internal Internal method to initiate `update`.
      */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         this.update();
     }
 
@@ -418,7 +418,7 @@ export class VideoTexture extends Texture {
      * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
      * @param url New url.
      */
-    public updateURL(url: string): void {
+    public override updateURL(url: string): void {
         this.video.src = url;
         this._currentSrc = url;
     }
@@ -427,14 +427,14 @@ export class VideoTexture extends Texture {
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): VideoTexture {
+    public override clone(): VideoTexture {
         return new VideoTexture(this.name, this._currentSrc!, this.getScene(), this._generateMipMaps, this.invertY, this.samplingMode, this._settings);
     }
 
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this._currentSrc = null;

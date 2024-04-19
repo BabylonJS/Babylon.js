@@ -142,7 +142,7 @@ export class StandardMaterialPropertyGridComponent extends React.Component<IStan
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

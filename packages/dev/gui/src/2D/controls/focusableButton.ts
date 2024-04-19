@@ -26,7 +26,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     /** Observable raised when a key event was processed */
     public onKeyboardEventProcessedObservable = new Observable<IKeyboardEvent>();
 
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
 
         this._unfocusedColor = this.color;
@@ -89,7 +89,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     /**
      * @internal
      */
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!this.isReadOnly) {
             // Clicking on button should focus
             this.focus();
@@ -99,7 +99,7 @@ export class FocusableButton extends Button implements IFocusableControl {
     }
 
     /** @internal */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this.onBlurObservable.clear();

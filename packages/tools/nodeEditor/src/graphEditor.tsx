@@ -89,7 +89,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         return this.appendBlock(newInputBlock);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         window.addEventListener("wheel", this.onWheel, { passive: false });
 
         if (this.props.globalState.hostDocument) {
@@ -110,7 +110,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         this.build();
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         window.removeEventListener("wheel", this.onWheel);
 
         if (this.props.globalState.hostDocument) {
@@ -638,7 +638,7 @@ export class GraphEditor extends React.Component<IGraphEditorProps, IGraphEditor
         }
     };
 
-    render() {
+    override render() {
         return (
             <Portal globalState={this.props.globalState}>
                 <div

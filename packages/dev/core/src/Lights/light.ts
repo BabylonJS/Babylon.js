@@ -465,7 +465,7 @@ export abstract class Light extends Node implements ISortableLight {
      * Returns the string "Light".
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "Light";
     }
 
@@ -477,7 +477,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param fullDetails Supports for multiple levels of logging within scene loading
      * @returns the human readable light info
      */
-    public toString(fullDetails?: boolean): string {
+    public override toString(fullDetails?: boolean): string {
         let ret = "Name: " + this.name;
         ret += ", type: " + ["Point", "Directional", "Spot", "Hemispheric"][this.getTypeID()];
         if (this.animations) {
@@ -489,7 +489,7 @@ export abstract class Light extends Node implements ISortableLight {
     }
 
     /** @internal */
-    protected _syncParentEnabledState() {
+    protected override _syncParentEnabledState() {
         super._syncParentEnabledState();
         if (!this.isDisposed()) {
             this._resyncMeshes();
@@ -500,7 +500,7 @@ export abstract class Light extends Node implements ISortableLight {
      * Set the enabled state of this node.
      * @param value - the new enabled state
      */
-    public setEnabled(value: boolean): void {
+    public override setEnabled(value: boolean): void {
         super.setEnabled(value);
 
         this._resyncMeshes();
@@ -569,7 +569,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         if (this._shadowGenerators) {
             const iterator = this._shadowGenerators.values();
             for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
@@ -624,7 +624,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param newParent The parent of this light, if it has one
      * @returns the new created light
      */
-    public clone(name: string, newParent: Nullable<Node> = null): Nullable<Light> {
+    public override clone(name: string, newParent: Nullable<Node> = null): Nullable<Light> {
         const constructor = Light.GetConstructorFromName(this.getTypeID(), name, this.getScene());
 
         if (!constructor) {

@@ -363,7 +363,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         this._varAlbedoName = material instanceof PBRBaseMaterial ? "surfaceAlbedo" : "baseColor.rgb";
     }
 
-    public prepareDefines(defines: MaterialRSMCreateDefines) {
+    public override prepareDefines(defines: MaterialRSMCreateDefines) {
         defines.RSMCREATE = this._isEnabled;
 
         this._hasProjectionTexture = false;
@@ -378,11 +378,11 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         defines.RSMCREATE_LIGHT_IS_SPOT = isSpot;
     }
 
-    public getClassName() {
+    public override getClassName() {
         return "RSMCreatePluginMaterial";
     }
 
-    public getUniforms() {
+    public override getUniforms() {
         return {
             ubo: [
                 { name: "rsmTextureProjectionMatrix", size: 16, type: "mat4" },
@@ -399,11 +399,11 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         };
     }
 
-    public getSamplers(samplers: string[]) {
+    public override getSamplers(samplers: string[]) {
         samplers.push("rsmTextureProjectionSampler");
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer) {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (!this._isEnabled) {
             return;
         }
@@ -433,7 +433,7 @@ export class RSMCreatePluginMaterial extends MaterialPluginBase {
         }
     }
 
-    public getCustomCode(shaderType: string) {
+    public override getCustomCode(shaderType: string) {
         return shaderType === "vertex"
             ? null
             : {

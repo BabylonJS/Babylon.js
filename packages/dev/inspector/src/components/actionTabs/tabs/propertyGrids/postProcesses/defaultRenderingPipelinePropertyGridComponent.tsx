@@ -29,7 +29,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
         super(props);
     }
 
-    render() {
+    override render() {
         const renderPipeline = this.props.renderPipeline;
 
         const camera = renderPipeline.scene.activeCamera!;

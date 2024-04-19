@@ -1,6 +1,36 @@
 {
-    "fromTag": "7.2.3",
+    "fromTag": "7.3.0",
     "changelog": {
+        "7.3.1": [
+            {
+                "pr": "15005",
+                "title": "Fix unpack for webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15004",
+                "title": "Fix material helper AbstractEngine type",
+                "description": "I encountered a type error after upgrading to 7.2.3. After digging in a little, I saw it was a quick fix from a miss in https://github.com/BabylonJS/Babylon.js/pull/14931.",
+                "author": {
+                    "name": "kinetifex",
+                    "url": "https://github.com/kinetifex"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.3.0": [
             {
                 "pr": "15001",

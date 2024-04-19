@@ -14,10 +14,10 @@ import type { Nullable } from "core/types";
  */
 export class WebXRCompositionLayerWrapper extends WebXRLayerWrapper {
     constructor(
-        public getWidth: () => number,
-        public getHeight: () => number,
-        public readonly layer: XRCompositionLayer,
-        public readonly layerType: WebXRLayerType,
+        public override getWidth: () => number,
+        public override getHeight: () => number,
+        public override readonly layer: XRCompositionLayer,
+        public override readonly layerType: WebXRLayerType,
         public readonly isMultiview: boolean,
         public createRTTProvider: (xrSessionManager: WebXRSessionManager) => WebXRLayerRenderTargetTextureProvider,
         public _originalInternalTexture: Nullable<InternalTexture> = null
@@ -41,7 +41,7 @@ export class WebXRCompositionLayerRenderTargetTextureProvider extends WebXRLayer
     constructor(
         protected readonly _xrSessionManager: WebXRSessionManager,
         protected readonly _xrWebGLBinding: XRWebGLBinding,
-        public readonly layerWrapper: WebXRCompositionLayerWrapper
+        public override readonly layerWrapper: WebXRCompositionLayerWrapper
     ) {
         super(_xrSessionManager.scene, layerWrapper);
         this._compositionLayer = layerWrapper.layer;

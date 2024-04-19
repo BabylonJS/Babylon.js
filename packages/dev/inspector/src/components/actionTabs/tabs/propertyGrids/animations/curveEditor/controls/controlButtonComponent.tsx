@@ -22,7 +22,7 @@ export class ControlButtonComponent extends React.Component<IControlButtonCompon
         this.state = {};
     }
 
-    public render() {
+    public override render() {
         return (
             <div
                 title={this.props.tooltip}

@@ -30,7 +30,7 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryArcTan2Block";
     }
 
@@ -55,7 +55,7 @@ export class GeometryArcTan2Block extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this.x.isConnected || !this.y.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;

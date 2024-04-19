@@ -34,7 +34,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
         this.state = { isExpanded: false, value: this.props.target[this.props.propertyName].clone() };
     }
 
-    shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: { isExpanded: boolean; value: Vector2 }) {
+    override shouldComponentUpdate(nextProps: IVector2LineComponentProps, nextState: { isExpanded: boolean; value: Vector2 }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -88,7 +88,7 @@ export class Vector2LineComponent extends React.Component<IVector2LineComponentP
         this.raiseOnPropertyChanged(store);
     }
 
-    render() {
+    override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (

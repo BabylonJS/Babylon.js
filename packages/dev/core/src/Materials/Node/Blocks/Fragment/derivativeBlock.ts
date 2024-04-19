@@ -29,7 +29,7 @@ export class DerivativeBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DerivativeBlock";
     }
 
@@ -54,7 +54,7 @@ export class DerivativeBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const dx = this._outputs[0];

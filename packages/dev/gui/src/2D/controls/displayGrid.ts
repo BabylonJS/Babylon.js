@@ -154,11 +154,11 @@ export class DisplayGrid extends Control {
      * Creates a new GridDisplayRectangle
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -227,7 +227,7 @@ export class DisplayGrid extends Control {
         context.restore();
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "DisplayGrid";
     }
 }

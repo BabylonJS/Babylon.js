@@ -107,7 +107,7 @@ export class ImageProcessingPostProcess extends PostProcess {
     /**
      * If the post process is supported.
      */
-    public get isSupported(): boolean {
+    public override get isSupported(): boolean {
         const effect = this.getEffect();
         return !effect || effect.isSupported;
     }
@@ -449,7 +449,7 @@ export class ImageProcessingPostProcess extends PostProcess {
      *  "ImageProcessingPostProcess"
      * @returns "ImageProcessingPostProcess"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ImageProcessingPostProcess";
     }
 
@@ -477,7 +477,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         this.updateEffect(defines, uniforms, samplers);
     }
 
-    public dispose(camera?: Camera): void {
+    public override dispose(camera?: Camera): void {
         super.dispose(camera);
 
         if (this._imageProcessingConfiguration && this._imageProcessingObserver) {

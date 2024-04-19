@@ -28,7 +28,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         this.state = { isInPickingMode: false };
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const adt = this.props.texture;
 
         if (this._onControlPickedObserver) {
@@ -62,7 +62,7 @@ export class AdvancedDynamicTextureTreeItemComponent extends React.Component<IAd
         this.setState({ isInPickingMode: !this.state.isInPickingMode });
     }
 
-    render() {
+    override render() {
         return (
             <div className="adtextureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />

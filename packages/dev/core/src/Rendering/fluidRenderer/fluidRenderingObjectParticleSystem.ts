@@ -27,7 +27,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     /**
      * @returns the name of the class
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FluidRenderingObjectParticleSystem";
     }
 
@@ -71,7 +71,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     /**
      * Gets the index buffer (or null if the object is using instancing)
      */
-    public get indexBuffer(): Nullable<DataBuffer> {
+    public override get indexBuffer(): Nullable<DataBuffer> {
         return this._particleSystem.indexBuffer;
     }
 
@@ -101,7 +101,7 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
      * Indicates if the object is ready to be rendered
      * @returns True if everything is ready for the object to be rendered, otherwise false
      */
-    public isReady(): boolean {
+    public override isReady(): boolean {
         return super.isReady() && this._particleSystem.isReady();
     }
 
@@ -116,14 +116,14 @@ export class FluidRenderingObjectParticleSystem extends FluidRenderingObject {
     /**
      * Render the diffuse texture for this object
      */
-    public renderDiffuseTexture(): void {
+    public override renderDiffuseTexture(): void {
         this._originalRender();
     }
 
     /**
      * Releases the ressources used by the class
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this._particleSystem.onBeforeDrawParticlesObservable.remove(this._onBeforeDrawParticleObserver);

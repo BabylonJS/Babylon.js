@@ -20,7 +20,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
         super(props);
     }
 
-    render() {
+    override render() {
         const slider = this.props.slider;
 
         return (

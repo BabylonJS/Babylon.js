@@ -64,7 +64,7 @@ export class MaterialSubSurfaceDefines extends MaterialDefines {
  * Plugin that implements the sub surface component of the PBR material
  */
 export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
-    protected _material: PBRBaseMaterial;
+    protected override _material: PBRBaseMaterial;
 
     private _isRefractionEnabled = false;
     /**
@@ -360,7 +360,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         this._internalMarkScenePrePassDirty = material._dirtyCallbacks[Constants.MATERIAL_PrePassDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
+    public override isReadyForSubMesh(defines: MaterialSubSurfaceDefines, scene: Scene): boolean {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return true;
         }
@@ -391,7 +391,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
+    public override prepareDefinesBeforeAttributes(defines: MaterialSubSurfaceDefines, scene: Scene): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             defines.SUBSURFACE = false;
             defines.SS_DISPERSION = false;
@@ -508,7 +508,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * @param engine defines the engine the material belongs to.
      * @param subMesh the submesh to bind data for
      */
-    public hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override hardBindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
@@ -520,7 +520,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isRefractionEnabled && !this._isTranslucencyEnabled && !this._isScatteringEnabled) {
             return;
         }
@@ -654,13 +654,13 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
      * Fills the list of render target textures.
      * @param renderTargets the list of render targets to update
      */
-    public fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {
+    public override fillRenderTargetTextures(renderTargets: SmartArray<RenderTargetTexture>): void {
         if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
             renderTargets.push(<RenderTargetTexture>this._refractionTexture);
         }
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (this._thicknessTexture === texture) {
             return true;
         }
@@ -684,7 +684,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    public hasRenderTargetTextures(): boolean {
+    public override hasRenderTargetTextures(): boolean {
         if (MaterialFlags.RefractionTextureEnabled && this._refractionTexture && this._refractionTexture.isRenderTarget) {
             return true;
         }
@@ -692,7 +692,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._thicknessTexture) {
             activeTextures.push(this._thicknessTexture);
         }
@@ -706,7 +706,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public getAnimatables(animatables: IAnimatable[]): void {
+    public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._thicknessTexture && this._thicknessTexture.animations && this._thicknessTexture.animations.length > 0) {
             animatables.push(this._thicknessTexture);
         }
@@ -720,7 +720,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public dispose(forceDisposeTextures?: boolean): void {
+    public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             if (this._thicknessTexture) {
                 this._thicknessTexture.dispose();
@@ -736,11 +736,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRSubSurfaceConfiguration";
     }
 
-    public addFallbacks(defines: MaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public override addFallbacks(defines: MaterialSubSurfaceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.SS_SCATTERING) {
             fallbacks.addFallback(currentRank++, "SS_SCATTERING");
         }
@@ -750,7 +750,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public getSamplers(samplers: string[]): void {
+    public override getSamplers(samplers: string[]): void {
         samplers.push(
             "thicknessSampler",
             "refractionIntensitySampler",
@@ -762,7 +762,7 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         );
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+    public override getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vRefractionMicrosurfaceInfos", size: 4, type: "vec4" },

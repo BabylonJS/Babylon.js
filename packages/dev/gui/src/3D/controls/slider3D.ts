@@ -70,7 +70,7 @@ export class Slider3D extends Control3D {
     /**
      * Gets the mesh used to render this control
      */
-    public get mesh(): Nullable<AbstractMesh> {
+    public override get mesh(): Nullable<AbstractMesh> {
         if (this.node) {
             return this._sliderThumb;
         }
@@ -195,7 +195,7 @@ export class Slider3D extends Control3D {
     }
 
     /** Sets a boolean indicating if the control is visible */
-    public set isVisible(value: boolean) {
+    public override set isVisible(value: boolean) {
         if (this._isVisible === value) {
             return;
         }
@@ -206,7 +206,7 @@ export class Slider3D extends Control3D {
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         const sliderBackplate = CreateBox(
             `${this.name}_sliderbackplate`,
             {
@@ -275,7 +275,7 @@ export class Slider3D extends Control3D {
         return sliderBackplate;
     }
 
-    protected _affectMaterial(mesh: AbstractMesh) {
+    protected override _affectMaterial(mesh: AbstractMesh) {
         this._sliderBackplateMaterial = this._sliderBackplateMaterial ?? new MRDLBackplateMaterial(`${this.name}_sliderbackplate_material`, mesh.getScene());
         this._sliderBarMaterial = this._sliderBarMaterial ?? new MRDLSliderBarMaterial(`${this.name}_sliderbar_material`, mesh.getScene());
         this._sliderThumbMaterial = this._sliderThumbMaterial ?? new MRDLSliderThumbMaterial(`${this.name}_sliderthumb_material`, mesh.getScene());
@@ -312,7 +312,7 @@ export class Slider3D extends Control3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this._sliderBar?.dispose();
         this._sliderThumb?.dispose();

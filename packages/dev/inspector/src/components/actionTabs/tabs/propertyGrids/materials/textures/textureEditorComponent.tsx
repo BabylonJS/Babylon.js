@@ -168,7 +168,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this.onPointerDown = this.onPointerDown.bind(this);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._textureCanvasManager = new TextureCanvasManager(
             this.props.texture,
             this.props.window.current!.getWindow()!,
@@ -186,7 +186,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this.addTools(defaultTools);
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         const channelsClone: IChannel[] = [];
         this.state.channels.forEach((channel) => channelsClone.push({ ...channel }));
         this._textureCanvasManager.channels = channelsClone;
@@ -194,7 +194,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._textureCanvasManager.mipLevel = this.state.mipLevel;
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._textureCanvasManager.dispose();
     }
 
@@ -288,7 +288,7 @@ export class TextureEditorComponent extends React.Component<ITextureEditorCompon
         this._textureCanvasManager.upload(file);
     }
 
-    render() {
+    override render() {
         const currentTool: ITool | undefined = this.state.tools[this.state.activeToolIndex];
         let cursor = `initial`;
         if (!this._textureCanvasManager?.toolInteractionEnabled()) {

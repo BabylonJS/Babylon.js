@@ -466,7 +466,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Get the class name
      * @returns Class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MeshDebugPluginMaterial";
     }
 
@@ -499,7 +499,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param scene Scene
      * @param mesh Mesh associated with material
      */
-    public prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
+    public override prepareDefines(defines: MeshDebugDefines, scene: Scene, mesh: AbstractMesh) {
         if (
             (this._mode == MeshDebugMode.VERTICES || this._mode == MeshDebugMode.TRIANGLES || this._mode == MeshDebugMode.TRIANGLES_VERTICES) &&
             !mesh.isVerticesDataPresent("dbg_initialPass")
@@ -519,7 +519,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Get the shader attributes
      * @param attributes Array of attributes
      */
-    public getAttributes(attributes: string[]) {
+    public override getAttributes(attributes: string[]) {
         attributes.push("dbg_initialPass");
     }
 
@@ -527,7 +527,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Get the shader uniforms
      * @returns Uniforms
      */
-    public getUniforms() {
+    public override getUniforms() {
         return {
             ubo: [
                 { name: "dbg_shadedDiffuseColor", size: 3, type: "vec3" },
@@ -548,7 +548,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * Bind the uniform buffer
      * @param uniformBuffer Uniform buffer
      */
-    public bindForSubMesh(uniformBuffer: UniformBuffer): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer): void {
         if (!this._isEnabled) {
             return;
         }
@@ -568,7 +568,7 @@ export class MeshDebugPluginMaterial extends MaterialPluginBase {
      * @param shaderType "vertex" or "fragment"
      * @returns Shader code
      */
-    public getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    public override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         return shaderType === "vertex"
             ? {
                   CUSTOM_VERTEX_DEFINITIONS: vertexDefinitions,

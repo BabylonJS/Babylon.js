@@ -14,7 +14,7 @@ export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
      * @param layer is the layer to be wrapped.
      * @returns a new WebXRLayerWrapper wrapping the provided XRWebGLLayer.
      */
-    constructor(public readonly layer: XRWebGLLayer) {
+    constructor(public override readonly layer: XRWebGLLayer) {
         super(
             () => layer.framebufferWidth,
             () => layer.framebufferHeight,
@@ -31,14 +31,14 @@ export class WebXRWebGLLayerWrapper extends WebXRLayerWrapper {
  */
 export class WebXRWebGLLayerRenderTargetTextureProvider extends WebXRLayerRenderTargetTextureProvider {
     // The dimensions will always be defined in this class.
-    protected _framebufferDimensions: { framebufferWidth: number; framebufferHeight: number };
+    protected override _framebufferDimensions: { framebufferWidth: number; framebufferHeight: number };
     private _rtt: Nullable<RenderTargetTexture>;
     private _framebuffer: WebGLFramebuffer;
     private _layer: XRWebGLLayer;
 
     constructor(
         scene: Scene,
-        public readonly layerWrapper: WebXRWebGLLayerWrapper
+        public override readonly layerWrapper: WebXRWebGLLayerWrapper
     ) {
         super(scene, layerWrapper);
         this._layer = layerWrapper.layer;

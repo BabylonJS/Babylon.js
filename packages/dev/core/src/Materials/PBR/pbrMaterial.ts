@@ -22,29 +22,29 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * PBRMaterialTransparencyMode: No transparency mode, Alpha channel is not use.
      */
-    public static readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
+    public static override readonly PBRMATERIAL_OPAQUE = PBRBaseMaterial.PBRMATERIAL_OPAQUE;
 
     /**
      * PBRMaterialTransparencyMode: Alpha Test mode, pixel are discarded below a certain threshold defined by the alpha cutoff value.
      */
-    public static readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
+    public static override readonly PBRMATERIAL_ALPHATEST = PBRBaseMaterial.PBRMATERIAL_ALPHATEST;
 
     /**
      * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      */
-    public static readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
+    public static override readonly PBRMATERIAL_ALPHABLEND = PBRBaseMaterial.PBRMATERIAL_ALPHABLEND;
 
     /**
      * PBRMaterialTransparencyMode: Pixels are blended (according to the alpha mode) with the already drawn pixels in the current frame buffer.
      * They are also discarded below the alpha cutoff threshold to improve performances.
      */
-    public static readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
+    public static override readonly PBRMATERIAL_ALPHATESTANDBLEND = PBRBaseMaterial.PBRMATERIAL_ALPHATESTANDBLEND;
 
     /**
      * Defines the default value of how much AO map is occluding the analytical lights
      * (point spot...).
      */
-    public static DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
+    public static override DEFAULT_AO_ON_ANALYTICAL_LIGHTS = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS;
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -765,7 +765,7 @@ export class PBRMaterial extends PBRBaseMaterial {
     /**
      * @returns the name of this material class.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRMaterial";
     }
 
@@ -776,7 +776,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param rootUrl defines the root URL to use to load textures
      * @returns cloned material instance
      */
-    public clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBRMaterial {
+    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): PBRMaterial {
         const clone = SerializationHelper.Clone(() => new PBRMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         clone.id = name;
@@ -793,7 +793,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * Serializes this PBR Material.
      * @returns - An object with the serialized material.
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.PBRMaterial";
 
@@ -808,7 +808,7 @@ export class PBRMaterial extends PBRBaseMaterial {
      * @param rootUrl - url for the scene object
      * @returns - PBRMaterial
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): PBRMaterial {
         const material = SerializationHelper.Parse(() => new PBRMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.stencil) {

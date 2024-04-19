@@ -5,6 +5,7 @@
         "baseUrl": "packages",
         "experimentalDecorators": true,
         "noImplicitAny": true,
+        "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedLocals": true,

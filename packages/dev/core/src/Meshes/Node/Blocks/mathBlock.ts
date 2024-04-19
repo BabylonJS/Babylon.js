@@ -84,7 +84,7 @@ export class MathBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MathBlock";
     }
 
@@ -109,7 +109,7 @@ export class MathBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         let func: (state: NodeGeometryBuildState) => any;
         const left = this.left;
         const right = this.right;
@@ -263,7 +263,7 @@ export class MathBlock extends NodeGeometryBlock {
         };
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.operation = BABYLON.MathBlockOperations.${MathBlockOperations[this.operation]};\n`;
         return codeString;
     }
@@ -324,7 +324,7 @@ export class MathBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.operation = this.operation;
@@ -332,7 +332,7 @@ export class MathBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.operation = serializationObject.operation;

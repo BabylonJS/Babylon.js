@@ -32,7 +32,7 @@ export class TransformNodePropertyGridComponent extends React.Component<ITransfo
         super(props);
     }
 
-    render() {
+    override render() {
         const transformNode = this.props.transformNode;
 
         return (

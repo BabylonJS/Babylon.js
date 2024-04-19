@@ -22,7 +22,7 @@ export class TreeItemLabelComponent extends React.Component<ITreeItemLabelCompon
         this.props.onClick();
     }
 
-    render() {
+    override render() {
         return (
             <div className="title" title={this.props.label} onClick={() => this.onClick()}>
                 <div className="titleIcon">

@@ -19,7 +19,7 @@ export class RectanglePropertyGridComponent extends React.Component<IRectanglePr
         super(props);
     }
 
-    render() {
+    override render() {
         const rectangle = this.props.rectangle;
 
         return (

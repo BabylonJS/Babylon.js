@@ -129,7 +129,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         return super.attach();
     }
 
@@ -139,7 +139,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         return super.detach();
     }
 
@@ -156,7 +156,7 @@ export class WebXRImageTracking extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._trackedImages.forEach((trackedImage) => {
             trackedImage.originalBitmap.close();

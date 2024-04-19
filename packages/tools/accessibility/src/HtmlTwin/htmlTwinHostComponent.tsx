@@ -22,7 +22,7 @@ export class HTMLTwinHostComponent extends React.Component<IHTMLTwinHostComponen
         };
     }
 
-    render() {
+    override render() {
         return (
             <div id={"accessibility-host"}>
                 <HTMLTwinSceneTree scene={this.props.scene} options={this._options} />

@@ -99,7 +99,7 @@ export abstract class VolumeBasedPanel extends Container3D {
         super(name);
     }
 
-    protected _arrangeChildren() {
+    protected override _arrangeChildren() {
         this._cellWidth = 0;
         this._cellHeight = 0;
         let rows = 0;

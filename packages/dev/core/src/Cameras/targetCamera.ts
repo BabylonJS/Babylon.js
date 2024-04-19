@@ -163,7 +163,7 @@ export class TargetCamera extends Camera {
      * Store current camera state of the camera (fov, position, rotation, etc..)
      * @returns the camera
      */
-    public storeState(): Camera {
+    public override storeState(): Camera {
         this._storedPosition = this.position.clone();
         this._storedRotation = this.rotation.clone();
         if (this.rotationQuaternion) {
@@ -178,7 +178,7 @@ export class TargetCamera extends Camera {
      * @returns whether it was successful or not
      * @internal
      */
-    public _restoreStateValues(): boolean {
+    public override _restoreStateValues(): boolean {
         if (!super._restoreStateValues()) {
             return false;
         }
@@ -197,7 +197,7 @@ export class TargetCamera extends Camera {
     }
 
     /** @internal */
-    public _initCache() {
+    public override _initCache() {
         super._initCache();
         this._cache.lockedTarget = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         this._cache.rotation = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
@@ -207,7 +207,7 @@ export class TargetCamera extends Camera {
     /**
      * @internal
      */
-    public _updateCache(ignoreParentClass?: boolean): void {
+    public override _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
             super._updateCache();
         }
@@ -231,7 +231,7 @@ export class TargetCamera extends Camera {
 
     // Synchronized
     /** @internal */
-    public _isSynchronizedViewMatrix(): boolean {
+    public override _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronizedViewMatrix()) {
             return false;
         }
@@ -346,7 +346,7 @@ export class TargetCamera extends Camera {
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         const directionMultiplier = this.invertRotation ? -this.inverseRotationSpeed : 1.0;
         const needToMove = this._decideIfNeedsToMove();
         const needToRotate = this.cameraRotation.x || this.cameraRotation.y;
@@ -460,7 +460,7 @@ export class TargetCamera extends Camera {
     private _cachedRotationZ = 0;
     private _cachedQuaternionRotationZ = 0;
     /** @internal */
-    public _getViewMatrix(): Matrix {
+    public override _getViewMatrix(): Matrix {
         if (this.lockedTarget) {
             this.setTarget(this._getLockedTargetPosition()!);
         }
@@ -537,7 +537,7 @@ export class TargetCamera extends Camera {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
+    public override createRigCamera(name: string, cameraIndex: number): Nullable<Camera> {
         if (this.cameraRigMode !== Camera.RIG_MODE_NONE) {
             const rigCamera = new TargetCamera(name, this.position.clone(), this.getScene());
             rigCamera.isRigCamera = true;
@@ -564,7 +564,7 @@ export class TargetCamera extends Camera {
     /**
      * @internal
      */
-    public _updateRigCameras() {
+    public override _updateRigCameras() {
         const camLeft = <TargetCamera>this._rigCameras[0];
         const camRight = <TargetCamera>this._rigCameras[1];
 
@@ -620,7 +620,7 @@ export class TargetCamera extends Camera {
      * Gets the current object class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "TargetCamera";
     }
 }

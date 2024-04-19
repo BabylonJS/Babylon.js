@@ -56,7 +56,7 @@ export class SheenBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("sheenOut");
         state._excludeVariableName("sheenMapData");
         state._excludeVariableName("vSheenColor");
@@ -67,7 +67,7 @@ export class SheenBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "SheenBlock";
     }
 
@@ -99,7 +99,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("SHEEN", true);
@@ -186,7 +186,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
         }
@@ -194,7 +194,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.albedoScaling = ${this.albedoScaling};\n`;
@@ -203,7 +203,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.albedoScaling = this.albedoScaling;
@@ -212,7 +212,7 @@ export class SheenBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.albedoScaling = serializationObject.albedoScaling;

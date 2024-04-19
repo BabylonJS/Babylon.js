@@ -33,7 +33,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphReceiveCustomEventBlockConfiguration
+        public override config: IFlowGraphReceiveCustomEventBlockConfiguration
     ) {
         super(config);
         for (let i = 0; i < this.config.eventData.length; i++) {
@@ -63,7 +63,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphReceiveCustomEventBlock.ClassName;
     }
 
@@ -76,7 +76,7 @@ export class FlowGraphReceiveCustomEventBlock extends FlowGraphEventBlock {
      * Serializes this block
      * @param serializationObject the object to serialize to
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.eventId = this.config.eventId;
         serializationObject.eventData = this.config.eventData;

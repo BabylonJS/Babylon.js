@@ -238,7 +238,7 @@ export class NodeMaterialPropertyGridComponent extends React.Component<INodeMate
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

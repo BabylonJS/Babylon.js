@@ -49,7 +49,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * Define the input manager associated to the camera.
      */
-    public inputs: FreeCameraInputsManager;
+    public override inputs: FreeCameraInputsManager;
 
     /**
      * Gets the input sensibility for a mouse input. (default is 2000.0)
@@ -301,20 +301,20 @@ export class FreeCamera extends TargetCamera {
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(noPreventDefault?: boolean): void;
+    public override attachControl(noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * BACK COMPAT SIGNATURE ONLY.
      */
-    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    public override attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored?: any, noPreventDefault?: boolean): void {
+    public override attachControl(ignored?: any, noPreventDefault?: boolean): void {
         // eslint-disable-next-line prefer-rest-params
         noPreventDefault = Tools.BackCompatCameraNoPreventDefault(arguments);
         this.inputs.attachElement(noPreventDefault);
@@ -323,7 +323,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public override detachControl(): void {
         this.inputs.detachElement();
 
         this.cameraDirection = new Vector3(0, 0, 0);
@@ -399,7 +399,7 @@ export class FreeCamera extends TargetCamera {
     };
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         if (!this._localDirection) {
             this._localDirection = Vector3.Zero();
             this._transformedDirection = Vector3.Zero();
@@ -425,12 +425,12 @@ export class FreeCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _decideIfNeedsToMove(): boolean {
+    public override _decideIfNeedsToMove(): boolean {
         return this._needMoveForGravity || Math.abs(this.cameraDirection.x) > 0 || Math.abs(this.cameraDirection.y) > 0 || Math.abs(this.cameraDirection.z) > 0;
     }
 
     /** @internal */
-    public _updatePosition(): void {
+    public override _updatePosition(): void {
         if (this.checkCollisions && this.getScene().collisionsEnabled) {
             this._collideWithWorld(this.cameraDirection);
         } else {
@@ -441,7 +441,7 @@ export class FreeCamera extends TargetCamera {
     /**
      * Destroy the camera and release the current resources hold by it.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.inputs.clear();
         super.dispose();
     }
@@ -450,7 +450,7 @@ export class FreeCamera extends TargetCamera {
      * Gets the current object class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FreeCamera";
     }
 }

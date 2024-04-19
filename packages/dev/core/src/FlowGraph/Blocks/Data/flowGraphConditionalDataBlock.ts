@@ -40,7 +40,7 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
     /**
      * @internal
      */
-    public _updateOutputs(context: FlowGraphContext): void {
+    public override _updateOutputs(context: FlowGraphContext): void {
         this.output.setValue(this.condition.getValue(context) ? this.trueValue.getValue(context) : this.falseValue.getValue(context), context);
     }
 
@@ -48,7 +48,7 @@ export class FlowGraphConditionalDataBlock<T> extends FlowGraphBlock {
      * Gets the class name of this block
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGConditionalDataBlock";
     }
 }

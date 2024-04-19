@@ -80,14 +80,14 @@ export class DynamicTexture extends Texture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "DynamicTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DynamicTexture";
     }
 
     /**
      * Gets the current state of canRescale
      */
-    public get canRescale(): boolean {
+    public override get canRescale(): boolean {
         return true;
     }
 
@@ -104,7 +104,7 @@ export class DynamicTexture extends Texture {
      * Scales the texture
      * @param ratio the scale factor to apply to both width and height
      */
-    public scale(ratio: number): void {
+    public override scale(ratio: number): void {
         const textureSize = this.getSize();
 
         textureSize.width *= ratio;
@@ -213,7 +213,7 @@ export class DynamicTexture extends Texture {
     /**
      * Disposes the dynamic texture.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         if (this._ownCanvas) {
@@ -227,7 +227,7 @@ export class DynamicTexture extends Texture {
      * Clones the texture
      * @returns the clone of the texture.
      */
-    public clone(): DynamicTexture {
+    public override clone(): DynamicTexture {
         const scene = this.getScene();
 
         if (!scene) {
@@ -252,7 +252,7 @@ export class DynamicTexture extends Texture {
      * Serializes the dynamic texture.  The scene should be ready before the dynamic texture is serialized
      * @returns a serialized dynamic texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const scene = this.getScene();
         if (scene && !scene.isReady()) {
             Logger.Warn("The scene must be ready before serializing the dynamic texture");
@@ -274,7 +274,7 @@ export class DynamicTexture extends Texture {
     }
 
     /** @internal */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         this.update();
     }
 }

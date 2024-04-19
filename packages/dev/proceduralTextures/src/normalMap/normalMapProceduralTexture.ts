@@ -20,18 +20,18 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
         this.setFloat("size", this.getRenderSize() as number);
     }
 
-    public render(useCameraPostProcess?: boolean) {
+    public override render(useCameraPostProcess?: boolean) {
         super.render(useCameraPostProcess);
     }
 
-    public resize(size: any, generateMipMaps: any): void {
+    public override resize(size: any, generateMipMaps: any): void {
         super.resize(size, generateMipMaps);
 
         // We need to update the "size" uniform
         this.updateShaderUniforms();
     }
 
-    public isReady(): boolean {
+    public override isReady(): boolean {
         if (!this._baseTexture || !this._baseTexture.isReady()) {
             return false;
         }
@@ -53,7 +53,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
      * Serializes this normal map procedural texture
      * @returns a serialized normal map procedural texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.NormalMapProceduralTexture";
 
@@ -67,7 +67,7 @@ export class NormalMapProceduralTexture extends ProceduralTexture {
      * @param rootUrl defines the root URL containing normal map procedural texture information
      * @returns a parsed Normal Map Procedural Texture
      */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture {
+    public static override Parse(parsedTexture: any, scene: Scene, rootUrl: string): NormalMapProceduralTexture {
         const texture = SerializationHelper.Parse(
             () => new NormalMapProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,

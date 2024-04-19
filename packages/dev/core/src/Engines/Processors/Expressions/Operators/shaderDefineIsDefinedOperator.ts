@@ -9,7 +9,7 @@ export class ShaderDefineIsDefinedOperator extends ShaderDefineExpression {
         super();
     }
 
-    public isTrue(preprocessors: { [key: string]: string }) {
+    public override isTrue(preprocessors: { [key: string]: string }) {
         let condition = preprocessors[this.define] !== undefined;
 
         if (this.not) {

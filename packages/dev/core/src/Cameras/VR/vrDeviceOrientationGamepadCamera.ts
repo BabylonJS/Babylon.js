@@ -34,9 +34,9 @@ export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCam
      * Gets camera class name
      * @returns VRDeviceOrientationGamepadCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VRDeviceOrientationGamepadCamera";
     }
 
-    protected _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
+    protected override _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
 }

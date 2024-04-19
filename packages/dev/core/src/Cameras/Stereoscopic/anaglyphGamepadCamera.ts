@@ -31,9 +31,9 @@ export class AnaglyphGamepadCamera extends GamepadCamera {
      * Gets camera class name
      * @returns AnaglyphGamepadCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AnaglyphGamepadCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
+    protected override _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

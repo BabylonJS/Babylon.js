@@ -53,7 +53,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VectorMergerBlock";
     }
 
@@ -157,7 +157,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return this.xyzOut;
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "xyzw ") {
             return "xyzwIn";
         }
@@ -179,7 +179,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return "." + swizzle.substr(0, len);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const xInput = this.x;
@@ -308,7 +308,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.xSwizzle = this.xSwizzle;
@@ -319,7 +319,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.xSwizzle = serializationObject.xSwizzle ?? "x";
@@ -328,7 +328,7 @@ export class VectorMergerBlock extends NodeMaterialBlock {
         this.wSwizzle = serializationObject.wSwizzle ?? "w";
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.xSwizzle = "${this.xSwizzle}";\n`;
         codeString += `${this._codeVariableName}.ySwizzle = "${this.ySwizzle}";\n`;

@@ -33,7 +33,7 @@ export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock
      * @param connectionPoint defines the other connection point
      * @returns a number defining the compatibility state
      */
-    public checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
+    public override checkCompatibilityState(connectionPoint: NodeMaterialConnectionPoint): NodeMaterialConnectionPointCompatibilityStates {
         return connectionPoint instanceof NodeMaterialConnectionPointCustomObject && connectionPoint._blockName === this._blockName
             ? NodeMaterialConnectionPointCompatibilityStates.Compatible
             : NodeMaterialConnectionPointCompatibilityStates.TypeIncompatible;
@@ -44,7 +44,7 @@ export class NodeMaterialConnectionPointCustomObject<T extends NodeMaterialBlock
      * If null is returned, a block based on the point type will be created.
      * @returns The returned string parameter is the name of the output point of NodeMaterialBlock (first parameter of the returned array) that can be connected to the input
      */
-    public createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]> {
+    public override createCustomInputBlock(): Nullable<[NodeMaterialBlock, string]> {
         return [new this._blockType(this._blockName), this.name];
     }
 }

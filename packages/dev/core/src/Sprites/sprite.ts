@@ -15,9 +15,9 @@ import type { Animation } from "../Animations/animation";
  */
 export class Sprite extends ThinSprite implements IAnimatable {
     /** Gets or sets the current world position */
-    public position: Vector3;
+    public override position: Vector3;
     /** Gets or sets the main color */
-    public color: Color4;
+    public override color: Color4;
     /** Gets or sets a boolean indicating that this sprite should be disposed after animation ends */
     public disposeWhenFinishedAnimating: boolean;
     /** Gets the list of attached animations */
@@ -92,34 +92,34 @@ export class Sprite extends ThinSprite implements IAnimatable {
     }
 
     /** Gets or sets the initial key for the animation (setting it will restart the animation)  */
-    public get fromIndex() {
+    public override get fromIndex() {
         return this._fromIndex;
     }
-    public set fromIndex(value: number) {
+    public override set fromIndex(value: number) {
         this.playAnimation(value, this._toIndex, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets the end key for the animation (setting it will restart the animation)  */
-    public get toIndex() {
+    public override get toIndex() {
         return this._toIndex;
     }
-    public set toIndex(value: number) {
+    public override set toIndex(value: number) {
         this.playAnimation(this._fromIndex, value, this._loopAnimation, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets a boolean indicating if the animation is looping (setting it will restart the animation)  */
-    public get loopAnimation() {
+    public override get loopAnimation() {
         return this._loopAnimation;
     }
-    public set loopAnimation(value: boolean) {
+    public override set loopAnimation(value: boolean) {
         this.playAnimation(this._fromIndex, this._toIndex, value, this._delay, this._onAnimationEnd);
     }
 
     /** Gets or sets the delay between cell changes (setting it will restart the animation)  */
-    public get delay() {
+    public override get delay() {
         return Math.max(this._delay, 1);
     }
-    public set delay(value: number) {
+    public override set delay(value: number) {
         this.playAnimation(this._fromIndex, this._toIndex, this._loopAnimation, value, this._onAnimationEnd);
     }
 
@@ -131,7 +131,7 @@ export class Sprite extends ThinSprite implements IAnimatable {
      * @param delay defines the start delay (in ms)
      * @param onAnimationEnd defines a callback to call when animation ends
      */
-    public playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void> = null): void {
+    public override playAnimation(from: number, to: number, loop: boolean, delay: number, onAnimationEnd: Nullable<() => void> = null): void {
         this._onAnimationEnd = onAnimationEnd;
 
         super.playAnimation(from, to, loop, delay, this._endAnimation);

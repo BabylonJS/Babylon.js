@@ -14,12 +14,12 @@ export class AbstractButton3D extends ContentDisplay3D {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "AbstractButton3D";
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         return new TransformNode("button" + this.name, scene);
     }
 }

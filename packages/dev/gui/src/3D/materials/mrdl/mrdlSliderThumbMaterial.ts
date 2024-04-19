@@ -494,20 +494,20 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         this._indirectEnvTexture = new Texture("", this.getScene());
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return false;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -700,7 +700,7 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const defines = <MRDLSliderThumbMaterialDefines>subMesh.materialDefines;
         if (!defines) {
             return;
@@ -852,11 +852,11 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
      * Get the list of animatables in the material.
      * @returns the list of animatables object used in the material
      */
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         return [];
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
         this._reflectionMapTexture.dispose();
         this._indirectEnvTexture.dispose();
@@ -864,22 +864,22 @@ export class MRDLSliderThumbMaterial extends PushMaterial {
         this._decalTexture.dispose();
     }
 
-    public clone(name: string): MRDLSliderThumbMaterial {
+    public override clone(name: string): MRDLSliderThumbMaterial {
         return SerializationHelper.Clone(() => new MRDLSliderThumbMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.MRDLSliderThumbMaterial";
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "MRDLSliderThumbMaterial";
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderThumbMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLSliderThumbMaterial {
         return SerializationHelper.Parse(() => new MRDLSliderThumbMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

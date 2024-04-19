@@ -33,7 +33,7 @@ export class SharpenPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "SharpenPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SharpenPostProcess";
     }
 
@@ -69,7 +69,7 @@ export class SharpenPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new SharpenPostProcess(

@@ -27,7 +27,7 @@ export class CommonPostProcessPropertyGridComponent extends React.Component<ICom
         super(props);
     }
 
-    render() {
+    override render() {
         const postProcess = this.props.postProcess;
 
         return (

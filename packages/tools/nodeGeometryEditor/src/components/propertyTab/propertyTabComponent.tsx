@@ -56,7 +56,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.state = { currentNode: null, currentFrame: null, currentFrameNodePort: null, currentNodePort: null, uploadInProgress: false };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.globalState.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection instanceof GraphNode) {
@@ -77,7 +77,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
@@ -291,7 +291,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onExportToGLBRequired.notifyObservers();
     }
 
-    render() {
+    override render() {
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">

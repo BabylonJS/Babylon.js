@@ -25,7 +25,7 @@ export class RotationZBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "RotationZBlock";
     }
 
@@ -43,7 +43,7 @@ export class RotationZBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.angle.isConnected) {
             const angleInput = new GeometryInputBlock("Angle");
             angleInput.value = 0;
@@ -51,7 +51,7 @@ export class RotationZBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {

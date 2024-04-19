@@ -67,10 +67,10 @@ export class ArcRotateCamera extends TargetCamera {
      * Defines the target point of the camera.
      * The camera looks towards it from the radius distance.
      */
-    public get target(): Vector3 {
+    public override get target(): Vector3 {
         return this._target;
     }
-    public set target(value: Vector3) {
+    public override set target(value: Vector3) {
         this.setTarget(value);
     }
 
@@ -92,18 +92,18 @@ export class ArcRotateCamera extends TargetCamera {
      * Return the current target position of the camera. This value is expressed in local space.
      * @returns the target position
      */
-    public getTarget(): Vector3 {
+    public override getTarget(): Vector3 {
         return this.target;
     }
 
     /**
      * Define the current local position of the camera in the scene
      */
-    public get position(): Vector3 {
+    public override get position(): Vector3 {
         return this._position;
     }
 
-    public set position(newPosition: Vector3) {
+    public override set position(newPosition: Vector3) {
         this.setPosition(newPosition);
     }
 
@@ -115,7 +115,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Setting this will copy the given vector to the camera's upVector, and set rotation matrices to and from Y up.
      * DO NOT set the up vector using copyFrom or copyFromFloats, as this bypasses setting the above matrices.
      */
-    set upVector(vec: Vector3) {
+    override set upVector(vec: Vector3) {
         if (!this._upToYMatrix) {
             this._yToUpMatrix = new Matrix();
             this._upToYMatrix = new Matrix();
@@ -128,7 +128,7 @@ export class ArcRotateCamera extends TargetCamera {
         this.setMatUp();
     }
 
-    get upVector() {
+    override get upVector() {
         return this._upVector;
     }
 
@@ -533,7 +533,7 @@ export class ArcRotateCamera extends TargetCamera {
     public useInputToRestoreState = true;
 
     /** @internal */
-    public _viewMatrix = new Matrix();
+    public override _viewMatrix = new Matrix();
     /** @internal */
     public _useCtrlForPanning: boolean;
     /** @internal */
@@ -542,10 +542,10 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Defines the input associated to the camera.
      */
-    public inputs: ArcRotateCameraInputsManager;
+    public override inputs: ArcRotateCameraInputsManager;
 
     /** @internal */
-    public _reset: () => void;
+    public override _reset: () => void;
 
     /**
      * Defines the allowed panning axis.
@@ -721,7 +721,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     // Cache
     /** @internal */
-    public _initCache(): void {
+    public override _initCache(): void {
         super._initCache();
         this._cache._target = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
         this._cache.alpha = undefined;
@@ -733,7 +733,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * @internal
      */
-    public _updateCache(ignoreParentClass?: boolean): void {
+    public override _updateCache(ignoreParentClass?: boolean): void {
         if (!ignoreParentClass) {
             super._updateCache();
         }
@@ -774,7 +774,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Stores the current state of the camera (alpha, beta, radius and target)
      * @returns the camera itself
      */
-    public storeState(): Camera {
+    public override storeState(): Camera {
         this._storedAlpha = this.alpha;
         this._storedBeta = this.beta;
         this._storedRadius = this.radius;
@@ -788,7 +788,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @internal
      * Restored camera state. You must call storeState() first
      */
-    public _restoreStateValues(): boolean {
+    public override _restoreStateValues(): boolean {
         if (!super._restoreStateValues()) {
             return false;
         }
@@ -810,7 +810,7 @@ export class ArcRotateCamera extends TargetCamera {
 
     // Synchronized
     /** @internal */
-    public _isSynchronizedViewMatrix(): boolean {
+    public override _isSynchronizedViewMatrix(): boolean {
         if (!super._isSynchronizedViewMatrix()) {
             return false;
         }
@@ -828,33 +828,33 @@ export class ArcRotateCamera extends TargetCamera {
      * Attach the input controls to a specific dom element to get the input from.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(noPreventDefault?: boolean): void;
+    public override attachControl(noPreventDefault?: boolean): void;
     /**
      * Attach the input controls to a specific dom element to get the input from.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      */
-    public attachControl(ignored: any, noPreventDefault?: boolean): void;
+    public override attachControl(ignored: any, noPreventDefault?: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      */
-    public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+    public override attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      */
-    public attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
+    public override attachControl(ignored: any, noPreventDefault: boolean, useCtrlForPanning: boolean): void;
     /**
      * Attached controls to the current camera.
      * @param noPreventDefault Defines whether event caught by the controls should call preventdefault() (https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault)
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
-    public attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
+    public override attachControl(noPreventDefault: boolean, useCtrlForPanning: boolean, panningMouseButton: number): void;
     /**
      * Attached controls to the current camera.
      * @param ignored defines an ignored parameter kept for backward compatibility.
@@ -862,7 +862,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param useCtrlForPanning  Defines whether ctrl is used for panning within the controls
      * @param panningMouseButton Defines whether panning is allowed through mouse click button
      */
-    public attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
+    public override attachControl(ignored: any, noPreventDefault?: boolean, useCtrlForPanning: boolean | number = true, panningMouseButton: number = 2): void {
         // eslint-disable-next-line prefer-rest-params
         const args = arguments;
 
@@ -893,7 +893,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Detach the current controls from the specified dom element.
      */
-    public detachControl(): void {
+    public override detachControl(): void {
         this.inputs.detachElement();
 
         if (this._reset) {
@@ -902,7 +902,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         //if (async) collision inspection was triggered, don't update the camera's position - until the collision callback was called.
         if (this._collisionTriggered) {
             return;
@@ -1090,7 +1090,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param allowSamePosition If false, prevents reapplying the new computed position if it is identical to the current one (optim)
      * @param cloneAlphaBetaRadius If true, replicate the current setup (alpha, beta, radius) on the new target
      */
-    public setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
+    public override setTarget(target: TransformNode | Vector3, toBoundingCenter = false, allowSamePosition = false, cloneAlphaBetaRadius = false): void {
         cloneAlphaBetaRadius = this.overrideCloneAlphaBetaRadius ?? cloneAlphaBetaRadius;
 
         if ((target as TransformNode).computeWorldMatrix) {
@@ -1122,7 +1122,7 @@ export class ArcRotateCamera extends TargetCamera {
     }
 
     /** @internal */
-    public _getViewMatrix(): Matrix {
+    public override _getViewMatrix(): Matrix {
         // Compute
         const cosa = Math.cos(this.alpha);
         const sina = Math.sin(this.alpha);
@@ -1264,7 +1264,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @param name the name of the camera
      * @param cameraIndex the index of the camera in the rig cameras array
      */
-    public createRigCamera(name: string, cameraIndex: number): Camera {
+    public override createRigCamera(name: string, cameraIndex: number): Camera {
         let alphaShift: number = 0;
         switch (this.cameraRigMode) {
             case Camera.RIG_MODE_STEREOSCOPIC_ANAGLYPH:
@@ -1298,7 +1298,7 @@ export class ArcRotateCamera extends TargetCamera {
      * @override
      * Override Camera._updateRigCameras
      */
-    public _updateRigCameras() {
+    public override _updateRigCameras() {
         const camLeft = <ArcRotateCamera>this._rigCameras[0];
         const camRight = <ArcRotateCamera>this._rigCameras[1];
 
@@ -1347,7 +1347,7 @@ export class ArcRotateCamera extends TargetCamera {
     /**
      * Destroy the camera and release the current resources hold by it.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.inputs.clear();
         super.dispose();
     }
@@ -1356,7 +1356,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Gets the current object class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ArcRotateCamera";
     }
 }

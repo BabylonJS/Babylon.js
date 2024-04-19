@@ -31,7 +31,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TeleportInBlock";
     }
 
@@ -42,7 +42,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         return this._inputs[0];
     }
 
-    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 
         for (const endpoint of this.endpoints) {
@@ -59,7 +59,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      * @param type defines the potential type to check
      * @returns true if block is a descendant
      */
-    public isAnAncestorOfType(type: string): boolean {
+    public override isAnAncestorOfType(type: string): boolean {
         if (this.getClassName() === type) {
             return true;
         }
@@ -78,7 +78,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      * @param block defines the potential descendant block to check
      * @returns true if block is a descendant
      */
-    public isAnAncestorOf(block: NodeGeometryBlock): boolean {
+    public override isAnAncestorOf(block: NodeGeometryBlock): boolean {
         for (const endpoint of this.endpoints) {
             if (endpoint === block) {
                 return true;
@@ -97,7 +97,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
      * @param predicate defines the predicate to check
      * @returns descendant or null if none found
      */
-    public getDescendantOfPredicate(predicate: (block: NodeGeometryBlock) => boolean): Nullable<NodeGeometryBlock> {
+    public override getDescendantOfPredicate(predicate: (block: NodeGeometryBlock) => boolean): Nullable<NodeGeometryBlock> {
         if (predicate(this)) {
             return this;
         }
@@ -141,7 +141,7 @@ export class TeleportInBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         for (const endpoint of this._endpoints) {
             endpoint.output._storedFunction = (state) => {
                 return this.input.getConnectedValue(state);

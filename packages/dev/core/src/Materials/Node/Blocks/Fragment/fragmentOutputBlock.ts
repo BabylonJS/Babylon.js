@@ -51,7 +51,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "FragmentOutputBlock";
     }
 
@@ -59,7 +59,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("logarithmicDepthConstant");
         state._excludeVariableName("vFragmentDepth");
     }
@@ -85,18 +85,18 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToLinearSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToGammaSpace, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if ((this.useLogarithmicDepth || nodeMaterial.useLogarithmicDepth) && mesh) {
             BindLogDepth(undefined, effect, mesh.getScene());
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const rgba = this.rgba;
@@ -166,7 +166,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
         codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
@@ -175,7 +175,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
@@ -185,7 +185,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;

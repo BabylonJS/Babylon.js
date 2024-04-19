@@ -32,7 +32,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.openPopup();
         this.setState({ isComponentMounted: true });
     }
@@ -94,7 +94,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         window.removeEventListener("beforeunload", this.onBeforeUnloadListener);
         if (this._window) {
             this._window.close();
@@ -105,7 +105,7 @@ export class PopupComponent extends React.Component<IPopupComponentProps, { isCo
         return this._window;
     }
 
-    render() {
+    override render() {
         if (!this.state.isComponentMounted || this._container === null) {
             return null;
         }

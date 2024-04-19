@@ -2493,8 +2493,9 @@ export class Control implements IAnimatable {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force if the control should be serialized even if the isSerializable flag is set to false (default false)
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize (true by default)
      */
-    public serialize(serializationObject: any, force: boolean = false) {
+    public serialize(serializationObject: any, force: boolean = false, allowCanvas: boolean = true) {
         if (!this.isSerializable && !force) {
             return;
         }
@@ -2503,7 +2504,9 @@ export class Control implements IAnimatable {
         serializationObject.className = this.getClassName();
 
         // Call prepareFont to guarantee the font is properly set before serializing
-        this._prepareFont();
+        if (allowCanvas) {
+            this._prepareFont();
+        }
         if (this._font) {
             serializationObject.fontFamily = this._fontFamily;
             serializationObject.fontSize = this.fontSize;

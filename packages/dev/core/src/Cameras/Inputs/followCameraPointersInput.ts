@@ -20,7 +20,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      * Gets the class name of the current input.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FollowCameraPointersInput";
     }
 
@@ -115,7 +115,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
      */
     public warningEnable: boolean = true;
 
-    public onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
+    public override onTouch(pointA: Nullable<PointerTouch>, offsetX: number, offsetY: number): void {
         this._warning();
 
         if (this.axisXControlRotation) {
@@ -137,7 +137,7 @@ export class FollowCameraPointersInput extends BaseCameraPointersInput {
         }
     }
 
-    public onMultiTouch(
+    public override onMultiTouch(
         pointA: Nullable<PointerTouch>,
         pointB: Nullable<PointerTouch>,
         previousPinchSquaredDistance: number,

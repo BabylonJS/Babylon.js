@@ -145,7 +145,7 @@ export class RangeSelectorComponent extends React.Component<IRangeSelectorCompon
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
-    public render() {
+    public override render() {
         this._updateLimits();
 
         const ratio = this._maxFrame - this._minFrame;

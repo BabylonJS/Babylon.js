@@ -20,7 +20,7 @@ export class CylinderEmitterGridComponent extends React.Component<ICylinderEmitt
         super(props);
     }
 
-    render() {
+    override render() {
         const emitter = this.props.emitter;
         return (
             <>

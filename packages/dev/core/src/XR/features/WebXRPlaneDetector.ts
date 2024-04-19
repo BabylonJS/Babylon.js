@@ -114,7 +114,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -134,7 +134,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onPlaneAddedObservable.clear();
         this.onPlaneRemovedObservable.clear();
@@ -146,7 +146,7 @@ export class WebXRPlaneDetector extends WebXRAbstractFeature {
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
      * @returns true if the initial compatibility test passed
      */
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         return typeof XRPlane !== "undefined";
     }
 

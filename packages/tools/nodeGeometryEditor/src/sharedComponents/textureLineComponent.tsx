@@ -40,15 +40,15 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         this._canvasRef = React.createRef();
     }
 
-    shouldComponentUpdate(): boolean {
+    override shouldComponentUpdate(): boolean {
         return true;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.updatePreview();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.updatePreview();
     }
 
@@ -189,7 +189,7 @@ export class TextureLineComponent extends React.Component<ITextureLineComponentP
         }
     }
 
-    render() {
+    override render() {
         const texture = this.props.texture;
 
         return (

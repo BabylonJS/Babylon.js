@@ -25,7 +25,7 @@ export class AlignBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "AlignBlock";
     }
 
@@ -50,7 +50,7 @@ export class AlignBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {

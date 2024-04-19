@@ -1043,7 +1043,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         return pixels[position] / 255;
     }
 
-    protected _reset() {
+    protected override _reset() {
         this._resetEffect();
     }
 

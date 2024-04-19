@@ -17,7 +17,7 @@ export class SpriteManagerTreeItemComponent extends React.Component<ISpriteManag
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="spriteManagerTools">
                 <TreeItemLabelComponent label={this.props.spriteManager.name || "No name"} onClick={() => this.props.onClick()} icon={faAddressBook} color="blanchedalmond" />

@@ -31,7 +31,7 @@ export class TwirlBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TwirlBlock";
     }
 
@@ -84,7 +84,7 @@ export class TwirlBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.center.isConnected) {
             const centerInput = new InputBlock("center");
             centerInput.value = new Vector2(0.5, 0.5);
@@ -107,7 +107,7 @@ export class TwirlBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const tempDelta = state._getFreeVariableName("delta");

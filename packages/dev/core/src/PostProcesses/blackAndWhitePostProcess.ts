@@ -26,7 +26,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "BlackAndWhitePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "BlackAndWhitePostProcess";
     }
 
@@ -51,7 +51,7 @@ export class BlackAndWhitePostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<BlackAndWhitePostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new BlackAndWhitePostProcess(

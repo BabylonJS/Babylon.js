@@ -84,7 +84,7 @@ export class AnimationEntryComponent extends React.Component<IAnimationEntryComp
         this.props.context.onDeleteAnimation.notifyObservers(this.props.animation);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._unmount = true;
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
@@ -135,7 +135,7 @@ export class AnimationEntryComponent extends React.Component<IAnimationEntryComp
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    public render() {
+    public override render() {
         const isActive = this.props.context.activeAnimations.indexOf(this.props.animation) !== -1;
 
         return (

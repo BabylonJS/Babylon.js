@@ -47,7 +47,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         return `${singularForm}`;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.props.globalState) {
             this._onValidationResultsUpdatedObserver = this.props.globalState.onValidationResultsUpdatedObservable.add(() => {
                 this.forceUpdate();
@@ -55,7 +55,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.globalState) {
             if (this._onValidationResultsUpdatedObserver) {
                 this.props.globalState.onValidationResultsUpdatedObservable.remove(this._onValidationResultsUpdatedObserver);
@@ -84,7 +84,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         );
     }
 
-    render() {
+    override render() {
         const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
