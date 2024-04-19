@@ -51,7 +51,7 @@
 
         var visibility: f32 = 1.;
 
-        var poissonDisk: vec3f[4];
+        var poissonDisk: array<vec3f, 4>;
         poissonDisk[0] =  vec3f(-1.0, 1.0, -1.0);
         poissonDisk[1] =  vec3f(1.0, -1.0, -1.0);
         poissonDisk[2] =  vec3f(-1.0, -1.0, -1.0);
@@ -60,15 +60,15 @@
         // Poisson Sampling
 
         #ifndef SHADOWFLOAT
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) visibility -= 0.25;
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) visibility -= 0.25;
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) visibility -= 0.25;
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < depth) visibility -= 0.25;
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) {visibility -= 0.25};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) {visibility -= 0.25};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) {visibility -= 0.25};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < depth) {visibility -= 0.25};
         #else
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < depth) visibility -= 0.25;
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < depth) visibility -= 0.25;
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < depth) visibility -= 0.25;
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) visibility -= 0.25;
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < depth) {visibility -= 0.25};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < depth) {visibility -= 0.25};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < depth) {visibility -= 0.25};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) {visibility -= 0.25};
         #endif
 
         return  min(1.0, visibility + darkness);
