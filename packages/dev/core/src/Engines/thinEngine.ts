@@ -2031,7 +2031,7 @@ export class ThinEngine extends AbstractEngine {
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
         const stateObject = getStateObject(this._gl);
         stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
-        const context = createPipelineContext(shaderProcessingContext, this._gl) as WebGLPipelineContext;
+        const context = createPipelineContext(this._gl, shaderProcessingContext) as WebGLPipelineContext;
         context.engine = this;
         return context;
     }

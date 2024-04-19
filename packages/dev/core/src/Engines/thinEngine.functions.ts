@@ -130,11 +130,11 @@ export function createShaderProgram(
 
 /**
  * Creates a new pipeline context. Note, make sure to attach an engine instance to the created context
- * @param _shaderProcessingContext defines the shader processing context used during the processing if available
  * @param context defines the webGL context to use (if not set, the current one will be used)
+ * @param _shaderProcessingContext defines the shader processing context used during the processing if available
  * @returns the new pipeline
  */
-export function createPipelineContext(_shaderProcessingContext: Nullable<ShaderProcessingContext>, context: WebGLContext): IPipelineContext {
+export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
     const pipelineContext = new WebGLPipelineContext();
     const stateObject = getStateObject(context);
     if (stateObject.parallelShaderCompile) {
