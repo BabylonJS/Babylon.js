@@ -31,6 +31,7 @@ import {
     _executeWhenRenderingStateIsCompiled,
     getStateObject,
     _createShaderProgram,
+    deleteStateObject,
 } from "./thinEngine.functions";
 
 import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
@@ -4095,6 +4096,8 @@ export class ThinEngine extends AbstractEngine {
         if ((this._creationOptions as EngineOptions).loseContextOnDispose) {
             this._gl.getExtension("WEBGL_lose_context")?.loseContext();
         }
+        // clear the state object
+        deleteStateObject(this._gl);
     }
 
     /**

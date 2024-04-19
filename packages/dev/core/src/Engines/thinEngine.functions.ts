@@ -23,9 +23,19 @@ export interface IThinEngineStateObject {
  */
 const _stateObject: WeakMap<WebGLContext, IThinEngineStateObject> = new WeakMap();
 
+/**
+ * get or create a state object for the given context
+ * Note - Used in WebGL only at the moment.
+ * @param context The context to get the state object from
+ * @returns the state object
+ * @internal
+ */
 export function getStateObject(context: WebGLContext): IThinEngineStateObject {
     let state = _stateObject.get(context);
     if (!state) {
+        if (!context) {
+            throw new Error("Context is not defined");
+        }
         state = {
             _webGLVersion: context instanceof WebGL2RenderingContext ? 2 : 1,
             _context: context,
@@ -34,6 +44,13 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
         _stateObject.set(context, state);
     }
     return state;
+}
+/**
+ *
+ * @param context @internal
+ */
+export function deleteStateObject(context: WebGLContext): void {
+    _stateObject.delete(context);
 }
 
 export type WebGLContext = WebGLRenderingContext | WebGL2RenderingContext;
