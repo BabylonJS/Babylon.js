@@ -65,7 +65,7 @@ export class MetadataComponent extends React.Component<IMetadataComponentProps, 
         this.props.globalState.onMetadataWindowHiddenObservable.notifyObservers(false);
     }
 
-    public render() {
+    public override render() {
         if (!this.state.isVisible) {
             return null;
         }

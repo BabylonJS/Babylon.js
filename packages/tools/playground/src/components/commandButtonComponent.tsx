@@ -15,7 +15,7 @@ export class CommandButtonComponent extends React.Component<ICommandButtonCompon
         super(props);
     }
 
-    public render() {
+    public override render() {
         return (
             <div className="command-button" onClick={this.props.onClick} title={this.props.tooltip + (this.props.shortcut ? "\n" + this.props.shortcut : "")}>
                 <div className="command-button-icon">

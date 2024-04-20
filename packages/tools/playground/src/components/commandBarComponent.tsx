@@ -62,7 +62,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
     }
 
-    public render() {
+    public override render() {
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 

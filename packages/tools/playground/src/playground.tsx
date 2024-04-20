@@ -68,11 +68,11 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         this.shortcutManager = new ShortcutManager(this._globalState);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.checkSize();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.checkSize();
     }
 
@@ -111,7 +111,7 @@ export class Playground extends React.Component<IPlaygroundProps, { errorMessage
         }
     }
 
-    public render() {
+    public override render() {
         if (this._globalState.runtimeMode === RuntimeMode.Full) {
             return (
                 <>

@@ -42,7 +42,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
         });
     }
 
-    public render() {
+    public override render() {
         const engineVersion = Engine.Version.split("-")[0];
         const activeState = Utilities.ReadStringFromStore(this.props.storeKey || this.props.tooltip, this.props.defaultValue!, this.props.useSessionStorage);
 
