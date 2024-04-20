@@ -774,41 +774,6 @@ export class Engine extends ThinEngine {
         super.beginFrame();
     }
 
-    /**
-     * Force a specific size of the canvas
-     * @param width defines the new canvas' width
-     * @param height defines the new canvas' height
-     * @param forceSetSize true to force setting the sizes of the underlying canvas
-     * @returns true if the size was changed
-     */
-    public override setSize(width: number, height: number, forceSetSize = false): boolean {
-        if (!this._renderingCanvas) {
-            return false;
-        }
-
-        if (!super.setSize(width, height, forceSetSize)) {
-            return false;
-        }
-
-        if (this.scenes) {
-            for (let index = 0; index < this.scenes.length; index++) {
-                const scene = this.scenes[index];
-
-                for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
-                    const cam = scene.cameras[camIndex];
-
-                    cam._currentRenderId = 0;
-                }
-            }
-
-            if (this.onResizeObservable.hasObservers()) {
-                this.onResizeObservable.notifyObservers(this);
-            }
-        }
-
-        return true;
-    }
-
     public override _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
