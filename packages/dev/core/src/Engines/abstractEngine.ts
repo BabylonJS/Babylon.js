@@ -2221,6 +2221,22 @@ export abstract class AbstractEngine {
         this._renderingCanvas.width = width;
         this._renderingCanvas.height = height;
 
+        if (this.scenes) {
+            for (let index = 0; index < this.scenes.length; index++) {
+                const scene = this.scenes[index];
+
+                for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    const cam = scene.cameras[camIndex];
+
+                    cam._currentRenderId = 0;
+                }
+            }
+
+            if (this.onResizeObservable.hasObservers()) {
+                this.onResizeObservable.notifyObservers(this);
+            }
+        }
+
         return true;
     }
 
