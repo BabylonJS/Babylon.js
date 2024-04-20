@@ -858,31 +858,6 @@ export class ThinEngine extends AbstractEngine {
     }
 
     /**
-     * Force a specific size of the canvas
-     * @param width defines the new canvas' width
-     * @param height defines the new canvas' height
-     * @param forceSetSize true to force setting the sizes of the underlying canvas
-     * @returns true if the size was changed
-     */
-    public override setSize(width: number, height: number, forceSetSize = false): boolean {
-        if (!this._renderingCanvas) {
-            return false;
-        }
-
-        width = width | 0;
-        height = height | 0;
-
-        if (!forceSetSize && this._renderingCanvas.width === width && this._renderingCanvas.height === height) {
-            return false;
-        }
-
-        this._renderingCanvas.width = width;
-        this._renderingCanvas.height = height;
-
-        return true;
-    }
-
-    /**
      * Clear the current render buffer or the current render target (if any is set up)
      * @param color defines the color to use
      * @param backBuffer defines if the back buffer must be cleared
