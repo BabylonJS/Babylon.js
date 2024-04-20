@@ -384,7 +384,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
         }
     }
 
-    public render() {
+    public override render() {
         return <canvas id="renderCanvas" ref={this._canvasRef}></canvas>;
     }
 }

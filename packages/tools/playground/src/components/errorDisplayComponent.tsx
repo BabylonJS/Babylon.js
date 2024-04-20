@@ -41,7 +41,7 @@ export class ErrorDisplayComponent extends React.Component<IErrorDisplayComponen
         this.setState({ error: null });
     }
 
-    public render() {
+    public override render() {
         if (!this.state.error) {
             return null;
         }

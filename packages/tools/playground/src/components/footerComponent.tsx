@@ -27,7 +27,7 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.globalState.fpsElement = this._fpsRef.current!;
     }
 
@@ -41,7 +41,7 @@ export class FooterComponent extends React.Component<IFooterComponentProps> {
         this.props.globalState.onMobileDefaultModeChangedObservable.notifyObservers();
     }
 
-    public render() {
+    public override render() {
         if (this.props.globalState.runtimeMode === RuntimeMode.Frame) {
             return (
                 <div id="footer" className={this.props.globalState.language === "JS" ? "background-js" : "background-ts"}>

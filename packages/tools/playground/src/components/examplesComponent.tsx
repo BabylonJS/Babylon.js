@@ -127,7 +127,7 @@ export class ExamplesComponent extends React.Component<IExamplesComponentProps, 
         this.props.globalState.onExamplesDisplayChangedObservable.notifyObservers();
     }
 
-    public render() {
+    public override render() {
         if (!this._scripts) {
             return null;
         }

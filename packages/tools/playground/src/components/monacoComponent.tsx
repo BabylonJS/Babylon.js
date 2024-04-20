@@ -29,12 +29,12 @@ export class MonacoComponent extends React.Component<IMonacoComponentProps> {
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const hostElement = this.props.refObject.current!;
         this._monacoManager.setupMonacoAsync(hostElement, true);
     }
 
-    public render() {
+    public override render() {
         return <div id="monacoHost" ref={this.props.refObject} className={this.props.className}></div>;
     }
 }
