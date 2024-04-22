@@ -104,7 +104,7 @@ export class ReflectorZone extends React.Component<IReflectorProps> {
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!Engine.isSupported()) {
             return;
         }
@@ -116,11 +116,11 @@ export class ReflectorZone extends React.Component<IReflectorProps> {
         this._reflector = new Reflector(this._engine, this.props.globalState);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this._reflector.close();
     }
 
-    shouldComponentUpdate(nextProps: IReflectorProps) {
+    override shouldComponentUpdate(nextProps: IReflectorProps) {
         if (nextProps.expanded !== this.props.expanded) {
             setTimeout(() => this._engine.resize());
             return true;
@@ -128,7 +128,7 @@ export class ReflectorZone extends React.Component<IReflectorProps> {
         return false;
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="canvasZone" className={this.props.expanded ? "expanded" : ""}>
                 <canvas id="renderCanvas" touch-action="none" onContextMenu={(evt) => evt.preventDefault()}></canvas>

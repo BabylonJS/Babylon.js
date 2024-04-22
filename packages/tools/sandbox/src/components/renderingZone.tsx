@@ -354,7 +354,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!Engine.isSupported()) {
             return;
         }
@@ -389,7 +389,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         this.initEngine();
     }
 
-    shouldComponentUpdate(nextProps: IRenderingZoneProps) {
+    override shouldComponentUpdate(nextProps: IRenderingZoneProps) {
         if (nextProps.expanded !== this.props.expanded) {
             setTimeout(() => this._engine.resize());
             return true;
@@ -397,7 +397,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         return false;
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="canvasZone" className={this.props.expanded ? "expanded" : ""}>
                 <canvas id="renderCanvas" touch-action="none" onContextMenu={(evt) => evt.preventDefault()}></canvas>

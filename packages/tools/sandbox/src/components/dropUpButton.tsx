@@ -32,7 +32,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onClickInterceptorClicked.remove(this._onClickInterceptorClickedObserver);
     }
 
@@ -52,7 +52,7 @@ export class DropUpButton extends React.Component<IDropUpButtonProps, { isOpen: 
         this.setState({ searchText: text });
     };
 
-    public render() {
+    public override render() {
         if (!this.props.enabled) {
             return null;
         }

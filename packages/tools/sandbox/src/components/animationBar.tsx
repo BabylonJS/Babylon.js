@@ -105,7 +105,7 @@ export class AnimationBar extends React.Component<IAnimationBarProps, { groupInd
         }
     }
 
-    public render() {
+    public override render() {
         if (!this.props.enabled) {
             this._currentGroup = null;
             return null;
