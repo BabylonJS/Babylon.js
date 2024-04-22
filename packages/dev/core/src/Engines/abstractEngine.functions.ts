@@ -7,8 +7,6 @@ import type { WebRequest } from "core/Misc/webRequest";
 import type { IOfflineProvider } from "core/Offline/IOfflineProvider";
 import type { Nullable } from "core/types";
 
-export const _activeRequests: IFileRequest[] = [];
-
 export const EngineFunctionContext: {
     /**
      * Loads a file from a url
@@ -60,10 +58,6 @@ export function _loadFile(
     const loadFile = injectedLoadFile || EngineFunctionContext.loadFile;
     if (loadFile) {
         const request = loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-        _activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            _activeRequests.splice(_activeRequests.indexOf(request), 1);
-        });
         return request;
     }
     throw _WarnImport("FileTools");

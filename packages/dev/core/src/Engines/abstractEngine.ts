@@ -54,7 +54,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
-import { EngineFunctionContext, _activeRequests, _loadFile } from "./abstractEngine.functions";
+import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -198,6 +198,8 @@ export abstract class AbstractEngine {
     public _alphaMode = Constants.ALPHA_ADD;
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
+
+    protected _activeRequests: IFileRequest[] = [];
 
     /** @internal */
     public _badOS = false;
@@ -3003,7 +3005,15 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: IWebRequest, exception?: any) => void
     ): IFileRequest {
-        return _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        const request = _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add(() => {
+            const index = this._activeRequests.indexOf(request);
+            if (index !== -1) {
+                this._activeRequests.splice(index, 1);
+            }
+        });
+        return request;
     }
 
     /**
@@ -3084,7 +3094,7 @@ export abstract class AbstractEngine {
         Effect.ResetCache();
 
         // Abort active requests
-        for (const request of _activeRequests) {
+        for (const request of this._activeRequests) {
             request.abort();
         }
 
