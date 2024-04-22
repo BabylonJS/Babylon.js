@@ -636,6 +636,12 @@ export class Constants {
      */
     public static readonly PREPASS_LOCAL_POSITION_TEXTURE_TYPE = 9;
 
+    /**
+     * Constant used to retrieve clip-space (non-linear) depth index in the textures array in the prepass
+     * using the getIndex(Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE)
+     */
+    public static readonly PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE = 10;
+
     /** Flag to create a readable buffer (the buffer can be the source of a copy) */
     public static readonly BUFFER_CREATIONFLAG_READ = 1;
     /** Flag to create a writable buffer (the buffer can be the destination of a copy) */

@@ -17,8 +17,11 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         super(name, NodeMaterialBlockTargets.Fragment, true);
 
         this.registerInput("viewDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
+        this.registerInput("viewDepthLinear", NodeMaterialBlockConnectionPointTypes.Float, true);
         this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("localPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+        this.registerInput("worldNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
         this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
         this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -81,6 +84,13 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[5];
     }
 
+    /**
+     * Gets the linear depth component
+     */
+    public get viewDepthClipSpace(): NodeMaterialConnectionPoint {
+        return this._inputs[6];
+    }
+
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -90,6 +100,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         const worldNormal = this.worldNormal;
         const viewDepth = this.viewDepth;
         const reflectivity = this.reflectivity;
+        const viewDepthClipSpace = this.viewDepthClipSpace;
 
         state.sharedData.blocksWithDefines.push(this);
 
@@ -103,6 +114,14 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         } else {
             // We have to write something on the viewDepth output or it will raise a gl error
             state.compilationString += ` gl_FragData[PREPASS_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_CLIPSPACE_DEPTH\r\n`;
+        if (viewDepthClipSpace.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(${viewDepthClipSpace.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+        } else {
+            // We have to write something on the viewDepth output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_POSITION\r\n`;

@@ -685,6 +685,10 @@ void main(void) {
         gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
+    #ifdef PREPASS_CLIPSPACE_DEPTH
+        gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+    #endif
+
     #ifdef PREPASS_NORMAL
         #ifdef PREPASS_NORMAL_WORLDSPACE
             gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
