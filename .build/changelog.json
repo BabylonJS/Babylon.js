@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.3.0",
+    "fromTag": "7.3.1",
     "changelog": {
         "7.3.1": [
             {
@@ -27,6 +27,240 @@
                 },
                 "files": [
                     "packages/dev/core/src/Materials/materialHelper.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.3.2": [
+            {
+                "pr": "15014",
+                "title": "WebGPU: Fix onResize not triggered on the engine",
+                "description": "See https://forum.babylonjs.com/t/gui-elements-not-resized-with-webgpu/49843",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15013",
+                "title": "Playground: Fix missing override keyword",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/commandButtonComponent.tsx",
+                    "packages/tools/playground/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/playground/src/components/errorDisplayComponent.tsx",
+                    "packages/tools/playground/src/components/examplesComponent.tsx",
+                    "packages/tools/playground/src/components/footerComponent.tsx",
+                    "packages/tools/playground/src/components/hamburgerMenu.tsx",
+                    "packages/tools/playground/src/components/headerComponent.tsx",
+                    "packages/tools/playground/src/components/metadataComponent.tsx",
+                    "packages/tools/playground/src/components/monacoComponent.tsx",
+                    "packages/tools/playground/src/components/qrCodeComponent.tsx",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/components/waitRingComponent.tsx",
+                    "packages/tools/playground/src/playground.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15012",
+                "title": "WebGPU: Fix equirectangular cube textures",
+                "description": "See https://forum.babylonjs.com/t/equirectangularcubetexture-webgpu-error/49803/5",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuHardwareTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/equiRectangularCubeTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15009",
+                "title": "Enable noImplicitOverride and fix all the errors",
+                "description": "- Enabled `noImplicitOverride` in tsconfig.json and tsconfig.build.json.\r\n- Fixed 3000+ compile errors.\r\n\r\nI wrote this node script to do the heavy lifting (including it here in case it is useful for similar things in the future):\r\n```js\r\n\"use strict\";\r\n\r\n// This script expects to find a build.log in the same directory (e.g. the result of running `tsc --build > build.log`).\r\n// It will look for errors resulting from violations of noImplicitOverride, and insert override keyword.\r\n// This is meant to be a way of enabling noImplicitOverride and quickly fixing all violations.\r\n\r\nconst fs = require(\"fs\");\r\nconst chalk = require(\"chalk\");\r\n\r\nconst buildLog = fs.readFileSync(\"build.log\", \"utf8\");\r\n\r\nconst errorRegex =\r\n  /(?<filePath>.+)\\((?<errorLine>\\d+),(?<errorColumn>\\d+)\\): error (?<errorCode>TS\\d+): (?<errorMessage>.*)/;\r\nconst declarationRegex = /(public|protected)?( static)? (\\w+)\\(/;\r\n\r\n(async function () {\r\n  let totalErrorCount = 0;\r\n  let fixedErrorCount = 0;\r\n  const processedLines = new Set();\r\n  for (const line of buildLog.split(\"\\n\")) {\r\n    try {\r\n      const match = line.match(errorRegex);\r\n      if (match) {\r\n        totalErrorCount++;\r\n        const { filePath, errorLine, errorColumn, errorCode, errorMessage } =\r\n          match.groups;\r\n\r\n        if (processedLines.has(`${filePath}:${errorLine}`)) {\r\n          console.log(`Skipping duplicate error in ${filePath}:${errorLine}`);\r\n          continue;\r\n        }\r\n\r\n        processedLines.add(`${filePath}:${errorLine}`);\r\n\r\n        fixedErrorCount++;\r\n\r\n        const lineIndex = errorLine - 1;\r\n\r\n        const fileContent = fs.readFileSync(filePath, \"utf8\").split(\"\\n\");\r\n        const lineContent = fileContent[lineIndex].replace(\r\n          declarationRegex,\r\n          \"$1$2 override $3(\"\r\n        );\r\n        fileContent.splice(lineIndex, 1, lineContent);\r\n        fs.writeFileSync(filePath, fileContent.join(\"\\n\"));\r\n      }\r\n    } catch (e) {\r\n      console.log(chalk.red(`Error processing line: ${line}`));\r\n      console.error(e);\r\n      break;\r\n    }\r\n  }\r\n  console.log(`Found ${totalErrorCount} errors`);\r\n  console.log(`Fixed ${fixedErrorCount} errors`);\r\n})();\r\n\r\n```",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/condition.ts",
+                    "packages/dev/core/src/Actions/directActions.ts",
+                    "packages/dev/core/src/Actions/directAudioActions.ts",
+                    "packages/dev/core/src/Actions/interpolateValueAction.ts",
+                    "packages/dev/core/src/Animations/easing.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts",
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Cameras/Inputs/arcRotateCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/followCameraPointersInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseWheelInput.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/anaglyphUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicScreenUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/Stereoscopic/stereoscopicUniversalCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationArcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationFreeCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrDeviceOrientationGamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/VR/vrExperienceHelper.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Cameras/deviceOrientationCamera.ts",
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCameraInputsManager.ts",
+                    "packages/dev/core/src/Cameras/gamepadCamera.ts",
+                    "packages/dev/core/src/Cameras/targetCamera.ts",
+                    "packages/dev/core/src/Cameras/touchCamera.ts",
+                    "packages/dev/core/src/Cameras/universalCamera.ts",
+                    "packages/dev/core/src/Cameras/virtualJoysticksCamera.ts",
+                    "packages/dev/core/src/Debug/boneAxesViewer.ts",
+                    "packages/dev/core/src/Engines/Native/nativeRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineAndOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineArithmeticOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineIsDefinedOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/Expressions/Operators/shaderDefineOrOperator.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeConditionNode.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderCodeTestNode.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLRenderTargetWrapper.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipelineTree.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuDepthCullingState.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuStencilStateComposer.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Events/keyboardEvents.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphBinaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCachedOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConditionalDataBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphConstantOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphCoordinateTransformBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphGetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphTernaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Data/flowGraphUnaryOperationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphMeshPickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphReceiveCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneReadyEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Event/flowGraphSceneTickEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPauseAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphPlayAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Animation/flowGraphStopAnimationBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphPlayAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/Audio/flowGraphStopAudioBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphBranchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphCounterBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDebounceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphDoNBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphFlipFlopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphForLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphMultiGateBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSequenceBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphSwitchBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphThrottleBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphTimerBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWaitAllBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/ControlFlow/flowGraphWhileLoopBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphConsoleLogBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSendCustomEventBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetPropertyBlock.ts",
+                    "packages/dev/core/src/FlowGraph/Blocks/Execution/flowGraphSetVariableBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphDataConnection.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphExecutionBlock.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphSignalConnection.ts",
+                    "packages/dev/core/src/Gamepads/dualShockGamepad.ts",
+                    "packages/dev/core/src/Gamepads/gamepad.ts",
+                    "packages/dev/core/src/Gamepads/xboxGamepad.ts",
+                    "packages/dev/core/src/Gizmos/axisDragGizmo.ts",
+                    "packages/dev/core/src/Gizmos/axisScaleGizmo.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15011",
+                "title": "Improve new texture support in Particle System Editor",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15008",
+                "title": "Update dependencies",
+                "description": "This PR does not affect core directly. Update to the right version of the wasm wrapper",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15007",
+                "title": "Fix adding child nodes to the html twin tree",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/accessibility-not-working-on-nested-node/49563",
+                "author": {
+                    "name": "carolhmj",
+                    "url": "https://github.com/carolhmj"
+                },
+                "files": [
+                    "packages/tools/accessibility/src/HtmlTwin/htmlTwinItemAdapter.tsx"
+                ],
+                "tags": [
+                    "bug",
+                    "accessibility"
+                ]
+            },
+            {
+                "pr": "15010",
+                "title": "Ability to \"skip\" using Canvas when serializing Textblocks and other CSS dependent GUI Controls.",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
                 ],
                 "tags": []
             }
