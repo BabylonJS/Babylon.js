@@ -1,7 +1,10 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+
+import copyIcon from "./copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -99,6 +102,16 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
+    onCopyClick(){
+        if(this.props && this.props.target){
+            let targetName = this.props.target.constructor.name;
+            let targetProperty = this.props.propertyName;
+            let value = this.props.target[this.props.propertyName!];
+            let strCommand = targetName + "." + targetProperty + " = " + value + ";";
+            copyCommandToClipboard(strCommand);
+        }
+    }
+
     override render() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
@@ -116,6 +129,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             );
                         })}
                     </select>
+                </div>
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );

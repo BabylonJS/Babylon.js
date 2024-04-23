@@ -1,9 +1,12 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "./../propertyChangedEvent";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
+
+import copyIcon from "./copy.svg";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
@@ -109,6 +112,16 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected, isConflict: false });
     }
 
+    onCopyClick(){
+        if(this.props && this.props.target){
+            let targetName = this.props.target.constructor.name;
+            let targetProperty = this.props.propertyName;
+            let value = this.props.target[this.props.propertyName!];
+            let strCommand = targetName + "." + targetProperty + " = " + value + ";";
+            copyCommandToClipboard(strCommand);
+        }
+    }
+
     override render() {
         const icons = this.props.large ? Icons.size40 : Icons.size30;
         const icon = this.state.isConflict ? icons.mixed : this.state.isSelected ? icons.on : icons.off;
@@ -141,6 +154,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                         </label>
                     </div>
                 )}
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
+                </div>
             </div>
         );
     }
