@@ -1,12 +1,10 @@
 import { Observable } from "../Misc/observable";
 import type { FloatArray, Nullable } from "../types";
 import { Constants } from "../Engines/constants";
-import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
 import { Logger } from "../Misc/logger";
 import type { IDisposable } from "../scene";
 import type { IPipelineContext } from "../Engines/IPipelineContext";
 import type { DataBuffer } from "../Buffers/dataBuffer";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
 import type { IShaderProcessor } from "../Engines/Processors/iShaderProcessor";
 import type { ProcessingOptions, ShaderCustomProcessingFunction, ShaderProcessingContext } from "../Engines/Processors/shaderProcessingOptions";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
@@ -14,11 +12,12 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { IEffectFallbacks } from "./iEffectFallbacks";
 import { ShaderStore as EngineShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "./shaderLanguage";
-
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { PostProcess } from "../PostProcesses/postProcess";
+import type { IPipelineGenerationOptions } from "./effect.functions";
+import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -120,6 +119,11 @@ export interface IEffectCreationOptions {
      * The language the shader is written in (default: GLSL)
      */
     shaderLanguage?: ShaderLanguage;
+
+    /**
+     * Provide an existing pipeline context to avoid creating a new one
+     */
+    existingPipelineContext?: IPipelineContext;
 }
 
 /**
@@ -233,14 +237,14 @@ export class Effect implements IDisposable {
     public _fragmentSourceCode: string = "";
 
     /** @internal */
-    private _vertexSourceCodeBeforeMigration: string = "";
+    public _vertexSourceCodeBeforeMigration: string = "";
     /** @internal */
-    private _fragmentSourceCodeBeforeMigration: string = "";
+    public _fragmentSourceCodeBeforeMigration: string = "";
 
     /** @internal */
-    private _rawVertexSourceCode: string = "";
+    public _rawVertexSourceCode: string = "";
     /** @internal */
-    private _rawFragmentSourceCode: string = "";
+    public _rawFragmentSourceCode: string = "";
 
     private static _BaseCache: { [key: number]: DataBuffer } = {};
     private _processingContext: Nullable<ShaderProcessingContext>;
@@ -287,6 +291,8 @@ export class Effect implements IDisposable {
     ) {
         this.name = baseName;
         this._key = key;
+        const pipelineName = this._key.replace(/\r/g, "").replace(/\n/g, "|");
+        let cachedPipeline: IPipelineContext | undefined = undefined;
 
         if ((<IEffectCreationOptions>attributesNamesOrOptions).attributes) {
             const options = <IEffectCreationOptions>attributesNamesOrOptions;
@@ -313,6 +319,8 @@ export class Effect implements IDisposable {
 
             this._processFinalCode = options.processFinalCode ?? null;
             this._processCodeAfterIncludes = options.processCodeAfterIncludes ?? undefined;
+
+            cachedPipeline = options.existingPipelineContext;
         } else {
             this._engine = <AbstractEngine>engine;
             this.defines = defines == null ? "" : defines;
@@ -329,43 +337,32 @@ export class Effect implements IDisposable {
             this._fallbacks = fallbacks;
         }
 
+        // Use the cache if we can. For now, WebGL2 only.
+        if (this._engine.shaderPlatformName === "WEBGL2") {
+            cachedPipeline = getCachedPipeline(pipelineName, (this._engine as any)._gl) ?? cachedPipeline;
+        }
+
         this._attributeLocationByName = {};
 
         this.uniqueId = Effect._UniqueIdSeed++;
-
-        this._processShaderCode();
+        if (!cachedPipeline) {
+            this._processShaderCode();
+        } else {
+            this._pipelineContext = cachedPipeline;
+            this._pipelineContext.setEngine(this._engine);
+            this._onRenderingStateCompiled(this._pipelineContext);
+            // rebuildRebind for spector
+            if ((this._pipelineContext as any).program) {
+                (this._pipelineContext as any).program.__SPECTOR_rebuildProgram = this._rebuildProgram.bind(this);
+            }
+        }
     }
 
     /** @internal */
     public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        let vertexSource: string | HTMLElement | IShaderPath;
-        let fragmentSource: string | HTMLElement | IShaderPath;
-
-        const baseName = this.name;
-        const hostDocument = IsWindowObjectExist() ? this._engine.getHostDocument() : null;
-
-        if (typeof baseName === "string") {
-            vertexSource = baseName;
-        } else if (baseName.vertexSource) {
-            vertexSource = "source:" + baseName.vertexSource;
-        } else if (baseName.vertexElement) {
-            vertexSource = hostDocument?.getElementById(baseName.vertexElement) || baseName.vertexElement;
-        } else {
-            vertexSource = baseName.vertex || baseName;
-        }
-        if (typeof baseName === "string") {
-            fragmentSource = baseName;
-        } else if (baseName.fragmentSource) {
-            fragmentSource = "source:" + baseName.fragmentSource;
-        } else if (baseName.fragmentElement) {
-            fragmentSource = hostDocument?.getElementById(baseName.fragmentElement) || baseName.fragmentElement;
-        } else {
-            fragmentSource = baseName.fragment || baseName;
-        }
-
         this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
 
-        let processorOptions: ProcessingOptions = {
+        const processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),
             indexParameters: this._indexParameters,
             isFragment: false,
@@ -382,63 +379,19 @@ export class Effect implements IDisposable {
             processCodeAfterIncludes: this._processCodeAfterIncludes,
         };
 
-        const shaderCodes: [string | undefined, string | undefined] = [undefined, undefined];
-        const shadersLoaded = () => {
-            if (shaderCodes[0] && shaderCodes[1]) {
-                processorOptions.isFragment = true;
-                const [migratedVertexCode, fragmentCode] = shaderCodes;
-                ShaderProcessor.Process(
-                    fragmentCode,
-                    processorOptions,
-                    (migratedFragmentCode, codeBeforeMigration) => {
-                        this._fragmentSourceCodeBeforeMigration = codeBeforeMigration;
-                        if (this._processFinalCode) {
-                            migratedFragmentCode = this._processFinalCode("fragment", migratedFragmentCode);
-                        }
-                        const finalShaders = ShaderProcessor.Finalize(migratedVertexCode, migratedFragmentCode, processorOptions);
-                        processorOptions = null as any;
-                        this._useFinalCode(finalShaders.vertexCode, finalShaders.fragmentCode, baseName, keepExistingPipelineContext);
-                    },
-                    this._engine
-                );
-            }
-        };
-        this._loadShader(vertexSource, "Vertex", "", (vertexCode) => {
-            ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.Process(
-                vertexCode,
-                processorOptions,
-                (migratedVertexCode, codeBeforeMigration) => {
-                    this._rawVertexSourceCode = vertexCode;
-                    this._vertexSourceCodeBeforeMigration = codeBeforeMigration;
-                    if (this._processFinalCode) {
-                        migratedVertexCode = this._processFinalCode("vertex", migratedVertexCode);
-                    }
-                    shaderCodes[0] = migratedVertexCode;
-                    shadersLoaded();
-                },
-                this._engine
-            );
-        });
-        this._loadShader(fragmentSource, "Fragment", "Pixel", (fragmentCode) => {
-            this._rawFragmentSourceCode = fragmentCode;
-            shaderCodes[1] = fragmentCode;
-            shadersLoaded();
-        });
-    }
-
-    private _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string, baseName: any, keepExistingPipelineContext = false) {
-        if (baseName) {
-            const vertex = baseName.vertexElement || baseName.vertex || baseName.spectorName || baseName;
-            const fragment = baseName.fragmentElement || baseName.fragment || baseName.spectorName || baseName;
-
-            this._vertexSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME vertex:" + vertex + "\n" + migratedVertexCode;
-            this._fragmentSourceCode = (this._shaderLanguage === ShaderLanguage.WGSL ? "//" : "") + "#define SHADER_NAME fragment:" + fragment + "\n" + migratedFragmentCode;
-        } else {
-            this._vertexSourceCode = migratedVertexCode;
-            this._fragmentSourceCode = migratedFragmentCode;
-        }
-        this._prepareEffect(keepExistingPipelineContext);
+        _processShaderCode(
+            processorOptions,
+            this.name,
+            this._processFinalCode,
+            (migratedVertexCode, migratedFragmentCode) => {
+                this._vertexSourceCode = migratedVertexCode;
+                this._fragmentSourceCode = migratedFragmentCode;
+                this._prepareEffect(keepExistingPipelineContext);
+            },
+            this._shaderLanguage,
+            this._engine,
+            this
+        );
     }
 
     /**
@@ -626,54 +579,6 @@ export class Effect implements IDisposable {
         }, 16);
     }
 
-    private _loadShader(shader: any, key: string, optionalKey: string, callback: (data: any) => void): void {
-        if (typeof HTMLElement !== "undefined") {
-            // DOM element ?
-            if (shader instanceof HTMLElement) {
-                const shaderCode = GetDOMTextContent(shader);
-                callback(shaderCode);
-                return;
-            }
-        }
-
-        // Direct source ?
-        if (shader.substr(0, 7) === "source:") {
-            callback(shader.substr(7));
-            return;
-        }
-
-        // Base64 encoded ?
-        if (shader.substr(0, 7) === "base64:") {
-            const shaderBinary = window.atob(shader.substr(7));
-            callback(shaderBinary);
-            return;
-        }
-
-        const shaderStore = EngineShaderStore.GetShadersStore(this._shaderLanguage);
-
-        // Is in local store ?
-        if (shaderStore[shader + key + "Shader"]) {
-            callback(shaderStore[shader + key + "Shader"]);
-            return;
-        }
-
-        if (optionalKey && shaderStore[shader + optionalKey + "Shader"]) {
-            callback(shaderStore[shader + optionalKey + "Shader"]);
-            return;
-        }
-
-        let shaderUrl;
-
-        if (shader[0] === "." || shader[0] === "/" || shader.indexOf("http") > -1) {
-            shaderUrl = shader;
-        } else {
-            shaderUrl = EngineShaderStore.GetShadersRepository(this._shaderLanguage) + shader;
-        }
-
-        // Vertex shader
-        this._engine._loadFile(shaderUrl + "." + key.toLowerCase() + ".fx", callback);
-    }
-
     /**
      * Gets the vertex shader source code of this effect
      * This is the final source code that will be compiled, after all the processing has been done (pre-processing applied, code injection/replacement, etc)
@@ -726,6 +631,27 @@ export class Effect implements IDisposable {
         return this._rawFragmentSourceCode;
     }
 
+    public getPipelineGenerationOptions(): IPipelineGenerationOptions {
+        return {
+            platformName: this._engine.shaderPlatformName,
+            shaderLanguage: this._shaderLanguage,
+            shaderNameOrContent: this.name,
+            key: this._key,
+            defines: this.defines.split("\n"),
+            addGlobalDefines: false,
+            extendedProcessingOptions: {
+                indexParameters: this._indexParameters,
+                isNDCHalfZRange: this._engine.isNDCHalfZRange,
+                useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+                supportsUniformBuffers: this._engine.supportsUniformBuffers,
+            },
+            extendedCreatePipelineOptions: {
+                transformFeedbackVaryings: this._transformFeedbackVaryings,
+                createAsRaw: !!(this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride),
+            },
+        };
+    }
+
     /**
      * Recompiles the webGL program
      * @param vertexSourceCode The source code for the vertex shader.
@@ -758,98 +684,90 @@ export class Effect implements IDisposable {
         this._prepareEffect();
     }
 
+    private _onRenderingStateCompiled(pipelineContext: IPipelineContext) {
+        this._pipelineContext = pipelineContext;
+        this._pipelineContext.setEngine(this._engine);
+        this._attributes = [];
+        this._pipelineContext!._fillEffectInformation(
+            this,
+            this._uniformBuffersNames,
+            this._uniformsNames,
+            this._uniforms,
+            this._samplerList,
+            this._samplers,
+            this._attributesNames,
+            this._attributes
+        );
+
+        // Caches attribute locations.
+        if (this._attributesNames) {
+            for (let i = 0; i < this._attributesNames.length; i++) {
+                const name = this._attributesNames[i];
+                this._attributeLocationByName[name] = this._attributes[i];
+            }
+        }
+
+        this._engine.bindSamplers(this);
+
+        this._compilationError = "";
+        this._isReady = true;
+        if (this.onCompiled) {
+            this.onCompiled(this);
+        }
+        this.onCompileObservable.notifyObservers(this);
+        this.onCompileObservable.clear();
+
+        // Unbind mesh reference in fallbacks
+        if (this._fallbacks) {
+            this._fallbacks.unBindMesh();
+        }
+    }
+
     /**
      * Prepares the effect
      * @internal
      */
     public _prepareEffect(keepExistingPipelineContext = false) {
-        const attributesNames = this._attributesNames;
-        const defines = this.defines;
-
         const previousPipelineContext = this._pipelineContext;
 
         this._isReady = false;
 
         try {
+            const overrides = !!(this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride);
+            const defines = overrides ? null : this.defines;
+            const vertex = overrides ? this._vertexSourceCodeOverride : this._vertexSourceCode;
+            const fragment = overrides ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
             const engine = this._engine;
-
-            this._pipelineContext = (keepExistingPipelineContext ? previousPipelineContext : undefined) ?? engine.createPipelineContext(this._processingContext);
-            this._pipelineContext._name = this._key.replace(/\r/g, "").replace(/\n/g, "|");
-
-            const rebuildRebind = (
-                vertexSourceCode: string,
-                fragmentSourceCode: string,
-                onCompiled: (pipelineContext: IPipelineContext) => void,
-                onError: (message: string) => void
-            ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError);
-            if (this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride) {
-                engine._preparePipelineContext(
-                    this._pipelineContext,
-                    this._vertexSourceCodeOverride,
-                    this._fragmentSourceCodeOverride,
-                    true,
-                    this._rawVertexSourceCode,
-                    this._rawFragmentSourceCode,
-                    rebuildRebind,
-                    null,
-                    this._transformFeedbackVaryings,
-                    this._key
-                );
-            } else {
-                engine._preparePipelineContext(
-                    this._pipelineContext,
-                    this._vertexSourceCode,
-                    this._fragmentSourceCode,
-                    false,
-                    this._rawVertexSourceCode,
-                    this._rawFragmentSourceCode,
-                    rebuildRebind,
+            this._pipelineContext = createAndPreparePipelineContext(
+                {
+                    existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
+                    vertex,
+                    fragment,
+                    context: engine.shaderPlatformName === "WEBGL2" ? (engine as any)._gl : undefined,
+                    rebuildRebind: (
+                        vertexSourceCode: string,
+                        fragmentSourceCode: string,
+                        onCompiled: (pipelineContext: IPipelineContext) => void,
+                        onError: (message: string) => void
+                    ) => this._rebuildProgram(vertexSourceCode, fragmentSourceCode, onCompiled, onError),
                     defines,
-                    this._transformFeedbackVaryings,
-                    this._key
-                );
-            }
-
-            engine._executeWhenRenderingStateIsCompiled(this._pipelineContext, () => {
-                this._attributes = [];
-                this._pipelineContext!._fillEffectInformation(
-                    this,
-                    this._uniformBuffersNames,
-                    this._uniformsNames,
-                    this._uniforms,
-                    this._samplerList,
-                    this._samplers,
-                    attributesNames,
-                    this._attributes
-                );
-
-                // Caches attribute locations.
-                if (attributesNames) {
-                    for (let i = 0; i < attributesNames.length; i++) {
-                        const name = attributesNames[i];
-                        this._attributeLocationByName[name] = this._attributes[i];
-                    }
-                }
-
-                engine.bindSamplers(this);
-
-                this._compilationError = "";
-                this._isReady = true;
-                if (this.onCompiled) {
-                    this.onCompiled(this);
-                }
-                this.onCompileObservable.notifyObservers(this);
-                this.onCompileObservable.clear();
-
-                // Unbind mesh reference in fallbacks
-                if (this._fallbacks) {
-                    this._fallbacks.unBindMesh();
-                }
-
-                if (previousPipelineContext && !keepExistingPipelineContext) {
-                    this.getEngine()._deletePipelineContext(previousPipelineContext);
-                }
-            });
+                    transformFeedbackVaryings: this._transformFeedbackVaryings,
+                    name: this._key.replace(/\r/g, "").replace(/\n/g, "|"),
+                    createAsRaw: overrides,
+                    parallelShaderCompile: engine._caps.parallelShaderCompile,
+                    shaderProcessingContext: this._processingContext,
+                    onRenderingStateCompiled: (pipelineContext) => {
+                        if (previousPipelineContext && !keepExistingPipelineContext) {
+                            this._engine._deletePipelineContext(previousPipelineContext);
+                        }
+                        if (pipelineContext) {
+                            this._onRenderingStateCompiled(pipelineContext);
+                        }
+                    },
+                },
+                this._engine.createPipelineContext.bind(this._engine),
+                this._engine._preparePipelineContext.bind(this._engine)
+            );
 
             if (this._pipelineContext.isAsync) {
                 this._checkIsReady(previousPipelineContext);
@@ -1536,7 +1454,7 @@ export class Effect implements IDisposable {
      **/
     public dispose() {
         if (this._pipelineContext) {
-            this._pipelineContext.dispose();
+            resetCachedPipeline(this._pipelineContext);
         }
         this._engine._releaseEffect(this);
 

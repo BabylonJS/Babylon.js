@@ -54,6 +54,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
+import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -198,6 +199,8 @@ export abstract class AbstractEngine {
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
 
+    protected _activeRequests: IFileRequest[] = [];
+
     /** @internal */
     public _badOS = false;
     /** @internal */
@@ -214,7 +217,6 @@ export abstract class AbstractEngine {
     public _renderingCanvas: Nullable<HTMLCanvasElement>;
     /** @internal */
     public _internalTexturesCache = new Array<InternalTexture>();
-    private _activeRequests = new Array<IFileRequest>();
     protected _currentEffect: Nullable<Effect>;
     /** @internal */
     protected _cachedVertexBuffers: any;
@@ -1469,6 +1471,12 @@ export abstract class AbstractEngine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public abstract drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
+
+    /**
+     * Force the engine to release all cached effects.
+     * This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+     */
+    public abstract releaseEffects(): void;
 
     /**
      * @internal
@@ -3003,6 +3011,28 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * @internal
+     */
+    public _loadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (data: any) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: IWebRequest, exception?: any) => void
+    ): IFileRequest {
+        const request = _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add(() => {
+            const index = this._activeRequests.indexOf(request);
+            if (index !== -1) {
+                this._activeRequests.splice(index, 1);
+            }
+        });
+        return request;
+    }
+
+    /**
      * Loads a file from a url
      * @param url url to load
      * @param onSuccess callback called when the file successfully loads
@@ -3021,26 +3051,10 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ): IFileRequest {
+        if (EngineFunctionContext.loadFile) {
+            return EngineFunctionContext.loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        }
         throw _WarnImport("FileTools");
-    }
-
-    /**
-     * @internal
-     */
-    public _loadFile(
-        url: string,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-        onProgress?: (data: any) => void,
-        offlineProvider?: IOfflineProvider,
-        useArrayBuffer?: boolean,
-        onError?: (request?: IWebRequest, exception?: any) => void
-    ): IFileRequest {
-        const request = AbstractEngine._FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
     }
 
     /**
@@ -3053,6 +3067,8 @@ export abstract class AbstractEngine {
      */
     public dispose(): void {
         this.hideLoadingUI();
+
+        this.releaseEffects();
 
         this._isDisposed = true;
         this.stopRenderLoop();

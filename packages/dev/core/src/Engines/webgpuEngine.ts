@@ -88,6 +88,7 @@ import "./AbstractEngine/abstractEngine.dom";
 import "./AbstractEngine/abstractEngine.states";
 import "./AbstractEngine/abstractEngine.renderPass";
 import "../Audio/audioEngine";
+import { resetCachedPipeline } from "../Materials/effect.functions";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -2281,7 +2282,7 @@ export class WebGPUEngine extends AbstractEngine {
     public _deletePipelineContext(pipelineContext: IPipelineContext): void {
         const webgpuPipelineContext = pipelineContext as WebGPUPipelineContext;
         if (webgpuPipelineContext) {
-            pipelineContext.dispose();
+            resetCachedPipeline(webgpuPipelineContext);
         }
     }
 
