@@ -367,12 +367,8 @@ export function _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineC
 
     const oldHandler = webGLPipelineContext.onCompiled;
 
-    if (oldHandler) {
-        webGLPipelineContext.onCompiled = () => {
-            oldHandler!();
-            action(pipelineContext);
-        };
-    } else {
-        webGLPipelineContext.onCompiled = action;
-    }
+    webGLPipelineContext.onCompiled = () => {
+        oldHandler?.();
+        action(pipelineContext);
+    };
 }
