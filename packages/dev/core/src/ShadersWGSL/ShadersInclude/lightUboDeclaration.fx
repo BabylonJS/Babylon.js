@@ -49,14 +49,14 @@ var<uniform> light{X} : Light{X};
         #ifdef SHADOWCSMDEBUG{X}
             const vCascadeColorsMultiplier{X}: vec3f[8] = vec3f[8]
             (
-                vec3 ( 1.5, 0.0, 0.0 ),
-                vec3 ( 0.0, 1.5, 0.0 ),
-                vec3 ( 0.0, 0.0, 5.5 ),
-                vec3 ( 1.5, 0.0, 5.5 ),
-                vec3 ( 1.5, 1.5, 0.0 ),
-                vec3 ( 1.0, 1.0, 1.0 ),
-                vec3 ( 0.0, 1.0, 5.5 ),
-                vec3 ( 0.5, 3.5, 0.75 )
+                vec3f ( 1.5, 0.0, 0.0 ),
+                vec3f ( 0.0, 1.5, 0.0 ),
+                vec3f ( 0.0, 0.0, 5.5 ),
+                vec3f ( 1.5, 0.0, 5.5 ),
+                vec3f ( 1.5, 1.5, 0.0 ),
+                vec3f ( 1.0, 1.0, 1.0 ),
+                vec3f ( 0.0, 1.0, 5.5 ),
+                vec3f ( 0.5, 3.5, 0.75 )
             );
             var shadowDebug{X}: vec3f;
         #endif

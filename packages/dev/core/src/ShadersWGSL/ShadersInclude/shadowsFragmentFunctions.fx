@@ -60,15 +60,15 @@
         // Poisson Sampling
 
         #ifndef SHADOWFLOAT
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) {visibility -= 0.25};
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) {visibility -= 0.25};
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) {visibility -= 0.25};
-            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < depth) {visibility -= 0.25};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize)) < depth) {visibility -= 0.25;};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize)) < depth) {visibility -= 0.25;};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize)) < depth) {visibility -= 0.25;};
+            if (unpack(textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize)) < depth) {visibility -= 0.25;};
         #else
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < depth) {visibility -= 0.25};
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < depth) {visibility -= 0.25};
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < depth) {visibility -= 0.25};
-            if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) {visibility -= 0.25};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[0] * mapSize).x < depth) {visibility -= 0.25;};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[1] * mapSize).x < depth) {visibility -= 0.25;};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[2] * mapSize).x < depth) {visibility -= 0.25;};
+            if (textureCube(shadowSampler, directionToLight + poissonDisk[3] * mapSize).x < depth) {visibility -= 0.25;};
         #endif
 
         return  min(1.0, visibility + darkness);
@@ -115,7 +115,7 @@
         return esm;
     }
        
-    fn computeShadowCSM(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, highp sampler2DArray shadowSampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
+    fn computeShadowCSM(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, shadowSampler: sampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uv: vec2f = 0.5 * clipSpace.xy +  vec2f(0.5);
@@ -129,7 +129,7 @@
             var shadow: f32 = texture2D(shadowSampler, uvLayer).x;
         #endif
 
-        return shadowPixelDepth > shadow ? computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff) : 1.;
+        return select(computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), 1., shadowPixelDepth > shadow );
     }
 
     fn computeShadow(vPositionFromLight: vec4f, depthMetric: f32, shadowSampler: sampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
@@ -151,7 +151,7 @@
                 var shadow: f32 = TEXTUREFUNC(shadowSampler, uv, 0.).x;
             #endif
 
-            return shadowPixelDepth > shadow ? computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff) : 1.;
+            return select(computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), 1., shadowPixelDepth > shadow );
         }
     }
 
@@ -170,7 +170,7 @@
 
             var visibility: f32 = 1.;
 
-            var poissonDisk: vec2f[4];
+            var poissonDisk: array<vec2f, 4>;
             poissonDisk[0] =  vec2f(-0.94201624, -0.39906216);
             poissonDisk[1] =  vec2f(0.94558609, -0.76890725);
             poissonDisk[2] =  vec2f(-0.094184101, -0.92938870);
@@ -179,15 +179,15 @@
             // Poisson Sampling
 
             #ifndef SHADOWFLOAT
-                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
-                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.)) < shadowPixelDepth) visibility -= 0.25;
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.)) < shadowPixelDepth) {visibility -= 0.25};
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.)) < shadowPixelDepth) {visibility -= 0.25};
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.)) < shadowPixelDepth) {visibility -= 0.25};
+                if (unpack(TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.)) < shadowPixelDepth) {visibility -= 0.25};
             #else
-                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
-                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
-                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
-                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.).x < shadowPixelDepth) visibility -= 0.25;
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[0] * mapSize, 0.).x < shadowPixelDepth) {visibility -= 0.25};
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[1] * mapSize, 0.).x < shadowPixelDepth) {visibility -= 0.25};
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[2] * mapSize, 0.).x < shadowPixelDepth) {visibility -= 0.25};
+                if (TEXTUREFUNC(shadowSampler, uv + poissonDisk[3] * mapSize, 0.).x < shadowPixelDepth) {visibility -= 0.25};
             #endif
 
             return computeFallOff(min(1.0, visibility + darkness), clipSpace.xy, frustumEdgeFalloff);
