@@ -497,9 +497,9 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
-            return `${this._samplerFunc(state)}(${this._textureName},${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+            return `${this._samplerFunc(state)}(${this._textureName},${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
-        return `${this._samplerFunc(state)}(${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+        return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }
 
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
