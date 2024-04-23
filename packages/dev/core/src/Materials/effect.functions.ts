@@ -301,13 +301,13 @@ export const createAndPreparePipelineContext = (
             ""
         );
 
-        _executeWhenRenderingStateIsCompiled(pipelineContext, (pipelineContext) => {
-            options.onRenderingStateCompiled?.(pipelineContext);
+        _executeWhenRenderingStateIsCompiled(pipelineContext, (context) => {
+            options.onRenderingStateCompiled?.(context);
         });
 
         return pipelineContext;
     } catch (e) {
-        Logger.Error("Erro compiling effect");
+        Logger.Error("Error compiling effect");
         throw e;
     }
 };
