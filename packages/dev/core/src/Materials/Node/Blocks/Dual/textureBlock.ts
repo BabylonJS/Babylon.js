@@ -445,7 +445,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._textureTransformName, NodeMaterialBlockConnectionPointTypes.Matrix, this._defineName);
 
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
-        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += `#ifdef ${this._defineName}\n`;
         state.compilationString += `${state._getVaryingName(this._transformedUVName)} = ${vec2}(${this._textureTransformName} * ${vec4}(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
