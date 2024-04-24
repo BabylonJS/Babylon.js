@@ -673,9 +673,10 @@ export class Container extends Control {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force force serialization even if isSerializable === false
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize (true by default)
      */
-    public override serialize(serializationObject: any, force: boolean = false) {
-        super.serialize(serializationObject, force);
+    public override serialize(serializationObject: any, force: boolean = false, allowCanvas: boolean = true) {
+        super.serialize(serializationObject, force, allowCanvas);
         if (!this.isSerializable && !force) {
             return;
         }
@@ -694,7 +695,7 @@ export class Container extends Control {
         for (const child of this.children) {
             if (child.isSerializable || force) {
                 const childSerializationObject = {};
-                child.serialize(childSerializationObject);
+                child.serialize(childSerializationObject, force, allowCanvas);
                 serializationObject.children.push(childSerializationObject);
             }
         }
