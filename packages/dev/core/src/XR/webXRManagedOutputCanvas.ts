@@ -73,6 +73,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      */
     public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
 
+    private _canvasCompatiblePromise: Promise<void>;
+
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
      * @param _xrSessionManager The XR Session manager
@@ -102,6 +104,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         _xrSessionManager.onXRSessionEnded.add(() => {
             this._removeCanvas();
         });
+
+        this._makeCanvasCompatibleAsync();
     }
 
     /**
@@ -110,6 +114,18 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     public dispose() {
         this._removeCanvas();
         this._setManagedOutputCanvas(null);
+    }
+
+    private _makeCanvasCompatibleAsync() {
+        this._canvasCompatiblePromise = new Promise<void>((resolve) => {
+            if (this.canvasContext && (this.canvasContext as any).makeXRCompatible) {
+                (this.canvasContext as any).makeXRCompatible().then(() => {
+                    resolve();
+                });
+            } else {
+                resolve();
+            }
+        });
     }
 
     /**
@@ -125,13 +141,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             return this.xrLayer;
         };
 
-        // support canvases without makeXRCompatible
-        if (!(this.canvasContext as any).makeXRCompatible) {
-            return Promise.resolve(createLayer());
-        }
-
-        return (this.canvasContext as any)
-            .makeXRCompatible()
+        return this._canvasCompatiblePromise
             .then(
                 // catch any error and continue. When using the emulator is throws this error for no apparent reason.
                 () => {},
