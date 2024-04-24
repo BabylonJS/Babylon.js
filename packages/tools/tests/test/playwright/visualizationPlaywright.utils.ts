@@ -252,7 +252,7 @@ export const evaluatePrepareScene = async ({
         replace?: string;
         playgroundId?: string;
     };
-    globalConfig: ReturnType<typeof getGlobalConfig>;
+    globalConfig: { root: string; snippetUrl: any; pgRoot: string };
 }) => {
     window.seed = 1;
     window.Math.random = function () {
@@ -283,8 +283,7 @@ export const evaluatePrepareScene = async ({
                 .replace(/\/scenes\//g, globalConfig.pgRoot + "/scenes/")
                 .replace(/("|')scenes\//g, "$1" + globalConfig.pgRoot + "/scenes/")
                 .replace(/("|')\.\.\/\.\.https/g, "$1" + "https")
-                .replace("http://", "https://")
-                .replace(/https:\/\/cdn.babylonjs.com/g, globalConfig.baseUrl);
+                .replace("http://", "https://");
 
             if (sceneMetadata.replace) {
                 const split = sceneMetadata.replace.split(",");
