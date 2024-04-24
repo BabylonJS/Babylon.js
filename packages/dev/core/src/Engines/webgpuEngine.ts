@@ -1803,6 +1803,9 @@ export class WebGPUEngine extends AbstractEngine {
         if (creationFlags & Constants.BUFFER_CREATIONFLAG_STORAGE) {
             flags |= WebGPUConstants.BufferUsage.Storage;
         }
+        if (creationFlags & Constants.BUFFER_CREATIONFLAG_INDIRECT) {
+            flags |= WebGPUConstants.BufferUsage.Indirect;
+        }
 
         return this._bufferManager.createBuffer(view, flags, label);
     }
