@@ -190,7 +190,8 @@ export function workerFunction(): void {
                 if (decoder.url) {
                     importScripts(decoder.url);
                 }
-                decoderPromise = DracoDecoderModule({ wasmBinary: decoder.wasmBinary });
+                const initDecoderObject = decoder.wasmBinary ? { wasmBinary: decoder.wasmBinary } : {};
+                decoderPromise = DracoDecoderModule(initDecoderObject);
                 postMessage({ id: "initDone" });
                 break;
             }
@@ -225,7 +226,7 @@ export function workerFunction(): void {
  * @param moduleUrl The url to the draco decoder module (optional)
  * @returns A promise that resolves when the worker is initialized
  */
-export function initializeWebWorker(worker: Worker, decoderWasmBinary: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
+export function initializeWebWorker(worker: Worker, decoderWasmBinary?: ArrayBuffer, moduleUrl?: string): Promise<Worker> {
     return new Promise<Worker>((resolve, reject) => {
         const onError = (error: ErrorEvent) => {
             worker.removeEventListener("error", onError);
@@ -244,18 +245,27 @@ export function initializeWebWorker(worker: Worker, decoderWasmBinary: ArrayBuff
         worker.addEventListener("error", onError);
         worker.addEventListener("message", onMessage);
 
-        // clone the array buffer to make it transferable
-        const clone = decoderWasmBinary.slice(0);
-        worker.postMessage(
-            {
+        if (!decoderWasmBinary) {
+            worker.postMessage({
                 id: "init",
                 decoder: {
                     url: moduleUrl,
-                    wasmBinary: clone,
                 },
-            },
-            [clone]
-        );
+            });
+        } else {
+            // clone the array buffer to make it transferable
+            const clone = decoderWasmBinary.slice(0);
+            worker.postMessage(
+                {
+                    id: "init",
+                    decoder: {
+                        url: moduleUrl,
+                        wasmBinary: clone,
+                    },
+                },
+                [clone]
+            );
+        }
         // note: no transfer list as the ArrayBuffer is shared across main thread and pool workers
     });
 }
