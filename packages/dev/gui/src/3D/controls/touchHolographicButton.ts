@@ -21,6 +21,7 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { SceneLoader } from "core/Loading/sceneLoader";
 import { IsDocumentAvailable } from "core/Misc/domManagement";
 import { Scalar } from "core/Maths/math.scalar";
+import { PointerInfo } from "core/Events/pointerEvents";
 
 /**
  * Class used to create a holographic button in 3D
@@ -52,6 +53,8 @@ export class TouchHolographicButton extends TouchButton3D {
     private _backPlateDepth = 0.04;
     private _backplateColor = new Color3(0.08, 0.15, 0.55);
     private _backplateToggledColor = new Color3(0.25, 0.4, 0.95);
+    private _pointerObserver: Nullable<Observer<PointerInfo>>;
+    private _isRay = false;
 
     // Tooltip
     private _tooltipFade: Nullable<FadeInOutBehavior>;
@@ -272,7 +275,12 @@ export class TouchHolographicButton extends TouchButton3D {
             if (this._frontPlate && this.isActiveNearInteraction) {
                 const scale = Vector3.Zero();
                 if (this._backPlate.getWorldMatrix().decompose(scale, undefined, undefined)) {
-                    let interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
+                    let interactionHeight = this.getPressDepth(position);
+
+                    if (this._isRay) {
+                        interactionHeight = this._getInteractionHeight(position, this._backPlate.getAbsolutePosition()) / scale.z;
+                    } 
+
                     interactionHeight = Scalar.Clamp(interactionHeight - this._backPlateDepth / 2, 0.2 * this._frontPlateDepth, this._frontPlateDepth);
 
                     this._frontPlate.scaling.z = interactionHeight;
@@ -390,6 +398,14 @@ export class TouchHolographicButton extends TouchButton3D {
 
         this.collisionMesh = collisionMesh;
         this.collidableFrontDirection = this._backPlate.forward.negate(); // Mesh is facing the wrong way
+
+        this._pointerObserver = scene.onPointerObservable.add((pointerInfo) => {
+
+            if (this.isActiveNearInteraction && pointerInfo.pickInfo) {
+                if (pointerInfo.pickInfo.hit)
+                    this._isRay = (<PointerEvent><unknown>pointerInfo.event).pointerType === "xr";
+            }
+        });
 
         return tn;
     }
