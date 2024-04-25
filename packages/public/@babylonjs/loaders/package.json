@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/loaders",
-    "version": "7.3.2",
+    "version": "7.4.0",
     "main": "index.js",
     "module": "index.js",
     "types": "index.d.ts",
@@ -18,10 +18,10 @@
         "postcompile": "build-tools -c add-js-to-es6"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.3.2",
+        "@babylonjs/core": "^7.4.0",
         "@dev/build-tools": "^1.0.0",
         "@lts/loaders": "^1.0.0",
-        "babylonjs-gltf2interface": "^7.3.2"
+        "babylonjs-gltf2interface": "^7.4.0"
     },
     "peerDependencies": {
         "@babylonjs/core": "^7.0.0",

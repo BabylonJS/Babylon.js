@@ -1,6 +1,6 @@
 {
     "name": "babylonjs-node-geometry-editor",
-    "version": "7.3.2",
+    "version": "7.4.0",
     "main": "babylon.nodeGeometryEditor.js",
     "types": "babylon.nodeGeometryEditor.module.d.ts",
     "files": [
@@ -14,7 +14,7 @@
         "clean": "rimraf dist && rimraf babylon*.*"
     },
     "dependencies": {
-        "babylonjs": "^7.3.2"
+        "babylonjs": "^7.4.0"
     },
     "devDependencies": {
         "@dev/build-tools": "1.0.0",

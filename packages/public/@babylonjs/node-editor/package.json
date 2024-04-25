@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/node-editor",
-    "version": "7.3.2",
+    "version": "7.4.0",
     "main": "dist/babylon.nodeEditor.max.js",
     "module": "dist/babylon.nodeEditor.max.js",
     "esnext": "dist/babylon.nodeEditor.max.js",
@@ -23,7 +23,7 @@
         "@types/react-dom": ">=16.0.9"
     },
     "devDependencies": {
-        "@babylonjs/core": "^7.3.2",
+        "@babylonjs/core": "^7.4.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2"
     },

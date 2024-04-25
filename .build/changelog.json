@@ -1,32 +1,200 @@
 {
-    "fromTag": "7.3.1",
+    "fromTag": "7.3.3",
     "changelog": {
-        "7.3.1": [
+        "7.4.0": [],
+        "7.3.3": [
             {
-                "pr": "15005",
-                "title": "Fix unpack for webgpu",
+                "pr": "15029",
+                "title": "Detect WebGL2 using feature detection",
+                "description": "instanceof returns false for some reason",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15026",
+                "title": "Draco - fix for fallback and tests update",
+                "description": "When using the fallback URL to use draco the function was still assuming that the wasm binary was populated. This fixes this issue.\n\nThe tests were using the wrapper as fallback and the fallback as the base wrapper, so the wasm file was downloaded but was never tested. This PR also fixes that and adds a test to test the fallback approach without the .wasm file being downloaded at all.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts",
+                    "packages/dev/core/src/Meshes/Compression/dracoCompressionWorker.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15018",
+                "title": "update havok dependencies",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/havok/HavokPhysics.wasm",
+                    "packages/tools/babylonServer/public/havok/HavokPhysics_umd.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15028",
+                "title": "Add allowCanvas to GUI Containers",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                    "packages/dev/gui/src/2D/controls/container.ts"
                 ],
                 "tags": [
                     "skip changelog"
                 ]
             },
             {
-                "pr": "15004",
-                "title": "Fix material helper AbstractEngine type",
-                "description": "I encountered a type error after upgrading to 7.2.3. After digging in a little, I saw it was a quick fix from a miss in https://github.com/BabylonJS/Babylon.js/pull/14931.",
+                "pr": "15024",
+                "title": "Fix dispatch indirect call",
+                "description": "Currently when using my recently added #14970 , it says\r\n```\r\nUncaught TypeError: buffer.underlyingResource is not a function\r\n    at WebGPUEngine._computeDispatch\r\n```\r\n\r\nApparently I screwed up and thought it was a function, but it actually was a getter. This fixes that.\r\n\r\nIt's a bit suspicious that Typescript didn't catch it though.",
                 "author": {
-                    "name": "kinetifex",
-                    "url": "https://github.com/kinetifex"
+                    "name": "stefnotch",
+                    "url": "https://github.com/stefnotch"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/materialHelper.ts"
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15025",
+                "title": "Indirect buffer",
+                "description": "Currently using #14970 is a bit tricky, since one has to carefully construct a buffer with an \"indirect\" flag.\r\nThis extends the API to make that much simpler.",
+                "author": {
+                    "name": "stefnotch",
+                    "url": "https://github.com/stefnotch"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/constants.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15017",
+                "title": "Add vec4 support to procedural textures",
+                "description": "I noticed that I can't set a general Vector4 as a shader uniform in ProceduralTexture.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15020",
+                "title": "NME: Fix sampler name in TextureBlock",
+                "description": "See https://forum.babylonjs.com/t/nme-imagesourceblock-bug/49907",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15022",
+                "title": "Fix context issue webgl effect compilation",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "14996",
+                "title": "Allow shader precompile by dividing effect and thinEngine",
+                "description": "This PR presents a few changes to Effect and ThinEngine architecture to allow shader precompilation before an engine is constructed.\nUsing the following ode will allow you to generate create a (WebGL) Pipeline context using an existing context. While this is running you can do any other async tasks, like loading the Engine and its dependencies.\n\nNote - the shader is being cached, so it will not be recompiled even if Babylon requests it. The important part is maintaining the generated shader name so that when an effect is created based on the shader code it will take the compiled shader from cache.\n\nThis code will precompile a provided shader:\n\n```javascript\nimport { generatePipelineContext } from '@babylonjs/core/Materials/effect.functions';\nimport { _preparePipelineContext, _stateObject, createPipelineContext } from '@babylonjs/core/Engines/thinEngine.functions';\n\nexport async function compileShader(\n   id: string,\n   context: WebGL2RenderingContext | WebGLRenderingContext,\n   options: {\n      vertex: string;\n      fragment: string;\n   },\n): Promise<void> {\n   await generatePipelineContext(\n      {\n         shaderNameOrContent: {\n            vertexSource: options.vertex,\n            fragmentSource: options.fragment,\n         },\n         key: id,\n      },\n      context,\n      createPipelineContext,\n      _preparePipelineContext,\n   );\n}\n```\n\nOf course it can be a little more complex than that. It is technically possible to \"serialize\" existing shaders and then pre-load them. Having said that, precompiling the standard shader(s) might be a bit challenging, depending on many different factors.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/Processors/iShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGL/webGLShaderProcessors.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuPipelineContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.functions.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/dev/core/src/Materials/materialPluginManager.ts",
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15019",
+                "title": "NME: Fix wrong type casting for TextureBlock output",
+                "description": "See https://forum.babylonjs.com/t/babylon-7-node-material-texture-uscale-vscale-bug/49922",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15016",
+                "title": "override keyword in sandbox",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/animationBar.tsx",
+                    "packages/tools/sandbox/src/components/dropUpButton.tsx",
+                    "packages/tools/sandbox/src/components/footer.tsx",
+                    "packages/tools/sandbox/src/components/footerButton.tsx",
+                    "packages/tools/sandbox/src/components/footerFileButton.tsx",
+                    "packages/tools/sandbox/src/components/reflectorZone.tsx",
+                    "packages/tools/sandbox/src/components/renderingZone.tsx",
+                    "packages/tools/sandbox/src/sandbox.tsx"
                 ],
                 "tags": []
             }
@@ -261,6 +429,36 @@
                 },
                 "files": [
                     "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.3.1": [
+            {
+                "pr": "15005",
+                "title": "Fix unpack for webgpu",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15004",
+                "title": "Fix material helper AbstractEngine type",
+                "description": "I encountered a type error after upgrading to 7.2.3. After digging in a little, I saw it was a quick fix from a miss in https://github.com/BabylonJS/Babylon.js/pull/14931.",
+                "author": {
+                    "name": "kinetifex",
+                    "url": "https://github.com/kinetifex"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/materialHelper.ts"
                 ],
                 "tags": []
             }

@@ -47,7 +47,8 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
             return singleStateObject;
         }
         state = {
-            _webGLVersion: context instanceof WebGL2RenderingContext ? 2 : 1,
+            // use feature detection. instanceof returns false. This only exists on WebGL2 context
+            _webGLVersion: (context as WebGL2RenderingContext).TEXTURE_BINDING_3D ? 2 : 1,
             _context: context,
             cachedPipelines: {},
         };
@@ -56,8 +57,8 @@ export function getStateObject(context: WebGLContext): IThinEngineStateObject {
     return state;
 }
 /**
- *
- * @param context @internal
+ * Remove the state object that belongs to the specific context
+ * @param context the context that is being
  */
 export function deleteStateObject(context: WebGLContext): void {
     _stateObject.delete(context);
