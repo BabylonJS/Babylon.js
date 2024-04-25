@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "./../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
@@ -114,11 +114,13 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
 
     onCopyClick(){
         if(this.props && this.props.target){
-            let targetName = this.props.target.constructor.name;
+            let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
             let strCommand = targetName + "." + targetProperty + " = " + value + ";";
             copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
         }
     }
 

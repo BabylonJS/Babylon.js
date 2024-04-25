@@ -5,7 +5,7 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
@@ -167,7 +167,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
     onCopyClick(){
         if(this.props && this.props.target){
-            let targetName = this.props.target.constructor.name;
+            let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
             let hex = this.state.color.toHexString();
@@ -180,6 +180,8 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
             strColor += ";//(HEX : " + hex + ")";
             let strCommand = targetName + "." + targetProperty + " = " + strColor;
             copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
         }
     }
 

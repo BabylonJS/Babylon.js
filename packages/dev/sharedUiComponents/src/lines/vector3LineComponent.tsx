@@ -6,7 +6,7 @@ import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
@@ -110,12 +110,14 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
 
     onCopyClick(){
         if(this.props && this.props.target){
-            let targetName = this.props.target.constructor.name;
+            let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
             let strVector = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
             let strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
             copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
         }
     }
 

@@ -8,6 +8,9 @@ import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { copyCommandToClipboard, getInstanceType } from "shared-ui-components/copyCommandToClipboard";
+
+import copyIcon from "shared-ui-components/lines/copy.svg";
 
 interface IQuaternionLineComponentProps {
     label: string;
@@ -141,6 +144,19 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.updateQuaternionFromEuler();
     }
 
+    onCopyClick(){
+        if(this.props && this.props.target){
+            let targetName = getInstanceType(this.props.target);
+            let targetProperty = this.props.propertyName;
+            let value = this.props.target[this.props.propertyName!];
+            let strVector = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+            let strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
@@ -158,8 +174,11 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         {!this.props.useEuler && `X: ${quat.x.toFixed(1)}, Y: ${quat.y.toFixed(1)}, Z: ${quat.z.toFixed(1)}, W: ${quat.w.toFixed(1)}`}
                         {this.props.useEuler && `X: ${eulerDegrees.x.toFixed(2)}, Y: ${eulerDegrees.y.toFixed(2)}, Z: ${eulerDegrees.z.toFixed(2)}`}
                     </div>
-                    <div className="expand" onClick={() => this.switchExpandState()}>
+                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
+                    </div>
+                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (

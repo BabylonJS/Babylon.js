@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
 
 import copyIcon from "./copy.svg";
@@ -104,11 +104,13 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
     onCopyClick(){
         if(this.props && this.props.target){
-            let targetName = this.props.target.constructor.name;
+            let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
             let strCommand = targetName + "." + targetProperty + " = " + value + ";";
             copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
         }
     }
 
