@@ -460,13 +460,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             #ifdef GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE
                                 vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
                             #else
-                                vec2 lookup;
-                                if (grl_textureSize.y <= 1.0) {
-                                    lookup = vec2(fract(grlColorPointer / grl_textureSize.x), 0.0);
-                                } else {
-                                    lookup = vec2(fract(grlColorPointer / grl_textureSize.x),
-                                                  1. - floor(grlColorPointer / grl_textureSize.x) / (grl_textureSize.y - 1.0));
-                                }
+                                vec2 lookup = vec2(fract(grlColorPointer / grl_textureSize.x), 1.0 - floor(grlColorPointer / grl_textureSize.x) / max(grl_textureSize.y - 1.0, 1.0));
                                 vec4 grlColor = texture2D(grl_colors, lookup, 0.0);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
