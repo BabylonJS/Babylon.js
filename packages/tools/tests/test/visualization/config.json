@@ -984,6 +984,12 @@
             "referenceImage": "upVector.png"
         },
         {
+            "title": "Procedural textures playground",
+            "playgroundId": "#24C4KC#51",
+            "referenceImage": "proceduralTexturePlayground.png",
+            "excludedEngines": ["webgl1", "webgpu"]
+        },
+        {
             "title": "Procedural textures",
             "scriptToRun": "/Demos/Procedural/proceduralTexture.js",
             "functionToCall": "CreateProceduralTextureTestScene",

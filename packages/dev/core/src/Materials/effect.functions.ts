@@ -10,7 +10,7 @@ import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
-import type { _loadFile } from "core/Engines/abstractEngine.functions";
+import { _loadFile } from "core/Engines/abstractEngine.functions";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
@@ -246,6 +246,7 @@ function _loadShader(shader: any, key: string, optionalKey: string, callback: (d
     } else {
         shaderUrl = ShaderStore.GetShadersRepository(shaderLanguage) + shader;
     }
+    _loadFileInjection = _loadFileInjection || _loadFile;
     if (!_loadFileInjection) {
         // we got to this point and loadFile was not injected - throw an error
         throw new Error("loadFileInjection is not defined");

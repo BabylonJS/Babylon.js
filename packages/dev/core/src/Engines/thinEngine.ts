@@ -2081,6 +2081,7 @@ export class ThinEngine extends AbstractEngine {
         stateObject._createShaderProgramInjection = this._createShaderProgram.bind(this);
         stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
         stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
+        stateObject.loadFileInjection = this._loadFile.bind(this);
         return _preparePipelineContext(
             pipelineContext as WebGLPipelineContext,
             vertexSourceCode,
