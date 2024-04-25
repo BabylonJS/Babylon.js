@@ -238,7 +238,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 : "",
             fragment: `
                 uniform vec4 grl_dashOptions;
-                uniform vec4 grl_textureSize;
+                uniform vec2 grl_textureSize;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
                 uniform vec3 grl_singleColor;
                 `,
