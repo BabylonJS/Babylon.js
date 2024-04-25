@@ -985,7 +985,7 @@
         },
         {
             "title": "Procedural textures playground",
-            "playgroundId": "#24C4KC#51",
+            "playgroundId": "#24C4KC#67",
             "referenceImage": "proceduralTexturePlayground.png",
             "excludedEngines": ["webgl1", "webgpu"]
         },
