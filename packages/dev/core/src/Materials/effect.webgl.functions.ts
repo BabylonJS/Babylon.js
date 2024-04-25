@@ -29,7 +29,7 @@ export async function generatePipelineContext(
     let processor = options.extendedProcessingOptions?.processor;
     const language = options.shaderLanguage || ShaderLanguage.GLSL;
     // auto-populate the processor if not provided
-    // Note - async but can be synchronous if we load all dependenceis at the start
+    // Note - async but can be synchronous if we load all dependencies at the start
     if (!processor) {
         switch (platformName) {
             case "WEBGL1":

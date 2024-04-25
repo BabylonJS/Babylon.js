@@ -2,6 +2,7 @@ import type { Nullable } from "../types";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
+import type { _loadFile } from "./abstractEngine.functions";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
 /**
@@ -16,6 +17,7 @@ export interface IThinEngineStateObject {
     _createShaderProgramInjection?: typeof _createShaderProgram;
     createRawShaderProgramInjection?: typeof createRawShaderProgram;
     createShaderProgramInjection?: typeof createShaderProgram;
+    loadFileInjection?: typeof _loadFile;
     cachedPipelines: { [name: string]: IPipelineContext };
 }
 /**
