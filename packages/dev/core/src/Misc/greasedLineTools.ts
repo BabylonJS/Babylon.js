@@ -524,7 +524,7 @@ export class GreasedLineTools {
      * @returns the colors texture
      */
     public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
-        const maxTextureSize = scene?.getEngine()?.getCaps().maxTextureSize ?? 1;
+        const maxTextureSize = scene.getEngine().getCaps().maxTextureSize ?? 1;
         const width = colors.length > maxTextureSize ? maxTextureSize : colors.length;
         const height = Math.ceil(colors.length / maxTextureSize);
         if (height > 1) {

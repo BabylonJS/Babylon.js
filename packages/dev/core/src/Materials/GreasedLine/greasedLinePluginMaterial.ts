@@ -293,7 +293,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         }
         const texture = this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture;
         uniformBuffer.setTexture("grl_colors", texture);
-        uniformBuffer.updateFloat2("grl_textureSize", texture?.getSize()?.width ?? 1, texture?.getSize()?.height ?? 1);
+        uniformBuffer.updateFloat2("grl_textureSize", texture?.getSize().width ?? 1, texture?.getSize().height ?? 1);
     }
 
     /**
