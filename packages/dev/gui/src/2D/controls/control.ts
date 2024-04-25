@@ -2507,10 +2507,16 @@ export class Control implements IAnimatable {
         if (allowCanvas) {
             this._prepareFont();
         }
-        if (this._font) {
+        if (this._fontFamily) {
             serializationObject.fontFamily = this._fontFamily;
+        }
+        if (this.fontSize) {
             serializationObject.fontSize = this.fontSize;
+        }
+        if (this.fontWeight) {
             serializationObject.fontWeight = this.fontWeight;
+        }
+        if (this.fontStyle) {
             serializationObject.fontStyle = this.fontStyle;
         }
 
