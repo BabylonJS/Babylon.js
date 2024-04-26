@@ -2,22 +2,29 @@ import { Constants } from "../Engines/constants";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
+import { Matrix, Vector3, Quaternion } from "../Maths/math.vector";
+import { Mesh } from "../Meshes/mesh";
 import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
-import { EffectRenderer } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
 import { IblShadowsVoxelRenderer } from "../Rendering/iblShadowsVoxelRenderer";
+import { IblShadowsShadowPass } from "../Rendering/iblShadowsShadowPass";
 
 import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 
-class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
+class IblShadowsSettings {
+    public resolution: number = 64;
+    public sampleDirections: number = 1;
+    public ssShadowSampleCount: number = 16;
+}
+class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
     /**
      * Is this effect enabled
      */
@@ -53,15 +60,14 @@ export class IblShadowsRenderer {
     private _engine: AbstractEngine;
 
     private _voxelizationDirty: boolean = true;
+    private _boundsNeedUpdate: boolean = true;
     private _thinTextures: ThinTexture[] = [];
 
     private _gbufferDebugEnabled: boolean;
     private _gbufferDebugPass: PostProcess;
-    // private _finalEffectWrapper: EffectWrapper;
-    private _effectRenderer: EffectRenderer;
 
     // private _currentPingPongState: number = 0;
-    private _prePassEffectConfiguration: IblShadowsEffectConfiguration;
+    private _prePassEffectConfiguration: IblShadowsPrepassConfiguration;
 
     // private _candidateSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
     private _excludedSubMeshes: SmartArray<SubMesh> = new SmartArray(10);
@@ -69,9 +75,14 @@ export class IblShadowsRenderer {
 
     private _voxelRenderer: IblShadowsVoxelRenderer;
     private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
+    private _shadowComputePass: IblShadowsShadowPass;
 
     public setIblTexture(iblSource: Texture) {
         this._importanceSamplingRenderer.iblSource = iblSource;
+    }
+
+    public getVoxelGridTexture(): Texture {
+        return this._voxelRenderer.getVoxelGrid();
     }
 
     public get importanceSamplingDebugEnabled(): boolean {
@@ -171,24 +182,22 @@ export class IblShadowsRenderer {
             return;
         }
 
-        this._prePassEffectConfiguration = new IblShadowsEffectConfiguration();
+        this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
         this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
+        this._shadowComputePass = new IblShadowsShadowPass(this._scene);
         this._createTextures();
-        this._createEffects();
 
         this._scene.onNewMeshAddedObservable.add(() => {
             this._voxelizationDirty = true;
+            this._boundsNeedUpdate = true;
         });
     }
 
     private _createTextures() {}
 
     private _updateTextures() {
-        // if (this._depthMrts[0].getSize().width !== this._engine.getRenderWidth() || this._depthMrts[0].getSize().height !== this._engine.getRenderHeight()) {
-        //     this._disposeTextures();
-        //     this._createTextures();
-        // }
+
         return this._updateTextureReferences();
     }
 
@@ -214,46 +223,7 @@ export class IblShadowsRenderer {
             }
         });
 
-        // if (this._blendBackTexture !== prePassTexture) {
-        //     this._blendBackTexture = prePassTexture;
-        //     this._blendBackMrt.setInternalTexture(this._blendBackTexture, 0);
-
-        //     if (this._thinTextures[6]) {
-        //         this._thinTextures[6].dispose();
-        //     }
-        //     this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
-
-        //     prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
-        // }
-
         return true;
-    }
-
-    private _createEffects() {
-        //     this._blendBackEffectWrapper = new EffectWrapper({
-        //         fragmentShader: "oitBackBlend",
-        //         useShaderStore: true,
-        //         engine: this._engine,
-        //         samplerNames: ["uBackColor"],
-        //         uniformNames: [],
-        //     });
-        //     this._blendBackEffectWrapperPingPong = new EffectWrapper({
-        //         fragmentShader: "oitBackBlend",
-        //         useShaderStore: true,
-        //         engine: this._engine,
-        //         samplerNames: ["uBackColor"],
-        //         uniformNames: [],
-        //     });
-
-        // this._finalEffectWrapper = new EffectWrapper({
-        //     fragmentShader: "iblShadowDebug",
-        //     useShaderStore: true,
-        //     engine: this._engine,
-        //     samplerNames: ["worldNormalSampler", "localPositionSampler", "velocitySampler", "depthSampler"],
-        //     uniformNames: [],
-        // });
-
-        this._effectRenderer = new EffectRenderer(this._engine);
     }
 
     /**
@@ -285,6 +255,25 @@ export class IblShadowsRenderer {
             return this._excludedSubMeshes;
         }
 
+        // Update scene inverse scale matrix. This is used to scale the voxel grid to world space and
+        // also by the shadow compute pass.
+        if (this._boundsNeedUpdate) {
+            const bounds = this._scene.getWorldExtends((mesh) => {
+                return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
+            });
+            const size = bounds.max.subtract(bounds.min);
+            const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
+            const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
+            const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
+            this._shadowComputePass.setWorldScaleMatrix(invWorldScaleMatrix);
+            this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
+            this._boundsNeedUpdate = false;
+            Logger.Log("IBL Shadows: Scene size: " + size);
+            Logger.Log("Half size: " + halfSize);
+            Logger.Log("Centre translation: " + centre);
+            Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
+        }
+
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
             this._voxelRenderer.updateVoxelGrid(this._excludedMeshes);
@@ -303,8 +292,8 @@ export class IblShadowsRenderer {
      * Disposes the IBL shadow renderer and associated resources
      */
     public dispose() {
-        this._effectRenderer.dispose();
         this._voxelRenderer.dispose();
         this._importanceSamplingRenderer.dispose();
+        this._shadowComputePass.dispose();
     }
 }

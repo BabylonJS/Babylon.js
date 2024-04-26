@@ -32,7 +32,10 @@ export class IblShadowsVoxelRenderer {
     private _maxDrawBuffers: number;
 
     private _voxelizationInProgress: boolean = false;
-
+    private _invWorldScaleMatrix: Matrix;
+    public setWorldScaleMatrix(matrix: Matrix) {
+        this._invWorldScaleMatrix = matrix;
+    }
     /**
      * @returns Whether voxelization is currently happening.
      */
@@ -211,22 +214,7 @@ export class IblShadowsVoxelRenderer {
 
         this._voxelizationInProgress = true;
 
-        // Update render lists and scene scale for voxel rendering
-        const bounds = this._scene.getWorldExtends((mesh) => {
-            return mesh instanceof Mesh && excludedMeshes.indexOf(mesh.uniqueId) === -1;
-        });
-        const size = bounds.max.subtract(bounds.min);
         const slabSize = 1.0 / this._computeNumberOfSlabs();
-        const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
-        const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
-        const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
-        if (this._voxelDebugEnabled) {
-            Logger.Log("Scene size: " + size);
-            Logger.Log("Half size: " + halfSize);
-            Logger.Log("Centre translation: " + centre);
-            Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
-        }
-
         const meshes = this._scene.meshes;
 
         // We need to update the world scale uniform for every mesh being rendered to the voxel grid.
@@ -239,7 +227,7 @@ export class IblShadowsVoxelRenderer {
             // Logger.Log("Far plane for slab " + mrtIndex + " is " + farPlane);
             // Logger.Log("Size of slab " + mrtIndex + " is " + slabSize);
             const voxelMaterial = this._createVoxelMaterial();
-            voxelMaterial.setMatrix("invWorldScale", invWorldScaleMatrix);
+            voxelMaterial.setMatrix("invWorldScale", this._invWorldScaleMatrix);
             voxelMaterial.setFloat("nearPlane", nearPlane);
             voxelMaterial.setFloat("farPlane", farPlane);
             voxelMaterial.setFloat("stepSize", stepSize);
