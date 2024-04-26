@@ -4,7 +4,7 @@ import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { Color4 } from "../Maths/math.color";
-import { Vector3, Quaternion, Matrix } from "../Maths/math.vector";
+import type { Matrix } from "../Maths/math.vector";
 import { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";

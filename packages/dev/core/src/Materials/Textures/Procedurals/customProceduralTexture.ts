@@ -130,7 +130,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
         for (const name in this._textures) {
             const texture = this._textures[name];
 
-            if (!texture.isReady()) {
+            if (texture && !texture.isReady()) {
                 return false;
             }
         }

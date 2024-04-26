@@ -64,6 +64,7 @@ export class IblShadowsShadowPass {
             format: Constants.TEXTUREFORMAT_RG,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            skipJson: true,
         };
 
         this._outputPT = new CustomProceduralTexture(
@@ -71,7 +72,8 @@ export class IblShadowsShadowPass {
             "iblShadowCompute",
             { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
             this._scene,
-            outputOptions
+            outputOptions,
+            false
         );
     }
 
@@ -105,6 +107,8 @@ export class IblShadowsShadowPass {
         this._outputPT.setVector4("sssParameters", new Vector4(samples, stride, maxDist, thickness));
 
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
+        this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());
+        this._outputPT.setTexture("icdfxSampler", this._scene.iblShadowsRenderer!.getIcdfxTexture());
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
