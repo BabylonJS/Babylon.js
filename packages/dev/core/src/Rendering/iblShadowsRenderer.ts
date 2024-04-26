@@ -19,11 +19,12 @@ import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 
-class IblShadowsSettings {
-    public resolution: number = 64;
-    public sampleDirections: number = 1;
-    public ssShadowSampleCount: number = 16;
-}
+// class IblShadowsSettings {
+//     public resolution: number = 64;
+//     public sampleDirections: number = 1;
+//     public ssShadowSampleCount: number = 16;
+// }
+
 class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
     /**
      * Is this effect enabled
@@ -83,6 +84,18 @@ export class IblShadowsRenderer {
 
     public getVoxelGridTexture(): Texture {
         return this._voxelRenderer.getVoxelGrid();
+    }
+
+    public getIcdfyTexture(): Texture {
+        return this._importanceSamplingRenderer!.getIcdfyTexture();
+    }
+
+    public getIcdfxTexture(): Texture {
+        return this._importanceSamplingRenderer!.getIcdfxTexture();
+    }
+
+    public getShadowTexture(): Texture {
+        return this._shadowComputePass!.getTexture();
     }
 
     public get importanceSamplingDebugEnabled(): boolean {
@@ -197,7 +210,6 @@ export class IblShadowsRenderer {
     private _createTextures() {}
 
     private _updateTextures() {
-
         return this._updateTextureReferences();
     }
 
@@ -273,6 +285,8 @@ export class IblShadowsRenderer {
             Logger.Log("Centre translation: " + centre);
             Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
         }
+
+        this._shadowComputePass.update();
 
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
