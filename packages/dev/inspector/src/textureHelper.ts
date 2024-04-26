@@ -3,8 +3,6 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { GlobalState } from "./components/globalState";
 import type { Texture } from "core/Materials/Textures/texture";
 import { TextureTools } from "core/Misc/textureTools";
-import "./lod";
-import "./lodCube";
 
 /**
  * Defines which channels of the texture to retrieve with {@link TextureHelper.GetTextureDataAsync}.
