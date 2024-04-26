@@ -3,6 +3,7 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
+import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/customProceduralTexture";
 // import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
@@ -160,7 +161,7 @@ export class IblShadowsImportanceSamplingRenderer {
     }
     public set iblSource(source: Texture) {
         this._iblSource = source;
-        this._createTextures();
+        this._resizeTextures();
     }
     public getIcdfyTexture(): CustomProceduralTexture {
         return this._icdfyPT;
@@ -213,11 +214,20 @@ export class IblShadowsImportanceSamplingRenderer {
         this._createTextures();
     }
 
-    private _createTextures() {
-        if (!this._iblSource) {
-            return;
+    private _resizeTextures() {
+        if (!this._iblSource || !this._cdfyPT) {
+            this._createTextures();
         }
-        const size = this._iblSource.getSize();
+        const size = this._iblSource!.getSize();
+        this._cdfyPT.resize({ width: size.width, height: size.height + 1 }, false);
+        this._icdfyPT.resize({ width: size.width, height: size.height }, false);
+        this._cdfxPT.resize({ width: size.width + 1, height: 1 }, false);
+        this._icdfxPT.resize({ width: size.width, height: 1 }, false);
+    }
+
+    private _createTextures() {
+        const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
+
         const cdfOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
