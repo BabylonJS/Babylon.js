@@ -53,6 +53,10 @@ export type IShaderPath = {
      * Used with shader code in script tags
      */
     fragmentElement?: string;
+    /**
+     * Defines the name appearing in spector when framgent/vertex...source are being used
+     */
+    spectorName?: string;
 };
 
 /**
