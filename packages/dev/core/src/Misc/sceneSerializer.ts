@@ -156,19 +156,19 @@ export class SceneSerializer {
         serializationObject.useRightHandedSystem = scene.useRightHandedSystem;
 
         // Fog
-        if (scene.fogMode) {
+        if (scene.fogMode !== undefined) {
             serializationObject.fogMode = scene.fogMode;
         }
-        if (scene.fogColor) {
+        if (scene.fogColor !== undefined) {
             serializationObject.fogColor = scene.fogColor.asArray();
         }
-        if (scene.fogStart) {
+        if (scene.fogStart !== undefined) {
             serializationObject.fogStart = scene.fogStart;
         }
-        if (scene.fogEnd) {
+        if (scene.fogEnd !== undefined) {
             serializationObject.fogEnd = scene.fogEnd;
         }
-        if (scene.fogDensity) {
+        if (scene.fogDensity !== undefined) {
             serializationObject.fogDensity = scene.fogDensity;
         }
 

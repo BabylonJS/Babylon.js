@@ -959,19 +959,19 @@ SceneLoader.RegisterPlugin({
             }
 
             // Fog
-            if (parsedData.fogMode) {
+            if (parsedData.fogMode !== undefined) {
                 scene.fogMode = parsedData.fogMode;
             }
-            if (scene.fogColor) {
+            if (parsedData.fogColor !== undefined) {
                 scene.fogColor = Color3.FromArray(parsedData.fogColor);
             }
-            if (scene.fogStart) {
+            if (parsedData.fogStart !== undefined) {
                 scene.fogStart = parsedData.fogStart;
             }
-            if (scene.fogEnd) {
+            if (parsedData.fogEnd !== undefined) {
                 scene.fogEnd = parsedData.fogEnd;
             }
-            if (scene.fogDensity) {
+            if (parsedData.fogDensity !== undefined) {
                 scene.fogDensity = parsedData.fogDensity;
             }
             log += "\tFog mode for scene:  ";
