@@ -959,25 +959,36 @@ SceneLoader.RegisterPlugin({
             }
 
             // Fog
-            if (parsedData.fogMode && parsedData.fogMode !== 0) {
+            if (parsedData.fogMode) {
                 scene.fogMode = parsedData.fogMode;
+            }
+            if (scene.fogColor) {
                 scene.fogColor = Color3.FromArray(parsedData.fogColor);
+            }
+            if (scene.fogStart) {
                 scene.fogStart = parsedData.fogStart;
+            }
+            if (scene.fogEnd) {
                 scene.fogEnd = parsedData.fogEnd;
+            }
+            if (scene.fogDensity) {
                 scene.fogDensity = parsedData.fogDensity;
-                log += "\tFog mode for scene:  ";
-                switch (scene.fogMode) {
-                    // getters not compiling, so using hardcoded
-                    case 1:
-                        log += "exp\n";
-                        break;
-                    case 2:
-                        log += "exp2\n";
-                        break;
-                    case 3:
-                        log += "linear\n";
-                        break;
-                }
+            }
+            log += "\tFog mode for scene:  ";
+            switch (scene.fogMode) {
+                case 0:
+                    log += "none\n";
+                    break;
+                // getters not compiling, so using hardcoded
+                case 1:
+                    log += "exp\n";
+                    break;
+                case 2:
+                    log += "exp2\n";
+                    break;
+                case 3:
+                    log += "linear\n";
+                    break;
             }
 
             //Physics
