@@ -47,9 +47,9 @@ export class IblShadowsShadowPass {
     }
 
     /**
-     * Instanciates the importance sampling renderer
+     * Instantiates the shadow compute pass
      * @param scene Scene to attach to
-     * @returns The importance sampling renderer
+     * @returns The shadow compute pass
      */
     constructor(scene: Scene) {
         this._scene = scene;
