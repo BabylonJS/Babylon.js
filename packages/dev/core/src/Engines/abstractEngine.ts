@@ -2119,11 +2119,11 @@ export abstract class AbstractEngine {
 
     /**
      * Creates a new engine
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled. If undefined, it means that the underlying engine is free to enable it or not
      * @param options defines further options to be sent to the creation context
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(antialias: boolean, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
+    constructor(antialias: boolean | undefined, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
         EngineStore.Instances.push(this);
         this.startTime = PrecisionDate.Now;
 
