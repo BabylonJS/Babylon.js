@@ -54,8 +54,6 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
         const antialias = !this.props.globalState.commerceMode;
 
-        console.log("Using WebGPU: ", antialias);
-
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
             this._engine = new WebGPUEngine(this._canvas, {
