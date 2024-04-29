@@ -271,7 +271,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled (default value is "undefined", meaning that the browser may or may not enable it)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
@@ -282,7 +282,7 @@ export class ThinEngine extends AbstractEngine {
         adaptToDeviceRatio?: boolean
     ) {
         options = options || {};
-        super((antialias ?? options.antialias) || false, options, adaptToDeviceRatio);
+        super(antialias ?? options.antialias, options, adaptToDeviceRatio);
 
         if (!canvasOrContext) {
             return;
