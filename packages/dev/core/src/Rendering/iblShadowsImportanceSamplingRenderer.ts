@@ -223,6 +223,10 @@ export class IblShadowsImportanceSamplingRenderer {
         this._icdfyPT.resize({ width: size.width, height: size.height }, false);
         this._cdfxPT.resize({ width: size.width + 1, height: 1 }, false);
         this._icdfxPT.resize({ width: size.width, height: 1 }, false);
+        this._cdfyPT.setTexture("iblSource", this._iblSource);
+        this._icdfyPT.setTexture("cdfy", this._cdfyPT);
+        this._cdfxPT.setTexture("cdfy", this._cdfyPT);
+        this._icdfxPT.setTexture("cdfx", this._cdfxPT);
     }
 
     private _createTextures() {
