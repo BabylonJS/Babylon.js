@@ -117,12 +117,12 @@
         var shadowPixelDepth: f32 = clamp(depthMetric, 0., 1.0);
 
         #ifndef SHADOWFLOAT
-            var shadow: f32 = unpack(textureSample(shadowTexture, shadowSampler, uv, i32(layer));
+            var shadow: f32 = unpack(textureSample(shadowTexture, shadowSampler, uv, i32(layer)));
         #else
             var shadow: f32 = textureSample(shadowTexture, shadowSampler, uv, i32(layer)).x;
         #endif
 
-        return select(computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), 1., shadowPixelDepth > shadow );
+        return select(1., computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), shadowPixelDepth > shadow );
     }
 
     fn computeShadow(vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_2d<f32>, shadowSampler: sampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
@@ -144,7 +144,7 @@
                 var shadow: f32 = textureSampleLevel(shadowTexture, shadowSampler, uv, 0.).x;
             #endif
 
-            return select(computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), 1., shadowPixelDepth > shadow );
+            return select(1., computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), shadowPixelDepth > shadow );
         }
     }
 

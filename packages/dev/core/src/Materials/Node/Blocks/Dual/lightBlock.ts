@@ -341,7 +341,7 @@ export class LightBlock extends NodeMaterialBlock {
             // Vertex
             this._injectVertexCode(state);
 
-            return; //#KLCBNM#1
+            return; //#KLCBNM#3
         }
 
         if (this.generateOnlyFragmentCode) {

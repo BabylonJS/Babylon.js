@@ -81,7 +81,8 @@ var<uniform> light{X} : Light{X};
 			var shadow{X}Sampler: sampler_comparison;
 			var shadow{X}Texture: texture_depth_2d;
 		#else
-			var shadow{X}Sampler: sampler;
+			var shadow{X}Sampler: sampler;			
+			var shadow{X}Texture: texture_2d<f32>;
 		#endif
 		uniform lightMatrix{X}: mat4x4f;
 	#endif
