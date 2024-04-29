@@ -205,6 +205,10 @@ export class IblShadowsRenderer {
             this._voxelizationDirty = true;
             this._boundsNeedUpdate = true;
         });
+
+        this._scene.onBeforeRenderObservable.add(() => {
+            this._shadowComputePass.update();
+        });
     }
 
     private _createTextures() {}
@@ -286,7 +290,7 @@ export class IblShadowsRenderer {
             Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
         }
 
-        this._shadowComputePass.update();
+        // this._shadowComputePass.update();
 
         // If update is needed, render voxels
         if (this._voxelizationDirty) {

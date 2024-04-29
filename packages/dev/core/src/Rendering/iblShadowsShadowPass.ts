@@ -20,9 +20,9 @@ export class IblShadowsShadowPass {
     private _outputPT: CustomProceduralTexture;
     private _cameraInvView: Matrix = Matrix.Identity();
     private _cameraInvProj: Matrix = Matrix.Identity();
-    private _invWorldScaleMatrix: Matrix;
+    private _invWorldScaleMatrix: Matrix = Matrix.Identity();
     private _frameId: number = 0;
-    private _sampleDirections: number = 1;
+    private _sampleDirections: number = 2;
     private _downscale: number = 1.0;
 
     public getTexture(): CustomProceduralTexture {
