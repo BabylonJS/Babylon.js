@@ -18,6 +18,7 @@ import "../Shaders/postprocess.vertex";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
+import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 
 // class IblShadowsSettings {
 //     public resolution: number = 64;
@@ -65,7 +66,7 @@ export class IblShadowsRenderer {
     private _thinTextures: ThinTexture[] = [];
 
     private _gbufferDebugEnabled: boolean;
-    private _gbufferDebugPass: PostProcess;
+    private _debugPass: PostProcess;
 
     // private _currentPingPongState: number = 0;
     private _prePassEffectConfiguration: IblShadowsPrepassConfiguration;
@@ -77,6 +78,7 @@ export class IblShadowsRenderer {
     private _voxelRenderer: IblShadowsVoxelRenderer;
     private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
     private _shadowComputePass: IblShadowsShadowPass;
+    private _spatialBlurPass: IblShadowsSpatialBlurPass;
 
     public setIblTexture(iblSource: Texture) {
         this._importanceSamplingRenderer.iblSource = iblSource;
@@ -123,10 +125,10 @@ export class IblShadowsRenderer {
             }
             let samplerNames = new Array(this._prePassEffectConfiguration.texturesRequired.length).fill("");
             samplerNames = samplerNames.map((_, i) => PrePassRenderer.TextureFormats[this._prePassEffectConfiguration.texturesRequired[i]].name);
-            this._gbufferDebugPass = new PostProcess(
+            this._debugPass = new PostProcess(
                 "iblShadows_GBuffer_Debug",
                 "iblShadowDebug",
-                null, // attributes
+                ["sizeParams"], // attributes
                 samplerNames,
                 1.0, // options
                 this._scene._activeCamera, // camera
@@ -134,14 +136,36 @@ export class IblShadowsRenderer {
                 this._engine
             );
 
-            this._gbufferDebugPass.onBeforeRenderObservable.add((effect) => {
+            this._debugPass.onBeforeRenderObservable.add((effect) => {
                 this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
                     const index = prePassRenderer.getIndex(type);
                     if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
                 });
             });
+            this._updateDebugPass();
         } else {
-            this._gbufferDebugPass.dispose();
+            this._debugPass.dispose();
+        }
+    }
+
+    private _updateDebugPass() {
+        let count = 0;
+        if (this._gbufferDebugEnabled) count++;
+        if (this.importanceSamplingDebugEnabled) count++;
+        if (this._voxelRenderer.voxelDebugEnabled) count++;
+        if (this._shadowComputePass.debugEnabled) count++;
+        if (this._spatialBlurPass.debugEnabled) count++;
+
+        count = 4;
+        const rows = Math.ceil(Math.sqrt(count));
+        const cols = Math.ceil(count / rows);
+        const width = 1.0 / cols;
+        const height = 1.0 / rows;
+
+        if (this.gbufferDebugEnabled) {
+            this._debugPass.onBeforeRenderObservable.add((effect) => {
+                effect.setFloat4("sizeParams", 0, 0, width, height);
+            });
         }
     }
 
@@ -199,6 +223,7 @@ export class IblShadowsRenderer {
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
         this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
         this._shadowComputePass = new IblShadowsShadowPass(this._scene);
+        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
         this._createTextures();
 
         this._scene.onNewMeshAddedObservable.add(() => {
@@ -208,6 +233,7 @@ export class IblShadowsRenderer {
 
         this._scene.onBeforeRenderObservable.add(() => {
             this._shadowComputePass.update();
+            this._spatialBlurPass.update();
         });
     }
 
@@ -283,6 +309,8 @@ export class IblShadowsRenderer {
             const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
             this._shadowComputePass.setWorldScaleMatrix(invWorldScaleMatrix);
             this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
+            // Set world scale for spatial blur.
+            this._spatialBlurPass.setWorldScale(halfSize * 2.0);
             this._boundsNeedUpdate = false;
             Logger.Log("IBL Shadows: Scene size: " + size);
             Logger.Log("Half size: " + halfSize);
