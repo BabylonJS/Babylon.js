@@ -244,7 +244,11 @@ export class LightBlock extends NodeMaterialBlock {
                     effect.setTexture(`${rootName}${index}Texture`, texture);
                 }
                 if (texture) {
-                    effect.setTextureSampler(`${rootName}${index}Sampler`, texture!._texture);
+                    if (depthStencil) {
+                        effect.setTextureSampler(`${rootName}${index}Sampler`, (texture as RenderTargetTexture).depthStencilTexture);
+                    } else {
+                        effect.setTextureSampler(`${rootName}${index}Sampler`, texture!._texture);
+                    }
                 }
             },
         };
