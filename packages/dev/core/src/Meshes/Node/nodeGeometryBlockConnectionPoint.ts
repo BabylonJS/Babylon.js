@@ -409,6 +409,13 @@ export class NodeGeometryConnectionPoint {
             serializationObject.inputName = this.name;
             serializationObject.targetBlockId = this.connectedPoint.ownerBlock.uniqueId;
             serializationObject.targetConnectionName = this.connectedPoint.name;
+            serializationObject.isExposedOnFrame = true;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
+        }
+
+        if (this.isExposedOnFrame || this.exposedPortPosition >= 0) {
+            serializationObject.isExposedOnFrame = true;
+            serializationObject.exposedPortPosition = this.exposedPortPosition;
         }
 
         return serializationObject;
