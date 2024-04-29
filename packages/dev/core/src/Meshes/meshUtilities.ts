@@ -1,7 +1,7 @@
 import { AnimationGroup } from "../Animations/animationGroup";
 import { BoundingBox } from "../Culling/boundingBox";
 import { Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "./abstractMesh";
+import type { AbstractMesh } from "./abstractMesh";
 
 /**
  * Computes the maximum bounding boxes of the given meshes taking animation, skeleton, morph targets into account.
