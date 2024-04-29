@@ -35,15 +35,15 @@ var<uniform> light{X} : Light{X};
 		varying vPositionFromCamera{X}: vec4f;
 
 		#if defined(SHADOWPCSS{X})
-			var highp sampler2DArrayShadow shadowSampler{X};
+			var highp sampler2DArrayShadow shadow{X}Sampler;
 			uniform highp sampler2DArray depthSampler{X};
             uniform lightSizeUVCorrection{X}: vec2f[SHADOWCSMNUM_CASCADES{X}];
             uniform depthCorrection{X}: f32[SHADOWCSMNUM_CASCADES{X}];
             uniform penumbraDarkness{X}: f32;
 		#elif defined(SHADOWPCF{X})
-			var highp sampler2DArrayShadow shadowSampler{X};
+			var highp sampler2DArrayShadow shadow{X}Sampler;
 		#else
-			var highp sampler2DArray shadowSampler{X};
+			var highp sampler2DArray shadow{X}Sampler;
 		#endif
 
         #ifdef SHADOWCSMDEBUG{X}
@@ -69,18 +69,18 @@ var<uniform> light{X} : Light{X};
 
         var diff{X}: f32 = 0.;
 	#elif defined(SHADOWCUBE{X})
-		var shadowSampler{X}: sampler;		
+		var shadow{X}Sampler: sampler;		
 	#else
 		varying vPositionFromLight{X}: vec4f;
 		varying vDepthMetric{X}: f32;
 
 		#if defined(SHADOWPCSS{X})
-			var shadowSampler{X}: sampler;
+			var shadow{X}Sampler: sampler;
 			var depthSampler{X}: sampler;
 		#elif defined(SHADOWPCF{X})
-			var shadowSampler{X}: sampler;
+			var shadow{X}Sampler: sampler;
 		#else
-			var shadowSampler{X}: sampler;
+			var shadow{X}Sampler: sampler;
 		#endif
 		uniform lightMatrix{X}: mat4x4f;
 	#endif
