@@ -638,7 +638,7 @@
             // Rotated offset.
             offset =  vec4f(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0., 0.);
             let coords = uvDepthLayer + offset * filterRadius;
-            shadow += textureSampleCompare(shadowTexture, shadowSampler, coords.xy, i32(coords.z), coords.w);
+            // TODOWGSL shadow += textureSampleCompare(shadowTexture, shadowSampler, coords.xy, i32(coords.z), coords.w);
         }
         shadow /=  f32(pcfTapCount);
 
@@ -710,7 +710,7 @@
                     // Rotated offset.
                     offset =  vec3f(offset.x * rotationVector.x - offset.y * rotationVector.y, offset.y * rotationVector.x + offset.x * rotationVector.y, 0.);
                     let coords = uvDepth + offset * filterRadius;
-                    shadow += textureSampleCompare(shadowTexture, shadowSampler, coords.xy, i32(coords.z), 0.);
+                    // TODOWEBGPU shadow += textureSampleCompare(shadowTexture, shadowSampler, coords.xy, i32(coords.z), 0.);
                 }
                 shadow /=  f32(pcfTapCount);
 

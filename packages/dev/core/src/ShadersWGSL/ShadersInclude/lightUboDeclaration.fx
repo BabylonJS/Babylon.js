@@ -36,7 +36,7 @@ var<uniform> light{X} : Light{X};
 
 		#if defined(SHADOWPCSS{X})
 			var highp sampler2DArrayShadow shadow{X}Sampler;
-			uniform highp sampler2DArray depthSampler{X};
+			uniform highp sampler2DArray depth{X}Sampler;
             uniform lightSizeUVCorrection{X}: vec2f[SHADOWCSMNUM_CASCADES{X}];
             uniform depthCorrection{X}: f32[SHADOWCSMNUM_CASCADES{X}];
             uniform penumbraDarkness{X}: f32;
@@ -76,9 +76,10 @@ var<uniform> light{X} : Light{X};
 
 		#if defined(SHADOWPCSS{X})
 			var shadow{X}Sampler: sampler;
-			var depthSampler{X}: sampler;
+			var depth{X}Sampler: sampler;
 		#elif defined(SHADOWPCF{X})
-			var shadow{X}Sampler: sampler;
+			var shadow{X}Sampler: sampler_comparison;
+			var shadow{X}Texture: texture_depth_2d;
 		#else
 			var shadow{X}Sampler: sampler;
 		#endif

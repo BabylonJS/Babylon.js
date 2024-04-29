@@ -9,6 +9,7 @@ import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Mesh } from "../../Meshes/mesh";
 
 import type { IShadowLight } from "../../Lights/shadowLight";
+import type { LightBindingOptions } from "../../Lights/light";
 import { Light } from "../../Lights/light";
 import type { MaterialDefines } from "../../Materials/materialDefines";
 import type { Effect, IEffectCreationOptions } from "../../Materials/effect";
@@ -102,8 +103,9 @@ export interface IShadowGenerator {
      * It implies the uniforms available on the materials are the standard BJS ones.
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
      * @param effect The effect we are binding the information for
+     * @param options The options to configure the binding
      */
-    bindShadowLight(lightIndex: string, effect: Effect): void;
+    bindShadowLight(lightIndex: string, effect: Effect, options?: LightBindingOptions): void;
     /**
      * Gets the transformation matrix used to project the meshes into the map from the light point of view.
      * (eq to shadow projection matrix * light transform matrix)
@@ -1758,8 +1760,9 @@ export class ShadowGenerator implements IShadowGenerator {
      * defined in the generator but impacting the effect).
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
      * @param effect The effect we are binding the information for
+     * @param options options to be used when binding the shadow information
      */
-    public bindShadowLight(lightIndex: string, effect: Effect): void {
+    public bindShadowLight(lightIndex: string, effect: Effect, options?: LightBindingOptions): void {
         const light = this._light;
         const scene = this._scene;
 
@@ -1783,12 +1786,23 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Only PCF uses depth stencil texture.
+        const setTextureForShadows = options && options.setTextureForShadows;
+        const shadowMapForRendering = this.getShadowMapForRendering();
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", true, lightIndex, shadowMapForRendering);
+            } else {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMapForRendering);
+            }
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), shadowMap.getSize().width, 1 / shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-            effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", true, lightIndex, shadowMapForRendering);
+                setTextureForShadows("depth", false, lightIndex, shadowMapForRendering);
+            } else {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMapForRendering);
+                effect.setTexture("depthSampler" + lightIndex, shadowMapForRendering);
+            }
             light._uniformBuffer.updateFloat4(
                 "shadowsInfo",
                 this.getDarkness(),
@@ -1798,7 +1812,11 @@ export class ShadowGenerator implements IShadowGenerator {
                 lightIndex
             );
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", false, lightIndex, shadowMapForRendering);
+            } else {
+                effect.setTexture("shadowSampler" + lightIndex, shadowMapForRendering);
+            }
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
         }
 

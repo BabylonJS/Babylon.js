@@ -14,6 +14,11 @@ import type { ISortableLight } from "./lightConstants";
 import { LightConstants } from "./lightConstants";
 import type { Camera } from "../Cameras/camera";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import type { Texture } from "../Materials/Textures/texture";
+
+export type LightBindingOptions = {
+    setTextureForShadows?: (rootName: string, depthStencil: boolean, index: string, texture: Nullable<Texture>) => void;
+};
 
 /**
  * Base class of all the lights in Babylon. It groups all the generic information about lights.
@@ -410,8 +415,9 @@ export abstract class Light extends Node implements ISortableLight {
      * @param effect The effect we are binding the data to
      * @param useSpecular Defines if specular is supported
      * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
+     * @param options Options to be used when binding
      */
-    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+    public _bindLight(lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true, options?: LightBindingOptions): void {
         const iAsString = lightIndex.toString();
         let needUpdate = false;
 
@@ -441,7 +447,7 @@ export abstract class Light extends Node implements ISortableLight {
         if (scene.shadowsEnabled && this.shadowEnabled && receiveShadows) {
             const shadowGenerator = this.getShadowGenerator(scene.activeCamera) ?? this.getShadowGenerator();
             if (shadowGenerator) {
-                shadowGenerator.bindShadowLight(iAsString, effect);
+                shadowGenerator.bindShadowLight(iAsString, effect, options);
                 needUpdate = true;
             }
         }

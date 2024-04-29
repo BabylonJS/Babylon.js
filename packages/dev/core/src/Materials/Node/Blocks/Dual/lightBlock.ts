@@ -24,9 +24,11 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
+import type { Texture } from "../../../../Materials/Textures/texture";
+import type { RenderTargetTexture } from "core/Materials/Textures";
 
 /**
  * Block used to add light in the fragment shader
@@ -216,7 +218,15 @@ export class LightBlock extends NodeMaterialBlock {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
+            PrepareUniformsAndSamplersForLight(
+                lightIndex,
+                state.uniforms,
+                state.samplers,
+                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
+                uniformBuffers,
+                onlyUpdateBuffersList,
+                state.shaderLanguage === ShaderLanguage.WGSL
+            );
         }
     }
 
@@ -226,11 +236,24 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
+        const options = {
+            setTextureForShadows: (rootName: string, depthStencil: boolean, index: string, texture: Nullable<Texture>) => {
+                if (depthStencil) {
+                    effect.setDepthStencilTexture(`${rootName}${index}Texture`, texture as Nullable<RenderTargetTexture>);
+                } else {
+                    effect.setTexture(`${rootName}${index}Texture`, texture);
+                }
+                if (texture) {
+                    effect.setTextureSampler(`${rootName}${index}Sampler`, texture!._texture);
+                }
+            },
+        };
+        const isWGSL = nodeMaterial.shaderLanguage === ShaderLanguage.WGSL;
 
         if (!this.light) {
-            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
+            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, isWGSL ? options : undefined);
         } else {
-            BindLight(this.light, this._lightId, scene, effect, true);
+            BindLight(this.light, this._lightId, scene, effect, true, undefined, isWGSL ? options : undefined);
         }
     }
 

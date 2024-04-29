@@ -1211,10 +1211,6 @@ export class WebGPUEngine extends AbstractEngine {
      * @param name The texture name
      */
     public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
-        if (channel === undefined) {
-            return;
-        }
-
         if (!texture || !texture.depthStencilTexture) {
             this._setTexture(channel, null, undefined, undefined, name);
         } else {
