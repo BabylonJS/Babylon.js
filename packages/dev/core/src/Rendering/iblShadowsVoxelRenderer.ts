@@ -14,6 +14,7 @@ import "../Shaders/voxelGrid.vertex";
 import "../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../Shaders/voxelGrid3dDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
+import { Vector4 } from "../Maths/math.vector";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -60,7 +61,10 @@ export class IblShadowsVoxelRenderer {
 
     private _voxelDebugPass: PostProcess;
     private _voxelDebugEnabled: boolean = false;
-
+    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
+        this._debugSizeParams.set(x, y, widthScale, heightScale);
+    }
     public get voxelDebugEnabled(): boolean {
         return this._voxelDebugEnabled;
     }
@@ -74,7 +78,7 @@ export class IblShadowsVoxelRenderer {
             this._voxelDebugPass = new PostProcess(
                 "Final compose shader",
                 this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
-                ["slice"], // attributes
+                ["sizeParams"], // attributes
                 ["voxelTexture"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
@@ -84,6 +88,7 @@ export class IblShadowsVoxelRenderer {
             this._voxelDebugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTexture("voxelTexture", this._voxelGridRT);
+                effect.setVector4("sizeParams", this._debugSizeParams);
             };
         }
     }

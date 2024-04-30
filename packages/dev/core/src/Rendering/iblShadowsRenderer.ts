@@ -12,10 +12,10 @@ import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
 import { IblShadowsVoxelRenderer } from "../Rendering/iblShadowsVoxelRenderer";
-import { IblShadowsShadowPass } from "../Rendering/iblShadowsShadowPass";
+import { IblShadowsComputePass } from "../Rendering/iblShadowsComputePass";
 
 import "../Shaders/postprocess.vertex";
-import "../Shaders/iblShadowDebug.fragment";
+import "../Shaders/iblShadowGBufferDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
@@ -77,7 +77,7 @@ export class IblShadowsRenderer {
 
     private _voxelRenderer: IblShadowsVoxelRenderer;
     private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
-    private _shadowComputePass: IblShadowsShadowPass;
+    private _shadowComputePass: IblShadowsComputePass;
     private _spatialBlurPass: IblShadowsSpatialBlurPass;
 
     public setIblTexture(iblSource: Texture) {
@@ -108,6 +108,30 @@ export class IblShadowsRenderer {
         this._importanceSamplingRenderer.debugEnabled = enabled;
     }
 
+    public get voxelDebugEnabled(): boolean {
+        return this._voxelRenderer.voxelDebugEnabled;
+    }
+
+    public set voxelDebugEnabled(enabled: boolean) {
+        this._voxelRenderer.voxelDebugEnabled = enabled;
+    }
+
+    public get shadowComputeDebugEnabled(): boolean {
+        return this._shadowComputePass.debugEnabled;
+    }
+
+    public set shadowComputeDebugEnabled(enabled: boolean) {
+        this._shadowComputePass.debugEnabled = enabled;
+    }
+
+    public get spatialBlurPassDebugEnabled(): boolean {
+        return this._spatialBlurPass.debugEnabled;
+    }
+
+    public set spatialBlurPassDebugEnabled(enabled: boolean) {
+        this._spatialBlurPass.debugEnabled = enabled;
+    }
+
     public get gbufferDebugEnabled(): boolean {
         return this._gbufferDebugEnabled;
     }
@@ -127,7 +151,7 @@ export class IblShadowsRenderer {
             samplerNames = samplerNames.map((_, i) => PrePassRenderer.TextureFormats[this._prePassEffectConfiguration.texturesRequired[i]].name);
             this._debugPass = new PostProcess(
                 "iblShadows_GBuffer_Debug",
-                "iblShadowDebug",
+                "iblShadowGBufferDebug",
                 ["sizeParams"], // attributes
                 samplerNames,
                 1.0, // options
@@ -135,37 +159,78 @@ export class IblShadowsRenderer {
                 Texture.BILINEAR_SAMPLINGMODE, // sampling
                 this._engine
             );
-
-            this._debugPass.onBeforeRenderObservable.add((effect) => {
-                this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
-                    const index = prePassRenderer.getIndex(type);
-                    if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
-                });
-            });
-            this._updateDebugPass();
         } else {
             this._debugPass.dispose();
         }
     }
 
-    private _updateDebugPass() {
+    private _updateDebugPasses() {
         let count = 0;
         if (this._gbufferDebugEnabled) count++;
         if (this.importanceSamplingDebugEnabled) count++;
-        if (this._voxelRenderer.voxelDebugEnabled) count++;
-        if (this._shadowComputePass.debugEnabled) count++;
-        if (this._spatialBlurPass.debugEnabled) count++;
+        if (this.voxelDebugEnabled) count++;
+        if (this.shadowComputeDebugEnabled) count++;
+        if (this.spatialBlurPassDebugEnabled) count++;
 
-        count = 4;
+        // count = 4;
         const rows = Math.ceil(Math.sqrt(count));
         const cols = Math.ceil(count / rows);
         const width = 1.0 / cols;
         const height = 1.0 / rows;
-
+        let x = 0;
+        let y = 0;
         if (this.gbufferDebugEnabled) {
-            this._debugPass.onBeforeRenderObservable.add((effect) => {
-                effect.setFloat4("sizeParams", 0, 0, width, height);
-            });
+            const prePassRenderer = this._scene!.prePassRenderer;
+            if (!prePassRenderer) {
+                Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
+                return;
+            }
+            const xOffset = x;
+            const yOffset = y;
+            this._debugPass.onApply = (effect) => {
+                this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
+                    const index = prePassRenderer.getIndex(type);
+                    if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
+                });
+                effect.setFloat4("sizeParams", xOffset, yOffset, cols, rows);
+            };
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
+        if (this.importanceSamplingDebugEnabled) {
+            this._importanceSamplingRenderer.setDebugDisplayParams(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
+        if (this.voxelDebugEnabled) {
+            this._voxelRenderer.setDebugDisplayParams(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
+        if (this.shadowComputeDebugEnabled) {
+            this._shadowComputePass.setDebugDisplayParams(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
+        if (this.spatialBlurPassDebugEnabled) {
+            this._spatialBlurPass.setDebugDisplayParams(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
         }
     }
 
@@ -222,7 +287,7 @@ export class IblShadowsRenderer {
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
         this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
-        this._shadowComputePass = new IblShadowsShadowPass(this._scene);
+        this._shadowComputePass = new IblShadowsComputePass(this._scene);
         this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
         this._createTextures();
 
@@ -232,6 +297,7 @@ export class IblShadowsRenderer {
         });
 
         this._scene.onBeforeRenderObservable.add(() => {
+            this._updateDebugPasses();
             this._shadowComputePass.update();
             this._spatialBlurPass.update();
         });
