@@ -7,6 +7,7 @@ import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textu
 import { Vector4 } from "../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../Shaders/iblShadowSpatialBlur.fragment";
+import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 
 /**
@@ -27,6 +28,10 @@ export class IblShadowsSpatialBlurPass {
     }
 
     private _debugPass: PostProcess;
+    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
+        this._debugSizeParams.set(x, y, widthScale, heightScale);
+    }
     private _debugEnabled: boolean = false;
 
     public get debugEnabled(): boolean {
@@ -37,23 +42,24 @@ export class IblShadowsSpatialBlurPass {
         if (this._debugEnabled === enabled) {
             return;
         }
-        if (!this._debugPass) {
+        this._debugEnabled = enabled;
+        if (enabled) {
             this._debugPass = new PostProcess(
-                "spatial_debug",
-                "shadowPassDebug",
-                null,
-                ["shadowTexture"],
-                1.0,
-                this._scene.activeCamera,
-                Texture.BILINEAR_SAMPLINGMODE,
-                this._engine
+                "Shadow Spatial Blur Pass Debug",
+                "iblShadowDebug",
+                ["sizeParams"], // attributes
+                ["debugSampler"], // textures
+                1.0, // options
+                this._scene.activeCamera, // camera
+                Texture.BILINEAR_SAMPLINGMODE, // sampling
+                this._engine // engine
             );
             this._debugPass.onApply = (effect) => {
-                const shadowPassPT = this._scene.iblShadowsRenderer!.getShadowTexture();
-                effect.setTexture("shadowTexture", shadowPassPT);
+                // update the caustic texture with what we just rendered.
+                effect.setTexture("debugSampler", this._outputPT);
+                effect.setVector4("sizeParams", this._debugSizeParams);
             };
         }
-        this._debugEnabled = enabled;
     }
 
     /**

@@ -10,6 +10,7 @@ import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textu
 // import { Logger } from "../Misc/logger";
 import "../Shaders/importanceSamplingDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
+import { Vector4 } from "../Maths/math.vector";
 
 const cdfyFragment = `
     precision highp sampler2D;
@@ -172,7 +173,10 @@ export class IblShadowsImportanceSamplingRenderer {
 
     private _debugPass: PostProcess;
     private _debugEnabled: boolean = false;
-
+    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
+        this._debugSizeParams.set(x, y, widthScale, heightScale);
+    }
     public get debugEnabled(): boolean {
         return this._debugEnabled;
     }
@@ -186,7 +190,7 @@ export class IblShadowsImportanceSamplingRenderer {
             this._debugPass = new PostProcess(
                 "Importance Sample Debug",
                 "importanceSamplingDebug",
-                [], // attributes
+                ["sizeParams"], // attributes
                 ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
@@ -199,6 +203,7 @@ export class IblShadowsImportanceSamplingRenderer {
                 effect.setTexture("cdfx", this._cdfxPT);
                 effect.setTexture("icdfx", this._icdfxPT);
                 effect.setTexture("iblSource", this._iblSource);
+                effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
             };
         }
     }
