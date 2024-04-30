@@ -75,8 +75,10 @@ var<uniform> light{X} : Light{X};
 		varying vDepthMetric{X}: f32;
 
 		#if defined(SHADOWPCSS{X})
-			var shadow{X}Sampler: sampler;
-			var depth{X}Sampler: sampler;
+			var shadow{X}Sampler: sampler_comparison;			
+			var shadow{X}Texture: texture_depth_2d;
+			var depth{X}Sampler: sampler;			
+			var depth{X}Texture: texture_2d<f32>;
 		#elif defined(SHADOWPCF{X})
 			var shadow{X}Sampler: sampler_comparison;
 			var shadow{X}Texture: texture_depth_2d;

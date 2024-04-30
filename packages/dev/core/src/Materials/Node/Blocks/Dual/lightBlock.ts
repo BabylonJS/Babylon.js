@@ -238,16 +238,18 @@ export class LightBlock extends NodeMaterialBlock {
         const scene = mesh.getScene();
         const options = {
             setTextureForShadows: (rootName: string, depthStencil: boolean, index: string, texture: Nullable<Texture>) => {
+                const textureName = `${rootName}${index}Texture`;
+                const samplerName = `${rootName}${index}Sampler`;
                 if (depthStencil) {
-                    effect.setDepthStencilTexture(`${rootName}${index}Texture`, texture as Nullable<RenderTargetTexture>);
+                    effect.setDepthStencilTexture(textureName, texture as Nullable<RenderTargetTexture>);
                 } else {
-                    effect.setTexture(`${rootName}${index}Texture`, texture);
+                    effect.setTexture(textureName, texture);
                 }
                 if (texture) {
                     if (depthStencil) {
-                        effect.setTextureSampler(`${rootName}${index}Sampler`, (texture as RenderTargetTexture).depthStencilTexture);
+                        effect.setTextureSampler(samplerName, (texture as RenderTargetTexture).depthStencilTexture);
                     } else {
-                        effect.setTextureSampler(`${rootName}${index}Sampler`, texture!._texture);
+                        effect.setTextureSampler(samplerName, texture!._texture);
                     }
                 }
             },
