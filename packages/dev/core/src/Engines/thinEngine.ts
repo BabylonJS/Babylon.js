@@ -3012,7 +3012,7 @@ export class ThinEngine extends AbstractEngine {
 
                 texture._creationFlags = creationFlags ?? 0;
 
-                const tip = this._getTexImageParametersForCreateTexture(texture.format, extension, texture._useSRGBBuffer);
+                const tip = this._getTexImageParametersForCreateTexture(texture.format, texture._useSRGBBuffer);
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
@@ -3072,7 +3072,7 @@ export class ThinEngine extends AbstractEngine {
      * @returns The options to pass to texImage2D or texImage3D calls.
      * @internal
      */
-    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
+    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, useSRGBBuffer: boolean): TexImageParameters {
         babylonFormat = babylonFormat ?? Constants.TEXTUREFORMAT_UNDEFINED;
 
         let format: number, internalFormat: number;
@@ -3612,6 +3612,7 @@ export class ThinEngine extends AbstractEngine {
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture.format =
+            //texture.format !== -1 ? texture.format : extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : format ?? Constants.TEXTUREFORMAT_RGBA;
             texture.format !== -1 ? texture.format : format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA);
 
         if (
