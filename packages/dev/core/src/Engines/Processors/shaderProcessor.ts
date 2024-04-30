@@ -328,7 +328,7 @@ export class ShaderProcessor {
 
         // General pre processing
         if (options.processor.preProcessor) {
-            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
         }
 
         preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
@@ -355,7 +355,7 @@ export class ShaderProcessor {
 
         // General pre processing
         if (options.processor?.preProcessor) {
-            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+            preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
         }
 
         preparedSourceCode = this._EvaluatePreProcessors(preparedSourceCode, preprocessors, options);

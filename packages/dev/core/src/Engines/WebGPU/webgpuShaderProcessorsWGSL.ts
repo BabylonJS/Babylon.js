@@ -76,6 +76,21 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;
 
+    public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
+        // Convert defines into const
+        for (const key in preProcessors) {
+            if (key === "__VERSION__") {
+                continue;
+            }
+            const value = preProcessors[key];
+            if (!isNaN(parseInt(value))) {
+                code = `const ${key}: i32 = ${value};\n` + code;
+            }
+        }
+
+        return code;
+    }
+
     protected _getArraySize(name: string, uniformType: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
 
