@@ -20,10 +20,10 @@ var<uniform> light{X} : Light{X};
 
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
-		uniform lightMatrix{X}: mat4x4f[SHADOWCSMNUM_CASCADES{X}];
+		uniform lightMatrix{X}: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;
 
-		varying vPositionFromLight{X}: vec4f[SHADOWCSMNUM_CASCADES{X}];
-		varying vDepthMetric{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+		varying vPositionFromLight{X}: array<vec4f, SHADOWCSMNUM_CASCADES{X}>;
+		varying vDepthMetric{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
 		varying vPositionFromCamera{X}: vec4f;
 	#elif defined(SHADOWCUBE{X})
 	#else
