@@ -104,8 +104,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
 
     // Copy to clipboard the code this option actually does
     // Example : material.sideOrientation = 1;
-    onCopyClick(){
-        if(this.props && this.props.target){
+    onCopyClick() {
+        if (this.props && this.props.target) {
             let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];

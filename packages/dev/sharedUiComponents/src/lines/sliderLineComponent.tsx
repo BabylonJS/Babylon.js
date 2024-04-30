@@ -125,8 +125,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
 
     // Copy to clipboard the code this slider actually does
     // Example : ImageProcessingConfiguration.contrast = 1;
-    onCopyClick(){
-        if(this.props && this.props.target){
+    onCopyClick() {
+        if (this.props && this.props.target) {
             let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
@@ -183,7 +183,6 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                     <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
-
         );
     }
 }

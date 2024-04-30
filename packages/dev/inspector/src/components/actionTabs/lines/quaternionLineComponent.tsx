@@ -146,8 +146,8 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
 
     // Copy to clipboard the code this Quaternion actually does
     // Example : cube.rotationQuaternion = new BABYLON.Quaternion(0,0,0,1);
-    onCopyClick(){
-        if(this.props && this.props.target){
+    onCopyClick() {
+        if (this.props && this.props.target) {
             let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];

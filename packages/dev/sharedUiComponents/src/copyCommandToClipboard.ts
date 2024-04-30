@@ -2,7 +2,7 @@ import * as BABYLON from "core/index";
 
 // Inspired by previous copyToClipboard() function which was copying Color3
 // Copies strCommand to clipboard
-export function copyCommandToClipboard(strCommand: string){
+export function copyCommandToClipboard(strCommand: string) {
     const element = document.createElement("div");
     element.textContent = strCommand;
     document.body.appendChild(element);
@@ -24,11 +24,11 @@ export function copyCommandToClipboard(strCommand: string){
 // Looping on BABYLON classes to find real type
 export function getInstanceType(target: any): string {
     for (let className in BABYLON) {
-        try{
-            if (target instanceof (BABYLON[className as keyof typeof BABYLON] as any)){
+        try {
+            if (target instanceof (BABYLON[className as keyof typeof BABYLON] as any)) {
                 return className;
             }
-        } catch(err){}
+        } catch (err) {}
     }
     return "Unknown";
 }

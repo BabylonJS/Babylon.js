@@ -167,8 +167,8 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
 
     // Copy to clipboard the code this Color3 actually does
     // Example : material.diffuseColor = new BABYLON.Vector3(0,1,0);
-    onCopyClick(){
-        if(this.props && this.props.target){
+    onCopyClick() {
+        if (this.props && this.props.target) {
             let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];

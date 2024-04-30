@@ -114,8 +114,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
 
     // Copy to clipboard the code this checkbox actually does
     // Example : mesh.checkCollisions = true;
-    onCopyClick(){
-        if(this.props && this.props.target){
+    onCopyClick() {
+        if (this.props && this.props.target) {
             let targetName = getInstanceType(this.props.target);
             let targetProperty = this.props.propertyName;
             let value = this.props.target[this.props.propertyName!];
