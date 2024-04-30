@@ -109,7 +109,7 @@
         return esm;
     }
        
-    fn computeShadowCSM(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_2d_array<f32>, shadowSampler: sampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
+    fn computeShadowCSM(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_2d_array<f32>, shadowSampler: sampler, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uv: vec2f = 0.5 * clipSpace.xy +  vec2f(0.5);
@@ -117,9 +117,9 @@
         var shadowPixelDepth: f32 = clamp(depthMetric, 0., 1.0);
 
         #ifndef SHADOWFLOAT
-            var shadow: f32 = unpack(textureSample(shadowTexture, shadowSampler, uv, i32(layer)));
+            var shadow: f32 = unpack(textureSample(shadowTexture, shadowSampler, uv, layer));
         #else
-            var shadow: f32 = textureSample(shadowTexture, shadowSampler, uv, i32(layer)).x;
+            var shadow: f32 = textureSample(shadowTexture, shadowSampler, uv, layer).x;
         #endif
 
         return select(1., computeFallOff(darkness, clipSpace.xy, frustumEdgeFalloff), shadowPixelDepth > shadow );
@@ -256,14 +256,14 @@
 
     // Shadow PCF kernel size 1 with a single tap (lowest quality)
     
-    fn computeShadowWithCSMPCF1(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, darkness: f32, frustumEdgeFalloff: f32) -> f32
+    fn computeShadowWithCSMPCF1(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
 
         uvDepth.z = clamp(getZInClip(clipSpace, uvDepth), 0., GREATEST_LESS_THAN_ONE);
 
-        var shadow: f32 = textureSampleCompare(shadowTexture, shadowSampler, uvDepth.xy, i32(layer), uvDepth.z);
+        var shadow: f32 = textureSampleCompare(shadowTexture, shadowSampler, uvDepth.xy, layer, uvDepth.z);
         shadow = mix(darkness, 1., shadow);
         return computeFallOff(shadow, clipSpace.xy, frustumEdgeFalloff);
     }
@@ -272,7 +272,7 @@
     // This uses a well distributed taps to allow a gaussian distribution covering a 3*3 kernel
     // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
     
-    fn computeShadowWithCSMPCF3(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
+    fn computeShadowWithCSMPCF3(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
@@ -295,10 +295,10 @@
         var v: vec2f =  vec2f((2. - st.y) / uvw0.y - 1., st.y / uvw1.y + 1.) * shadowMapSizeAndInverse.y;
 
         var shadow: f32 = 0.;
-        shadow += uvw0.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[0]), i32(layer), uvDepth.z);
-        shadow += uvw1.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[0]), i32(layer), uvDepth.z);
-        shadow += uvw0.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[1]), i32(layer), uvDepth.z);
-        shadow += uvw1.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[1]), i32(layer), uvDepth.z);
+        shadow += uvw0.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[0]), layer, uvDepth.z);
+        shadow += uvw1.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[0]), layer, uvDepth.z);
+        shadow += uvw0.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[1]), layer, uvDepth.z);
+        shadow += uvw1.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[1]), layer, uvDepth.z);
         shadow = shadow / 16.;
 
         shadow = mix(darkness, 1., shadow);
@@ -309,7 +309,7 @@
     // This uses a well distributed taps to allow a gaussian distribution covering a 5*5 kernel
     // https://mynameismjp.wordpress.com/2013/09/10/shadow-maps/
     
-    fn computeShadowWithCSMPCF5(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
+    fn computeShadowWithCSMPCF5(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeAndInverse: vec2f, darkness: f32, frustumEdgeFalloff: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
@@ -332,15 +332,15 @@
         var v: vec3f =  vec3f((3. - 2. * st.y) / uvw0.y - 2., (3. + st.y) / uvw1.y, st.y / uvw2.y + 2.) * shadowMapSizeAndInverse.y;
 
         var shadow: f32 = 0.;
-        shadow += uvw0.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[0]), i32(layer), uvDepth.z);
-        shadow += uvw1.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[0]), i32(layer), uvDepth.z);
-        shadow += uvw2.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[0]), i32(layer), uvDepth.z);
-        shadow += uvw0.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[1]), i32(layer), uvDepth.z);
-        shadow += uvw1.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[1]), i32(layer), uvDepth.z);
-        shadow += uvw2.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[1]), i32(layer), uvDepth.z);
-        shadow += uvw0.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[2]), i32(layer), uvDepth.z);
-        shadow += uvw1.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[2]), i32(layer), uvDepth.z);
-        shadow += uvw2.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[2]), i32(layer), uvDepth.z);
+        shadow += uvw0.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[0]), layer, uvDepth.z);
+        shadow += uvw1.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[0]), layer, uvDepth.z);
+        shadow += uvw2.x * uvw0.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[0]), layer, uvDepth.z);
+        shadow += uvw0.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[1]), layer, uvDepth.z);
+        shadow += uvw1.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[1]), layer, uvDepth.z);
+        shadow += uvw2.x * uvw1.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[1]), layer, uvDepth.z);
+        shadow += uvw0.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[0], v[2]), layer, uvDepth.z);
+        shadow += uvw1.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[1], v[2]), layer, uvDepth.z);
+        shadow += uvw2.x * uvw2.y * textureSampleCompare(shadowTexture, shadowSampler,  base_uv.xy +  vec2f(u[2], v[2]), layer, uvDepth.z);
         shadow = shadow / 144.;
 
         shadow = mix(darkness, 1., shadow);
@@ -599,20 +599,20 @@
     // This is heavily inspired from http://developer.download.nvidia.com/shaderlibrary/docs/shadow_PCSS.pdf
     // and http://developer.download.nvidia.com/whitepapers/2008/PCSS_Integration.pdf
     
-    fn computeShadowWithCSMPCSS(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, searchTapCount: i32, pcfTapCount: i32, poissonSamplers: array<vec3f, 64>, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
+    fn computeShadowWithCSMPCSS(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, searchTapCount: i32, pcfTapCount: i32, poissonSamplers: array<vec3f, 64>, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
     {
         var clipSpace: vec3f = vPositionFromLight.xyz / vPositionFromLight.w;
         var uvDepth: vec3f =  vec3f(0.5 * clipSpace.xyz +  vec3f(0.5));
 
         uvDepth.z = clamp(getZInClip(clipSpace, uvDepth), 0., GREATEST_LESS_THAN_ONE);
 
-        var uvDepthLayer: vec4f =  vec4f(uvDepth.x, uvDepth.y, layer, uvDepth.z);
+        var uvDepthLayer: vec4f =  vec4f(uvDepth.x, uvDepth.y, f32(layer), uvDepth.z);
 
         var blockerDepth: f32 = 0.0;
         var sumBlockerDepth: f32 = 0.0;
         var numBlocker: f32 = 0.0;
         for (var i: i32 = 0; i < searchTapCount; i ++) {
-            blockerDepth = textureSample(depthTexture, depthSampler,  uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), i32(layer)).r;
+            blockerDepth = textureSample(depthTexture, depthSampler,  uvDepth.xy + (lightSizeUV * lightSizeUVCorrection * shadowMapSizeInverse * PoissonSamplers32[i].xy), layer).r;
             numBlocker += select(0., 1., blockerDepth < depthMetric);
             sumBlockerDepth += select(0., blockerDepth, blockerDepth < depthMetric);
         }
@@ -731,19 +731,19 @@
     }
 
     
-    fn computeShadowWithCSMPCSS16(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
+    fn computeShadowWithCSMPCSS16(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
     {
         return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthTexture, depthSampler, shadowTexture, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 16, PoissonSamplers32, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
     }
 
     
-    fn computeShadowWithCSMPCSS32(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
+    fn computeShadowWithCSMPCSS32(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
     {
         return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthTexture, depthSampler, shadowTexture, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 16, 32, PoissonSamplers32, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
     }
 
     
-    fn computeShadowWithCSMPCSS64(layer: f32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
+    fn computeShadowWithCSMPCSS64(layer: i32, vPositionFromLight: vec4f, depthMetric: f32, depthTexture: texture_2d_array<f32>, depthSampler: sampler, shadowTexture: texture_depth_2d_array, shadowSampler: sampler_comparison, shadowMapSizeInverse: f32, lightSizeUV: f32, darkness: f32, frustumEdgeFalloff: f32, lightSizeUVCorrection: vec2f, depthCorrection: f32, penumbraDarkness: f32) -> f32
     {
         return computeShadowWithCSMPCSS(layer, vPositionFromLight, depthMetric, depthTexture, depthSampler, shadowTexture, shadowSampler, shadowMapSizeInverse, lightSizeUV, darkness, frustumEdgeFalloff, 32, 64, PoissonSamplers64, lightSizeUVCorrection, depthCorrection, penumbraDarkness);
     }

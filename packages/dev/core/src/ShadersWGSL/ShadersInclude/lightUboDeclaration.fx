@@ -30,8 +30,15 @@ var<uniform> light{X} : Light{X};
         uniform frustumLengths{X}:  array<f32, SHADOWCSMNUM_CASCADES{X}>;
         uniform cascadeBlendFactor{X}: f32;
 
-		varying vPositionFromLight{X}: array<vec4f, SHADOWCSMNUM_CASCADES{X}>;
-		varying vDepthMetric{X}:  array<f32, SHADOWCSMNUM_CASCADES{X}>;
+		// Because WGSL does not allow us to have arrays as varying...
+		varying vPositionFromLight{X}_0: vec4f;
+		varying vDepthMetric{X}_0:  f32;
+		varying vPositionFromLight{X}_1: vec4f;
+		varying vDepthMetric{X}_1:  f32;
+		varying vPositionFromLight{X}_2: vec4f;
+		varying vDepthMetric{X}_2:  f32;
+		varying vPositionFromLight{X}_3: vec4f;
+		varying vDepthMetric{X}_3:  f32;
 		varying vPositionFromCamera{X}: vec4f;
 
 		#if defined(SHADOWPCSS{X})
@@ -43,13 +50,15 @@ var<uniform> light{X} : Light{X};
             uniform depthCorrection{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
             uniform penumbraDarkness{X}: f32;
 		#elif defined(SHADOWPCF{X})
-			var highp sampler2DArrayShadow shadow{X}Sampler;
-		#else
-			var highp sampler2DArray shadow{X}Sampler;
+			var shadow{X}Sampler: sampler_comparison;
+			var shadow{X}Texture: texture_depth_2d_array;
+		#else			
+			var shadow{X}Sampler: sampler;			
+			var shadow{X}Texture: texture_2d_array<f32>;
 		#endif
 
         #ifdef SHADOWCSMDEBUG{X}
-            const vCascadeColorsMultiplier{X}: vec3f[8] = vec3f[8]
+            const vCascadeColorsMultiplier{X}: array<vec3f, 8> = array<vec3f, 8>
             (
                 vec3f ( 1.5, 0.0, 0.0 ),
                 vec3f ( 0.0, 1.5, 0.0 ),
@@ -64,12 +73,12 @@ var<uniform> light{X} : Light{X};
         #endif
 
         #ifdef SHADOWCSMUSESHADOWMAXZ{X}
-            var index{X}: i32 = -1;
+            var<private> index{X}: i32 = -1;
         #else
-            var index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
+            var<private> index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
         #endif
 
-        var diff{X}: f32 = 0.;
+        var<private> diff{X}: f32 = 0.;
 	#elif defined(SHADOWCUBE{X})
 		var shadow{X}Sampler: sampler;		
 	#else

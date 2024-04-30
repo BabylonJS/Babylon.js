@@ -24,6 +24,7 @@ import { DepthReducer } from "../../Misc/depthReducer";
 import { Logger } from "../../Misc/logger";
 import { EngineStore } from "../../Engines/engineStore";
 import type { Camera } from "../../Cameras/camera";
+import type { LightBindingOptions } from "../../Lights/light";
 
 interface ICascade {
     prevBreakDistance: number;
@@ -944,8 +945,9 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * defined in the generator but impacting the effect).
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
      * @param effect The effect we are binfing the information for
+     * @param options options to be used when binding the shadow information
      */
-    public bindShadowLight(lightIndex: string, effect: Effect): void {
+    public bindShadowLight(lightIndex: string, effect: Effect, options?: LightBindingOptions): void {
         const light = this._light;
         const scene = this._scene;
 
@@ -971,8 +973,13 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         effect.setArray("frustumLengths" + lightIndex, this._frustumLengths);
 
         // Only PCF uses depth stencil texture.
+        const setTextureForShadows = options && options.setTextureForShadows;
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", true, lightIndex, shadowMap);
+            } else {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            }
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
             for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
@@ -989,14 +996,24 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                         ? 1
                         : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
             }
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
-            effect.setTexture("depthSampler" + lightIndex, shadowMap);
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", true, lightIndex, shadowMap);
+                setTextureForShadows("depth", false, lightIndex, shadowMap);
+            } else {
+                effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+                effect.setTexture("depthSampler" + lightIndex, shadowMap);
+            }
+
             effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
             effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
             effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, shadowMap);
+            if (setTextureForShadows) {
+                setTextureForShadows("shadow", false, lightIndex, shadowMap);
+            } else {
+                effect.setTexture("shadowSampler" + lightIndex, shadowMap);
+            }
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 

@@ -22,8 +22,15 @@ var<uniform> light{X} : Light{X};
 	#ifdef SHADOWCSM{X}
 		uniform lightMatrix{X}: array<mat4x4f, SHADOWCSMNUM_CASCADES{X}>;
 
-		varying vPositionFromLight{X}: array<vec4f, SHADOWCSMNUM_CASCADES{X}>;
-		varying vDepthMetric{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
+		// Because WGSL does not allow us to have arrays as varying...
+		varying vPositionFromLight{X}_0: vec4f;
+		varying vDepthMetric{X}_0:  f32;
+		varying vPositionFromLight{X}_1: vec4f;
+		varying vDepthMetric{X}_1:  f32;
+		varying vPositionFromLight{X}_2: vec4f;
+		varying vDepthMetric{X}_2:  f32;
+		varying vPositionFromLight{X}_3: vec4f;
+		varying vDepthMetric{X}_3:  f32;
 		varying vPositionFromCamera{X}: vec4f;
 	#elif defined(SHADOWCUBE{X})
 	#else
