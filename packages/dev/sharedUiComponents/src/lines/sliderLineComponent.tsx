@@ -123,6 +123,8 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return value;
     }
 
+    // Copy to clipboard the code this slider actually does
+    // Example : ImageProcessingConfiguration.contrast = 1;
     onCopyClick(){
         if(this.props && this.props.target){
             let targetName = getInstanceType(this.props.target);

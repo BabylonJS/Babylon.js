@@ -112,6 +112,8 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected, isConflict: false });
     }
 
+    // Copy to clipboard the code this checkbox actually does
+    // Example : mesh.checkCollisions = true;
     onCopyClick(){
         if(this.props && this.props.target){
             let targetName = getInstanceType(this.props.target);

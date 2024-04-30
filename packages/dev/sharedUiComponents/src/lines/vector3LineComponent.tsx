@@ -108,6 +108,8 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this.updateVector3();
     }
 
+    // Copy to clipboard the code this Vector3 actually does
+    // Example : Mesh.position = new BABYLON.Vector3(0, 1, 0);
     onCopyClick(){
         if(this.props && this.props.target){
             let targetName = getInstanceType(this.props.target);

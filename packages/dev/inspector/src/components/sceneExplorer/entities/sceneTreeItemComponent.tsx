@@ -173,6 +173,7 @@ export class SceneTreeItemComponent extends React.Component<
             return;
         }
         const scene = this.props.scene;
+        // Put scene object into window.debugNode
         setDebugNode(scene);
         this.props.onSelectionChangedObservable.notifyObservers(scene);
     }

@@ -88,6 +88,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
         this._wasSelected = true;
         const entity = this.props.entity;
+        // Put selected node into window.debugNode
         setDebugNode(entity);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
     }

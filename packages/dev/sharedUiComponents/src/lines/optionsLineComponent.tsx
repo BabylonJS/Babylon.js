@@ -102,6 +102,8 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
+    // Copy to clipboard the code this option actually does
+    // Example : material.sideOrientation = 1;
     onCopyClick(){
         if(this.props && this.props.target){
             let targetName = getInstanceType(this.props.target);
