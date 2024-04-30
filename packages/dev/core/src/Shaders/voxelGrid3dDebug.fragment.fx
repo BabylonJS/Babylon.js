@@ -4,15 +4,26 @@ varying vec2 vUV;
 
 uniform sampler3D voxelTexture;
 uniform sampler2D textureSampler;
-uniform int slice;
+uniform vec4 sizeParams;
+#define offsetX sizeParams.x
+#define offsetY sizeParams.y
+#define widthScale sizeParams.z
+#define heightScale sizeParams.w
 
 void main(void) {
 
+  vec2 uv =
+      vec2((offsetX + vUV.x) * widthScale, (offsetY + vUV.y) * heightScale);
+  if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+    gl_FragColor.rgba = texture2D(textureSampler, vUV);
+    return;
+  }
     // ***** Display all slices as a grid *******
     ivec3 size = textureSize(voxelTexture, 0);
     float dimension = sqrt(float(size.z));
-    vec2 samplePos = fract(vUV.xy * vec2(dimension));
-    int sampleIndex = int(floor(vUV.x * float(dimension)) + floor(vUV.y * float(dimension)) * dimension);
+    vec2 samplePos = fract(uv.xy * vec2(dimension));
+    int sampleIndex = int(floor(uv.x * float(dimension)) +
+                          floor(uv.y * float(dimension)) * dimension);
     glFragColor.rgb = texture(voxelTexture, vec3(samplePos.xy, float(sampleIndex) / float(size.z))).rrr;
     glFragColor.a = 1.0;
     glFragColor.rgb += texture(textureSampler, vUV.xy).rgb;

@@ -1,19 +1,20 @@
 import { Constants } from "../Engines/constants";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
-// import type { Texture } from "../Materials/Textures/texture";
+import { Texture } from "../Materials/Textures/texture";
 import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/customProceduralTexture";
 import { Matrix, Vector2, Vector4 } from "../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../Shaders/iblShadowCompute.fragment";
-// import type { PostProcess } from "../PostProcesses/postProcess";
+import "../Shaders/iblShadowDebug.fragment";
+import { PostProcess } from "../PostProcesses/postProcess";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
  * This should not be instanciated directly, as it is part of a scene component
  */
-export class IblShadowsShadowPass {
+export class IblShadowsComputePass {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
@@ -32,7 +33,11 @@ export class IblShadowsShadowPass {
         this._invWorldScaleMatrix = matrix;
     }
 
-    // private _debugPass: PostProcess;
+    private _debugPass: PostProcess;
+    private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+    public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
+        this._debugSizeParams.set(x, y, widthScale, heightScale);
+    }
     private _debugEnabled: boolean = false;
 
     public get debugEnabled(): boolean {
@@ -44,6 +49,23 @@ export class IblShadowsShadowPass {
             return;
         }
         this._debugEnabled = enabled;
+        if (enabled) {
+            this._debugPass = new PostProcess(
+                "Shadow Compute Pass Debug",
+                "iblShadowDebug",
+                ["sizeParams"], // attributes
+                ["debugSampler"], // textures
+                1.0, // options
+                this._scene.activeCamera, // camera
+                Texture.BILINEAR_SAMPLINGMODE, // sampling
+                this._engine // engine
+            );
+            this._debugPass.onApply = (effect) => {
+                // update the caustic texture with what we just rendered.
+                effect.setTexture("debugSampler", this._outputPT);
+                effect.setVector4("sizeParams", this._debugSizeParams);
+            };
+        }
     }
 
     /**
