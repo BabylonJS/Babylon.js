@@ -2988,14 +2988,31 @@ export class ThinEngine extends AbstractEngine {
             samplingMode,
             onLoad,
             onError,
-            this._prepareWebGLTexture.bind(this),
+            (
+                texture: InternalTexture,
+                extension: string,
+                scene: Nullable<ISceneLike>,
+                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+                invertY: boolean,
+                noMipmap: boolean,
+                isCompressed: boolean,
+                processFunction: (
+                    width: number,
+                    height: number,
+                    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+                    extension: string,
+                    texture: InternalTexture,
+                    continuationCallback: () => void
+                ) => boolean,
+                samplingMode: number
+            ) => this._prepareWebGLTexture(texture, extension, scene, img, invertY, noMipmap, isCompressed, processFunction, samplingMode, format),
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
 
                 texture._creationFlags = creationFlags ?? 0;
 
-                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
+                const tip = this._getTexImageParametersForCreateTexture(texture.format, extension, texture._useSRGBBuffer);
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
@@ -3056,9 +3073,7 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
-        if (babylonFormat === undefined || babylonFormat === null) {
-            babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
-        }
+        babylonFormat = babylonFormat ?? Constants.TEXTUREFORMAT_UNDEFINED;
 
         let format: number, internalFormat: number;
         if (this.webGLVersion === 1) {
@@ -3566,7 +3581,8 @@ export class ThinEngine extends AbstractEngine {
             texture: InternalTexture,
             continuationCallback: () => void
         ) => boolean,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        samplingMode: number,
+        format: Nullable<number>
     ): void {
         const maxTextureSize = this.getCaps().maxTextureSize;
         const potWidth = Math.min(maxTextureSize, this.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
@@ -3595,7 +3611,8 @@ export class ThinEngine extends AbstractEngine {
         texture.height = potHeight;
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        texture.format = texture.format !== -1 ? texture.format : extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        texture.format =
+            texture.format !== -1 ? texture.format : format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA);
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {
