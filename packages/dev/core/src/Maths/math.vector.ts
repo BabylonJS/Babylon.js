@@ -74,7 +74,7 @@ export interface Vector<N extends number[], I> extends Tensor<N, I> {
 /**
  * Static side of Vector
  */
-export interface VectorStatic<T extends Vector<number[], _I>, _I = TensorLike<T>> extends TensorStatic<T, _I> {
+export interface VectorStatic<T extends Vector<any[], _I>, _I = TensorLike<T>> extends TensorStatic<T, _I> {
     /**
      * Checks if a given vector is inside a specific range
      * @param value defines the vector to test
@@ -1156,7 +1156,7 @@ Object.defineProperties(Vector2.prototype, {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
+export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -1346,8 +1346,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public add(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
+    public add(otherVector: DeepImmutable<Vector3>): Vector3 {
+        return new Vector3(this._x + otherVector._x, this._y + otherVector._y, this._z + otherVector._z);
     }
 
     /**
@@ -1381,8 +1381,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param otherVector defines the second operand
      * @returns the resulting Vector3
      */
-    public subtract(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
+    public subtract(otherVector: DeepImmutable<Vector3>): Vector3 {
+        return new Vector3(this._x - otherVector._x, this._y - otherVector._y, this._z - otherVector._z);
     }
 
     /**
@@ -1404,8 +1404,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param z defines the z coordinate of the operand
      * @returns the resulting Vector3
      */
-    public subtractFromFloats(x: number, y: number, z: number): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x - x, this._y - y, this._z - z);
+    public subtractFromFloats(x: number, y: number, z: number): Vector3 {
+        return new Vector3(this._x - x, this._y - y, this._z - z);
     }
 
     /**
@@ -1426,8 +1426,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#35
      * @returns a new Vector3
      */
-    public negate(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(-this._x, -this._y, -this._z);
+    public negate(): Vector3 {
+        return new Vector3(-this._x, -this._y, -this._z);
     }
 
     /**
@@ -1473,8 +1473,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param scale defines the multiplier factor
      * @returns a new Vector3
      */
-    public scale(scale: number): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x * scale, this._y * scale, this._z * scale);
+    public scale(scale: number): Vector3 {
+        return new Vector3(this._x * scale, this._y * scale, this._z * scale);
     }
 
     /**
@@ -1569,8 +1569,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param q the unit quaternion representing the rotation
      * @returns a new Vector3
      */
-    public applyRotationQuaternion(q: Quaternion): this {
-        return this.applyRotationQuaternionToRef(q, new (this.constructor as Constructor<typeof Vector3, this>)());
+    public applyRotationQuaternion(q: Quaternion): Vector3 {
+        return this.applyRotationQuaternionToRef(q, new Vector3());
     }
 
     /**
@@ -1591,11 +1591,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param origin defines the origin of the projection ray
      * @returns the projected vector3
      */
-    public projectOnPlane<T extends Vector3>(plane: Plane, origin: Vector3): T {
-        const result = new (this.constructor as Constructor<typeof Vector3, T>)();
-        this.projectOnPlaneToRef(plane, origin, result);
-
-        return result;
+    public projectOnPlane(plane: Plane, origin: Vector3): Vector3 {
+        return this.projectOnPlaneToRef(plane, origin, new Vector3());
     }
 
     /**
@@ -1686,7 +1683,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public multiply(otherVector: DeepImmutable<Vector3>): this {
+    public multiply(otherVector: DeepImmutable<Vector3>): Vector3 {
         return this.multiplyByFloats(otherVector._x, otherVector._y, otherVector._z);
     }
 
@@ -1709,8 +1706,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param z defines the z coordinate of the operand
      * @returns the new Vector3
      */
-    public multiplyByFloats(x: number, y: number, z: number): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x * x, this._y * y, this._z * z);
+    public multiplyByFloats(x: number, y: number, z: number): Vector3 {
+        return new Vector3(this._x * x, this._y * y, this._z * z);
     }
 
     /**
@@ -1719,8 +1716,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param otherVector defines the second operand
      * @returns the new Vector3
      */
-    public divide(otherVector: DeepImmutable<Vector3>): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
+    public divide(otherVector: DeepImmutable<Vector3>): Vector3 {
+        return new Vector3(this._x / otherVector._x, this._y / otherVector._y, this._z / otherVector._z);
     }
 
     /**
@@ -1858,7 +1855,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public floorToRef<T extends this>(result: T): T {
+    public floorToRef<T extends Vector3>(result: T): T {
         result._x = Math.floor(this._x);
         result._y = Math.floor(this._y);
         result._z = Math.floor(this._z);
@@ -1871,8 +1868,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#22
      * @returns a new Vector3
      */
-    public floor(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
+    public floor(): Vector3 {
+        return new Vector3(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z));
     }
 
     /**
@@ -1880,7 +1877,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public fractToRef<T extends this>(result: T): T {
+    public fractToRef<T extends Vector3>(result: T): T {
         result._x = this.x - Math.floor(this._x);
         result._y = this.y - Math.floor(this._y);
         result._z = this.z - Math.floor(this._z);
@@ -1893,8 +1890,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#23
      * @returns a new Vector3
      */
-    public fract(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this.x - Math.floor(this._x), this.y - Math.floor(this._y), this.z - Math.floor(this._z));
+    public fract(): Vector3 {
+        return new Vector3(this.x - Math.floor(this._x), this.y - Math.floor(this._y), this.z - Math.floor(this._z));
     }
 
     // Properties
@@ -1987,9 +1984,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * @param other defines the right operand
      * @returns the cross product
      */
-    public cross(other: Vector3): this {
-        const result = new (this.constructor as Constructor<typeof Vector3, this>)();
-        return Vector3.CrossToRef(this, other, result);
+    public cross(other: Vector3): Vector3 {
+        return Vector3.CrossToRef(this, other, new Vector3());
     }
 
     /**
@@ -2012,10 +2008,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#124
      * @returns the new Vector3
      */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Vector3, this>)(0, 0, 0);
-        this.normalizeToRef(normalized);
-        return normalized;
+    public normalizeToNew(): Vector3 {
+        return this.normalizeToRef(new Vector3());
     }
 
     /**
@@ -2038,8 +2032,8 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
      * Example Playground https://playground.babylonjs.com/#R1F8YU#11
      * @returns the new Vector3
      */
-    public clone(): this {
-        return new (this.constructor as Constructor<typeof Vector3, this>)(this._x, this._y, this._z);
+    public clone(): Vector3 {
+        return new Vector3(this._x, this._y, this._z);
     }
 
     /**
@@ -3340,7 +3334,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3, IVector3Like>;
+Vector3 satisfies VectorStatic<Vector3, Vector3>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -3349,7 +3343,7 @@ Object.defineProperties(Vector3.prototype, {
 /**
  * Vector4 class created for EulerAngle class conversion to Quaternion
  */
-export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
+export class Vector4 implements Vector<Tuple<number, 4>, Vector4>, IVector4Like {
     private static _ZeroReadOnly = Vector4.Zero() as DeepImmutable<Vector4>;
 
     /**
@@ -3484,8 +3478,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param otherVector the vector to add
      * @returns the resulting vector
      */
-    public add(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
+    public add(otherVector: DeepImmutable<Vector4>): Vector4 {
+        return new Vector4(this.x + otherVector.x, this.y + otherVector.y, this.z + otherVector.z, this.w + otherVector.w);
     }
 
     /**
@@ -3520,8 +3514,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param otherVector the vector to add
      * @returns the new vector with the result
      */
-    public subtract(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
+    public subtract(otherVector: DeepImmutable<Vector4>): Vector4 {
+        return new Vector4(this.x - otherVector.x, this.y - otherVector.y, this.z - otherVector.z, this.w - otherVector.w);
     }
 
     /**
@@ -3546,8 +3540,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param w value to subtract
      * @returns new vector containing the result
      */
-    public subtractFromFloats(x: number, y: number, z: number, w: number): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x - x, this.y - y, this.z - z, this.w - w);
+    public subtractFromFloats(x: number, y: number, z: number, w: number): Vector4 {
+        return new Vector4(this.x - x, this.y - y, this.z - z, this.w - w);
     }
 
     /**
@@ -3571,8 +3565,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * Returns a new Vector4 set with the current Vector4 negated coordinates.
      * @returns a new vector with the negated values
      */
-    public negate(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(-this.x, -this.y, -this.z, -this.w);
+    public negate(): Vector4 {
+        return new Vector4(-this.x, -this.y, -this.z, -this.w);
     }
 
     /**
@@ -3614,8 +3608,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param scale the number to scale with
      * @returns a new vector with the result
      */
-    public scale(scale: number): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
+    public scale(scale: number): Vector4 {
+        return new Vector4(this.x * scale, this.y * scale, this.z * scale, this.w * scale);
     }
 
     /**
@@ -3701,8 +3695,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param otherVector vector to multiple with
      * @returns resulting new vector
      */
-    public multiply(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
+    public multiply(otherVector: DeepImmutable<Vector4>): Vector4 {
+        return new Vector4(this.x * otherVector.x, this.y * otherVector.y, this.z * otherVector.z, this.w * otherVector.w);
     }
     /**
      * Updates the given vector "result" with the multiplication result of the current Vector4 and the given one.
@@ -3725,16 +3719,16 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param w w value multiply with
      * @returns resulting new vector
      */
-    public multiplyByFloats(x: number, y: number, z: number, w: number): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x * x, this.y * y, this.z * z, this.w * w);
+    public multiplyByFloats(x: number, y: number, z: number, w: number): Vector4 {
+        return new Vector4(this.x * x, this.y * y, this.z * z, this.w * w);
     }
     /**
      * Returns a new Vector4 set with the division result of the current Vector4 by the given one.
      * @param otherVector vector to devide with
      * @returns resulting new vector
      */
-    public divide(otherVector: DeepImmutable<Vector4>): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
+    public divide(otherVector: DeepImmutable<Vector4>): Vector4 {
+        return new Vector4(this.x / otherVector.x, this.y / otherVector.y, this.z / otherVector.z, this.w / otherVector.w);
     }
     /**
      * Updates the given vector "result" with the division result of the current Vector4 by the given one.
@@ -3837,7 +3831,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public floorToRef<T extends this>(result: T): T {
+    public floorToRef<T extends Vector4>(result: T): T {
         result.x = Math.floor(this.x);
         result.y = Math.floor(this.y);
         result.z = Math.floor(this.z);
@@ -3849,8 +3843,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * Gets a new Vector4 from current Vector4 floored values
      * @returns a new Vector4
      */
-    public floor(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
+    public floor(): Vector4 {
+        return new Vector4(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z), Math.floor(this.w));
     }
 
     /**
@@ -3858,7 +3852,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param result the vector to store the result in
      * @returns the result vector
      */
-    public fractToRef<T extends this>(result: T): T {
+    public fractToRef<T extends Vector4>(result: T): T {
         result.x = this.x - Math.floor(this.x);
         result.y = this.y - Math.floor(this.y);
         result.z = this.z - Math.floor(this.z);
@@ -3870,13 +3864,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * Gets a new Vector4 from current Vector4 fractional values
      * @returns a new Vector4
      */
-    public fract(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(
-            this.x - Math.floor(this.x),
-            this.y - Math.floor(this.y),
-            this.z - Math.floor(this.z),
-            this.w - Math.floor(this.w)
-        );
+    public fract(): Vector4 {
+        return new Vector4(this.x - Math.floor(this.x), this.y - Math.floor(this.y), this.z - Math.floor(this.z), this.w - Math.floor(this.w));
     }
 
     // Properties
@@ -3922,10 +3911,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * Normalize the current Vector4 to a new vector
      * @returns the new Vector4
      */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Vector4, this>)();
-        this.normalizeToRef(normalized);
-        return normalized;
+    public normalizeToNew(): Vector4 {
+        return this.normalizeToRef(new Vector4());
     }
 
     /**
@@ -3933,7 +3920,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * @param reference define the Vector4 to update
      * @returns the updated Vector4
      */
-    public normalizeToRef<T extends this>(reference: T): T {
+    public normalizeToRef<T extends Vector4>(reference: T): T {
         const len = this.length();
         if (len === 0 || len === 1.0) {
             return reference.copyFrom(this);
@@ -3954,8 +3941,8 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
      * Returns a new Vector4 copied from the current one.
      * @returns the new cloned vector
      */
-    public clone(): this {
-        return new (this.constructor as Constructor<typeof Vector4, this>)(this.x, this.y, this.z, this.w);
+    public clone(): Vector4 {
+        return new Vector4(this.x, this.y, this.z, this.w);
     }
     /**
      * Updates the current Vector4 with the given one coordinates.
@@ -4368,7 +4355,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
         return left.dot(right);
     }
 }
-Vector4 satisfies VectorStatic<Vector4, IVector4Like>;
+Vector4 satisfies VectorStatic<Vector4, Vector4>;
 Object.defineProperties(Vector4.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
@@ -4380,7 +4367,7 @@ Object.defineProperties(Vector4.prototype, {
  * @see https://en.wikipedia.org/wiki/Quaternion
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
-export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
+export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuaternionLike {
     /** @internal */
     public _x: number;
 
@@ -4553,8 +4540,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#12
      * @returns a new quaternion copied from the current one
      */
-    public clone(): this {
-        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x, this._y, this._z, this._w);
+    public clone(): Quaternion {
+        return new Quaternion(this._x, this._y, this._z, this._w);
     }
 
     /**
@@ -4613,8 +4600,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @param other defines the second operand
      * @returns a new quaternion as the addition result of the given one and the current quaternion
      */
-    public add(other: DeepImmutable<Quaternion>): this {
-        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x + other._x, this._y + other._y, this._z + other._z, this._w + other._w);
+    public add(other: DeepImmutable<Quaternion>): Quaternion {
+        return new Quaternion(this._x + other._x, this._y + other._y, this._z + other._z, this._w + other._w);
     }
 
     /**
@@ -4632,7 +4619,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this;
     }
 
-    public addToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+    public addToRef<T extends Quaternion>(other: DeepImmutable<this>, result: T): T {
         result._x = this._x + other._x;
         result._y = this._y + other._y;
         result._z = this._z + other._z;
@@ -4650,7 +4637,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this;
     }
 
-    public subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+    public subtractToRef<T extends Quaternion>(other: DeepImmutable<this>, result: T): T {
         result._x = this._x - other._x;
         result._y = this._y - other._y;
         result._z = this._z - other._z;
@@ -4659,11 +4646,11 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return result;
     }
 
-    public subtractFromFloats(x: number, y: number, z: number, w: number): this {
-        return this.subtractFromFloatsToRef(x, y, z, w, new (this.constructor as Constructor<typeof Quaternion, this>)());
+    public subtractFromFloats(x: number, y: number, z: number, w: number): Quaternion {
+        return this.subtractFromFloatsToRef(x, y, z, w, new Quaternion());
     }
 
-    public subtractFromFloatsToRef<T extends this>(x: number, y: number, z: number, w: number, result: T): T {
+    public subtractFromFloatsToRef<T extends Quaternion>(x: number, y: number, z: number, w: number, result: T): T {
         result._x = this._x - x;
         result._y = this._y - y;
         result._z = this._z - z;
@@ -4678,8 +4665,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @param other defines the second operand
      * @returns a new quaternion as the subtraction result of the given one from the current one
      */
-    public subtract(other: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
+    public subtract(other: DeepImmutable<this>): Quaternion {
+        return new Quaternion(this._x - other._x, this._y - other._y, this._z - other._z, this._w - other._w);
     }
 
     /**
@@ -4703,8 +4690,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @param value defines the scale factor
      * @returns a new quaternion set by multiplying the current quaternion coordinates by the float "scale"
      */
-    public scale(value: number): this {
-        return new (this.constructor as Constructor<typeof Quaternion, this>)(this._x * value, this._y * value, this._z * value, this._w * value);
+    public scale(value: number): Quaternion {
+        return new Quaternion(this._x * value, this._y * value, this._z * value, this._w * value);
     }
 
     /**
@@ -4761,8 +4748,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @param q1 defines the second operand
      * @returns a new quaternion set as the multiplication result of the current one with the given one "q1"
      */
-    public multiply(q1: DeepImmutable<Quaternion>): this {
-        const result = new (this.constructor as Constructor<typeof Quaternion, this>)(0, 0, 0, 1.0);
+    public multiply(q1: DeepImmutable<Quaternion>): Quaternion {
+        const result = new Quaternion(0, 0, 0, 1.0);
         this.multiplyToRef(q1, result);
         return result;
     }
@@ -4814,7 +4801,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @internal
      * Do not use
      */
-    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+    public divideToRef<T extends Quaternion>(_other: DeepImmutable<this>, _result: T): T {
         throw new ReferenceError("Can not divide a quaternion");
     }
 
@@ -4858,8 +4845,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         throw new ReferenceError("Can not maximize a quaternion");
     }
 
-    public negate(): this {
-        return this.negateToRef(new (this.constructor as Constructor<typeof Quaternion, this>)());
+    public negate(): Quaternion {
+        return this.negateToRef(new Quaternion());
     }
 
     public negateInPlace(): this {
@@ -4871,7 +4858,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return this;
     }
 
-    public negateToRef<T extends this>(result: T): T {
+    public negateToRef<T extends Quaternion>(result: T): T {
         result._x = -this._x;
         result._y = -this._y;
         result._z = -this._z;
@@ -4888,7 +4875,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @internal
      * Do not use
      */
-    public floorToRef<T extends this>(_result: T): T {
+    public floorToRef<T extends Quaternion>(_result: T): T {
         throw new ReferenceError("Can not floor a quaternion");
     }
 
@@ -4896,7 +4883,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @internal
      * Do not use
      */
-    public floor(): this {
+    public floor(): Quaternion {
         throw new ReferenceError("Can not floor a quaternion");
     }
 
@@ -4904,7 +4891,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @internal
      * Do not use
      */
-    public fractToRef<T extends this>(_result: T): T {
+    public fractToRef<T extends Quaternion>(_result: T): T {
         throw new ReferenceError("Can not fract a quaternion");
     }
 
@@ -4912,7 +4899,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * @internal
      * Do not use
      */
-    public fract(): this {
+    public fract(): Quaternion {
         throw new ReferenceError("Can not fract a quaternion");
     }
 
@@ -4945,8 +4932,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#83
      * @returns a new quaternion
      */
-    public conjugate(): this {
-        return new (this.constructor as Constructor<typeof Quaternion, this>)(-this._x, -this._y, -this._z, this._w);
+    public conjugate(): Quaternion {
+        return new Quaternion(-this._x, -this._y, -this._z, this._w);
     }
 
     /**
@@ -4954,7 +4941,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#84
      * @returns a new quaternion
      */
-    public invert(): this {
+    public invert(): Quaternion {
         const conjugate = this.conjugate();
         const lengthSquared = this.lengthSquared();
         if (lengthSquared == 0 || lengthSquared == 1) {
@@ -5025,8 +5012,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
      * Example Playground https://playground.babylonjs.com/#L49EJ7#55
      * @returns the normalized quaternion
      */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Quaternion, this>)(0, 0, 0, 1);
+    public normalizeToNew(): Quaternion {
+        const normalized = new Quaternion(0, 0, 0, 1);
         this.normalizeToRef(normalized);
         return normalized;
     }
@@ -5884,7 +5871,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
     }
 }
-Quaternion satisfies TensorStatic<Quaternion, IQuaternionLike>;
+Quaternion satisfies TensorStatic<Quaternion, Quaternion>;
 Object.defineProperties(Quaternion.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
@@ -5912,7 +5899,7 @@ Object.defineProperties(Quaternion.prototype, {
  * Example Playground - Overview Transformation - https://playground.babylonjs.com/#AV9X17#1
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
-export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
+export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatrixLike {
     /**
      * @see Tensor.dimension
      */
@@ -6194,8 +6181,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param other defines the matrix to add
      * @returns a new matrix as the addition of the current matrix and the given one
      */
-    public add(other: DeepImmutable<Matrix>): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public add(other: DeepImmutable<Matrix>): Matrix {
+        const result = new Matrix();
         this.addToRef(other, result);
         return result;
     }
@@ -6234,7 +6221,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public addInPlace(other: DeepImmutable<this>): this {
+    public addInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6253,7 +6240,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public subtract(other: DeepImmutable<this>): this {
+    public subtract(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6262,7 +6249,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         this.markAsUpdated();
         return this;
     }
-    public subtractToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+    public subtractToRef<T extends Matrix>(other: DeepImmutable<Matrix>, result: T): T {
         const m = this._m,
             otherM = other.m,
             resultM = result._m;
@@ -6272,7 +6259,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         result.markAsUpdated();
         return result;
     }
-    public subtractInPlace(other: DeepImmutable<this>): this {
+    public subtractInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6282,11 +6269,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public subtractFromFloats(...floats: Tuple<number, 16>): this {
-        return this.subtractFromFloatsToRef(...floats, new (this.constructor as Constructor<typeof Matrix, this>)());
+    public subtractFromFloats(...floats: Tuple<number, 16>): Matrix {
+        return this.subtractFromFloatsToRef(...floats, new Matrix());
     }
 
-    public subtractFromFloatsToRef<T extends this>(...args: [...Tuple<number, 16>, T]): T {
+    public subtractFromFloatsToRef<T extends Matrix>(...args: [...Tuple<number, 16>, T]): T {
         const result = args.pop() as T,
             m = this._m,
             resultM = result._m,
@@ -6551,8 +6538,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param other defines the second operand
      * @returns a new matrix set with the multiplication result of the current Matrix and the given one
      */
-    public multiply(other: DeepImmutable<Matrix>): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public multiply(other: DeepImmutable<Matrix>): Matrix {
+        const result = new Matrix();
         this.multiplyToRef(other, result);
         return result;
     }
@@ -6563,7 +6550,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param other defines the second operand
      * @returns the current updated matrix
      */
-    public multiplyInPlace(other: DeepImmutable<this>): this {
+    public multiplyInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6593,7 +6580,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param args The floats and ref
      * @returns The updated ref
      */
-    public multiplyByFloatsToRef<T extends this>(...args: [...Tuple<number, 16>, T]): T {
+    public multiplyByFloatsToRef<T extends Matrix>(...args: [...Tuple<number, 16>, T]): T {
         const result = args.pop() as T,
             m = this._m,
             resultM = result._m,
@@ -6694,11 +6681,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public divide(other: DeepImmutable<this>): this {
-        return this.divideToRef(other, new (this.constructor as Constructor<typeof Matrix, this>)());
+    public divide(other: DeepImmutable<Matrix>): Matrix {
+        return this.divideToRef(other, new Matrix());
     }
 
-    public divideToRef<T extends this>(other: DeepImmutable<this>, result: T): T {
+    public divideToRef<T extends Matrix>(other: DeepImmutable<Matrix>, result: T): T {
         const m = this._m,
             otherM = other.m,
             resultM = result._m;
@@ -6709,7 +6696,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return result;
     }
 
-    public divideInPlace(other: DeepImmutable<this>): this {
+    public divideInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6719,7 +6706,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public minimizeInPlace(other: DeepImmutable<this>): this {
+    public minimizeInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6738,7 +6725,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public maximizeInPlace(other: DeepImmutable<this>): this {
+    public maximizeInPlace(other: DeepImmutable<Matrix>): this {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6757,8 +6744,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public negate(): this {
-        return this.negateToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    public negate(): Matrix {
+        return this.negateToRef(new Matrix());
     }
 
     public negateInPlace(): this {
@@ -6770,7 +6757,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return this;
     }
 
-    public negateToRef<T extends this>(result: T): T {
+    public negateToRef<T extends Matrix>(result: T): T {
         const m = this._m,
             resultM = result._m;
         for (let i = 0; i < 16; i++) {
@@ -6819,7 +6806,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         );
     }
 
-    public equalsWithEpsilon(other: DeepImmutable<this>, epsilon: number = 0): boolean {
+    public equalsWithEpsilon(other: DeepImmutable<Matrix>, epsilon: number = 0): boolean {
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
@@ -6840,11 +6827,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return true;
     }
 
-    public floor(): this {
-        return this.floorToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    public floor(): Matrix {
+        return this.floorToRef(new Matrix());
     }
 
-    public floorToRef<T extends this>(result: T): T {
+    public floorToRef<T extends Matrix>(result: T): T {
         const m = this._m,
             resultM = result._m;
         for (let i = 0; i < 16; i++) {
@@ -6854,11 +6841,11 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
         return result;
     }
 
-    public fract(): this {
-        return this.fractToRef(new (this.constructor as Constructor<typeof Matrix, this>)());
+    public fract(): Matrix {
+        return this.fractToRef(new Matrix());
     }
 
-    public fractToRef<T extends this>(result: T): T {
+    public fractToRef<T extends Matrix>(result: T): T {
         const m = this._m,
             resultM = result._m;
         for (let i = 0; i < 16; i++) {
@@ -6873,8 +6860,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * Example Playground - https://playground.babylonjs.com/#AV9X17#18
      * @returns a new matrix from the current matrix
      */
-    public clone(): this {
-        const matrix = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public clone(): Matrix {
+        const matrix = new Matrix();
         matrix.copyFrom(this);
         return matrix;
     }
@@ -7043,8 +7030,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * Example Playground - https://playground.babylonjs.com/#AV9X17#40
      * @returns the new transposed matrix
      */
-    public transpose(): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public transpose(): Matrix {
+        const result = new Matrix();
         Matrix.TransposeToRef(this, result);
         return result;
     }
@@ -7089,8 +7076,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * @param scale defines the scale factor
      * @returns a new matrix
      */
-    public scale(scale: number): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public scale(scale: number): Matrix {
+        const result = new Matrix();
         this.scaleToRef(scale, result);
         return result;
     }
@@ -7151,8 +7138,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>>, IMatrixLike {
      * Gets only rotation part of the current matrix
      * @returns a new matrix sets to the extracted rotation matrix from the current one
      */
-    public getRotationMatrix(): this {
-        const result = new (this.constructor as Constructor<typeof Matrix, this>)();
+    public getRotationMatrix(): Matrix {
+        const result = new Matrix();
         this.getRotationMatrixToRef(result);
         return result;
     }
