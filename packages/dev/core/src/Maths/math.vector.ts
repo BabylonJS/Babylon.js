@@ -8,7 +8,7 @@ import type { Plane } from "./math.plane";
 import { PerformanceConfigurator } from "../Engines/performanceConfigurator";
 import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
-import type { Dimension, Tensor, TensorStatic } from "./tensor";
+import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
 import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike } from "./math.like";
 import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
 
@@ -20,7 +20,7 @@ const _ExtractAsInt = (value: number) => {
 /**
  * Represents a vector of any dimension
  */
-export interface Vector<N extends number[] = number[]> extends Tensor<N> {
+export interface Vector<N extends number[], I> extends Tensor<N, I> {
     /**
      * @see Tensor.dimension
      */
@@ -61,27 +61,27 @@ export interface Vector<N extends number[] = number[]> extends Tensor<N> {
      * Normalize the current Vector to a new vector
      * @returns the new Vector
      */
-    normalizeToNew(): this;
+    normalizeToNew(): Vector<N, I>;
 
     /**
      * Normalize the current Vector to the reference
      * @param reference define the Vector to update
      * @returns the updated Vector
      */
-    normalizeToRef(reference: this): this;
+    normalizeToRef<T extends I>(reference: T): T;
 }
 
 /**
  * Static side of Vector
  */
-export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
+export interface VectorStatic<T extends Vector<number[], _I>, _I = TensorLike<T>> extends TensorStatic<T, _I> {
     /**
      * Checks if a given vector is inside a specific range
-     * @param v defines the vector to test
+     * @param value defines the vector to test
      * @param min defines the minimum range
      * @param max defines the maximum range
      */
-    CheckExtends(v: T, min: T, max: T): void;
+    CheckExtends(value: _I, min: _I, max: _I): void;
 
     /**
      * Returns a new Vector equal to the normalized given vector
@@ -103,7 +103,7 @@ export interface VectorStatic<T extends Vector> extends TensorStatic<T> {
  * Class representing a vector containing 2 coordinates
  * Example Playground - Overview -  https://playground.babylonjs.com/#QYBWV4#9
  */
-export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
+export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2Like {
     private static _ZeroReadOnly = Vector2.Zero() as DeepImmutable<Vector2>;
 
     /**
@@ -198,7 +198,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param source defines the source Vector2
      * @returns the current updated Vector2
      */
-    public copyFrom(source: DeepImmutable<this>): this {
+    public copyFrom(source: DeepImmutable<IVector2Like>): this {
         this.x = source.x;
         this.y = source.y;
         return this;
@@ -243,8 +243,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2 set with the addition of the current Vector2 and the given one coordinates
      */
-    public add(otherVector: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x + otherVector.x, this.y + otherVector.y);
+    public add(otherVector: DeepImmutable<IVector2Like>): Vector2 {
+        return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
     }
 
     /**
@@ -254,7 +254,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public addToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
+    public addToRef<T extends IVector2Like>(otherVector: DeepImmutable<IVector2Like>, result: T): T {
         result.x = this.x + otherVector.x;
         result.y = this.y + otherVector.y;
         return result;
@@ -266,7 +266,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public addInPlace(otherVector: DeepImmutable<this>): this {
+    public addInPlace(otherVector: DeepImmutable<IVector2Like>): this {
         this.x += otherVector.x;
         this.y += otherVector.y;
         return this;
@@ -290,8 +290,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public addVector3(otherVector: Vector3): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x + otherVector.x, this.y + otherVector.y);
+    public addVector3(otherVector: IVector3Like): Vector2 {
+        return new Vector2(this.x + otherVector.x, this.y + otherVector.y);
     }
 
     /**
@@ -300,8 +300,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public subtract(otherVector: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - otherVector.x, this.y - otherVector.y);
+    public subtract(otherVector: DeepImmutable<IVector2Like>): Vector2 {
+        return new Vector2(this.x - otherVector.x, this.y - otherVector.y);
     }
 
     /**
@@ -311,7 +311,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public subtractToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
+    public subtractToRef<T extends IVector2Like>(otherVector: DeepImmutable<IVector2Like>, result: T): T {
         result.x = this.x - otherVector.x;
         result.y = this.y - otherVector.y;
         return result;
@@ -322,7 +322,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public subtractInPlace(otherVector: DeepImmutable<this>): this {
+    public subtractInPlace(otherVector: DeepImmutable<IVector2Like>): this {
         this.x -= otherVector.x;
         this.y -= otherVector.y;
         return this;
@@ -334,7 +334,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public multiplyInPlace(otherVector: DeepImmutable<this>): this {
+    public multiplyInPlace(otherVector: DeepImmutable<IVector2Like>): this {
         this.x *= otherVector.x;
         this.y *= otherVector.y;
         return this;
@@ -346,8 +346,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public multiply(otherVector: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * otherVector.x, this.y * otherVector.y);
+    public multiply(otherVector: DeepImmutable<IVector2Like>): Vector2 {
+        return new Vector2(this.x * otherVector.x, this.y * otherVector.y);
     }
 
     /**
@@ -357,7 +357,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public multiplyToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
+    public multiplyToRef<T extends IVector2Like>(otherVector: DeepImmutable<IVector2Like>, result: T): T {
         result.x = this.x * otherVector.x;
         result.y = this.y * otherVector.y;
         return result;
@@ -370,8 +370,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param y defines the second coordinate
      * @returns a new Vector2
      */
-    public multiplyByFloats(x: number, y: number): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * x, this.y * y);
+    public multiplyByFloats(x: number, y: number): Vector2 {
+        return new Vector2(this.x * x, this.y * y);
     }
 
     /**
@@ -380,8 +380,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns a new Vector2
      */
-    public divide(otherVector: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x / otherVector.x, this.y / otherVector.y);
+    public divide(otherVector: DeepImmutable<IVector2Like>): Vector2 {
+        return new Vector2(this.x / otherVector.x, this.y / otherVector.y);
     }
 
     /**
@@ -391,7 +391,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public divideToRef<T extends this>(otherVector: DeepImmutable<this>, result: T): T {
+    public divideToRef<T extends IVector2Like>(otherVector: DeepImmutable<IVector2Like>, result: T): T {
         result.x = this.x / otherVector.x;
         result.y = this.y / otherVector.y;
         return result;
@@ -403,7 +403,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns the current updated Vector2
      */
-    public divideInPlace(otherVector: DeepImmutable<this>): this {
+    public divideInPlace(otherVector: DeepImmutable<IVector2Like>): this {
         this.x = this.x / otherVector.x;
         this.y = this.y / otherVector.y;
         return this;
@@ -414,7 +414,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param other defines the second operand
      * @returns the current updated Vector2
      */
-    public minimizeInPlace(other: DeepImmutable<this>): this {
+    public minimizeInPlace(other: DeepImmutable<IVector2Like>): this {
         return this.minimizeInPlaceFromFloats(other.x, other.y);
     }
 
@@ -423,7 +423,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param other defines the second operand
      * @returns the current updated Vector2
      */
-    public maximizeInPlace(other: DeepImmutable<this>): this {
+    public maximizeInPlace(other: DeepImmutable<IVector2Like>): this {
         return this.maximizeInPlaceFromFloats(other.x, other.y);
     }
 
@@ -457,8 +457,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param y defines the y coordinate of the operand
      * @returns the resulting Vector2
      */
-    public subtractFromFloats(x: number, y: number): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - x, this.y - y);
+    public subtractFromFloats(x: number, y: number): Vector2 {
+        return new Vector2(this.x - x, this.y - y);
     }
 
     /**
@@ -468,16 +468,18 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector2 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends this>(x: number, y: number, result: T): T {
-        return result.copyFromFloats(this.x - x, this.y - y);
+    public subtractFromFloatsToRef<T extends IVector2Like>(x: number, y: number, result: T): T {
+        result.x = this.x - x;
+        result.y = this.y - y;
+        return result;
     }
 
     /**
      * Gets a new Vector2 with current Vector2 negated coordinates
      * @returns a new Vector2
      */
-    public negate(): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(-this.x, -this.y);
+    public negate(): Vector2 {
+        return new Vector2(-this.x, -this.y);
     }
 
     /**
@@ -497,8 +499,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector3 object where to store the result
      * @returns the result
      */
-    public negateToRef<T extends this>(result: T): T {
-        return result.copyFromFloats(this.x * -1, this.y * -1);
+    public negateToRef<T extends IVector2Like>(result: T): T {
+        result.x = this.x * -1;
+        result.y = this.y * -1;
+        return result;
     }
 
     /**
@@ -519,8 +523,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param scale defines the scaling factor
      * @returns a new Vector2
      */
-    public scale(scale: number): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x * scale, this.y * scale);
+    public scale(scale: number): Vector2 {
+        return new Vector2(this.x * scale, this.y * scale);
     }
 
     /**
@@ -530,7 +534,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector2 object where to store the result
      * @returns result input
      */
-    public scaleToRef<T extends this>(scale: number, result: T): T {
+    public scaleToRef<T extends IVector2Like>(scale: number, result: T): T {
         result.x = this.x * scale;
         result.y = this.y * scale;
         return result;
@@ -543,7 +547,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the Vector2 object where to store the result
      * @returns result input
      */
-    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends IVector2Like>(scale: number, result: T): T {
         result.x += this.x * scale;
         result.y += this.y * scale;
         return result;
@@ -555,7 +559,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines the other vector
      * @returns true if the given vector coordinates strictly equal the current Vector2 ones
      */
-    public equals(otherVector: DeepImmutable<this>): boolean {
+    public equals(otherVector: DeepImmutable<IVector2Like>): boolean {
         return otherVector && this.x === otherVector.x && this.y === otherVector.y;
     }
 
@@ -566,7 +570,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param epsilon defines the minimal distance to consider equality
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
      */
-    public equalsWithEpsilon(otherVector: DeepImmutable<this>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherVector: DeepImmutable<IVector2Like>, epsilon: number = Epsilon): boolean {
         return otherVector && WithinEpsilon(this.x, otherVector.x, epsilon) && WithinEpsilon(this.y, otherVector.y, epsilon);
     }
 
@@ -586,8 +590,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * eg (1.2, 2.31) returns (1, 2)
      * @returns a new Vector2
      */
-    public floor(): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(Math.floor(this.x), Math.floor(this.y));
+    public floor(): Vector2 {
+        return new Vector2(Math.floor(this.x), Math.floor(this.y));
     }
 
     /**
@@ -595,7 +599,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result the Vector2 to store the result in
      * @returns the result Vector2
      */
-    public floorToRef<T extends this>(result: T): T {
+    public floorToRef<T extends IVector2Like>(result: T): T {
         result.x = Math.floor(this.x);
         result.y = Math.floor(this.y);
         return result;
@@ -607,8 +611,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * eg (1.2, 2.31) returns (0.2, 0.31)
      * @returns a new Vector2
      */
-    public fract(): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x - Math.floor(this.x), this.y - Math.floor(this.y));
+    public fract(): Vector2 {
+        return new Vector2(this.x - Math.floor(this.x), this.y - Math.floor(this.y));
     }
 
     /**
@@ -616,7 +620,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result the Vector2 to store the result in
      * @returns the result Vector2
      */
-    public fractToRef<T extends this>(result: T): T {
+    public fractToRef<T extends IVector2Like>(result: T): T {
         result.x = this.x - Math.floor(this.x);
         result.y = this.y - Math.floor(this.y);
         return result;
@@ -629,7 +633,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the result vector where to store the rotated vector
      * @returns result input
      */
-    public rotateToRef<T extends this>(angle: number, result: T): T {
+    public rotateToRef<T extends IVector2Like>(angle: number, result: T): T {
         const cos = Math.cos(angle);
         const sin = Math.sin(angle);
         const x = cos * this.x - sin * this.y;
@@ -686,23 +690,24 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * Normalize the current Vector2 to a new vector
      * @returns the new Vector2
      */
-    public normalizeToNew(): this {
-        const normalized = new (this.constructor as Constructor<typeof Vector2, this>)();
+    public normalizeToNew(): Vector2 {
+        const normalized = new Vector2();
         this.normalizeToRef(normalized);
         return normalized;
     }
 
     /**
      * Normalize the current Vector2 to the reference
-     * @param reference define the Vector to update
+     * @param result define the Vector to update
      * @returns the updated Vector2
      */
-    public normalizeToRef<T extends this>(reference: T): T {
+    public normalizeToRef<T extends IVector2Like>(result: T): T {
         const len = this.length();
         if (len === 0) {
-            return reference.copyFrom(this as DeepImmutable<T>);
+            result.x = this.x;
+            result.y = this.y;
         }
-        return this.scaleToRef(1.0 / len, reference);
+        return this.scaleToRef(1.0 / len, result);
     }
 
     /**
@@ -710,8 +715,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * Example Playground https://playground.babylonjs.com/#QYBWV4#20
      * @returns a new Vector2
      */
-    public clone(): this {
-        return new (this.constructor as Constructor<typeof Vector2, this>)(this.x, this.y);
+    public clone(): Vector2 {
+        return new Vector2(this.x, this.y);
     }
 
     /**
@@ -719,7 +724,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param otherVector defines second vector
      * @returns the dot product (float)
      */
-    public dot(otherVector: DeepImmutable<this>): number {
+    public dot(otherVector: DeepImmutable<IVector2Like>): number {
         return this.x * otherVector.x + this.y * otherVector.y;
     }
 
@@ -816,13 +821,13 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param amount defines the interpolation factor
      * @returns a new Vector2
      */
-    public static CatmullRom<T extends Vector2>(
-        value1: DeepImmutable<T>,
-        value2: DeepImmutable<Vector2>,
-        value3: DeepImmutable<Vector2>,
-        value4: DeepImmutable<Vector2>,
+    public static CatmullRom(
+        value1: DeepImmutable<IVector2Like>,
+        value2: DeepImmutable<IVector2Like>,
+        value3: DeepImmutable<IVector2Like>,
+        value4: DeepImmutable<IVector2Like>,
         amount: number
-    ): T {
+    ): Vector2 {
         const squared = amount * amount;
         const cubed = amount * squared;
 
@@ -840,7 +845,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
                 (2.0 * value1.y - 5.0 * value2.y + 4.0 * value3.y - value4.y) * squared +
                 (-value1.y + 3.0 * value2.y - 3.0 * value3.y + value4.y) * cubed);
 
-        return new (value1.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -853,7 +858,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param ref the reference
      * @returns the reference
      */
-    public static ClampToRef<T extends Vector2>(value: DeepImmutable<T>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>, ref: T): T {
+    public static ClampToRef<T extends Vector2>(value: DeepImmutable<IVector2Like>, min: DeepImmutable<IVector2Like>, max: DeepImmutable<IVector2Like>, ref: T): T {
         ref.x = Clamp(value.x, min.x, max.x);
         ref.y = Clamp(value.y, min.y, max.y);
         return ref;
@@ -869,10 +874,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param max defines the upper limit
      * @returns a new Vector2
      */
-    public static Clamp<T extends Vector2>(value: DeepImmutable<T>, min: DeepImmutable<Vector2>, max: DeepImmutable<Vector2>): T {
+    public static Clamp(value: DeepImmutable<IVector2Like>, min: DeepImmutable<IVector2Like>, max: DeepImmutable<IVector2Like>): Vector2 {
         const x = Clamp(value.x, min.x, max.x);
         const y = Clamp(value.y, min.y, max.y);
-        return new (value.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -885,13 +890,13 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param amount defines the interpolation factor
      * @returns a new Vector2
      */
-    public static Hermite<T extends Vector2>(
-        value1: DeepImmutable<T>,
-        tangent1: DeepImmutable<Vector2>,
-        value2: DeepImmutable<Vector2>,
-        tangent2: DeepImmutable<Vector2>,
+    public static Hermite(
+        value1: DeepImmutable<IVector2Like>,
+        tangent1: DeepImmutable<IVector2Like>,
+        value2: DeepImmutable<IVector2Like>,
+        tangent2: DeepImmutable<IVector2Like>,
         amount: number
-    ): T {
+    ): Vector2 {
         const squared = amount * amount;
         const cubed = amount * squared;
         const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
@@ -902,7 +907,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
         const x = value1.x * part1 + value2.x * part2 + tangent1.x * part3 + tangent2.x * part4;
         const y = value1.y * part1 + value2.y * part2 + tangent1.y * part3 + tangent2.y * part4;
 
-        return new (value1.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -915,18 +920,14 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative<T extends Vector2>(
-        value1: DeepImmutable<T>,
-        tangent1: DeepImmutable<Vector2>,
-        value2: DeepImmutable<Vector2>,
-        tangent2: DeepImmutable<Vector2>,
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<IVector2Like>,
+        tangent1: DeepImmutable<IVector2Like>,
+        value2: DeepImmutable<IVector2Like>,
+        tangent2: DeepImmutable<IVector2Like>,
         time: number
-    ): T {
-        const result = new (value1.constructor as Constructor<typeof Vector2, T>)();
-
-        this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
-
-        return result;
+    ): Vector2 {
+        return this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, new Vector2());
     }
 
     /**
@@ -941,10 +942,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @returns result input
      */
     public static Hermite1stDerivativeToRef<T extends Vector2>(
-        value1: DeepImmutable<Vector2>,
-        tangent1: DeepImmutable<Vector2>,
-        value2: DeepImmutable<Vector2>,
-        tangent2: DeepImmutable<Vector2>,
+        value1: DeepImmutable<IVector2Like>,
+        tangent1: DeepImmutable<IVector2Like>,
+        value2: DeepImmutable<IVector2Like>,
+        tangent2: DeepImmutable<IVector2Like>,
         time: number,
         result: T
     ): T {
@@ -964,10 +965,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param amount defines the interpolation factor
      * @returns a new Vector2
      */
-    public static Lerp<T extends Vector2>(start: DeepImmutable<T>, end: DeepImmutable<Vector2>, amount: number): Vector2 {
+    public static Lerp(start: DeepImmutable<IVector2Like>, end: DeepImmutable<IVector2Like>, amount: number): Vector2 {
         const x = start.x + (end.x - start.x) * amount;
         const y = start.y + (end.y - start.y) * amount;
-        return new (start.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -977,7 +978,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param right defines second vector
      * @returns the dot product (float)
      */
-    public static Dot(left: DeepImmutable<Vector2>, right: DeepImmutable<Vector2>): number {
+    public static Dot(left: DeepImmutable<IVector2Like>, right: DeepImmutable<IVector2Like>): number {
         return left.x * right.x + left.y * right.y;
     }
 
@@ -987,10 +988,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param vector defines the vector to normalize
      * @returns a new Vector2
      */
-    public static Normalize<T extends Vector2>(vector: DeepImmutable<T>): T {
-        const result = new (vector.constructor as Constructor<typeof Vector2, T>)();
-        Vector2.NormalizeToRef(vector, result);
-        return result;
+    public static Normalize(vector: DeepImmutable<Vector2>): Vector2 {
+        return Vector2.NormalizeToRef(vector, new Vector2());
     }
 
     /**
@@ -1012,10 +1011,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param right defines 2nd vector
      * @returns a new Vector2
      */
-    public static Minimize<T extends Vector2>(left: DeepImmutable<T>, right: DeepImmutable<Vector2>): T {
+    public static Minimize(left: DeepImmutable<IVector2Like>, right: DeepImmutable<IVector2Like>): Vector2 {
         const x = left.x < right.x ? left.x : right.x;
         const y = left.y < right.y ? left.y : right.y;
-        return new (left.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -1025,10 +1024,10 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param right defines 2nd vector
      * @returns a new Vector2
      */
-    public static Maximize<T extends Vector2>(left: DeepImmutable<T>, right: DeepImmutable<Vector2>): T {
+    public static Maximize(left: DeepImmutable<IVector2Like>, right: DeepImmutable<IVector2Like>): Vector2 {
         const x = left.x > right.x ? left.x : right.x;
         const y = left.y > right.y ? left.y : right.y;
-        return new (left.constructor as Constructor<typeof Vector2, T>)(x, y);
+        return new Vector2(x, y);
     }
 
     /**
@@ -1038,10 +1037,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param transformation defines the matrix to apply
      * @returns a new Vector2
      */
-    public static Transform<T extends Vector2>(vector: DeepImmutable<T>, transformation: DeepImmutable<Matrix>): T {
-        const result = new (vector.constructor as Constructor<typeof Vector2, T>)();
-        Vector2.TransformToRef(vector, transformation, result);
-        return result;
+    public static Transform(vector: DeepImmutable<IVector2Like>, transformation: DeepImmutable<Matrix>): Vector2 {
+        return Vector2.TransformToRef(vector, transformation, new Vector2());
     }
 
     /**
@@ -1052,7 +1049,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param result defines the target vector
      * @returns result input
      */
-    public static TransformToRef<T extends Vector2>(vector: DeepImmutable<Vector2>, transformation: DeepImmutable<Matrix>, result: T): T {
+    public static TransformToRef<T extends Vector2>(vector: DeepImmutable<IVector2Like>, transformation: DeepImmutable<Matrix>, result: T): T {
         const m = transformation.m;
         const x = vector.x * m[0] + vector.y * m[4] + m[12];
         const y = vector.x * m[1] + vector.y * m[5] + m[13];
@@ -1070,7 +1067,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param p2 defines 3rd triangle point
      * @returns true if the point "p" is in the triangle defined by the vectors "p0", "p1", "p2"
      */
-    public static PointInTriangle(p: DeepImmutable<Vector2>, p0: DeepImmutable<Vector2>, p1: DeepImmutable<Vector2>, p2: DeepImmutable<Vector2>): boolean {
+    public static PointInTriangle(p: DeepImmutable<IVector2Like>, p0: DeepImmutable<IVector2Like>, p1: DeepImmutable<IVector2Like>, p2: DeepImmutable<IVector2Like>): boolean {
         const a = (1 / 2) * (-p1.y * p2.x + p0.y * (-p1.x + p2.x) + p0.x * (p1.y - p2.y) + p1.x * p2.y);
         const sign = a < 0 ? -1 : 1;
         const s = (p0.y * p2.x - p0.x * p2.y + (p2.y - p0.y) * p.x + (p0.x - p2.x) * p.y) * sign;
@@ -1086,7 +1083,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param value2 defines second vector
      * @returns the distance between vectors
      */
-    public static Distance(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
+    public static Distance(value1: DeepImmutable<IVector2Like>, value2: DeepImmutable<IVector2Like>): number {
         return Math.sqrt(Vector2.DistanceSquared(value1, value2));
     }
 
@@ -1097,7 +1094,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param value2 defines second vector
      * @returns the squared distance between vectors
      */
-    public static DistanceSquared(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>): number {
+    public static DistanceSquared(value1: DeepImmutable<IVector2Like>, value2: DeepImmutable<IVector2Like>): number {
         const x = value1.x - value2.x;
         const y = value1.y - value2.y;
         return x * x + y * y;
@@ -1111,9 +1108,8 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param value2 defines second vector
      * @returns a new Vector2
      */
-    public static Center<T extends Vector2>(value1: DeepImmutable<T>, value2: DeepImmutable<Vector2>): T {
-        const result = new (value1.constructor as Constructor<typeof Vector2, T>)();
-        return Vector2.CenterToRef(value1, value2, result);
+    public static Center(value1: DeepImmutable<IVector2Like>, value2: DeepImmutable<IVector2Like>): Vector2 {
+        return Vector2.CenterToRef(value1, value2, new Vector2());
     }
 
     /**
@@ -1124,7 +1120,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
      * @param ref defines third vector
      * @returns ref
      */
-    public static CenterToRef<T extends Vector2>(value1: DeepImmutable<Vector2>, value2: DeepImmutable<Vector2>, ref: T): T {
+    public static CenterToRef<T extends Vector2>(value1: DeepImmutable<IVector2Like>, value2: DeepImmutable<IVector2Like>, ref: T): T {
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2);
     }
 
@@ -1147,7 +1143,7 @@ export class Vector2 implements Vector<Tuple<number, 2>>, IVector2Like {
         return Vector2.Distance(p, proj);
     }
 }
-Vector2 satisfies TensorStatic<Vector2>;
+Vector2 satisfies TensorStatic<Vector2, IVector2Like>;
 Object.defineProperties(Vector2.prototype, {
     dimension: { value: [2] },
     rank: { value: 1 },
@@ -3344,7 +3340,7 @@ export class Vector3 implements Vector<Tuple<number, 3>>, IVector3Like {
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3>;
+Vector3 satisfies VectorStatic<Vector3, IVector3Like>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -4372,7 +4368,7 @@ export class Vector4 implements Vector<Tuple<number, 4>>, IVector4Like {
         return left.dot(right);
     }
 }
-Vector4 satisfies VectorStatic<Vector4>;
+Vector4 satisfies VectorStatic<Vector4, IVector4Like>;
 Object.defineProperties(Vector4.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
@@ -5888,7 +5884,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>>, IQuaternionLike {
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
     }
 }
-Quaternion satisfies TensorStatic<Quaternion>;
+Quaternion satisfies TensorStatic<Quaternion, IQuaternionLike>;
 Object.defineProperties(Quaternion.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
