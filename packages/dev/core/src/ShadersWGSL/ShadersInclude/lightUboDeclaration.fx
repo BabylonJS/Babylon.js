@@ -45,7 +45,7 @@ var<uniform> light{X} : Light{X};
 			var shadow{X}Sampler: sampler_comparison;			
 			var shadow{X}Texture: texture_depth_2d_array;
 			var depth{X}Sampler: sampler;
-			var depth{X}Texture: texture_2d_array<f32>
+			var depth{X}Texture: texture_2d_array<f32>;
             uniform lightSizeUVCorrection{X}: array<vec2f, SHADOWCSMNUM_CASCADES{X}>;
             uniform depthCorrection{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
             uniform penumbraDarkness{X}: f32;

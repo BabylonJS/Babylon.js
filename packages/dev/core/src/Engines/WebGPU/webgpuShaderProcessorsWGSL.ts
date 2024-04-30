@@ -337,7 +337,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexMainStartingCode += "\n";
         }
         const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
-        const needDiagnosticOff = vertexCode.indexOf("//DIAGNOSTIC=OFF") !== -1;
+        const needDiagnosticOff = vertexCode.indexOf("DIAGNOSTIC_OFF") !== -1;
 
         vertexCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
@@ -542,7 +542,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     private _processStridedUniformArrays(code: string): string {
         for (const uniformArrayName of this._stridedUniformArrays) {
-            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
+            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*?)\\]`, "g"), `${uniformArrayName}[$1].el`);
         }
         return code;
     }
