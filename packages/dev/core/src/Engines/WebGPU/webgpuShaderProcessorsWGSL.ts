@@ -337,8 +337,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexMainStartingCode += "\n";
         }
         const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
+        const needDiagnosticOff = vertexCode.indexOf("//DIAGNOSTIC=OFF") !== -1;
 
-        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
+        vertexCode =
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
@@ -383,7 +386,9 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
         const fragmentEndingCode = "  return fragmentOutputs;";
 
-        fragmentCode = this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+        fragmentCode =
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();

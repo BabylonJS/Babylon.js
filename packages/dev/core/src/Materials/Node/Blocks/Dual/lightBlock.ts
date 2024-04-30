@@ -292,6 +292,10 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            // We need to turn off UA checking because of the CSM shadows
+            state.compilationString += "//DIAGNOSTIC=OFF";
+        }
         if (state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             state.compilationString += (state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "") + `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
         }
