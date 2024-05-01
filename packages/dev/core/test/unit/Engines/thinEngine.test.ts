@@ -20,12 +20,10 @@ describe("ThinEngine", () => {
 
         it("gets tex image parameters for WebGL 1", () => {
             test(
-                ["<undefined>", "TEXTUREFORMAT_ALPHA", "TEXTUREFORMAT_LUMINANCE", "TEXTUREFORMAT_LUMINANCE_ALPHA", "TEXTUREFORMAT_RGB", "TEXTUREFORMAT_RGBA"],
+                ["TEXTUREFORMAT_ALPHA", "TEXTUREFORMAT_LUMINANCE", "TEXTUREFORMAT_LUMINANCE_ALPHA", "TEXTUREFORMAT_RGB", "TEXTUREFORMAT_RGBA"],
                 `
 Babylon format                SRGB  Int. format     Format          Type
 ==============                ====  ===========     ======          ====
-<undefined>                   false RGBA            RGBA            UNSIGNED_BYTE
-<undefined>                   true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           false ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           true  ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_LUMINANCE       false LUMINANCE       LUMINANCE       UNSIGNED_BYTE
@@ -43,7 +41,6 @@ TEXTUREFORMAT_RGBA            true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYT
             thinEngine._webGLVersion = 2;
             test(
                 [
-                    "<undefined>",
                     "TEXTUREFORMAT_ALPHA",
                     "TEXTUREFORMAT_LUMINANCE",
                     "TEXTUREFORMAT_LUMINANCE_ALPHA",
@@ -61,8 +58,6 @@ TEXTUREFORMAT_RGBA            true  SRGB8_ALPHA8    SRGB8_ALPHA8    UNSIGNED_BYT
                 `
 Babylon format                SRGB  Int. format     Format          Type
 ==============                ====  ===========     ======          ====
-<undefined>                   false RGBA8           RGBA            UNSIGNED_BYTE
-<undefined>                   true  RGBA8           RGBA            UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           false ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_ALPHA           true  ALPHA           ALPHA           UNSIGNED_BYTE
 TEXTUREFORMAT_LUMINANCE       false LUMINANCE       LUMINANCE       UNSIGNED_BYTE
@@ -98,7 +93,7 @@ TEXTUREFORMAT_RGBA_INTEGER    true  RGBA8UI         RGBA_INTEGER    UNSIGNED_BYT
                 "==============                ====  ===========     ======          ====",
             ];
             for (const formatStr of formatStrs) {
-                const format = formatStr === "<undefined>" ? undefined : (Engine as any)[formatStr];
+                const format = (Engine as any)[formatStr];
                 for (const useSRGBBuffer of [false, true]) {
                     const texImageParams = thinEngine._getTexImageParametersForCreateTexture(format, useSRGBBuffer);
                     results.push(

@@ -3055,9 +3055,7 @@ export class ThinEngine extends AbstractEngine {
      * @returns The options to pass to texImage2D or texImage3D calls.
      * @internal
      */
-    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, useSRGBBuffer: boolean): TexImageParameters {
-        babylonFormat = babylonFormat ?? Constants.TEXTUREFORMAT_UNDEFINED;
-
+    public _getTexImageParametersForCreateTexture(babylonFormat: number, useSRGBBuffer: boolean): TexImageParameters {
         let format: number, internalFormat: number;
         if (this.webGLVersion === 1) {
             // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
