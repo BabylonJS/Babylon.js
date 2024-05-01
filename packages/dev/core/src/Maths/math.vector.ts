@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { Epsilon } from "./math.constants";
 import type { Viewport } from "./math.viewport";
-import type { DeepImmutable, Nullable, FloatArray, float, Constructor, Tuple } from "../types";
+import type { DeepImmutable, Nullable, FloatArray, float, Tuple } from "../types";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Plane } from "./math.plane";
@@ -2584,13 +2584,13 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param amount defines the amount on the spline to use
      * @returns the new Vector3
      */
-    public static CatmullRom<T extends Vector3>(
-        value1: DeepImmutable<T>,
+    public static CatmullRom(
+        value1: DeepImmutable<Vector3>,
         value2: DeepImmutable<Vector3>,
         value3: DeepImmutable<Vector3>,
         value4: DeepImmutable<Vector3>,
         amount: number
-    ): T {
+    ): Vector3 {
         const squared = amount * amount;
         const cubed = amount * squared;
 
@@ -2615,7 +2615,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
                 (2.0 * value1._z - 5.0 * value2._z + 4.0 * value3._z - value4._z) * squared +
                 (-value1._z + 3.0 * value2._z - 3.0 * value3._z + value4._z) * cubed);
 
-        return new (value1.constructor as Constructor<typeof Vector3, T>)(x, y, z);
+        return new Vector3(x, y, z);
     }
 
     /**
@@ -2628,8 +2628,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param max defines the upper range value
      * @returns the new Vector3
      */
-    public static Clamp<T extends Vector3>(value: DeepImmutable<T>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): T {
-        const result = new (value.constructor as Constructor<typeof Vector3, T>)();
+    public static Clamp(value: DeepImmutable<Vector3>, min: DeepImmutable<Vector3>, max: DeepImmutable<Vector3>): Vector3 {
+        const result = new Vector3();
         Vector3.ClampToRef(value, min, max, result);
         return result;
     }
@@ -2684,13 +2684,13 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param amount defines the amount on the interpolation spline (between 0 and 1)
      * @returns the new Vector3
      */
-    public static Hermite<T extends Vector3>(
-        value1: DeepImmutable<T>,
+    public static Hermite(
+        value1: DeepImmutable<Vector3>,
         tangent1: DeepImmutable<Vector3>,
         value2: DeepImmutable<Vector3>,
         tangent2: DeepImmutable<Vector3>,
         amount: number
-    ): T {
+    ): Vector3 {
         const squared = amount * amount;
         const cubed = amount * squared;
         const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
@@ -2701,7 +2701,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         const x = value1._x * part1 + value2._x * part2 + tangent1._x * part3 + tangent2._x * part4;
         const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
         const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
-        return new (value1.constructor as Constructor<typeof Vector3, T>)(x, y, z);
+        return new Vector3(x, y, z);
     }
 
     /**
@@ -2714,14 +2714,14 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative<T extends Vector3>(
-        value1: DeepImmutable<T>,
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Vector3>,
         tangent1: DeepImmutable<Vector3>,
         value2: DeepImmutable<Vector3>,
         tangent2: DeepImmutable<Vector3>,
         time: number
-    ): T {
-        const result = new (value1.constructor as Constructor<typeof Vector3, T>)();
+    ): Vector3 {
+        const result = new Vector3();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -2764,8 +2764,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param amount max defines amount between both (between 0 and 1)
      * @returns the new Vector3
      */
-    public static Lerp<T extends Vector3>(start: DeepImmutable<T>, end: DeepImmutable<Vector3>, amount: number): T {
-        const result = new (start.constructor as Constructor<typeof Vector3, T>)(0, 0, 0);
+    public static Lerp(start: DeepImmutable<Vector3>, end: DeepImmutable<Vector3>, amount: number): Vector3 {
+        const result = new Vector3(0, 0, 0);
         Vector3.LerpToRef(start, end, amount, result);
         return result;
     }
@@ -2803,7 +2803,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param otherVector defines the right operand
      * @returns the dot product
      */
-    public dot(otherVector: DeepImmutable<this>): number {
+    public dot(otherVector: DeepImmutable<Vector3>): number {
         return this._x * otherVector._x + this._y * otherVector._y + this._z * otherVector._z;
     }
 
@@ -2815,8 +2815,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param right defines the right operand
      * @returns the cross product
      */
-    public static Cross<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const result = new (left.constructor as Constructor<typeof Vector3, T>)();
+    public static Cross(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
+        const result = new Vector3();
         Vector3.CrossToRef(left, right, result);
         return result;
     }
@@ -2871,8 +2871,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param viewport defines the screen viewport to use
      * @returns the new Vector3
      */
-    public static Project<T extends Vector3>(vector: DeepImmutable<T>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): T {
-        const result = new (vector.constructor as Constructor<typeof Vector3, T>)();
+    public static Project(vector: DeepImmutable<Vector3>, world: DeepImmutable<Matrix>, transform: DeepImmutable<Matrix>, viewport: DeepImmutable<Viewport>): Vector3 {
+        const result = new Vector3();
         Vector3.ProjectToRef(vector, world, transform, viewport, result);
         return result;
     }
@@ -2962,13 +2962,13 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param transform defines the transform (view x projection) matrix to use
      * @returns the new Vector3
      */
-    public static UnprojectFromTransform<T extends Vector3>(
-        source: DeepImmutable<T>,
+    public static UnprojectFromTransform(
+        source: DeepImmutable<Vector3>,
         viewportWidth: number,
         viewportHeight: number,
         world: DeepImmutable<Matrix>,
         transform: DeepImmutable<Matrix>
-    ): T {
+    ): Vector3 {
         return this.Unproject(source, viewportWidth, viewportHeight, world, transform, Matrix.IdentityReadOnly);
     }
 
@@ -2983,15 +2983,15 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param projection defines the projection matrix to use
      * @returns the new Vector3
      */
-    public static Unproject<T extends Vector3>(
-        source: DeepImmutable<T>,
+    public static Unproject(
+        source: DeepImmutable<Vector3>,
         viewportWidth: number,
         viewportHeight: number,
         world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>
-    ): T {
-        const result = new (source.constructor as Constructor<typeof Vector3, T>)();
+    ): Vector3 {
+        const result = new Vector3();
 
         Vector3.UnprojectToRef(source, viewportWidth, viewportHeight, world, view, projection, result);
 
@@ -3073,8 +3073,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param right defines the second operand
      * @returns the new Vector3
      */
-    public static Minimize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const min = new (left.constructor as Constructor<typeof Vector3, T>)();
+    public static Minimize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
+        const min = new Vector3();
         min.copyFrom(left);
         min.minimizeInPlace(right);
         return min;
@@ -3087,8 +3087,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @param right defines the second operand
      * @returns the new Vector3
      */
-    public static Maximize<T extends Vector3>(left: DeepImmutable<T>, right: DeepImmutable<Vector3>): T {
-        const max = new (left.constructor as Constructor<typeof Vector3, T>)();
+    public static Maximize(left: DeepImmutable<Vector3>, right: DeepImmutable<Vector3>): Vector3 {
+        const max = new Vector3();
         max.copyFrom(left);
         max.maximizeInPlace(right);
         return max;
@@ -3312,8 +3312,8 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @returns a new Vector3
      * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/target_align
      */
-    public static RotationFromAxis<T extends Vector3>(axis1: DeepImmutable<T>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): T {
-        const rotation = new (axis1.constructor as Constructor<typeof Vector3, T>)();
+    public static RotationFromAxis(axis1: DeepImmutable<Vector3>, axis2: DeepImmutable<Vector3>, axis3: DeepImmutable<Vector3>): Vector3 {
+        const rotation = new Vector3();
         Vector3.RotationFromAxisToRef(axis1, axis2, axis3, rotation);
         return rotation;
     }
@@ -5255,8 +5255,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @param q defines the source quaternion
      * @returns a new quaternion as the inverted current quaternion
      */
-    public static Inverse<T extends Quaternion>(q: DeepImmutable<T>): T {
-        return new (q.constructor as Constructor<typeof Quaternion, T>)(-q._x, -q._y, -q._z, q._w);
+    public static Inverse(q: DeepImmutable<Quaternion>): Quaternion {
+        return new Quaternion(-q._x, -q._y, -q._z, q._w);
     }
 
     /**
@@ -5676,13 +5676,13 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @param amount defines the target quaternion
      * @returns the new interpolated quaternion
      */
-    public static Hermite<T extends Quaternion>(
-        value1: DeepImmutable<T>,
+    public static Hermite(
+        value1: DeepImmutable<Quaternion>,
         tangent1: DeepImmutable<Quaternion>,
         value2: DeepImmutable<Quaternion>,
         tangent2: DeepImmutable<Quaternion>,
         amount: number
-    ): T {
+    ): Quaternion {
         const squared = amount * amount;
         const cubed = amount * squared;
         const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
@@ -5694,7 +5694,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         const y = value1._y * part1 + value2._y * part2 + tangent1._y * part3 + tangent2._y * part4;
         const z = value1._z * part1 + value2._z * part2 + tangent1._z * part3 + tangent2._z * part4;
         const w = value1._w * part1 + value2._w * part2 + tangent1._w * part3 + tangent2._w * part4;
-        return new (value1.constructor as Constructor<typeof Quaternion, T>)(x, y, z, w);
+        return new Quaternion(x, y, z, w);
     }
 
     /**
@@ -5707,14 +5707,14 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @param time define where the derivative must be done
      * @returns 1st derivative
      */
-    public static Hermite1stDerivative<T extends Quaternion>(
-        value1: DeepImmutable<T>,
+    public static Hermite1stDerivative(
+        value1: DeepImmutable<Quaternion>,
         tangent1: DeepImmutable<Quaternion>,
         value2: DeepImmutable<Quaternion>,
         tangent2: DeepImmutable<Quaternion>,
         time: number
-    ): T {
-        const result = new (value1.constructor as Constructor<typeof Quaternion, T>)();
+    ): Quaternion {
+        const result = new Quaternion();
 
         this.Hermite1stDerivativeToRef(value1, tangent1, value2, tangent2, time, result);
 
@@ -5781,8 +5781,8 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @param max defines the upper range value
      * @returns the new Quaternion
      */
-    public static Clamp<T extends Quaternion>(value: DeepImmutable<T>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>): T {
-        const result = new (value.constructor as Constructor<typeof Quaternion, T>)();
+    public static Clamp(value: DeepImmutable<Quaternion>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>): Quaternion {
+        const result = new Quaternion();
         Quaternion.ClampToRef(value, min, max, result);
         return result;
     }
@@ -7498,8 +7498,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @param source defines the source matrix
      * @returns the new matrix
      */
-    public static Invert<T extends Matrix>(source: DeepImmutable<T>): T {
-        const result = new (source.constructor as Constructor<typeof Matrix, T>)();
+    public static Invert(source: DeepImmutable<Matrix>): Matrix {
+        const result = new Matrix();
         source.invertToRef(result);
         return result;
     }
@@ -7778,8 +7778,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @param gradient defines the gradient factor
      * @returns the new matrix
      */
-    public static Lerp<T extends Matrix>(startValue: DeepImmutable<T>, endValue: DeepImmutable<Matrix>, gradient: number): T {
-        const result = new (startValue.constructor as Constructor<typeof Matrix, T>)();
+    public static Lerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
+        const result = new Matrix();
         Matrix.LerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -7816,8 +7816,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @param gradient defines the gradient between the two matrices
      * @returns the new matrix
      */
-    public static DecomposeLerp<T extends Matrix>(startValue: DeepImmutable<T>, endValue: DeepImmutable<Matrix>, gradient: number): T {
-        const result = new (startValue.constructor as Constructor<typeof Matrix, T>)();
+    public static DecomposeLerp(startValue: DeepImmutable<Matrix>, endValue: DeepImmutable<Matrix>, gradient: number): Matrix {
+        const result = new Matrix();
         Matrix.DecomposeLerpToRef(startValue, endValue, gradient, result);
         return result;
     }
@@ -8547,14 +8547,14 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @param zmax defines the far clip plane
      * @returns the transformation matrix
      */
-    public static GetFinalMatrix<T extends Matrix>(
+    public static GetFinalMatrix(
         viewport: DeepImmutable<Viewport>,
-        world: DeepImmutable<T>,
+        world: DeepImmutable<Matrix>,
         view: DeepImmutable<Matrix>,
         projection: DeepImmutable<Matrix>,
         zmin: number,
         zmax: number
-    ): T {
+    ): Matrix {
         const cw = viewport.width;
         const ch = viewport.height;
         const cx = viewport.x;
@@ -8562,7 +8562,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
 
         const viewportMatrix = Matrix.FromValues(cw / 2.0, 0.0, 0.0, 0.0, 0.0, -ch / 2.0, 0.0, 0.0, 0.0, 0.0, zmax - zmin, 0.0, cx + cw / 2.0, ch / 2.0 + cy, zmin, 1.0);
 
-        const matrix = new (world.constructor as Constructor<typeof Matrix, T>)();
+        const matrix = new Matrix();
         world.multiplyToRef(view, matrix);
         matrix.multiplyToRef(projection, matrix);
         return matrix.multiplyToRef(viewportMatrix, matrix);
@@ -8595,8 +8595,8 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @param matrix defines the matrix to transpose
      * @returns the new matrix
      */
-    public static Transpose<T extends Matrix>(matrix: DeepImmutable<T>): T {
-        const result = new (matrix.constructor as Constructor<typeof Matrix, T>)();
+    public static Transpose(matrix: DeepImmutable<Matrix>): Matrix {
+        const result = new Matrix();
         Matrix.TransposeToRef(matrix, result);
         return result;
     }
