@@ -427,6 +427,10 @@ export class NodeMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || EngineStore.LastCreatedScene!);
 
+        if (options && options.shaderLanguage === ShaderLanguage.WGSL && !this.getScene().getEngine().isWebGPU) {
+            throw new Error("WebGPU shader language is only supported with WebGPU engine");
+        }
+
         this._options = {
             emitComments: false,
             shaderLanguage: ShaderLanguage.GLSL,
