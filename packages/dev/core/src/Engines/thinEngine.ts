@@ -34,7 +34,7 @@ import {
     deleteStateObject,
 } from "./thinEngine.functions";
 
-import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction } from "./abstractEngine";
+import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
@@ -3556,14 +3556,7 @@ export class ThinEngine extends AbstractEngine {
         invertY: boolean,
         noMipmap: boolean,
         isCompressed: boolean,
-        processFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
+        processFunction: PrepareTextureProcessFunction,
         samplingMode: number,
         format: Nullable<number>
     ): void {
