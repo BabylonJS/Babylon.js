@@ -174,6 +174,27 @@ export interface HostInformation {
     isMobile: boolean;
 }
 
+export type PrepareTextureProcessFunction = (
+    width: number,
+    height: number,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    extension: string,
+    texture: InternalTexture,
+    continuationCallback: () => void
+) => boolean;
+
+export type PrepareTextureFunction = (
+    texture: InternalTexture,
+    extension: string,
+    scene: Nullable<ISceneLike>,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    invertY: boolean,
+    noMipmap: boolean,
+    isCompressed: boolean,
+    processFunction: PrepareTextureProcessFunction,
+    samplingMode: number
+) => void;
+
 /**
  * The parent class for specialized engines (WebGL, WebGPU)
  */
@@ -1596,32 +1617,8 @@ export abstract class AbstractEngine {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
-        prepareTexture: (
-            texture: InternalTexture,
-            extension: string,
-            scene: Nullable<ISceneLike>,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            invertY: boolean,
-            noMipmap: boolean,
-            isCompressed: boolean,
-            processFunction: (
-                width: number,
-                height: number,
-                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-                extension: string,
-                texture: InternalTexture,
-                continuationCallback: () => void
-            ) => boolean,
-            samplingMode: number
-        ) => void,
-        prepareTextureProcessFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
+        prepareTexture: PrepareTextureFunction,
+        prepareTextureProcess: PrepareTextureProcessFunction,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
         format: Nullable<number> = null,
@@ -1712,7 +1709,7 @@ export abstract class AbstractEngine {
                         null,
                         onError,
                         prepareTexture,
-                        prepareTextureProcessFunction,
+                        prepareTextureProcess,
                         buffer,
                         texture
                     );
@@ -1735,7 +1732,7 @@ export abstract class AbstractEngine {
                     onLoad,
                     onError,
                     prepareTexture,
-                    prepareTextureProcessFunction,
+                    prepareTextureProcess,
                     buffer,
                     texture,
                     format,
@@ -1807,7 +1804,7 @@ export abstract class AbstractEngine {
                     texture._buffer = img;
                 }
 
-                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
+                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcess, samplingMode);
             };
             // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
             // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
