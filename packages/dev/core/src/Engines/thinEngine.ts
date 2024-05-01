@@ -34,7 +34,7 @@ import {
     deleteStateObject,
 } from "./thinEngine.functions";
 
-import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
+import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
@@ -2988,24 +2988,7 @@ export class ThinEngine extends AbstractEngine {
             samplingMode,
             onLoad,
             onError,
-            (
-                texture: InternalTexture,
-                extension: string,
-                scene: Nullable<ISceneLike>,
-                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-                invertY: boolean,
-                noMipmap: boolean,
-                isCompressed: boolean,
-                processFunction: (
-                    width: number,
-                    height: number,
-                    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-                    extension: string,
-                    texture: InternalTexture,
-                    continuationCallback: () => void
-                ) => boolean,
-                samplingMode: number
-            ) => this._prepareWebGLTexture(texture, extension, scene, img, invertY, noMipmap, isCompressed, processFunction, samplingMode, format),
+            (...args: Parameters<PrepareTextureFunction>) => this._prepareWebGLTexture(...args, format),
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
