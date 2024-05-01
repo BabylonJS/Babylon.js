@@ -352,6 +352,7 @@ export interface Tensor<V extends TensorValue, I> {
 /* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Static side of Tensor
+ * @see Tensor
  */
 export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
     /**
