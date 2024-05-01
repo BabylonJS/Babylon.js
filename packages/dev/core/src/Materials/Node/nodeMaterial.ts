@@ -155,9 +155,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Opaque blend mode for vignette */
     public VIGNETTEBLENDMODEOPAQUE = false;
     /** Tone mapping */
-    public TONEMAPPING = false;
-    /** ACES tone mapping mode */
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     /** Contrast */
     public CONTRAST = false;
     /** Exposure */
@@ -1196,18 +1194,20 @@ export class NodeMaterial extends PushMaterial {
         const result = this._processDefines(dummyMesh, defines);
         Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
-        let effect = this.getScene().getEngine().createEffect(
-            {
-                vertexElement: tempName,
-                fragmentElement: tempName,
-            },
-            [VertexBuffer.PositionKind],
-            this._fragmentCompilationState.uniforms,
-            this._fragmentCompilationState.samplers,
-            defines.toString(),
-            result?.fallbacks,
-            undefined
-        );
+        let effect = this.getScene()
+            .getEngine()
+            .createEffect(
+                {
+                    vertexElement: tempName,
+                    fragmentElement: tempName,
+                },
+                [VertexBuffer.PositionKind],
+                this._fragmentCompilationState.uniforms,
+                this._fragmentCompilationState.samplers,
+                defines.toString(),
+                result?.fallbacks,
+                undefined
+            );
 
         proceduralTexture.nodeMaterialSource = this;
         proceduralTexture._setEffect(effect);
@@ -1231,18 +1231,20 @@ export class NodeMaterial extends PushMaterial {
                 Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
 
                 TimingTools.SetImmediate(() => {
-                    effect = this.getScene().getEngine().createEffect(
-                        {
-                            vertexElement: tempName,
-                            fragmentElement: tempName,
-                        },
-                        [VertexBuffer.PositionKind],
-                        this._fragmentCompilationState.uniforms,
-                        this._fragmentCompilationState.samplers,
-                        defines.toString(),
-                        result?.fallbacks,
-                        undefined
-                    );
+                    effect = this.getScene()
+                        .getEngine()
+                        .createEffect(
+                            {
+                                vertexElement: tempName,
+                                fragmentElement: tempName,
+                            },
+                            [VertexBuffer.PositionKind],
+                            this._fragmentCompilationState.uniforms,
+                            this._fragmentCompilationState.samplers,
+                            defines.toString(),
+                            result?.fallbacks,
+                            undefined
+                        );
 
                     proceduralTexture._setEffect(effect);
                 });

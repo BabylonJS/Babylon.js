@@ -37,6 +37,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
         const toneMappingOptions = [
             { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
             { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
+            { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
         ];
 
         const vignetteModeOptions = [
