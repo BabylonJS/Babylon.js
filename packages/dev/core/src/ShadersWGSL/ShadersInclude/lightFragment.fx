@@ -135,9 +135,27 @@
     #endif
 
     #ifdef SHADOW{X}
+            #ifdef SHADOWCSMDEBUG{X}               
+                var shadowDebug{X}: vec3f;
+            #endif
         #ifdef SHADOWCSM{X}
-            var vPositionFromLight{X}: array<vec4f, 4> = array<vec4f, 4>(fragmentInputs.vPositionFromLight{X}_0, fragmentInputs.vPositionFromLight{X}_1, fragmentInputs.vPositionFromLight{X}_2, fragmentInputs.vPositionFromLight{X}_3);
-            var vDepthMetric{X}: array<f32, 4> = array<f32, 4>(fragmentInputs.vDepthMetric{X}_0, fragmentInputs.vDepthMetric{X}_1, fragmentInputs.vDepthMetric{X}_2, fragmentInputs.vDepthMetric{X}_3);
+            #ifdef SHADOWCSMUSESHADOWMAXZ{X}
+                var index{X}: i32 = -1;
+            #else
+                var index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
+            #endif
+
+            var diff{X}: f32 = 0.;
+            
+            vPositionFromLight{X}[0] = fragmentInputs.vPositionFromLight{X}_0;
+            vPositionFromLight{X}[1] = fragmentInputs.vPositionFromLight{X}_1;
+            vPositionFromLight{X}[2] = fragmentInputs.vPositionFromLight{X}_2;
+            vPositionFromLight{X}[3] = fragmentInputs.vPositionFromLight{X}_3;
+                       
+            vDepthMetric{X}[0] = fragmentInputs.vDepthMetric{X}_0;
+            vDepthMetric{X}[1] = fragmentInputs.vDepthMetric{X}_1;
+            vDepthMetric{X}[2] = fragmentInputs.vDepthMetric{X}_2;
+            vDepthMetric{X}[3] = fragmentInputs.vDepthMetric{X}_3;
             
             for (var i:i32 = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
             {
@@ -151,7 +169,6 @@
                     break;
                 }
             }
-
             #ifdef SHADOWCSMUSESHADOWMAXZ{X}
             if (index{X} >= 0)
             #endif
@@ -177,7 +194,7 @@
                 #endif
 
                 #ifdef SHADOWCSMDEBUG{X}
-                    shadowDebug{X} = vec3(shadow) * vCascadeColorsMultiplier{X}[index{X}];
+                    shadowDebug{X} = vec3f(shadow) * vCascadeColorsMultiplier{X}[index{X}];
                 #endif
 
                 #ifndef SHADOWCSMNOBLEND{X}
@@ -204,7 +221,7 @@
                                 nextShadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depth{X}Texture, depth{X}Sampler, shadow{X}Texture, shadow{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                             #endif
                         #else
-                            nextShadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadow{X}Texture, hadow{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                            nextShadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadow{X}Texture, shadow{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                         #endif
 
                         shadow = mix(nextShadow, shadow, diffRatio);

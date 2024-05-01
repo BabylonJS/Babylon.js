@@ -41,6 +41,9 @@ var<uniform> light{X} : Light{X};
 		varying vDepthMetric{X}_3:  f32;
 		varying vPositionFromCamera{X}: vec4f;
 
+		var<private> vPositionFromLight{X}: array<vec4f, 4>;
+		var<private> vDepthMetric{X} : array<f32, 4>;
+
 		#if defined(SHADOWPCSS{X})
 			var shadow{X}Sampler: sampler_comparison;			
 			var shadow{X}Texture: texture_depth_2d_array;
@@ -69,16 +72,7 @@ var<uniform> light{X} : Light{X};
                 vec3f ( 0.0, 1.0, 5.5 ),
                 vec3f ( 0.5, 3.5, 0.75 )
             );
-            var shadowDebug{X}: vec3f;
         #endif
-
-        #ifdef SHADOWCSMUSESHADOWMAXZ{X}
-            var<private> index{X}: i32 = -1;
-        #else
-            var<private> index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
-        #endif
-
-        var<private> diff{X}: f32 = 0.;
 	#elif defined(SHADOWCUBE{X})
 		var shadow{X}Sampler: sampler;		
 	#else
