@@ -34,7 +34,7 @@ import {
     deleteStateObject,
 } from "./thinEngine.functions";
 
-import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
+import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
@@ -271,7 +271,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled (default value is "undefined", meaning that the browser may or may not enable it)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
@@ -282,7 +282,7 @@ export class ThinEngine extends AbstractEngine {
         adaptToDeviceRatio?: boolean
     ) {
         options = options || {};
-        super((antialias ?? options.antialias) || false, options, adaptToDeviceRatio);
+        super(antialias ?? options.antialias, options, adaptToDeviceRatio);
 
         if (!canvasOrContext) {
             return;
@@ -2988,14 +2988,14 @@ export class ThinEngine extends AbstractEngine {
             samplingMode,
             onLoad,
             onError,
-            this._prepareWebGLTexture.bind(this),
+            (...args: Parameters<PrepareTextureFunction>) => this._prepareWebGLTexture(...args, format),
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
 
                 texture._creationFlags = creationFlags ?? 0;
 
-                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
+                const tip = this._getTexImageParametersForCreateTexture(texture.format, texture._useSRGBBuffer);
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
@@ -3055,11 +3055,7 @@ export class ThinEngine extends AbstractEngine {
      * @returns The options to pass to texImage2D or texImage3D calls.
      * @internal
      */
-    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
-        if (babylonFormat === undefined || babylonFormat === null) {
-            babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
-        }
-
+    public _getTexImageParametersForCreateTexture(babylonFormat: number, useSRGBBuffer: boolean): TexImageParameters {
         let format: number, internalFormat: number;
         if (this.webGLVersion === 1) {
             // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
@@ -3558,15 +3554,9 @@ export class ThinEngine extends AbstractEngine {
         invertY: boolean,
         noMipmap: boolean,
         isCompressed: boolean,
-        processFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        processFunction: PrepareTextureProcessFunction,
+        samplingMode: number,
+        format: Nullable<number>
     ): void {
         const maxTextureSize = this.getCaps().maxTextureSize;
         const potWidth = Math.min(maxTextureSize, this.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
@@ -3595,7 +3585,8 @@ export class ThinEngine extends AbstractEngine {
         texture.height = potHeight;
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        texture.format = texture.format !== -1 ? texture.format : extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        texture.format =
+            texture.format !== -1 ? texture.format : format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA);
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {

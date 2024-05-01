@@ -202,7 +202,7 @@ export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, 
     if (!linked) {
         // Get more info
         // Vertex
-        if (gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+        if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
             const log = gl.getShaderInfoLog(vertexShader);
             if (log) {
                 pipelineContext.vertexCompilationError = log;

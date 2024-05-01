@@ -225,6 +225,24 @@ export class GIRSMManager {
         this._debugLayer.isEnabled = show;
     }
 
+    private _use32BitsDepthBuffer = false;
+
+    /**
+     * Defines if the depth buffer used by the geometry buffer renderer should be 32 bits or not. Default is false (16 bits).
+     */
+    public get use32BitsDepthBuffer() {
+        return this._use32BitsDepthBuffer;
+    }
+
+    public set use32BitsDepthBuffer(enable: boolean) {
+        if (this._use32BitsDepthBuffer === enable) {
+            return;
+        }
+
+        this._use32BitsDepthBuffer = enable;
+        this.recreateResources();
+    }
+
     private _outputDimensions: { width: number; height: number };
 
     /**
@@ -527,7 +545,7 @@ export class GIRSMManager {
 
         const geometryBufferRenderer = this._scene.enableGeometryBufferRenderer(
             this._enableBlur ? this._outputDimensions : this._giTextureDimensions,
-            Constants.TEXTUREFORMAT_DEPTH16,
+            this._use32BitsDepthBuffer ? Constants.TEXTUREFORMAT_DEPTH32_FLOAT : Constants.TEXTUREFORMAT_DEPTH16,
             GIRSMManager.GeometryBufferTextureTypesAndFormats
         );
 
