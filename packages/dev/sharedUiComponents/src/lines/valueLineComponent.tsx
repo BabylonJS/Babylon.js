@@ -15,7 +15,7 @@ export class ValueLineComponent extends React.Component<IValueLineComponentProps
         super(props);
     }
 
-    render() {
+    override render() {
         const digits = this.props.fractionDigits !== undefined ? this.props.fractionDigits : 2;
         const value = this.props.value.toFixed(digits) + (this.props.units ? " " + this.props.units : "");
 

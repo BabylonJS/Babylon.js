@@ -28,15 +28,15 @@ export class Ellipse extends Container {
      * Creates a new Ellipse
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Ellipse";
     }
 
-    protected _localDraw(context: ICanvasRenderingContext): void {
+    protected override _localDraw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -78,7 +78,7 @@ export class Ellipse extends Container {
         context.restore();
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.width -= 2 * this._thickness;
@@ -87,7 +87,7 @@ export class Ellipse extends Container {
         this._measureForChildren.top += this._thickness;
     }
 
-    protected _clipForChildren(context: ICanvasRenderingContext) {
+    protected override _clipForChildren(context: ICanvasRenderingContext) {
         Control.drawEllipse(
             this._currentMeasure.left + this._currentMeasure.width / 2,
             this._currentMeasure.top + this._currentMeasure.height / 2,
@@ -99,7 +99,7 @@ export class Ellipse extends Container {
         context.clip();
     }
 
-    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
+    public override _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         Control.drawEllipse(
             this._currentMeasure.left + this._currentMeasure.width / 2,
             this._currentMeasure.top + this._currentMeasure.height / 2,

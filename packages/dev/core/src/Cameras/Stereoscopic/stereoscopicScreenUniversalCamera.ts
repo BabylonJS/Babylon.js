@@ -59,14 +59,14 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
      * Gets camera class name
      * @returns StereoscopicScreenUniversalCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicUniversalCamera";
     }
 
     /**
      * @internal
      */
-    public createRigCamera(name: string): Nullable<Camera> {
+    public override createRigCamera(name: string): Nullable<Camera> {
         const camera = new TargetCamera(name, Vector3.Zero(), this.getScene());
         const transform = new TransformNode("tm_" + name, this.getScene());
         camera.parent = transform;
@@ -79,7 +79,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
     /**
      * @internal
      */
-    public _updateRigCameras() {
+    public override _updateRigCameras() {
         for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {
             const cam = this._rigCameras[cameraIndex] as TargetCamera;
             cam.minZ = this.minZ;
@@ -107,7 +107,7 @@ export class StereoscopicScreenUniversalCamera extends UniversalCamera {
         transform.setPivotMatrix(m, false);
     }
 
-    protected _setRigMode() {
+    protected override _setRigMode() {
         this._rigCameras[0].viewport = new Viewport(0, 0, 0.5, 1);
         this._rigCameras[1].viewport = new Viewport(0.5, 0, 0.5, 1.0);
         for (let cameraIndex = 0; cameraIndex < this._rigCameras.length; cameraIndex++) {

@@ -30,7 +30,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ShadowMapBlock";
     }
 
@@ -38,7 +38,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("vPositionWSM");
         state._excludeVariableName("lightDataSM");
         state._excludeVariableName("biasAndScaleSM");
@@ -76,7 +76,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const comments = `//${this.name}`;

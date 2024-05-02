@@ -26,7 +26,7 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MatrixComposeBlock";
     }
 
@@ -51,7 +51,7 @@ export class MatrixComposeBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         this.output._storedFunction = (state: NodeGeometryBuildState) => {
             if (!this.matrix0.isConnected || !this.matrix1.isConnected) {
                 return null;

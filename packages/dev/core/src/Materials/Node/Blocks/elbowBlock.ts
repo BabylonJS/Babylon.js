@@ -25,7 +25,7 @@ export class ElbowBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ElbowBlock";
     }
 
@@ -46,7 +46,7 @@ export class ElbowBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the target of the block
      */
-    public get target() {
+    public override get target() {
         const input = this._inputs[0];
         if (input.isConnected) {
             const block = input.connectedPoint!.ownerBlock;
@@ -62,14 +62,14 @@ export class ElbowBlock extends NodeMaterialBlock {
         return this._target;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {
+    public override set target(value: NodeMaterialBlockTargets) {
         if ((this._target & value) !== 0) {
             return;
         }
         this._target = value;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];

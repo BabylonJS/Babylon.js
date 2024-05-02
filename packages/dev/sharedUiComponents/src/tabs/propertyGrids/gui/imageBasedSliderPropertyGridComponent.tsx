@@ -20,7 +20,7 @@ export class ImageBasedSliderPropertyGridComponent extends React.Component<IImag
         super(props);
     }
 
-    render() {
+    override render() {
         const imageBasedSlider = this.props.imageBasedSlider;
 
         return (

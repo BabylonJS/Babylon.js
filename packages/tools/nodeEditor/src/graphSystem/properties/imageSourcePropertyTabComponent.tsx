@@ -30,7 +30,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
+    override UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.nodeData.data !== this.props.nodeData.data) {
             const texture = (nextProps.nodeData.data as ImageSourceBlock).texture as BaseTexture;
 
@@ -118,7 +118,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         (texture as Texture).updateURL(url, null, () => this.updateAfterTextureLoad());
     }
 
-    render() {
+    override render() {
         let url = "";
         const block = this.props.nodeData.data as NodeMaterialBlock;
 

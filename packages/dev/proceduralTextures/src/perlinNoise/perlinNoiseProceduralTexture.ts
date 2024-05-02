@@ -41,12 +41,12 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
         this.setFloat("translationSpeed", this._currentTranslation);
     }
 
-    public render(useCameraPostProcess?: boolean) {
+    public override render(useCameraPostProcess?: boolean) {
         this.updateShaderUniforms();
         super.render(useCameraPostProcess);
     }
 
-    public resize(size: any, generateMipMaps: any): void {
+    public override resize(size: any, generateMipMaps: any): void {
         super.resize(size, generateMipMaps);
     }
 
@@ -54,7 +54,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
      * Serializes this perlin noise procedural texture
      * @returns a serialized perlin noise procedural texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.PerlinNoiseProceduralTexture";
 
@@ -68,7 +68,7 @@ export class PerlinNoiseProceduralTexture extends ProceduralTexture {
      * @param rootUrl defines the root URL containing perlin noise procedural texture information
      * @returns a parsed Perlin Noise Procedural Texture
      */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): PerlinNoiseProceduralTexture {
+    public static override Parse(parsedTexture: any, scene: Scene, rootUrl: string): PerlinNoiseProceduralTexture {
         const texture = SerializationHelper.Parse(
             () => new PerlinNoiseProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,

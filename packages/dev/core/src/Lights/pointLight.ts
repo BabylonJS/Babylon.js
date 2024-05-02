@@ -44,14 +44,14 @@ export class PointLight extends ShadowLight {
      * Gets the direction if it has been set.
      * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
      */
-    public get direction(): Vector3 {
+    public override get direction(): Vector3 {
         return this._direction;
     }
 
     /**
      * In case of direction provided, the shadow will not use a cube texture but simulate a spot shadow as a fallback
      */
-    public set direction(value: Vector3) {
+    public override set direction(value: Vector3) {
         const previousNeedCube = this.needCube();
         this._direction = value;
         if (this.needCube() !== previousNeedCube && this._shadowGenerators) {
@@ -85,7 +85,7 @@ export class PointLight extends ShadowLight {
      * Returns the string "PointLight"
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PointLight";
     }
 
@@ -93,7 +93,7 @@ export class PointLight extends ShadowLight {
      * Returns the integer 0.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
-    public getTypeID(): number {
+    public override getTypeID(): number {
         return Light.LIGHTTYPEID_POINTLIGHT;
     }
 
@@ -101,7 +101,7 @@ export class PointLight extends ShadowLight {
      * Specifies whether or not the shadowmap should be a cube texture.
      * @returns true if the shadowmap needs to be a cube texture.
      */
-    public needCube(): boolean {
+    public override needCube(): boolean {
         return !this.direction;
     }
 
@@ -110,7 +110,7 @@ export class PointLight extends ShadowLight {
      * @param faceIndex The index of the face we are computed the direction to generate shadow
      * @returns The set direction in 2d mode otherwise the direction to the cubemap face if needCube() is true
      */
-    public getShadowDirection(faceIndex?: number): Vector3 {
+    public override getShadowDirection(faceIndex?: number): Vector3 {
         if (this.direction) {
             return super.getShadowDirection(faceIndex);
         } else {

@@ -23,7 +23,7 @@ export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPr
         super(props);
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
 
         return (

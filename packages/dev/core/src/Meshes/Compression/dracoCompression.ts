@@ -211,7 +211,7 @@ export class DracoCompression implements IDisposable {
 
                     return new AutoReleaseWorkerPool(numberOfWorkers as number, () => {
                         const worker = new Worker(workerBlobUrl);
-                        return initializeWebWorker(worker, decoderWasmBinary!, decoderInfo.url);
+                        return initializeWebWorker(worker, decoderWasmBinary, decoderInfo.url);
                     });
                 });
             } else {

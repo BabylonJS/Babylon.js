@@ -9,11 +9,12 @@ import { FilesInputStore } from "./filesInputStore";
 import { RetryStrategy } from "./retryStrategy";
 import { BaseError, ErrorCodes, RuntimeError } from "./error";
 import { DecodeBase64ToBinary, DecodeBase64ToString, EncodeArrayBufferToBase64 } from "./stringTools";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { _functionContainer } from "../Engines/Processors/shaderProcessor";
 import { EngineStore } from "../Engines/engineStore";
 import { Logger } from "./logger";
 import { TimingTools } from "./timingTools";
 import type { INative } from "../Engines/Native/nativeInterfaces";
+import { EngineFunctionContext } from "core/Engines/abstractEngine.functions";
 import { AbstractEngine } from "../Engines/abstractEngine";
 
 const Base64DataUrlRegEx = new RegExp(/^data:([^,]+\/[^,]+)?;base64,/i);
@@ -132,7 +133,8 @@ export const FileToolsOptions: {
  * @param url defines the url to clean
  * @returns the cleaned url
  */
-const _CleanUrl = (url: string): string => {
+// eslint-disable-next-line prefer-const
+export let CleanUrl = (url: string): string => {
     url = url.replace(/#/gm, "%23");
     return url;
 };
@@ -199,7 +201,7 @@ export const LoadImage = (
         url = URL.createObjectURL(input);
         usingObjectURL = true;
     } else {
-        url = _CleanUrl(input);
+        url = CleanUrl(input);
         url = FileToolsOptions.PreprocessUrl(input);
     }
 
@@ -521,7 +523,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
-    url = _CleanUrl(url);
+    url = CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
     const loadUrl = FileToolsOptions.BaseUrl + url;
@@ -774,8 +776,8 @@ export const DecodeBase64UrlToString = (uri: string): string => {
  */
 const initSideEffects = () => {
     AbstractEngine._FileToolsLoadImage = LoadImage;
-    AbstractEngine._FileToolsLoadFile = LoadFile;
-    ShaderProcessor._FileToolsLoadFile = LoadFile;
+    EngineFunctionContext.loadFile = LoadFile;
+    _functionContainer.loadFile = LoadFile;
 };
 
 initSideEffects();

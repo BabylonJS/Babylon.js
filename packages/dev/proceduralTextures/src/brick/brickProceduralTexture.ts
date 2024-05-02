@@ -71,7 +71,7 @@ export class BrickProceduralTexture extends ProceduralTexture {
      * Serializes this brick procedural texture
      * @returns a serialized brick procedural texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.BrickProceduralTexture";
 
@@ -85,7 +85,7 @@ export class BrickProceduralTexture extends ProceduralTexture {
      * @param rootUrl defines the root URL containing brick procedural texture information
      * @returns a parsed Brick Procedural Texture
      */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture {
+    public static override Parse(parsedTexture: any, scene: Scene, rootUrl: string): BrickProceduralTexture {
         const texture = SerializationHelper.Parse(
             () => new BrickProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,

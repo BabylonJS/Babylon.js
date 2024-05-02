@@ -53,7 +53,7 @@ export class TransformBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TransformBlock";
     }
 
@@ -85,7 +85,7 @@ export class TransformBlock extends NodeMaterialBlock {
         return this._inputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const vector = this.vector;
@@ -159,14 +159,14 @@ export class TransformBlock extends NodeMaterialBlock {
      * @param nodeMaterial defines the node material requesting the update
      * @param defines defines the material defines to update
      */
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         // Do nothing
         if (mesh.nonUniformScaling) {
             defines.setValue("NONUNIFORMSCALING", true);
         }
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.complementZ = this.complementZ;
@@ -175,14 +175,14 @@ export class TransformBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.complementZ = serializationObject.complementZ !== undefined ? serializationObject.complementZ : 0.0;
         this.complementW = serializationObject.complementW !== undefined ? serializationObject.complementW : 1.0;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.complementZ = ${this.complementZ};\n`;
 
         codeString += `${this._codeVariableName}.complementW = ${this.complementW};\n`;

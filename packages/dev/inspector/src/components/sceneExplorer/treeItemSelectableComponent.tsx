@@ -37,7 +37,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isExpanded: boolean; isSelected: boolean }) {
+    override shouldComponentUpdate(nextProps: ITreeItemSelectableComponentProps, nextState: { isExpanded: boolean; isSelected: boolean }) {
         if (!nextState.isExpanded && this.state.isExpanded) {
             return true;
         }
@@ -67,13 +67,13 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.state.isSelected) {
             this.scrollIntoView();
         }
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         if (this.state.isSelected && !this._wasSelected) {
             this.scrollIntoView();
         }
@@ -113,7 +113,7 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         });
     }
 
-    render() {
+    override render() {
         const marginStyle = {
             paddingLeft: 10 * (this.props.offset + 0.5) + "px",
         };

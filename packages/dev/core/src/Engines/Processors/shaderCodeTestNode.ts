@@ -5,7 +5,7 @@ import type { ShaderDefineExpression } from "./Expressions/shaderDefineExpressio
 export class ShaderCodeTestNode extends ShaderCodeNode {
     public testExpression: ShaderDefineExpression;
 
-    public isValid(preprocessors: { [key: string]: string }) {
+    public override isValid(preprocessors: { [key: string]: string }) {
         return this.testExpression.isTrue(preprocessors);
     }
 }

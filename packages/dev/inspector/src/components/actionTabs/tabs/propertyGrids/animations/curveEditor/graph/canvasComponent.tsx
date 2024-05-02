@@ -29,13 +29,13 @@ export class CanvasComponent extends React.Component<ICanvasComponentProps, ICan
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="canvas-zone">
                 <FrameBarComponent globalState={this.props.globalState} context={this.props.context} />

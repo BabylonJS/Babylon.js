@@ -87,7 +87,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateOnVerticesBlock";
     }
 
@@ -140,7 +140,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
             state.pushInstancingContext(this);
@@ -253,7 +253,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         }
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.removeDuplicatedPositions = ${this.removeDuplicatedPositions ? "true" : "false"};\n`;
         codeString += `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         return codeString;
@@ -263,7 +263,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.removeDuplicatedPositions = this.removeDuplicatedPositions;
@@ -272,7 +272,7 @@ export class InstantiateOnVerticesBlock extends NodeGeometryBlock implements INo
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.removeDuplicatedPositions = serializationObject.removeDuplicatedPositions;

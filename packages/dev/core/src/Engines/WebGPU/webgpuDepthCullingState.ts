@@ -18,11 +18,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this.reset();
     }
 
-    public get zOffset(): number {
+    public override get zOffset(): number {
         return this._zOffset;
     }
 
-    public set zOffset(value: number) {
+    public override set zOffset(value: number) {
         if (this._zOffset === value) {
             return;
         }
@@ -32,11 +32,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthBiasSlopeScale(value);
     }
 
-    public get zOffsetUnits(): number {
+    public override get zOffsetUnits(): number {
         return this._zOffsetUnits;
     }
 
-    public set zOffsetUnits(value: number) {
+    public override set zOffsetUnits(value: number) {
         if (this._zOffsetUnits === value) {
             return;
         }
@@ -46,11 +46,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthBias(value);
     }
 
-    public get cullFace(): Nullable<number> {
+    public override get cullFace(): Nullable<number> {
         return this._cullFace;
     }
 
-    public set cullFace(value: Nullable<number>) {
+    public override set cullFace(value: Nullable<number>) {
         if (this._cullFace === value) {
             return;
         }
@@ -60,11 +60,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setCullFace(value ?? 1);
     }
 
-    public get cull(): Nullable<boolean> {
+    public override get cull(): Nullable<boolean> {
         return this._cull;
     }
 
-    public set cull(value: Nullable<boolean>) {
+    public override set cull(value: Nullable<boolean>) {
         if (this._cull === value) {
             return;
         }
@@ -74,11 +74,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setCullEnabled(!!value);
     }
 
-    public get depthFunc(): Nullable<number> {
+    public override get depthFunc(): Nullable<number> {
         return this._depthFunc;
     }
 
-    public set depthFunc(value: Nullable<number>) {
+    public override set depthFunc(value: Nullable<number>) {
         if (this._depthFunc === value) {
             return;
         }
@@ -88,11 +88,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthCompare(value);
     }
 
-    public get depthMask(): boolean {
+    public override get depthMask(): boolean {
         return this._depthMask;
     }
 
-    public set depthMask(value: boolean) {
+    public override set depthMask(value: boolean) {
         if (this._depthMask === value) {
             return;
         }
@@ -102,11 +102,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthWriteEnabled(value);
     }
 
-    public get depthTest(): boolean {
+    public override get depthTest(): boolean {
         return this._depthTest;
     }
 
-    public set depthTest(value: boolean) {
+    public override set depthTest(value: boolean) {
         if (this._depthTest === value) {
             return;
         }
@@ -116,11 +116,11 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setDepthTestEnabled(value);
     }
 
-    public get frontFace(): Nullable<number> {
+    public override get frontFace(): Nullable<number> {
         return this._frontFace;
     }
 
-    public set frontFace(value: Nullable<number>) {
+    public override set frontFace(value: Nullable<number>) {
         if (this._frontFace === value) {
             return;
         }
@@ -130,12 +130,12 @@ export class WebGPUDepthCullingState extends DepthCullingState {
         this._cache.setFrontFace(value ?? 2);
     }
 
-    public reset() {
+    public override reset() {
         super.reset();
         this._cache.resetDepthCullingState();
     }
 
-    public apply() {
+    public override apply() {
         // nothing to do
     }
 }

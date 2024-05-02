@@ -141,7 +141,7 @@ WebGPUEngine.prototype._computeDispatch = function (
     }
 
     if (buffer !== undefined) {
-        computePass.dispatchWorkgroupsIndirect(buffer.underlyingResource(), <number>offset);
+        computePass.dispatchWorkgroupsIndirect(buffer.underlyingResource, <number>offset);
     } else {
         if (<number>x + <number>y + <number>z > 0) {
             computePass.dispatchWorkgroups(<number>x, <number>y, <number>z);

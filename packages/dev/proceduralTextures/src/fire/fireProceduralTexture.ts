@@ -35,7 +35,7 @@ export class FireProceduralTexture extends ProceduralTexture {
         this.setFloat("alphaThreshold", this._alphaThreshold);
     }
 
-    public render(useCameraPostProcess?: boolean) {
+    public override render(useCameraPostProcess?: boolean) {
         const scene = this.getScene();
         if (this._autoGenerateTime && scene) {
             this._time += scene.getAnimationRatio() * 0.03;
@@ -112,7 +112,7 @@ export class FireProceduralTexture extends ProceduralTexture {
      * Serializes this fire procedural texture
      * @returns a serialized fire procedural texture object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this, super.serialize());
         serializationObject.customType = "BABYLON.FireProceduralTexture";
 
@@ -131,7 +131,7 @@ export class FireProceduralTexture extends ProceduralTexture {
      * @param rootUrl defines the root URL containing fire procedural texture information
      * @returns a parsed Fire Procedural Texture
      */
-    public static Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
+    public static override Parse(parsedTexture: any, scene: Scene, rootUrl: string): FireProceduralTexture {
         const texture = SerializationHelper.Parse(
             () => new FireProceduralTexture(parsedTexture.name, parsedTexture._size, scene, undefined, parsedTexture._generateMipMaps),
             parsedTexture,

@@ -38,7 +38,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryTextureFetchBlock";
     }
 
@@ -106,7 +106,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         const func = (state: NodeGeometryBuildState) => {
             const textureData = this.texture.getConnectedValue(state) as INodeGeometryTextureData;
             if (!textureData || !textureData.data) {
@@ -159,7 +159,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         };
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.clampCoordinates = ${this.clampCoordinates};\n`;
         return codeString;
     }
@@ -168,7 +168,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.clampCoordinates = this.clampCoordinates;
@@ -176,7 +176,7 @@ export class GeometryTextureFetchBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.clampCoordinates = serializationObject.clampCoordinates;

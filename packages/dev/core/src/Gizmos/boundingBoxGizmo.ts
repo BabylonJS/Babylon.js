@@ -706,7 +706,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this.updateBoundingBox();
     }
 
-    protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
+    protected override _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
             // Reset anchor mesh to match attached mesh's scale
             // This is needed to avoid invalid box/sphere position on first drag
@@ -960,7 +960,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
         this._lineBoundingBox.dispose();
@@ -1030,7 +1030,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     /**
      * CustomMeshes are not supported by this gizmo
      */
-    public setCustomMesh() {
+    public override setCustomMesh() {
         Logger.Error("Custom meshes are not supported on this gizmo");
     }
 }

@@ -30,7 +30,7 @@ export class RadioButtonPropertyGridComponent extends React.Component<IRadioButt
         super(props);
     }
 
-    render() {
+    override render() {
         const radioButtons = this.props.radioButtons;
 
         return (

@@ -58,7 +58,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
         this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
     }
 
-    render() {
+    override render() {
         const scene = (this.props.nodeData as any).__scene as Nullable<Scene>;
         const meshOptions = [{ label: "None", value: -1 }];
         let meshes: AbstractMesh[] = [];

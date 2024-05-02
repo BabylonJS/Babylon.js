@@ -94,7 +94,7 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -126,7 +126,7 @@ export class WebXRDomOverlay extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         if (this._element !== null && this._beforeXRSelectListener) {
             this._element.removeEventListener("beforexrselect", this._beforeXRSelectListener);

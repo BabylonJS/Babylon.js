@@ -122,7 +122,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Is the texture ready to be used ? (rendered at least once)
      * @returns true if ready, otherwise, false.
      */
-    public isReady(): boolean {
+    public override isReady(): boolean {
         if (!super.isReady()) {
             return false;
         }
@@ -142,7 +142,7 @@ export class CustomProceduralTexture extends ProceduralTexture {
      * Render the texture to its associated render target.
      * @param useCameraPostProcess Define if camera post process should be applied to the texture
      */
-    public render(useCameraPostProcess?: boolean): void {
+    public override render(useCameraPostProcess?: boolean): void {
         const scene = this.getScene();
         if (this._animate && scene) {
             this._time += scene.getAnimationRatio() * 0.03;

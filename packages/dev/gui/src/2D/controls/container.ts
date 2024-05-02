@@ -142,11 +142,11 @@ export class Container extends Control {
         return this._children;
     }
 
-    public get isReadOnly() {
+    public override get isReadOnly() {
         return this._isReadOnly;
     }
 
-    public set isReadOnly(value: boolean) {
+    public override set isReadOnly(value: boolean) {
         this._isReadOnly = value;
 
         for (const child of this._children) {
@@ -158,15 +158,15 @@ export class Container extends Control {
      * Creates a new Container
      * @param name defines the name of the container
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Container";
     }
 
-    public _flagDescendantsAsMatrixDirty(): void {
+    public override _flagDescendantsAsMatrixDirty(): void {
         for (const child of this.children) {
             child._isClipped = false;
             child._markMatrixAsDirty();
@@ -324,7 +324,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _offsetLeft(offset: number) {
+    public override _offsetLeft(offset: number) {
         super._offsetLeft(offset);
 
         for (const child of this._children) {
@@ -335,7 +335,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _offsetTop(offset: number) {
+    public override _offsetTop(offset: number) {
         super._offsetTop(offset);
 
         for (const child of this._children) {
@@ -344,7 +344,7 @@ export class Container extends Control {
     }
 
     /** @internal */
-    public _markAllAsDirty(): void {
+    public override _markAllAsDirty(): void {
         super._markAllAsDirty();
 
         for (let index = 0; index < this._children.length; index++) {
@@ -379,7 +379,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _link(host: AdvancedDynamicTexture): void {
+    public override _link(host: AdvancedDynamicTexture): void {
         super._link(host);
 
         for (const child of this._children) {
@@ -395,7 +395,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._isDirty || !this._cachedParentMeasure.isEqualsTo(parentMeasure)) {
             super._processMeasures(parentMeasure, context);
             this._evaluateClippingState(parentMeasure);
@@ -425,7 +425,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
+    public override _layout(parentMeasure: Measure, context: ICanvasRenderingContext): boolean {
         if (!this.isDirty && (!this.isVisible || this.notRenderable)) {
             return false;
         }
@@ -505,7 +505,7 @@ export class Container extends Control {
         return true;
     }
 
-    protected _postMeasure() {
+    protected override _postMeasure() {
         // Do nothing by default
     }
 
@@ -515,7 +515,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
+    public override _draw(context: ICanvasRenderingContext, invalidatedRectangle?: Measure): void {
         const renderToIntermediateTextureThisDraw = this._renderToIntermediateTexture && this._intermediateTexture;
         const contextToDrawTo = renderToIntermediateTextureThisDraw ? (<DynamicTexture>this._intermediateTexture).getContext() : context;
 
@@ -560,7 +560,7 @@ export class Container extends Control {
         context.restore();
     }
 
-    public getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
+    public override getDescendantsToRef(results: Control[], directDescendantsOnly: boolean = false, predicate?: (control: Control) => boolean): void {
         if (!this.children) {
             return;
         }
@@ -581,7 +581,16 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _processPicking(x: number, y: number, pi: Nullable<PointerInfoBase>, type: number, pointerId: number, buttonIndex: number, deltaX?: number, deltaY?: number): boolean {
+    public override _processPicking(
+        x: number,
+        y: number,
+        pi: Nullable<PointerInfoBase>,
+        type: number,
+        pointerId: number,
+        buttonIndex: number,
+        deltaX?: number,
+        deltaY?: number
+    ): boolean {
         if (!this._isEnabled || !this.isVisible || this.notRenderable) {
             return false;
         }
@@ -634,7 +643,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._measureForChildren.copyFrom(this._currentMeasure);
@@ -648,7 +657,7 @@ export class Container extends Control {
         }
     }
 
-    public isDimensionFullyDefined(dim: "width" | "height"): boolean {
+    public override isDimensionFullyDefined(dim: "width" | "height"): boolean {
         if (this._getAdaptDimTo(dim)) {
             for (const child of this.children) {
                 if (!child.isDimensionFullyDefined(dim)) {
@@ -664,9 +673,10 @@ export class Container extends Control {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force force serialization even if isSerializable === false
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize (true by default)
      */
-    public serialize(serializationObject: any, force: boolean = false) {
-        super.serialize(serializationObject, force);
+    public override serialize(serializationObject: any, force: boolean = false, allowCanvas: boolean = true) {
+        super.serialize(serializationObject, force, allowCanvas);
         if (!this.isSerializable && !force) {
             return;
         }
@@ -685,14 +695,14 @@ export class Container extends Control {
         for (const child of this.children) {
             if (child.isSerializable || force) {
                 const childSerializationObject = {};
-                child.serialize(childSerializationObject);
+                child.serialize(childSerializationObject, force, allowCanvas);
                 serializationObject.children.push(childSerializationObject);
             }
         }
     }
 
     /** Releases associated resources */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         for (let index = this.children.length - 1; index >= 0; index--) {
@@ -704,7 +714,7 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this._link(host);
 
@@ -724,7 +734,7 @@ export class Container extends Control {
         }
     }
 
-    public isReady(): boolean {
+    public override isReady(): boolean {
         for (const child of this.children) {
             if (!child.isReady()) {
                 return false;

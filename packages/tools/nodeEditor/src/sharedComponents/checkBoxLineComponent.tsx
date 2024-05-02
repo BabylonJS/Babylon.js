@@ -33,7 +33,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         }
     }
 
-    shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean }) {
+    override shouldComponentUpdate(nextProps: ICheckBoxLineComponentProps, nextState: { isSelected: boolean; isDisabled: boolean }) {
         let currentState: boolean;
 
         if (nextProps.isSelected) {
@@ -79,7 +79,7 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected });
     }
 
-    render() {
+    override render() {
         return (
             <div className="checkBoxLine">
                 <div className="label" title={this.props.label}>

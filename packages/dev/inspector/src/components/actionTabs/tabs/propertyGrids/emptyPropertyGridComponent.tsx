@@ -19,7 +19,7 @@ export class EmptyPropertyGridComponent extends React.Component<IEmptyPropertyGr
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <CustomPropertyGridComponent
                 globalState={this.props.globalState}

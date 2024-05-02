@@ -98,20 +98,20 @@ export class CellMaterial extends PushMaterial {
         super(name, scene);
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1.0;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
     // Methods
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -263,7 +263,7 @@ export class CellMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <CellMaterialDefines>subMesh.materialDefines;
@@ -327,7 +327,7 @@ export class CellMaterial extends PushMaterial {
         this._afterBind(mesh, this._activeEffect, subMesh);
     }
 
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         const results = [];
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
@@ -337,7 +337,7 @@ export class CellMaterial extends PushMaterial {
         return results;
     }
 
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
@@ -347,7 +347,7 @@ export class CellMaterial extends PushMaterial {
         return activeTextures;
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -355,7 +355,7 @@ export class CellMaterial extends PushMaterial {
         return this._diffuseTexture === texture;
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         if (this._diffuseTexture) {
             this._diffuseTexture.dispose();
         }
@@ -363,22 +363,22 @@ export class CellMaterial extends PushMaterial {
         super.dispose(forceDisposeEffect);
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "CellMaterial";
     }
 
-    public clone(name: string): CellMaterial {
+    public override clone(name: string): CellMaterial {
         return SerializationHelper.Clone<CellMaterial>(() => new CellMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.CellMaterial";
         return serializationObject;
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): CellMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): CellMaterial {
         return SerializationHelper.Parse(() => new CellMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

@@ -144,12 +144,12 @@ export class Line extends Control {
     }
 
     /** Gets or sets horizontal alignment */
-    public set horizontalAlignment(value: number) {
+    public override set horizontalAlignment(value: number) {
         return;
     }
 
     /** Gets or sets vertical alignment */
-    public set verticalAlignment(value: number) {
+    public override set verticalAlignment(value: number) {
         return;
     }
 
@@ -167,7 +167,7 @@ export class Line extends Control {
      * Creates a new Line
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
 
         this._automaticSize = true;
@@ -177,11 +177,11 @@ export class Line extends Control {
         this._verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Line";
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -205,13 +205,13 @@ export class Line extends Control {
         context.restore();
     }
 
-    public _measure(): void {
+    public override _measure(): void {
         // Width / Height
         this._currentMeasure.width = Math.abs(this._x1.getValue(this._host) - this._effectiveX2) + this._lineWidth;
         this._currentMeasure.height = Math.abs(this._y1.getValue(this._host) - this._effectiveY2) + this._lineWidth;
     }
 
-    protected _computeAlignment(parentMeasure: Measure): void {
+    protected override _computeAlignment(parentMeasure: Measure): void {
         this._currentMeasure.left = parentMeasure.left + Math.min(this._x1.getValue(this._host), this._effectiveX2) - this._lineWidth / 2;
         this._currentMeasure.top = parentMeasure.top + Math.min(this._y1.getValue(this._host), this._effectiveY2) - this._lineWidth / 2;
     }
@@ -222,7 +222,7 @@ export class Line extends Control {
      * @param scene Scene
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
-    public moveToVector3(position: Vector3, scene: Scene, end: boolean = false): void {
+    public override moveToVector3(position: Vector3, scene: Scene, end: boolean = false): void {
         if (!this._host || this.parent !== this._host._rootContainer) {
             Tools.Error("Cannot move a control to a vector3 if the control is not at root level");
             return;
@@ -245,7 +245,7 @@ export class Line extends Control {
      * @param projectedPosition Position in screen absolute space (X, Y)
      * @param end (opt) Set to true to assign x2 and y2 coordinates of the line. Default assign to x1 and y1.
      */
-    public _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
+    public override _moveToProjectedPosition(projectedPosition: Vector3, end: boolean = false): void {
         const x: string = projectedPosition.x + this._linkOffsetX.getValue(this._host) + "px";
         const y: string = projectedPosition.y + this._linkOffsetY.getValue(this._host) + "px";
 

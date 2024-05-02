@@ -103,7 +103,7 @@ export class SideBarComponent extends React.Component<ISideBarComponentProps, IS
         this.setState({ mode: Mode.Edit });
     }
 
-    public render() {
+    public override render() {
         let fps = "60";
 
         if (this.props.context.animations && this.props.context.animations.length) {

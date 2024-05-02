@@ -44,7 +44,7 @@ export class FlowGraphBinaryOperationBlock<LeftT, RightT, ResultT> extends FlowG
      * Gets the class name of this block
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return this._className;
     }
 }

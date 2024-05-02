@@ -45,7 +45,7 @@ export class TBNBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TBNBlock";
     }
 
@@ -53,7 +53,7 @@ export class TBNBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("tbnNormal");
         state._excludeVariableName("tbnTangent");
         state._excludeVariableName("tbnBitangent");
@@ -110,13 +110,13 @@ export class TBNBlock extends NodeMaterialBlock {
         return this._outputs[3];
     }
 
-    public get target() {
+    public override get target() {
         return NodeMaterialBlockTargets.Fragment;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {}
+    public override set target(value: NodeMaterialBlockTargets) {}
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world.isConnected) {
             let worldInput = material.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World && additionalFilteringInfo(b));
 
@@ -150,7 +150,7 @@ export class TBNBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const normal = this.normal;
         const tangent = this.tangent;
 
@@ -169,7 +169,7 @@ export class TBNBlock extends NodeMaterialBlock {
         defines.setValue("TBNBLOCK", useTBNBlock, true);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const normal = this.normal;

@@ -17,7 +17,7 @@ export class RenderingPipelineItemComponent extends React.Component<IRenderPipel
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="postProcessTools">
                 <TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="orangered" />

@@ -18,7 +18,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     /**
      * @returns the name of the class
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FluidRenderingObjectCustomParticles";
     }
 
@@ -67,7 +67,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
         }
     }
 
-    protected _createEffects(): void {
+    protected override _createEffects(): void {
         super._createEffects();
 
         const uniformNames = ["view", "projection", "size"];
@@ -88,7 +88,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
      * Indicates if the object is ready to be rendered
      * @returns True if everything is ready for the object to be rendered, otherwise false
      */
-    public isReady(): boolean {
+    public override isReady(): boolean {
         if (!this._vertexBuffers["offset"]) {
             this._vertexBuffers["offset"] = new VertexBuffer(this._engine, [0, 0, 1, 0, 0, 1, 1, 1], "offset", false, false, 2);
         }
@@ -115,7 +115,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     /**
      * Render the diffuse texture for this object
      */
-    public renderDiffuseTexture(): void {
+    public override renderDiffuseTexture(): void {
         const numParticles = this.numParticles;
 
         if (!this._diffuseEffectWrapper || numParticles === 0) {
@@ -144,7 +144,7 @@ export class FluidRenderingObjectCustomParticles extends FluidRenderingObject {
     /**
      * Releases the ressources used by the class
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this._diffuseEffectWrapper?.dispose();

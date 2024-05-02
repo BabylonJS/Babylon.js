@@ -18,7 +18,7 @@ export class StackPanelPropertyGridComponent extends React.Component<IStackPanel
         super(props);
     }
 
-    render() {
+    override render() {
         const stackPanel = this.props.stackPanel;
 
         return (

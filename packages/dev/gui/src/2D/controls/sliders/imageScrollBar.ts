@@ -174,15 +174,15 @@ export class ImageScrollBar extends BaseSlider {
      * Creates a new ImageScrollBar
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "ImageScrollBar";
     }
 
-    protected _getThumbThickness(): number {
+    protected override _getThumbThickness(): number {
         let thumbThickness = 0;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
@@ -192,7 +192,7 @@ export class ImageScrollBar extends BaseSlider {
         return thumbThickness;
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -251,7 +251,7 @@ export class ImageScrollBar extends BaseSlider {
     /**
      * @internal
      */
-    protected _updateValueFromPointer(x: number, y: number): void {
+    protected override _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
             x = this._transformedPosition.x;
@@ -294,7 +294,7 @@ export class ImageScrollBar extends BaseSlider {
         this._originY = y;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         this._first = true;
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);

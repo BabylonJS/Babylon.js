@@ -125,10 +125,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /** Node Caching for quick lookup */
     protected _gizmoAxisCache: Map<Mesh, GizmoAxisCache> = new Map();
 
-    public get attachedMesh() {
+    public override get attachedMesh() {
         return this._meshAttached;
     }
-    public set attachedMesh(mesh: Nullable<AbstractMesh>) {
+    public override set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         this._checkBillboardTransform();
@@ -141,10 +141,10 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         });
     }
 
-    public get attachedNode() {
+    public override get attachedNode() {
         return this._nodeAttached;
     }
-    public set attachedNode(node: Nullable<Node>) {
+    public override set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
         this._checkBillboardTransform();
@@ -181,7 +181,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * True when the mouse pointer is hovering a gizmo mesh
      */
-    public get isHovered() {
+    public override get isHovered() {
         return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered;
     }
 
@@ -192,11 +192,11 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
         return this.xGizmo.dragBehavior.dragging || this.yGizmo.dragBehavior.dragging || this.zGizmo.dragBehavior.dragging;
     }
 
-    public get additionalTransformNode() {
+    public override get additionalTransformNode() {
         return this._additionalTransformNode;
     }
 
-    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+    public override set additionalTransformNode(transformNode: TransformNode | undefined) {
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             gizmo.additionalTransformNode = transformNode;
         });
@@ -262,35 +262,35 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
      * NOTE: This is only possible for meshes with uniform scaling, as otherwise it's not possible to decompose the rotation
      */
-    public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
+    public override set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         if (this.xGizmo) {
             this.xGizmo.updateGizmoRotationToMatchAttachedMesh = value;
             this.yGizmo.updateGizmoRotationToMatchAttachedMesh = value;
             this.zGizmo.updateGizmoRotationToMatchAttachedMesh = value;
         }
     }
-    public get updateGizmoRotationToMatchAttachedMesh() {
+    public override get updateGizmoRotationToMatchAttachedMesh() {
         return this.xGizmo.updateGizmoRotationToMatchAttachedMesh;
     }
 
-    public set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
+    public override set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
         if (this.xGizmo) {
             this.xGizmo.updateGizmoPositionToMatchAttachedMesh = value;
             this.yGizmo.updateGizmoPositionToMatchAttachedMesh = value;
             this.zGizmo.updateGizmoPositionToMatchAttachedMesh = value;
         }
     }
-    public get updateGizmoPositionToMatchAttachedMesh() {
+    public override get updateGizmoPositionToMatchAttachedMesh() {
         return this.xGizmo.updateGizmoPositionToMatchAttachedMesh;
     }
 
-    public set anchorPoint(value: GizmoAnchorPoint) {
+    public override set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             gizmo.anchorPoint = value;
         });
     }
-    public get anchorPoint() {
+    public override get anchorPoint() {
         return this._anchorPoint;
     }
 
@@ -299,20 +299,20 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * But it's possible for a user to tweak so its local for translation and world for rotation.
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
-    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+    public override set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             gizmo.coordinatesMode = coordinatesMode;
         });
     }
 
-    public set updateScale(value: boolean) {
+    public override set updateScale(value: boolean) {
         if (this.xGizmo) {
             this.xGizmo.updateScale = value;
             this.yGizmo.updateScale = value;
             this.zGizmo.updateScale = value;
         }
     }
-    public get updateScale() {
+    public override get updateScale() {
         return this.xGizmo.updateScale;
     }
     /**
@@ -332,14 +332,14 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
-    public set scaleRatio(value: number) {
+    public override set scaleRatio(value: number) {
         if (this.xGizmo) {
             this.xGizmo.scaleRatio = value;
             this.yGizmo.scaleRatio = value;
             this.zGizmo.scaleRatio = value;
         }
     }
-    public get scaleRatio() {
+    public override get scaleRatio() {
         return this.xGizmo.scaleRatio;
     }
 
@@ -347,11 +347,11 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
      * posture that the gizmo will be display
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
-    public get customRotationQuaternion(): Nullable<Quaternion> {
+    public override get customRotationQuaternion(): Nullable<Quaternion> {
         return this._customRotationQuaternion;
     }
 
-    public set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
+    public override set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
         [this.xGizmo, this.yGizmo, this.zGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -381,7 +381,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         this.xGizmo.dispose();
         this.yGizmo.dispose();
         this.zGizmo.dispose();
@@ -396,7 +396,7 @@ export class RotationGizmo extends Gizmo implements IRotationGizmo {
     /**
      * CustomMeshes are not supported by this gizmo
      */
-    public setCustomMesh() {
+    public override setCustomMesh() {
         Logger.Error(
             "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo)"
         );

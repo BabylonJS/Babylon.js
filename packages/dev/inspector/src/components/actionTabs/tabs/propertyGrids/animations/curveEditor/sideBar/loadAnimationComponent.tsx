@@ -87,7 +87,7 @@ export class LoadAnimationComponent extends React.Component<ILoadAnimationCompon
             });
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="load-animation-pane" ref={this._root}>
                 <div id="load-animation-snippet-id-label">Snippet Id</div>

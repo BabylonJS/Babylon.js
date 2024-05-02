@@ -192,8 +192,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public COLORCURVES = false;
     public COLORGRADING = false;
@@ -664,7 +663,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Can this material render to prepass
      */
-    public get isPrePassCapable(): boolean {
+    public override get isPrePassCapable(): boolean {
         return !this.disableDepthWrite;
     }
 
@@ -773,7 +772,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Can this material render to several textures at once
      */
-    public get canRenderToMRT() {
+    public override get canRenderToMRT() {
         return true;
     }
 
@@ -825,7 +824,7 @@ export class StandardMaterial extends PushMaterial {
     /**
      * Gets a boolean indicating that current material needs to register RTT
      */
-    public get hasRenderTargetTextures(): boolean {
+    public override get hasRenderTargetTextures(): boolean {
         if (StandardMaterial.ReflectionTextureEnabled && this._reflectionTexture && this._reflectionTexture.isRenderTarget) {
             return true;
         }
@@ -842,7 +841,7 @@ export class StandardMaterial extends PushMaterial {
      * Mainly use in serialization.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StandardMaterial";
     }
 
@@ -850,7 +849,7 @@ export class StandardMaterial extends PushMaterial {
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         if (this._disableAlphaBlending) {
             return false;
         }
@@ -867,7 +866,7 @@ export class StandardMaterial extends PushMaterial {
      * Specifies if this material should be rendered in alpha test mode
      * @returns a boolean specifying if an alpha test is needed.
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         if (this._forceAlphaTest) {
             return true;
         }
@@ -893,7 +892,7 @@ export class StandardMaterial extends PushMaterial {
      * Get the texture used for alpha test purpose.
      * @returns the diffuse texture in case of the standard material.
      */
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return this._diffuseTexture;
     }
 
@@ -905,7 +904,7 @@ export class StandardMaterial extends PushMaterial {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1505,7 +1504,7 @@ export class StandardMaterial extends PushMaterial {
      * Builds the material UBO layouts.
      * Used internally during the effect preparation.
      */
-    public buildUniformLayout(): void {
+    public override buildUniformLayout(): void {
         // Order is important !
         const ubo = this._uniformBuffer;
         ubo.addUniform("diffuseLeftColor", 4);
@@ -1558,7 +1557,7 @@ export class StandardMaterial extends PushMaterial {
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <StandardMaterialDefines>subMesh.materialDefines;
@@ -1840,7 +1839,7 @@ export class StandardMaterial extends PushMaterial {
      * Get the list of animatables in the material.
      * @returns the list of animatables object used in the material
      */
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         const results = super.getAnimatables();
 
         if (this._diffuseTexture && this._diffuseTexture.animations && this._diffuseTexture.animations.length > 0) {
@@ -1886,7 +1885,7 @@ export class StandardMaterial extends PushMaterial {
      * Gets the active textures from the material
      * @returns an array of textures
      */
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._diffuseTexture) {
@@ -1933,7 +1932,7 @@ export class StandardMaterial extends PushMaterial {
      * @param texture defines the texture to check against the material
      * @returns a boolean specifying if the material uses the texture
      */
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -1982,7 +1981,7 @@ export class StandardMaterial extends PushMaterial {
      * @param forceDisposeEffect specifies if effects should be forcefully disposed
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._diffuseTexture?.dispose();
             this._ambientTexture?.dispose();
@@ -2009,7 +2008,7 @@ export class StandardMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures
      * @returns the cloned material
      */
-    public clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): StandardMaterial {
+    public override clone(name: string, cloneTexturesOnlyOnce: boolean = true, rootUrl = ""): StandardMaterial {
         const result = SerializationHelper.Clone(() => new StandardMaterial(name, this.getScene()), this, { cloneTexturesOnlyOnce });
 
         result.name = name;
@@ -2029,7 +2028,7 @@ export class StandardMaterial extends PushMaterial {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a new standard material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): StandardMaterial {
         const material = SerializationHelper.Parse(() => new StandardMaterial(source.name, scene), source, scene, rootUrl);
 
         if (source.stencil) {

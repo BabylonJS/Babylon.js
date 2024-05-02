@@ -82,7 +82,7 @@ export class HamburgerMenuComponent extends React.Component<IHamburgerMenuCompon
         this.setState({ isExpanded: !this.state.isExpanded });
     }
 
-    public render() {
+    public override render() {
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 

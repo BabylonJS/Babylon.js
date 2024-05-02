@@ -25,7 +25,7 @@ export class TranslationBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TranslationBlock";
     }
 
@@ -43,7 +43,7 @@ export class TranslationBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.translation.isConnected) {
             const translationInput = new GeometryInputBlock("Translation");
             translationInput.value = new Vector3(0, 0, 0);
@@ -51,7 +51,7 @@ export class TranslationBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {

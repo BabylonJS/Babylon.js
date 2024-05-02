@@ -518,6 +518,10 @@ void main(void) {
             vec4 translucencyIntensityMap = texture2D(translucencyIntensitySampler, vTranslucencyIntensityUV + uvOffset);
         #endif
 
+        #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+            vec4 translucencyColorMap = texture2D(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
+        #endif
+
         subSurfaceBlock(
             vSubSurfaceIntensity,
             vThicknessParam,
@@ -592,6 +596,10 @@ void main(void) {
         #endif
         #ifdef SS_TRANSLUCENCY
             vDiffusionDistance,
+            vTranslucencyColor,
+            #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+                translucencyColorMap,
+            #endif
         #endif
             subSurfaceOut
         );

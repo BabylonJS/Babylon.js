@@ -60,7 +60,7 @@ export class WebGPUCacheRenderPipelineTree extends WebGPUCacheRenderPipeline {
         WebGPUCacheRenderPipelineTree._Cache = new NodeState();
     }
 
-    public reset(): void {
+    public override reset(): void {
         this._nodeStack = [];
         this._nodeStack[0] = WebGPUCacheRenderPipelineTree._Cache;
         super.reset();

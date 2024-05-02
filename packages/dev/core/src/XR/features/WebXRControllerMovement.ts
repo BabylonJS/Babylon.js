@@ -342,7 +342,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         this._xrInput = options.xrInput;
     }
 
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -357,7 +357,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }

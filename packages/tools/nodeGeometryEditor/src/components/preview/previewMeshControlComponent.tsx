@@ -34,7 +34,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
     }
@@ -69,7 +69,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this.props.globalState.onFrame.notifyObservers();
     }
 
-    render() {
+    override render() {
         return (
             <div id="preview-mesh-bar">
                 <>

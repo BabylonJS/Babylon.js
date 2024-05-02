@@ -54,7 +54,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "ChromaticAberrationPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ChromaticAberrationPostProcess";
     }
 
@@ -116,7 +116,7 @@ export class ChromaticAberrationPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ChromaticAberrationPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new ChromaticAberrationPostProcess(

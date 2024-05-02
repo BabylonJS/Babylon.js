@@ -43,7 +43,7 @@ export class StatisticsTabComponent extends PaneComponent {
         this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._sceneInstrumentation) {
             this._sceneInstrumentation.dispose();
             this._sceneInstrumentation = null;
@@ -57,7 +57,7 @@ export class StatisticsTabComponent extends PaneComponent {
         window.clearInterval(this._timerIntervalId);
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         if (!scene || !this._sceneInstrumentation || !this._engineInstrumentation) {

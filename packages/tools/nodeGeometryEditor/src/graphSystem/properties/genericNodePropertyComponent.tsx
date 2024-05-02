@@ -21,7 +21,7 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
@@ -138,7 +138,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         return null;
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock;
 
         const nonConnectedInputs = block.inputs.filter((input) => {
@@ -218,7 +218,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 

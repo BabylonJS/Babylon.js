@@ -22,13 +22,13 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * The direction the blur should be applied
      */
     @serialize()
-    public direction: Vector2;
+    public override direction: Vector2;
 
     /**
      * Gets a string identifying the name of the class
      * @returns "DepthOfFieldBlurPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DepthOfFieldBlurPostProcess";
     }
 

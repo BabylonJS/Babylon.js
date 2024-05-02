@@ -26,10 +26,12 @@ https.get("https://cdn.babylonjs.com/fileSizes.json", (res) => {
         for (const filename in fileSizes) {
             if (fileSizes[filename] < sizes[filename]) {
                 // check if increase is more than 10%
-                if (sizes[filename] > fileSizes[filename] * 1.1) {
+                const errorThreshold = Number.parseFloat(process.env.errorThreshold || "1.1");
+                const warningThreshold = Number.parseFloat(process.env.warningThreshold || "1.05");
+                if (sizes[filename] > fileSizes[filename] * errorThreshold) {
                     console.log(`##[error] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 10%`);
                     error = true;
-                } else if (sizes[filename] > fileSizes[filename] * 1.05) {
+                } else if (sizes[filename] > fileSizes[filename] * warningThreshold) {
                     console.log(`##[warning] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]} - more than 5%`);
                 } else {
                     console.log(`##[info] File size for ${filename} has increased from ${fileSizes[filename]} to ${sizes[filename]}`);

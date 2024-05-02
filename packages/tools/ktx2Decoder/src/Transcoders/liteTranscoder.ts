@@ -40,19 +40,19 @@ export class LiteTranscoder extends Transcoder {
         this._wasmBinary = wasmBinary;
     }
 
-    public initialize(): void {
+    public override initialize(): void {
         this._transcodeInPlace = true;
     }
 
-    public needMemoryManager(): boolean {
+    public override needMemoryManager(): boolean {
         return true;
     }
 
-    public setMemoryManager(memoryMgr: WASMMemoryManager): void {
+    public override setMemoryManager(memoryMgr: WASMMemoryManager): void {
         this._memoryManager = memoryMgr;
     }
 
-    public transcode(
+    public override transcode(
         src: KTX2.SourceTextureFormat,
         dst: KTX2.TranscodeTarget,
         level: number,

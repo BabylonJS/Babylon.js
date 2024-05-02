@@ -7,7 +7,7 @@ import { ConfigurationLoader } from "../configuration/loader";
  */
 export abstract class AbstractViewerWithTemplate extends AbstractViewer {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected getConfigurationLoader() {
+    protected override getConfigurationLoader() {
         return new ConfigurationLoader();
     }
 }

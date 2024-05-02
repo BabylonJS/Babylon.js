@@ -29,7 +29,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphMeshPickEventBlockConfiguration
+        public override config: IFlowGraphMeshPickEventBlockConfiguration
     ) {
         super(config);
     }
@@ -91,7 +91,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphMeshPickEventBlock.ClassName;
     }
 
@@ -99,7 +99,7 @@ export class FlowGraphMeshPickEventBlock extends FlowGraphEventBlock {
      * Serializes the block to a JSON object.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.path = this.config.path;
     }

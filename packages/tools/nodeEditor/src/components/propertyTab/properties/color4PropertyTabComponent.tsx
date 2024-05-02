@@ -11,7 +11,7 @@ interface IColor4PropertyTabComponentProps {
 }
 
 export class Color4PropertyTabComponent extends React.Component<IColor4PropertyTabComponentProps> {
-    render() {
+    override render() {
         return (
             <Color4LineComponent
                 lockObject={this.props.lockObject}

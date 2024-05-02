@@ -28,7 +28,7 @@ export class TonemapPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "TonemapPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "TonemapPostProcess";
     }
 

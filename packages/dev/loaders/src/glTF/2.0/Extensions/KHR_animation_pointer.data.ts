@@ -243,6 +243,20 @@ const materialsTree = {
                     },
                 },
             },
+            KHR_materials_diffuse_transmission: {
+                diffuseTransmissionFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_FLOAT, "subSurface.translucencyIntensity", getFloat, () => 1)],
+                diffuseTransmissionTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("subSurface.translucencyIntensityTexture"),
+                    },
+                },
+                diffuseTransmissionColorFactor: [new MaterialAnimationPropertyInfo(Animation.ANIMATIONTYPE_COLOR3, "subSurface.translucencyColor", getColor3, () => 3)],
+                diffuseTransmissionColorTexture: {
+                    extensions: {
+                        KHR_texture_transform: getTextureTransformTree("subSurface.translucencyColorTexture"),
+                    },
+                },
+            },
         },
     },
 };

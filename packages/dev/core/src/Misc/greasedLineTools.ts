@@ -524,8 +524,14 @@ export class GreasedLineTools {
      * @returns the colors texture
      */
     public static CreateColorsTexture(name: string, colors: Color3[], colorsSampling: number, scene: Scene) {
+        const maxTextureSize = scene.getEngine().getCaps().maxTextureSize ?? 1;
+        const width = colors.length > maxTextureSize ? maxTextureSize : colors.length;
+        const height = Math.ceil(colors.length / maxTextureSize);
+        if (height > 1) {
+            colors = [...colors, ...Array(width * height - colors.length).fill(colors[0])];
+        }
         const colorsArray = GreasedLineTools.Color3toRGBAUint8(colors);
-        const colorsTexture = new RawTexture(colorsArray, colors.length, 1, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
+        const colorsTexture = new RawTexture(colorsArray, width, height, Engine.TEXTUREFORMAT_RGBA, scene, false, true, colorsSampling);
         colorsTexture.name = name;
         return colorsTexture;
     }

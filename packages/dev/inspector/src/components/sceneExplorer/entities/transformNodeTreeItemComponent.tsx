@@ -16,7 +16,7 @@ export class TransformNodeItemComponent extends React.Component<ITransformNodeIt
         super(props);
     }
 
-    render() {
+    override render() {
         const transformNode = this.props.transformNode;
         return (
             <div className="transformNodeTools">

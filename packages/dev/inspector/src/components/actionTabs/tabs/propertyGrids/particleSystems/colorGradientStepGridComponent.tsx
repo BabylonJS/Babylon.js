@@ -73,7 +73,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
         }
     }
 
-    render() {
+    override render() {
         const gradient = this.props.gradient;
 
         return (

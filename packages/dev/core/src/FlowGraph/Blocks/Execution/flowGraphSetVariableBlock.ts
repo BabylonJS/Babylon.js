@@ -30,7 +30,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphSetVariableBlockConfiguration
+        public override config: IFlowGraphSetVariableBlockConfiguration
     ) {
         super(config);
 
@@ -47,7 +47,7 @@ export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOut
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphSetVariableBlock.ClassName;
     }
 

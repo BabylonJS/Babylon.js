@@ -42,7 +42,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
@@ -53,7 +53,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.onDebugSelectionChangeObservable && this._onDebugSelectionChangeObserver) {
             this.props.onDebugSelectionChangeObservable.remove(this._onDebugSelectionChangeObserver);
         }
@@ -189,7 +189,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const texture = this.props.texture;
 
         if (!texture) {

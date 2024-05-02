@@ -65,7 +65,7 @@ export class Footer extends React.Component<IFooterProps> {
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
     }
 
-    render() {
+    override render() {
         let variantNames: string[] = [];
         let hasVariants = false;
         let activeEntry = () => "";

@@ -20,13 +20,13 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
         this.state = { isSelected: this.props.isSelected() };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onSelectionChangedObserver = this.props.onSelectionChangedObservable.add((value) => {
             this.setState({ isSelected: value === this });
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onSelectionChangedObserver) {
             this.props.onSelectionChangedObservable.remove(this._onSelectionChangedObserver);
             this._onSelectionChangedObserver = null;
@@ -38,7 +38,7 @@ export class RadioButtonLineComponent extends React.Component<IRadioButtonLineCo
         this.props.onSelectionChangedObservable.notifyObservers(this);
     }
 
-    render() {
+    override render() {
         return (
             <div className="radioLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

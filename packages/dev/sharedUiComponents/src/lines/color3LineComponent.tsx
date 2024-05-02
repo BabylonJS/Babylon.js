@@ -17,7 +17,7 @@ export interface IColor3LineComponentProps {
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps> {
-    render() {
+    override render() {
         const props = this.props;
         return <ColorLineComponent disableAlpha={true} {...props} />;
     }

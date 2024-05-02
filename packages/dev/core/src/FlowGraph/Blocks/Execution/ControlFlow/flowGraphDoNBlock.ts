@@ -38,7 +38,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }
+        public override config: IFlowGraphDoNBlockConfiguration = { startIndex: new FlowGraphInteger(0) }
     ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
@@ -61,7 +61,7 @@ export class FlowGraphDoNBlock extends FlowGraphExecutionBlockWithOutSignal {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphDoNBlock.ClassName;
     }
 

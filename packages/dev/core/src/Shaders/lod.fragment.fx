@@ -1,7 +1,3 @@
-import { Effect } from "core/Materials/effect";
-
-const name = "lodPixelShader";
-const shader = `
 #extension GL_EXT_shader_texture_lod : enable
 
 precision highp float;
@@ -19,9 +15,4 @@ void main(void)
     if (!gamma) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
     }
-}`;
-
-Effect.ShadersStore[name] = shader;
-/** @internal */
-// eslint-disable-next-line no-var
-export var lodPixelShader = { name, shader };
+}

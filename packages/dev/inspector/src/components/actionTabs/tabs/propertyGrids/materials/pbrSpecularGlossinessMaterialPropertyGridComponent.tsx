@@ -86,7 +86,7 @@ export class PBRSpecularGlossinessMaterialPropertyGridComponent extends React.Co
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

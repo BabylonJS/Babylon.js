@@ -44,7 +44,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         }
     }
 
-    shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: { value: number }) {
+    override shouldComponentUpdate(nextProps: ISliderLineComponentProps, nextState: { value: number }) {
         if (nextProps.directValue !== undefined) {
             nextState.value = nextProps.directValue;
             return true;
@@ -120,7 +120,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return value;
     }
 
-    render() {
+    override render() {
         return (
             <div className="sliderLine">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

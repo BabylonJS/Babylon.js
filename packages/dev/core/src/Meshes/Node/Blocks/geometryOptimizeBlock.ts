@@ -40,7 +40,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryOptimizeBlock";
     }
 
@@ -58,7 +58,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             if (!this.geometry.isConnected) {
                 return null;
@@ -106,7 +106,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
         codeString += `${this._codeVariableName}.epsilon = ${this.epsilon};\n`;
         return codeString;
@@ -116,7 +116,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
@@ -125,7 +125,7 @@ export class GeometryOptimizeBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.evaluateContext = serializationObject.evaluateContext;

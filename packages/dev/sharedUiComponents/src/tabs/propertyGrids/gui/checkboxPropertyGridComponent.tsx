@@ -19,7 +19,7 @@ export class CheckboxPropertyGridComponent extends React.Component<ICheckboxProp
         super(props);
     }
 
-    render() {
+    override render() {
         const checkbox = this.props.checkbox;
 
         return (

@@ -72,7 +72,7 @@ export class FlowGraphTimerBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphTimerBlock.ClassName;
     }
 

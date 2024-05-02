@@ -48,7 +48,7 @@ export class ColorComponentEntry extends React.Component<IColorComponentEntryPro
         }
     }
 
-    public render() {
+    public override render() {
         return (
             <div className="color-picker-component">
                 <div className="color-picker-component-value">

@@ -10,7 +10,7 @@ export class DraggableLineComponent extends React.Component<IButtonLineComponent
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div
                 className="draggableLine"

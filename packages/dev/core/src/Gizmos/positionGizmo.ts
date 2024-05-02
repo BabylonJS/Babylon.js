@@ -125,10 +125,10 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      */
     protected _planarGizmoEnabled = false;
 
-    public get attachedMesh() {
+    public override get attachedMesh() {
         return this._meshAttached;
     }
-    public set attachedMesh(mesh: Nullable<AbstractMesh>) {
+    public override set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
@@ -140,10 +140,10 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         });
     }
 
-    public get attachedNode() {
+    public override get attachedNode() {
         return this._nodeAttached;
     }
-    public set attachedNode(node: Nullable<Node>) {
+    public override set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
@@ -158,7 +158,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * True when the mouse pointer is hovering a gizmo mesh
      */
-    public get isHovered() {
+    public override get isHovered() {
         return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered || this.xPlaneGizmo.isHovered || this.yPlaneGizmo.isHovered || this.zPlaneGizmo.isHovered;
     }
 
@@ -173,11 +173,11 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
         );
     }
 
-    public get additionalTransformNode() {
+    public override get additionalTransformNode() {
         return this._additionalTransformNode;
     }
 
-    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+    public override set additionalTransformNode(transformNode: TransformNode | undefined) {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             gizmo.additionalTransformNode = transformNode;
         });
@@ -252,11 +252,11 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * posture that the gizmo will be display
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
-    public get customRotationQuaternion(): Nullable<Quaternion> {
+    public override get customRotationQuaternion(): Nullable<Quaternion> {
         return this._customRotationQuaternion;
     }
 
-    public set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
+    public override set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -269,7 +269,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * If set the gizmo's rotation will be updated to match the attached mesh each frame (Default: true)
      * NOTE: This is only possible for meshes with uniform scaling, as otherwise it's not possible to decompose the rotation
      */
-    public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
+    public override set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         this._updateGizmoRotationToMatchAttachedMesh = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -277,11 +277,11 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
             }
         });
     }
-    public get updateGizmoRotationToMatchAttachedMesh() {
+    public override get updateGizmoRotationToMatchAttachedMesh() {
         return this._updateGizmoRotationToMatchAttachedMesh;
     }
 
-    public set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
+    public override set updateGizmoPositionToMatchAttachedMesh(value: boolean) {
         this._updateGizmoPositionToMatchAttachedMesh = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -289,17 +289,17 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
             }
         });
     }
-    public get updateGizmoPositionToMatchAttachedMesh() {
+    public override get updateGizmoPositionToMatchAttachedMesh() {
         return this._updateGizmoPositionToMatchAttachedMesh;
     }
 
-    public set anchorPoint(value: GizmoAnchorPoint) {
+    public override set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             gizmo.anchorPoint = value;
         });
     }
-    public get anchorPoint() {
+    public override get anchorPoint() {
         return this._anchorPoint;
     }
 
@@ -308,20 +308,20 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
      * But it's possible for a user to tweak so its local for translation and world for rotation.
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
-    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+    public override set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             gizmo.coordinatesMode = coordinatesMode;
         });
     }
 
-    public set updateScale(value: boolean) {
+    public override set updateScale(value: boolean) {
         if (this.xGizmo) {
             this.xGizmo.updateScale = value;
             this.yGizmo.updateScale = value;
             this.zGizmo.updateScale = value;
         }
     }
-    public get updateScale() {
+    public override get updateScale() {
         return this.xGizmo.updateScale;
     }
     /**
@@ -342,7 +342,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
-    public set scaleRatio(value: number) {
+    public override set scaleRatio(value: number) {
         this._scaleRatio = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -350,7 +350,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
             }
         });
     }
-    public get scaleRatio() {
+    public override get scaleRatio() {
         return this._scaleRatio;
     }
 
@@ -377,7 +377,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.xPlaneGizmo, this.yPlaneGizmo, this.zPlaneGizmo].forEach((gizmo) => {
             if (gizmo) {
                 gizmo.dispose();
@@ -394,7 +394,7 @@ export class PositionGizmo extends Gizmo implements IPositionGizmo {
     /**
      * CustomMeshes are not supported by this gizmo
      */
-    public setCustomMesh() {
+    public override setCustomMesh() {
         Logger.Error(
             "Custom meshes are not supported on this gizmo, please set the custom meshes on the gizmos contained within this one (gizmo.xGizmo, gizmo.yGizmo, gizmo.zGizmo,gizmo.xPlaneGizmo, gizmo.yPlaneGizmo, gizmo.zPlaneGizmo)"
         );

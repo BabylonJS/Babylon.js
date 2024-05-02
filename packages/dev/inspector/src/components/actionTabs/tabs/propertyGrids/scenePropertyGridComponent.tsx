@@ -128,7 +128,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         });
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         const physicsEngine = scene.getPhysicsEngine();
@@ -146,6 +146,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
         const toneMappingOptions = [
             { label: "Standard", value: ImageProcessingConfiguration.TONEMAPPING_STANDARD },
             { label: "ACES", value: ImageProcessingConfiguration.TONEMAPPING_ACES },
+            { label: "Khronos PBR Neutral", value: ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL },
         ];
 
         const vignetteModeOptions = [

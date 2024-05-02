@@ -16,7 +16,7 @@ export class FlowGraphSignalConnection extends FlowGraphConnection<FlowGraphExec
      * but a signal output can only connect to one signal input
      * @returns true if the connection is singular
      */
-    public _isSingularConnection(): boolean {
+    public override _isSingularConnection(): boolean {
         return this.connectionType === FlowGraphConnectionType.Output;
     }
 

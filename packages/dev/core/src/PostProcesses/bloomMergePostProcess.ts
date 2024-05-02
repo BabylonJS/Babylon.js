@@ -22,7 +22,7 @@ export class BloomMergePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "BloomMergePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "BloomMergePostProcess";
     }
 

@@ -894,7 +894,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._hostCanvas = this._hostCanvasRef.current!;
         this._rootContainer = this._rootContainerRef.current!;
         this._graphCanvas = this._graphCanvasRef.current!;
@@ -1467,7 +1467,7 @@ export class GraphCanvasComponent extends React.Component<IGraphCanvasComponentP
         this.stateManager.onSelectionChangedObservable.notifyObservers({ selection: frame });
     }
 
-    render() {
+    override render() {
         return (
             <div
                 ref={this._hostCanvasRef}

@@ -15,7 +15,7 @@ export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
         this.state = { hex: this.props.value.replace("#", "") };
     }
 
-    shouldComponentUpdate(nextProps: IHexColorProps, nextState: { hex: string }) {
+    override shouldComponentUpdate(nextProps: IHexColorProps, nextState: { hex: string }) {
         if (nextProps.value !== this.props.value) {
             nextState.hex = nextProps.value.replace("#", "");
         }
@@ -55,7 +55,7 @@ export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
         this.props.onChange("#" + valueString);
     }
 
-    public render() {
+    public override render() {
         return (
             <input
                 type="string"

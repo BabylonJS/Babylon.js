@@ -20,7 +20,7 @@ export class MaterialPropertyGridComponent extends React.Component<IMaterialProp
         super(props);
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

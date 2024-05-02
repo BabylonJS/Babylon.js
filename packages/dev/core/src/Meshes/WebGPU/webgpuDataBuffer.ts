@@ -14,7 +14,7 @@ export class WebGPUDataBuffer extends DataBuffer {
         this._buffer = resource;
     }
 
-    public get underlyingResource(): any {
+    public override get underlyingResource(): any {
         return this._buffer;
     }
 }

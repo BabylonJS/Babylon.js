@@ -41,7 +41,7 @@ export class ParentingPropertyGridComponent extends React.Component<IParentingPr
         Tools.ReorderGrid(grid, index, draggedControl, newCell);
     }
 
-    render() {
+    override render() {
         this.getCellInfo();
         return (
             <div className="pane">

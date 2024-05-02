@@ -29,7 +29,7 @@ export class GamepadCamera extends UniversalCamera {
      * Gets the current object class name.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GamepadCamera";
     }
 }

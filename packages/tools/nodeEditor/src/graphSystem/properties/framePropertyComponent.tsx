@@ -23,18 +23,18 @@ export class FramePropertyTabComponent extends React.Component<IFramePropertyTab
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onFrameExpandStateChangedObserver) {
             this.props.frame.onExpandStateChanged.remove(this._onFrameExpandStateChangedObserver);
             this._onFrameExpandStateChangedObserver = null;
         }
     }
 
-    render() {
+    override render() {
         let configurableInputBlocks: InputBlock[] = [];
         this.props.frame.nodes.forEach((node) => {
             const block = node.content.data as NodeMaterialBlock;

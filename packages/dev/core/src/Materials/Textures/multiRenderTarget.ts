@@ -139,7 +139,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Set the wrapping mode on U of all the textures we are rendering to.
      * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
      */
-    public set wrapU(wrap: number) {
+    public override set wrapU(wrap: number) {
         if (this._textures) {
             for (let i = 0; i < this._textures.length; i++) {
                 this._textures[i].wrapU = wrap;
@@ -151,7 +151,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Set the wrapping mode on V of all the textures we are rendering to.
      * Can be any of the Texture. (CLAMP_ADDRESSMODE, MIRROR_ADDRESSMODE or WRAP_ADDRESSMODE)
      */
-    public set wrapV(wrap: number) {
+    public override set wrapV(wrap: number) {
         if (this._textures) {
             for (let i = 0; i < this._textures.length; i++) {
                 this._textures[i].wrapV = wrap;
@@ -319,7 +319,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * @internal
      */
-    public _rebuild(fromContextLost = false, forceFullRebuild: boolean = false, textureNames?: string[]): void {
+    public override _rebuild(fromContextLost = false, forceFullRebuild: boolean = false, textureNames?: string[]): void {
         if (this._count < 1 || fromContextLost) {
             return;
         }
@@ -476,11 +476,11 @@ export class MultiRenderTarget extends RenderTargetTexture {
     /**
      * Define the number of samples used if MSAA is enabled.
      */
-    public get samples(): number {
+    public override get samples(): number {
         return this._samples;
     }
 
-    public set samples(value: number) {
+    public override set samples(value: number) {
         if (this._renderTarget) {
             this._samples = this._renderTarget.setSamples(value);
         } else {
@@ -494,7 +494,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Be careful as it will recreate all the data in the new texture.
      * @param size Define the new size
      */
-    public resize(size: any) {
+    public override resize(size: any) {
         this._processSizeParameter(size, false);
         this._rebuild(false, undefined, this._textureNames);
     }
@@ -535,7 +535,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
         this._rebuild(false, true, textureNames);
     }
 
-    protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+    protected override _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
         if (this._renderTarget) {
             engine.unBindMultiColorAttachmentFramebuffer(this._renderTarget, this.isCube, () => {
                 this.onAfterRenderObservable.notifyObservers(faceIndex);
@@ -547,7 +547,7 @@ export class MultiRenderTarget extends RenderTargetTexture {
      * Dispose the render targets and their associated resources
      * @param doNotDisposeInternalTextures if set to true, internal textures won't be disposed (default: false).
      */
-    public dispose(doNotDisposeInternalTextures = false): void {
+    public override dispose(doNotDisposeInternalTextures = false): void {
         this._releaseTextures();
         if (!doNotDisposeInternalTextures) {
             this.releaseInternalTextures();

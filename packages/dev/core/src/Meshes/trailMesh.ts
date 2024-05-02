@@ -60,7 +60,7 @@ export class TrailMesh extends Mesh {
      * "TrailMesh"
      * @returns "TrailMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "TrailMesh";
     }
 
@@ -169,7 +169,7 @@ export class TrailMesh extends Mesh {
      * @param newGenerator use new generator object for cloned trail mesh
      * @returns a new mesh
      */
-    public clone(name: string = "", newGenerator: TransformNode): TrailMesh {
+    public override clone(name: string = "", newGenerator: TransformNode): TrailMesh {
         return new TrailMesh(name, newGenerator ?? this._generator, this.getScene(), this.diameter, this._length, this._autoStart);
     }
 
@@ -177,7 +177,7 @@ export class TrailMesh extends Mesh {
      * Serializes this trail mesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
 
         serializationObject.generatorId = this._generator.id;
@@ -189,7 +189,7 @@ export class TrailMesh extends Mesh {
      * @param scene the scene to create the trail mesh in
      * @returns the created trail mesh
      */
-    public static Parse(parsedMesh: any, scene: Scene): TrailMesh {
+    public static override Parse(parsedMesh: any, scene: Scene): TrailMesh {
         const generator = scene.getLastMeshById(parsedMesh.generatorId) ?? scene.getLastTransformNodeById(parsedMesh.generatorId);
 
         if (!generator) {

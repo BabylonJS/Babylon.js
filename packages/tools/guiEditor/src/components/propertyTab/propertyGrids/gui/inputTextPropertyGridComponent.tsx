@@ -41,7 +41,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
         super(props);
     }
 
-    render() {
+    override render() {
         const { inputTexts, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(inputTexts, onPropertyChangedObservable);
 

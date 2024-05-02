@@ -261,7 +261,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onActiveAnimationChangedObserver) {
             this.props.context.onActiveAnimationChanged.remove(this._onActiveAnimationChangedObserver);
         }
@@ -1142,7 +1142,7 @@ export class GraphComponent extends React.Component<IGraphComponentProps, IGraph
         this.props.context.onGraphScaled.notifyObservers(this._viewScale);
     }
 
-    public render() {
+    public override render() {
         const scale = this._viewScale;
         const viewBoxScalingCurves = `${-this._offsetX} ${-this._offsetY} ${Math.round(scale * this._viewCurveWidth)} ${Math.round(scale * this._viewHeight)}`;
         const viewBoxScalingGrid = `0 ${-this._offsetY} ${Math.round(scale * this._viewWidth)} ${Math.round(scale * this._viewHeight)}`;

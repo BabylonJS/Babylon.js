@@ -19,7 +19,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
         super(props);
     }
 
-    render() {
+    override render() {
         const ellipse = this.props.ellipse;
 
         return (

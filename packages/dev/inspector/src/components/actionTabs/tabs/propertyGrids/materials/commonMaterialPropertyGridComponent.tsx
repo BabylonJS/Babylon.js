@@ -33,7 +33,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         super(props);
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         material.depthFunction = material.depthFunction ?? 0;

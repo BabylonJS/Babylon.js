@@ -17,7 +17,7 @@ export class TextureTreeItemComponent extends React.Component<ITextureTreeItemCo
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="textureTools">
                 <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />

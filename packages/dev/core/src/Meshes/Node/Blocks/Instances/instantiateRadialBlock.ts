@@ -37,7 +37,7 @@ export class InstantiateRadialBlock extends InstantiateBaseBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateRadialBlock";
     }
 
@@ -83,7 +83,7 @@ export class InstantiateRadialBlock extends InstantiateBaseBlock {
         return this._inputs[7];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
             state.pushInstancingContext(this);

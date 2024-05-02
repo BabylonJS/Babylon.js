@@ -70,7 +70,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         );
     }
 
-    public bind(effect: Effect) {
+    public override bind(effect: Effect) {
         if (!this.texture) {
             return;
         }
@@ -78,7 +78,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         effect.setTexture(this._samplerName, this.texture);
     }
 
-    public isReady() {
+    public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -90,7 +90,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ImageSourceBlock";
     }
 
@@ -101,7 +101,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
@@ -118,7 +118,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (!this.texture) {
@@ -140,7 +140,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
@@ -150,7 +150,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {

@@ -87,7 +87,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onControlLoadObservable.add((file) => this.loadControl(file));
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.globalState.onSelectionChangedObservable.add(() => {
             this.forceUpdate();
         });
@@ -101,7 +101,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this.props.globalState.onPropertyChangedObservable.add(() => this.forceUpdate());
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         window.clearInterval(this._timerIntervalId);
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
@@ -547,7 +547,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return type ? type.icon : adtIcon;
     }
 
-    render() {
+    override render() {
         if (this.props.globalState.guiTexture == undefined) return null;
         const nodesToRender = this.props.globalState.selectedControls.length > 0 ? this.props.globalState.selectedControls : [this.props.globalState.workbench.trueRootContainer];
         return <div id="ge-propertyTab">{this.renderNode(nodesToRender)}</div>;

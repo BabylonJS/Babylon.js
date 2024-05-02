@@ -71,7 +71,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
     /**
      * @returns the current class name of the material.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRSpecularGlossinessMaterial";
     }
 
@@ -80,7 +80,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      * @param name - name to use for the new material.
      * @returns cloned material instance
      */
-    public clone(name: string): PBRSpecularGlossinessMaterial {
+    public override clone(name: string): PBRSpecularGlossinessMaterial {
         const clone = SerializationHelper.Clone(() => new PBRSpecularGlossinessMaterial(name, this.getScene()), this);
 
         clone.id = name;
@@ -99,7 +99,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      * Serialize the material to a parsable JSON object.
      * @returns the JSON object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = SerializationHelper.Serialize(this);
         serializationObject.customType = "BABYLON.PBRSpecularGlossinessMaterial";
 
@@ -120,7 +120,7 @@ export class PBRSpecularGlossinessMaterial extends PBRBaseSimpleMaterial {
      * @param rootUrl - root url of the assets.
      * @returns a new PBRSpecularGlossinessMaterial.
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): PBRSpecularGlossinessMaterial {
         const material = SerializationHelper.Parse(() => new PBRSpecularGlossinessMaterial(source.name, scene), source, scene, rootUrl);
         if (source.clearCoat) {
             material.clearCoat.parse(source.clearCoat, scene, rootUrl);

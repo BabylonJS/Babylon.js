@@ -20,7 +20,7 @@ export class PaneComponent extends React.Component<IPaneComponentProps, { tag: a
         super(props);
     }
 
-    render(): JSX.Element | null {
+    override render(): JSX.Element | null {
         return <div className="pane"></div>;
     }
 }

@@ -21,7 +21,7 @@ export class HemisphericLightPropertyGridComponent extends React.Component<IHemi
         super(props);
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
 
         return (

@@ -23,7 +23,7 @@ export class CommonRenderingPipelinePropertyGridComponent extends React.Componen
         super(props);
     }
 
-    render() {
+    override render() {
         const renderPipeline = this.props.renderPipeline;
         const renderPipelineAsAny = renderPipeline as any;
 

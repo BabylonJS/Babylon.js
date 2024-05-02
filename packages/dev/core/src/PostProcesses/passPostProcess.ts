@@ -20,7 +20,7 @@ export class PassPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "PassPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PassPostProcess";
     }
 
@@ -51,7 +51,7 @@ export class PassPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new PassPostProcess(
@@ -123,7 +123,7 @@ export class PassCubePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "PassCubePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PassCubePostProcess";
     }
 
@@ -154,7 +154,7 @@ export class PassCubePostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new PassCubePostProcess(

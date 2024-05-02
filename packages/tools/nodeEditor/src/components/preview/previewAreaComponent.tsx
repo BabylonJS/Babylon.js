@@ -34,7 +34,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
@@ -74,7 +74,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
             { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },

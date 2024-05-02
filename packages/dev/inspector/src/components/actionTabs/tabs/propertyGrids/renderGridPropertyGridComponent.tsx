@@ -25,7 +25,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         this.state = { isEnabled: false };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const scene = UtilityLayerRenderer.DefaultKeepDepthUtilityLayer.utilityLayerScene;
 
         for (const mesh of scene.meshes) {
@@ -76,7 +76,7 @@ export class RenderGridPropertyGridComponent extends React.Component<IRenderGrid
         this._gridMesh = null;
     }
 
-    render() {
+    override render() {
         return (
             <div>
                 <CheckBoxLineComponent label="Render grid" isSelected={() => this.state.isEnabled} onSelect={() => this.addOrRemoveGrid()} />

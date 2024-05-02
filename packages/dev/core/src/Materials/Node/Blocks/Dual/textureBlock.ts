@@ -191,7 +191,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TextureBlock";
     }
 
@@ -272,7 +272,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public get target() {
+    public override get target() {
         if (this._fragmentOnly) {
             return NodeMaterialBlockTargets.Fragment;
         }
@@ -318,9 +318,9 @@ export class TextureBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {}
+    public override set target(value: NodeMaterialBlockTargets) {}
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
                 const uvInput = material.getBlockByPredicate((b) => b.name === "uv" && additionalFilteringInfo(b));
@@ -342,7 +342,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -352,7 +352,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -385,7 +385,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public isReady() {
+    public override isReady() {
         if (this._isSourcePrePass) {
             return true;
         }
@@ -397,7 +397,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect) {
+    public override bind(effect: Effect) {
         if (this._isSourcePrePass) {
             effect.setFloat(this._textureInfoName, 1);
         }
@@ -445,7 +445,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._textureTransformName, NodeMaterialBlockConnectionPointTypes.Matrix, this._defineName);
 
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
-        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += `#ifdef ${this._defineName}\n`;
         state.compilationString += `${state._getVaryingName(this._transformedUVName)} = ${vec2}(${this._textureTransformName} * ${vec4}(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
@@ -497,9 +497,9 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
-            return `${this._samplerFunc(state)}(${this._textureName},${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+            return `${this._samplerFunc(state)}(${this._textureName},${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
-        return `${this._samplerFunc(state)}(${this._samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+        return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }
 
     private _generateTextureLookup(state: NodeMaterialBuildState): void {
@@ -573,7 +573,7 @@ export class TextureBlock extends NodeMaterialBlock {
         this._generateConversionCode(state, output, swizzle);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.source.isConnected) {
@@ -648,7 +648,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
@@ -674,7 +674,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
@@ -688,7 +688,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;

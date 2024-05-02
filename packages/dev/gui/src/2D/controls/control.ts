@@ -27,6 +27,7 @@ import type { IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
 import type { BaseGradient } from "./gradient/BaseGradient";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Root class used for all 2D controls
@@ -2428,7 +2429,7 @@ export class Control implements IAnimatable {
             "px " +
             this._getStyleProperty("fontFamily", "Arial");
 
-        this._fontOffset = Control._GetFontOffset(this._font);
+        this._fontOffset = Control._GetFontOffset(this._font, this._host.getScene()?.getEngine());
 
         //children need to be refreshed
         this.getDescendants().forEach((child) => child._markAllAsDirty());
@@ -2493,8 +2494,9 @@ export class Control implements IAnimatable {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      * @param force if the control should be serialized even if the isSerializable flag is set to false (default false)
+     * @param allowCanvas defines if the control is allowed to use a Canvas2D object to serialize (true by default)
      */
-    public serialize(serializationObject: any, force: boolean = false) {
+    public serialize(serializationObject: any, force: boolean = false, allowCanvas: boolean = true) {
         if (!this.isSerializable && !force) {
             return;
         }
@@ -2503,11 +2505,19 @@ export class Control implements IAnimatable {
         serializationObject.className = this.getClassName();
 
         // Call prepareFont to guarantee the font is properly set before serializing
-        this._prepareFont();
-        if (this._font) {
+        if (allowCanvas) {
+            this._prepareFont();
+        }
+        if (this._fontFamily) {
             serializationObject.fontFamily = this._fontFamily;
+        }
+        if (this.fontSize) {
             serializationObject.fontSize = this.fontSize;
+        }
+        if (this.fontWeight) {
             serializationObject.fontWeight = this.fontWeight;
+        }
+        if (this.fontStyle) {
             serializationObject.fontStyle = this.fontStyle;
         }
 
@@ -2653,12 +2663,12 @@ export class Control implements IAnimatable {
     /**
      * @internal
      */
-    public static _GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
+    public static _GetFontOffset(font: string, engineToUse?: AbstractEngine): { ascent: number; height: number; descent: number } {
         if (Control._FontHeightSizes[font]) {
             return Control._FontHeightSizes[font];
         }
 
-        const engine = EngineStore.LastCreatedEngine;
+        const engine = engineToUse || EngineStore.LastCreatedEngine;
         if (!engine) {
             throw new Error("Invalid engine. Unable to create a canvas.");
         }

@@ -5,6 +5,7 @@ import type { Nullable, DataArray, IndicesArray, FloatArray, DeepImmutable } fro
 import type { IColor4Like } from "../Maths/math.like";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import type { IPipelineContext } from "./IPipelineContext";
+import type { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import type { VertexBuffer } from "../Buffers/buffer";
 import type { InstancingAttributeInfo } from "./instancingAttributeInfo";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
@@ -20,7 +21,20 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { WebGLRenderTargetWrapper } from "./WebGL/webGLRenderTargetWrapper";
 import type { VideoTexture } from "../Materials/Textures/videoTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
-import type { AbstractEngineOptions, ISceneLike } from "./abstractEngine";
+import {
+    createPipelineContext,
+    createRawShaderProgram,
+    createShaderProgram,
+    _finalizePipelineContext,
+    _preparePipelineContext,
+    _setProgram,
+    _executeWhenRenderingStateIsCompiled,
+    getStateObject,
+    _createShaderProgram,
+    deleteStateObject,
+} from "./thinEngine.functions";
+
+import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { PerformanceMonitor } from "../Misc/performanceMonitor";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
@@ -34,10 +48,11 @@ import { AbstractEngine, QueueNewFrame } from "./abstractEngine";
 import { Constants } from "./constants";
 import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
-import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
+import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
+import { resetCachedPipeline } from "core/Materials/effect.functions";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -115,16 +130,16 @@ export class ThinEngine extends AbstractEngine {
     ];
 
     /** @internal */
-    protected _name = "WebGL";
+    protected override _name = "WebGL";
 
     /**
      * Gets or sets the name of the engine
      */
-    public get name(): string {
+    public override get name(): string {
         return this._name;
     }
 
-    public set name(value: string) {
+    public override set name(value: string) {
         this._name = value;
     }
 
@@ -256,7 +271,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Creates a new engine
      * @param canvasOrContext defines the canvas or WebGL context to use for rendering. If you provide a WebGL context, Babylon.js will not hook events on the canvas (like pointers, keyboards, etc...) so no event observables will be available. This is mostly used when Babylon.js is used as a plugin on a system which already used the WebGL context
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled (default value is "undefined", meaning that the browser may or may not enable it)
      * @param options defines further options to be sent to the getContext() function
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
@@ -267,7 +282,7 @@ export class ThinEngine extends AbstractEngine {
         adaptToDeviceRatio?: boolean
     ) {
         options = options || {};
-        super((antialias ?? options.antialias) || false, options, adaptToDeviceRatio);
+        super(antialias ?? options.antialias, options, adaptToDeviceRatio);
 
         if (!canvasOrContext) {
             return;
@@ -442,9 +457,13 @@ export class ThinEngine extends AbstractEngine {
         if (this._renderingCanvas && this._renderingCanvas.setAttribute) {
             this._renderingCanvas.setAttribute("data-engine", versionToLog);
         }
+        const stateObject = getStateObject(this._gl);
+        // update state object with the current engine state
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
     }
 
-    protected _clearEmptyResources(): void {
+    protected override _clearEmptyResources(): void {
         this._dummyFramebuffer = null;
         super._clearEmptyResources();
     }
@@ -783,7 +802,7 @@ export class ThinEngine extends AbstractEngine {
      * Gets a string identifying the name of the class
      * @returns "Engine" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ThinEngine";
     }
 
@@ -941,7 +960,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * End the current frame
      */
-    public endFrame(): void {
+    public override endFrame(): void {
         super.endFrame();
         // Force a flush in case we are using a bad OS.
         if (this._badOS) {
@@ -1860,9 +1879,16 @@ export class ThinEngine extends AbstractEngine {
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
         if (webGLPipelineContext && webGLPipelineContext.program) {
             webGLPipelineContext.program.__SPECTOR_rebuildProgram = null;
-
+            resetCachedPipeline(webGLPipelineContext);
             this._gl.deleteProgram(webGLPipelineContext.program);
         }
+    }
+
+    /**
+     * @internal
+     */
+    public override _getGlobalDefines(defines?: { [key: string]: string }): string | undefined {
+        return _getGlobalDefines(defines, this.isNDCHalfZRange, this.useReverseDepthBuffer, this.useExactSrgbConversions);
     }
 
     /**
@@ -1910,6 +1936,9 @@ export class ThinEngine extends AbstractEngine {
 
             return compiledEffect;
         }
+        if (this._gl) {
+            getStateObject(this._gl);
+        }
         const effect = new Effect(
             baseName,
             attributesNamesOrOptions,
@@ -1930,36 +1959,7 @@ export class ThinEngine extends AbstractEngine {
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static _ConcatenateShader(source: string, defines: Nullable<string>, shaderVersion: string = ""): string {
-        return shaderVersion + (defines ? defines + "\n" : "") + source;
-    }
-
-    private _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string): WebGLShader {
-        return this._compileRawShader(ThinEngine._ConcatenateShader(source, defines, shaderVersion), type);
-    }
-
-    private _compileRawShader(source: string, type: string): WebGLShader {
-        const gl = this._gl;
-
-        const shader = gl.createShader(type === "vertex" ? gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
-
-        if (!shader) {
-            let error: GLenum = gl.NO_ERROR;
-            let tempError: GLenum = gl.NO_ERROR;
-            while ((tempError = gl.getError()) !== gl.NO_ERROR) {
-                error = tempError;
-            }
-
-            throw new Error(
-                `Something went wrong while creating a gl ${type} shader object. gl error=${error}, gl isContextLost=${gl.isContextLost()}, _contextWasLost=${this._contextWasLost}`
-            );
-        }
-
-        gl.shaderSource(shader, source);
-        gl.compileShader(shader);
-
-        return shader;
-    }
+    protected static _ConcatenateShader = _ConcatenateShader;
 
     /**
      * @internal
@@ -1984,12 +1984,10 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        context = context || this._gl;
-
-        const vertexShader = this._compileRawShader(vertexCode, "vertex");
-        const fragmentShader = this._compileRawShader(fragmentCode, "fragment");
-
-        return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+        const stateObject = getStateObject(this._gl);
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        return createRawShaderProgram(pipelineContext, vertexCode, fragmentCode, context || this._gl, transformFeedbackVaryings);
     }
 
     /**
@@ -2010,13 +2008,11 @@ export class ThinEngine extends AbstractEngine {
         context?: WebGLRenderingContext,
         transformFeedbackVaryings: Nullable<string[]> = null
     ): WebGLProgram {
-        context = context || this._gl;
-
-        const shaderVersion = this._webGLVersion > 1 ? "#version 300 es\n#define WEBGL2 \n" : "";
-        const vertexShader = this._compileShader(vertexCode, "vertex", defines, shaderVersion);
-        const fragmentShader = this._compileShader(fragmentCode, "fragment", defines, shaderVersion);
-
-        return this._createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
+        const stateObject = getStateObject(this._gl);
+        // assure the state object is correct
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        return createShaderProgram(pipelineContext, vertexCode, fragmentCode, defines, context || this._gl, transformFeedbackVaryings);
     }
 
     /**
@@ -2035,14 +2031,13 @@ export class ThinEngine extends AbstractEngine {
      * @returns the new pipeline
      */
     public createPipelineContext(shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-        const pipelineContext = new WebGLPipelineContext();
-        pipelineContext.engine = this;
-
-        if (this._caps.parallelShaderCompile) {
-            pipelineContext.isParallelCompiled = true;
+        if (this._gl) {
+            const stateObject = getStateObject(this._gl);
+            stateObject.parallelShaderCompile = this._caps.parallelShaderCompile;
         }
-
-        return pipelineContext;
+        const context = createPipelineContext(this._gl, shaderProcessingContext) as WebGLPipelineContext;
+        context.engine = this;
+        return context;
     }
 
     /**
@@ -2061,93 +2056,8 @@ export class ThinEngine extends AbstractEngine {
         return undefined;
     }
 
-    protected _createShaderProgram(
-        pipelineContext: WebGLPipelineContext,
-        vertexShader: WebGLShader,
-        fragmentShader: WebGLShader,
-        context: WebGLRenderingContext,
-        transformFeedbackVaryings: Nullable<string[]> = null
-    ): WebGLProgram {
-        const shaderProgram = context.createProgram();
-        pipelineContext.program = shaderProgram;
-
-        if (!shaderProgram) {
-            throw new Error("Unable to create program");
-        }
-
-        context.attachShader(shaderProgram, vertexShader);
-        context.attachShader(shaderProgram, fragmentShader);
-
-        context.linkProgram(shaderProgram);
-
-        pipelineContext.context = context;
-        pipelineContext.vertexShader = vertexShader;
-        pipelineContext.fragmentShader = fragmentShader;
-
-        if (!pipelineContext.isParallelCompiled) {
-            this._finalizePipelineContext(pipelineContext);
-        }
-
-        return shaderProgram;
-    }
-
     protected _finalizePipelineContext(pipelineContext: WebGLPipelineContext) {
-        const context = pipelineContext.context!;
-        const vertexShader = pipelineContext.vertexShader!;
-        const fragmentShader = pipelineContext.fragmentShader!;
-        const program = pipelineContext.program!;
-
-        const linked = context.getProgramParameter(program, context.LINK_STATUS);
-        if (!linked) {
-            // Get more info
-            // Vertex
-            if (!this._gl.getShaderParameter(vertexShader, this._gl.COMPILE_STATUS)) {
-                const log = this._gl.getShaderInfoLog(vertexShader);
-                if (log) {
-                    pipelineContext.vertexCompilationError = log;
-                    throw new Error("VERTEX SHADER " + log);
-                }
-            }
-
-            // Fragment
-            if (!this._gl.getShaderParameter(fragmentShader, this._gl.COMPILE_STATUS)) {
-                const log = this._gl.getShaderInfoLog(fragmentShader);
-                if (log) {
-                    pipelineContext.fragmentCompilationError = log;
-                    throw new Error("FRAGMENT SHADER " + log);
-                }
-            }
-
-            const error = context.getProgramInfoLog(program);
-            if (error) {
-                pipelineContext.programLinkError = error;
-                throw new Error(error);
-            }
-        }
-
-        if (this.validateShaderPrograms) {
-            context.validateProgram(program);
-            const validated = context.getProgramParameter(program, context.VALIDATE_STATUS);
-
-            if (!validated) {
-                const error = context.getProgramInfoLog(program);
-                if (error) {
-                    pipelineContext.programValidationError = error;
-                    throw new Error(error);
-                }
-            }
-        }
-
-        context.deleteShader(vertexShader);
-        context.deleteShader(fragmentShader);
-
-        pipelineContext.vertexShader = undefined;
-        pipelineContext.fragmentShader = undefined;
-
-        if (pipelineContext.onCompiled) {
-            pipelineContext.onCompiled();
-            pipelineContext.onCompiled = undefined;
-        }
+        return _finalizePipelineContext(pipelineContext, this._gl, this.validateShaderPrograms);
     }
 
     /**
@@ -2158,21 +2068,42 @@ export class ThinEngine extends AbstractEngine {
         vertexSourceCode: string,
         fragmentSourceCode: string,
         createAsRaw: boolean,
-        rawVertexSourceCode: string,
-        rawFragmentSourceCode: string,
+        _rawVertexSourceCode: string,
+        _rawFragmentSourceCode: string,
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        key: string
+        _key: string
     ) {
-        const webGLRenderingState = pipelineContext as WebGLPipelineContext;
+        const stateObject = getStateObject(this._gl);
+        stateObject._contextWasLost = this._contextWasLost;
+        stateObject.validateShaderPrograms = this.validateShaderPrograms;
+        stateObject._createShaderProgramInjection = this._createShaderProgram.bind(this);
+        stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
+        stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
+        stateObject.loadFileInjection = this._loadFile.bind(this);
+        return _preparePipelineContext(
+            pipelineContext as WebGLPipelineContext,
+            vertexSourceCode,
+            fragmentSourceCode,
+            createAsRaw,
+            _rawVertexSourceCode,
+            _rawFragmentSourceCode,
+            rebuildRebind,
+            defines,
+            transformFeedbackVaryings,
+            _key
+        );
+    }
 
-        if (createAsRaw) {
-            webGLRenderingState.program = this.createRawShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, undefined, transformFeedbackVaryings);
-        } else {
-            webGLRenderingState.program = this.createShaderProgram(webGLRenderingState, vertexSourceCode, fragmentSourceCode, defines, undefined, transformFeedbackVaryings);
-        }
-        webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
+    protected _createShaderProgram(
+        pipelineContext: WebGLPipelineContext,
+        vertexShader: WebGLShader,
+        fragmentShader: WebGLShader,
+        context: WebGLRenderingContext,
+        transformFeedbackVaryings: Nullable<string[]> = null
+    ): WebGLProgram {
+        return _createShaderProgram(pipelineContext as WebGLPipelineContext, vertexShader, fragmentShader, context, transformFeedbackVaryings);
     }
 
     /**
@@ -2195,23 +2126,7 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void) {
-        const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-
-        if (!webGLPipelineContext.isParallelCompiled) {
-            action();
-            return;
-        }
-
-        const oldHandler = webGLPipelineContext.onCompiled;
-
-        if (oldHandler) {
-            webGLPipelineContext.onCompiled = () => {
-                oldHandler!();
-                action();
-            };
-        } else {
-            webGLPipelineContext.onCompiled = action;
-        }
+        _executeWhenRenderingStateIsCompiled(pipelineContext as WebGLPipelineContext, action);
     }
 
     /**
@@ -3073,14 +2988,14 @@ export class ThinEngine extends AbstractEngine {
             samplingMode,
             onLoad,
             onError,
-            this._prepareWebGLTexture.bind(this),
+            (...args: Parameters<PrepareTextureFunction>) => this._prepareWebGLTexture(...args, format),
             (potWidth, potHeight, img, extension, texture, continuationCallback) => {
                 const gl = this._gl;
                 const isPot = img.width === potWidth && img.height === potHeight;
 
                 texture._creationFlags = creationFlags ?? 0;
 
-                const tip = this._getTexImageParametersForCreateTexture(format, extension, texture._useSRGBBuffer);
+                const tip = this._getTexImageParametersForCreateTexture(texture.format, texture._useSRGBBuffer);
                 if (isPot) {
                     gl.texImage2D(gl.TEXTURE_2D, 0, tip.internalFormat, tip.format, tip.type, img as any);
                     return false;
@@ -3140,11 +3055,7 @@ export class ThinEngine extends AbstractEngine {
      * @returns The options to pass to texImage2D or texImage3D calls.
      * @internal
      */
-    public _getTexImageParametersForCreateTexture(babylonFormat: Nullable<number>, fileExtension: string, useSRGBBuffer: boolean): TexImageParameters {
-        if (babylonFormat === undefined || babylonFormat === null) {
-            babylonFormat = fileExtension === ".jpg" && !useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
-        }
-
+    public _getTexImageParametersForCreateTexture(babylonFormat: number, useSRGBBuffer: boolean): TexImageParameters {
         let format: number, internalFormat: number;
         if (this.webGLVersion === 1) {
             // In WebGL 1, format and internalFormat must be the same and taken from a limited set of values, see https://docs.gl/es2/glTexImage2D.
@@ -3643,15 +3554,9 @@ export class ThinEngine extends AbstractEngine {
         invertY: boolean,
         noMipmap: boolean,
         isCompressed: boolean,
-        processFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
-        samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE
+        processFunction: PrepareTextureProcessFunction,
+        samplingMode: number,
+        format: Nullable<number>
     ): void {
         const maxTextureSize = this.getCaps().maxTextureSize;
         const potWidth = Math.min(maxTextureSize, this.needPOTTextures ? GetExponentOfTwo(img.width, maxTextureSize) : img.width);
@@ -3680,7 +3585,8 @@ export class ThinEngine extends AbstractEngine {
         texture.height = potHeight;
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
-        texture.format = texture.format !== -1 ? texture.format : extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA;
+        texture.format =
+            texture.format !== -1 ? texture.format : format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA);
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {
@@ -3810,7 +3716,7 @@ export class ThinEngine extends AbstractEngine {
 
     protected _setProgram(program: WebGLProgram): void {
         if (this._currentProgram !== program) {
-            this._gl.useProgram(program);
+            _setProgram(program, this._gl);
             this._currentProgram = program;
         }
     }
@@ -4157,15 +4063,12 @@ export class ThinEngine extends AbstractEngine {
     /**
      * Dispose and release all associated resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         if (this._dummyFramebuffer) {
             this._gl.deleteFramebuffer(this._dummyFramebuffer);
         }
-
-        // Release effects
-        this.releaseEffects();
 
         // Unbind
         this.unbindAllAttributes();
@@ -4189,6 +4092,8 @@ export class ThinEngine extends AbstractEngine {
         if ((this._creationOptions as EngineOptions).loseContextOnDispose) {
             this._gl.getExtension("WEBGL_lose_context")?.loseContext();
         }
+        // clear the state object
+        deleteStateObject(this._gl);
     }
 
     /**

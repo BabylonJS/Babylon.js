@@ -59,7 +59,7 @@ export class RefractionPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "RefractionPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "RefractionPostProcess";
     }
 
@@ -114,7 +114,7 @@ export class RefractionPostProcess extends PostProcess {
      * Disposes of the post process
      * @param camera Camera to dispose post process on
      */
-    public dispose(camera: Camera): void {
+    public override dispose(camera: Camera): void {
         if (this._refTexture && this._ownRefractionTexture) {
             this._refTexture.dispose();
             (<any>this._refTexture) = null;
@@ -126,7 +126,7 @@ export class RefractionPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new RefractionPostProcess(

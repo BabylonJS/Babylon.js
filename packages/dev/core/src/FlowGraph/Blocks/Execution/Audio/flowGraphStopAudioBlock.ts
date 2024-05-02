@@ -29,7 +29,7 @@ export class FlowGraphStopAudioBlock extends FlowGraphExecutionBlockWithOutSigna
         }
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGStopAudioBlock";
     }
 }

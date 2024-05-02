@@ -140,8 +140,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public COLORCURVES = false;
     public COLORGRADING = false;
@@ -682,7 +681,7 @@ export class BackgroundMaterial extends PushMaterial {
     /**
      * Gets a boolean indicating that current material needs to register RTT
      */
-    public get hasRenderTargetTextures(): boolean {
+    public override get hasRenderTargetTextures(): boolean {
         if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
             return true;
         }
@@ -698,7 +697,7 @@ export class BackgroundMaterial extends PushMaterial {
      * The entire material has been created in order to prevent overdraw.
      * @returns false
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return true;
     }
 
@@ -706,7 +705,7 @@ export class BackgroundMaterial extends PushMaterial {
      * The entire material has been created in order to prevent overdraw.
      * @returns true if blending is enable
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1 || (this._diffuseTexture != null && this._diffuseTexture.hasAlpha) || this._shadowOnly;
     }
 
@@ -717,7 +716,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param useInstances Specify wether or not the material is used with instances
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (drawWrapper.effect && this.isFrozen) {
@@ -1066,7 +1065,7 @@ export class BackgroundMaterial extends PushMaterial {
     /**
      * Build the uniform buffer used in the material.
      */
-    public buildUniformLayout(): void {
+    public override buildUniformLayout(): void {
         // Order is important !
         this._uniformBuffer.addUniform("vPrimaryColor", 4);
         this._uniformBuffer.addUniform("vPrimaryColorShadow", 4);
@@ -1089,7 +1088,7 @@ export class BackgroundMaterial extends PushMaterial {
     /**
      * Unbind the material.
      */
-    public unbind(): void {
+    public override unbind(): void {
         if (this._diffuseTexture && this._diffuseTexture.isRenderTarget) {
             this._uniformBuffer.setTexture("diffuseSampler", null);
         }
@@ -1105,7 +1104,7 @@ export class BackgroundMaterial extends PushMaterial {
      * Bind only the world matrix to the material.
      * @param world The world matrix to bind.
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
+    public override bindOnlyWorldMatrix(world: Matrix): void {
         this._activeEffect!.setMatrix("world", world);
     }
 
@@ -1115,7 +1114,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param mesh the mesh to bind for.
      * @param subMesh The submesh to bind for.
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <BackgroundMaterialDefines>subMesh.materialDefines;
@@ -1258,7 +1257,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param texture - Base texture to use.
      * @returns - Boolean specifying if a texture is used in the material.
      */
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -1279,7 +1278,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param forceDisposeEffect Force disposal of the associated effect.
      * @param forceDisposeTextures Force disposal of the associated textures.
      */
-    public dispose(forceDisposeEffect: boolean = false, forceDisposeTextures: boolean = false): void {
+    public override dispose(forceDisposeEffect: boolean = false, forceDisposeTextures: boolean = false): void {
         if (forceDisposeTextures) {
             if (this.diffuseTexture) {
                 this.diffuseTexture.dispose();
@@ -1303,7 +1302,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param name The cloned name.
      * @returns The cloned material.
      */
-    public clone(name: string): BackgroundMaterial {
+    public override clone(name: string): BackgroundMaterial {
         return SerializationHelper.Clone(() => new BackgroundMaterial(name, this.getScene()), this);
     }
 
@@ -1311,7 +1310,7 @@ export class BackgroundMaterial extends PushMaterial {
      * Serializes the current material to its JSON representation.
      * @returns The JSON representation.
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.BackgroundMaterial";
         return serializationObject;
@@ -1321,7 +1320,7 @@ export class BackgroundMaterial extends PushMaterial {
      * Gets the class name of the material
      * @returns "BackgroundMaterial"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "BackgroundMaterial";
     }
 
@@ -1332,7 +1331,7 @@ export class BackgroundMaterial extends PushMaterial {
      * @param rootUrl The root url of the assets the material depends upon
      * @returns the instantiated BackgroundMaterial.
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): BackgroundMaterial {
         return SerializationHelper.Parse(() => new BackgroundMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

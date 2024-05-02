@@ -227,7 +227,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
      */
-    public get environmentTexture(): Nullable<BaseTexture> {
+    public override get environmentTexture(): Nullable<BaseTexture> {
         return this._environmentTexture;
     }
     /**
@@ -235,7 +235,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to set here than in all the materials.
      */
-    public set environmentTexture(value: Nullable<BaseTexture>) {
+    public override set environmentTexture(value: Nullable<BaseTexture>) {
         if (this._environmentTexture === value) {
             return;
         }

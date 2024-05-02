@@ -27,7 +27,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
      * Gets the class name of the current input.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FreeCameraMouseWheelInput";
     }
 
@@ -277,7 +277,7 @@ export class FreeCameraMouseWheelInput extends BaseCameraMouseWheelInput {
     /**
      * Called for each rendered frame.
      */
-    public checkInputs(): void {
+    public override checkInputs(): void {
         if (this._wheelDeltaX === 0 && this._wheelDeltaY === 0 && this._wheelDeltaZ == 0) {
             return;
         }

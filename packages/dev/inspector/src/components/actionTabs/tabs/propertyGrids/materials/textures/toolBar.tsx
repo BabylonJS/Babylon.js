@@ -44,7 +44,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
         return Color4.FromHexString(`${this.props.metadata.color}${opacityHex}`);
     }
 
-    shouldComponentUpdate(nextProps: IToolBarProps) {
+    override shouldComponentUpdate(nextProps: IToolBarProps) {
         return (
             nextProps.tools != this.props.tools ||
             nextProps.activeToolIndex !== this.props.activeToolIndex ||
@@ -53,7 +53,7 @@ export class ToolBar extends React.Component<IToolBarProps, IToolBarState> {
         );
     }
 
-    render() {
+    override render() {
         return (
             <div id="toolbar">
                 <div id="tools">

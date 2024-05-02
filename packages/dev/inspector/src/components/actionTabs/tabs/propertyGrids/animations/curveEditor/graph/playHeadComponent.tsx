@@ -120,7 +120,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         return Math.max(((pixel / scale - offset) / width) * (maxFrame - minFrame) + minFrame, keys[0].frame);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onBeforeRenderObserver) {
             this.props.context.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
@@ -195,7 +195,7 @@ export class PlayHeadComponent extends React.Component<IPlayHeadComponentProps, 
         evt.currentTarget.releasePointerCapture(evt.pointerId);
     }
 
-    public render() {
+    public override render() {
         if (this.props.context.activeAnimations.length === 0) {
             return null;
         }

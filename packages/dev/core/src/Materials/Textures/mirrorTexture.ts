@@ -102,7 +102,7 @@ export class MirrorTexture extends RenderTargetTexture {
         this.blurKernelY = this._adaptiveBlurKernel * dh;
     }
 
-    protected _onRatioRescale(): void {
+    protected override _onRatioRescale(): void {
         if (this._sizeRatio) {
             this.resize(this._initialSizeParameter);
             if (!this._adaptiveBlurKernel) {
@@ -284,7 +284,7 @@ export class MirrorTexture extends RenderTargetTexture {
      * Clone the mirror texture.
      * @returns the cloned texture
      */
-    public clone(): MirrorTexture {
+    public override clone(): MirrorTexture {
         const scene = this.getScene();
 
         if (!scene) {
@@ -319,7 +319,7 @@ export class MirrorTexture extends RenderTargetTexture {
      * Serialize the texture to a JSON representation you could use in Parse later on
      * @returns the serialized JSON representation
      */
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }
@@ -334,7 +334,7 @@ export class MirrorTexture extends RenderTargetTexture {
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
         const scene = this.getScene();
 

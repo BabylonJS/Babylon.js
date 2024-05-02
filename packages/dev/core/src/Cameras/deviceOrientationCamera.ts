@@ -79,7 +79,7 @@ export class DeviceOrientationCamera extends FreeCamera {
      * This helps avoiding instanceof at run time.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DeviceOrientationCamera";
     }
 
@@ -87,7 +87,7 @@ export class DeviceOrientationCamera extends FreeCamera {
      * @internal
      * Checks and applies the current values of the inputs to the camera. (Internal use only)
      */
-    public _checkInputs(): void {
+    public override _checkInputs(): void {
         super._checkInputs();
         this._quaternionCache.copyFrom(this.rotationQuaternion);
         if (this._initialQuaternion) {

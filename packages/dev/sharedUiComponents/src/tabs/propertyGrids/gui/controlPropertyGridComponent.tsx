@@ -16,7 +16,7 @@ export class ControlPropertyGridComponent extends React.Component<IControlProper
         super(props);
     }
 
-    render() {
+    override render() {
         const control = this.props.control;
 
         return <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;

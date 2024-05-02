@@ -45,6 +45,8 @@ import {
     PrepareUniformsAndSamplersList,
 } from "core/Materials/materialHelper.functions";
 
+import "core/Rendering/boundingBoxRenderer";
+
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
     public REFLECTION = false;
@@ -79,8 +81,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public EXPOSURE = false;
     public COLORCURVES = false;
@@ -246,7 +247,7 @@ export class WaterMaterial extends PushMaterial {
     /**
      * Gets a boolean indicating that current material needs to register RTT
      */
-    public get hasRenderTargetTextures(): boolean {
+    public override get hasRenderTargetTextures(): boolean {
         return true;
     }
 
@@ -338,19 +339,19 @@ export class WaterMaterial extends PushMaterial {
         return !(this._refractionRTT && this._refractionRTT.refreshRate === 0);
     }
 
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.alpha < 1.0;
     }
 
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
-    public getAlphaTestTexture(): Nullable<BaseTexture> {
+    public override getAlphaTestTexture(): Nullable<BaseTexture> {
         return null;
     }
 
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -562,7 +563,7 @@ export class WaterMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <WaterMaterialDefines>subMesh.materialDefines;
@@ -672,6 +673,15 @@ export class WaterMaterial extends PushMaterial {
         this._refractionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._refractionRTT.ignoreCameraViewport = true;
 
+        let boundingBoxRendererEnabled = false;
+        this._refractionRTT.onBeforeRenderObservable.add(() => {
+            boundingBoxRendererEnabled = scene.getBoundingBoxRenderer().enabled;
+            scene.getBoundingBoxRenderer().enabled = false;
+        });
+        this._refractionRTT.onAfterRenderObservable.add(() => {
+            scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+        });
+
         this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
         this._reflectionRTT.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._reflectionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
@@ -746,7 +756,7 @@ export class WaterMaterial extends PushMaterial {
         };
     }
 
-    public getAnimatables(): IAnimatable[] {
+    public override getAnimatables(): IAnimatable[] {
         const results = [];
 
         if (this.bumpTexture && this.bumpTexture.animations && this.bumpTexture.animations.length > 0) {
@@ -762,7 +772,7 @@ export class WaterMaterial extends PushMaterial {
         return results;
     }
 
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._bumpTexture) {
@@ -772,7 +782,7 @@ export class WaterMaterial extends PushMaterial {
         return activeTextures;
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -784,7 +794,7 @@ export class WaterMaterial extends PushMaterial {
         return false;
     }
 
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         if (this.bumpTexture) {
             this.bumpTexture.dispose();
         }
@@ -814,11 +824,11 @@ export class WaterMaterial extends PushMaterial {
         super.dispose(forceDisposeEffect);
     }
 
-    public clone(name: string): WaterMaterial {
+    public override clone(name: string): WaterMaterial {
         return SerializationHelper.Clone(() => new WaterMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.WaterMaterial";
 
@@ -832,12 +842,12 @@ export class WaterMaterial extends PushMaterial {
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "WaterMaterial";
     }
 
     // Statics
-    public static Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): WaterMaterial {
         const mat = SerializationHelper.Parse(() => new WaterMaterial(source.name, scene), source, scene, rootUrl);
         mat._waitingRenderList = source.renderList;
 

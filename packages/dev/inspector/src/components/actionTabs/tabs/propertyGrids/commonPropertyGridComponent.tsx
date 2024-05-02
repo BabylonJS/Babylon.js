@@ -51,7 +51,7 @@ export class CommonPropertyGridComponent extends React.Component<ICommonProperty
         return components;
     }
 
-    render() {
+    override render() {
         if (!this.props.host.metadata) {
             return null;
         }

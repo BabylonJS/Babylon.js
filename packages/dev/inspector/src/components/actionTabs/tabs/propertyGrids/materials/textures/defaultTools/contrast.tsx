@@ -60,7 +60,7 @@ class ContrastTool implements IToolType {
 }
 
 class Settings extends React.Component<IToolGUIProps> {
-    render() {
+    override render() {
         const instance = this.props.instance as ContrastTool;
         return (
             <div>

@@ -186,7 +186,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
      * @param force should attachment be forced (even when already attached)
      * @returns true if successful.
      */
-    public attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean | undefined): boolean {
         if (!super.attach(force)) {
             return false;
         }
@@ -204,7 +204,7 @@ export class WebXRDepthSensing extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         this._cachedDepthImageTexture?.dispose();
     }
 

@@ -25,7 +25,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "FragDepthBlock";
     }
 
@@ -50,7 +50,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
         return this._inputs[2];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.depth.isConnected) {

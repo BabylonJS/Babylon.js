@@ -128,7 +128,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         this.openTextureEditor.bind(this);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._adtInstrumentation) {
             this._adtInstrumentation.dispose();
             this._adtInstrumentation = null;
@@ -212,7 +212,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
         return null;
     }
 
-    render() {
+    override render() {
         const texture = this.props.texture;
         const textureAsRTT = texture as RenderTargetTexture;
 

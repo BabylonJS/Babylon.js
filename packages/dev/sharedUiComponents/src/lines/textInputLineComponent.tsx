@@ -50,13 +50,13 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         };
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.lockObject) {
             this.props.lockObject.lock = false;
         }
     }
 
-    shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string; dragging: boolean }) {
+    override shouldComponentUpdate(nextProps: ITextInputLineComponentProps, nextState: { value: string; dragging: boolean }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -191,7 +191,7 @@ export class TextInputLineComponent extends React.Component<ITextInputLineCompon
         }
     }
 
-    render() {
+    override render() {
         const value = this.state.value === conflictingValuesPlaceholder ? "" : this.state.value;
         const placeholder = this.state.value === conflictingValuesPlaceholder ? conflictingValuesPlaceholder : this.props.placeholder || "";
         const step = this.props.step || (this.props.roundValues ? 1 : 0.01);

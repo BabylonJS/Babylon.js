@@ -20,11 +20,11 @@ export class PushMaterial extends Material {
         this._storeEffectOnSubMeshes = storeEffectOnSubMeshes;
     }
 
-    public getEffect(): Effect {
+    public override getEffect(): Effect {
         return this._storeEffectOnSubMeshes ? this._activeEffect! : super.getEffect()!;
     }
 
-    public isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
+    public override isReady(mesh?: AbstractMesh, useInstances?: boolean): boolean {
         if (!mesh) {
             return false;
         }
@@ -56,7 +56,7 @@ export class PushMaterial extends Material {
      *
      * @param world the matrix to bind
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
+    public override bindOnlyWorldMatrix(world: Matrix): void {
         this._activeEffect!.setMatrix("world", world);
     }
 
@@ -69,7 +69,7 @@ export class PushMaterial extends Material {
         this._activeEffect!.setMatrix("normalMatrix", normalMatrix);
     }
 
-    public bind(world: Matrix, mesh?: Mesh): void {
+    public override bind(world: Matrix, mesh?: Mesh): void {
         if (!mesh) {
             return;
         }
@@ -77,7 +77,7 @@ export class PushMaterial extends Material {
         this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
+    protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         super._afterBind(mesh, effect, subMesh);
         this.getScene()._cachedEffect = effect;
         if (subMesh) {
@@ -91,7 +91,7 @@ export class PushMaterial extends Material {
         return subMesh._drawWrapper._forceRebindOnNextCall || scene.isCachedMaterialInvalid(this, effect, visibility);
     }
 
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean) {
         this._activeEffect = undefined;
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }

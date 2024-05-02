@@ -93,7 +93,7 @@ export class MultiMaterial extends Material {
      * Get the list of active textures for the whole sub materials list.
      * @returns All the textures that will be used during the rendering
      */
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         return super.getActiveTextures().concat(
             ...this.subMaterials.map((subMaterial) => {
                 if (subMaterial) {
@@ -110,7 +110,7 @@ export class MultiMaterial extends Material {
      * @param texture Defines the texture to check against this multi-material's sub-materials.
      * @returns A boolean specifying if any sub-material of this multi-material uses the texture.
      */
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -129,7 +129,7 @@ export class MultiMaterial extends Material {
      * Mainly use in serialization.
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "MultiMaterial";
     }
 
@@ -140,7 +140,7 @@ export class MultiMaterial extends Material {
      * @param useInstances Define whether or not the material is used with instances
      * @returns true if ready, otherwise false
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         for (let index = 0; index < this.subMaterials.length; index++) {
             const subMaterial = this.subMaterials[index];
             if (subMaterial) {
@@ -166,7 +166,7 @@ export class MultiMaterial extends Material {
      * @param cloneChildren Define if submaterial will be cloned or shared with the parent instance
      * @returns the cloned material
      */
-    public clone(name: string, cloneChildren?: boolean): MultiMaterial {
+    public override clone(name: string, cloneChildren?: boolean): MultiMaterial {
         const newMultiMaterial = new MultiMaterial(name, this.getScene());
 
         for (let index = 0; index < this.subMaterials.length; index++) {
@@ -187,7 +187,7 @@ export class MultiMaterial extends Material {
      * Serializes the materials into a JSON representation.
      * @returns the JSON representation
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject: any = {};
 
         serializationObject.name = this.name;
@@ -220,7 +220,7 @@ export class MultiMaterial extends Material {
      * @param forceDisposeTextures Define if we want to force disposing the associated textures (if false, they will not be disposed and can still be use elsewhere in the app)
      * @param forceDisposeChildren Define if we want to force disposing the associated submaterials (if false, they will not be disposed and can still be use elsewhere in the app)
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, forceDisposeChildren?: boolean): void {
         const scene = this.getScene();
         if (!scene) {
             return;

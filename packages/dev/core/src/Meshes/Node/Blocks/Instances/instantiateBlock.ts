@@ -10,8 +10,8 @@ import { InstantiateBaseBlock } from "./instantiateBaseBlock";
  * Block used to instantiate a geometry inside a loop
  */
 export class InstantiateBlock extends InstantiateBaseBlock {
-    protected _vertexData: VertexData;
-    protected _currentIndex: number;
+    protected override _vertexData: VertexData;
+    protected override _currentIndex: number;
 
     /**
      * Create a new InstantiateBlock
@@ -32,7 +32,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
      * Gets the current instance index in the current flow
      * @returns the current index
      */
-    public getInstanceIndex(): number {
+    public override getInstanceIndex(): number {
         return this._currentIndex;
     }
 
@@ -40,7 +40,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
      * Gets the current index in the current flow
      * @returns the current index
      */
-    public getExecutionIndex(): number {
+    public override getExecutionIndex(): number {
         return this._currentIndex;
     }
 
@@ -48,7 +48,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
      * Gets the current loop index in the current flow
      * @returns the current loop index
      */
-    public getExecutionLoopIndex(): number {
+    public override getExecutionLoopIndex(): number {
         return this._currentIndex;
     }
 
@@ -56,7 +56,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
      * Gets the current face index in the current flow
      * @returns the current face index
      */
-    public getExecutionFaceIndex(): number {
+    public override getExecutionFaceIndex(): number {
         return 0;
     }
 
@@ -64,7 +64,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateBlock";
     }
 
@@ -96,7 +96,7 @@ export class InstantiateBlock extends InstantiateBaseBlock {
         return this._inputs[5];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
             state.pushInstancingContext(this);

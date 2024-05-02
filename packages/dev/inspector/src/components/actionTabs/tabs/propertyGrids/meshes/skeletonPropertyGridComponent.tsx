@@ -140,7 +140,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         }
     }
 
-    shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
+    override shouldComponentUpdate(nextProps: ISkeletonPropertyGridComponentProps) {
         if (nextProps.skeleton !== this.props.skeleton) {
             this.checkSkeletonViewerState(nextProps);
         }
@@ -148,7 +148,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
         return true;
     }
 
-    render() {
+    override render() {
         const skeleton = this.props.skeleton;
 
         const debugModeOptions = [

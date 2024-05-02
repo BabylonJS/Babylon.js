@@ -64,7 +64,7 @@ export class KHR_materials_dispersion implements IGLTFLoaderExtension {
         }
 
         // If transparency isn't enabled already, this extension shouldn't do anything.
-        // i.e. it requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
+        // i.e. it requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
         if (!babylonMaterial.subSurface.isRefractionEnabled || !extension.dispersion) {
             return Promise.resolve();
         }

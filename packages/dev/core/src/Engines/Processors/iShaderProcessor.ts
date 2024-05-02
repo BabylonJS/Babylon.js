@@ -2,8 +2,6 @@ import type { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "./shaderProcessingOptions";
 
-import type { AbstractEngine } from "../abstractEngine";
-
 /** @internal */
 export interface IShaderProcessor {
     shaderLanguage: ShaderLanguage;

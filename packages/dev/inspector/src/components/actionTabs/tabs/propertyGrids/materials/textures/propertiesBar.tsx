@@ -73,7 +73,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
         return oldDim;
     }
 
-    componentWillUpdate(nextProps: IPropertiesBarProps) {
+    override componentWillUpdate(nextProps: IPropertiesBarProps) {
         if (nextProps.size.width != this.props.size.width || nextProps.size.height != this.props.size.height) {
             this.setState({
                 width: nextProps.size.width,
@@ -82,7 +82,7 @@ export class PropertiesBar extends React.PureComponent<IPropertiesBarProps, IPro
         }
     }
 
-    render() {
+    override render() {
         const { mipLevel, setMipLevel, pixelData, resizeTexture, texture, face, setFace, saveTexture, resetTexture, uploadTexture } = this.props;
         const maxLevels = Math.floor(Math.log2(Math.max(texture.getSize().width, texture.getSize().height)));
         const engine = texture.getScene()!.getEngine();

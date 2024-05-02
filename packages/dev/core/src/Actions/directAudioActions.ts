@@ -21,12 +21,12 @@ export class PlaySoundAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {}
+    public override _prepare(): void {}
 
     /**
      * Execute the action and play the sound.
      */
-    public execute(): void {
+    public override execute(): void {
         if (this._sound !== undefined) {
             this._sound.play();
         }
@@ -37,7 +37,7 @@ export class PlaySoundAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "PlaySoundAction",
@@ -66,12 +66,12 @@ export class StopSoundAction extends Action {
     }
 
     /** @internal */
-    public _prepare(): void {}
+    public override _prepare(): void {}
 
     /**
      * Execute the action and stop the sound.
      */
-    public execute(): void {
+    public override execute(): void {
         if (this._sound !== undefined) {
             this._sound.stop();
         }
@@ -82,7 +82,7 @@ export class StopSoundAction extends Action {
      * @param parent defines the object to serialize in
      * @returns the serialized object
      */
-    public serialize(parent: any): any {
+    public override serialize(parent: any): any {
         return super._serialize(
             {
                 name: "StopSoundAction",

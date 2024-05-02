@@ -25,7 +25,7 @@ export class ArcRotateCameraPropertyGridComponent extends React.Component<IArcRo
         super(props);
     }
 
-    render() {
+    override render() {
         const camera = this.props.camera;
 
         return (

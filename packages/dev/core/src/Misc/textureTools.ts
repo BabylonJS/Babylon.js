@@ -9,6 +9,9 @@ import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 
+import "../Shaders/lod.fragment";
+import "../Shaders/lodCube.fragment";
+
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
  * @param texture Texture to copy from

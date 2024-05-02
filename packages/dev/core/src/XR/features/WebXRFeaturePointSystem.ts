@@ -77,7 +77,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -89,7 +89,7 @@ export class WebXRFeaturePointSystem extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this._featurePointCloud.length = 0;

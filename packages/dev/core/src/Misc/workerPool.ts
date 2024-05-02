@@ -111,7 +111,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
         this._options = options;
     }
 
-    public push(action: (worker: Worker, onComplete: () => void) => void): void {
+    public override push(action: (worker: Worker, onComplete: () => void) => void): void {
         if (!this._executeOnIdleWorker(action)) {
             if (this._workerInfos.length < this._maxWorkers) {
                 const workerInfo: WorkerInfo = {
@@ -126,7 +126,7 @@ export class AutoReleaseWorkerPool extends WorkerPool {
         }
     }
 
-    protected _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
+    protected override _execute(workerInfo: WorkerInfo, action: (worker: Worker, onComplete: () => void) => void): void {
         // Reset the idle timeout.
         if (workerInfo.timeoutId) {
             clearTimeout(workerInfo.timeoutId);

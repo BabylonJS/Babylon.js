@@ -54,6 +54,7 @@ import { InternalTexture, InternalTextureSource } from "../Materials/Textures/in
 import { IsDocumentAvailable, IsNavigatorAvailable, IsWindowObjectExist } from "../Misc/domManagement";
 import { Constants } from "./constants";
 import { Observable } from "../Misc/observable";
+import { EngineFunctionContext, _loadFile } from "./abstractEngine.functions";
 
 /**
  * Defines the interface used by objects working like Scene
@@ -173,6 +174,27 @@ export interface HostInformation {
     isMobile: boolean;
 }
 
+export type PrepareTextureProcessFunction = (
+    width: number,
+    height: number,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    extension: string,
+    texture: InternalTexture,
+    continuationCallback: () => void
+) => boolean;
+
+export type PrepareTextureFunction = (
+    texture: InternalTexture,
+    extension: string,
+    scene: Nullable<ISceneLike>,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    invertY: boolean,
+    noMipmap: boolean,
+    isCompressed: boolean,
+    processFunction: PrepareTextureProcessFunction,
+    samplingMode: number
+) => void;
+
 /**
  * The parent class for specialized engines (WebGL, WebGPU)
  */
@@ -198,6 +220,8 @@ export abstract class AbstractEngine {
     /** @internal */
     public _alphaEquation = Constants.ALPHA_DISABLE;
 
+    protected _activeRequests: IFileRequest[] = [];
+
     /** @internal */
     public _badOS = false;
     /** @internal */
@@ -214,7 +238,6 @@ export abstract class AbstractEngine {
     public _renderingCanvas: Nullable<HTMLCanvasElement>;
     /** @internal */
     public _internalTexturesCache = new Array<InternalTexture>();
-    private _activeRequests = new Array<IFileRequest>();
     protected _currentEffect: Nullable<Effect>;
     /** @internal */
     protected _cachedVertexBuffers: any;
@@ -1471,6 +1494,12 @@ export abstract class AbstractEngine {
     public abstract drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void;
 
     /**
+     * Force the engine to release all cached effects.
+     * This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+     */
+    public abstract releaseEffects(): void;
+
+    /**
      * @internal
      */
     public abstract _viewport(x: number, y: number, width: number, height: number): void;
@@ -1588,32 +1617,8 @@ export abstract class AbstractEngine {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
-        prepareTexture: (
-            texture: InternalTexture,
-            extension: string,
-            scene: Nullable<ISceneLike>,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            invertY: boolean,
-            noMipmap: boolean,
-            isCompressed: boolean,
-            processFunction: (
-                width: number,
-                height: number,
-                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-                extension: string,
-                texture: InternalTexture,
-                continuationCallback: () => void
-            ) => boolean,
-            samplingMode: number
-        ) => void,
-        prepareTextureProcessFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
+        prepareTexture: PrepareTextureFunction,
+        prepareTextureProcess: PrepareTextureProcessFunction,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
         format: Nullable<number> = null,
@@ -1704,7 +1709,7 @@ export abstract class AbstractEngine {
                         null,
                         onError,
                         prepareTexture,
-                        prepareTextureProcessFunction,
+                        prepareTextureProcess,
                         buffer,
                         texture
                     );
@@ -1727,7 +1732,7 @@ export abstract class AbstractEngine {
                     onLoad,
                     onError,
                     prepareTexture,
-                    prepareTextureProcessFunction,
+                    prepareTextureProcess,
                     buffer,
                     texture,
                     format,
@@ -1799,7 +1804,7 @@ export abstract class AbstractEngine {
                     texture._buffer = img;
                 }
 
-                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
+                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcess, samplingMode);
             };
             // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
             // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
@@ -1993,14 +1998,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.2.3";
+        return "babylonjs@7.5.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.2.3";
+        return "7.5.0";
     }
 
     /**
@@ -2111,11 +2116,11 @@ export abstract class AbstractEngine {
 
     /**
      * Creates a new engine
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled. If undefined, it means that the underlying engine is free to enable it or not
      * @param options defines further options to be sent to the creation context
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(antialias: boolean, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
+    constructor(antialias: boolean | undefined, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
         EngineStore.Instances.push(this);
         this.startTime = PrecisionDate.Now;
 
@@ -2220,6 +2225,22 @@ export abstract class AbstractEngine {
 
         this._renderingCanvas.width = width;
         this._renderingCanvas.height = height;
+
+        if (this.scenes) {
+            for (let index = 0; index < this.scenes.length; index++) {
+                const scene = this.scenes[index];
+
+                for (let camIndex = 0; camIndex < scene.cameras.length; camIndex++) {
+                    const cam = scene.cameras[camIndex];
+
+                    cam._currentRenderId = 0;
+                }
+            }
+
+            if (this.onResizeObservable.hasObservers()) {
+                this.onResizeObservable.notifyObservers(this);
+            }
+        }
 
         return true;
     }
@@ -2987,6 +3008,28 @@ export abstract class AbstractEngine {
     }
 
     /**
+     * @internal
+     */
+    public _loadFile(
+        url: string,
+        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
+        onProgress?: (data: any) => void,
+        offlineProvider?: IOfflineProvider,
+        useArrayBuffer?: boolean,
+        onError?: (request?: IWebRequest, exception?: any) => void
+    ): IFileRequest {
+        const request = _loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        this._activeRequests.push(request);
+        request.onCompleteObservable.add(() => {
+            const index = this._activeRequests.indexOf(request);
+            if (index !== -1) {
+                this._activeRequests.splice(index, 1);
+            }
+        });
+        return request;
+    }
+
+    /**
      * Loads a file from a url
      * @param url url to load
      * @param onSuccess callback called when the file successfully loads
@@ -3005,26 +3048,10 @@ export abstract class AbstractEngine {
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void
     ): IFileRequest {
+        if (EngineFunctionContext.loadFile) {
+            return EngineFunctionContext.loadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
+        }
         throw _WarnImport("FileTools");
-    }
-
-    /**
-     * @internal
-     */
-    public _loadFile(
-        url: string,
-        onSuccess: (data: string | ArrayBuffer, responseURL?: string) => void,
-        onProgress?: (data: any) => void,
-        offlineProvider?: IOfflineProvider,
-        useArrayBuffer?: boolean,
-        onError?: (request?: IWebRequest, exception?: any) => void
-    ): IFileRequest {
-        const request = AbstractEngine._FileToolsLoadFile(url, onSuccess, onProgress, offlineProvider, useArrayBuffer, onError);
-        this._activeRequests.push(request);
-        request.onCompleteObservable.add((request) => {
-            this._activeRequests.splice(this._activeRequests.indexOf(request), 1);
-        });
-        return request;
     }
 
     /**
@@ -3037,6 +3064,8 @@ export abstract class AbstractEngine {
      */
     public dispose(): void {
         this.hideLoadingUI();
+
+        this.releaseEffects();
 
         this._isDisposed = true;
         this.stopRenderLoop();
