@@ -114,7 +114,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
 
         this._endpoints.push(endpoint);
         endpoint._entryPoint = this;
-        endpoint._outputs[0].typeConnectionSource = this._inputs[0];
+        endpoint._outputs[0]._typeConnectionSource = this._inputs[0];
         endpoint._tempEntryPointUniqueId = null;
         endpoint.name = "> " + this.name;
     }
@@ -128,7 +128,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
 
         if (index !== -1) {
             this._endpoints.splice(index, 1);
-            endpoint._outputs[0].typeConnectionSource = null;
+            endpoint._outputs[0]._typeConnectionSource = null;
             endpoint._entryPoint = null;
         }
     }

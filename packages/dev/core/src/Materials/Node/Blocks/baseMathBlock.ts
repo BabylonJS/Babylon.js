@@ -3,7 +3,6 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 
 /**
  * Block used to perform a mathematical operation on 2 values
@@ -18,18 +17,14 @@ export class BaseMathBlock extends NodeMaterialBlock {
         this.registerInput("right", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
-        this.output.typeConnectionSource = this.left;
+        this.output._typeConnectionSource = this.left;
         this._linkConnectionTypes(0, 1, true);
 
         this.left.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
         this.right.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
 
         this._connectionObservers = [
-            // this.left.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            // this.left.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
             this.left.onTypeChangedObservable.add(() => this._updateInputOutputTypes()),
-            // this.right.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            // this.right.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
             this.right.onTypeChangedObservable.add(() => this._updateInputOutputTypes()),
         ];
     }
@@ -55,14 +50,9 @@ export class BaseMathBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        //this._updateInputOutputTypes();
-        super._buildBlock(state);
-    }
-
     private _updateInputOutputTypes() {
         // First update the output type with the initial assumption that we'll base it on the left input.
-        this.output.typeConnectionSource = this.left;
+        this.output._typeConnectionSource = this.left;
 
         if (this.left.isConnected && this.right.isConnected) {
             // Both inputs are connected, so we need to determine the output type based on the input types.
@@ -70,11 +60,11 @@ export class BaseMathBlock extends NodeMaterialBlock {
                 this.left.type === NodeMaterialBlockConnectionPointTypes.Int ||
                 (this.left.type === NodeMaterialBlockConnectionPointTypes.Float && this.right.type !== NodeMaterialBlockConnectionPointTypes.Int)
             ) {
-                this.output.typeConnectionSource = this.right;
+                this.output._typeConnectionSource = this.right;
             }
         } else if (this.left.isConnected !== this.right.isConnected) {
             // Only one input is connected, so we need to determine the output type based on the connected input.
-            this.output.typeConnectionSource = this.left.isConnected ? this.left : this.right;
+            this.output._typeConnectionSource = this.left.isConnected ? this.left : this.right;
         }
 
         // Next update the accepted connection point types for the inputs based on the current input connection state.
