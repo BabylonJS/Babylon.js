@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to make gl_FragCoord available
@@ -86,9 +87,11 @@ export class FragCoordBlock extends NodeMaterialBlock {
     protected writeOutputs(state: NodeMaterialBuildState): string {
         let code = "";
 
+        const coord = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs.position" : "gl_FragCoord";
+
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${state._declareOutput(output)} = gl_FragCoord.${output.name};\n`;
+                code += `${state._declareOutput(output)} = ${coord}.${output.name};\n`;
             }
         }
 
