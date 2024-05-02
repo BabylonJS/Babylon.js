@@ -54,8 +54,8 @@ export class ConditionalBlock extends NodeMaterialBlock {
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
         this._linkConnectionTypes(2, 3);
-        this._outputs[0]._typeConnectionSource = this._inputs[2];
-        this._outputs[0]._defaultConnectionPointType = NodeMaterialBlockConnectionPointTypes.Float;
+        this._outputs[0].typeConnectionSource = this._inputs[2];
+        this._outputs[0].defaultConnectionPointType = NodeMaterialBlockConnectionPointTypes.Float;
     }
 
     /**

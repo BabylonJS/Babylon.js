@@ -18,7 +18,7 @@ export class NegateBlock extends NodeMaterialBlock {
         this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
         this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
+        this._outputs[0].typeConnectionSource = this._inputs[0];
     }
 
     /**

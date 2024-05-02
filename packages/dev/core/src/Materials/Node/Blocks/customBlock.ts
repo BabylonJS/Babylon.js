@@ -166,7 +166,7 @@ export class CustomBlock extends NodeMaterialBlock {
             });
 
             if (output.type === "BasedOnInput") {
-                this._outputs[index]._typeConnectionSource = this._findInputByName(output.typeFromInput)![0];
+                this._outputs[index].typeConnectionSource = this._findInputByName(output.typeFromInput)![0];
             }
         });
 

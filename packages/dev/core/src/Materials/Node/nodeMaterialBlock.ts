@@ -24,7 +24,7 @@ export class NodeMaterialBlock {
     private _buildTarget: NodeMaterialBlockTargets;
     protected _target: NodeMaterialBlockTargets;
     private _isFinalMerger = false;
-    private _isInput = false;
+    private readonly _isInput: boolean = false;
     private _isTeleportOut = false;
     private _isTeleportIn = false;
     private _name = "";
@@ -533,9 +533,9 @@ export class NodeMaterialBlock {
         if (looseCoupling) {
             this._inputs[inputIndex1]._acceptedConnectionPointType = this._inputs[inputIndex0];
         } else {
-            this._inputs[inputIndex0]._linkedConnectionSource = this._inputs[inputIndex1];
+            this._inputs[inputIndex0].linkedConnectionSource = this._inputs[inputIndex1];
         }
-        this._inputs[inputIndex1]._linkedConnectionSource = this._inputs[inputIndex0];
+        this._inputs[inputIndex1].linkedConnectionSource = this._inputs[inputIndex0];
     }
 
     private _processBuild(block: NodeMaterialBlock, state: NodeMaterialBuildState, input: NodeMaterialConnectionPoint, activeBlocks: NodeMaterialBlock[]) {

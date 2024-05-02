@@ -21,8 +21,8 @@ export class DerivativeBlock extends NodeMaterialBlock {
         this.registerOutput("dx", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
         this.registerOutput("dy", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-        this._outputs[1]._typeConnectionSource = this._inputs[0];
+        this._outputs[0].typeConnectionSource = this._inputs[0];
+        this._outputs[1].typeConnectionSource = this._inputs[0];
     }
 
     /**
