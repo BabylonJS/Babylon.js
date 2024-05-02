@@ -23,7 +23,7 @@ export function copyCommandToClipboard(strCommand: string) {
 // target.constructor.name returns a random letter after build, due to mangling
 // Looping on BABYLON classes to find real type
 export function getInstanceType(target: any): string {
-    for (let className in BABYLON) {
+    for (const className in BABYLON) {
         try {
             if (target instanceof (BABYLON[className as keyof typeof BABYLON] as any)) {
                 return className;

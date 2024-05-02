@@ -169,10 +169,10 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     // Example : material.diffuseColor = new BABYLON.Vector3(0,1,0);
     onCopyClick() {
         if (this.props && this.props.target) {
-            let targetName = getInstanceType(this.props.target);
-            let targetProperty = this.props.propertyName;
-            let value = this.props.target[this.props.propertyName!];
-            let hex = this.state.color.toHexString();
+            const targetName = getInstanceType(this.props.target);
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const hex = this.state.color.toHexString();
             let strColor;
             if (value.a) {
                 strColor = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
@@ -180,7 +180,7 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                 strColor = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
             }
             strColor += ";//(HEX : " + hex + ")";
-            let strCommand = targetName + "." + targetProperty + " = " + strColor;
+            const strCommand = targetName + "." + targetProperty + " = " + strColor;
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");

@@ -112,11 +112,11 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
     // Example : Mesh.position = new BABYLON.Vector3(0, 1, 0);
     onCopyClick() {
         if (this.props && this.props.target) {
-            let targetName = getInstanceType(this.props.target);
-            let targetProperty = this.props.propertyName;
-            let value = this.props.target[this.props.propertyName!];
-            let strVector = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
-            let strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
+            const targetName = getInstanceType(this.props.target);
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strVector = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");

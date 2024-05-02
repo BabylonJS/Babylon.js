@@ -127,10 +127,10 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     // Example : ImageProcessingConfiguration.contrast = 1;
     onCopyClick() {
         if (this.props && this.props.target) {
-            let targetName = getInstanceType(this.props.target);
-            let targetProperty = this.props.propertyName;
-            let value = this.props.target[this.props.propertyName!];
-            let strCommand = targetName + "." + targetProperty + " = " + value + ";";
+            const targetName = getInstanceType(this.props.target);
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");
