@@ -133,7 +133,8 @@ export const FileToolsOptions: {
  * @param url defines the url to clean
  * @returns the cleaned url
  */
-const _CleanUrl = (url: string): string => {
+// eslint-disable-next-line prefer-const
+export let CleanUrl = (url: string): string => {
     url = url.replace(/#/gm, "%23");
     return url;
 };
@@ -200,7 +201,7 @@ export const LoadImage = (
         url = URL.createObjectURL(input);
         usingObjectURL = true;
     } else {
-        url = _CleanUrl(input);
+        url = CleanUrl(input);
         url = FileToolsOptions.PreprocessUrl(input);
     }
 
@@ -522,7 +523,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
-    url = _CleanUrl(url);
+    url = CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
     const loadUrl = FileToolsOptions.BaseUrl + url;
