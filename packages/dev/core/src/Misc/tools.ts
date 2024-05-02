@@ -395,16 +395,6 @@ export class Tools {
     // External files
 
     /**
-     * Removes unwanted characters from an url
-     * @param url defines the url to clean
-     * @returns the cleaned url
-     */
-    public static CleanUrl(url: string): string {
-        url = url.replace(/#/gm, "%23");
-        return url;
-    }
-
-    /**
      * Gets or sets a function used to pre-process url before using them to load assets
      */
     public static get PreprocessUrl() {
