@@ -219,7 +219,7 @@ export interface INodeMaterialOptions {
      * Defines if blocks should emit comments
      */
     emitComments: boolean;
-    /** Defines shader language to use (GLSL by default) */
+    /** Defines shader language to use (default to GLSL) */
     shaderLanguage: ShaderLanguage;
 }
 
