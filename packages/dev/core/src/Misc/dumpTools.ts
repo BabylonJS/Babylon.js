@@ -10,7 +10,7 @@ import type { Nullable } from "../types";
 import { passPixelShader } from "../Shaders/pass.fragment";
 import { Scalar } from "../Maths/math.scalar";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import { EngineStore } from "..";
+import { EngineStore } from "../Engines/engineStore";
 
 type DumpToolsEngine = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
