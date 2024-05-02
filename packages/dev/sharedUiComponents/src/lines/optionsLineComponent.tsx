@@ -1,8 +1,9 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import { GetClassName } from "core/Misc/typeStore";
 
 import copyIcon from "./copy.svg";
 
@@ -106,7 +107,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     // Example : material.sideOrientation = 1;
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = getInstanceType(this.props.target);
+            const targetName = GetClassName(this.props.target);
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";";

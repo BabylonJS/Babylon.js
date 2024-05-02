@@ -1,10 +1,11 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard, getInstanceType } from "../copyCommandToClipboard";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { GetClassName } from "core/Misc/typeStore";
 
 import copyIcon from "./copy.svg";
 
@@ -127,7 +128,7 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
     // Example : ImageProcessingConfiguration.contrast = 1;
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = getInstanceType(this.props.target);
+            const targetName = GetClassName(this.props.target);
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
             const strCommand = targetName + "." + targetProperty + " = " + value + ";";

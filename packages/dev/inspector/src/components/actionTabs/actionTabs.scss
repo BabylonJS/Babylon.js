@@ -1020,6 +1020,17 @@ $line-padding-left: 2px;
                             width: 110px;
                         }
                     }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
+                        }
+                    }
                 }
 
                 .sliderLine {
@@ -1103,6 +1114,12 @@ $line-padding-left: 2px;
                             border-radius: 50%;
                             background: rgb(51, 122, 183);
                             cursor: pointer;
+                        }
+                    }
+
+                    .floatLine {
+                        .copy {
+                            display: none;
                         }
                     }
 

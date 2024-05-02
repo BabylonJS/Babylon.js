@@ -8,7 +8,8 @@ import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { copyCommandToClipboard, getInstanceType } from "shared-ui-components/copyCommandToClipboard";
+import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
+import { GetClassName } from "core/Misc/typeStore";
 
 import copyIcon from "shared-ui-components/lines/copy.svg";
 
@@ -148,7 +149,7 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     // Example : cube.rotationQuaternion = new BABYLON.Quaternion(0,0,0,1);
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = getInstanceType(this.props.target);
+            const targetName = GetClassName(this.props.target);
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
             const strVector = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
