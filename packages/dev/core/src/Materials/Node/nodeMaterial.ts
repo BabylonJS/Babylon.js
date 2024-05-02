@@ -155,9 +155,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Opaque blend mode for vignette */
     public VIGNETTEBLENDMODEOPAQUE = false;
     /** Tone mapping */
-    public TONEMAPPING = false;
-    /** ACES tone mapping mode */
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     /** Contrast */
     public CONTRAST = false;
     /** Exposure */
@@ -221,7 +219,7 @@ export interface INodeMaterialOptions {
      * Defines if blocks should emit comments
      */
     emitComments: boolean;
-    /** Defines shader language to use (GLSL by default) */
+    /** Defines shader language to use (default to GLSL) */
     shaderLanguage: ShaderLanguage;
 }
 

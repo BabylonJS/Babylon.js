@@ -50,7 +50,29 @@
 	}
 #endif
 
-#ifdef TONEMAPPING_ACES
+#if TONEMAPPING == 3
+	// https://modelviewer.dev/examples/tone-mapping
+	const float PBRNeutralStartCompression = 0.8 - 0.04;
+	const float PBRNeutralDesaturation = 0.15;
+
+	vec3 PBRNeutralToneMapping( vec3 color ) {
+		float x = min(color.r, min(color.g, color.b));
+		float offset = x < 0.08 ? x - 6.25 * x * x : 0.04;
+		color -= offset;
+
+		float peak = max(color.r, max(color.g, color.b));
+		if (peak < PBRNeutralStartCompression) return color;
+
+		float d = 1. - PBRNeutralStartCompression;
+		float newPeak = 1. - d * d / (peak + d - PBRNeutralStartCompression);
+		color *= newPeak / peak;
+
+		float g = 1. - 1. / (PBRNeutralDesaturation * (peak - newPeak) + 1.);
+		return mix(color, newPeak * vec3(1, 1, 1), g);
+	}
+#endif
+
+#if TONEMAPPING == 2
 	// https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 	// Thanks to MJP for all the invaluable tricks found in his repo.
 	// As stated there, the code in this section was originally written by Stephen Hill (@self_shadow), who deserves all
@@ -123,14 +145,14 @@ vec4 applyImageProcessing(vec4 result) {
 		result.rgb = mix(vignetteColor, result.rgb, vignette);
 	#endif
 #endif
-	
-#ifdef TONEMAPPING
-	#ifdef TONEMAPPING_ACES
-		result.rgb = ACESFitted(result.rgb);
-	#else
-		const float tonemappingCalibration = 1.590579;
-		result.rgb = 1.0 - exp2(-tonemappingCalibration * result.rgb);
-	#endif
+
+#if TONEMAPPING == 3
+	result.rgb = PBRNeutralToneMapping(result.rgb);
+#elif TONEMAPPING == 2
+	result.rgb = ACESFitted(result.rgb);
+#elif TONEMAPPING == 1
+	const float tonemappingCalibration = 1.590579;
+	result.rgb = 1.0 - exp2(-tonemappingCalibration * result.rgb);
 #endif
 
 	// Going back to gamma space
