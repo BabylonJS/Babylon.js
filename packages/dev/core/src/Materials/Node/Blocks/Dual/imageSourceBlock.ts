@@ -13,6 +13,7 @@ import { NodeMaterial } from "../../nodeMaterial";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 /**
  * Block used to provide an image for a TextureBlock
  */
@@ -75,7 +76,12 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             return;
         }
 
-        effect.setTexture(this._samplerName, this.texture);
+        if (effect.shaderLanguage === ShaderLanguage.WGSL) {
+            effect.setTexture(this._samplerName.replace("Sampler", "Texture"), this.texture);
+            effect.setTextureSampler(this._samplerName, this.texture._texture);
+        } else {
+            effect.setTexture(this._samplerName, this.texture);
+        }
     }
 
     public override isReady() {
@@ -113,7 +119,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             state.sharedData.bindableBlocks.push(this);
         }
 
-        state._emit2DSampler(this._samplerName);
+        state._emit2DSampler(this._samplerName, state.shaderLanguage === ShaderLanguage.WGSL ? this._samplerName.replace("Sampler", "Texture") : undefined);
 
         return this;
     }
