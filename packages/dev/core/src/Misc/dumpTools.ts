@@ -52,8 +52,8 @@ export class DumpTools {
             EngineStore.OnEnginesDisposedObservable.add((e) => {
                 // guaranteed to run when no other instances are left
                 // only dispose if it's not the current engine
-                if (e !== engine && !e.isDisposed) {
-                    e.dispose();
+                if (e !== engine && !engine.isDisposed) {
+                    engine.dispose();
                 }
             });
             engine.getCaps().parallelShaderCompile = undefined;
