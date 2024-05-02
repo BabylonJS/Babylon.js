@@ -327,7 +327,8 @@ export class NodeMaterialBuildState {
             return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
         }
 
-        let code = Effect.IncludesShadersStore[includeName] + "\n";
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
+        let code = store[includeName] + "\n";
 
         if (this.sharedData.emitComments) {
             code = comments + `\n` + code;
