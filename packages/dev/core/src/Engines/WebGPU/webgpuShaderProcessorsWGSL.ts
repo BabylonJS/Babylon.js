@@ -34,6 +34,7 @@ import "../../ShadersWGSL/ShadersInclude/lightUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions";
 import "../../ShadersWGSL/ShadersInclude/shadowsVertex";
+import "../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
@@ -308,6 +309,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         fragmentCode = leftOverUBO + fragmentCode;
 
         // Vertex code
+        vertexCode = vertexCode.replace(/#define (\w+)\s+(\d+\.*\d*)/g, "const $1 = $2;");
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
         vertexCode = this._processStridedUniformArrays(vertexCode);
 
@@ -344,6 +346,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
+        fragmentCode = fragmentCode.replace(/#define (\w+)\s+(\d+\.*\d*)/g, "const $1 = $2;");
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
         fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine

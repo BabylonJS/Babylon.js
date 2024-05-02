@@ -339,27 +339,6 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    private _injectUBODeclaration(state: NodeMaterialBuildState) {
-        const comments = `//${this.name}`;
-
-        if (!this.light) {
-            // Emit for all lights
-            state._emitFunctionFromInclude(state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration", comments, {
-                repeatKey: "maxSimultaneousLights",
-                substitutionVars: this.generateOnlyFragmentCode ? "varying," : undefined,
-            });
-        } else {
-            state._emitFunctionFromInclude(
-                state.supportUniformBuffers ? "lightUboDeclaration" : "lightFragmentDeclaration",
-                comments,
-                {
-                    replaceStrings: [{ search: /{X}/g, replace: this._lightId.toString() }],
-                },
-                this._lightId.toString()
-            );
-        }
-    }
-
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
@@ -371,8 +350,7 @@ export class LightBlock extends NodeMaterialBlock {
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
             // Vertex
             this._injectVertexCode(state);
-
-            return; //#KLCBNM#3 #D1HXFP#5 #4P1O6L#1
+            return;
         }
 
         if (this.generateOnlyFragmentCode) {

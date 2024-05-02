@@ -268,15 +268,15 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Int:
                 return isWGSL ? "i32" : "int";
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return isWGSL ? "vec2<f32>" : "vec2";
+                return isWGSL ? "vec2f" : "vec2";
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return isWGSL ? "vec3<f32>" : "vec3";
+                return isWGSL ? "vec3f" : "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return isWGSL ? "vec4<f32>" : "vec4";
+                return isWGSL ? "vec4f" : "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return isWGSL ? "mat4x4<f32>" : "mat4";
+                return isWGSL ? "mat4x4f" : "mat4";
         }
 
         return "";
