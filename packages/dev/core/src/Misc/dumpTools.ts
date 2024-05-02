@@ -51,7 +51,10 @@ export class DumpTools {
             // However, make sure to dispose it when no other engines are left
             EngineStore.OnEnginesDisposedObservable.add((e) => {
                 // guaranteed to run when no other instances are left
-                e.dispose();
+                // only dispose if it's not the current engine
+                if (e !== engine) {
+                    e.dispose();
+                }
             });
             engine.getCaps().parallelShaderCompile = undefined;
             const renderer = new EffectRenderer(engine);
