@@ -489,7 +489,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += state._declareOutput(this.output) + ` = ${this._emitConstant(state)};\n`;
+                state._constantDeclaration += state._declareOutput(this.output, true) + ` = ${this._emitConstant(state)};\n`;
                 return;
             }
 

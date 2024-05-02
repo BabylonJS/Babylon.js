@@ -1,7 +1,6 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
-import { Effect } from "../effect";
 import { ShaderLanguage } from "../shaderLanguage";
 import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
@@ -525,16 +524,16 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _declareOutput(output: NodeMaterialConnectionPoint): string {
-        return this._declareLocalVar(output.associatedVariableName, output.type);
+    public _declareOutput(output: NodeMaterialConnectionPoint, isConst?: boolean): string {
+        return this._declareLocalVar(output.associatedVariableName, output.type, isConst);
     }
 
     /**
      * @internal
      */
-    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes): string {
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean): string {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `var ${name}: ${this._getShaderType(type)}`;
+            return `${isConst ? "const" : "var"} ${name}: ${this._getShaderType(type)}`;
         } else {
             return `${this._getShaderType(type)} ${name}`;
         }
