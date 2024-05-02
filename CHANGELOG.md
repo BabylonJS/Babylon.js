@@ -1,5 +1,35 @@
 # Changelog
 
+## 7.5.0
+
+### Core
+
+- Fix CleanURL override - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15056](https://github.com/BabylonJS/Babylon.js/pull/15056))
+- Add Neutral Tone Mapping - by [sebavan](https://github.com/sebavan) ([#15054](https://github.com/BabylonJS/Babylon.js/pull/15054))
+- Store the requested texture format in InternalTexture - by [ryantrem](https://github.com/ryantrem) ([#15051](https://github.com/BabylonJS/Babylon.js/pull/15051))
+- Log the shader compilation error correctly - by [RaananW](https://github.com/RaananW) ([#15049](https://github.com/BabylonJS/Babylon.js/pull/15049))
+- Global Illumination manager: Add option to use 32 bits depth buffer - by [Popov72](https://github.com/Popov72) ([#15047](https://github.com/BabylonJS/Babylon.js/pull/15047))
+- WebGL Engine: Rollback the default value for the "antialias" option - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15042](https://github.com/BabylonJS/Babylon.js/pull/15042))
+- Better individual store for fog serialization - by [deltakosh](https://github.com/deltakosh) ([#15039](https://github.com/BabylonJS/Babylon.js/pull/15039))
+- Bug: Fix texture size limit issue in GreasedLinePluginMaterial - by [Baggins800](https://github.com/Baggins800) ([#15031](https://github.com/BabylonJS/Babylon.js/pull/15031))
+- Allow defines the shader name that appears in spector. - by [sebavan](https://github.com/sebavan) ([#15038](https://github.com/BabylonJS/Babylon.js/pull/15038))
+- Inspector: Move shader code to core - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15037](https://github.com/BabylonJS/Babylon.js/pull/15037))
+- Mesh debug material plugin: Fix crash when showing uvs - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15034](https://github.com/BabylonJS/Babylon.js/pull/15034))
+- Load file was not injcted to loadShader - by [RaananW](https://github.com/RaananW) ([#15032](https://github.com/BabylonJS/Babylon.js/pull/15032))
+
+### GUI
+
+
+### Inspector
+
+- Add Neutral Tone Mapping - by [sebavan](https://github.com/sebavan) ([#15054](https://github.com/BabylonJS/Babylon.js/pull/15054))
+- Inspector: Move shader code to core - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15037](https://github.com/BabylonJS/Babylon.js/pull/15037))
+
+### Materials
+
+- Add Neutral Tone Mapping - by [sebavan](https://github.com/sebavan) ([#15054](https://github.com/BabylonJS/Babylon.js/pull/15054))
+- Fix water material refraction - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15055](https://github.com/BabylonJS/Babylon.js/pull/15055))
+
 ## 7.4.0
 
 ## 7.3.3

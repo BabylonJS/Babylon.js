@@ -1,7 +1,314 @@
 {
-    "fromTag": "7.3.3",
+    "fromTag": "7.4.0",
     "changelog": {
         "7.4.0": [],
+        "7.5.0": [
+            {
+                "pr": "15056",
+                "title": "Fix CleanURL override",
+                "description": "https://forum.babylonjs.com/t/is-there-a-switch-here-to-turn-off-cleanurl/50144/3",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15054",
+                "title": "Add Neutral Tone Mapping",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Background/backgroundMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/PBR/pbrBaseMaterial.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.defines.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/standardMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/imageProcessingPostProcess.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/imageProcessingFunctions.fx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15055",
+                "title": "Fix water material refraction",
+                "description": "https://forum.babylonjs.com/t/boundingbox-affected-by-watermaterial/50067/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/materials/src/water/waterMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "materials"
+                ]
+            },
+            {
+                "pr": "15051",
+                "title": "Store the requested texture format in InternalTexture",
+                "description": "This is addressing the issue described here: https://forum.babylonjs.com/t/texture-textureformat-does-not-return-right-value/50128/3\r\n\r\nFor WebGL (ThinEngine), the requested texture format is ignored in some cases when assigning the InternalTexture format. I believe it is correctly respected for compressed textures due to the texture loader assigning the format. If the format is unspecified, the deduced default texture format is also stored. But in other cases, the requested texture format is not stored correctly in the InternalTexture (even though it does affect how the texture is loaded).\r\n\r\nThis change makes it work more like WebGPU (WebGPUEngine) - when a texture is created the requested format is stored in the InternalTexture within the `prepareTexture` callback. Since this happens before the `prepareTextureProcessFunction` callback, in the WebGL case `prepareTextureProcessFunction` can be simplified to just use the InternalTexture format which by this time has correctly been assigned.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/test/unit/Engines/thinEngine.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15049",
+                "title": "Log the shader compilation error correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15048",
+                "title": "Fix edge renderer",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/renderingGroup.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15047",
+                "title": "Global Illumination manager: Add option to use 32 bits depth buffer",
+                "description": "See https://forum.babylonjs.com/t/issues-with-the-use-of-global-illumination/49832/16",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15044",
+                "title": "Fix node port export",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15043",
+                "title": "Fix mod",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/modBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15042",
+                "title": "WebGL Engine: Rollback the default value for the \"antialias\" option",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15041",
+                "title": "AA in sandbox",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/tools/sandbox/src/components/renderingZone.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sandbox"
+                ]
+            },
+            {
+                "pr": "15039",
+                "title": "Better individual store for fog serialization",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Misc/sceneSerializer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15031",
+                "title": "Bug: Fix texture size limit issue in GreasedLinePluginMaterial",
+                "description": "Previously, when the number of lines exceeded 8192, rendering issues occurred due to the 16384x1 texture size limit. This commit resolves this by dynamically adjusting the texture's dimensions based on the number of colors and the maximum texture size supported by the engine. This change ensures robust handling of large color sets by distributing colors across multiple rows in the texture when necessary, preventing overflow and maintaining correct color rendering.",
+                "author": {
+                    "name": "Baggins800",
+                    "url": "https://github.com/Baggins800"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLinePluginMaterial.ts",
+                    "packages/dev/core/src/Misc/greasedLineTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15038",
+                "title": "Allow defines the shader name that appears in spector.",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effect.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15037",
+                "title": "Inspector: Move shader code to core",
+                "description": "See https://forum.babylonjs.com/t/texturetools-gettexturedataasync-get-texture-data-error/47549/3",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/textureTools.ts",
+                    "packages/dev/core/src/Shaders/lod.fragment.fx",
+                    "packages/dev/core/src/Shaders/lodCube.fragment.fx",
+                    "packages/dev/inspector/src/textureHelper.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15036",
+                "title": "Allow configuring error/warn threshold for size tests",
+                "description": "This will allow changing the values in the CI",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/tests/scripts/generateFileSizes.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15034",
+                "title": "Mesh debug material plugin: Fix crash when showing uvs",
+                "description": "See https://forum.babylonjs.com/t/meshdebugpluginmaterial-bug-vmainuv1-undeclared-identifier/49945",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15033",
+                "title": "Final fix for allowCanvas",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15032",
+                "title": "Load file was not injcted to loadShader",
+                "description": "This would prevent external shaders (or shaders from a different package) to work correctly, unless injected.\n\nThis adds the engine's loadFile to the state, otherwise it will use the default _loadFile from abstractEngine.functions.ts",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/proceduralTexturePlayground.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            }
+        ],
         "7.3.3": [
             {
                 "pr": "15029",
