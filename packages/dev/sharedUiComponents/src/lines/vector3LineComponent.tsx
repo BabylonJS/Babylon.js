@@ -6,9 +6,13 @@ import { NumericInputComponent } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import { GetClassName } from "core/Misc/typeStore";
+
+import copyIcon from "./copy.svg";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -105,6 +109,21 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this.updateVector3();
     }
 
+    // Copy to clipboard the code this Vector3 actually does
+    // Example : Mesh.position = new BABYLON.Vector3(0, 1, 0);
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const targetName = GetClassName(this.props.target);
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strVector = "new BABYLON.Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
@@ -124,6 +143,9 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
+                    </div>
+                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (

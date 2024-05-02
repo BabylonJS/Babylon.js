@@ -9,6 +9,7 @@ import { FreeCameraInputsManager } from "./freeCameraInputsManager";
 import type { FreeCameraMouseInput } from "../Cameras/Inputs/freeCameraMouseInput";
 import type { FreeCameraKeyboardMoveInput } from "../Cameras/Inputs/freeCameraKeyboardMoveInput";
 import { Tools } from "../Misc/tools";
+import { RegisterClass } from "../Misc/typeStore";
 
 import type { Collider } from "../Collisions/collider";
 
@@ -454,3 +455,6 @@ export class FreeCamera extends TargetCamera {
         return "FreeCamera";
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.FreeCamera", FreeCamera);
