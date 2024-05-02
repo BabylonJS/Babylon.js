@@ -133,6 +133,7 @@ export const FileToolsOptions: {
  * @param url defines the url to clean
  * @returns the cleaned url
  */
+// eslint-disable-next-line prefer-const
 export let CleanUrl = (url: string): string => {
     url = url.replace(/#/gm, "%23");
     return url;
