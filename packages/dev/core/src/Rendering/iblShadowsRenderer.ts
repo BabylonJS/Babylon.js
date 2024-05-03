@@ -7,7 +7,6 @@ import { Mesh } from "../Meshes/mesh";
 import { SmartArray } from "../Misc/smartArray";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
-import { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
@@ -19,6 +18,7 @@ import "../Shaders/iblShadowGBufferDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
+import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
 
 // class IblShadowsSettings {
 //     public resolution: number = 64;
@@ -46,10 +46,10 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
         Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
         // Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-        // Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+        Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
         // Local positions used for shadow accumulation pass
         // Constants.PREPASS_POSITION_TEXTURE_TYPE,
-        // Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+        Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
     ];
 }
 
@@ -63,7 +63,6 @@ export class IblShadowsRenderer {
 
     private _voxelizationDirty: boolean = true;
     private _boundsNeedUpdate: boolean = true;
-    private _thinTextures: ThinTexture[] = [];
 
     private _gbufferDebugEnabled: boolean;
     private _debugPass: PostProcess;
@@ -79,6 +78,7 @@ export class IblShadowsRenderer {
     private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
     private _shadowComputePass: IblShadowsComputePass;
     private _spatialBlurPass: IblShadowsSpatialBlurPass;
+    private _accumulationPass: IblShadowsAccumulationPass;
 
     public setIblTexture(iblSource: Texture) {
         this._importanceSamplingRenderer.iblSource = iblSource;
@@ -96,8 +96,11 @@ export class IblShadowsRenderer {
         return this._importanceSamplingRenderer!.getIcdfxTexture();
     }
 
-    public getShadowTexture(): Texture {
+    public getRawShadowTexture(): Texture {
         return this._shadowComputePass!.getTexture();
+    }
+    public getBlurShadowTexture(): Texture {
+        return this._spatialBlurPass!.getTexture();
     }
 
     public get importanceSamplingDebugEnabled(): boolean {
@@ -130,6 +133,14 @@ export class IblShadowsRenderer {
 
     public set spatialBlurPassDebugEnabled(enabled: boolean) {
         this._spatialBlurPass.debugEnabled = enabled;
+    }
+
+    public get accumulationPassDebugEnabled(): boolean {
+        return this._accumulationPass.debugEnabled;
+    }
+
+    public set accumulationPassDebugEnabled(enabled: boolean) {
+        this._accumulationPass.debugEnabled = enabled;
     }
 
     public get gbufferDebugEnabled(): boolean {
@@ -171,6 +182,7 @@ export class IblShadowsRenderer {
         if (this.voxelDebugEnabled) count++;
         if (this.shadowComputeDebugEnabled) count++;
         if (this.spatialBlurPassDebugEnabled) count++;
+        if (this.accumulationPassDebugEnabled) count++;
 
         // count = 4;
         const rows = Math.ceil(Math.sqrt(count));
@@ -226,6 +238,14 @@ export class IblShadowsRenderer {
         }
         if (this.spatialBlurPassDebugEnabled) {
             this._spatialBlurPass.setDebugDisplayParams(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
+        if (this.accumulationPassDebugEnabled) {
+            this._accumulationPass.setDebugDisplayParams(x, y, cols, rows);
             x -= width;
             if (x <= -1) {
                 x = 0;
@@ -289,7 +309,7 @@ export class IblShadowsRenderer {
         this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
         this._shadowComputePass = new IblShadowsComputePass(this._scene);
         this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
-        this._createTextures();
+        this._accumulationPass = new IblShadowsAccumulationPass(this._scene);
 
         this._scene.onNewMeshAddedObservable.add(() => {
             this._voxelizationDirty = true;
@@ -300,38 +320,8 @@ export class IblShadowsRenderer {
             this._updateDebugPasses();
             this._shadowComputePass.update();
             this._spatialBlurPass.update();
+            this._accumulationPass.update();
         });
-    }
-
-    private _createTextures() {}
-
-    private _updateTextures() {
-        return this._updateTextureReferences();
-    }
-
-    private _updateTextureReferences() {
-        const prePassRenderer = this._scene!.prePassRenderer;
-        if (!prePassRenderer) {
-            return false;
-        }
-
-        // Retrieve opaque color texture
-        this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
-            const textureIndex = prePassRenderer.getIndex(type);
-            if (textureIndex === -1) {
-                return;
-            }
-            const prePassTexture = prePassRenderer.defaultRT.textures?.length ? prePassRenderer.defaultRT.textures[textureIndex].getInternalTexture() : null;
-
-            if (!prePassTexture) {
-                return;
-            }
-            if (!this._thinTextures[textureIndex]) {
-                this._thinTextures[textureIndex] = new ThinTexture(prePassTexture);
-            }
-        });
-
-        return true;
     }
 
     /**
@@ -348,7 +338,13 @@ export class IblShadowsRenderer {
      * @returns true if the IBL shadow renderer is ready to render the shadows
      */
     public isReady() {
-        return this._voxelRenderer.isReady() && this._importanceSamplingRenderer.isReady() && this._updateTextures();
+        return (
+            this._voxelRenderer.isReady() &&
+            this._importanceSamplingRenderer.isReady() &&
+            this._shadowComputePass.isReady() &&
+            this._spatialBlurPass.isReady() &&
+            this._accumulationPass.isReady()
+        );
     }
 
     /**

@@ -91,6 +91,7 @@ export class IblShadowsSpatialBlurPass {
             outputOptions,
             false
         );
+        this._outputPT.autoClear = false;
     }
 
     public update() {
@@ -100,7 +101,7 @@ export class IblShadowsSpatialBlurPass {
 
         const iterationCount = 1;
         this._outputPT.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
-        this._outputPT.setTexture("shadowSampler", this._scene.iblShadowsRenderer!.getShadowTexture());
+        this._outputPT.setTexture("shadowSampler", this._scene.iblShadowsRenderer!.getRawShadowTexture());
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
