@@ -298,7 +298,7 @@ export class ThinEngine extends AbstractEngine {
             }
 
             if (options.xrCompatible === undefined) {
-                options.xrCompatible = true;
+                options.xrCompatible = false;
             }
 
             // Exceptions
