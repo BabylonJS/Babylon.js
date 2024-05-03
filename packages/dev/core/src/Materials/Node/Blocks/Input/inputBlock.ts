@@ -397,7 +397,7 @@ export class InputBlock extends NodeMaterialBlock {
             }
             case AnimatedInputBlockTypes.MouseInfo: {
                 if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                    this.value = (window as any).mouse_data || new Vector4(0,0,0,0)
+                    this.value = (window as any).mouse_data || new Vector4(0, 0, 0, 0);
                 }
                 break;
             }

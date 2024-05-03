@@ -164,9 +164,9 @@ export class PreviewManager {
         });
 
         this._initAsync(targetCanvas);
-        this._scene.onPointerObservable.add((evt) => { 
-            const mouse_data = new Vector4(evt.event.offsetX, evt.event.offsetY, (evt.event.buttons & 1) != 0 ? 1 : 0, (evt.event.buttons & 2) != 0 ? 1 : 0); 
-            (window as any).mouse_data = mouse_data; 
+        this._scene.onPointerObservable.add((evt) => {
+            const mouse_data = new Vector4(evt.event.offsetX, evt.event.offsetY, (evt.event.buttons & 1) != 0 ? 1 : 0, (evt.event.buttons & 2) != 0 ? 1 : 0);
+            (window as any).mouse_data = mouse_data;
         });
     }
 

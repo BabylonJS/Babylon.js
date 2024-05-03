@@ -458,7 +458,7 @@ export class BlockTools {
                 meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
                 return meshMatrixWeights;
             }
-            
+
             case "MouseInfoBlock": {
                 const mouseInfoBlock = new InputBlock("MouseInfo", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
                 mouseInfoBlock.animationType = AnimatedInputBlockTypes.MouseInfo;
