@@ -1,11 +1,7 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
-import { GetClassName } from "core/Misc/typeStore";
-
-import copyIcon from "./copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -103,20 +99,6 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
-    // Copy to clipboard the code this option actually does
-    // Example : material.sideOrientation = 1;
-    onCopyClick() {
-        if (this.props && this.props.target) {
-            const targetName = GetClassName(this.props.target);
-            const targetProperty = this.props.propertyName;
-            const value = this.props.target[this.props.propertyName!];
-            const strCommand = targetName + "." + targetProperty + " = " + value + ";";
-            copyCommandToClipboard(strCommand);
-        } else {
-            copyCommandToClipboard("undefined");
-        }
-    }
-
     override render() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
@@ -134,9 +116,6 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             );
                         })}
                     </select>
-                </div>
-                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
-                    <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );

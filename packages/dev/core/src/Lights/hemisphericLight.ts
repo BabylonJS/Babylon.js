@@ -7,7 +7,6 @@ import { Node } from "../node";
 import type { Effect } from "../Materials/effect";
 import { Light } from "./light";
 import type { IShadowGenerator } from "./Shadows/shadowGenerator";
-import { RegisterClass } from "../Misc/typeStore";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -129,6 +128,3 @@ export class HemisphericLight extends Light {
         defines["HEMILIGHT" + lightIndex] = true;
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.HemisphericLight", HemisphericLight);

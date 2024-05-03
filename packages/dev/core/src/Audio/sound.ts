@@ -12,7 +12,6 @@ import type { ISoundOptions } from "./Interfaces/ISoundOptions";
 import { EngineStore } from "../Engines/engineStore";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import type { Observer } from "../Misc/observable";
-import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Defines a sound that can be played in the application.
@@ -1307,6 +1306,3 @@ export class Sound {
         }
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.Sound", Sound);

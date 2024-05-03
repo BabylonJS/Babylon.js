@@ -16,7 +16,6 @@ import type { Material } from "./material";
 import type { BaseTexture } from "./Textures/baseTexture";
 import type { RenderTargetTexture } from "./Textures/renderTargetTexture";
 import { SerializationHelper } from "../Misc/decorators.serialization";
-import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * Base class for material plugins.
@@ -306,6 +305,3 @@ export class MaterialPluginBase {
         SerializationHelper.Parse(() => this, source, scene, rootUrl);
     }
 }
-
-// Register Class Name
-RegisterClass("BABYLON.MaterialPluginBase", MaterialPluginBase);
