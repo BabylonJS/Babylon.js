@@ -146,7 +146,33 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         isActive={false}
                         onClick={() => this.onDownload()}
                     />
-                    <CommandButtonComponent globalState={this.props.globalState} tooltip="Create new" icon="new" isActive={false} onClick={() => this.onNew()} />
+                    <CommandDropdownComponent
+                        globalState={this.props.globalState}
+                        icon="new"
+                        tooltip="New Scene"
+                        items={[
+                            {
+                                label: "Create New",
+                                tooltip: "Creates the Default Playground Scene",
+                                storeKey: "new",
+                                defaultValue: "Light",
+                                subItems: ["Light", "Dark"],
+                                onClick: () => {
+                                    this.onNew();
+                                },
+                            },
+                            {
+                                label: "Create New",
+                                tooltip: "Creates the Default Playground Scene",
+                                storeKey: "new",
+                                defaultValue: "Light",
+                                subItems: ["Light", "Dark"],
+                                onClick: () => {
+                                    this.onNew();
+                                },
+                            },
+                        ]}
+                    />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={() => this.onClear()} />
                     <CommandDropdownComponent
                         globalState={this.props.globalState}
