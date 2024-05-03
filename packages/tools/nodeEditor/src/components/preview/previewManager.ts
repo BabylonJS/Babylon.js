@@ -4,7 +4,7 @@ import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { Scene } from "core/scene";
-import { Vector3 } from "core/Maths/math.vector";
+import { Vector3, Vector4 } from "core/Maths/math.vector";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import { PreviewType } from "./previewType";
@@ -164,6 +164,10 @@ export class PreviewManager {
         });
 
         this._initAsync(targetCanvas);
+        this._scene.onPointerObservable.add((evt) => { 
+            const mouse_data = new Vector4(evt.event.offsetX, evt.event.offsetY, (evt.event.buttons & 1) != 0 ? 1 : 0, (evt.event.buttons & 2) != 0 ? 1 : 0); 
+            (window as any).mouse_data = mouse_data; 
+        });
     }
 
     public async _initAsync(targetCanvas: HTMLCanvasElement) {
