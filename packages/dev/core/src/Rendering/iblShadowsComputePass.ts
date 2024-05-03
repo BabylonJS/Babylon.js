@@ -97,6 +97,7 @@ export class IblShadowsComputePass {
             outputOptions,
             false
         );
+        this._outputPT.autoClear = false;
     }
 
     public update() {
