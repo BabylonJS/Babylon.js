@@ -24,6 +24,7 @@ import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParti
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -824,3 +825,6 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         throw new Error("Method not implemented.");
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.BaseParticleSystem", BaseParticleSystem);

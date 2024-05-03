@@ -6,6 +6,7 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import type { Effect } from "../Materials/effect";
+import { RegisterClass } from "../Misc/typeStore";
 
 Node.AddNodeConstructor("Light_Type_0", (name, scene) => {
     return () => new PointLight(name, Vector3.Zero(), scene);
@@ -215,3 +216,6 @@ export class PointLight extends ShadowLight {
         defines["POINTLIGHT" + lightIndex] = true;
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.PointLight", PointLight);

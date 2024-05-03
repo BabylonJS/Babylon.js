@@ -676,11 +676,11 @@ $line-padding-left: 2px;
                     }
 
                     .radioContainer {
+                        grid-column: 2;
                         display: flex;
                         align-items: center;
 
                         .radio {
-                            grid-column: 2;
                             display: none;
 
                             &:checked + label:before {
@@ -724,6 +724,17 @@ $line-padding-left: 2px;
                             }
                         }
                     }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
+                        }
+                    }
                 }
 
                 .vector3Line {
@@ -758,6 +769,17 @@ $line-padding-left: 2px;
                             align-items: center;
                             justify-items: center;
                             cursor: pointer;
+                        }
+
+                        .copy {
+                            grid-column: 4;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
+                            img {
+                                height: 100%;
+                            }
                         }
                     }
 
@@ -794,7 +816,7 @@ $line-padding-left: 2px;
                     padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 1fr auto 20px 10px;
 
                     .label {
                         grid-column: 1;
@@ -868,6 +890,17 @@ $line-padding-left: 2px;
 
                         .icon {
                             display: none;
+                        }
+                    }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
                         }
                     }
                 }
@@ -987,6 +1020,17 @@ $line-padding-left: 2px;
                             width: 110px;
                         }
                     }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
+                        }
+                    }
                 }
 
                 .sliderLine {
@@ -1072,6 +1116,23 @@ $line-padding-left: 2px;
                             cursor: pointer;
                         }
                     }
+
+                    .floatLine {
+                        .copy {
+                            display: none;
+                        }
+                    }
+
+                    .copy {
+                        grid-column: 4;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
+                        }
+                    }
                 }
 
                 .color3Line {
@@ -1081,7 +1142,7 @@ $line-padding-left: 2px;
                     .firstLine {
                         height: 30px;
                         display: grid;
-                        grid-template-columns: 1fr auto 20px 20px;
+                        grid-template-columns: 1fr auto 20px;
 
                         .label {
                             grid-column: 1;
@@ -1115,8 +1176,16 @@ $line-padding-left: 2px;
                             }
                         }
 
-                        .copy {
+                        .expand {
                             grid-column: 3;
+                            display: grid;
+                            align-items: center;
+                            justify-items: center;
+                            cursor: pointer;
+                        }
+
+                        .copy {
+                            grid-column: 4;
                             display: grid;
                             align-items: center;
                             justify-items: center;
@@ -1124,14 +1193,6 @@ $line-padding-left: 2px;
                             img {
                                 height: 100%;
                             }
-                        }
-
-                        .expand {
-                            grid-column: 4;
-                            display: grid;
-                            align-items: center;
-                            justify-items: center;
-                            cursor: pointer;
                         }
                     }
 
@@ -1168,7 +1229,7 @@ $line-padding-left: 2px;
                     padding-left: $line-padding-left;
                     height: 30px;
                     display: grid;
-                    grid-template-columns: 1fr auto;
+                    grid-template-columns: 1fr auto 20px 10px;
 
                     .label {
                         grid-column: 1;
@@ -1185,6 +1246,17 @@ $line-padding-left: 2px;
 
                         select {
                             width: 115px;
+                        }
+                    }
+
+                    .copy {
+                        grid-column: 3;
+                        display: grid;
+                        align-items: center;
+                        justify-items: center;
+                        cursor: pointer;
+                        img {
+                            height: 100%;
                         }
                     }
                 }

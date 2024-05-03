@@ -90,6 +90,7 @@ import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
 import type { AbstractEngine } from "./Engines/abstractEngine";
+import { RegisterClass } from "./Misc/typeStore";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -5755,3 +5756,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this.getLastSkeletonById(id);
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.Scene", Scene);

@@ -3,6 +3,7 @@ import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { Nullable } from "../../types";
 import type { InputBlock } from "./Blocks/Input/inputBlock";
 import { Observable } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 
 /**
@@ -71,22 +72,90 @@ export class NodeMaterialConnectionPoint {
     }
 
     /** @internal */
-    public _ownerBlock: NodeMaterialBlock;
-    /** @internal */
-    public _connectedPoint: Nullable<NodeMaterialConnectionPoint> = null;
+    public readonly _ownerBlock: NodeMaterialBlock;
 
-    private _endpoints = new Array<NodeMaterialConnectionPoint>();
+    private _connectedPointBackingField: Nullable<NodeMaterialConnectionPoint> = null;
+    private _connectedPointTypeChangedObserver: Nullable<Observer<NodeMaterialBlockConnectionPointTypes>>;
+
+    private get _connectedPoint(): Nullable<NodeMaterialConnectionPoint> {
+        return this._connectedPointBackingField;
+    }
+
+    private set _connectedPoint(value: Nullable<NodeMaterialConnectionPoint>) {
+        if (this._connectedPointBackingField === value) {
+            return;
+        }
+
+        this._connectedPointTypeChangedObserver?.remove();
+        this._updateTypeDependentState(() => (this._connectedPointBackingField = value));
+        if (this._connectedPointBackingField) {
+            this._connectedPointTypeChangedObserver = this._connectedPointBackingField.onTypeChangedObservable.add(() => {
+                this._notifyTypeChanged();
+            });
+        }
+    }
+
+    private readonly _endpoints = new Array<NodeMaterialConnectionPoint>();
     private _associatedVariableName: string;
-    private _direction: NodeMaterialConnectionPointDirection;
+    private readonly _direction: NodeMaterialConnectionPointDirection;
+
+    private _typeConnectionSourceBackingField: Nullable<NodeMaterialConnectionPoint> = null;
+    private _typeConnectionSourceTypeChangedObserver: Nullable<Observer<NodeMaterialBlockConnectionPointTypes>>;
 
     /** @internal */
-    public _typeConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+    public get _typeConnectionSource(): Nullable<NodeMaterialConnectionPoint> {
+        return this._typeConnectionSourceBackingField;
+    }
 
     /** @internal */
-    public _defaultConnectionPointType: Nullable<NodeMaterialBlockConnectionPointTypes> = null;
+    public set _typeConnectionSource(value: Nullable<NodeMaterialConnectionPoint>) {
+        if (this._typeConnectionSourceBackingField === value) {
+            return;
+        }
+
+        this._typeConnectionSourceTypeChangedObserver?.remove();
+        this._updateTypeDependentState(() => (this._typeConnectionSourceBackingField = value));
+        if (this._typeConnectionSourceBackingField) {
+            this._typeConnectionSourceTypeChangedObserver = this._typeConnectionSourceBackingField.onTypeChangedObservable.add(() => {
+                this._notifyTypeChanged();
+            });
+        }
+    }
+
+    private _defaultConnectionPointTypeBackingField: Nullable<NodeMaterialBlockConnectionPointTypes> = null;
 
     /** @internal */
-    public _linkedConnectionSource: Nullable<NodeMaterialConnectionPoint> = null;
+    public get _defaultConnectionPointType(): Nullable<NodeMaterialBlockConnectionPointTypes> {
+        return this._defaultConnectionPointTypeBackingField;
+    }
+
+    /** @internal */
+    public set _defaultConnectionPointType(value: Nullable<NodeMaterialBlockConnectionPointTypes>) {
+        this._updateTypeDependentState(() => (this._defaultConnectionPointTypeBackingField = value));
+    }
+
+    private _linkedConnectionSourceBackingField: Nullable<NodeMaterialConnectionPoint> = null;
+    private _linkedConnectionSourceTypeChangedObserver: Nullable<Observer<NodeMaterialBlockConnectionPointTypes>>;
+
+    /** @internal */
+    public get _linkedConnectionSource(): Nullable<NodeMaterialConnectionPoint> {
+        return this._linkedConnectionSourceBackingField;
+    }
+
+    /** @internal */
+    public set _linkedConnectionSource(value: Nullable<NodeMaterialConnectionPoint>) {
+        if (this._linkedConnectionSourceBackingField === value) {
+            return;
+        }
+
+        this._linkedConnectionSourceTypeChangedObserver?.remove();
+        this._updateTypeDependentState(() => (this._linkedConnectionSourceBackingField = value));
+        if (this._linkedConnectionSourceBackingField) {
+            this._linkedConnectionSourceTypeChangedObserver = this._linkedConnectionSourceBackingField.onTypeChangedObservable.add(() => {
+                this._notifyTypeChanged();
+            });
+        }
+    }
 
     /** @internal */
     public _acceptedConnectionPointType: Nullable<NodeMaterialConnectionPoint> = null;
@@ -117,7 +186,18 @@ export class NodeMaterialConnectionPoint {
     /**
      * Observable triggered when this point is connected
      */
-    public onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
+    public readonly onConnectionObservable = new Observable<NodeMaterialConnectionPoint>();
+
+    /**
+     * Observable triggered when this point is disconnected
+     */
+    public readonly onDisconnectionObservable = new Observable<NodeMaterialConnectionPoint>();
+
+    /**
+     * Observable triggered when the type of the connection point is changed
+     */
+    public readonly onTypeChangedObservable = new Observable<NodeMaterialBlockConnectionPointTypes>();
+    private _isTypeChangeObservableNotifying = false;
 
     /**
      * Gets the declaration variable name in the shader
@@ -133,11 +213,6 @@ export class NodeMaterialConnectionPoint {
 
         return this._associatedVariableName;
     }
-
-    /**
-     * Observable triggered when this point is disconnected
-     */
-    public onDisconnectionObservable = new Observable<NodeMaterialConnectionPoint>();
 
     /**
      * Gets or sets the associated variable name in the shader
@@ -199,13 +274,13 @@ export class NodeMaterialConnectionPoint {
     }
 
     public set type(value: NodeMaterialBlockConnectionPointTypes) {
-        this._type = value;
+        this._updateTypeDependentState(() => (this._type = value));
     }
 
     /**
      * Gets or sets the connection point name
      */
-    public name: string;
+    public readonly name: string;
 
     /**
      * Gets or sets the connection point name
@@ -587,5 +662,29 @@ export class NodeMaterialConnectionPoint {
     public dispose() {
         this.onConnectionObservable.clear();
         this.onDisconnectionObservable.clear();
+        this.onTypeChangedObservable.clear();
+
+        this._connectedPoint = null;
+        this._typeConnectionSource = null;
+        this._linkedConnectionSource = null;
+    }
+
+    private _updateTypeDependentState(update: () => void) {
+        const previousType = this.type;
+        update();
+        if (this.type !== previousType) {
+            this._notifyTypeChanged();
+        }
+    }
+
+    private _notifyTypeChanged() {
+        // Disallow re-entrancy
+        if (this._isTypeChangeObservableNotifying) {
+            return;
+        }
+
+        this._isTypeChangeObservableNotifying = true;
+        this.onTypeChangedObservable.notifyObservers(this.type);
+        this._isTypeChangeObservableNotifying = false;
     }
 }

@@ -11,6 +11,7 @@ import { Mix } from "../Misc/tools.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This groups together the common properties used for image processing either in direct forward pass
@@ -643,3 +644,6 @@ export class ImageProcessingConfiguration {
 
 // References the dependencies.
 SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;
+
+// Register Class Name
+RegisterClass("BABYLON.ImageProcessingConfiguration", ImageProcessingConfiguration);

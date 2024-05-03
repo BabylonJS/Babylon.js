@@ -21,6 +21,8 @@ import { TmpVectors, Vector3 } from "core/Maths/math";
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import type { Bone } from "core/Bones/bone";
 
+import { setDebugNode } from "../treeNodeDebugger";
+
 interface ISceneTreeItemComponentProps {
     scene: Scene;
     gizmoCamera?: Camera;
@@ -171,6 +173,8 @@ export class SceneTreeItemComponent extends React.Component<
             return;
         }
         const scene = this.props.scene;
+        // Put scene object into window.debugNode
+        setDebugNode(scene);
         this.props.onSelectionChangedObservable.notifyObservers(scene);
     }
 

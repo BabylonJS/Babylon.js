@@ -5,9 +5,11 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard } from "../copyCommandToClipboard";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
+import { GetClassName } from "core/Misc/typeStore";
 
 import copyIcon from "./copy.svg";
 const emptyColor = new Color4(0, 0, 0, 0);
@@ -130,22 +132,6 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         this.setColor(new Color4(this.state.color.r, this.state.color.g, this.state.color.b, value));
     }
 
-    copyToClipboard() {
-        const element = document.createElement("div");
-        element.textContent = this.state.color.toHexString();
-        document.body.appendChild(element);
-
-        if (window.getSelection) {
-            const range = document.createRange();
-            range.selectNode(element);
-            window.getSelection()!.removeAllRanges();
-            window.getSelection()!.addRange(range);
-        }
-
-        document.execCommand("copy");
-        element.remove();
-    }
-
     private _convertToColor(color: string): Color4 {
         if (color === "" || color === "transparent") {
             return emptyColor;
@@ -180,6 +166,28 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
         return new Color3(color.r, color.g, color.b);
     }
 
+    // Copy to clipboard the code this Color3 actually does
+    // Example : material.diffuseColor = new BABYLON.Vector3(0,1,0);
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const targetName = GetClassName(this.props.target);
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const hex = this.state.color.toHexString();
+            let strColor;
+            if (value.a) {
+                strColor = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
+            } else {
+                strColor = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
+            }
+            strColor += ";//(HEX : " + hex + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strColor;
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
@@ -200,11 +208,11 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
                             }}
                         />
                     </div>
-                    <div className="copy hoverIcon" onClick={() => this.copyToClipboard()} title="Copy to clipboard">
-                        <img src={copyIcon} alt="Copy" />
-                    </div>
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
+                    </div>
+                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                 </div>
                 {this.state.isExpanded && (
