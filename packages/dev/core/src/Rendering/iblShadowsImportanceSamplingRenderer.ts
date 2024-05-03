@@ -262,6 +262,7 @@ export class IblShadowsImportanceSamplingRenderer {
             false,
             true
         );
+        this._cdfyPT.autoClear = false;
         this._cdfyPT.setTexture("iblSource", this._iblSource);
         this._icdfyPT = new CustomProceduralTexture(
             "icdfyTexture",
@@ -272,6 +273,7 @@ export class IblShadowsImportanceSamplingRenderer {
             false,
             true
         );
+        this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
         this._cdfxPT = new CustomProceduralTexture(
             "cdfxTexture",
@@ -282,6 +284,7 @@ export class IblShadowsImportanceSamplingRenderer {
             false,
             true
         );
+        this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
         this._icdfxPT = new CustomProceduralTexture(
             "icdfxTexture",
@@ -292,6 +295,7 @@ export class IblShadowsImportanceSamplingRenderer {
             false,
             true
         );
+        this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
     }
 
