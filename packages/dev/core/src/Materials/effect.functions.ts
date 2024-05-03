@@ -3,7 +3,7 @@ import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement"
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
 import type { WebGLContext } from "core/Engines/thinEngine.functions";
-import { _executeWhenRenderingStateIsCompiled, getStateObject } from "core/Engines/thinEngine.functions";
+import { getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect, IShaderPath } from "./effect";
@@ -279,7 +279,8 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
 export const createAndPreparePipelineContext = (
     options: ICreateAndPreparePipelineContextOptions,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
-    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
+    _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ) => {
     try {
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
@@ -302,8 +303,8 @@ export const createAndPreparePipelineContext = (
             ""
         );
 
-        _executeWhenRenderingStateIsCompiled(pipelineContext, (context) => {
-            options.onRenderingStateCompiled?.(context);
+        _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
+            options.onRenderingStateCompiled?.(pipelineContext);
         });
 
         return pipelineContext;

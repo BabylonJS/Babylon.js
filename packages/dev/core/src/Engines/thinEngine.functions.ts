@@ -324,33 +324,6 @@ function _compileRawShader(source: string, type: string, gl: WebGLContext, _cont
 }
 
 /**
- * Binds an effect to the webGL context
- * @param pipelineContext  defines the pipeline context to use
- * @param samplers defines the list of webGL samplers to bind
- * @param uniforms defines the list of webGL uniforms to bind
- * @returns the webGL program
- */
-export function bindSamplers(
-    pipelineContext: IPipelineContext,
-    samplers: string[],
-    uniforms: {
-        [key: string]: Nullable<WebGLUniformLocation>;
-    }
-) {
-    const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-    _setProgram(webGLPipelineContext.program!, webGLPipelineContext.context!);
-    const _boundUniforms: Nullable<WebGLUniformLocation>[] = [];
-    for (let index = 0; index < samplers.length; index++) {
-        const uniform = uniforms[samplers[index]];
-
-        if (uniform) {
-            _boundUniforms[index] = uniform;
-        }
-    }
-    return _boundUniforms;
-}
-
-/**
  * @internal
  */
 export function _setProgram(program: WebGLProgram, gl: WebGLContext): void {
