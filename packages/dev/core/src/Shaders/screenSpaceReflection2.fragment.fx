@@ -130,7 +130,11 @@ void main()
     #endif
     float depth = texelFetch(depthSampler, ivec2(vUV * texSize), 0).r;
     vec3 csPosition = computeViewPosFromUVDepth(vUV, depth, projection, invProjectionMatrix);
-    vec3 csViewDirection = normalize(csPosition);
+    #ifdef ORTHOGRAPHIC_CAMERA
+        vec3 csViewDirection = vec3(0., 0., 1.);
+    #else
+        vec3 csViewDirection = normalize(csPosition);
+    #endif
 
     vec3 csReflectedVector = reflect(csViewDirection, csNormal);
 

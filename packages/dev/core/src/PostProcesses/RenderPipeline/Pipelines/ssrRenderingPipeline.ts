@@ -801,6 +801,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
             defines.push("#define SSR_DECODE_NORMAL");
         }
 
+        const camera = this._cameras?.[0];
+
+        if (camera && camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+            defines.push("#define ORTHOGRAPHIC_CAMERA");
+        }
+
         this._ssrPostProcess?.updateEffect(defines.join("\n"));
     }
 
