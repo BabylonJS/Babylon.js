@@ -403,7 +403,6 @@ export class InputBlock extends NodeMaterialBlock {
                         const y = event.offsetY;
                         const z = (event.buttons & 1) != 0 ? 1 : 0;
                         const w = (event.buttons & 2) != 0 ? 1 : 0;
-                        console.error(event.buttons, x, y, z, w);
                         this.value = new Vector4(x, y, z, w);
                     } else {
                         this.value = new Vector4(0, 0, 0, 0);
