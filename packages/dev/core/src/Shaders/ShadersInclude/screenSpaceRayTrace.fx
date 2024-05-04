@@ -325,9 +325,17 @@ vec3 computeViewPosFromUVDepth(vec2 texCoord, float depth, mat4 projection, mat4
     
     ndc.xy = texCoord * 2.0 - 1.0;
 #ifdef SSRAYTRACE_RIGHT_HANDED_SCENE
-    ndc.z = -projection[2].z - projection[3].z / depth;
+    #ifdef ORTHOGRAPHIC_CAMERA
+        ndc.z = -projection[2].z * depth + projection[3].z;
+    #else
+        ndc.z = -projection[2].z - projection[3].z / depth;
+    #endif
 #else
-    ndc.z = projection[2].z + projection[3].z / depth;
+    #ifdef ORTHOGRAPHIC_CAMERA
+        ndc.z = projection[2].z * depth + projection[3].z;
+    #else
+        ndc.z = projection[2].z + projection[3].z / depth;
+    #endif
 #endif
     ndc.w = 1.0;
 
