@@ -130,7 +130,7 @@ export class InputManager {
     private _deviceSourceManager: Nullable<DeviceSourceManager> = null;
 
     // origin MouseEvent
-    _originMouseEvent : IMouseEvent
+    _originMouseEvent: IMouseEvent;
     /**
      * Creates a new InputManager
      * @param scene - defines the hosting scene
@@ -1041,7 +1041,7 @@ export class InputManager {
         this._deviceSourceManager.onDeviceConnectedObservable.add((deviceSource) => {
             if (deviceSource.deviceType === DeviceType.Mouse) {
                 deviceSource.onInputChangedObservable.add((eventData) => {
-                    this._originMouseEvent = eventData
+                    this._originMouseEvent = eventData;
                     if (
                         eventData.inputIndex === PointerInput.LeftClick ||
                         eventData.inputIndex === PointerInput.MiddleClick ||
