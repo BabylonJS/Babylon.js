@@ -482,6 +482,7 @@ export class SpotLight extends ShadowLight {
      * @param rayLength the length of the ray
      */
     public createVolumetricSpotLight(params: IVolumetricSpotLight){
-        this._volumetricSpotLight = new VolumetricSpotLight(this, params.diameterTop, params.diameterBottom, params.rayLength ?? 1.0, this.getScene());
+        console.log("hmm createVolumetricSpotLight");
+        this._volumetricSpotLight = new VolumetricSpotLight(this, params.diameterTop, params.diameterBottom, params.rayLength ?? 2.0, this.getScene());
     }
 }

@@ -37,15 +37,18 @@ export class VolumetricSpotLight implements IVolumetricSpotLight {
     }
 
     private createVolumetricSpotLight(){
-        const lightPos = this.spotLight.getAbsolutePosition();
-        const spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this.diameterTop, diameterBottom: this.diameterBottom}, this.scene);
+        const lightPos = this.spotLight.position.clone();
+        const spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this.diameterTop, diameterBottom: this.diameterBottom, height: this.rayLength}, this.scene);
         spotLightCone.rotate(Axis.X, -Math.PI / 2);
-        spotLightCone.translate(Axis.Y, -1);
+        spotLightCone.translate(Axis.Y, -this.rayLength! / 2);
         spotLightCone.bakeCurrentTransformIntoVertices();
-        spotLightCone.lookAt(this.spotLight.direction);
-        spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-0.05)));
-        spotLightCone.scaling.z = this.rayLength!;
-
+        
+        const dir = lightPos.subtract(this.spotLight.direction)
+        const len = dir.length();
+        spotLightCone.lookAt(lightPos.subtract(this.spotLight.direction.normalize().scale(-len)));
+        spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-1/(len * this.rayLength!))));
+        
+        
         this.volumetricMaterial = new ShaderMaterial('volumetricSpotLightMaterial', this.scene, 'volumetricSpot', {
               attributes: ["position", "normal", "uv"],
               uniforms: ["world", "worldView", "worldViewProjection", "view", "projection" ],
@@ -63,10 +66,11 @@ export class VolumetricSpotLight implements IVolumetricSpotLight {
     }
     
     private _update(){
-        const lightPos = this.spotLight.getAbsolutePosition();
-        this.spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-0.05)));
-        this.spotLightCone.lookAt(this.spotLight.direction);
-        this.spotLightCone.scaling.z = this.rayLength ?? 1.0;
+        const lightPos = this.spotLight.position.clone();
+        const dir = lightPos.subtract(this.spotLight.direction)
+        const len = dir.length();
+        this.spotLightCone.lookAt(lightPos.subtract(this.spotLight.direction.normalize().scale(-len)));
+        this.spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-1/(len * this.rayLength!))));
         this.volumetricMaterial.setFloat("exponent", this.spotLight.exponent);
         this.volumetricMaterial.setFloat("angle", this.spotLight.angle / 100)
         this.volumetricMaterial.setColor3("diffuse", this.spotLight.diffuse);
