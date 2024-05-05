@@ -1,4 +1,3 @@
-import { Vector3 } from "core/Maths/math.vector";
 import { SpotLight } from "./spotLight";
 import { Scene } from "core/scene";
 import { Axis } from "core/Maths/math.axis";
@@ -8,68 +7,70 @@ import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import "../Shaders/volumetricSpot.fragment";
 import "../Shaders/volumetricSpot.vertex";
 
-export class VolumetricSpotLight extends SpotLight {
-    public spotLightCone: Mesh;
-    public volumetricMaterial: ShaderMaterial;
-    private _diameterTop: number;
-    private _diameterBottom: number;
-    protected _rayLength: number = 1;
+export interface IVolumetricSpotLight {
+    diameterTop: number;
+    diameterBottom: number;
+    rayLength?: number;
+    scene: Scene;
+}
 
-    /**
-     * Creates a volumetric spotlight effect, extended from the SpotLight class
-     * @params ...SpotLight parameters
-     * @param diameterTop the diameter of the top of the cone
-     * @param diameterBottom the diameter of the bottom of the cone
-     */
-    constructor(name: string, position: Vector3, direction: Vector3, angle: number, exponent: number, diameterTop: number, diameterBottom: number, scene?: Scene) {
-        super(name, position, direction, angle, exponent, scene);
-        this._diameterTop = diameterTop;
-        this._diameterBottom = diameterBottom;
+export class VolumetricSpotLight implements IVolumetricSpotLight {
+    diameterTop: number;
+    diameterBottom: number;
+    rayLength?: number;
+    scene: Scene;
+    public spotLight: SpotLight;
+    public volumetricMaterial: ShaderMaterial;
+    public spotLightCone: Mesh;
+
+    constructor(spotLight: SpotLight, diameterTop: number, diameterBottom: number, rayLength: number, scene: Scene) {
+        this.spotLight = spotLight;
+        this.diameterTop = diameterTop;
+        this.diameterBottom = diameterBottom;
+        this.rayLength = rayLength;
+        this.scene = scene;
         this.createVolumetricSpotLight();
 
-        this._scene.registerBeforeRender(() => {
+        this.scene.registerBeforeRender(() => {
             this._update();
         });
     }
-    /**
-     * Creates the VolumetricSpotLight
-     */
-    private createVolumetricSpotLight() {
-        const lightPos = this.getAbsolutePosition();
-        this.spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this._diameterTop, diameterBottom: this._diameterBottom}, this._scene);
-        this.spotLightCone.rotate(Axis.X, -Math.PI / 2);
-        this.spotLightCone.translate(Axis.Y, -1);
-        this.spotLightCone.bakeCurrentTransformIntoVertices();
-        this.spotLightCone.lookAt(this.direction);
-        this.spotLightCone.position.copyFrom(lightPos.add(this.direction.normalize().scale(-0.05)));
-        this.spotLightCone.scaling.z = this._rayLength ?? 1.0;
 
-        this.volumetricMaterial = new ShaderMaterial('volumetricSpotLightMaterial', this._scene, 'volumetricSpot', {
+    private createVolumetricSpotLight(){
+        const lightPos = this.spotLight.getAbsolutePosition();
+        const spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this.diameterTop, diameterBottom: this.diameterBottom}, this.scene);
+        spotLightCone.rotate(Axis.X, -Math.PI / 2);
+        spotLightCone.translate(Axis.Y, -1);
+        spotLightCone.bakeCurrentTransformIntoVertices();
+        spotLightCone.lookAt(this.spotLight.direction);
+        spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-0.05)));
+        spotLightCone.scaling.z = this.rayLength!;
+
+        this.volumetricMaterial = new ShaderMaterial('volumetricSpotLightMaterial', this.scene, 'volumetricSpot', {
               attributes: ["position", "normal", "uv"],
               uniforms: ["world", "worldView", "worldViewProjection", "view", "projection" ],
               needAlphaBlending: true,
               needAlphaTesting: true
         });
-        this.volumetricMaterial.setFloat("exponent", this.exponent);
-        this.volumetricMaterial.setFloat("angle", this.angle / 100)
-        this.volumetricMaterial.setColor3("diffuse", this.diffuse);
+        this.volumetricMaterial.setFloat("exponent", this.spotLight.exponent);
+        this.volumetricMaterial.setFloat("angle", this.spotLight.angle / 100)
+        this.volumetricMaterial.setColor3("diffuse", this.spotLight.diffuse);
         this.volumetricMaterial.setVector3("lightPos", lightPos);
-        this.volumetricMaterial.setFloat("intensity", this.intensity);
+        this.volumetricMaterial.setFloat("intensity", this.spotLight.intensity);
 
-        this.spotLightCone.material = this.volumetricMaterial
+        spotLightCone.material = this.volumetricMaterial;
+        this.spotLightCone = spotLightCone;
     }
-    /**
-     * Updates the VolumetricSpotLight properties
-     */
+    
     private _update(){
-        const lightPos = this.getAbsolutePosition();
-        this.spotLightCone.position.copyFrom(lightPos.add(this.direction.normalize().scale(-0.05)));
-        this.spotLightCone.lookAt(this.direction);
-        this.spotLightCone.scaling.z = this._rayLength ?? 1.0;
-        this.volumetricMaterial.setFloat("exponent", this.exponent);
-        this.volumetricMaterial.setFloat("angle", this.angle / 100)
-        this.volumetricMaterial.setColor3("diffuse", this.diffuse);
+        const lightPos = this.spotLight.getAbsolutePosition();
+        this.spotLightCone.position.copyFrom(lightPos.add(this.spotLight.direction.normalize().scale(-0.05)));
+        this.spotLightCone.lookAt(this.spotLight.direction);
+        this.spotLightCone.scaling.z = this.rayLength ?? 1.0;
+        this.volumetricMaterial.setFloat("exponent", this.spotLight.exponent);
+        this.volumetricMaterial.setFloat("angle", this.spotLight.angle / 100)
+        this.volumetricMaterial.setColor3("diffuse", this.spotLight.diffuse);
         this.volumetricMaterial.setVector3("lightPos", lightPos);
-        this.volumetricMaterial.setFloat("intensity", this.intensity);
+        this.volumetricMaterial.setFloat("intensity", this.spotLight.intensity);
     }
 }

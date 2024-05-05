@@ -11,6 +11,7 @@ import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Camera } from "../Cameras/camera";
+import { IVolumetricSpotLight, VolumetricSpotLight } from "./volumetricSpotLight";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -472,5 +473,15 @@ export class SpotLight extends ShadowLight {
     public prepareLightSpecificDefines(defines: any, lightIndex: number): void {
         defines["SPOTLIGHT" + lightIndex] = true;
         defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
+    }
+    protected _volumetricSpotLight: VolumetricSpotLight;
+    /**
+     * Create volumetric spot light
+     * @param diameterTop the diameter of the top of the cone
+     * @param diameterBottom the diameter of the bottom of the cone
+     * @param rayLength the length of the ray
+     */
+    public createVolumetricSpotLight(params: IVolumetricSpotLight){
+        this._volumetricSpotLight = new VolumetricSpotLight(this, params.diameterTop, params.diameterBottom, params.rayLength ?? 1.0, this.getScene());
     }
 }
