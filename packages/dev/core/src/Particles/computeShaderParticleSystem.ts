@@ -1,4 +1,3 @@
-import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";
@@ -20,7 +19,7 @@ import "../ShadersWGSL/gpuUpdateParticles.compute";
 /** @internal */
 export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
     private _parent: GPUParticleSystem;
-    private _engine: AbstractEngine;
+    private _engine: WebGPUEngine;
     private _updateComputeShader: ComputeShader;
     private _simParamsComputeShader: UniformBuffer;
     private _bufferComputeShader: StorageBuffer[] = [];
@@ -28,7 +27,7 @@ export class ComputeShaderParticleSystem implements IGPUParticleSystemPlatform {
 
     public readonly alignDataInBuffer = true;
 
-    constructor(parent: GPUParticleSystem, engine: AbstractEngine) {
+    constructor(parent: GPUParticleSystem, engine: WebGPUEngine) {
         this._parent = parent;
         this._engine = engine;
     }

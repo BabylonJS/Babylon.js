@@ -21,6 +21,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { WebGPUEngine } from "core/Engines";
 
 /**
  * Block used to read a texture from a sampler
@@ -414,7 +415,10 @@ export class TextureBlock extends NodeMaterialBlock {
         if (!this._imageSource) {
             if (this._textureName) {
                 effect.setTexture(this._textureName, this.texture);
-                effect.setTextureSampler(this._samplerName, this.texture._texture);
+                const setTextureSampler = (effect.getEngine() as WebGPUEngine).setTextureSampler;
+                if (setTextureSampler) {
+                    setTextureSampler(this._samplerName, this.texture._texture);
+                }
             } else {
                 effect.setTexture(this._samplerName, this.texture);
             }
