@@ -1,8 +1,8 @@
 import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { TriPlanarBlock } from "./triPlanarBlock";
-import { NodeMaterialBlockConnectionPointTypes } from "../Enums";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 
 /**
  * Block used to read a texture with triplanar mapping (see https://iquilezles.org/articles/biplanar/)
