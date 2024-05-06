@@ -395,6 +395,21 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 break;
             }
+            case AnimatedInputBlockTypes.MouseInfo: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    const event = scene._inputManager._originMouseEvent;
+                    if (event) {
+                        const x = event.offsetX;
+                        const y = event.offsetY;
+                        const z = (event.buttons & 1) != 0 ? 1 : 0;
+                        const w = (event.buttons & 2) != 0 ? 1 : 0;
+                        this.value = new Vector4(x, y, z, w);
+                    } else {
+                        this.value = new Vector4(0, 0, 0, 0);
+                    }
+                }
+                break;
+            }
         }
     }
 

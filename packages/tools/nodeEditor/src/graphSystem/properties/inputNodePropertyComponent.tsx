@@ -241,6 +241,10 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                 ];
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
+                animationOptions = [
+                    { label: "None", value: AnimatedInputBlockTypes.None },
+                    { label: "MouseInfo", value: AnimatedInputBlockTypes.MouseInfo },
+                ];
                 attributeOptions = [
                     { label: "matricesIndices", value: "matricesIndices" },
                     { label: "matricesWeights", value: "matricesWeights" },

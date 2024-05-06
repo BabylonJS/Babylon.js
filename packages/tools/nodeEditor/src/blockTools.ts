@@ -458,6 +458,12 @@ export class BlockTools {
                 meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
                 return meshMatrixWeights;
             }
+
+            case "MouseInfoBlock": {
+                const mouseInfoBlock = new InputBlock("MouseInfo", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+                mouseInfoBlock.animationType = AnimatedInputBlockTypes.MouseInfo;
+                return mouseInfoBlock;
+            }
             case "TimeBlock": {
                 const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
                 timeBlock.animationType = AnimatedInputBlockTypes.Time;
