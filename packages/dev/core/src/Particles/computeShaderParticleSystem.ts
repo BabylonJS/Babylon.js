@@ -1,4 +1,3 @@
-import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { WebGPUEngine } from "../Engines/webgpuEngine";
 import { StorageBuffer } from "../Buffers/storageBuffer";
 import { ComputeShader } from "../Compute/computeShader";

@@ -27,7 +27,6 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import type { ExternalTexture } from "../Materials/Textures/externalTexture";
-import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DepthTextureCreationOptions, InternalTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
