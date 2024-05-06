@@ -3,7 +3,7 @@ import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { Effect } from "../effect";
 import { ShaderLanguage } from "../shaderLanguage";
-import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 
 /**

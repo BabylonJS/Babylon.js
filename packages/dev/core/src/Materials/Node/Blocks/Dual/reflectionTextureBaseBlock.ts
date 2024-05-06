@@ -1,5 +1,5 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { BaseTexture } from "../../../Textures/baseTexture";
