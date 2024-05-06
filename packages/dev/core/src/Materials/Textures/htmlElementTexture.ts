@@ -7,7 +7,6 @@ import type { ExternalTexture } from "./externalTexture";
 
 import "../../Engines/Extensions/engine.dynamicTexture";
 import "../../Engines/Extensions/engine.videoTexture";
-import "../../Engines/Extensions/engine.externalTexture";
 
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
