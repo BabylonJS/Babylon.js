@@ -24,7 +24,8 @@ import { WebGPUShaderProcessingContext } from "./WebGPU/webgpuShaderProcessingCo
 import { Tools } from "../Misc/tools";
 import { WebGPUTextureHelper } from "./WebGPU/webgpuTextureHelper";
 import { WebGPUTextureManager } from "./WebGPU/webgpuTextureManager";
-import { type ISceneLike, AbstractEngine } from "./abstractEngine";
+import { AbstractEngine } from "./abstractEngine";
+import type { ISceneLike, AbstractEngineOptions } from "./abstractEngine";
 import { WebGPUBufferManager } from "./WebGPU/webgpuBufferManager";
 import type { HardwareTextureWrapper } from "../Materials/Textures/hardwareTextureWrapper";
 import { WebGPUHardwareTexture } from "./WebGPU/webgpuHardwareTexture";
@@ -65,7 +66,6 @@ import type { RenderTargetTexture } from "../Materials/Textures/renderTargetText
 import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 import type { Scene } from "../scene";
-import type { AbstractEngineOptions } from "./abstractEngine";
 
 import type { PostProcess } from "../PostProcesses/postProcess";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";

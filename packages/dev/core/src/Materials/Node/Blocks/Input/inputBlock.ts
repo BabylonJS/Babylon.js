@@ -8,7 +8,7 @@ import type { Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import type { Scene } from "../../../../scene";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors } from "../../../../Maths/math";
