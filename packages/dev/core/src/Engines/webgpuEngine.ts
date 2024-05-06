@@ -90,10 +90,6 @@ import "./AbstractEngine/abstractEngine.renderPass";
 import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 
-import "./WebGPU/Extensions/engine.externalTexture";
-import "./WebGPU/Extensions/engine.textureSampler";
-import "./WebGPU/Extensions/engine.storageBuffer";
-
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
     dimension: WebGPUConstants.TextureDimension.E2d,
@@ -3942,3 +3938,7 @@ export class WebGPUEngine extends AbstractEngine {
         return 0;
     }
 }
+
+import "./WebGPU/Extensions/engine.externalTexture";
+import "./WebGPU/Extensions/engine.textureSampler";
+import "./WebGPU/Extensions/engine.storageBuffer";
