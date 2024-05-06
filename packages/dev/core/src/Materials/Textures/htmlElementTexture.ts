@@ -11,6 +11,7 @@ import "../../Engines/Extensions/engine.externalTexture";
 
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 /**
  * Defines the options related to the creation of an HtmlElementTexture
@@ -100,7 +101,13 @@ export class HtmlElementTexture extends BaseTexture {
         this.name = name;
         this.element = element;
         this._isVideo = !!(element as HTMLVideoElement).getVideoPlaybackQuality;
-        this._externalTexture = this._isVideo ? this._engine?.createExternalTexture(element as HTMLVideoElement) ?? null : null;
+
+        if (this._isVideo) {
+            const createExternalTexture = (this._engine as WebGPUEngine)?.createExternalTexture;
+            if (createExternalTexture) {
+                this._externalTexture = createExternalTexture(element as HTMLVideoElement);
+            }
+        }
 
         this.anisotropicFilteringLevel = 1;
 

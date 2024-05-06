@@ -21,6 +21,7 @@ import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -1070,11 +1071,6 @@ export class ShaderMaterial extends PushMaterial {
                 effect.setTextureArray(name, this._textureArrays[name]);
             }
 
-            // External texture
-            for (name in this._externalTextures) {
-                effect.setExternalTexture(name, this._externalTextures[name]);
-            }
-
             // Int
             for (name in this._ints) {
                 effect.setInt(name, this._ints[name]);
@@ -1184,14 +1180,28 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
+            // External texture
+            const setExternalTexture = (effect.getEngine() as WebGPUEngine).setExternalTexture;
+            if (setExternalTexture) {
+                for (name in this._externalTextures) {
+                    setExternalTexture(name, this._externalTextures[name]);
+                }
+            }
+
             // Samplers
-            for (name in this._textureSamplers) {
-                effect.setTextureSampler(name, this._textureSamplers[name]);
+            const setTextureSampler = (effect.getEngine() as WebGPUEngine).setTextureSampler;
+            if (setTextureSampler) {
+                for (name in this._textureSamplers) {
+                    setTextureSampler(name, this._textureSamplers[name]);
+                }
             }
 
             // Storage buffers
-            for (name in this._storageBuffers) {
-                effect.setStorageBuffer(name, this._storageBuffers[name]);
+            const setStorageBuffer = (effect.getEngine() as WebGPUEngine).setStorageBuffer;
+            if (setStorageBuffer) {
+                for (name in this._storageBuffers) {
+                    setStorageBuffer(name, this._storageBuffers[name]);
+                }
             }
         }
 

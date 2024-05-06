@@ -4,21 +4,8 @@ import type { DataArray, Nullable } from "../../../types";
 import { Constants } from "../../constants";
 import { WebGPUEngine } from "../../webgpuEngine";
 import * as WebGPUConstants from "../webgpuConstants";
-import { Effect } from "../../../Materials/effect";
 
 import type { StorageBuffer } from "../../../Buffers/storageBuffer";
-
-declare module "../../../Materials/effect" {
-    export interface Effect {
-        /**
-         * Sets a storage buffer on the engine to be used in the shader.
-         * @param name Name of the storage buffer variable.
-         * @param buffer Storage buffer to set.
-         * @param label defines the label of the buffer (for debug purpose)
-         */
-        setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>, label?: string): void;
-    }
-}
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
@@ -59,10 +46,6 @@ declare module "../../webgpuEngine" {
         setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
     }
 }
-
-Effect.prototype.setStorageBuffer = function (name: string, buffer: Nullable<StorageBuffer>): void {
-    this._engine.setStorageBuffer(name, buffer);
-};
 
 WebGPUEngine.prototype.createStorageBuffer = function (data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
     return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);

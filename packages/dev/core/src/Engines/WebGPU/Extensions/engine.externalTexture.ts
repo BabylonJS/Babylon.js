@@ -2,22 +2,6 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 import type { Nullable } from "../../../types";
 import { WebGPUExternalTexture } from "../webgpuExternalTexture";
-import { Effect } from "../../../Materials/effect";
-
-declare module "../../../Materials/effect" {
-    export interface Effect {
-        /**
-         * Sets an external texture on the engine to be used in the shader.
-         * @param name Name of the external texture variable.
-         * @param texture Texture to set.
-         */
-        setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void;
-    }
-}
-
-Effect.prototype.setExternalTexture = function (name: string, texture: Nullable<ExternalTexture>): void {
-    this._engine.setExternalTexture(name, texture);
-};
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
