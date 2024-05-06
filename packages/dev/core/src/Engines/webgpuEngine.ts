@@ -91,8 +91,8 @@ import "../Audio/audioEngine";
 import { resetCachedPipeline } from "../Materials/effect.functions";
 
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
-import { TextureSampler } from "../Materials/Textures/textureSampler";
-import { StorageBuffer } from "../Buffers/storageBuffer";
+import type { TextureSampler } from "../Materials/Textures/textureSampler";
+import type { StorageBuffer } from "../Buffers/storageBuffer";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
