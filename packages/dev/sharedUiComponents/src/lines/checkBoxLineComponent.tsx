@@ -1,12 +1,10 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "./../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
-import { GetClassName } from "core/Misc/typeStore";
-
 import copyIcon from "./copy.svg";
 
 export interface ICheckBoxLineComponentProps {
@@ -117,10 +115,11 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
     // Example : mesh.checkCollisions = true;
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = GetClassName(this.props.target);
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
-            const strCommand = targetName + "." + targetProperty + " = " + value + ";";
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");

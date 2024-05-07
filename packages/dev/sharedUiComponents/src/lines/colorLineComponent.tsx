@@ -5,13 +5,12 @@ import { NumericInputComponent } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import { ColorPickerLineComponent } from "./colorPickerComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
-import { GetClassName } from "core/Misc/typeStore";
-
 import copyIcon from "./copy.svg";
+
 const emptyColor = new Color4(0, 0, 0, 0);
 
 export interface IColorLineComponentProps {
@@ -170,18 +169,19 @@ export class ColorLineComponent extends React.Component<IColorLineComponentProps
     // Example : material.diffuseColor = new BABYLON.Vector3(0,1,0);
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = GetClassName(this.props.target);
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
             const hex = this.state.color.toHexString();
             let strColor;
             if (value.a) {
-                strColor = "new BABYLON.Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
+                strColor = "new " + babylonNamespace + "Color4(" + value.r + ", " + value.g + ", " + value.b + ", " + value.a + ")";
             } else {
-                strColor = "new BABYLON.Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
+                strColor = "new " + babylonNamespace + "Color3(" + value.r + ", " + value.g + ", " + value.b + ")";
             }
-            strColor += ";//(HEX : " + hex + ")";
-            const strCommand = targetName + "." + targetProperty + " = " + strColor;
+            strColor += ";// (HEX : " + hex;
+            const strCommand = targetName + "." + targetProperty + " = " + strColor + " , debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");

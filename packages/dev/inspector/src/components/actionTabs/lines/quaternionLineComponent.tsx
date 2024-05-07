@@ -8,9 +8,7 @@ import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { copyCommandToClipboard } from "shared-ui-components/copyCommandToClipboard";
-import { GetClassName } from "core/Misc/typeStore";
-
+import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
 import copyIcon from "shared-ui-components/lines/copy.svg";
 
 interface IQuaternionLineComponentProps {
@@ -146,14 +144,15 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
     }
 
     // Copy to clipboard the code this Quaternion actually does
-    // Example : cube.rotationQuaternion = new BABYLON.Quaternion(0,0,0,1);
+    // Example : cube.rotationQuaternion = new BABYLON.Quaternion(0,0,0,1)// cube as BABYLON.Mesh;
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = GetClassName(this.props.target);
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
-            const strVector = "new BABYLON.Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
-            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";";
+            const strVector = "new " + babylonNamespace + "Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");

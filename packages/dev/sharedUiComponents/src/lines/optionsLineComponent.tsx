@@ -1,10 +1,8 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { copyCommandToClipboard } from "../copyCommandToClipboard";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
-import { GetClassName } from "core/Misc/typeStore";
-
 import copyIcon from "./copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -107,10 +105,11 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
     // Example : material.sideOrientation = 1;
     onCopyClick() {
         if (this.props && this.props.target) {
-            const targetName = GetClassName(this.props.target);
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
             const targetProperty = this.props.propertyName;
             const value = this.props.target[this.props.propertyName!];
-            const strCommand = targetName + "." + targetProperty + " = " + value + ";";
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
             copyCommandToClipboard(strCommand);
         } else {
             copyCommandToClipboard("undefined");
