@@ -414,10 +414,12 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if (!this._imageSource) {
             if (this._textureName) {
+                const engineWebGPU = effect.getEngine() as WebGPUEngine;
+
                 effect.setTexture(this._textureName, this.texture);
-                const setTextureSampler = (effect.getEngine() as WebGPUEngine).setTextureSampler;
+                const setTextureSampler = engineWebGPU.setTextureSampler;
                 if (setTextureSampler) {
-                    setTextureSampler(this._samplerName, this.texture._texture);
+                    setTextureSampler.call(engineWebGPU, this._samplerName, this.texture._texture);
                 }
             } else {
                 effect.setTexture(this._samplerName, this.texture);

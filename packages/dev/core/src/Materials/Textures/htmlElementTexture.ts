@@ -102,9 +102,10 @@ export class HtmlElementTexture extends BaseTexture {
         this._isVideo = !!(element as HTMLVideoElement).getVideoPlaybackQuality;
 
         if (this._isVideo) {
-            const createExternalTexture = (this._engine as WebGPUEngine)?.createExternalTexture;
+            const engineWebGPU = this._engine as Nullable<WebGPUEngine>;
+            const createExternalTexture = engineWebGPU?.createExternalTexture;
             if (createExternalTexture) {
-                this._externalTexture = createExternalTexture(element as HTMLVideoElement);
+                this._externalTexture = createExternalTexture.call(engineWebGPU, element as HTMLVideoElement);
             }
         }
 

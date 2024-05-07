@@ -720,36 +720,37 @@ export class FluidRenderingTargetRenderer {
         this._renderPostProcess.updateEffect(defines.join("\n"));
 
         this._renderPostProcess.samples = this._samples;
-        const setTextureSampler = (engine as WebGPUEngine).setTextureSampler;
+        const engineWebGPU = engine as WebGPUEngine;
+        const setTextureSampler = engineWebGPU.setTextureSampler;
         this._renderPostProcess.onApplyObservable.add((effect) => {
             this._invProjectionMatrix.copyFrom(this._scene.getProjectionMatrix());
             this._invProjectionMatrix.invert();
 
             if (setTextureSampler) {
-                setTextureSampler("textureSamplerSampler", this._renderPostProcess!.inputTexture.texture);
+                setTextureSampler.call(engineWebGPU, "textureSamplerSampler", this._renderPostProcess!.inputTexture.texture);
             }
 
             if (!this._depthRenderTarget!.enableBlur) {
                 effect.setTexture("depthSampler", this._depthRenderTarget!.texture);
                 if (setTextureSampler) {
-                    setTextureSampler("depthSamplerSampler", this._depthRenderTarget!.texture?.getInternalTexture() ?? null);
+                    setTextureSampler.call(engineWebGPU, "depthSamplerSampler", this._depthRenderTarget!.texture?.getInternalTexture() ?? null);
                 }
             } else {
                 effect.setTexture("depthSampler", this._depthRenderTarget!.textureBlur);
                 if (setTextureSampler) {
-                    setTextureSampler("depthSamplerSampler", this._depthRenderTarget!.textureBlur?.getInternalTexture() ?? null);
+                    setTextureSampler.call(engineWebGPU, "depthSamplerSampler", this._depthRenderTarget!.textureBlur?.getInternalTexture() ?? null);
                 }
             }
             if (this._diffuseRenderTarget) {
                 if (!this._diffuseRenderTarget.enableBlur) {
                     effect.setTexture("diffuseSampler", this._diffuseRenderTarget.texture);
                     if (setTextureSampler) {
-                        setTextureSampler("diffuseSamplerSampler", this._diffuseRenderTarget.texture?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "diffuseSamplerSampler", this._diffuseRenderTarget.texture?.getInternalTexture() ?? null);
                     }
                 } else {
                     effect.setTexture("diffuseSampler", this._diffuseRenderTarget.textureBlur);
                     if (setTextureSampler) {
-                        setTextureSampler("diffuseSamplerSampler", this._diffuseRenderTarget.textureBlur?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "diffuseSamplerSampler", this._diffuseRenderTarget.textureBlur?.getInternalTexture() ?? null);
                     }
                 }
             } else {
@@ -759,18 +760,18 @@ export class FluidRenderingTargetRenderer {
                 effect.setFloat("thickness", this.minimumThickness);
                 effect._bindTexture("bgDepthSampler", this._bgDepthTexture);
                 if (setTextureSampler) {
-                    setTextureSampler("bgDepthSamplerSampler", this._bgDepthTexture ?? null);
+                    setTextureSampler.call(engineWebGPU, "bgDepthSamplerSampler", this._bgDepthTexture ?? null);
                 }
             } else {
                 if (!this._thicknessRenderTarget!.enableBlur) {
                     effect.setTexture("thicknessSampler", this._thicknessRenderTarget!.texture);
                     if (setTextureSampler) {
-                        setTextureSampler("thicknessSamplerSampler", this._thicknessRenderTarget!.texture?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "thicknessSamplerSampler", this._thicknessRenderTarget!.texture?.getInternalTexture() ?? null);
                     }
                 } else {
                     effect.setTexture("thicknessSampler", this._thicknessRenderTarget!.textureBlur);
                     if (setTextureSampler) {
-                        setTextureSampler("thicknessSamplerSampler", this._thicknessRenderTarget!.textureBlur?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "thicknessSamplerSampler", this._thicknessRenderTarget!.textureBlur?.getInternalTexture() ?? null);
                     }
                 }
                 effect.setFloat("minimumThickness", this.minimumThickness);
@@ -781,7 +782,7 @@ export class FluidRenderingTargetRenderer {
                 if (envMap) {
                     effect.setTexture("reflectionSampler", envMap);
                     if (setTextureSampler) {
-                        setTextureSampler("reflectionSamplerSampler", envMap?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "reflectionSamplerSampler", envMap?.getInternalTexture() ?? null);
                     }
                 }
             }
@@ -823,7 +824,7 @@ export class FluidRenderingTargetRenderer {
                 if (this._debugFeature !== FluidRenderingDebug.Normals) {
                     effect.setTexture("debugSampler", texture);
                     if (setTextureSampler) {
-                        setTextureSampler("debugSamplerSampler", texture?.getInternalTexture() ?? null);
+                        setTextureSampler.call(engineWebGPU, "debugSamplerSampler", texture?.getInternalTexture() ?? null);
                     }
                 }
             }
