@@ -21,7 +21,8 @@ var<uniform> light{X} : Light{X};
 
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform textureProjectionMatrix{X}: mat4x4f;
-	var projectionLightSampler{X}: sampler;
+	var projectionLightTexture{X}sampler: sampler;
+	var projectionLightTexture{X}: texture_2d<f32>;
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
@@ -45,19 +46,19 @@ var<uniform> light{X} : Light{X};
 		var<private> vDepthMetric{X} : array<f32, 4>;
 
 		#if defined(SHADOWPCSS{X})
-			var shadow{X}Sampler: sampler_comparison;			
-			var shadow{X}Texture: texture_depth_2d_array;
-			var depth{X}Sampler: sampler;
-			var depth{X}Texture: texture_2d_array<f32>;
+			var shadowTexture{X}Sampler: sampler_comparison;			
+			var shadowTexture{X}: texture_depth_2d_array;
+			var depthTexture{X}Sampler: sampler;
+			var depthTexture{X}: texture_2d_array<f32>;
             uniform lightSizeUVCorrection{X}: array<vec2f, SHADOWCSMNUM_CASCADES{X}>;
             uniform depthCorrection{X}: array<f32, SHADOWCSMNUM_CASCADES{X}>;
             uniform penumbraDarkness{X}: f32;
 		#elif defined(SHADOWPCF{X})
-			var shadow{X}Sampler: sampler_comparison;
-			var shadow{X}Texture: texture_depth_2d_array;
+			var shadowTexture{X}Sampler: sampler_comparison;
+			var shadowTexture{X}: texture_depth_2d_array;
 		#else			
-			var shadow{X}Sampler: sampler;			
-			var shadow{X}Texture: texture_2d_array<f32>;
+			var shadowTexture{X}Sampler: sampler;			
+			var shadowTexture{X}: texture_2d_array<f32>;
 		#endif
 
         #ifdef SHADOWCSMDEBUG{X}
@@ -74,22 +75,23 @@ var<uniform> light{X} : Light{X};
             );
         #endif
 	#elif defined(SHADOWCUBE{X})
-		var shadow{X}Sampler: sampler;		
+		var shadowTexture{X}Sampler: sampler;
+		var shadowTexture{X}: texture_cube<f32>;
 	#else
 		varying vPositionFromLight{X}: vec4f;
 		varying vDepthMetric{X}: f32;
 
 		#if defined(SHADOWPCSS{X})
-			var shadow{X}Sampler: sampler_comparison;			
-			var shadow{X}Texture: texture_depth_2d;
-			var depth{X}Sampler: sampler;			
-			var depth{X}Texture: texture_2d<f32>;
+			var shadowTexture{X}Sampler: sampler_comparison;			
+			var shadowTexture{X}: texture_depth_2d;
+			var depthTexture{X}Sampler: sampler;			
+			var depthTexture{X}: texture_2d<f32>;
 		#elif defined(SHADOWPCF{X})
-			var shadow{X}Sampler: sampler_comparison;
-			var shadow{X}Texture: texture_depth_2d;
+			var shadowTexture{X}Sampler: sampler_comparison;
+			var shadowTexture{X}: texture_depth_2d;
 		#else
-			var shadow{X}Sampler: sampler;			
-			var shadow{X}Texture: texture_2d<f32>;
+			var shadowTexture{X}Sampler: sampler;			
+			var shadowTexture{X}: texture_2d<f32>;
 		#endif
 		uniform lightMatrix{X}: mat4x4f;
 	#endif

@@ -105,9 +105,6 @@ const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
     mipLevelCount: 1,
     arrayLayerCount: 1,
 };
-
-const disableUniformityAnalysisMarker = "/* disable_uniformity_analysis */";
-
 const tempColor4 = new Color4();
 
 /** @internal */
@@ -367,7 +364,7 @@ export class WebGPUEngine extends AbstractEngine {
 
     // TODO WEBGPU remove those variables when code stabilized
     /** @internal */
-    public dbgShowShaderCode = true;
+    public dbgShowShaderCode = false;
     /** @internal */
     public dbgSanityChecks = true;
     /** @internal */
@@ -2050,8 +2047,8 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
 
         const vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
         const fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
@@ -2067,8 +2064,8 @@ export class WebGPUEngine extends AbstractEngine {
     ): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
 
         const shaderVersion = "#version 450\n";
         const vertexShader =

@@ -10,7 +10,7 @@ import type { Mesh } from "../Meshes/mesh";
 import type { UniformBuffer } from "./uniformBuffer";
 import type { BaseTexture } from "./Textures/baseTexture";
 import type { PrePassConfiguration } from "./prePassConfiguration";
-import type { Light, LightBindingOptions } from "../Lights/light";
+import type { Light } from "../Lights/light";
 import type { MaterialDefines } from "./materialDefines";
 import type { EffectFallbacks } from "./effectFallbacks";
 import { LightConstants } from "../Lights/lightConstants";
@@ -258,10 +258,9 @@ export function BindLightProperties(light: Light, effect: Effect, lightIndex: nu
  * @param effect The effect we are binding the data to
  * @param useSpecular Defines if specular is supported
  * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
- * @param options Options to be used when binding the light
  */
-export function BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true, options?: LightBindingOptions): void {
-    light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows, options);
+export function BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
+    light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
 }
 
 /**
@@ -271,14 +270,13 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
  * @param effect The effect we are binding the data to
  * @param defines The generated defines for the effect
  * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
- * @param options Options to be used when binding the light
  */
-export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4, options?: LightBindingOptions): void {
+export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
     const len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
     for (let i = 0; i < len; i++) {
         const light = mesh.lightSources[i];
-        BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows, options);
+        BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
     }
 }
 
@@ -912,7 +910,6 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param projectedLightTexture defines if projected texture must be used
  * @param uniformBuffersList defines an optional list of uniform buffers
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
- * @param injectIndexInMiddle defines if the sampler name should get the light index injected in the middle (false by default)
  */
 export function PrepareUniformsAndSamplersForLight(
     lightIndex: number,
@@ -920,8 +917,7 @@ export function PrepareUniformsAndSamplersForLight(
     samplersList: string[],
     projectedLightTexture?: any,
     uniformBuffersList: Nullable<string[]> = null,
-    updateOnlyBuffersList = false,
-    injectIndexInMiddle = false
+    updateOnlyBuffersList = false
 ) {
     if (uniformBuffersList) {
         uniformBuffersList.push("Light" + lightIndex);
@@ -943,8 +939,8 @@ export function PrepareUniformsAndSamplersForLight(
         "depthValues" + lightIndex
     );
 
-    samplersList.push(injectIndexInMiddle ? `shadow${lightIndex}Sampler` : "shadowSampler" + lightIndex);
-    samplersList.push(injectIndexInMiddle ? `depth${lightIndex}Sampler` : "depthSampler" + lightIndex);
+    samplersList.push("shadowTexture" + lightIndex);
+    samplersList.push("depthTexture" + lightIndex);
 
     uniformsList.push(
         "viewFrustumZ" + lightIndex,
@@ -956,7 +952,7 @@ export function PrepareUniformsAndSamplersForLight(
     );
 
     if (projectedLightTexture) {
-        samplersList.push(injectIndexInMiddle ? `projectionLight${lightIndex}Sampler` : "projectionLightSampler" + lightIndex);
+        samplersList.push("projectionLightTexture" + lightIndex);
         uniformsList.push("textureProjectionMatrix" + lightIndex);
     }
 }

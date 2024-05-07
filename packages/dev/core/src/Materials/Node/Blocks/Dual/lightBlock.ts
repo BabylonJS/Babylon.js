@@ -27,8 +27,6 @@ import "../../../../Shaders/ShadersInclude/shadowsVertex";
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
-import type { Texture } from "../../../../Materials/Textures/texture";
-import type { RenderTargetTexture } from "core/Materials/Textures";
 
 /**
  * Block used to add light in the fragment shader
@@ -218,15 +216,7 @@ export class LightBlock extends NodeMaterialBlock {
                 break;
             }
             const onlyUpdateBuffersList = state.uniforms.indexOf("vLightData" + lightIndex) >= 0;
-            PrepareUniformsAndSamplersForLight(
-                lightIndex,
-                state.uniforms,
-                state.samplers,
-                defines["PROJECTEDLIGHTTEXTURE" + lightIndex],
-                uniformBuffers,
-                onlyUpdateBuffersList,
-                state.shaderLanguage === ShaderLanguage.WGSL
-            );
+            PrepareUniformsAndSamplersForLight(lightIndex, state.uniforms, state.samplers, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffers, onlyUpdateBuffersList);
         }
     }
 
@@ -236,30 +226,11 @@ export class LightBlock extends NodeMaterialBlock {
         }
 
         const scene = mesh.getScene();
-        const options = {
-            setTextureForShadows: (rootName: string, depthStencil: boolean, index: string, texture: Nullable<Texture>) => {
-                const textureName = `${rootName}${index}Texture`;
-                const samplerName = `${rootName}${index}Sampler`;
-                if (depthStencil) {
-                    effect.setDepthStencilTexture(textureName, texture as Nullable<RenderTargetTexture>);
-                } else {
-                    effect.setTexture(textureName, texture);
-                }
-                if (texture) {
-                    if (depthStencil) {
-                        effect.setTextureSampler(samplerName, (texture as RenderTargetTexture).depthStencilTexture);
-                    } else {
-                        effect.setTextureSampler(samplerName, texture!._texture);
-                    }
-                }
-            },
-        };
-        const isWGSL = nodeMaterial.shaderLanguage === ShaderLanguage.WGSL;
 
         if (!this.light) {
-            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights, isWGSL ? options : undefined);
+            BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
         } else {
-            BindLight(this.light, this._lightId, scene, effect, true, undefined, isWGSL ? options : undefined);
+            BindLight(this.light, this._lightId, scene, effect, true, undefined);
         }
     }
 
@@ -292,10 +263,7 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            // We need to turn off UA checking because of the CSM shadows
-            state.compilationString += "#define DIAGNOSTIC_OFF";
-        }
+
         if (state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             state.compilationString += (state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "") + `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
         }

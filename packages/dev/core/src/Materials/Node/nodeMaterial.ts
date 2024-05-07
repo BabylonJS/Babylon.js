@@ -262,6 +262,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Defines default shader language when no option is defined */
+    public static DefaultShaderLanguage = ShaderLanguage.GLSL;
+
     /**
      * Checks if a block is a texture block
      * @param block The block to check
@@ -431,7 +434,7 @@ export class NodeMaterial extends PushMaterial {
 
         this._options = {
             emitComments: false,
-            shaderLanguage: ShaderLanguage.GLSL,
+            shaderLanguage: NodeMaterial.DefaultShaderLanguage,
             ...options,
         };
 
