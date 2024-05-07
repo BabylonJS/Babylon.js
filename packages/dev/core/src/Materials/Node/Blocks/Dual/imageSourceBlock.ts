@@ -76,12 +76,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             return;
         }
 
-        if (effect.shaderLanguage === ShaderLanguage.WGSL) {
-            effect.setTexture(this._samplerName.replace("Sampler", "Texture"), this.texture);
-            effect.setTextureSampler(this._samplerName, this.texture._texture);
-        } else {
-            effect.setTexture(this._samplerName, this.texture);
-        }
+        effect.setTexture(this._samplerName, this.texture);
     }
 
     public override isReady() {
