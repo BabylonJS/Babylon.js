@@ -193,9 +193,10 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        const createExternalTexture = (this._engine as WebGPUEngine)?.createExternalTexture;
+        const engineWebGPU = this._engine as Nullable<WebGPUEngine>;
+        const createExternalTexture = engineWebGPU?.createExternalTexture;
         if (createExternalTexture) {
-            this._externalTexture = createExternalTexture(this.video);
+            this._externalTexture = createExternalTexture.call(engineWebGPU, this.video);
         }
 
         if (!this._settings.independentVideoSource) {

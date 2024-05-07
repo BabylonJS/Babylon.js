@@ -1180,27 +1180,29 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
+            const engineWebGPU = scene.getEngine() as WebGPUEngine;
+
             // External texture
-            const setExternalTexture = (effect.getEngine() as WebGPUEngine).setExternalTexture;
+            const setExternalTexture = engineWebGPU.setExternalTexture;
             if (setExternalTexture) {
                 for (name in this._externalTextures) {
-                    setExternalTexture(name, this._externalTextures[name]);
+                    setExternalTexture.call(engineWebGPU, name, this._externalTextures[name]);
                 }
             }
 
             // Samplers
-            const setTextureSampler = (effect.getEngine() as WebGPUEngine).setTextureSampler;
+            const setTextureSampler = engineWebGPU.setTextureSampler;
             if (setTextureSampler) {
                 for (name in this._textureSamplers) {
-                    setTextureSampler(name, this._textureSamplers[name]);
+                    setTextureSampler.call(engineWebGPU, name, this._textureSamplers[name]);
                 }
             }
 
             // Storage buffers
-            const setStorageBuffer = (effect.getEngine() as WebGPUEngine).setStorageBuffer;
+            const setStorageBuffer = engineWebGPU.setStorageBuffer;
             if (setStorageBuffer) {
                 for (name in this._storageBuffers) {
-                    setStorageBuffer(name, this._storageBuffers[name]);
+                    setStorageBuffer.call(engineWebGPU, name, this._storageBuffers[name]);
                 }
             }
         }
