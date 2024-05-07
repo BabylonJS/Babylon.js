@@ -111,7 +111,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+            this._samplerName = state._getFreeVariableName(this.name + "Texture");
 
             // Declarations
             state.sharedData.blockingBlocks.push(this);
@@ -119,7 +119,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
             state.sharedData.bindableBlocks.push(this);
         }
 
-        state._emit2DSampler(this._samplerName, state.shaderLanguage === ShaderLanguage.WGSL ? this._samplerName.replace("Sampler", "Texture") : undefined);
+        state._emit2DSampler(this._samplerName);
 
         return this;
     }

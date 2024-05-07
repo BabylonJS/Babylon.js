@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
-    /** Falg used to disable diagnostics for WebGPU */
+    /** Sampler suffix when associated with a texture name */
+    public static readonly AUTOSAMPLERSUFFIX = "Sampler";
+    /** Flag used to disable diagnostics for WebGPU */
     public static readonly DISABLEUA = "#define DIAGNOSTIC_OFF";
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;

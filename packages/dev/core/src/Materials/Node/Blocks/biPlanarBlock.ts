@@ -3,6 +3,7 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { TriPlanarBlock } from "./triPlanarBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
 import { ShaderLanguage } from "../../../Materials/shaderLanguage";
+import { Constants } from "core/Engines";
 
 /**
  * Block used to read a texture with triplanar mapping (see https://iquilezles.org/articles/biplanar/)
@@ -32,6 +33,14 @@ export class BiPlanarBlock extends TriPlanarBlock {
         }
     }
 
+    private _getTextureGrad(state: NodeMaterialBuildState, samplerName: string) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `textureSampleGrad(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}`;
+        }
+
+        return `textureGrad(${samplerName}`;
+    }
+
     protected override _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
         const samplerYName = this.samplerYName ?? this.samplerName;
@@ -46,20 +55,18 @@ export class BiPlanarBlock extends TriPlanarBlock {
         const me = state._getFreeVariableName("me");
         const x = state._getFreeVariableName("x");
         const y = state._getFreeVariableName("y");
-        const w = state._getFreeVariableName("y");
+        const w = state._getFreeVariableName("w");
 
         let ivec3 = "ivec3";
         let dpdxFunc = "dFdx";
         let dpdyFunc = "dFdy";
         let suffix = "";
-        let textureGrad = "textureGrad(";
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             ivec3 = "vec3<i32>";
             dpdxFunc = "dpdx";
             dpdyFunc = "dpdy";
             suffix = "f";
-            textureGrad = `textureSampleGrad(${samplerName.replace("Sampler", "Texture")},`;
         }
 
         state.compilationString += `
@@ -86,10 +93,10 @@ export class BiPlanarBlock extends TriPlanarBlock {
             ${this._declareLocalVarAsVec3I(me, state)} = ${ivec3}(3) - ${mi} - ${ma};
             
             // project+fetch
-            ${state._declareLocalVar(x, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureGrad}${samplerName}, vec2${suffix}(${this.position.associatedVariableName}[${ma}.y], ${this.position.associatedVariableName}[${ma}.z]), 
+            ${state._declareLocalVar(x, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._getTextureGrad(state, samplerName)}, vec2${suffix}(${this.position.associatedVariableName}[${ma}.y], ${this.position.associatedVariableName}[${ma}.z]), 
                                     vec2${suffix}(${dpdx}[${ma}.y],${dpdx}[${ma}.z]), 
                                     vec2${suffix}(${dpdy}[${ma}.y],${dpdy}[${ma}.z]));
-            ${state._declareLocalVar(y, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureGrad}${samplerYName}, vec2${suffix}(${this.position.associatedVariableName}[${me}.y], ${this.position.associatedVariableName}[${me}.z]), 
+            ${state._declareLocalVar(y, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._getTextureGrad(state, samplerYName)}, vec2${suffix}(${this.position.associatedVariableName}[${me}.y], ${this.position.associatedVariableName}[${me}.z]), 
                                     vec2${suffix}(${dpdx}[${me}.y],${dpdx}[${me}.z]),
                                     vec2${suffix}(${dpdy}[${me}.y],${dpdy}[${me}.z]));
             

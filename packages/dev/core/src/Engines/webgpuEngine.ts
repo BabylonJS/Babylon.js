@@ -2642,7 +2642,7 @@ export class WebGPUEngine extends AbstractEngine {
             this._currentMaterialContext.setTexture(name, texture);
 
             if (availableTexture && availableTexture.autoBindSampler) {
-                const samplerName = baseName + WebGPUShaderProcessor.AutoSamplerSuffix;
+                const samplerName = baseName + Constants.AUTOSAMPLERSUFFIX;
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }

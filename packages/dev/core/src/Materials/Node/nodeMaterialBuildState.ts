@@ -4,6 +4,7 @@ import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateS
 import { ShaderLanguage } from "../shaderLanguage";
 import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
+import { Constants } from "../../Engines/constants";
 
 /**
  * Class used to store node based material build state
@@ -209,11 +210,11 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, textureName = "") {
+    public _emit2DSampler(name: string) {
         if (this.samplers.indexOf(name) < 0) {
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                this._samplerDeclaration += `var ${name}: sampler;\n`;
-                this._samplerDeclaration += `var ${textureName}: texture_2d<f32>;\n`;
+                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform sampler2D ${name};\n`;
             }
@@ -551,12 +552,12 @@ export class NodeMaterialBuildState {
         return source.replace(new RegExp(`out\\s+var\\s+(\\w+)\\s*:\\s*(\\w+)`, "g"), `$1: ptr<function, $2>`);
     }
 
-    private _convertTertiaryOperandsToWGSL(source: string): string {
-        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `select(${trueCase}, ${falseCase}, ${condition})`);
+    private _convertTernaryOperandsToWGSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `select(${falseCase}, ${trueCase}, ${condition})`);
     }
 
     private _convertModOperatorsToWGSL(source: string): string {
-        return source.replace(new RegExp(`mod\\((.*?),\\s*(.*?)\\)`, "g"), (match, left, right) => `((${left})%(${right}))`);
+        return source.replace(new RegExp(`mod\\((.+?),\\s*(.+?)\\)`, "g"), (match, left, right) => `((${left})%(${right}))`);
     }
 
     private _convertConstToWGSL(source: string): string {
@@ -608,8 +609,8 @@ export class NodeMaterialBuildState {
         code = this._convertVariableConstructorsToWGSL("mat3", "mat3x3f", code);
         code = this._convertVariableConstructorsToWGSL("mat4", "mat4x4f", code);
 
-        // Tertiary operands
-        code = this._convertTertiaryOperandsToWGSL(code);
+        // Ternary operands
+        code = this._convertTernaryOperandsToWGSL(code);
 
         // Mod operators
         code = this._convertModOperatorsToWGSL(code);
@@ -633,14 +634,14 @@ export class NodeMaterialBuildState {
         return code;
     }
 
-    private _convertTertiaryOperandsToGLSL(source: string): string {
-        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `${condition} ? ${trueCase} : ${falseCase}`);
+    private _convertTernaryOperandsToGLSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.+?)\\?(.+?):(.+)\\]`, "g"), (match, condition, trueCase, falseCase) => `${condition} ? ${trueCase} : ${falseCase}`);
     }
 
     public _babylonSLtoGLSL(code: string) {
         /** Remove BSL specifics */
         code = code.replace(/\[\*\]/g, "");
-        code = this._convertTertiaryOperandsToGLSL(code);
+        code = this._convertTernaryOperandsToGLSL(code);
 
         return code;
     }

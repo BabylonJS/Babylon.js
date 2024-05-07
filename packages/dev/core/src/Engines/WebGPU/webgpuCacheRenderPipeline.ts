@@ -10,7 +10,7 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
-import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
+import type { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
@@ -898,7 +898,7 @@ export abstract class WebGPUCacheRenderPipeline {
                 if (entry.texture) {
                     const name = shaderProcessingContext.bindGroupLayoutEntryInfo[i][entry.binding].name;
                     const textureInfo = shaderProcessingContext.availableTextures[name];
-                    const samplerInfo = textureInfo.autoBindSampler ? shaderProcessingContext.availableSamplers[name + WebGPUShaderProcessor.AutoSamplerSuffix] : null;
+                    const samplerInfo = textureInfo.autoBindSampler ? shaderProcessingContext.availableSamplers[name + Constants.AUTOSAMPLERSUFFIX] : null;
 
                     let sampleType = textureInfo.sampleType;
                     let samplerType = samplerInfo?.type ?? WebGPUConstants.SamplerBindingType.Filtering;

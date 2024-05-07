@@ -353,12 +353,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         effect.setFloat(this._textureInfoName, this.texture.level);
 
         if (!this._imageSource) {
-            if (effect.shaderLanguage === ShaderLanguage.WGSL) {
-                effect.setTexture(this._samplerName.replace("Sampler", "Texture"), this.texture);
-                effect.setTextureSampler(this._samplerName, this.texture._texture);
-            } else {
-                effect.setTexture(this._samplerName, this.texture);
-            }
+            effect.setTexture(this._samplerName, this.texture);
         }
     }
 
@@ -369,11 +364,11 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         return "texture2D";
     }
 
-    private _generateTextureSample(samplerName: string, uv: string, state: NodeMaterialBuildState) {
+    private _generateTextureSample(textureName: string, uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerFunc(state)}(${samplerName.replace("Sampler", "Texture")},${samplerName}, ${uv})`;
+            return `${this._samplerFunc(state)}(${textureName},${textureName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
         }
-        return `${this._samplerFunc(state)}(${samplerName}, ${uv})`;
+        return `${this._samplerFunc(state)}(${textureName}, ${uv})`;
     }
 
     protected _generateTextureLookup(state: NodeMaterialBuildState): void {
@@ -486,9 +481,9 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
         if (!this._imageSource) {
-            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+            this._samplerName = state._getFreeVariableName(this.name + "Texture");
 
-            state._emit2DSampler(this._samplerName, state.shaderLanguage === ShaderLanguage.WGSL ? this._samplerName.replace("Sampler", "Texture") : undefined);
+            state._emit2DSampler(this._samplerName);
         }
 
         // Declarations
