@@ -6,6 +6,7 @@ varying vec2 vUV;
 uniform sampler2D depthSampler;
 uniform sampler2D linearDepthSampler;
 uniform sampler2D worldNormalSampler;
+uniform sampler2D worldPositionSampler;
 uniform sampler2D blueNoiseSampler;
 // Importance sampling
 uniform sampler2D icdfxSampler;
@@ -90,6 +91,40 @@ void genTB(const vec3 N, out vec3 T, out vec3 B) {
   float b = N.x * N.y * a;
   T = vec3(1.0 + s * N.x * N.x * a, s * b, -s * N.x);
   B = vec3(b, s + N.y * N.y * a, -N.y);
+}
+
+bool anyHitVoxelsSimple(const vec3 O, const vec3 D) {
+  const float stepSize = 0.01;
+  const int maxSteps = 100;
+  const float selfShadowingOffset =
+      stepSize * 0.75; // Adjust this value as needed
+  vec3 currentPosition = O + D * selfShadowingOffset; // Offset the ray origin
+  vec3 step = D * stepSize;
+
+  // Check if the ray will intersect the voxel grid
+  vec3 t0 = (vec3(0.0, 0.0, 0.0) - O) / D;
+  vec3 t1 = (vec3(1.0, 1.0, 1.0) - O) / D;
+  vec3 tmin = min(t0, t1);
+  vec3 tmax = max(t0, t1);
+  float tEnter = max(max(tmin.x, tmin.y), tmin.z);
+  float tExit = min(min(tmax.x, tmax.y), tmax.z);
+  if (tEnter > tExit || tExit < 0.0) {
+    return false;
+  }
+
+  for (int i = 0; i < maxSteps; ++i) {
+    // TODO - If the direction isn't pointing at the voxel grid, discard.
+    if (currentPosition.x >= 0.0 && currentPosition.y >= 0.0 &&
+        currentPosition.z >= 0.0 && currentPosition.x <= 1.0 &&
+        currentPosition.y <= 1.0 && currentPosition.z <= 1.0) {
+      float voxelValue = texture(voxelGridSampler, currentPosition).r;
+      if (voxelValue > 0.0) {
+        return true;
+      }
+    }
+    currentPosition += step;
+  }
+  return false;
 }
 
 int stack[24];                           // Swapped dimension
@@ -244,7 +279,7 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
       vxResolution;
   vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
 
-  return anyHitVoxels(O, wsDirection) ? 1.0f : 0.0f;
+  return anyHitVoxelsSimple(O, wsDirection) ? 1.0f : 0.0f;
 }
 
 void main(void) {
@@ -308,7 +343,8 @@ void main(void) {
       vec4 VP2 = VP;
       VP2.y *= -1.0;
       // rte world-space normalization
-      vec4 unormWP = invViewMtx * VP2;
+      // vec4 unormWP = invViewMtx * VP2;
+      vec4 unormWP = texelFetch(worldPositionSampler, PixelCoord, 0);
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));

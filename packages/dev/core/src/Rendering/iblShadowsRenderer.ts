@@ -48,7 +48,7 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
         // Constants.PREPASS_NORMAL_TEXTURE_TYPE,
         Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
         // Local positions used for shadow accumulation pass
-        // Constants.PREPASS_POSITION_TEXTURE_TYPE,
+        Constants.PREPASS_POSITION_TEXTURE_TYPE,
         Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
     ];
 }
@@ -205,6 +205,9 @@ export class IblShadowsRenderer {
                     if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
                 });
                 effect.setFloat4("sizeParams", xOffset, yOffset, cols, rows);
+                if (this._scene.activeCamera) {
+                    effect.setFloat("maxDepth", this._scene.activeCamera.maxZ);
+                }
             };
             x -= width;
             if (x <= -1) {

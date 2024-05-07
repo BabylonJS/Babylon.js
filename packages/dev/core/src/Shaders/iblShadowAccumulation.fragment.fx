@@ -21,8 +21,8 @@ void main(void) {
   bool reset = bool(resetb);
   vec2 Resolution = vec2(textureSize(shadowSampler, 0));
   ivec2 currentPixel = ivec2(max2(vUV * Resolution - vec2(0.5), vec2(0.0)));
-
-  vec4 LP = texelFetch(localPositionSampler, currentPixel, 0);
+  vec4 LP = texture(localPositionSampler, vUV);
+  // vec4 LP = texelFetch(localPositionSampler, currentPixel, 0);
   if (0.0 == LP.w) {
     gl_FragColor = vec4(0.0);
     return;
@@ -31,8 +31,8 @@ void main(void) {
   velocityColor.rg = velocityColor.rg * 2.0 - vec2(1.0);
 
   vec2 prevCoord = vUV + velocityColor;
-  vec3 PrevLP = textureLod(prevLocalPositionSampler, prevCoord, 0.0).xyz;
-  vec2 PrevShadows = textureLod(oldAccumulationSampler, prevCoord, 0.0).xy;
+  vec3 PrevLP = texture(prevLocalPositionSampler, prevCoord).xyz;
+  vec2 PrevShadows = texture(oldAccumulationSampler, prevCoord).xy;
   float newShadows = texelFetch(shadowSampler, currentPixel, 0).x;
 
   PrevShadows.y =
