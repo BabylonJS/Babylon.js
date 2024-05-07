@@ -138,9 +138,11 @@ export class IblShadowsComputePass {
             const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
             const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE);
+            const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
             if (wnormalIndex >= 0) this._outputPT.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
             if (depthIndex >= 0) this._outputPT.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
             if (clipDepthIndex >= 0) this._outputPT.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
+            if (wPositionIndex >= 0) this._outputPT.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
         }
     }
 

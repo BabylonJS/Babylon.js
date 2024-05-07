@@ -13,6 +13,7 @@ uniform sampler2D prePass_Position;
 uniform sampler2D prePass_LocalPosition;
 uniform sampler2D prePass_Velocity;
 uniform vec4 sizeParams;
+uniform float maxDepth;
 
 #define offsetX sizeParams.x
 #define offsetY sizeParams.y
@@ -43,7 +44,7 @@ void main(void) {
     gl_FragColor.rgb = depth.rgb;
     gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.375) {
-    gl_FragColor.rgb = linearDepth.rgb / 100.0;
+    gl_FragColor.rgb = linearDepth.rgb / vec3(maxDepth);
     gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.5) {
     gl_FragColor.rgb = velocity.rgb;
