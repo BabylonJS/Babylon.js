@@ -30,6 +30,10 @@ export class Footer extends React.Component<IFooterProps> {
             this._updateCameraNames();
             this.forceUpdate();
         });
+        if (props.globalState.currentScene) {
+            this._updateCameraNames();
+            this.forceUpdate();
+        }
     }
 
     showInspector() {
