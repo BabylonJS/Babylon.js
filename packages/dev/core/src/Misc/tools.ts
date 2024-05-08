@@ -47,6 +47,17 @@ export class Tools {
     }
 
     /**
+     * Gets or sets the clean URL function to use to load assets
+     */
+    public static get CleanUrl() {
+        return FileToolsOptions.CleanUrl;
+    }
+
+    public static set CleanUrl(value: (url: string) => string) {
+        FileToolsOptions.CleanUrl = value;
+    }
+
+    /**
      * This function checks whether a URL is absolute or not.
      * It will also detect data and blob URLs
      * @param url the url to check

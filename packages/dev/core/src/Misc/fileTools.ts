@@ -87,6 +87,7 @@ export const FileToolsOptions: {
     PreprocessUrl: (url: string) => string;
     ScriptBaseUrl: string;
     ScriptPreprocessUrl: (url: string) => string;
+    CleanUrl: (url: string) => string;
 } = {
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset.
@@ -126,6 +127,13 @@ export const FileToolsOptions: {
      * @returns the processed url
      */
     ScriptPreprocessUrl: (url: string) => url,
+
+    /**
+     * Gets or sets a function used to clean the url before using it to load assets
+     * @param url defines the url to clean
+     * @returns the cleaned url
+     */
+    CleanUrl: (url: string) => url,
 };
 
 /**
@@ -133,8 +141,7 @@ export const FileToolsOptions: {
  * @param url defines the url to clean
  * @returns the cleaned url
  */
-// eslint-disable-next-line prefer-const
-export let CleanUrl = (url: string): string => {
+const CleanUrl = (url: string): string => {
     url = url.replace(/#/gm, "%23");
     return url;
 };
@@ -835,15 +842,12 @@ export let FileTools: {
     SetCorsBehavior: (url: string | string[], element: { crossOrigin: string | null }) => void;
 };
 /**
- * @param DecodeBase64UrlToBinary
- * @param DecodeBase64UrlToString
- * @param FileToolsOptions
  * @internal
  */
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
     DecodeBase64UrlToString: (uri: string) => string,
-    FileToolsOptions: { DefaultRetryStrategy: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any },
+    FileToolsOptions: { DefaultRetryStrategy: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any; CleanUrl: any },
     IsBase64DataUrl: (uri: string) => boolean,
     IsFileURL: () => boolean,
     LoadFile: (
