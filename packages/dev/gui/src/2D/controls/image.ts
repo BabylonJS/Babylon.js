@@ -539,6 +539,10 @@ export class Image extends Control {
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
+        if (this._urlRewriter && value) {
+            value = this._urlRewriter(value);
+        }
+
         if (this._source === value) {
             return;
         }
