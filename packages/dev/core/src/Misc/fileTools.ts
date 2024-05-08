@@ -77,6 +77,17 @@ export class ReadFileError extends RuntimeError {
         BaseError._setPrototypeOf(this, ReadFileError.prototype);
     }
 }
+
+/**
+ * Removes unwanted characters from an url
+ * @param url defines the url to clean
+ * @returns the cleaned url
+ */
+const CleanUrl = (url: string): string => {
+    url = url.replace(/#/gm, "%23");
+    return url;
+};
+
 /**
  * @internal
  */
@@ -133,17 +144,7 @@ export const FileToolsOptions: {
      * @param url defines the url to clean
      * @returns the cleaned url
      */
-    CleanUrl: (url: string) => url,
-};
-
-/**
- * Removes unwanted characters from an url
- * @param url defines the url to clean
- * @returns the cleaned url
- */
-const CleanUrl = (url: string): string => {
-    url = url.replace(/#/gm, "%23");
-    return url;
+    CleanUrl,
 };
 
 /**
@@ -208,7 +209,7 @@ export const LoadImage = (
         url = URL.createObjectURL(input);
         usingObjectURL = true;
     } else {
-        url = CleanUrl(input);
+        url = FileToolsOptions.CleanUrl(input);
         url = FileToolsOptions.PreprocessUrl(input);
     }
 
@@ -530,7 +531,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
-    url = CleanUrl(url);
+    url = FileToolsOptions.CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
     const loadUrl = FileToolsOptions.BaseUrl + url;
