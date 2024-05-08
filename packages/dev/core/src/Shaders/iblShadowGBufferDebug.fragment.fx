@@ -37,30 +37,26 @@ void main(void) {
   vec4 localPosition = texture2D(prePass_LocalPosition, vUV);
   vec4 velocity = texture2D(prePass_Velocity, vUV);
 
+  gl_FragColor.a = 1.0;
   // mixes colors
   if (uv.x <= 0.125) { // show only base texture
     gl_FragColor = first;
   } else if (uv.x <= 0.25) { // show only depth texture
-    gl_FragColor.rgb = depth.rgb;
-    gl_FragColor.a = 1.0;
+    gl_FragColor.rgb = vec3(-linearDepth.r / 10.0 + 1.0);
   } else if (uv.x <= 0.375) {
     gl_FragColor.rgb = linearDepth.rgb / vec3(maxDepth);
     gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.5) {
+    velocity.rg = velocity.rg * 2.0 - 1.0;
     gl_FragColor.rgb = velocity.rgb;
-    gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.625) {
     gl_FragColor.rgb = worldPosition.rgb;
-    gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.75) {
     gl_FragColor.rgb = localPosition.rgb;
-    gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.875) {
     gl_FragColor.rgb = worldNormal.rgb;
-    gl_FragColor.a = 1.0;
   } else { // normal
     gl_FragColor.rgb = normal.rgb * vec3(0.5, 0.5, 0.0) + vec3(0.5, 0.5, 0.0);
-    gl_FragColor.a = 1.0;
   }
 
 }
