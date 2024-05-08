@@ -1,9 +1,11 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "./floatLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import copyIcon from "./copy.svg";
 
 interface ISliderLineComponentProps {
     label: string;
@@ -120,6 +122,21 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
         return value;
     }
 
+    // Copy to clipboard the code this slider actually does
+    // Example : ImageProcessingConfiguration.contrast = 1;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         return (
             <div className="sliderLine">
@@ -161,6 +178,9 @@ export class SliderLineComponent extends React.Component<ISliderLineComponentPro
                         onInput={(evt) => this.onInput((evt.target as HTMLInputElement).value)}
                         onChange={(evt) => this.onChange(evt.target.value)}
                     />
+                </div>
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );

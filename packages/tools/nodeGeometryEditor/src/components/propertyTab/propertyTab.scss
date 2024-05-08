@@ -136,6 +136,14 @@
                         -moz-appearance: textfield;
                     }
                 }
+
+                .copy {
+                    display: none;
+                }
+            }
+
+            .copy {
+                display: none;
             }
         }
 
@@ -435,6 +443,10 @@
                     -moz-appearance: textfield;
                 }
             }
+
+            .copy {
+                display: none;
+            }
         }
 
         .vector3Line {
@@ -466,6 +478,10 @@
                     align-items: center;
                     justify-items: center;
                     cursor: pointer;
+                }
+
+                .copy {
+                    display: none;
                 }
             }
 
@@ -665,6 +681,10 @@
                     display: none;
                 }
             }
+
+            .copy {
+                display: none;
+            }
         }
 
         .listLine {
@@ -690,6 +710,10 @@
                     width: 115px;
                 }
             }
+
+            .copy {
+                display: none;
+            }
         }
 
         .color3Line {
@@ -699,7 +723,7 @@
             .firstLine {
                 height: 30px;
                 display: grid;
-                grid-template-columns: 1fr auto 0px 20px 20px;
+                grid-template-columns: 1fr auto 20px;
 
                 .label {
                     grid-column: 1;
@@ -723,6 +747,19 @@
                     }
                 }
 
+                .expand {
+                    grid-column: 3;
+                    display: grid;
+                    align-items: center;
+                    justify-items: center;
+                    cursor: pointer;
+
+                    img {
+                        height: 100%;
+                        width: 20px;
+                    }
+                }
+
                 .copy {
                     grid-column: 4;
                     display: grid;
@@ -733,19 +770,6 @@
                     img {
                         height: 100%;
                         width: 24px;
-                    }
-                }
-
-                .expand {
-                    grid-column: 5;
-                    display: grid;
-                    align-items: center;
-                    justify-items: center;
-                    cursor: pointer;
-
-                    img {
-                        height: 100%;
-                        width: 20px;
                     }
                 }
             }
