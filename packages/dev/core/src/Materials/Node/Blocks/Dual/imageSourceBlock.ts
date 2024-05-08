@@ -13,7 +13,6 @@ import { NodeMaterial } from "../../nodeMaterial";
 import type { Scene } from "../../../../scene";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
-import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 /**
  * Block used to provide an image for a TextureBlock
  */

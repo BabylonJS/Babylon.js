@@ -21,7 +21,6 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { WebGPUEngine } from "core/Engines";
 
 /**
  * Block used to read a texture from a sampler
