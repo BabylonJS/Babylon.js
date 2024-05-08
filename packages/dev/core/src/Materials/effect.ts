@@ -770,7 +770,8 @@ export class Effect implements IDisposable {
                     },
                 },
                 this._engine.createPipelineContext.bind(this._engine),
-                this._engine._preparePipelineContext.bind(this._engine)
+                this._engine._preparePipelineContext.bind(this._engine),
+                this._engine._executeWhenRenderingStateIsCompiled.bind(this._engine)
             );
 
             if (this._pipelineContext.isAsync) {

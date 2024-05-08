@@ -2,7 +2,7 @@ import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
 import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import { _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
 import { _getGlobalDefines } from "core/Engines/abstractEngine.functions";
 import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
@@ -84,7 +84,8 @@ export async function generatePipelineContext(
                                 ...options.extendedCreatePipelineOptions,
                             },
                             createPipelineContextInjection,
-                            _preparePipelineContext
+                            _preparePipelineContext,
+                            _executeWhenRenderingStateIsCompiled
                         );
                         resolve(pipeline);
                     } catch (e) {

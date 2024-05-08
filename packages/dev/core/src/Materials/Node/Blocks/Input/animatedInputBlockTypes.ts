@@ -8,4 +8,5 @@ export enum AnimatedInputBlockTypes {
     Time,
     /** Time elapsed (in seconds) since the engine was initialized. Will only work for floats */
     RealTime,
+    MouseInfo,
 }

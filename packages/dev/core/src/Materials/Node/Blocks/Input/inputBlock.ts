@@ -8,7 +8,7 @@ import type { Effect } from "../../../../Materials/effect";
 import { Matrix, Vector2, Vector3, Vector4 } from "../../../../Maths/math.vector";
 import type { Scene } from "../../../../scene";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { GetClass, RegisterClass } from "../../../../Misc/typeStore";
 import { Color3, Color4, TmpColors } from "../../../../Maths/math";
@@ -392,6 +392,21 @@ export class InputBlock extends NodeMaterialBlock {
             case AnimatedInputBlockTypes.RealTime: {
                 if (this.type === NodeMaterialBlockConnectionPointTypes.Float) {
                     this.value = (PrecisionDate.Now - scene.getEngine().startTime) / 1000;
+                }
+                break;
+            }
+            case AnimatedInputBlockTypes.MouseInfo: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    const event = scene._inputManager._originMouseEvent;
+                    if (event) {
+                        const x = event.offsetX;
+                        const y = event.offsetY;
+                        const z = (event.buttons & 1) != 0 ? 1 : 0;
+                        const w = (event.buttons & 2) != 0 ? 1 : 0;
+                        this.value = new Vector4(x, y, z, w);
+                    } else {
+                        this.value = new Vector4(0, 0, 0, 0);
+                    }
                 }
                 break;
             }

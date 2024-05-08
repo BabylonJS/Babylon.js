@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
@@ -21,6 +21,7 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { WebGPUEngine } from "core/Engines";
 
 /**
  * Block used to read a texture from a sampler

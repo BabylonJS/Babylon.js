@@ -2,7 +2,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlock
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
 import { ShaderLanguage } from "../shaderLanguage";
-import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
 import { Constants } from "../../Engines/constants";
 

@@ -562,6 +562,11 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
             return;
         }
 
+        // if the joint is already created, don't create it again for preventing memory leaks
+        if (impostorJoint.joint.physicsJoint) {
+            return;
+        }
+
         const jointData = impostorJoint.joint.jointData;
         if (!jointData.mainPivot) {
             jointData.mainPivot = new Vector3(0, 0, 0);
@@ -578,12 +583,14 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     jointData.mainPivot = new Vector3(0, -distance / 2, 0);
                     jointData.connectedPivot = new Vector3(0, distance / 2, 0);
                 }
-                joint = new this.bjsAMMO.btPoint2PointConstraint(
-                    mainBody,
-                    connectedBody,
-                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
-                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
-                );
+
+                const mainPivot = this._tmpAmmoVectorA;
+                mainPivot.setValue(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z);
+
+                const connectedPivot = this._tmpAmmoVectorB;
+                connectedPivot.setValue(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z);
+
+                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, mainPivot, connectedPivot);
                 break;
             }
             case PhysicsJoint.HingeJoint: {
@@ -593,35 +600,44 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                 if (!jointData.connectedAxis) {
                     jointData.connectedAxis = new Vector3(0, 0, 0);
                 }
-                const mainAxis = new this.bjsAMMO.btVector3(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z);
-                const connectedAxis = new this.bjsAMMO.btVector3(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z);
-                joint = new this.bjsAMMO.btHingeConstraint(
-                    mainBody,
-                    connectedBody,
-                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
-                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z),
-                    mainAxis,
-                    connectedAxis
-                );
+
+                const mainPivot = this._tmpAmmoVectorA;
+                mainPivot.setValue(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z);
+
+                const connectedPivot = this._tmpAmmoVectorB;
+                connectedPivot.setValue(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z);
+
+                const mainAxis = this._tmpAmmoVectorC;
+                mainAxis.setValue(jointData.mainAxis.x, jointData.mainAxis.y, jointData.mainAxis.z);
+
+                const connectedAxis = this._tmpAmmoVectorD;
+                connectedAxis.setValue(jointData.connectedAxis.x, jointData.connectedAxis.y, jointData.connectedAxis.z);
+
+                joint = new this.bjsAMMO.btHingeConstraint(mainBody, connectedBody, mainPivot, connectedPivot, mainAxis, connectedAxis);
                 break;
             }
-            case PhysicsJoint.BallAndSocketJoint:
-                joint = new this.bjsAMMO.btPoint2PointConstraint(
-                    mainBody,
-                    connectedBody,
-                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
-                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
-                );
+            case PhysicsJoint.BallAndSocketJoint: {
+                const mainPivot = this._tmpAmmoVectorA;
+                mainPivot.setValue(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z);
+
+                const connectedPivot = this._tmpAmmoVectorB;
+                connectedPivot.setValue(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z);
+
+                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, mainPivot, connectedPivot);
                 break;
-            default:
+            }
+            default: {
                 Logger.Warn("JointType not currently supported by the Ammo plugin, falling back to PhysicsJoint.BallAndSocketJoint");
-                joint = new this.bjsAMMO.btPoint2PointConstraint(
-                    mainBody,
-                    connectedBody,
-                    new this.bjsAMMO.btVector3(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z),
-                    new this.bjsAMMO.btVector3(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z)
-                );
+
+                const mainPivot = this._tmpAmmoVectorA;
+                mainPivot.setValue(jointData.mainPivot.x, jointData.mainPivot.y, jointData.mainPivot.z);
+
+                const connectedPivot = this._tmpAmmoVectorB;
+                connectedPivot.setValue(jointData.connectedPivot.x, jointData.connectedPivot.y, jointData.connectedPivot.z);
+
+                joint = new this.bjsAMMO.btPoint2PointConstraint(mainBody, connectedBody, mainPivot, connectedPivot);
                 break;
+            }
         }
         this.world.addConstraint(joint, !impostorJoint.joint.jointData.collision);
         impostorJoint.joint.physicsJoint = joint;
@@ -635,6 +651,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         if (this.world) {
             this.world.removeConstraint(impostorJoint.joint.physicsJoint);
         }
+        this.bjsAMMO.destroy(impostorJoint.joint.physicsJoint);
     }
 
     // adds all verticies (including child verticies) to the triangle mesh
@@ -1047,10 +1064,13 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
                     returnValue = new this.bjsAMMO.btSphereShape(impostorExtents.x / 2);
                 } else {
                     // create a btMultiSphereShape because it's not possible to set a local scaling on a btSphereShape
-                    const positions = [new this.bjsAMMO.btVector3(0, 0, 0)];
+                    this._tmpAmmoVectorA.setValue(0, 0, 0);
+                    const positions = [this._tmpAmmoVectorA];
                     const radii = [1];
                     returnValue = new this.bjsAMMO.btMultiSphereShape(positions, radii, 1);
-                    returnValue.setLocalScaling(new this.bjsAMMO.btVector3(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2));
+
+                    this._tmpAmmoVectorA.setValue(impostorExtents.x / 2, impostorExtents.y / 2, impostorExtents.z / 2);
+                    returnValue.setLocalScaling(this._tmpAmmoVectorA);
                 }
                 break;
             case PhysicsImpostor.CapsuleImpostor:
@@ -1588,6 +1608,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
     public dispose() {
         // Dispose of world
         this.bjsAMMO.destroy(this.world);
+        this.bjsAMMO.destroy(this._softBodySolver);
         this.bjsAMMO.destroy(this._solver);
         this.bjsAMMO.destroy(this._overlappingPairCache);
         this.bjsAMMO.destroy(this._dispatcher);
@@ -1597,6 +1618,7 @@ export class AmmoJSPlugin implements IPhysicsEnginePlugin {
         this.bjsAMMO.destroy(this._tmpAmmoVectorA);
         this.bjsAMMO.destroy(this._tmpAmmoVectorB);
         this.bjsAMMO.destroy(this._tmpAmmoVectorC);
+        this.bjsAMMO.destroy(this._tmpAmmoVectorD);
         this.bjsAMMO.destroy(this._tmpAmmoTransform);
         this.bjsAMMO.destroy(this._tmpAmmoQuaternion);
         this.bjsAMMO.destroy(this._tmpAmmoConcreteContactResultCallback);

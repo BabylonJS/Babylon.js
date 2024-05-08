@@ -27,7 +27,6 @@ import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
 import type { ExternalTexture } from "../Materials/Textures/externalTexture";
-import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { DepthTextureCreationOptions, InternalTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
@@ -365,20 +364,6 @@ export abstract class AbstractEngine {
      * @param effect defines the effect to bind
      */
     public abstract bindSamplers(effect: Effect): void;
-
-    /**
-     * Creates an external texture
-     * @param video video element
-     * @returns the external texture, or null if external textures are not supported by the engine
-     */
-    public abstract createExternalTexture(video: HTMLVideoElement): Nullable<ExternalTexture>;
-
-    /**
-     * Sets an internal texture to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param texture The texture to apply
-     */
-    public abstract setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void;
 
     /**
      * @internal
@@ -1239,35 +1224,6 @@ export abstract class AbstractEngine {
     ): void;
 
     /**
-     * Creates a storage buffer
-     * @param data the data for the storage buffer or the size of the buffer
-     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
-     * @param label defines the label of the buffer (for debug purpose)
-     * @returns the new buffer
-     */
-    public abstract createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer;
-
-    /**
-     * Updates a storage buffer
-     * @param buffer the storage buffer to update
-     * @param data the data used to update the storage buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public abstract updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-
-    /**
-     * Read data from a storage buffer
-     * @param storageBuffer The storage buffer to read from
-     * @param offset The offset in the storage buffer to start reading from (default: 0)
-     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
-     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
-     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
-     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
-     */
-    public abstract readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView>;
-
-    /**
      * Draw a list of indexed primitives
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
@@ -1527,20 +1483,6 @@ export abstract class AbstractEngine {
 
         this._viewport(x * width, y * height, width * viewport.width, height * viewport.height);
     }
-
-    /**
-     * Sets a storage buffer in the shader
-     * @param name Defines the name of the storage buffer as defined in the shader
-     * @param buffer Defines the value to give to the uniform
-     */
-    public abstract setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
-
-    /**
-     * Sets a texture sampler to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param sampler The sampler to apply
-     */
-    public abstract setTextureSampler(name: string, sampler: Nullable<TextureSampler>): void;
 
     /**
      * Update the sampling mode of a given texture

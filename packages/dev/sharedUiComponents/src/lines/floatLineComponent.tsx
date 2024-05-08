@@ -1,5 +1,4 @@
 import * as React from "react";
-
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
@@ -7,6 +6,8 @@ import { SliderLineComponent } from "./sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
 import { InputArrowsComponent } from "./inputArrowsComponent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
+import copyIcon from "./copy.svg";
 
 interface IFloatLineComponentProps {
     label: string;
@@ -191,6 +192,21 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
         }
     }
 
+    // Copy to clipboard the code this slider actually does
+    // Example : BaseParticleSystem.minScaleX = 1.0;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         let valueAsNumber: number;
 
@@ -255,6 +271,9 @@ export class FloatLineComponent extends React.Component<IFloatLineComponentProps
                             )}
                         </div>
                         {this.props.unit}
+                        <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                            <img src={copyIcon} alt="Copy" />
+                        </div>
                     </div>
                 )}
                 {this.props.useEuler && (

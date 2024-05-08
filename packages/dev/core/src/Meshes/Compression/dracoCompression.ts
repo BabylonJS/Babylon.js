@@ -176,6 +176,21 @@ export class DracoCompression implements IDisposable {
     }
 
     /**
+     * Reset the default draco compression object to null and disposing the removed default instance.
+     * Note that if the workerPool is a member of the static Configuration object it is recommended not to run dispose,
+     * unless the static worker pool is no longer needed.
+     * @param skipDispose set to true to not dispose the removed default instance
+     */
+    public static ResetDefault(skipDispose?: boolean): void {
+        if (DracoCompression._Default) {
+            if (!skipDispose) {
+                DracoCompression._Default.dispose();
+            }
+            DracoCompression._Default = null;
+        }
+    }
+
+    /**
      * Constructor
      * @param numWorkers The number of workers for async operations Or an options object. Specify `0` to disable web workers and run synchronously in the current context.
      */

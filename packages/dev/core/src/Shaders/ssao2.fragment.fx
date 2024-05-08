@@ -49,7 +49,7 @@ varying vec2 vUV;
 	{
 		vec3 random = textureLod(randomSampler, vUV * randTextureTiles, 0.0).rgb;
 		float depth = textureLod(depthSampler, vUV, 0.0).r;
-		float depthSign = depth / abs(depth);
+		float depthSign = sign(depth);
 		depth = depth * depthSign;
 		vec3 normal = textureLod(normalSampler, vUV, 0.0).rgb;
 		float occlusion = 0.0;

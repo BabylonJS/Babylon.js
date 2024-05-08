@@ -787,12 +787,14 @@
         {
             "title": "GLTF Serializer Morph Target Animation Group",
             "playgroundId": "#T087A8#29",
-            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
+            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GLTF Serializer KHR materials clearcoat",
             "playgroundId": "#9N6CLU#23",
-            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
+            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GLTF Serializer KHR gpu instancing",

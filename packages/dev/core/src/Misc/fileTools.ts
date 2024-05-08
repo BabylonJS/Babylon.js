@@ -77,6 +77,17 @@ export class ReadFileError extends RuntimeError {
         BaseError._setPrototypeOf(this, ReadFileError.prototype);
     }
 }
+
+/**
+ * Removes unwanted characters from an url
+ * @param url defines the url to clean
+ * @returns the cleaned url
+ */
+const CleanUrl = (url: string): string => {
+    url = url.replace(/#/gm, "%23");
+    return url;
+};
+
 /**
  * @internal
  */
@@ -87,6 +98,7 @@ export const FileToolsOptions: {
     PreprocessUrl: (url: string) => string;
     ScriptBaseUrl: string;
     ScriptPreprocessUrl: (url: string) => string;
+    CleanUrl: (url: string) => string;
 } = {
     /**
      * Gets or sets the retry strategy to apply when an error happens while loading an asset.
@@ -126,17 +138,13 @@ export const FileToolsOptions: {
      * @returns the processed url
      */
     ScriptPreprocessUrl: (url: string) => url,
-};
 
-/**
- * Removes unwanted characters from an url
- * @param url defines the url to clean
- * @returns the cleaned url
- */
-// eslint-disable-next-line prefer-const
-export let CleanUrl = (url: string): string => {
-    url = url.replace(/#/gm, "%23");
-    return url;
+    /**
+     * Gets or sets a function used to clean the url before using it to load assets
+     * @param url defines the url to clean
+     * @returns the cleaned url
+     */
+    CleanUrl,
 };
 
 /**
@@ -201,7 +209,7 @@ export const LoadImage = (
         url = URL.createObjectURL(input);
         usingObjectURL = true;
     } else {
-        url = CleanUrl(input);
+        url = FileToolsOptions.CleanUrl(input);
         url = FileToolsOptions.PreprocessUrl(input);
     }
 
@@ -523,7 +531,7 @@ export const RequestFile = (
     onError?: (error: RequestFileError) => void,
     onOpened?: (request: WebRequest) => void
 ): IFileRequest => {
-    url = CleanUrl(url);
+    url = FileToolsOptions.CleanUrl(url);
     url = FileToolsOptions.PreprocessUrl(url);
 
     const loadUrl = FileToolsOptions.BaseUrl + url;
@@ -835,15 +843,12 @@ export let FileTools: {
     SetCorsBehavior: (url: string | string[], element: { crossOrigin: string | null }) => void;
 };
 /**
- * @param DecodeBase64UrlToBinary
- * @param DecodeBase64UrlToString
- * @param FileToolsOptions
  * @internal
  */
 export const _injectLTSFileTools = (
     DecodeBase64UrlToBinary: (uri: string) => ArrayBuffer,
     DecodeBase64UrlToString: (uri: string) => string,
-    FileToolsOptions: { DefaultRetryStrategy: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any },
+    FileToolsOptions: { DefaultRetryStrategy: any; BaseUrl: any; CorsBehavior: any; PreprocessUrl: any; CleanUrl: any },
     IsBase64DataUrl: (uri: string) => boolean,
     IsFileURL: () => boolean,
     LoadFile: (
