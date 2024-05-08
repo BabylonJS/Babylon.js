@@ -123,6 +123,9 @@ export class Control implements IAnimatable {
     /** @internal */
     protected _rebuildLayout = false;
 
+    /** @internal */
+    protected _urlRewriter?: (url: string) => string;
+
     /**
      * Observable that fires when the control's enabled state changes
      */
@@ -2478,9 +2481,11 @@ export class Control implements IAnimatable {
      * Parses a serialized object into this control
      * @param serializedObject the object with the serialized properties
      * @param host the texture where the control will be instantiated. Can be empty, in which case the control will be created on the same texture
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns this control
      */
-    public parse(serializedObject: any, host?: AdvancedDynamicTexture): Control {
+    public parse(serializedObject: any, host?: AdvancedDynamicTexture, urlRewriter?: (url: string) => string): Control {
+        this._urlRewriter = urlRewriter;
         SerializationHelper.Parse(() => this, serializedObject, null);
 
         this.name = serializedObject.name;
@@ -2533,7 +2538,7 @@ export class Control implements IAnimatable {
     /**
      * @internal
      */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture, urlRewriter?: (url: string) => string) {
         if (serializedObject.fontFamily) {
             this.fontFamily = serializedObject.fontFamily;
         }
@@ -2683,15 +2688,24 @@ export class Control implements IAnimatable {
      * Creates a Control from parsed data
      * @param serializedObject defines parsed data
      * @param host defines the hosting AdvancedDynamicTexture
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a new Control
      */
-    public static Parse(serializedObject: any, host: AdvancedDynamicTexture): Control {
+    public static Parse(serializedObject: any, host: AdvancedDynamicTexture, urlRewriter?: (url: string) => string): Control {
         const controlType = Tools.Instantiate("BABYLON.GUI." + serializedObject.className);
-        const control = SerializationHelper.Parse(() => new controlType(), serializedObject, null);
+        const control = SerializationHelper.Parse(
+            () => {
+                const newControl = new controlType() as Control;
+                newControl._urlRewriter = urlRewriter;
+                return newControl;
+            },
+            serializedObject,
+            null
+        );
 
         control.name = serializedObject.name;
 
-        control._parseFromContent(serializedObject, host);
+        control._parseFromContent(serializedObject, host, urlRewriter);
 
         return control;
     }

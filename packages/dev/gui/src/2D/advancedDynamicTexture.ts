@@ -1263,9 +1263,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      */
-    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean) {
-        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean, urlRewriter?: (url: string) => string) {
+        this._rootContainer = Control.Parse(serializedObject.root, this, urlRewriter) as Container;
         if (scaleToSize) {
             const width = serializedObject.width;
             const height = serializedObject.height;
@@ -1311,6 +1312,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @deprecated Please use parseSerializedObject instead
      */
     public parseContent = this.parseSerializedObject;
@@ -1320,16 +1322,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public static async ParseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+    public static async ParseFromSnippetAsync(
+        snippetId: string,
+        scaleToSize?: boolean,
+        appendToAdt?: AdvancedDynamicTexture,
+        urlRewriter?: (url: string) => string
+    ): Promise<AdvancedDynamicTexture> {
         const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from snippet");
         if (snippetId === "_BLANK") {
             return adt;
         }
 
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"), true);
-        adt.parseSerializedObject(serialized, scaleToSize);
+        adt.parseSerializedObject(serialized, scaleToSize, urlRewriter);
         return adt;
     }
 
@@ -1337,10 +1345,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this);
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
     }
 
     /**
@@ -1348,12 +1357,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param url defines the url to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+    public static async ParseFromFileAsync(
+        url: string,
+        scaleToSize?: boolean,
+        appendToAdt?: AdvancedDynamicTexture,
+        urlRewriter?: (url: string) => string
+    ): Promise<AdvancedDynamicTexture> {
         const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from URL");
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(url);
-        adt.parseSerializedObject(serialized, scaleToSize);
+        adt.parseSerializedObject(serialized, scaleToSize, urlRewriter);
         return adt;
     }
 
@@ -1361,10 +1376,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a url json
      * @param url defines the url to load
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this);
+    public parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
     }
 
     private static _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
