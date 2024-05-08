@@ -28,7 +28,7 @@ void main(void)
     if(N == vec3(0.0))
         return;
 
-    float depth = texelFetch(linearDepthSampler, PixelCoord, 0).x;
+    float depth = -texelFetch(linearDepthSampler, PixelCoord, 0).x;
 
     vec2 X = vec2(0.0);
     for(int y = 0; y < nbWeights; ++y) {
@@ -36,7 +36,7 @@ void main(void)
             ivec2 Coords = PixelCoord +  int(stridef) * ivec2(x - (nbWeights >> 1), y - (nbWeights >> 1));
 
             vec2 T = texelFetch(shadowSampler, Coords, 0).xy;
-            float ddepth = texelFetch(linearDepthSampler, Coords, 0).x - depth;
+            float ddepth = -texelFetch(linearDepthSampler, Coords, 0).x - depth;
             vec3 dN = texelFetch(worldNormalSampler, Coords, 0).xyz - N;
             float w = T.y * weights[x] * weights[y] * exp2(max(-1000.0 / (worldScale * worldScale), -0.5) * (ddepth * ddepth) - 1e1 * dot(dN, dN));
 
@@ -44,5 +44,5 @@ void main(void)
         }
     }
 
-    gl_FragColor = vec4(X.x / X.y, 1.0, 0.0, 0.0);
+    gl_FragColor = vec4(X.x / X.y, 1.0, 0.0, 1.0);
 }

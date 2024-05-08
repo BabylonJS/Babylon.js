@@ -43,5 +43,5 @@ void main(void) {
   PrevShadows = max(vec2(0.0), PrevShadows);
 
   gl_FragColor =
-      vec4(mix(PrevShadows.x, newShadows, PrevShadows.y), PrevShadows.y, 0, 0);
+      vec4(mix(PrevShadows.x, newShadows, PrevShadows.y), PrevShadows.y, 0, 1.0);
 }

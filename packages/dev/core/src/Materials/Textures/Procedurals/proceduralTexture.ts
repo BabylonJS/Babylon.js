@@ -75,6 +75,8 @@ export class ProceduralTexture extends Texture {
      */
     public nodeMaterialSource: Nullable<NodeMaterial> = null;
 
+    public defines: string = "";
+
     /** @internal */
     @serialize()
     public _generateMipMaps: boolean;
@@ -292,7 +294,7 @@ export class ProceduralTexture extends Texture {
     }
 
     protected _getDefines(): string {
-        return "";
+        return this.defines;
     }
 
     /**

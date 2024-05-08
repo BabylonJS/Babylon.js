@@ -82,7 +82,7 @@ export class IblShadowsAccumulationPass {
         const outputOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RG,
+            format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             skipJson: true,
@@ -101,7 +101,7 @@ export class IblShadowsAccumulationPass {
         const accumulationOptions: RenderTargetCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RG,
+            format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };

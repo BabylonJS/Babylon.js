@@ -240,7 +240,7 @@ export class IblShadowsImportanceSamplingRenderer {
         const cdfOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_R,
+            format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             skipJson: true,
@@ -248,7 +248,7 @@ export class IblShadowsImportanceSamplingRenderer {
         const icdfOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_R,
+            format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             skipJson: true,

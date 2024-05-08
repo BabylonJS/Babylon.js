@@ -77,8 +77,8 @@ export class IblShadowsSpatialBlurPass {
         const outputOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RG,
-            type: Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             skipJson: true,
         };
