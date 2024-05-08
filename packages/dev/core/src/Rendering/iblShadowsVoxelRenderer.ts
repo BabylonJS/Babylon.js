@@ -65,6 +65,10 @@ export class IblShadowsVoxelRenderer {
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
+    private _debugMipNumber: number = 0;
+    public setDebugMipNumber(mipNum: number) {
+        this._debugMipNumber = mipNum;
+    }
     public get voxelDebugEnabled(): boolean {
         return this._voxelDebugEnabled;
     }
@@ -82,13 +86,17 @@ export class IblShadowsVoxelRenderer {
                 ["voxelTexture"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
-                Texture.BILINEAR_SAMPLINGMODE, // sampling
-                this._engine // engine
+                Texture.NEAREST_SAMPLINGMODE, // sampling
+                this._engine, // engine,
+                true,
+                "#define MIP_NUMBER " + this._debugMipNumber
             );
             this._voxelDebugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTexture("voxelTexture", this._voxelGridRT);
                 effect.setVector4("sizeParams", this._debugSizeParams);
+                effect.setFloat("mipNumber", this._debugMipNumber);
+                effect.defines = "#define MIP_NUMBER " + this._debugMipNumber;
             };
         }
     }

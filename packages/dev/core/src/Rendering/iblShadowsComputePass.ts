@@ -83,7 +83,7 @@ export class IblShadowsComputePass {
         const outputOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RG,
+            format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             skipJson: true,
@@ -132,6 +132,7 @@ export class IblShadowsComputePass {
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
         this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());
         this._outputPT.setTexture("icdfxSampler", this._scene.iblShadowsRenderer!.getIcdfxTexture());
+        this._outputPT.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log(voxelGrid!.getSize().width).toFixed(0) + "u\n";
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {

@@ -119,6 +119,10 @@ export class IblShadowsRenderer {
         this._voxelRenderer.voxelDebugEnabled = enabled;
     }
 
+    public set voxelDebugDisplayMip(mipNum: number) {
+        this._voxelRenderer.setDebugMipNumber(mipNum);
+    }
+
     public get shadowComputeDebugEnabled(): boolean {
         return this._shadowComputePass.debugEnabled;
     }
