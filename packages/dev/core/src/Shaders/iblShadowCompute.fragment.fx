@@ -379,34 +379,19 @@ void genTB(const vec3 N, out vec3 T, out vec3 B) {
   B = vec3(b, s + N.y * N.y * a, -N.y);
 }
 
-bool anyHitVoxelsSimple(const vec3 O, const vec3 D) {
-  const float stepSize = 0.01;
+// Super simple voxel traversal. Just start at the t_min and step along the ray
+bool anyHitVoxelsSimple(const Ray ray_vs) {
   const int maxSteps = 100;
-  const float selfShadowingOffset =
-      stepSize * 0.75; // Adjust this value as needed
-  vec3 currentPosition = O + D * selfShadowingOffset; // Offset the ray origin
-  vec3 step = D * stepSize;
-
-  // Check if the ray will intersect the voxel grid
-  vec3 t0 = (vec3(0.0, 0.0, 0.0) - O) / D;
-  vec3 t1 = (vec3(1.0, 1.0, 1.0) - O) / D;
-  vec3 tmin = min(t0, t1);
-  vec3 tmax = max(t0, t1);
-  float tEnter = max(max(tmin.x, tmin.y), tmin.z);
-  float tExit = min(min(tmax.x, tmax.y), tmax.z);
-  if (tEnter > tExit || tExit < 0.0) {
+  float stepSize = (ray_vs.t_max - ray_vs.t_min) / float(maxSteps);
+  vec3 currentPosition = ray_vs.orig + ray_vs.dir * ray_vs.t_min;
+  vec3 step = ray_vs.dir * stepSize;
+  if (ray_vs.t_min > ray_vs.t_max || ray_vs.t_max < 0.0) {
     return false;
   }
-
   for (int i = 0; i < maxSteps; ++i) {
-    // TODO - If the direction isn't pointing at the voxel grid, discard.
-    if (currentPosition.x >= 0.0 && currentPosition.y >= 0.0 &&
-        currentPosition.z >= 0.0 && currentPosition.x <= 1.0 &&
-        currentPosition.y <= 1.0 && currentPosition.z <= 1.0) {
-      float voxelValue = texture(voxelGridSampler, currentPosition).r;
-      if (voxelValue > 0.0) {
-        return true;
-      }
+    float voxelValue = texture(voxelGridSampler, currentPosition).r;
+    if (voxelValue > 0.0) {
+      return true;
     }
     currentPosition += step;
   }
@@ -575,18 +560,18 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal, vec2 DitherNoi
 
     float near, far;
     if (!ray_box_intersection(near, far, voxel_aabb, ray_vs))
-        return false;
+      return 0.0;
 
     ray_vs.t_min = max(ray_vs.t_min, near);
     ray_vs.t_max = min(ray_vs.t_max, far);
 
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    return hierarchical_march(ray_vs, out_diagnostic_info) ? 1.0f : 0.0f;
-#else
-    return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
-#endif
+    // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+    //     return hierarchical_march(ray_vs, out_diagnostic_info) ? 1.0f : 0.0f;
+    // #else
+    //     return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
+    // #endif
 
-  // return anyHitVoxelsSimple(O, wsDirection) ? 1.0f : 0.0f;
+    return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
 }
 
 void main(void) {
@@ -596,7 +581,7 @@ void main(void) {
   float envRot = SHADOWenvRot;
 
   vec2 Resolution = vec2(textureSize(depthSampler, 0));
-  ivec2 currentPixel = ivec2(max(vUV * Resolution - vec2(0.5), vec2(0.0)));
+  ivec2 currentPixel = ivec2(vUV * Resolution);
   ivec2 PixelCoord = ivec2(vec2(currentPixel * downscale) + PixelOffset.xy);
   uint GlobalIndex =
       (frameId * uint(Resolution.y) + uint(PixelCoord.y)) * uint(Resolution.x) +
@@ -667,10 +652,10 @@ void main(void) {
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
-    } else if (linearZ_alpha.y > 0.0) {
-      shadowAccum += opacity / float(nbDirs);
+      // } else if (linearZ_alpha.y > 0.0) {
+      //   shadowAccum += opacity / float(nbDirs);
     } else {
-      shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
+      shadowAccum += 1.0; // min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
     }
     noise.z = fract(noise.z + GOLD);
   }
