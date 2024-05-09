@@ -472,6 +472,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         };
 
         blurFilter.samples = this.textureSamples;
+        blurFilter.autoClear = false;
         return blurFilter;
     }
 
@@ -566,6 +567,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             defines,
             textureType
         );
+        this._ssaoPostProcess.autoClear = false;
 
         this._ssaoPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
@@ -635,6 +637,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
             effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
+        this._ssaoCombinePostProcess.autoClear = false;
         this._ssaoCombinePostProcess.samples = this.textureSamples;
     }
 
