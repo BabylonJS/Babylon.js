@@ -20,19 +20,22 @@ vec2 max2(vec2 v, vec2 w) { return vec2(max(v.x, w.x), max(v.y, w.y)); }
 void main(void) {
   bool reset = bool(resetb);
   vec2 Resolution = vec2(textureSize(shadowSampler, 0));
-  ivec2 currentPixel = ivec2(max2(vUV * Resolution - vec2(0.5), vec2(0.0)));
-  vec4 LP = texture(localPositionSampler, vUV);
-  // vec4 LP = texelFetch(localPositionSampler, currentPixel, 0);
+  ivec2 currentPixel = ivec2(vUV * Resolution);
+  // vec4 LP = texture(localPositionSampler, vUV);
+  vec4 LP = texelFetch(localPositionSampler, currentPixel, 0);
   if (0.0 == LP.w) {
     gl_FragColor = vec4(0.0);
     return;
   }
   vec2 velocityColor = texelFetch(motionSampler, currentPixel, 0).xy;
-  velocityColor.rg = velocityColor.rg * 2.0 - vec2(1.0);
+  // Since the velocity is stored as 8-bit RGB, the neutral value isn't actually
+  // 0.5. It's 127/255 = 0.49803921568.
+  velocityColor.rg =
+      velocityColor.rg * 2.0 + vec2(0.00392156862745) - vec2(1.0);
 
   vec2 prevCoord = vUV + velocityColor;
-  vec3 PrevLP = texture(prevLocalPositionSampler, prevCoord).xyz;
-  vec2 PrevShadows = texture(oldAccumulationSampler, prevCoord).xy;
+  vec3 PrevLP = textureLod(prevLocalPositionSampler, prevCoord, 0.0).xyz;
+  vec2 PrevShadows = textureLod(oldAccumulationSampler, prevCoord, 0.0).xy;
   float newShadows = texelFetch(shadowSampler, currentPixel, 0).x;
 
   PrevShadows.y =

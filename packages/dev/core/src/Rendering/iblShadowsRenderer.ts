@@ -102,6 +102,9 @@ export class IblShadowsRenderer {
     public getBlurShadowTexture(): Texture {
         return this._spatialBlurPass!.getTexture();
     }
+    public getAccumulatedShadowTexture(): Texture {
+        return this._accumulationPass!.getTexture();
+    }
 
     public get importanceSamplingDebugEnabled(): boolean {
         return this._importanceSamplingRenderer.debugEnabled;

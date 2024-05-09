@@ -23,7 +23,7 @@ export class IblShadowsComputePass {
     private _cameraInvProj: Matrix = Matrix.Identity();
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
     private _frameId: number = 0;
-    private _sampleDirections: number = 2;
+    private _sampleDirections: number = 4;
     private _downscale: number = 1.0;
 
     public getTexture(): CustomProceduralTexture {
