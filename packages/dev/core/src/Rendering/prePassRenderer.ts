@@ -550,6 +550,10 @@ export class PrePassRenderer {
      * @internal
      */
     public _clear() {
+        if (this._isDirty) {
+            this._update();
+        }
+
         if (this._enabled && this._currentTarget.enabled) {
             this._bindFrameBuffer();
 
