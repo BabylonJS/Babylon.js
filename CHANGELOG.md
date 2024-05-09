@@ -1,5 +1,55 @@
 # Changelog
 
+## 7.6.0
+
+### Core
+
+- Add some unit tests for valid input combinations and dynamically updated output type - by [ryantrem](https://github.com/ryantrem) ([#15082](https://github.com/BabylonJS/Babylon.js/pull/15082))
+- KTXTextureLoader - Push instead of unshift - by [RaananW](https://github.com/RaananW) ([#15081](https://github.com/BabylonJS/Babylon.js/pull/15081))
+- Failproof the snippet reference in NearInteraction - by [RaananW](https://github.com/RaananW) ([#15078](https://github.com/BabylonJS/Babylon.js/pull/15078))
+- Fix ammo.js memory leak - by [noname0310](https://github.com/noname0310) ([#15075](https://github.com/BabylonJS/Babylon.js/pull/15075))
+- Allow changing CleanUrl from Tools - by [RaananW](https://github.com/RaananW) ([#15076](https://github.com/BabylonJS/Babylon.js/pull/15076))
+- Adding new debug tools to the scene Inspector : copyCommandToClipboar… - by [Tricotou](https://github.com/Tricotou) ([#15066](https://github.com/BabylonJS/Babylon.js/pull/15066))
+- Allow resetting the default draco instance - by [RaananW](https://github.com/RaananW) ([#15072](https://github.com/BabylonJS/Babylon.js/pull/15072))
+- WebGPU: Fix this being undefined in some callbacks - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15073](https://github.com/BabylonJS/Babylon.js/pull/15073))
+- Update Tensor types, for accuracy - by [dr-vortex](https://github.com/dr-vortex) ([#15053](https://github.com/BabylonJS/Babylon.js/pull/15053))
+- WebGPU: Fix SSAO - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15070](https://github.com/BabylonJS/Babylon.js/pull/15070))
+- Quick Workaround on thin engine build issues - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15069](https://github.com/BabylonJS/Babylon.js/pull/15069))
+- Fix an issue with native engine function extension. - by [RaananW](https://github.com/RaananW) ([#15063](https://github.com/BabylonJS/Babylon.js/pull/15063))
+- Mouse Block - by [onekit-boss](https://github.com/onekit-boss) ([#15061](https://github.com/BabylonJS/Babylon.js/pull/15061))
+- Support older typescript versions - by [RaananW](https://github.com/RaananW) ([#15068](https://github.com/BabylonJS/Babylon.js/pull/15068))
+- SSR: Fix in orthographic mode - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15067](https://github.com/BabylonJS/Babylon.js/pull/15067))
+- Revert "Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode" - by [deltakosh](https://github.com/deltakosh) ([#15065](https://github.com/BabylonJS/Babylon.js/pull/15065))
+- The disposed engine needs to be the thinengine - by [RaananW](https://github.com/RaananW) ([#15059](https://github.com/BabylonJS/Babylon.js/pull/15059))
+- xrCompatible false per default, canvas made compatible on demand - [_Breaking Change_] by [RaananW](https://github.com/RaananW) ([#15027](https://github.com/BabylonJS/Babylon.js/pull/15027))
+- Allow output type changes to propagate through the NME graph - by [ryantrem](https://github.com/ryantrem) ([#15060](https://github.com/BabylonJS/Babylon.js/pull/15060))
+- Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode - [_New Feature_] by [Tricotou](https://github.com/Tricotou) ([#15050](https://github.com/BabylonJS/Babylon.js/pull/15050))
+- Updated engine caps to enable linear sampling from float and half float - by [SergioRZMasson](https://github.com/SergioRZMasson) ([#15052](https://github.com/BabylonJS/Babylon.js/pull/15052))
+- Fix GetFontOffset missing in ThinEngine - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#15058](https://github.com/BabylonJS/Babylon.js/pull/15058))
+
+### GUI
+
+- GUI JSON parse - provide callback to allow updating link URLs from development to production servers - by [deltakosh](https://github.com/deltakosh) ([#15079](https://github.com/BabylonJS/Babylon.js/pull/15079))
+- Fix GetFontOffset missing in ThinEngine - [_Bug Fix_] by [RaananW](https://github.com/RaananW) ([#15058](https://github.com/BabylonJS/Babylon.js/pull/15058))
+
+### GUI Editor
+
+- Adding new debug tools to the scene Inspector : copyCommandToClipboar… - by [Tricotou](https://github.com/Tricotou) ([#15066](https://github.com/BabylonJS/Babylon.js/pull/15066))
+
+### Inspector
+
+- Adding new debug tools to the scene Inspector : copyCommandToClipboar… - by [Tricotou](https://github.com/Tricotou) ([#15066](https://github.com/BabylonJS/Babylon.js/pull/15066))
+- Revert "Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode" - by [deltakosh](https://github.com/deltakosh) ([#15065](https://github.com/BabylonJS/Babylon.js/pull/15065))
+- Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode - [_New Feature_] by [Tricotou](https://github.com/Tricotou) ([#15050](https://github.com/BabylonJS/Babylon.js/pull/15050))
+
+### Node Editor
+
+- Adding new debug tools to the scene Inspector : copyCommandToClipboar… - by [Tricotou](https://github.com/Tricotou) ([#15066](https://github.com/BabylonJS/Babylon.js/pull/15066))
+- Mouse Block - by [onekit-boss](https://github.com/onekit-boss) ([#15061](https://github.com/BabylonJS/Babylon.js/pull/15061))
+
+### Playground
+
+
 ## 7.5.0
 
 ### Core

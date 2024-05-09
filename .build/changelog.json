@@ -1,7 +1,536 @@
 {
-    "fromTag": "7.4.0",
+    "fromTag": "7.5.0",
     "changelog": {
-        "7.4.0": [],
+        "7.6.0": [
+            {
+                "pr": "15082",
+                "title": "Add some unit tests for valid input combinations and dynamically updated output type",
+                "description": "This is a follow up from #15060, adding some unit tests the validate:\r\n1. Invalid combinations of input types throw\r\n2. Output type is correctly deduced from input combinations\r\n3. Output type is updated if left or right inputs are reconnected\r\n4. Output type is updated if the output type of the node connected to left/right is updated\r\n\r\nWe had talked about adding a visual test with the [PG](https://playground.babylonjs.com/#D1H1LY#36) that helped reveal a bug around number 4 above, but it's quite complex and pulls in external assets (e.g. from dropbox). I thought about boiling this down to a simpler NME graph containing a MultiplyBlock where the left and right are floats but then the left switches to vector3 (this is effectively the min repro) and render something with that simple shader, but it didn't seem like this really added anything beyond what we'd get from unit tests, so I just wrote unit tests for the core issue (dynamically changing output types). If anyone still thinks a visual test would be useful for this scenario, let me know.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/Materials/Node/Blocks/mathBlocks.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15081",
+                "title": "KTXTextureLoader - Push instead of unshift",
+                "description": "Reasoning is this - if someone registers a different KTX Loader for the same mime types before this one is created, this one is still prioritized because it is being unshifted into the first position instead of being pushed to the last position.\n\nSince this is the only loader for ktx2 we have in our repo, there is no reason using unshift",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15080",
+                "title": "Fixes for playground and sandbox",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/monacoManager.ts",
+                    "packages/tools/sandbox/src/components/footer.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15079",
+                "title": "GUI JSON parse - provide callback to allow updating link URLs from development to production servers",
+                "description": "PG to test: https://playground.babylonjs.com/#8E97ZW#1",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/container.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15078",
+                "title": "Failproof the snippet reference in NearInteraction",
+                "description": "Fixes #14989",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15075",
+                "title": "Fix ammo.js memory leak",
+                "description": "Before using the AmmoJSPlugin in my project, I reviewed the source and found that there is a memory leak: objects created by the new this.bjsAMMO statement must be distroyed. \r\n\r\nRun this pg, then wait about 40 minutes and you should see Out of memory.\r\nhttps://playground.babylonjs.com/#T8H6S1\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/48761044/42b88f6a-892a-4b11-81dc-89fedcad1409)\r\n",
+                "author": {
+                    "name": "noname0310",
+                    "url": "https://github.com/noname0310"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v1/Plugins/ammoJSPlugin.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15076",
+                "title": "Allow changing CleanUrl from Tools",
+                "description": "This moves CleanUrl to FileToolsOptions, and proxy the change to tools (similar to BaseUrl)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts",
+                    "packages/dev/core/src/Misc/tools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15066",
+                "title": "Adding new debug tools to the scene Inspector : copyCommandToClipboar…",
+                "description": "Same version than final state of [previous PR 15050](https://github.com/BabylonJS/Babylon.js/pull/15050/)\r\n  PLUS the following :\r\n____\r\nAdded a fix (`.SCSS` only) on some broken tools, NME, NGE, gui-editor, where copy buttons where appearing, due to modification of the sharedUI line components.\r\n____\r\nBuilt locally and tested on `Playground`, `Sandbox`, `NME`, `NGE`, `GuiEditor`",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts",
+                    "packages/dev/core/src/Lights/hemisphericLight.ts",
+                    "packages/dev/core/src/Lights/pointLight.ts",
+                    "packages/dev/core/src/Lights/spotLight.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Misc/typeStore.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeNodeDebugger.ts",
+                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/guiEditor/src/scss/commandBar.scss",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/nodeEditor/src/main.scss",
+                    "packages/tools/nodeGeometryEditor/src/components/propertyTab/propertyTab.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15071",
+                "title": "Add GLSLANG and TWGSL to the core es6 package",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/core/NOTICE.md",
+                    "packages/public/@babylonjs/core/config.tasks.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15072",
+                "title": "Allow resetting the default draco instance",
+                "description": "This allows disposing the current default implementation and reset the removed instance.\nNote that if the workerPool is a member of the static Configuration object it is recommended not to run dispose, unless the static worker pool is no longer needed.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Compression/dracoCompression.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15073",
+                "title": "WebGPU: Fix this being undefined in some callbacks",
+                "description": "Fix after #15069 has been merged.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15053",
+                "title": "Update Tensor types, for accuracy",
+                "description": "This PR changes types on the Tensor API to be more accurate. The changes are described in more detail below.\r\n\r\n*Note: `Class` is used in place of some class in the Tensor API*\r\n\r\n### 1. `this` vs `Class`\r\n\r\nIn the example, `T extends this` and `DeepImmutable<this>` are inaccurate. The method does not need the arguments to be `this`, only that they are `Class`. When I was originally creating the Tensor API, I used `this` out of convenience. Doing so has caused several problems.\r\n\r\nUsing `this` instead of `Class` makes the type more strict. This is not needed with the Tensor API classes because they are compatible wth `Class`, not just `this`. The PR changes `this` to `Class` where `this` is not needed. Note that the return types of functions which return the value `this` are the type `this`.\r\n\r\nA brief example:\r\n```ts\r\nclass Primate {\r\n\t/**\r\n\t * Say hi to another primate;\r\n\t*/\r\n\tsayHi(other: this): void;\r\n}\r\n\r\nclass Human extends Primate { /* ... */ }\r\n\r\nconst sue = new Primate();\r\nconst ian = new Human();\r\n\r\nian.sayHi(sue); // error, `sue` is not a `Human`, but we want humans to be able to say hi to other primates\r\n```\r\n\r\n### 2. Introduction of `I`, the \"interface\" type, for compatibility.\r\n\r\nRecently, I've been working with shaders in GLSL. I've been amazed by the developer experience with operator overloading and thought something similar would be a huge boost for the Tensor API classes.\r\n\r\nI noticed a significant part of the vector math functions are of the form\r\n```ts\r\npublic operationToRef<T extends Class>(other: DeepImmutable<Class>, result: T): T {\r\n\tresult.x = this.x [[operator]] other.x;\r\n\tresult.y = this.y [[operator]] other.y;\r\n\t// ...\r\n\treturn result;\r\n}\r\n```\r\n\r\nMy line of thinking:\r\n1. All of the classes have a simple interface type (i.e. `IClassLike`)\r\n2. This interface type has coordinate members\r\n3. The method only modifies the coordinate members\r\n4. It is trivial to use the interface instead of the class for types\r\n5. Complex types that implement the interface can be used transparently.\r\n\r\nFor example, with `Vector4`:\r\n```ts\r\npublic addInPlace(other: DeepImmutable<IVector4Like>): this {\r\n\tthis.x += other.x;\r\n\tthis.y += other.y;\r\n\tthis.z += other.z;\r\n\tthis.w += other.w;\r\n\treturn this;\r\n}\r\n\r\n//similar for add, addToRef, subtract, etc.\r\n```\r\n\r\nWhich can then be used like `vec2.addInPlace(vec4)`. Note that this will not work for `vec3.*(vec4)` since the `Vector3` functions use the internal `_x`/`_y`/`_z`, which are not used by `Vector2` and `Vector4`.\r\n\r\nIn addition, when adding a vector of lower dimension, like `vec4.add(vec2)`, some coordinates may be set to `NaN`. This is reflected in the types. For example, `vec4.*` will only take an `IVector4Like`, so `IVector2Like` will give an error. While adding `|| 0` to the end of many operations would fix this simple issue, I have *not* done so due to performance concerns.\r\n\r\n### 3. Overengineered: `(value.constructor as Constructor<typeof Class, T>)`\r\n\r\n`(value.constructor as Constructor<typeof Class, T>)` is an incredibly verbose statement, which unnecessarily complicates things. Using `Class` instead makes the code much more readable, and provides a minor performance boost, since there is a single variable access (i.e. `Class`) instead of a variable access followed by a property lookup, which also involves the value prototype.",
+                "author": {
+                    "name": "dr-vortex",
+                    "url": "https://github.com/dr-vortex"
+                },
+                "files": [
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/tensor.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15070",
+                "title": "WebGPU: Fix SSAO",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/ssao2.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15069",
+                "title": "Quick Workaround on thin engine build issues",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/storageBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.externalTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.textureSampler.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.externalTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.storageBuffer.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.textureSampler.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Textures/htmlElementTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/videoTexture.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Particles/computeShaderParticleSystem.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "build"
+                ]
+            },
+            {
+                "pr": "15063",
+                "title": "Fix an issue with native engine function extension.",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.functions.ts",
+                    "packages/dev/core/src/Materials/effect.functions.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Materials/effect.webgl.functions.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15061",
+                "title": "Mouse Block",
+                "description": "Now, we can design a shader with mouse info,suck as x, y, leftButton, rightButton.",
+                "author": {
+                    "name": "onekit-boss",
+                    "url": "https://github.com/onekit-boss"
+                },
+                "files": [
+                    "packages/dev/core/src/Inputs/scene.inputManager.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/animatedInputBlockTypes.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/display/inputDisplayManager.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15068",
+                "title": "Support older typescript versions",
+                "description": "import { type ...} vs import type {...\n\nThere is no way to detect it using build, but I will try finding a way to automate this",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/fogBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/vertexOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15067",
+                "title": "SSR: Fix in orthographic mode",
+                "description": "See https://forum.babylonjs.com/t/screen-space-reflections-do-not-work-with-orthographic-camera/50178",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/screenSpaceRayTrace.fx",
+                    "packages/dev/core/src/Shaders/screenSpaceReflection2.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15065",
+                "title": "Revert \"Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode\"",
+                "description": "Reverts BabylonJS/Babylon.js#15050\r\n\r\nit is breaking all other tools (nme, etc)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts",
+                    "packages/dev/core/src/Lights/hemisphericLight.ts",
+                    "packages/dev/core/src/Lights/pointLight.ts",
+                    "packages/dev/core/src/Lights/spotLight.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Misc/typeStore.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeNodeDebugger.ts",
+                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15062",
+                "title": "update dependencies, support node 22",
+                "description": "Node 22 seems to be supported without an issue, updating dependencies and the package.json to support node 22",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15059",
+                "title": "The disposed engine needs to be the thinengine",
+                "description": "Related to a previous PR",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15027",
+                "title": "xrCompatible false per default, canvas made compatible on demand",
+                "description": "This is a breaking change that should never influence any of our users.\n\nWe set the canvas to be xrCompatible per default. mainly because there was no downside for the devs, and they could override this. However, this thread has shed some light on a single issue that was found with it - https://forum.babylonjs.com/t/browser-back-forward-cache-is-blocked-when-using-babylon-js-due-to-webxr/49903, namely browser back-forward cache is blocked when using a WebXR-enabled canvas. \n\nThis PR sets the flag to false per default and simplifies the mechanism in which a canvas is prepared for XR compatibility.\n\nPlease wait with merging this until the community has tested the snapshot, as I only have an emulator for the time being. Of course, it works correctly in both the windows XR emulator and the WebXR web-based emulator",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "15060",
+                "title": "Allow output type changes to propagate through the NME graph",
+                "description": "I previously changed NME math nodes to allow any valid combinations of inputs to either the left or right inputs, and determine the output type dynamically based on the input types. When a graph is being wired up in NME by the user, this works as expected because the output type is re-evaluated any time left/right inputs connect/disconnect, and the type flowing into the left/right input is already known at the time of connection. When loading a saved node graph, the order of operations is not the same. Specifically, the connections can be made before the type flowing into the left/right input is known, which means once the type is known, it is too late and we have already incorrectly inferred the output type. This is what happened in the [PG](https://playground.babylonjs.com/?version=7.1.0#D1H1LY#36) discussed here: https://forum.babylonjs.com/t/liquid-shader-node-material-shenanigans-how-to-translate-this-to-babylonian/42447/8\r\n\r\nTo address this, the connection point will now notify via an observable when the output type has changed (or at least may have changed). Since the output type is determined by various different states, changes to any of those states have to be observed to know when the output type has (or may have) changed. This also makes it so that in general, type changes can flow through the graph at regular edit time. Here is an example:\r\n![NME-cascading-output-type](https://github.com/BabylonJS/Babylon.js/assets/5084643/76812a9e-2c5a-4ea1-a408-0f4089bd048d)\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/baseMathBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15050",
+                "title": "Adding new debug tools to the scene Inspector : copyCommandToClipboard & window.debugNode",
+                "description": "Initiated in this topic : [scene.debugLayer : Copy last command to Clipboard](https://forum.babylonjs.com/t/scene-debuglayer-copy-last-command-to-clipboard/49796)\r\n____\r\n**Addind copyCommandToClipboard :**\r\n\r\nIn the right panel of the inspector, all the main component have now a copy button, which copies to the clipboard the javascript command this component is actually doing. For example : `\"AbstractMesh.checkCollisions = true;\"`\r\n\r\nIt is based on the `target` property of the `React.Component` considered (CheckboxLine, SliderLine, ColorLine, etc...)\r\n* `this.props.target` is the node considered (ex : `AbstractMesh`)\r\n* `this.props.propertyName` is the property (ex : `checkCollisions`)\r\n* `this.props.target[this.props.propertyName!]` is the value\r\n\r\nIn order to access the Class name of the target, `this.props.target.constructor.name` works in dev preview mode, but returns a single (random) letter such as \"e\" after the build. I suspect this is due to the mangling + minify at build;\r\n\r\nThat's why I replaced `this.props.target.constructor.name` by the `getInstanceType()` function, which finds a `instanceof` match over BABYLON classes.\r\n\r\nPlease feel free to propose a neater solution.\r\n\r\n([Demo Video](https://global.discourse-cdn.com/business7/uploads/babylonjs/original/3X/3/8/3833bf84f734ef25c7e7503f4f1f490c5dab4357.mp4))\r\n____\r\n**Addind window.debugNode :**\r\n\r\nAlso, I'm putting the reference of the selected node into `window.debugNode`;\r\nThis is soooo usefull, already since it's built on my side, I'm using it multiple times per day !\r\n* You select a mesh and type `let mesh = window.debugNode;`\r\n* You select a material and type `let mat = window.debugNode;`\r\nAnd then you can work in the console using `mesh` and `mat` ...\r\n\r\n([Demo Video](https://global.discourse-cdn.com/business7/uploads/babylonjs/original/3X/0/8/08c73f8152af42976194c326211e9d8cea4d91f6.mp4))",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/dev/core/src/Audio/sound.ts",
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/flyCamera.ts",
+                    "packages/dev/core/src/Cameras/followCamera.ts",
+                    "packages/dev/core/src/Cameras/freeCamera.ts",
+                    "packages/dev/core/src/Lights/directionalLight.ts",
+                    "packages/dev/core/src/Lights/hemisphericLight.ts",
+                    "packages/dev/core/src/Lights/pointLight.ts",
+                    "packages/dev/core/src/Lights/spotLight.ts",
+                    "packages/dev/core/src/Materials/imageProcessingConfiguration.ts",
+                    "packages/dev/core/src/Materials/materialPluginBase.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Misc/typeStore.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/abstractScene.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/inspector/src/components/actionTabs/actionTabs.scss",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/sceneTreeItemComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeItemSelectableComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeNodeDebugger.ts",
+                    "packages/dev/sharedUiComponents/src/copyCommandToClipboard.ts",
+                    "packages/dev/sharedUiComponents/src/lines/checkBoxLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/floatLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/sliderLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx"
+                ],
+                "tags": [
+                    "inspector",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15052",
+                "title": "Updated engine caps to enable linear sampling from float and half float",
+                "description": "This feature seems to be supported in all native platforms. Not having this enabled is what is currently causing models with transmission to be renderer incorrectly: \r\n\r\n<img src=\"https://github.com/BabylonJS/Babylon.js/assets/97050577/2852e790-2b67-47ce-88c9-ebb1c69e6b13\" width=\"200\" />\r\n<img src=\"https://github.com/BabylonJS/Babylon.js/assets/97050577/20bfeb66-0818-4f1a-9ae7-00f46fc7f45d\" width=\"200\" />\r\n",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15058",
+                "title": "Fix GetFontOffset missing in ThinEngine",
+                "description": "Issue described here - https://forum.babylonjs.com/t/issue-with-double-engine-instancing-after-creating-a-screenshot/50241?u=raananw\n\nThere are two fixes for the same issue in this PR:\n\n1) Take the ThinEngine instance created in DumpTools out of the list of instances in the EngineStore. Of course, making sure it is disposed when no other engines are available.\n2) Provide the engine set in the ADT for the getFontOffset call in GUI's Control. This avoids using LastCreatedInstance to get the font offset.\n",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/dumpTools.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts",
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15057",
+                "title": "Bump ejs from 3.1.9 to 3.1.10",
+                "description": "Bumps [ejs](https://github.com/mde/ejs) from 3.1.9 to 3.1.10.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/mde/ejs/releases\">ejs's releases</a>.</em></p>\n<blockquote>\n<h2>v3.1.10</h2>\n<p>Version 3.1.10</p>\n</blockquote>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/mde/ejs/commit/d3f807dea9ce904e20a47a661f2310ce9134dc2a\"><code>d3f807d</code></a> Version 3.1.10</li>\n<li><a href=\"https://github.com/mde/ejs/commit/9ee26dde5d7015d9c0e2ff87314cabeac5247c02\"><code>9ee26dd</code></a> Mocha TDD</li>\n<li><a href=\"https://github.com/mde/ejs/commit/e469741dca7df2eb400199e1cdb74621e3f89aa5\"><code>e469741</code></a> Basic pollution protection</li>\n<li><a href=\"https://github.com/mde/ejs/commit/715e9507fa3e6122dc6430fe0f25a6e6ded300c1\"><code>715e950</code></a> Merge pull request <a href=\"https://redirect.github.com/mde/ejs/issues/756\">#756</a> from Jeffrey-mu/main</li>\n<li><a href=\"https://github.com/mde/ejs/commit/cabe3146ad964a1e98db7742abf435906ca79406\"><code>cabe314</code></a> Include advanced usage examples</li>\n<li><a href=\"https://github.com/mde/ejs/commit/29b076cdbbf3eb1b4323b33299ab6d79391b2c33\"><code>29b076c</code></a> Added header</li>\n<li><a href=\"https://github.com/mde/ejs/commit/11503c79af882e3635b513d57c7f1813792eb127\"><code>11503c7</code></a> Merge branch 'main' of github.com:mde/ejs into main</li>\n<li><a href=\"https://github.com/mde/ejs/commit/7690404e2fc1688756938e4d2fc19e0fac77d736\"><code>7690404</code></a> Added security banner to README</li>\n<li><a href=\"https://github.com/mde/ejs/commit/f47d7aedd51a983e4f73045f962b1209096b5800\"><code>f47d7ae</code></a> Update SECURITY.md</li>\n<li><a href=\"https://github.com/mde/ejs/commit/828cea1687e3db459ab09d2f405d2444c7580b90\"><code>828cea1</code></a> Update SECURITY.md</li>\n<li>Additional commits viewable in <a href=\"https://github.com/mde/ejs/compare/v3.1.9...v3.1.10\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=ejs&package-manager=npm_and_yarn&previous-version=3.1.9&new-version=3.1.10)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            }
+        ],
         "7.5.0": [
             {
                 "pr": "15056",
@@ -309,6 +838,7 @@
                 "tags": []
             }
         ],
+        "7.4.0": [],
         "7.3.3": [
             {
                 "pr": "15029",
