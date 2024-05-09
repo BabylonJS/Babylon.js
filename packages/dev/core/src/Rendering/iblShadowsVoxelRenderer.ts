@@ -82,21 +82,19 @@ export class IblShadowsVoxelRenderer {
             this._voxelDebugPass = new PostProcess(
                 "Final compose shader",
                 this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
-                ["sizeParams"], // attributes
+                ["sizeParams", "mipNumber"], // attributes
                 ["voxelTexture"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
                 Texture.NEAREST_SAMPLINGMODE, // sampling
                 this._engine, // engine,
-                true,
-                "#define MIP_NUMBER " + this._debugMipNumber
+                true
             );
             this._voxelDebugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTexture("voxelTexture", this._voxelGridRT);
                 effect.setVector4("sizeParams", this._debugSizeParams);
                 effect.setFloat("mipNumber", this._debugMipNumber);
-                effect.defines = "#define MIP_NUMBER " + this._debugMipNumber;
             };
         }
     }
@@ -107,7 +105,7 @@ export class IblShadowsVoxelRenderer {
      * @param resolution Number of depth layers to peel
      * @returns The voxel renderer
      */
-    constructor(scene: Scene, resolution: number = 64) {
+    constructor(scene: Scene, resolution: number = 256) {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
         this._voxelResolution = resolution;
@@ -139,7 +137,7 @@ export class IblShadowsVoxelRenderer {
                 generateDepthBuffer: false,
                 type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
                 format: Constants.TEXTUREFORMAT_R,
-                samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+                samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
                 generateMipMaps: true,
             }
         );
@@ -188,6 +186,7 @@ export class IblShadowsVoxelRenderer {
     }
 
     private _disposeTextures() {
+        this._stopVoxelization();
         for (let i = 0; i < this._voxelMrts.length; i++) {
             this._voxelMrts[i].dispose(true);
         }
@@ -211,10 +210,10 @@ export class IblShadowsVoxelRenderer {
     }
 
     /**
-     * Renders voxel grid of scene for IBL shadows
-     * @param excludedMeshes
+     * If the MRT's are already in the list of render targets, this will
+     * remove them so that they don't get rendered again.
      */
-    public updateVoxelGrid(excludedMeshes: number[]) {
+    private _stopVoxelization() {
         // If the MRT's are already in the list of render targets, remove them.
         const currentRTs = this._scene.customRenderTargets;
         const mrtIdx = currentRTs.findIndex((rt) => {
@@ -224,6 +223,14 @@ export class IblShadowsVoxelRenderer {
         if (mrtIdx >= 0) {
             this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
         }
+    }
+
+    /**
+     * Renders voxel grid of scene for IBL shadows
+     * @param excludedMeshes
+     */
+    public updateVoxelGrid(excludedMeshes: number[]) {
+        this._stopVoxelization();
 
         this._voxelizationInProgress = true;
 
@@ -261,13 +268,13 @@ export class IblShadowsVoxelRenderer {
         });
 
         // Add the MRT's to render.
-        this._scene.customRenderTargets = currentRTs.concat(this._voxelMrts);
+        this._scene.customRenderTargets = this._scene.customRenderTargets.concat(this._voxelMrts);
 
         this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
             // Remove the MRTs from the array so they don't get rendered again.
             // TODO - this seems to be removing the MRT's too early??
             setTimeout(() => {
-                this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
+                this._stopVoxelization();
                 this._voxelizationInProgress = false;
                 if (this._voxelGridRT.getInternalTexture()) {
                     this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);

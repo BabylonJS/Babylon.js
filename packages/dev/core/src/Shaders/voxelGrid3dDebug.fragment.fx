@@ -10,6 +10,7 @@ uniform vec4 sizeParams;
 #define offsetY sizeParams.y
 #define widthScale sizeParams.z
 #define heightScale sizeParams.w
+uniform float mipNumber;
 
 void main(void) {
 
@@ -26,7 +27,11 @@ void main(void) {
     int sampleIndex = int(floor(uv.x * float(dimension)) +
                           floor(uv.y * float(dimension)) * dimension);
 
-    vec3 voxel = textureLod(voxelTexture, vec3(samplePos.xy, float(sampleIndex) / float(size.z)), MIP_NUMBER).rrr;
+    vec3 voxel =
+        textureLod(voxelTexture,
+                   vec3(samplePos.xy, float(sampleIndex) / float(size.z)),
+                   mipNumber)
+            .rrr;
     glFragColor.rgb = vec3(voxel.r > 0.0 ? 1.0 : 0.0);
 
     //ivec2 pixCoord = ivec2(uv.xy*vec2(dimension));

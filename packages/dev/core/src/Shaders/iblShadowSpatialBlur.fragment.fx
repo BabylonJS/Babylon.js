@@ -22,8 +22,8 @@ void main(void)
 {
     // ivec2 PixCoord = ivec2(gl_GlobalInvocationID.xy);
     vec2 Resolution = vec2(textureSize(linearDepthSampler, 0));
-    ivec2 PixelCoord = ivec2(max2(vUV * Resolution - vec2(0.5), vec2(0.0)));
-  
+    ivec2 PixelCoord = ivec2(vUV * Resolution);
+
     vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
     if(N == vec3(0.0))
         return;

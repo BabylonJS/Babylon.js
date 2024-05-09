@@ -178,7 +178,7 @@ export class IblShadowsAccumulationPass {
             return;
         }
 
-        const remenance = 1;
+        const remenance = 0.9;
         this._outputPT.setVector4("accumulationParameters", new Vector4(remenance, 0.0, 0.0, 0.0));
         this._outputPT.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         this._outputPT.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
