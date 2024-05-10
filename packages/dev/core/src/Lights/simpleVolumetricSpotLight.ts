@@ -6,7 +6,7 @@ import { Mesh } from "core/Meshes/mesh";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import "../Shaders/simpleVolumetricSpot.fragment";
 import "../Shaders/simpleVolumetricSpot.vertex";
-import { Observer, TmpVectors } from "..";
+import { Observer, RenderTargetTexture, TmpVectors } from "..";
 
 
 export class SimpleVolumetricSpotLight {
@@ -19,6 +19,7 @@ export class SimpleVolumetricSpotLight {
     private _volumetricMaterial: ShaderMaterial;
     private _lightCone: Mesh;
     private _observer: Observer<any>;
+    private _depthTexture: RenderTargetTexture;
 
     constructor(spotLight: SpotLight, diameterTop: number, diameterBottom: number, rayLength: number, scene: Scene) {
         this.spotLight = spotLight;
@@ -43,7 +44,10 @@ export class SimpleVolumetricSpotLight {
 
     public set softRadius(value: number){
         this._softRadius = value;
-        this._volumetricMaterial.setFloat("softRadius", value);
+    }
+
+    public set depthTexture(value: RenderTargetTexture){
+        this._depthTexture = value;
     }
 
     private createSimpleVolumetricSpotLight(){
@@ -57,10 +61,12 @@ export class SimpleVolumetricSpotLight {
             uniforms: ["world", "worldViewProjection", "view"],
             needAlphaBlending: true,
         });
+
+        const renderer = this._scene.enableDepthRenderer();
+
+        this._depthTexture = renderer.getDepthMap();
        
         this._updateUniforms();
-        const renderer = this._scene.enableDepthRenderer();
-        this._volumetricMaterial.setTexture("depthTexture", renderer.getDepthMap()!);
 
         spotLightCone.material = this._volumetricMaterial;
         this._lightCone = spotLightCone;
@@ -75,10 +81,11 @@ export class SimpleVolumetricSpotLight {
         this._volumetricMaterial.setFloat("cameraNear", this._scene.activeCamera!.minZ);
         this._volumetricMaterial.setFloat("cameraFar", this._scene.activeCamera!.maxZ);
         this._volumetricMaterial.setFloat("softRadius", this._softRadius || 0.5);
+        this._volumetricMaterial.setTexture("depthTexture", this._depthTexture);
         const resolution = TmpVectors.Vector2[0].set(this._scene.getEngine().getRenderWidth(), this._scene.getEngine().getRenderHeight());
         this._volumetricMaterial.setVector2("resolution", resolution);
     }
-    
+
     private _update(){
         const lightPos = TmpVectors.Vector3[0].copyFrom(this.spotLight.position);
         const dir = TmpVectors.Vector3[1];
