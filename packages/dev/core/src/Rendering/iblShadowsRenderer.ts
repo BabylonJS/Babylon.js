@@ -19,6 +19,8 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
+import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+import { FreeCamera } from "../Cameras/freeCamera";
 
 // class IblShadowsSettings {
 //     public resolution: number = 64;
@@ -182,6 +184,71 @@ export class IblShadowsRenderer {
         }
     }
 
+    /**
+     * Add a mesh in the exclusion list to prevent it to be handled by the IBL shadow renderer
+     * @param mesh The mesh to exclude from the IBL shadow renderer
+     */
+    public addExcludedMesh(mesh: AbstractMesh): void {
+        if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
+            this._excludedMeshes.push(mesh.uniqueId);
+        }
+    }
+
+    /**
+     * Remove a mesh from the exclusion list of the IBL shadow renderer
+     * @param mesh The mesh to remove
+     */
+    public removeExcludedMesh(mesh: AbstractMesh): void {
+        const index = this._excludedMeshes.indexOf(mesh.uniqueId);
+        if (index !== -1) {
+            this._excludedMeshes.splice(index, 1);
+        }
+    }
+
+    private _resolution: number = 64;
+    public get resolution() {
+        return this._resolution;
+    }
+    public set resolution(newResolution: number) {
+        if (this._resolution === newResolution) {
+            return;
+        }
+        this._resolution = newResolution;
+        this._voxelRenderer.voxelResolution = newResolution;
+        this._voxelizationDirty = true;
+    }
+
+    /**
+     * Instanciates the IBL Shadow renderer
+     * @param scene Scene to attach to
+     * @returns The IBL shadow renderer
+     */
+    constructor(scene: Scene) {
+        this._scene = scene;
+        this._engine = scene.getEngine();
+        this._gbufferDebugEnabled = false;
+
+        //  We need a depth texture for opaque
+        if (!scene.enablePrePassRenderer()) {
+            Logger.Warn("IBL Shadows Renderer could not enable PrePass, aborting.");
+            return;
+        }
+
+        this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
+        this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
+        this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
+        this._shadowComputePass = new IblShadowsComputePass(this._scene);
+        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
+        this._accumulationPass = new IblShadowsAccumulationPass(this._scene);
+
+        this._scene.onNewMeshAddedObservable.add(this._updateSceneBounds.bind(this));
+        this._scene.onMeshRemovedObservable.add(this._updateSceneBounds.bind(this));
+        this._scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
+        this._scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
+
+        this._listenForCameraChanges();
+    }
+
     private _updateDebugPasses() {
         let count = 0;
         if (this._gbufferDebugEnabled) count++;
@@ -264,74 +331,47 @@ export class IblShadowsRenderer {
         }
     }
 
-    /**
-     * Add a mesh in the exclusion list to prevent it to be handled by the IBL shadow renderer
-     * @param mesh The mesh to exclude from the IBL shadow renderer
-     */
-    public addExcludedMesh(mesh: AbstractMesh): void {
-        if (this._excludedMeshes.indexOf(mesh.uniqueId) === -1) {
-            this._excludedMeshes.push(mesh.uniqueId);
-        }
-    }
-
-    /**
-     * Remove a mesh from the exclusion list of the IBL shadow renderer
-     * @param mesh The mesh to remove
-     */
-    public removeExcludedMesh(mesh: AbstractMesh): void {
-        const index = this._excludedMeshes.indexOf(mesh.uniqueId);
-        if (index !== -1) {
-            this._excludedMeshes.splice(index, 1);
-        }
-    }
-
-    private _resolution: number = 64;
-    public get resolution() {
-        return this._resolution;
-    }
-    public set resolution(newResolution: number) {
-        if (this._resolution === newResolution) {
-            return;
-        }
-        this._resolution = newResolution;
-        this._voxelRenderer.voxelResolution = newResolution;
+    private _updateSceneBounds() {
         this._voxelizationDirty = true;
+        this._boundsNeedUpdate = true;
     }
 
-    /**
-     * Instanciates the IBL Shadow renderer
-     * @param scene Scene to attach to
-     * @returns The IBL shadow renderer
-     */
-    constructor(scene: Scene) {
-        this._scene = scene;
-        this._engine = scene.getEngine();
-        this._gbufferDebugEnabled = false;
+    private _updateBeforeRender() {
+        this._updateDebugPasses();
+        this._shadowComputePass.update();
+        this._spatialBlurPass.update();
+        this._accumulationPass.update();
+    }
 
-        //  We need a depth texture for opaque
-        if (!scene.enablePrePassRenderer()) {
-            Logger.Warn("IBL Shadows Renderer could not enable PrePass, aborting.");
-            return;
+    private _listenForCameraChanges() {
+        // We want to listen for camera changes and change settings while the camera is moving.
+        if (this._scene.activeCamera instanceof ArcRotateCamera) {
+            this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                // let isMoving: boolean = false;
+                // if (camera instanceof ArcRotateCamera) {
+                //     isMoving =
+                //         camera.inertialAlphaOffset !== 0 ||
+                //         camera.inertialBetaOffset !== 0 ||
+                //         camera.inertialRadiusOffset !== 0 ||
+                //         camera.inertialPanningX !== 0 ||
+                //         camera.inertialPanningY !== 0;
+                // } else if (camera instanceof FreeCamera) {
+                //     isMoving =
+                //         camera.cameraDirection.x !== 0 ||
+                //         camera.cameraDirection.y !== 0 ||
+                //         camera.cameraDirection.z !== 0 ||
+                //         camera.cameraRotation.x !== 0 ||
+                //         camera.cameraRotation.y !== 0;
+                // }
+                // if (isMoving) {
+                //     this._accumulationPass.reset = true;
+                //     this._accumulationPass.remenance = 1.0;
+                // } else {
+                //     this._accumulationPass.reset = false;
+                //     this._accumulationPass.remenance = 0.9;
+                // }
+            });
         }
-
-        this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
-        this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this._resolution);
-        this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
-        this._shadowComputePass = new IblShadowsComputePass(this._scene);
-        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
-        this._accumulationPass = new IblShadowsAccumulationPass(this._scene);
-
-        this._scene.onNewMeshAddedObservable.add(() => {
-            this._voxelizationDirty = true;
-            this._boundsNeedUpdate = true;
-        });
-
-        this._scene.onBeforeRenderObservable.add(() => {
-            this._updateDebugPasses();
-            this._shadowComputePass.update();
-            this._spatialBlurPass.update();
-            this._accumulationPass.update();
-        });
     }
 
     /**
@@ -369,8 +409,6 @@ export class IblShadowsRenderer {
             return this._excludedSubMeshes;
         }
 
-        // Update scene inverse scale matrix. This is used to scale the voxel grid to world space and
-        // also by the shadow compute pass.
         if (this._boundsNeedUpdate) {
             const bounds = this._scene.getWorldExtends((mesh) => {
                 return mesh instanceof Mesh && this._excludedMeshes.indexOf(mesh.uniqueId) === -1;
@@ -387,10 +425,7 @@ export class IblShadowsRenderer {
             Logger.Log("IBL Shadows: Scene size: " + size);
             Logger.Log("Half size: " + halfSize);
             Logger.Log("Centre translation: " + centre);
-            Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
         }
-
-        // this._shadowComputePass.update();
 
         // If update is needed, render voxels
         if (this._voxelizationDirty) {
