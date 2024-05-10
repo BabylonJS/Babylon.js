@@ -910,7 +910,7 @@ export abstract class AbstractEngine {
             }
         }
 
-        if (this._frameHandler === 0) {
+        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
     }
