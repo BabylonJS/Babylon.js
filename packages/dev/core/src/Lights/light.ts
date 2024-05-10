@@ -370,7 +370,7 @@ export abstract class Light extends Node implements ISortableLight {
      * @param scene The scene the light belongs too
      */
     constructor(name: string, scene?: Scene) {
-        super(name, scene);
+        super(name, scene, false);
         this.getScene().addLight(this);
         this._uniformBuffer = new UniformBuffer(this.getScene().getEngine(), undefined, undefined, name);
         this._buildUniformLayout();
