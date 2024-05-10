@@ -32,6 +32,21 @@ export class IblShadowsAccumulationPass {
         return this._outputPT;
     }
 
+    private _remenance: number = 0.9;
+    public get remenance(): number {
+        return this._remenance;
+    }
+    public set remenance(value: number) {
+        this._remenance = value;
+    }
+    private _reset: boolean = true;
+    public get reset(): boolean {
+        return this._reset;
+    }
+    public set reset(value: boolean) {
+        this._reset = value;
+    }
+
     private _debugPass: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
@@ -97,6 +112,12 @@ export class IblShadowsAccumulationPass {
             false
         );
         this._outputPT.autoClear = false;
+        this._outputPT.refreshRate = 0;
+        this._scene.onAfterRenderCameraObservable.add(() => {
+            if (this._outputPT.isReady()) {
+                // this._outputPT.render();
+            }
+        });
 
         const accumulationOptions: RenderTargetCreationOptions = {
             generateDepthBuffer: false,
@@ -178,8 +199,7 @@ export class IblShadowsAccumulationPass {
             return;
         }
 
-        const remenance = 0.9;
-        this._outputPT.setVector4("accumulationParameters", new Vector4(remenance, 0.0, 0.0, 0.0));
+        this._outputPT.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
         this._outputPT.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         this._outputPT.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
         this._outputPT.setTexture("shadowSampler", this._scene.iblShadowsRenderer!.getBlurShadowTexture()!);
@@ -192,6 +212,8 @@ export class IblShadowsAccumulationPass {
             const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
             if (velocityIndex >= 0) this._outputPT.setTexture("motionSampler", prePassRenderer.getRenderTarget().textures[velocityIndex]);
         }
+
+        this.reset = false;
     }
 
     private _disposeTextures() {

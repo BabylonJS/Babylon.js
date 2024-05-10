@@ -92,6 +92,12 @@ export class IblShadowsSpatialBlurPass {
             false
         );
         this._outputPT.autoClear = false;
+        this._outputPT.refreshRate = 0;
+        this._scene.onAfterRenderCameraObservable.add(() => {
+            if (this._outputPT.isReady()) {
+                // this._outputPT.render();
+            }
+        });
     }
 
     public update() {
