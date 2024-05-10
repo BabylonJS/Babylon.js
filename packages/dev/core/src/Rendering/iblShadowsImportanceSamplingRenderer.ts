@@ -163,6 +163,10 @@ export class IblShadowsImportanceSamplingRenderer {
     public set iblSource(source: Texture) {
         this._iblSource = source;
         this._resizeTextures();
+        this._cdfyPT.render();
+        this._icdfyPT.render();
+        this._cdfxPT.render();
+        this._icdfxPT.render();
     }
     public getIcdfyTexture(): CustomProceduralTexture {
         return this._icdfyPT;
@@ -264,6 +268,7 @@ export class IblShadowsImportanceSamplingRenderer {
         );
         this._cdfyPT.autoClear = false;
         this._cdfyPT.setTexture("iblSource", this._iblSource);
+        this._cdfyPT.refreshRate = 0;
         this._icdfyPT = new CustomProceduralTexture(
             "icdfyTexture",
             { fragmentSource: icdfyFragment } as any,
@@ -275,6 +280,7 @@ export class IblShadowsImportanceSamplingRenderer {
         );
         this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
+        this._icdfyPT.refreshRate = 0;
         this._cdfxPT = new CustomProceduralTexture(
             "cdfxTexture",
             { fragmentSource: cdfxFragment } as any,
@@ -286,6 +292,7 @@ export class IblShadowsImportanceSamplingRenderer {
         );
         this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
+        this._cdfxPT.refreshRate = 0;
         this._icdfxPT = new CustomProceduralTexture(
             "icdfxTexture",
             { fragmentSource: icdfxFragment } as any,
@@ -297,6 +304,7 @@ export class IblShadowsImportanceSamplingRenderer {
         );
         this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
+        this._icdfxPT.refreshRate = 0;
     }
 
     private _disposeTextures() {
