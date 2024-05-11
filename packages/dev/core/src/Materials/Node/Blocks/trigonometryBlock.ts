@@ -47,7 +47,7 @@ export enum TrigonometryBlockOperations {
     /** To degrees (from radians) */
     Degrees,
     /** To Set a = b */
-    Set
+    Set,
 }
 
 /**
