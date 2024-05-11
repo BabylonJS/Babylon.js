@@ -51,7 +51,7 @@ export class SimpleVolumetricSpotLight {
     }
 
     private createSimpleVolumetricSpotLight(){
-        const spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this._diameterTop, diameterBottom: this._diameterBottom, height: this._rayLength}, this._scene);
+        const spotLightCone = CreateCylinder("spotLightCone", {diameterTop: this._diameterTop, diameterBottom: this._diameterBottom, height: this._rayLength, cap: Mesh.CAP_END}, this._scene);
         spotLightCone.rotate(Axis.X, -Math.PI / 2);
         spotLightCone.translate(Axis.Y, -this._rayLength / 2); //pivot at the bottom
         spotLightCone.bakeCurrentTransformIntoVertices();
