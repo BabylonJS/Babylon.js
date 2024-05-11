@@ -33,6 +33,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
             { label: "Sign", value: TrigonometryBlockOperations.Sign },
             { label: "Radians to degrees", value: TrigonometryBlockOperations.Degrees },
             { label: "Degrees to radians", value: TrigonometryBlockOperations.Radians },
+            { label: "Set", value: TrigonometryBlockOperations.Set },
         ];
 
         operationOptions.sort((a, b) => {
