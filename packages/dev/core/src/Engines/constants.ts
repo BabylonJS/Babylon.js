@@ -634,6 +634,8 @@ export class Constants {
     public static readonly BUFFER_CREATIONFLAG_INDEX = 16;
     /** Flag to create a buffer suitable to be used as a storage buffer */
     public static readonly BUFFER_CREATIONFLAG_STORAGE = 32;
+    /** Flag to create a buffer suitable to be used for indirect calls, such as `dispatchIndirect` */
+    public static readonly BUFFER_CREATIONFLAG_INDIRECT = 64;
 
     /**
      * Prefixes used by the engine for sub mesh draw wrappers

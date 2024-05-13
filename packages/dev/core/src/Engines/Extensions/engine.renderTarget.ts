@@ -107,15 +107,6 @@ ThinEngine.prototype.createRenderTargetTexture = function (this: ThinEngine, siz
     return rtWrapper;
 };
 
-ThinEngine.prototype.createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture {
-    if (options.isCube) {
-        const width = (<{ width: number; height: number }>size).width || <number>size;
-        return this._createDepthStencilCubeTexture(width, options);
-    } else {
-        return this._createDepthStencilTexture(size, options, rtWrapper);
-    }
-};
-
 ThinEngine.prototype._createDepthStencilTexture = function (size: TextureSize, options: DepthTextureCreationOptions): InternalTexture {
     const gl = this._gl;
     const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;

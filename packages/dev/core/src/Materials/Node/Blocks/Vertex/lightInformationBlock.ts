@@ -52,7 +52,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "LightInformationBlock";
     }
 
@@ -112,7 +112,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
@@ -162,7 +162,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areLightsDirty && !this._forcePrepareDefines) {
             return;
         }
@@ -173,7 +173,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         defines.setValue(this._lightTypeDefineName, light && light instanceof PointLight ? true : false, true);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.bindableBlocks.push(this);
@@ -193,40 +193,40 @@ export class LightInformationBlock extends NodeMaterialBlock {
         this._lightShadowExtraUniformName = state._getFreeVariableName("shadowExtraData");
         this._lightTypeDefineName = state._getFreeDefineName("LIGHTPOINTTYPE");
 
-        state._emitUniformFromString(this._lightDataUniformName, "vec3");
-        state._emitUniformFromString(this._lightColorUniformName, "vec4");
+        state._emitUniformFromString(this._lightDataUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString(this._lightColorUniformName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         state.compilationString += `#ifdef ${this._lightTypeDefineName}\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
+        state.compilationString += state._declareOutput(direction) + ` = normalize(${this.worldPosition.associatedVariableName}.xyz - ${this._lightDataUniformName});\n`;
         state.compilationString += `#else\n`;
-        state.compilationString += this._declareOutput(direction, state) + ` = ${this._lightDataUniformName};\n`;
+        state.compilationString += state._declareOutput(direction) + ` = ${this._lightDataUniformName};\n`;
         state.compilationString += `#endif\n`;
 
-        state.compilationString += this._declareOutput(color, state) + ` = ${this._lightColorUniformName}.rgb;\n`;
-        state.compilationString += this._declareOutput(intensity, state) + ` = ${this._lightColorUniformName}.a;\n`;
+        state.compilationString += state._declareOutput(color) + ` = ${this._lightColorUniformName}.rgb;\n`;
+        state.compilationString += state._declareOutput(intensity) + ` = ${this._lightColorUniformName}.a;\n`;
 
         if (shadowBias.hasEndpoints || shadowNormalBias.hasEndpoints || shadowDepthScale.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowUniformName, "vec3");
+            state._emitUniformFromString(this._lightShadowUniformName, NodeMaterialBlockConnectionPointTypes.Vector3);
             if (shadowBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowBias, state) + ` = ${this._lightShadowUniformName}.x;\n`;
+                state.compilationString += state._declareOutput(shadowBias) + ` = ${this._lightShadowUniformName}.x;\n`;
             }
             if (shadowNormalBias.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowNormalBias, state) + ` = ${this._lightShadowUniformName}.y;\n`;
+                state.compilationString += state._declareOutput(shadowNormalBias) + ` = ${this._lightShadowUniformName}.y;\n`;
             }
             if (shadowDepthScale.hasEndpoints) {
-                state.compilationString += this._declareOutput(shadowDepthScale, state) + ` = ${this._lightShadowUniformName}.z;\n`;
+                state.compilationString += state._declareOutput(shadowDepthScale) + ` = ${this._lightShadowUniformName}.z;\n`;
             }
         }
 
         if (shadowDepthRange.hasEndpoints) {
-            state._emitUniformFromString(this._lightShadowExtraUniformName, "vec2");
-            state.compilationString += this._declareOutput(shadowDepthRange, state) + ` = ${this._lightShadowUniformName};\n`;
+            state._emitUniformFromString(this._lightShadowExtraUniformName, NodeMaterialBlockConnectionPointTypes.Vector2);
+            state.compilationString += state._declareOutput(shadowDepthRange) + ` = ${this._lightShadowUniformName};\n`;
         }
 
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.light) {
@@ -236,7 +236,7 @@ export class LightInformationBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.lightId) {

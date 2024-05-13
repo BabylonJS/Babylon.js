@@ -51,10 +51,11 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("subSurfaceOut");
         state._excludeVariableName("vThicknessParam");
         state._excludeVariableName("vTintColor");
+        state._excludeVariableName("vTranslucencyColor");
         state._excludeVariableName("vSubSurfaceIntensity");
         state._excludeVariableName("dispersion");
     }
@@ -63,7 +64,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "SubSurfaceBlock";
     }
 
@@ -116,7 +117,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.thickness.isConnected) {
             const thicknessInput = new InputBlock("SubSurface thickness", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             thicknessInput.value = 0;
@@ -124,7 +125,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         const translucencyEnabled = this.translucencyDiffusionDist.isConnected || this.translucencyIntensity.isConnected;
@@ -248,6 +249,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef SS_TRANSLUCENCY
                 ${translucencyDiffusionDistance},
+                vTintColor,
+                #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+                    vec4(0.),
+                #endif
             #endif
                 subSurfaceOut
             );
@@ -265,7 +270,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
         }

@@ -35,9 +35,9 @@ export class StereoscopicGamepadCamera extends GamepadCamera {
      * Gets camera class name
      * @returns StereoscopicGamepadCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicGamepadCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => setStereoscopicRigMode(this);
 }

@@ -20,7 +20,7 @@ export class WaitRingComponent extends React.Component<IWaitRingProps, { isVisib
         });
     }
 
-    public render() {
+    public override render() {
         if (!this.state.isVisible) {
             return null;
         }

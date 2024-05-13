@@ -103,7 +103,7 @@ export class SaveAnimationComponent extends React.Component<ISaveAnimationCompon
         StringTools.DownloadAsFile(this._root.current!.ownerDocument, this._getJson(), "animations.json");
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="save-animation-pane" ref={this._root}>
                 <div id="save-animation-list">

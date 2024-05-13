@@ -271,7 +271,7 @@ export class GridPropertyGridComponent extends React.Component<IGridPropertyGrid
         this.setState({ removingColumn: false, removingRow: false });
     }
 
-    render() {
+    override render() {
         const grids = this.props.grids;
         const grid = this.props.grids[0];
         if (grid !== this._previousGrid) {

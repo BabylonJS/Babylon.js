@@ -3,10 +3,10 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Engine } from "../Engines/engine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/depthOfFieldMerge.fragment";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * The DepthOfFieldMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -16,7 +16,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "DepthOfFieldMergePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DepthOfFieldMergePostProcess";
     }
 
@@ -42,7 +42,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
@@ -86,7 +86,7 @@ export class DepthOfFieldMergePostProcess extends PostProcess {
      * @param onCompiled Called when the shader has been compiled.
      * @param onError Called if there is an error when compiling a shader.
      */
-    public updateEffect(
+    public override updateEffect(
         defines: Nullable<string> = null,
         uniforms: Nullable<string[]> = null,
         samplers: Nullable<string[]> = null,

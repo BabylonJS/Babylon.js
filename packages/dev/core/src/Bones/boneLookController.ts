@@ -476,6 +476,7 @@ export class BoneLookController {
         const xaxis = BoneLookController._TmpVecs[6];
         const yaxis = BoneLookController._TmpVecs[7];
         const tmpQuat = BoneLookController._TmpQuat;
+        const boneScaling = BoneLookController._TmpVecs[9];
 
         target.subtractToRef(bonePos, zaxis);
         zaxis.normalize();
@@ -502,6 +503,8 @@ export class BoneLookController {
             _tmpMat2.multiplyToRef(_tmpMat1, _tmpMat1);
         }
 
+        boneScaling.copyFrom(this.bone.getScale());
+
         if (this.slerpAmount < 1) {
             if (!this._slerping) {
                 this.bone.getRotationQuaternionToRef(Space.WORLD, this.mesh, this._boneQuat);
@@ -521,6 +524,8 @@ export class BoneLookController {
             this.bone.setRotationMatrix(_tmpMat1, Space.WORLD, this.mesh);
             this._slerping = false;
         }
+
+        this.bone.setScale(boneScaling);
 
         this._updateLinkedTransformRotation();
     }

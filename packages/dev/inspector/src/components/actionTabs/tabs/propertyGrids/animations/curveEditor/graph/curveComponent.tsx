@@ -42,7 +42,7 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onDataUpdatedObserver) {
             this.props.curve.onDataUpdatedObservable.remove(this._onDataUpdatedObserver);
         }
@@ -56,7 +56,7 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         }
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         if (!this._onDataUpdatedObserver) {
             this._onDataUpdatedObserver = this.props.curve.onDataUpdatedObservable.add(() => this.forceUpdate());
         }
@@ -64,7 +64,7 @@ export class CurveComponent extends React.Component<ICurveComponentProps, ICurve
         return true;
     }
 
-    public render() {
+    public override render() {
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }

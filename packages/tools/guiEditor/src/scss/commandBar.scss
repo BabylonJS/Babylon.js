@@ -12,6 +12,10 @@
     grid-column: 1;
     user-select: none;
 
+    .copy {
+        display: none;
+    }
+
     .commands-left {
         float: left;
         display: flex;
@@ -335,6 +339,10 @@
     .checkBoxLine {
         display: flex;
         align-items: center;
+
+        .copy {
+            display: none;
+        }
     }
 
     .checkBoxLine {
@@ -348,6 +356,10 @@
 
         .checkBox {
             height: 40px;
+        }
+
+        .copy {
+            display: none;
         }
     }
 

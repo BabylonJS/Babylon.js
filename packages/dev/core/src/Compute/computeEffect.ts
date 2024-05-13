@@ -3,12 +3,12 @@ import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import type { IComputePipelineContext } from "./IComputePipelineContext";
 import { GetDOMTextContent, IsWindowObjectExist } from "../Misc/domManagement";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { Finalize, Initialize, PreProcess } from "../Engines/Processors/shaderProcessor";
 import type { ProcessingOptions } from "../Engines/Processors/shaderProcessingOptions";
 import { ShaderStore } from "../Engines/shaderStore";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ComputeCompilationMessages } from "../Engines/Extensions/engine.computeShader";
 
 /**
@@ -110,7 +110,7 @@ export class ComputeEffect {
      */
     public _wasPreviouslyReady = false;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _isReady = false;
     private _compilationError = "";
     /** @internal */
@@ -134,7 +134,7 @@ export class ComputeEffect {
      * @param engine The engine the effect is created for
      * @param key Effect Key identifying uniquely compiled shader variants
      */
-    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: Engine, key = "") {
+    constructor(baseName: IComputeShaderPath | string, options: IComputeEffectCreationOptions, engine: AbstractEngine, key = "") {
         this.name = baseName;
         this._key = key;
 
@@ -181,8 +181,8 @@ export class ComputeEffect {
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {
-            ShaderProcessor.Initialize(processorOptions);
-            ShaderProcessor.PreProcess(
+            Initialize(processorOptions);
+            PreProcess(
                 computeCode,
                 processorOptions,
                 (migratedCommputeCode) => {
@@ -190,7 +190,7 @@ export class ComputeEffect {
                     if (options.processFinalCode) {
                         migratedCommputeCode = options.processFinalCode(migratedCommputeCode);
                     }
-                    const finalShaders = ShaderProcessor.Finalize(migratedCommputeCode, "", processorOptions);
+                    const finalShaders = Finalize(migratedCommputeCode, "", processorOptions);
                     this._useFinalCode(finalShaders.vertexCode, baseName);
                 },
                 this._engine
@@ -242,7 +242,7 @@ export class ComputeEffect {
      * The engine the effect was initialized with.
      * @returns the engine.
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 

@@ -134,15 +134,15 @@ export class GridMaterial extends PushMaterial {
     /**
      * @returns whether or not the grid requires alpha blending.
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return this.opacity < 1.0 || (this._opacityTexture && this._opacityTexture.isReady());
     }
 
-    public needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
+    public override needAlphaBlendingForMesh(mesh: AbstractMesh): boolean {
         return mesh.visibility < 1.0 || this.needAlphaBlending();
     }
 
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
         const drawWrapper = subMesh._drawWrapper;
 
         if (this.isFrozen) {
@@ -267,7 +267,7 @@ export class GridMaterial extends PushMaterial {
         return true;
     }
 
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <GridMaterialDefines>subMesh.materialDefines;
@@ -324,25 +324,25 @@ export class GridMaterial extends PushMaterial {
      * Dispose the material and its associated resources.
      * @param forceDisposeEffect will also dispose the used effect when true
      */
-    public dispose(forceDisposeEffect?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean): void {
         super.dispose(forceDisposeEffect);
     }
 
-    public clone(name: string): GridMaterial {
+    public override clone(name: string): GridMaterial {
         return SerializationHelper.Clone(() => new GridMaterial(name, this.getScene()), this);
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GridMaterial";
         return serializationObject;
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GridMaterial";
     }
 
-    public static Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): GridMaterial {
         return SerializationHelper.Parse(() => new GridMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

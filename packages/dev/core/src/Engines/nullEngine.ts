@@ -10,11 +10,12 @@ import { Constants } from "./constants";
 import type { IPipelineContext } from "./IPipelineContext";
 import { DataBuffer } from "../Buffers/dataBuffer";
 import type { IColor4Like, IViewportLike } from "../Maths/math.like";
-import type { ISceneLike } from "./thinEngine";
+import type { ISceneLike } from "./abstractEngine";
 import { PerformanceConfigurator } from "./performanceConfigurator";
-import { DrawWrapper } from "../Materials/drawWrapper";
+import type { DrawWrapper } from "../Materials/drawWrapper";
 import { RenderTargetWrapper } from "./renderTargetWrapper";
 import type { IStencilState } from "../States/IStencilState";
+import { IsWrapper } from "../Materials/drawWrapper.functions";
 
 declare const global: any;
 
@@ -69,7 +70,7 @@ export class NullEngine extends Engine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns true if engine is in deterministic lock step mode
      */
-    public isDeterministicLockStep(): boolean {
+    public override isDeterministicLockStep(): boolean {
         return this._options.deterministicLockstep;
     }
 
@@ -78,7 +79,7 @@ export class NullEngine extends Engine {
      * @see https://doc.babylonjs.com/features/featuresDeepDive/animation/advanced_animations#deterministic-lockstep
      * @returns the max steps
      */
-    public getLockstepMaxSteps(): number {
+    public override getLockstepMaxSteps(): number {
         return this._options.lockstepMaxSteps;
     }
 
@@ -88,14 +89,12 @@ export class NullEngine extends Engine {
      * if level = 1 then the engine will render at the exact resolution of the canvas. If level = 0.5 then the engine will render at twice the size of the canvas.
      * @returns a number indicating the current hardware scaling level
      */
-    public getHardwareScalingLevel(): number {
+    public override getHardwareScalingLevel(): number {
         return 1.0;
     }
 
     public constructor(options: NullEngineOptions = new NullEngineOptions()) {
         super(null);
-
-        Engine.Instances.push(this);
 
         if (options.deterministicLockstep === undefined) {
             options.deterministicLockstep = false;
@@ -214,7 +213,7 @@ export class NullEngine extends Engine {
      * @param vertices the data for the vertex buffer
      * @returns the new WebGL static buffer
      */
-    public createVertexBuffer(vertices: FloatArray): DataBuffer {
+    public override createVertexBuffer(vertices: FloatArray): DataBuffer {
         const buffer = new DataBuffer();
         buffer.references = 1;
         return buffer;
@@ -225,7 +224,7 @@ export class NullEngine extends Engine {
      * @param indices defines the content of the index buffer
      * @returns a new webGL buffer
      */
-    public createIndexBuffer(indices: IndicesArray): DataBuffer {
+    public override createIndexBuffer(indices: IndicesArray): DataBuffer {
         const buffer = new DataBuffer();
         buffer.references = 1;
         return buffer;
@@ -238,14 +237,14 @@ export class NullEngine extends Engine {
      * @param depth defines if the depth buffer must be cleared
      * @param stencil defines if the stencil buffer must be cleared
      */
-    public clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
+    public override clear(color: IColor4Like, backBuffer: boolean, depth: boolean, stencil: boolean = false): void {}
 
     /**
      * Gets the current render width
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render width
      */
-    public getRenderWidth(useScreen = false): number {
+    public override getRenderWidth(useScreen = false): number {
         if (!useScreen && this._currentRenderTarget) {
             return this._currentRenderTarget.width;
         }
@@ -258,7 +257,7 @@ export class NullEngine extends Engine {
      * @param useScreen defines if screen size must be used (or the current render target if any)
      * @returns a number defining the current render height
      */
-    public getRenderHeight(useScreen = false): number {
+    public override getRenderHeight(useScreen = false): number {
         if (!useScreen && this._currentRenderTarget) {
             return this._currentRenderTarget.height;
         }
@@ -272,11 +271,17 @@ export class NullEngine extends Engine {
      * @param requiredWidth defines the width required for rendering. If not provided the rendering canvas' width is used
      * @param requiredHeight defines the height required for rendering. If not provided the rendering canvas' height is used
      */
-    public setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
+    public override setViewport(viewport: IViewportLike, requiredWidth?: number, requiredHeight?: number): void {
         this._cachedViewport = viewport;
     }
 
-    public createShaderProgram(pipelineContext: IPipelineContext, vertexCode: string, fragmentCode: string, defines: string, context?: WebGLRenderingContext): WebGLProgram {
+    public override createShaderProgram(
+        pipelineContext: IPipelineContext,
+        vertexCode: string,
+        fragmentCode: string,
+        defines: string,
+        context?: WebGLRenderingContext
+    ): WebGLProgram {
         return {
             // eslint-disable-next-line @typescript-eslint/naming-convention
             __SPECTOR_rebuildProgram: null,
@@ -289,7 +294,7 @@ export class NullEngine extends Engine {
      * @param uniformsNames defines the list of uniform names
      * @returns an array of webGL uniform locations
      */
-    public getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
+    public override getUniforms(pipelineContext: IPipelineContext, uniformsNames: string[]): Nullable<WebGLUniformLocation>[] {
         return [];
     }
 
@@ -299,7 +304,7 @@ export class NullEngine extends Engine {
      * @param attributesNames defines the list of attribute names to get
      * @returns an array of indices indicating the offset of each attribute
      */
-    public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
+    public override getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         return [];
     }
 
@@ -307,7 +312,7 @@ export class NullEngine extends Engine {
      * Binds an effect to the webGL context
      * @param effect defines the effect to bind
      */
-    public bindSamplers(effect: Effect): void {
+    public override bindSamplers(effect: Effect): void {
         this._currentEffect = null;
     }
 
@@ -315,8 +320,8 @@ export class NullEngine extends Engine {
      * Activates an effect, making it the current one (ie. the one used for rendering)
      * @param effect defines the effect to activate
      */
-    public enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
-        effect = effect !== null && DrawWrapper.IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
+    public override enableEffect(effect: Nullable<Effect | DrawWrapper>): void {
+        effect = effect !== null && IsWrapper(effect) ? effect.effect : effect; // get only the effect, we don't need a Wrapper in the WebGL engine
 
         this._currentEffect = effect as Nullable<Effect>;
         if (!effect) {
@@ -341,7 +346,7 @@ export class NullEngine extends Engine {
      * @param stencil stencil states to set
      * @param zOffsetUnits defines the value to apply to zOffsetUnits (0 by default)
      */
-    public setState(
+    public override setState(
         culling: boolean,
         zOffset: number = 0,
         force?: boolean,
@@ -357,7 +362,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of int32 to store
      * @returns true if value was set
      */
-    public setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public override setIntArray(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return true;
     }
 
@@ -367,7 +372,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of int32 to store
      * @returns true if value was set
      */
-    public setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public override setIntArray2(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return true;
     }
 
@@ -377,7 +382,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of int32 to store
      * @returns true if value was set
      */
-    public setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public override setIntArray3(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return true;
     }
 
@@ -387,7 +392,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of int32 to store
      * @returns true if value was set
      */
-    public setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
+    public override setIntArray4(uniform: WebGLUniformLocation, array: Int32Array): boolean {
         return true;
     }
 
@@ -437,7 +442,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of number to store
      * @returns true if value was set
      */
-    public setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public override setArray(uniform: WebGLUniformLocation, array: number[]): boolean {
         return true;
     }
 
@@ -447,7 +452,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of number to store
      * @returns true if value was set
      */
-    public setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public override setArray2(uniform: WebGLUniformLocation, array: number[]): boolean {
         return true;
     }
 
@@ -457,7 +462,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of number to store
      * @returns true if value was set
      */
-    public setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public override setArray3(uniform: WebGLUniformLocation, array: number[]): boolean {
         return true;
     }
 
@@ -467,7 +472,7 @@ export class NullEngine extends Engine {
      * @param array defines the array of number to store
      * @returns true if value was set
      */
-    public setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
+    public override setArray4(uniform: WebGLUniformLocation, array: number[]): boolean {
         return true;
     }
 
@@ -477,7 +482,7 @@ export class NullEngine extends Engine {
      * @param matrices defines the array of float32 to store
      * @returns true if value was set
      */
-    public setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
+    public override setMatrices(uniform: WebGLUniformLocation, matrices: Float32Array): boolean {
         return true;
     }
 
@@ -487,7 +492,7 @@ export class NullEngine extends Engine {
      * @param matrix defines the Float32Array representing the 3x3 matrix to store
      * @returns true if value was set
      */
-    public setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+    public override setMatrix3x3(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         return true;
     }
 
@@ -497,7 +502,7 @@ export class NullEngine extends Engine {
      * @param matrix defines the Float32Array representing the 2x2 matrix to store
      * @returns true if value was set
      */
-    public setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
+    public override setMatrix2x2(uniform: WebGLUniformLocation, matrix: Float32Array): boolean {
         return true;
     }
 
@@ -507,7 +512,7 @@ export class NullEngine extends Engine {
      * @param value defines the float number to store
      * @returns true if value was set
      */
-    public setFloat(uniform: WebGLUniformLocation, value: number): boolean {
+    public override setFloat(uniform: WebGLUniformLocation, value: number): boolean {
         return true;
     }
 
@@ -518,7 +523,7 @@ export class NullEngine extends Engine {
      * @param y defines the 2nd component of the value
      * @returns true if value was set
      */
-    public setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
+    public override setFloat2(uniform: WebGLUniformLocation, x: number, y: number): boolean {
         return true;
     }
 
@@ -530,7 +535,7 @@ export class NullEngine extends Engine {
      * @param z defines the 3rd component of the value
      * @returns true if value was set
      */
-    public setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
+    public override setFloat3(uniform: WebGLUniformLocation, x: number, y: number, z: number): boolean {
         return true;
     }
 
@@ -553,7 +558,7 @@ export class NullEngine extends Engine {
      * @param w defines the 4th component of the value
      * @returns true if value was set
      */
-    public setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
+    public override setFloat4(uniform: WebGLUniformLocation, x: number, y: number, z: number, w: number): boolean {
         return true;
     }
 
@@ -563,7 +568,7 @@ export class NullEngine extends Engine {
      * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
      * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
      */
-    public setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
+    public override setAlphaMode(mode: number, noDepthWriteChange: boolean = false): void {
         if (this._alphaMode === mode) {
             return;
         }
@@ -582,14 +587,14 @@ export class NullEngine extends Engine {
      * @param indexBuffer defines the index buffer to bind
      * @param effect defines the effect associated with the vertex buffer
      */
-    public bindBuffers(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: DataBuffer, effect: Effect): void {}
+    public override bindBuffers(vertexBuffers: { [key: string]: VertexBuffer }, indexBuffer: DataBuffer, effect: Effect): void {}
 
     /**
      * Force the entire cache to be cleared
      * You should not have to use this function unless your engine needs to share the webGL context with another engine
      * @param bruteForce defines a boolean to force clearing ALL caches (including stencil, detoh and alpha states)
      */
-    public wipeCaches(bruteForce?: boolean): void {
+    public override wipeCaches(bruteForce?: boolean): void {
         if (this.preventCacheWipeBetweenFrames) {
             return;
         }
@@ -616,7 +621,7 @@ export class NullEngine extends Engine {
      * @param indexCount defines the number of index to draw
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
-    public draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {}
+    public override draw(useTriangles: boolean, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
     /**
      * Draw a list of indexed primitives
@@ -625,7 +630,7 @@ export class NullEngine extends Engine {
      * @param indexCount defines the number of index to draw
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
-    public drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {}
+    public override drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {}
 
     /**
      * Draw a list of unindexed primitives
@@ -634,17 +639,17 @@ export class NullEngine extends Engine {
      * @param verticesCount defines the count of vertices to draw
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
-    public drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
+    public override drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {}
 
     /** @internal */
-    protected _createTexture(): WebGLTexture {
+    protected override _createTexture(): WebGLTexture {
         return {};
     }
 
     /**
      * @internal
      */
-    public _releaseTexture(texture: InternalTexture): void {}
+    public override _releaseTexture(texture: InternalTexture): void {}
 
     /**
      * Usually called from Texture.ts.
@@ -666,7 +671,7 @@ export class NullEngine extends Engine {
      * @param mimeType defines an optional mime type
      * @returns a InternalTexture for assignment back into BABYLON.Texture
      */
-    public createTexture(
+    public override createTexture(
         urlArg: Nullable<string>,
         noMipmap: boolean,
         invertY: boolean,
@@ -711,7 +716,7 @@ export class NullEngine extends Engine {
     /**
      * @internal
      */
-    public _createHardwareRenderTargetWrapper(
+    public override _createHardwareRenderTargetWrapper(
         isMulti: boolean,
         isCube: boolean,
         size: number | { width: number; height: number; depth?: number; layers?: number }
@@ -727,7 +732,7 @@ export class NullEngine extends Engine {
      * @param options defines the options used to create the texture
      * @returns a new render target wrapper
      */
-    public createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
+    public override createRenderTargetTexture(size: any, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, false, size);
 
         const fullOptions: RenderTargetCreationOptions = {};
@@ -774,7 +779,7 @@ export class NullEngine extends Engine {
      * @param options defines the options used to create the texture
      * @returns a new render target wrapper
      */
-    public createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
+    public override createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper {
         const rtWrapper = this._createHardwareRenderTargetWrapper(false, true, size);
 
         const fullOptions = {
@@ -821,7 +826,7 @@ export class NullEngine extends Engine {
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
      */
-    public updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
+    public override updateTextureSamplingMode(samplingMode: number, texture: InternalTexture): void {
         texture.samplingMode = samplingMode;
     }
 
@@ -840,7 +845,7 @@ export class NullEngine extends Engine {
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
-    public createRawTexture(
+    public override createRawTexture(
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
@@ -883,7 +888,7 @@ export class NullEngine extends Engine {
      * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      */
-    public updateRawTexture(
+    public override updateRawTexture(
         texture: Nullable<InternalTexture>,
         data: Nullable<ArrayBufferView>,
         format: number,
@@ -910,7 +915,7 @@ export class NullEngine extends Engine {
      * @param requiredHeight The height of the target to render to
      * @param forceFullscreenViewport Forces the viewport to be the entire texture/screen if true
      */
-    public bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
+    public override bindFramebuffer(rtWrapper: RenderTargetWrapper, faceIndex?: number, requiredWidth?: number, requiredHeight?: number, forceFullscreenViewport?: boolean): void {
         if (this._currentRenderTarget) {
             this.unBindFramebuffer(this._currentRenderTarget);
         }
@@ -927,7 +932,7 @@ export class NullEngine extends Engine {
      * @param disableGenerateMipMaps defines a boolean indicating that mipmaps must not be generated
      * @param onBeforeUnbind defines a function which will be called before the effective unbind
      */
-    public unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
+    public override unBindFramebuffer(rtWrapper: RenderTargetWrapper, disableGenerateMipMaps = false, onBeforeUnbind?: () => void): void {
         this._currentRenderTarget = null;
 
         if (onBeforeUnbind) {
@@ -941,7 +946,7 @@ export class NullEngine extends Engine {
      * @param vertices the data for the dynamic vertex buffer
      * @returns the new WebGL dynamic buffer
      */
-    public createDynamicVertexBuffer(vertices: FloatArray): DataBuffer {
+    public override createDynamicVertexBuffer(vertices: FloatArray): DataBuffer {
         const buffer = new DataBuffer();
         buffer.references = 1;
         buffer.capacity = 1;
@@ -956,13 +961,13 @@ export class NullEngine extends Engine {
      * @param premulAlpha defines if alpha is stored as premultiplied
      * @param format defines the format of the data
      */
-    public updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {}
+    public override updateDynamicTexture(texture: Nullable<InternalTexture>, canvas: HTMLCanvasElement, invertY: boolean, premulAlpha: boolean = false, format?: number): void {}
 
     /**
      * Gets a boolean indicating if all created effects are ready
      * @returns true if all effects are ready
      */
-    public areAllEffectsReady(): boolean {
+    public override areAllEffectsReady(): boolean {
         return true;
     }
 
@@ -972,19 +977,19 @@ export class NullEngine extends Engine {
      * @returns the error code
      * @see https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/getError
      */
-    public getError(): number {
+    public override getError(): number {
         return 0;
     }
 
     /** @internal */
-    public _getUnpackAlignement(): number {
+    public override _getUnpackAlignement(): number {
         return 1;
     }
 
     /**
      * @internal
      */
-    public _unpackFlipY(value: boolean) {}
+    public override _unpackFlipY(value: boolean) {}
 
     /**
      * Update a dynamic index buffer
@@ -992,7 +997,7 @@ export class NullEngine extends Engine {
      * @param indices defines the data to update
      * @param offset defines the offset in the target index buffer where update should start
      */
-    public updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {}
+    public override updateDynamicIndexBuffer(indexBuffer: WebGLBuffer, indices: IndicesArray, offset: number = 0): void {}
 
     /**
      * Updates a dynamic vertex buffer.
@@ -1001,12 +1006,12 @@ export class NullEngine extends Engine {
      * @param byteOffset the byte offset of the data (optional)
      * @param byteLength the byte length of the data (optional)
      */
-    public updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {}
+    public override updateDynamicVertexBuffer(vertexBuffer: WebGLBuffer, vertices: FloatArray, byteOffset?: number, byteLength?: number): void {}
 
     /**
      * @internal
      */
-    public _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
+    public override _bindTextureDirectly(target: number, texture: InternalTexture): boolean {
         if (this._boundTexturesCache[this._activeChannel] !== texture) {
             this._boundTexturesCache[this._activeChannel] = texture;
             return true;
@@ -1017,7 +1022,7 @@ export class NullEngine extends Engine {
     /**
      * @internal
      */
-    public _bindTexture(channel: number, texture: InternalTexture): void {
+    public override _bindTexture(channel: number, texture: InternalTexture): void {
         if (channel < 0) {
             return;
         }
@@ -1025,23 +1030,23 @@ export class NullEngine extends Engine {
         this._bindTextureDirectly(0, texture);
     }
 
-    protected _deleteBuffer(buffer: WebGLBuffer): void {}
+    protected override _deleteBuffer(buffer: WebGLBuffer): void {}
 
     /**
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
-    public releaseEffects() {}
+    public override releaseEffects() {}
 
-    public displayLoadingUI(): void {}
+    public override displayLoadingUI(): void {}
 
-    public hideLoadingUI(): void {}
+    public override hideLoadingUI(): void {}
 
-    public set loadingUIText(_: string) {}
+    public override set loadingUIText(_: string) {}
 
     /**
      * @internal
      */
-    public _uploadCompressedDataToTextureDirectly(
+    public override _uploadCompressedDataToTextureDirectly(
         texture: InternalTexture,
         internalFormat: number,
         width: number,
@@ -1054,15 +1059,15 @@ export class NullEngine extends Engine {
     /**
      * @internal
      */
-    public _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
+    public override _uploadDataToTextureDirectly(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
      * @internal
      */
-    public _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
+    public override _uploadArrayBufferViewToTexture(texture: InternalTexture, imageData: ArrayBufferView, faceIndex: number = 0, lod: number = 0): void {}
 
     /**
      * @internal
      */
-    public _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {}
+    public override _uploadImageToTexture(texture: InternalTexture, image: HTMLImageElement, faceIndex: number = 0, lod: number = 0) {}
 }

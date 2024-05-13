@@ -41,6 +41,7 @@ import { TextInputLineComponent } from "shared-ui-components/lines/textInputLine
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { Constants } from "core/Engines/constants";
+import { Texture } from "core/Materials/Textures/texture";
 
 interface IParticleSystemPropertyGridComponentProps {
     globalState: GlobalState;
@@ -291,7 +292,25 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
         xmlHttp.send(JSON.stringify(dataToSend));
     }
 
-    render() {
+    updateTexture(file: File) {
+        const system = this.props.system;
+
+        Tools.ReadFile(
+            file,
+            (data) => {
+                const blob = new Blob([data], { type: "octet/stream" });
+                const url = URL.createObjectURL(blob);
+
+                system.particleTexture = new Texture(url, system.getScene(), false, false);
+
+                this.forceUpdate();
+            },
+            undefined,
+            true
+        );
+    }
+
+    override render() {
         const system = this.props.system;
 
         const blendModeOptions = [
@@ -347,7 +366,12 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <TextLineComponent label="Class" value={system.getClassName()} />
                     <TextLineComponent label="Capacity" value={system.getCapacity().toString()} />
                     <TextLineComponent label="Active count" value={system.getActiveCount().toString()} />
-                    <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                    {system.particleTexture && (
+                        <>
+                            <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
+                            <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                        </>
+                    )}
                     <OptionsLineComponent
                         label="Blend mode"
                         options={blendModeOptions}

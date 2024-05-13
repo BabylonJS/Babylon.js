@@ -72,7 +72,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
         this.setState({ isFocused: true });
     }
 
-    shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState) {
+    override shouldComponentUpdate(newProps: ITextInputComponentProps, newState: ITextInputComponentState) {
         if (newProps !== this.props) {
             newState.value = newProps.value;
         }
@@ -92,7 +92,7 @@ export class TextInputComponent extends React.Component<ITextInputComponentProps
         }
     }
 
-    public render() {
+    public override render() {
         return (
             <input
                 type="text"

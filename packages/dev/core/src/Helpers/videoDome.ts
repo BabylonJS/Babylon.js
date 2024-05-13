@@ -18,15 +18,15 @@ export class VideoDome extends TextureDome<VideoTexture> {
     /**
      * Define the video source as a Monoscopic panoramic 360 video.
      */
-    public static readonly MODE_MONOSCOPIC = TextureDome.MODE_MONOSCOPIC;
+    public static override readonly MODE_MONOSCOPIC = TextureDome.MODE_MONOSCOPIC;
     /**
      * Define the video source as a Stereoscopic TopBottom/OverUnder panoramic 360 video.
      */
-    public static readonly MODE_TOPBOTTOM = TextureDome.MODE_TOPBOTTOM;
+    public static override readonly MODE_TOPBOTTOM = TextureDome.MODE_TOPBOTTOM;
     /**
      * Define the video source as a Stereoscopic Side by Side panoramic 360 video.
      */
-    public static readonly MODE_SIDEBYSIDE = TextureDome.MODE_SIDEBYSIDE;
+    public static override readonly MODE_SIDEBYSIDE = TextureDome.MODE_SIDEBYSIDE;
 
     /**
      * Get the video texture associated with this video dome
@@ -79,7 +79,7 @@ export class VideoDome extends TextureDome<VideoTexture> {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         this._texture.onLoadObservable.remove(this._textureObserver);
         this._scene.onPointerObservable.remove(this._pointerObserver);
         super.dispose(doNotRecurse, disposeMaterialAndTextures);

@@ -18,14 +18,16 @@ export class MultiplyBlock extends BaseMathBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MultiplyBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
-        state.compilationString += this._declareOutput(this.output, state) + ` = ${this.left.associatedVariableName} * ${this.right.associatedVariableName};\n`;
+        const output = this._outputs[0];
+
+        state.compilationString += state._declareOutput(output) + ` = ${this.left.associatedVariableName} * ${this.right.associatedVariableName};\n`;
 
         return this;
     }

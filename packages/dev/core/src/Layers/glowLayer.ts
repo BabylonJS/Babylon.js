@@ -18,7 +18,6 @@ import { EffectLayer } from "./effectLayer";
 import { AbstractScene } from "../abstractScene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
-import { Engine } from "../Engines/engine";
 import { Color4 } from "../Maths/math.color";
 import type { PBRMaterial } from "../Materials/PBR/pbrMaterial";
 
@@ -26,6 +25,7 @@ import "../Shaders/glowMapMerge.fragment";
 import "../Shaders/glowMapMerge.vertex";
 import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -260,8 +260,8 @@ export class GlowLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         let blurTextureWidth = this._mainTextureDesiredSize.width;
         let blurTextureHeight = this._mainTextureDesiredSize.height;
-        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
@@ -445,7 +445,7 @@ export class GlowLayer extends EffectLayer {
      * @param material The material used on the mesh
      * @returns true if it can be rendered otherwise false
      */
-    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+    protected override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
         return true;
     }
 
@@ -517,7 +517,7 @@ export class GlowLayer extends EffectLayer {
      * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
-    protected _shouldRenderMesh(mesh: Mesh): boolean {
+    protected override _shouldRenderMesh(mesh: Mesh): boolean {
         return this.hasMesh(mesh);
     }
 
@@ -525,7 +525,7 @@ export class GlowLayer extends EffectLayer {
      * Adds specific effects defines.
      * @param defines The defines to add specifics to.
      */
-    protected _addCustomEffectDefines(defines: string[]): void {
+    protected override _addCustomEffectDefines(defines: string[]): void {
         defines.push("#define GLOW");
     }
 
@@ -576,7 +576,7 @@ export class GlowLayer extends EffectLayer {
      * @param mesh The mesh to test
      * @returns true if the mesh will be highlighted by the current glow layer
      */
-    public hasMesh(mesh: AbstractMesh): boolean {
+    public override hasMesh(mesh: AbstractMesh): boolean {
         if (!super.hasMesh(mesh)) {
             return false;
         }
@@ -599,7 +599,7 @@ export class GlowLayer extends EffectLayer {
      * @param mesh defines the current mesh to render
      * @returns true if the material of the mesh should be use to render the effect
      */
-    protected _useMeshMaterial(mesh: AbstractMesh): boolean {
+    protected override _useMeshMaterial(mesh: AbstractMesh): boolean {
         if (this._meshesUsingTheirOwnMaterials.length == 0) {
             return false;
         }
@@ -648,7 +648,7 @@ export class GlowLayer extends EffectLayer {
      * Gets the class name of the effect layer
      * @returns the string with the class name of the effect layer
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GlowLayer";
     }
 
@@ -696,7 +696,7 @@ export class GlowLayer extends EffectLayer {
      * @param rootUrl defines the root URL containing the glow layer information
      * @returns a parsed Glow Layer
      */
-    public static Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
+    public static override Parse(parsedGlowLayer: any, scene: Scene, rootUrl: string): GlowLayer {
         const gl = SerializationHelper.Parse(() => new GlowLayer(parsedGlowLayer.name, scene, parsedGlowLayer.options), parsedGlowLayer, scene, rootUrl);
         let index;
 

@@ -24,7 +24,7 @@ export class SSRRenderingPipelinePropertyGridComponent extends React.Component<I
         super(props);
     }
 
-    render() {
+    override render() {
         const renderPipeline = this.props.renderPipeline;
 
         return (

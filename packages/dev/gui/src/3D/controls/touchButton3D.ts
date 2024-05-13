@@ -217,19 +217,19 @@ export class TouchButton3D extends Button3D {
         return providedType;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "TouchButton3D";
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         return super._createNode(scene);
     }
 
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         // Clean up toggle observables

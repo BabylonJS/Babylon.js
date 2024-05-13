@@ -54,7 +54,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "HeightToNormalBlock";
     }
 
@@ -100,7 +100,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
@@ -143,19 +143,19 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
         state._emitFunction("heightToNormal", heightToNormal, "// heightToNormal");
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = heightToNormal(${this.input.associatedVariableName}, ${this.worldPosition.associatedVariableName}, ${
                 this.worldTangent.isConnected ? this.worldTangent.associatedVariableName : "vec3(0.)"
             }.xyz, ${this.worldNormal.associatedVariableName});\n`;
 
         if (this.xyz.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.xyz, state) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+            state.compilationString += state._declareOutput(this.xyz) + ` = ${this.output.associatedVariableName}.xyz;\n`;
         }
 
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.generateInWorldSpace = ${this.generateInWorldSpace};\n`;
         codeString += `${this._codeVariableName}.automaticNormalizationNormal = ${this.automaticNormalizationNormal};\n`;
@@ -164,7 +164,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.generateInWorldSpace = this.generateInWorldSpace;
@@ -174,7 +174,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.generateInWorldSpace = serializationObject.generateInWorldSpace;

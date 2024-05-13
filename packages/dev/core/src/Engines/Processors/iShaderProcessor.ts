@@ -2,8 +2,6 @@ import type { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "./shaderProcessingOptions";
 
-import type { ThinEngine } from "../thinEngine";
-
 /** @internal */
 export interface IShaderProcessor {
     shaderLanguage: ShaderLanguage;
@@ -28,7 +26,15 @@ export interface IShaderProcessor {
     endOfUniformBufferProcessor?: (closingBracketLine: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
     lineProcessor?: (line: string, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
     preProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) => string;
-    postProcessor?: (code: string, defines: string[], isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>, engine: ThinEngine) => string;
+    postProcessor?: (
+        code: string,
+        defines: string[],
+        isFragment: boolean,
+        processingContext: Nullable<ShaderProcessingContext>,
+        patameters: {
+            [key: string]: number | string | boolean | undefined;
+        }
+    ) => string;
     initializeShaders?: (processingContext: Nullable<ShaderProcessingContext>) => void;
     finalizeShaders?: (vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>) => { vertexCode: string; fragmentCode: string };
 }

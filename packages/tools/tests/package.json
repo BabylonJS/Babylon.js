@@ -14,6 +14,7 @@
         "test:debug": "set DEBUG=true && npm run test",
         "update": "jest -u",
         "build": "webpack --env mode=production",
+        "analyse": "webpack --profile --json > stats.json",
         "generate-file-size-report": "node ./scripts/generateFileSizes.js",
         "test:playwright": "playwright test"
     },

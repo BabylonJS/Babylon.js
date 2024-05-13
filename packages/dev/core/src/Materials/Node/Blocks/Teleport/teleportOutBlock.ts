@@ -38,7 +38,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NodeMaterialTeleportOutBlock";
     }
 
@@ -52,11 +52,11 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the target of the block
      */
-    public get target() {
+    public override get target() {
         return this._entryPoint ? this._entryPoint.target : this._target;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {
+    public override set target(value: NodeMaterialBlockTargets) {
         if ((this._target & value) !== 0) {
             return;
         }
@@ -72,11 +72,11 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         this._entryPoint.detachFromEndpoint(this);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.entryPoint) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${this.entryPoint.input.associatedVariableName};\n`;
         }
     }
 
@@ -86,7 +86,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @returns a copy of the current block
      */
-    public clone(scene: Scene, rootUrl: string = "") {
+    public override clone(scene: Scene, rootUrl: string = "") {
         const clone = super.clone(scene, rootUrl);
 
         if (this.entryPoint) {
@@ -96,13 +96,13 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return clone;
     }
 
-    protected _customBuildStep(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): void {
+    protected override _customBuildStep(state: NodeMaterialBuildState, activeBlocks: NodeMaterialBlock[]): void {
         if (this.entryPoint) {
             this.entryPoint.build(state, activeBlocks);
         }
     }
 
-    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
             if (alreadyDumped.indexOf(this.entryPoint) === -1) {
@@ -113,7 +113,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
-    public _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
+    public override _dumpCodeForOutputConnections(alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
         if (this.entryPoint) {
@@ -123,7 +123,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (this.entryPoint) {
@@ -136,7 +136,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.entryPoint = this.entryPoint?.uniqueId ?? "";
@@ -144,7 +144,7 @@ export class NodeMaterialTeleportOutBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;

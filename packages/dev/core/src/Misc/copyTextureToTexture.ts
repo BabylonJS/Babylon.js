@@ -1,4 +1,4 @@
-import type { ThinEngine } from "core/Engines/thinEngine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
@@ -20,7 +20,7 @@ export enum ConversionMode {
  * Class used for fast copy from one texture to another
  */
 export class CopyTextureToTexture {
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
     private _isDepthTexture: boolean;
     private _renderer: EffectRenderer;
     private _effectWrapper: EffectWrapper;
@@ -36,7 +36,7 @@ export class CopyTextureToTexture {
      * @param engine The engine to use for the copy
      * @param isDepthTexture True means that we should write (using gl_FragDepth) into the depth texture attached to the destination (default: false)
      */
-    constructor(engine: ThinEngine, isDepthTexture = false) {
+    constructor(engine: AbstractEngine, isDepthTexture = false) {
         this._engine = engine;
         this._isDepthTexture = isDepthTexture;
 

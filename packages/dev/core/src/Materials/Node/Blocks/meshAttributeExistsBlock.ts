@@ -98,7 +98,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "MeshAttributeExistsBlock";
     }
 
@@ -143,7 +143,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let attributeDefine: null | string = null;
@@ -177,7 +177,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
                 break;
         }
 
-        const output = this._declareOutput(this.output, state);
+        const output = state._declareOutput(this.output);
         if (attributeDefine) {
             state.compilationString += `#ifdef ${attributeDefine}\n`;
         }
@@ -192,7 +192,7 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.attributeType = this.attributeType;
@@ -200,13 +200,13 @@ export class MeshAttributeExistsBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.attributeType = serializationObject.attributeType ?? MeshAttributeExistsBlockTypes.None;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.attributeType = ${this.attributeType};\n`;

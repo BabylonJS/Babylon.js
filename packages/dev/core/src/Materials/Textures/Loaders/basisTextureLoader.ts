@@ -1,9 +1,9 @@
 import type { Nullable } from "../../../types";
-import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
 import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/basis";
 import { Tools } from "../../../Misc/tools";
+import { AbstractEngine } from "../../../Engines/abstractEngine";
 
 /**
  * Loader for .basis file format
@@ -57,7 +57,7 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
             .then((result) => {
                 const hasMipmap = result.fileInfo.images[0].levels.length > 1 && texture.generateMipMaps;
                 LoadTextureFromTranscodeResult(texture, result);
-                (texture.getEngine() as Engine)._setCubeMapTextureParams(texture, hasMipmap);
+                texture.getEngine()._setCubeMapTextureParams(texture, hasMipmap);
                 texture.isReady = true;
                 texture.onLoadedObservable.notifyObservers(texture);
                 texture.onLoadedObservable.clear();
@@ -114,4 +114,4 @@ export class _BasisTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.push(new _BasisTextureLoader());
+AbstractEngine._TextureLoaders.push(new _BasisTextureLoader());

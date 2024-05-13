@@ -134,7 +134,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    componentWillMount() {
+    override componentWillMount() {
         this._checkFontsInLayout();
     }
 
@@ -282,7 +282,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onPropertyChangedObserver) {
             this.props.onPropertyChangedObservable?.remove(this._onPropertyChangedObserver);
         }
@@ -304,7 +304,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         });
     }
 
-    render() {
+    override render() {
         const controls = this.props.controls;
         const firstControl = controls[0];
         let horizontalAlignment = firstControl.horizontalAlignment;

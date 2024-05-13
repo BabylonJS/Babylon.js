@@ -60,12 +60,12 @@ export class HolographicBackplate extends Control3D {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "HolographicBackplate";
     }
 
     // Mesh association
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         const collisionMesh = CreateBox(
             (this.name ?? "HolographicBackplate") + "_CollisionMesh",
             {
@@ -96,7 +96,7 @@ export class HolographicBackplate extends Control3D {
         this._material = new FluentBackplateMaterial(this.name + " Material", mesh.getScene());
     }
 
-    protected _affectMaterial(mesh: Mesh) {
+    protected override _affectMaterial(mesh: Mesh) {
         // Back
         if (this._shareMaterials) {
             if (!this._host._touchSharedMaterials["fluentBackplateMaterial"]) {
@@ -113,7 +113,7 @@ export class HolographicBackplate extends Control3D {
     /**
      * Releases all associated resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose(); // will dispose main mesh ie. back plate
 
         if (!this.shareMaterials) {

@@ -127,7 +127,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryCurveBlock";
     }
 
@@ -145,7 +145,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this.input.isConnected) {
             this.output._storedFunction = null;
             this.output._storedValue = null;
@@ -291,7 +291,7 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.curveType = this.type;
@@ -299,13 +299,13 @@ export class GeometryCurveBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.type = serializationObject.curveType;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.type = BABYLON.GeometryCurveBlockTypes.${GeometryCurveBlockTypes[this.type]};\n`;
         return codeString;
     }

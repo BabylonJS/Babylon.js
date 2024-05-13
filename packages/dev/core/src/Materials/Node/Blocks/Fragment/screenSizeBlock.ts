@@ -30,7 +30,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ScreenSizeBlock";
     }
 
@@ -55,7 +55,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public bind(effect: Effect) {
+    public override bind(effect: Effect) {
         const engine = this._scene.getEngine();
 
         effect.setFloat2(this._varName, engine.getRenderWidth(), engine.getRenderHeight());
@@ -67,14 +67,14 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
 
         for (const output of this._outputs) {
             if (output.hasEndpoints) {
-                code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
             }
         }
 
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         this._scene = state.sharedData.scene;
@@ -87,7 +87,7 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         state.sharedData.bindableBlocks.push(this);
 
         this._varName = state._getFreeVariableName("screenSize");
-        state._emitUniformFromString(this._varName, "vec2");
+        state._emitUniformFromString(this._varName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += this.writeOutputs(state, this._varName);
 

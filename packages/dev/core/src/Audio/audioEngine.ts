@@ -3,12 +3,12 @@ import type { Analyser } from "./analyser";
 import type { Nullable } from "../types";
 import { Observable } from "../Misc/observable";
 import { Logger } from "../Misc/logger";
-import { Engine } from "../Engines/engine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 import type { IAudioEngine } from "./Interfaces/IAudioEngine";
 import { IsWindowObjectExist } from "../Misc/domManagement";
 
 // Sets the default audio engine to Babylon.js
-Engine.AudioEngineFactory = (
+AbstractEngine.AudioEngineFactory = (
     hostElement: Nullable<HTMLElement>,
     audioContext: Nullable<AudioContext>,
     audioDestination: Nullable<AudioDestinationNode | MediaStreamAudioDestinationNode>

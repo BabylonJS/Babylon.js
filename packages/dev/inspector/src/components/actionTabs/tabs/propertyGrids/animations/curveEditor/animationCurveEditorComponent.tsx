@@ -37,7 +37,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         this.props.context.onActiveAnimationChanged.notifyObservers({});
     }
 
-    shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
+    override shouldComponentUpdate(newProps: IAnimationCurveEditorComponentProps, newState: IAnimationCurveEditorComponentState) {
         if (newState.isOpen !== this.state.isOpen) {
             if (newState.isOpen) {
                 this.props.context.prepare();
@@ -106,7 +106,7 @@ export class AnimationCurveEditorComponent extends React.Component<IAnimationCur
         }
     }
 
-    public render() {
+    public override render() {
         return (
             <>
                 <ButtonLineComponent

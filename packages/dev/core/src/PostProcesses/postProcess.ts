@@ -9,7 +9,6 @@ import { Constants } from "../Engines/constants";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
 import "../Shaders/postprocess.vertex";
 import type { IInspectable } from "../Misc/iInspectable";
-import { Engine } from "../Engines/engine";
 import type { Color4 } from "../Maths/math.color";
 
 import "../Engines/Extensions/engine.renderTarget";
@@ -27,6 +26,8 @@ import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { Animation } from "../Animations/animation";
 import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
 
 /**
  * Allows for custom processing of the shader code used by a post process
@@ -100,7 +101,7 @@ export type PostProcessOptions = {
     /**
      * The engine to be used to render the post process (default: engine from scene)
      */
-    engine?: Engine;
+    engine?: AbstractEngine;
     /**
      * If the post process can be reused on the same frame. (default: false)
      */
@@ -196,7 +197,6 @@ export class PostProcess {
     public _outputTexture: Nullable<RenderTargetWrapper> = null;
     /**
      * Sampling mode used by the shader
-     * See https://doc.babylonjs.com/classes/3.1/texture
      */
     @serialize()
     public renderTargetSamplingMode: number;
@@ -295,7 +295,7 @@ export class PostProcess {
 
     private _camera: Camera;
     protected _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     private _options: number | { width: number; height: number };
     private _reusable = false;
@@ -521,7 +521,7 @@ export class PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         defines?: Nullable<string>,
         textureType?: number,
@@ -541,7 +541,7 @@ export class PostProcess {
         _size?: number | PostProcessOptions,
         camera?: Nullable<Camera>,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         defines: Nullable<string> = null,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
@@ -629,7 +629,7 @@ export class PostProcess {
      * Gets the engine which this post process belongs to.
      * @returns The engine the post process was enabled with.
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
@@ -895,11 +895,11 @@ export class PostProcess {
 
             if (needMipMaps || this.alwaysForcePOT) {
                 if (!(<PostProcessOptions>this._options).width) {
-                    desiredWidth = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
+                    desiredWidth = engine.needPOTTextures ? GetExponentOfTwo(desiredWidth, maxSize, this.scaleMode) : desiredWidth;
                 }
 
                 if (!(<PostProcessOptions>this._options).height) {
-                    desiredHeight = engine.needPOTTextures ? Engine.GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
+                    desiredHeight = engine.needPOTTextures ? GetExponentOfTwo(desiredHeight, maxSize, this.scaleMode) : desiredHeight;
                 }
             }
 

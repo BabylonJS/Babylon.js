@@ -10,6 +10,7 @@
         "inlineSources": true,
         "experimentalDecorators": true,
         "noImplicitAny": true,
+        "noImplicitOverride": true,
         "noImplicitReturns": true,
         "noImplicitThis": true,
         "noUnusedLocals": true,

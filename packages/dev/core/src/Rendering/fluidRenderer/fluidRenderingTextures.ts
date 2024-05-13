@@ -1,6 +1,6 @@
 import type { Camera } from "core/Cameras/camera";
 import { Constants } from "core/Engines/constants";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import { Texture } from "core/Materials/Textures/texture";
 import type { ThinTexture } from "core/Materials/Textures/thinTexture";
@@ -15,7 +15,7 @@ export class FluidRenderingTextures {
     protected _name: string;
     protected _scene: Scene;
     protected _camera: Nullable<Camera>;
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
     protected _width: number;
     protected _height: number;
     protected _blurTextureSizeX: number;

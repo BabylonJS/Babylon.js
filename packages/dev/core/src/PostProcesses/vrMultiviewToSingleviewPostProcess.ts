@@ -16,7 +16,7 @@ export class VRMultiviewToSingleviewPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "VRMultiviewToSingleviewPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VRMultiviewToSingleviewPostProcess";
     }
 

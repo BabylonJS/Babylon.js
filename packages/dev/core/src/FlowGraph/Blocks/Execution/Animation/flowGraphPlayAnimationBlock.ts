@@ -65,7 +65,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphPlayAnimationBlockConfiguration
+        public override config: IFlowGraphPlayAnimationBlockConfiguration
     ) {
         super(config);
 
@@ -149,7 +149,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphPlayAnimationBlock.ClassName;
     }
 
@@ -157,7 +157,7 @@ export class FlowGraphPlayAnimationBlock extends FlowGraphAsyncExecutionBlock {
      * Serializes the block to a JSON object.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject: any = {}) {
+    public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.config.targetPath = this.config.targetPath;
         serializationObject.config.animationPath = this.config.animationPath;

@@ -7,7 +7,7 @@ import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import type { IInspectable } from "../../Misc/iInspectable";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
@@ -286,7 +286,7 @@ export class Texture extends BaseTexture {
     /**
      * Are mip maps generated for this texture or not.
      */
-    get noMipmap(): boolean {
+    override get noMipmap(): boolean {
         return this._noMipmap;
     }
 
@@ -356,11 +356,11 @@ export class Texture extends BaseTexture {
      * Is the texture preventing material to render while loading.
      * If false, a default texture will be used instead of the loading one during the preparation step.
      */
-    public set isBlocking(value: boolean) {
+    public override set isBlocking(value: boolean) {
         this._isBlocking = value;
     }
     @serialize()
-    public get isBlocking(): boolean {
+    public override get isBlocking(): boolean {
         return this._isBlocking;
     }
 
@@ -392,7 +392,7 @@ export class Texture extends BaseTexture {
      */
     constructor(
         url: Nullable<string>,
-        sceneOrEngine?: Nullable<Scene | ThinEngine>,
+        sceneOrEngine?: Nullable<Scene | AbstractEngine>,
         noMipmapOrOptions?: boolean | ITextureCreationOptions,
         invertY?: boolean,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -593,7 +593,7 @@ export class Texture extends BaseTexture {
      * Finish the loading sequence of a texture flagged as delayed load.
      * @internal
      */
-    public delayLoad(): void {
+    public override delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
@@ -663,7 +663,7 @@ export class Texture extends BaseTexture {
      * @param uBase The horizontal base offset multiplier (1 by default)
      * @returns the transform matrix of the texture.
      */
-    public getTextureMatrix(uBase = 1): Matrix {
+    public override getTextureMatrix(uBase = 1): Matrix {
         if (
             this.uOffset === this._cachedUOffset &&
             this.vOffset === this._cachedVOffset &&
@@ -768,7 +768,7 @@ export class Texture extends BaseTexture {
      * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
      * @returns The reflection texture transform
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         const scene = this.getScene();
 
         if (!scene) {
@@ -844,7 +844,7 @@ export class Texture extends BaseTexture {
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): Texture {
+    public override clone(): Texture {
         const options: ITextureCreationOptions = {
             noMipmap: this._noMipmap,
             invertY: this._invertY,
@@ -869,7 +869,7 @@ export class Texture extends BaseTexture {
      * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
-    public serialize(): any {
+    public override serialize(): any {
         const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
@@ -918,14 +918,14 @@ export class Texture extends BaseTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "Texture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "Texture";
     }
 
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this.onLoadObservable.clear();

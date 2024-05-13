@@ -11,6 +11,7 @@ import { Mix } from "../Misc/tools.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import type { IImageProcessingConfigurationDefines } from "./imageProcessingConfiguration.defines";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "./imageProcessingConfiguration.functions";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This groups together the common properties used for image processing either in direct forward pass
@@ -28,6 +29,12 @@ export class ImageProcessingConfiguration {
      * to other engines rendering to increase portability.
      */
     public static readonly TONEMAPPING_ACES = 1;
+
+    /**
+     * Neutral Tone mapping developped by the Khronos group in order to constrain
+     * values between 0 and 1 without shifting Hue.
+     */
+    public static readonly TONEMAPPING_KHR_PBR_NEUTRAL = 2;
 
     /**
      * Color curves setup used in the effect if colorCurvesEnabled is set to true
@@ -463,8 +470,7 @@ export class ImageProcessingConfiguration {
     public prepareDefines(defines: IImageProcessingConfigurationDefines, forPostProcess = false): void {
         if (forPostProcess !== this.applyByPostProcess || !this._isEnabled) {
             defines.VIGNETTE = false;
-            defines.TONEMAPPING = false;
-            defines.TONEMAPPING_ACES = false;
+            defines.TONEMAPPING = 0;
             defines.CONTRAST = false;
             defines.EXPOSURE = false;
             defines.COLORCURVES = false;
@@ -481,14 +487,20 @@ export class ImageProcessingConfiguration {
         defines.VIGNETTEBLENDMODEMULTIPLY = this.vignetteBlendMode === ImageProcessingConfiguration._VIGNETTEMODE_MULTIPLY;
         defines.VIGNETTEBLENDMODEOPAQUE = !defines.VIGNETTEBLENDMODEMULTIPLY;
 
-        defines.TONEMAPPING = this.toneMappingEnabled;
-        switch (this._toneMappingType) {
-            case ImageProcessingConfiguration.TONEMAPPING_ACES:
-                defines.TONEMAPPING_ACES = true;
-                break;
-            default:
-                defines.TONEMAPPING_ACES = false;
-                break;
+        if (!this._toneMappingEnabled) {
+            defines.TONEMAPPING = 0;
+        } else {
+            switch (this._toneMappingType) {
+                case ImageProcessingConfiguration.TONEMAPPING_KHR_PBR_NEUTRAL:
+                    defines.TONEMAPPING = 3;
+                    break;
+                case ImageProcessingConfiguration.TONEMAPPING_ACES:
+                    defines.TONEMAPPING = 2;
+                    break;
+                default:
+                    defines.TONEMAPPING = 1;
+                    break;
+            }
         }
 
         defines.CONTRAST = this.contrast !== 1.0;
@@ -505,7 +517,8 @@ export class ImageProcessingConfiguration {
         defines.DITHER = this._ditheringEnabled;
         defines.IMAGEPROCESSINGPOSTPROCESS = this.applyByPostProcess;
         defines.SKIPFINALCOLORCLAMP = this.skipFinalColorClamp;
-        defines.IMAGEPROCESSING = defines.VIGNETTE || defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.DITHER;
+        defines.IMAGEPROCESSING =
+            defines.VIGNETTE || !!defines.TONEMAPPING || defines.CONTRAST || defines.EXPOSURE || defines.COLORCURVES || defines.COLORGRADING || defines.DITHER;
     }
 
     /**
@@ -631,3 +644,6 @@ export class ImageProcessingConfiguration {
 
 // References the dependencies.
 SerializationHelper._ImageProcessingConfigurationParser = ImageProcessingConfiguration.Parse;
+
+// Register Class Name
+RegisterClass("BABYLON.ImageProcessingConfiguration", ImageProcessingConfiguration);

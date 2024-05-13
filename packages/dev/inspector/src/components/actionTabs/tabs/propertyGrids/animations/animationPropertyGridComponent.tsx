@@ -100,7 +100,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         this.forceUpdate();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onBeforeRenderObserver = this.props.scene.onBeforeRenderObservable.add(() => {
             if (!this._isPlaying || !this._mainAnimatable) {
                 return;
@@ -109,7 +109,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onBeforeRenderObserver) {
             this.props.scene.onBeforeRenderObservable.remove(this._onBeforeRenderObserver);
             this._onBeforeRenderObserver = null;
@@ -132,7 +132,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    componentDidUpdate(prevProps: IAnimationGridComponentProps) {
+    override componentDidUpdate(prevProps: IAnimationGridComponentProps) {
         const prevId = (prevProps.animatable as any).uniqueId;
         const currId = (this.props.animatable as any).uniqueId;
         if (prevId !== currId) {
@@ -140,7 +140,7 @@ export class AnimationGridComponent extends React.Component<IAnimationGridCompon
         }
     }
 
-    render() {
+    override render() {
         const animatable = this.props.animatable;
         const animatableAsAny = this.props.animatable as any;
 

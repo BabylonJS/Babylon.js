@@ -27,7 +27,7 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
         super(props);
     }
 
-    render() {
+    override render() {
         const sound = this.props.sound;
 
         return (

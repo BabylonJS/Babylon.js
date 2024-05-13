@@ -7,7 +7,7 @@ import type { IParticleSystem } from "./IParticleSystem";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { ThinEngine } from "../Engines/thinEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetClass } from "../Misc/typeStore";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import type { Effect } from "../Materials/effect";
@@ -82,7 +82,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the box
      * @returns the emitter
      */
-    public createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
+    public override createPointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
         const particleEmitter = CreatePointEmitter(direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -94,7 +94,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param radiusRange The range of the hemisphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
      * @returns the emitter
      */
-    public createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
+    public override createHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
         const particleEmitter = CreateHemisphericEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -106,7 +106,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param radiusRange The range of the sphere to emit from [0-1] 0 Surface Only, 1 Entire Radius
      * @returns the emitter
      */
-    public createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
+    public override createSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
         const particleEmitter = CreateSphereEmitter(radius, radiusRange);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -119,7 +119,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the sphere
      * @returns the emitter
      */
-    public createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
+    public override createDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
         const particleEmitter = CreateDirectedSphereEmitter(radius, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -133,7 +133,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param directionRandomizer How much to randomize the particle direction [0-1]
      * @returns the emitter
      */
-    public createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
+    public override createCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
         const particleEmitter = CreateCylinderEmitter(radius, height, radiusRange, directionRandomizer);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -148,7 +148,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param direction2 Particles are emitted between the direction1 and direction2 from within the cylinder
      * @returns the emitter
      */
-    public createDirectedCylinderEmitter(
+    public override createDirectedCylinderEmitter(
         radius = 1,
         height = 1,
         radiusRange = 1,
@@ -166,7 +166,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param angle The base angle of the cone
      * @returns the emitter
      */
-    public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+    public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
         const particleEmitter = CreateConeEmitter(radius, angle);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
@@ -179,7 +179,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param maxEmitBox  Particles are emitted from the box between minEmitBox and maxEmitBox
      * @returns the emitter
      */
-    public createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
+    public override createBoxEmitter(direction1: Vector3, direction2: Vector3, minEmitBox: Vector3, maxEmitBox: Vector3): BoxParticleEmitter {
         const particleEmitter = new BoxParticleEmitter();
         this.particleEmitterType = particleEmitter;
         this.direction1 = direction1;
@@ -227,7 +227,7 @@ export class ParticleSystem extends ThinParticleSystem {
         this._rootParticleSystem = null;
     }
 
-    public _emitFromParticle: (particle: Particle) => void = (particle) => {
+    public override _emitFromParticle: (particle: Particle) => void = (particle) => {
         if (!this._subEmitters || this._subEmitters.length === 0) {
             return;
         }
@@ -244,7 +244,7 @@ export class ParticleSystem extends ThinParticleSystem {
         });
     };
 
-    public _preStart() {
+    public override _preStart() {
         // Convert the subEmitters field to the constant type field _subEmitters
         this._prepareSubEmitterInternalArray();
 
@@ -253,13 +253,13 @@ export class ParticleSystem extends ThinParticleSystem {
         }
     }
 
-    public _postStop(stopSubEmitters: boolean) {
+    public override _postStop(stopSubEmitters: boolean) {
         if (stopSubEmitters) {
             this._stopSubEmitters();
         }
     }
 
-    public _prepareParticle(particle: Particle): void {
+    public override _prepareParticle(particle: Particle): void {
         // Attach emitters
         if (this._subEmitters && this._subEmitters.length > 0) {
             const subEmitters = this._subEmitters[Math.floor(Math.random() * this._subEmitters.length)];
@@ -275,7 +275,7 @@ export class ParticleSystem extends ThinParticleSystem {
     }
 
     /** @internal */
-    public _onDispose(disposeAttachedSubEmitters = false, disposeEndSubEmitters = false) {
+    public override _onDispose(disposeAttachedSubEmitters = false, disposeEndSubEmitters = false) {
         this._removeFromRoot();
 
         if (this.subEmitters && !this._subEmitters) {
@@ -319,10 +319,10 @@ export class ParticleSystem extends ThinParticleSystem {
     /**
      * @internal
      */
-    public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | ThinEngine, rootUrl: string) {
+    public static _Parse(parsedParticleSystem: any, particleSystem: IParticleSystem, sceneOrEngine: Scene | AbstractEngine, rootUrl: string) {
         let scene: Nullable<Scene>;
 
-        if (sceneOrEngine instanceof ThinEngine) {
+        if (sceneOrEngine instanceof AbstractEngine) {
             scene = null;
         } else {
             scene = sceneOrEngine as Scene;
@@ -620,14 +620,14 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param capacity defines the system capacity (if null or undefined the sotred capacity will be used)
      * @returns the Parsed particle system
      */
-    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | ThinEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
+    public static Parse(parsedParticleSystem: any, sceneOrEngine: Scene | AbstractEngine, rootUrl: string, doNotStart = false, capacity?: number): ParticleSystem {
         const name = parsedParticleSystem.name;
         let custom: Nullable<Effect> = null;
         let program: any = null;
-        let engine: ThinEngine;
+        let engine: AbstractEngine;
         let scene: Nullable<Scene>;
 
-        if (sceneOrEngine instanceof ThinEngine) {
+        if (sceneOrEngine instanceof AbstractEngine) {
             engine = sceneOrEngine;
         } else {
             scene = sceneOrEngine as Scene;
@@ -687,7 +687,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param serializeTexture defines if the texture must be serialized as well
      * @returns the JSON object
      */
-    public serialize(serializeTexture = false): any {
+    public override serialize(serializeTexture = false): any {
         const serializationObject: any = {};
 
         ParticleSystem._Serialize(serializationObject, this, serializeTexture);
@@ -1040,7 +1040,7 @@ export class ParticleSystem extends ThinParticleSystem {
      * @param cloneTexture Also clone the textures if true
      * @returns the cloned particle system
      */
-    public clone(name: string, newEmitter: any, cloneTexture = false): ParticleSystem {
+    public override clone(name: string, newEmitter: any, cloneTexture = false): ParticleSystem {
         const custom = { ...this._customWrappers };
         let program: any = null;
         const engine = this._engine as Engine;

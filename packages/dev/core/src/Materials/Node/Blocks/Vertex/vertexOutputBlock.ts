@@ -7,6 +7,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Immutable } from "../../../../types";
 
 import type { FragmentOutputBlock } from "../Fragment/fragmentOutputBlock";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to output the vertex position
@@ -26,7 +27,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VertexOutputBlock";
     }
 
@@ -50,16 +51,21 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         return false;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const input = this.vector;
 
-        state.compilationString += `gl_Position = ${input.associatedVariableName};\n`;
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `vertexOutputs.position = ${input.associatedVariableName};\n`;
+        } else {
+            state.compilationString += `gl_Position = ${input.associatedVariableName};\n`;
+        }
 
+        // TODOWGSL
         if (this._isLogarithmicDepthEnabled(state.sharedData.fragmentOutputNodes, state.sharedData.nodeMaterial.useLogarithmicDepth)) {
-            state._emitUniformFromString("logarithmicDepthConstant", "float");
-            state._emitVaryingFromString("vFragmentDepth", "float");
+            state._emitUniformFromString("logarithmicDepthConstant", NodeMaterialBlockConnectionPointTypes.Float);
+            state._emitVaryingFromString("vFragmentDepth", NodeMaterialBlockConnectionPointTypes.Float);
 
             state.compilationString += `vFragmentDepth = 1.0 + gl_Position.w;\n`;
             state.compilationString += `gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;\n`;

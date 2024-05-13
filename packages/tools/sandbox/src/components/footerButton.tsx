@@ -10,7 +10,7 @@ interface IFooterButtonProps {
 }
 
 export class FooterButton extends React.Component<IFooterButtonProps> {
-    public render() {
+    public override render() {
         if (!this.props.enabled) {
             return null;
         }

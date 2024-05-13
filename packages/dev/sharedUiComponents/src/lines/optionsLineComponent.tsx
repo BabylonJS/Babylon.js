@@ -1,7 +1,9 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import copyIcon from "./copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
@@ -47,7 +49,7 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
-    shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
+    override shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -99,7 +101,22 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
-    render() {
+    // Copy to clipboard the code this option actually does
+    // Example : material.sideOrientation = 1;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
+    override render() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} color="black" className="icon" />}
@@ -116,6 +133,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             );
                         })}
                     </select>
+                </div>
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );

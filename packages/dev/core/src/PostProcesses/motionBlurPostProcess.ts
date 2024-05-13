@@ -18,7 +18,7 @@ import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
 import { RegisterClass } from "../Misc/typeStore";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 
 /**
@@ -104,7 +104,7 @@ export class MotionBlurPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "MotionBlurPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "MotionBlurPostProcess";
     }
 
@@ -127,7 +127,7 @@ export class MotionBlurPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,
@@ -217,7 +217,7 @@ export class MotionBlurPostProcess extends PostProcess {
      * Disposes the post process.
      * @param camera The camera to dispose the post process on.
      */
-    public dispose(camera?: Camera): void {
+    public override dispose(camera?: Camera): void {
         if (this._geometryBufferRenderer) {
             // Clear previous transformation matrices dictionary used to compute objects velocities
             this._geometryBufferRenderer._previousTransformationMatrices = {};
@@ -333,7 +333,7 @@ export class MotionBlurPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<MotionBlurPostProcess> {
         return SerializationHelper.Parse(
             () => {
                 return new MotionBlurPostProcess(

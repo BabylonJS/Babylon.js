@@ -6,7 +6,6 @@ import { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
 import type { Mesh } from "../../Meshes/mesh";
-import { Engine } from "../../Engines/engine";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
@@ -68,6 +67,8 @@ import type { NodeMaterialTeleportInBlock } from "./Blocks/Teleport/teleportInBl
 import { Logger } from "core/Misc/logger";
 import { PrepareDefinesForCamera, PrepareDefinesForPrePass } from "../materialHelper.functions";
 import type { IImageProcessingConfigurationDefines } from "../imageProcessingConfiguration.defines";
+import { ShaderLanguage } from "../shaderLanguage";
+import { AbstractEngine } from "../../Engines/abstractEngine";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -154,9 +155,7 @@ export class NodeMaterialDefines extends MaterialDefines implements IImageProces
     /** Opaque blend mode for vignette */
     public VIGNETTEBLENDMODEOPAQUE = false;
     /** Tone mapping */
-    public TONEMAPPING = false;
-    /** ACES tone mapping mode */
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     /** Contrast */
     public CONTRAST = false;
     /** Exposure */
@@ -220,6 +219,8 @@ export interface INodeMaterialOptions {
      * Defines if blocks should emit comments
      */
     emitComments: boolean;
+    /** Defines shader language to use (default to GLSL) */
+    shaderLanguage: ShaderLanguage;
 }
 
 /**
@@ -253,7 +254,7 @@ export class NodeMaterial extends PushMaterial {
     private _animationFrame = -1;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/nodeEditor/babylon.nodeEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
@@ -299,6 +300,11 @@ export class NodeMaterial extends PushMaterial {
         }
 
         return undefined;
+    }
+
+    /** Get the active shader language */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._options.shaderLanguage;
     }
 
     /**
@@ -421,6 +427,7 @@ export class NodeMaterial extends PushMaterial {
 
         this._options = {
             emitComments: false,
+            shaderLanguage: ShaderLanguage.GLSL,
             ...options,
         };
 
@@ -432,7 +439,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the current class name of the material e.g. "NodeMaterial"
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "NodeMaterial";
     }
 
@@ -667,7 +674,7 @@ export class NodeMaterial extends PushMaterial {
      * Specifies if the material will require alpha blending
      * @returns a boolean specifying if alpha blending is needed
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         if (this.ignoreAlpha) {
             return false;
         }
@@ -678,7 +685,7 @@ export class NodeMaterial extends PushMaterial {
      * Specifies if this material should be rendered in alpha test mode
      * @returns a boolean specifying if an alpha test is needed.
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return this._sharedData && this._sharedData.hints.needAlphaTesting;
     }
 
@@ -949,7 +956,7 @@ export class NodeMaterial extends PushMaterial {
     /**
      * Can this material render to prepass
      */
-    public get isPrePassCapable(): boolean {
+    public override get isPrePassCapable(): boolean {
         return true;
     }
 
@@ -1009,7 +1016,7 @@ export class NodeMaterial extends PushMaterial {
      * @param prePassRenderer defines the prepass renderer to set
      * @returns true if the pre pass is needed
      */
-    public setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
+    public override setPrePassRenderer(prePassRenderer: PrePassRenderer): boolean {
         const prePassTexturesRequired = this.prePassTextureInputs.concat(this.prePassTextureOutputs);
 
         if (prePassRenderer && prePassTexturesRequired.length > 1) {
@@ -1050,7 +1057,7 @@ export class NodeMaterial extends PushMaterial {
         camera: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
@@ -1075,7 +1082,7 @@ export class NodeMaterial extends PushMaterial {
         camera?: Nullable<Camera>,
         options: number | PostProcessOptions = 1,
         samplingMode: number = Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         textureFormat = Constants.TEXTUREFORMAT_RGBA
@@ -1500,7 +1507,7 @@ export class NodeMaterial extends PushMaterial {
      * @param useInstances specifies that instances should be used
      * @returns a boolean indicating that the submesh is ready or not
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
         if (!this._buildWasSuccessful) {
             return false;
         }
@@ -1546,6 +1553,27 @@ export class NodeMaterial extends PushMaterial {
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
+        // //*********************** */
+        // const tempA = `
+        // uniform u_World : mat4x4<f32>;
+        // uniform u_ViewProjection : mat4x4<f32>;
+        // attribute position : vec3<f32>;
+
+        // @vertex
+        // fn main(input : VertexInputs) -> FragmentInputs {
+        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
+        // }
+        // `;
+
+        // const tempB = `
+        // uniform u_color : vec4<f32>;
+
+        // @fragment
+        // fn main(input : FragmentInputs) -> FragmentOutputs {
+        //     fragmentOutputs.color = uniforms.u_color;
+        // }`;
+        // /*********************** */
+
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation
@@ -1568,6 +1596,7 @@ export class NodeMaterial extends PushMaterial {
                     onError: this.onError,
                     multiTarget: defines.PREPASS,
                     indexParameters: { maxSimultaneousLights: this.maxSimultaneousLights, maxSimultaneousMorphTargets: defines.NUM_MORPH_INFLUENCERS },
+                    shaderLanguage: this.shaderLanguage,
                 },
                 engine
             );
@@ -1620,7 +1649,7 @@ export class NodeMaterial extends PushMaterial {
      * Binds the world matrix to the material
      * @param world defines the world transformation matrix
      */
-    public bindOnlyWorldMatrix(world: Matrix): void {
+    public override bindOnlyWorldMatrix(world: Matrix): void {
         const scene = this.getScene();
 
         if (!this._activeEffect) {
@@ -1649,7 +1678,7 @@ export class NodeMaterial extends PushMaterial {
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
         const effect = subMesh.effect;
         if (!effect) {
@@ -1690,7 +1719,7 @@ export class NodeMaterial extends PushMaterial {
      * Gets the active textures from the material
      * @returns an array of textures
      */
-    public getActiveTextures(): BaseTexture[] {
+    public override getActiveTextures(): BaseTexture[] {
         const activeTextures = super.getActiveTextures();
 
         if (this._sharedData) {
@@ -1735,7 +1764,7 @@ export class NodeMaterial extends PushMaterial {
      * @param texture defines the texture to check against the material
      * @returns a boolean specifying if the material uses the texture
      */
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (super.hasTexture(texture)) {
             return true;
         }
@@ -1759,7 +1788,7 @@ export class NodeMaterial extends PushMaterial {
      * @param forceDisposeTextures specifies if textures should be forcefully disposed
      * @param notBoundToMesh specifies if the material that is being disposed is known to be not bound to any mesh
      */
-    public dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
+    public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean, notBoundToMesh?: boolean): void {
         if (forceDisposeTextures) {
             for (const texture of this.getTextureBlocks()
                 .filter((tb) => tb.texture)
@@ -2122,7 +2151,7 @@ export class NodeMaterial extends PushMaterial {
      * @param selectedBlocks defines an optional list of blocks to serialize
      * @returns the serialized material object
      */
-    public serialize(selectedBlocks?: NodeMaterialBlock[]): any {
+    public override serialize(selectedBlocks?: NodeMaterialBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
@@ -2320,7 +2349,7 @@ export class NodeMaterial extends PushMaterial {
      * @param shareEffect defines if the clone material should share the same effect (default is false)
      * @returns the cloned material
      */
-    public clone(name: string, shareEffect: boolean = false): NodeMaterial {
+    public override clone(name: string, shareEffect: boolean = false): NodeMaterial {
         const serializationObject = this.serialize();
 
         const clone = SerializationHelper.Clone(() => new NodeMaterial(name, this.getScene(), this.options), this);
@@ -2365,10 +2394,11 @@ export class NodeMaterial extends PushMaterial {
      * @param source defines the JSON representation of the material
      * @param scene defines the hosting scene
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
+     * @param shaderLanguage defines the language to use (GLSL by default)
      * @returns a new node material
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string = ""): NodeMaterial {
-        const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene), source, scene, rootUrl);
+    public static override Parse(source: any, scene: Scene, rootUrl: string = "", shaderLanguage = ShaderLanguage.GLSL): NodeMaterial {
+        const nodeMaterial = SerializationHelper.Parse(() => new NodeMaterial(source.name, scene, { shaderLanguage: shaderLanguage }), source, scene, rootUrl);
 
         nodeMaterial.parseSerializedObject(source, rootUrl);
         nodeMaterial.build();

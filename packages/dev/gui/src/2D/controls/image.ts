@@ -81,7 +81,7 @@ export class Image extends Control {
         return this._loaded;
     }
 
-    public isReady(): boolean {
+    public override isReady(): boolean {
         return this.isLoaded;
     }
 
@@ -539,6 +539,10 @@ export class Image extends Control {
      * Gets or sets image source url
      */
     public set source(value: Nullable<string>) {
+        if (this._urlRewriter && value) {
+            value = this._urlRewriter(value);
+        }
+
         if (this._source === value) {
             return;
         }
@@ -746,7 +750,7 @@ export class Image extends Control {
      * @param url defines the image url
      */
     constructor(
-        public name?: string,
+        public override name?: string,
         url: Nullable<string> = null
     ) {
         super(name);
@@ -759,7 +763,7 @@ export class Image extends Control {
      * @param y defines y coordinate to test
      * @returns true if the coordinates are inside the control
      */
-    public contains(x: number, y: number): boolean {
+    public override contains(x: number, y: number): boolean {
         if (!super.contains(x, y)) {
             return false;
         }
@@ -790,7 +794,7 @@ export class Image extends Control {
         return pickedPixel > 0;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Image";
     }
 
@@ -804,7 +808,7 @@ export class Image extends Control {
         this.height = this._domImage.height + "px";
     }
 
-    protected _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _processMeasures(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         if (this._loaded) {
             switch (this._stretch) {
                 case Image.STRETCH_NONE:
@@ -874,7 +878,7 @@ export class Image extends Control {
         workingCanvasContext.restore();
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         if (this.shadowBlur || this.shadowOffsetX || this.shadowOffsetY) {
@@ -969,7 +973,7 @@ export class Image extends Control {
         this._drawImage(context, sx + this._sliceRight, sy + this._sliceBottom, rightWidth, bottomHeight, rightOffset, bottomOffset, rightWidth, bottomHeight);
     }
 
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this.onImageLoadedObservable.clear();
         this.onSVGAttributesComputedObservable.clear();

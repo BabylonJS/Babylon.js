@@ -28,7 +28,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
         evt.target.value = "";
     }
 
-    render() {
+    override render() {
         return (
             <div className={styles.buttonLine}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} />}

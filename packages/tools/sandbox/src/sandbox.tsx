@@ -188,12 +188,12 @@ export class Sandbox extends React.Component<ISandboxProps, { isFooterVisible: b
         }
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this._assetUrl = undefined;
         this._cameraPosition = undefined;
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="root">
                 <span>

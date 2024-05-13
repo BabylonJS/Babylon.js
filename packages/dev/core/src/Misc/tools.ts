@@ -24,10 +24,10 @@ import { TimingTools } from "./timingTools";
 import { InstantiationTools } from "./instantiationTools";
 import { RandomGUID } from "./guid";
 import type { IScreenshotSize } from "./interfaces/screenshotSize";
-import type { Engine } from "../Engines/engine";
 import type { Camera } from "../Cameras/camera";
 import type { IColor4Like } from "../Maths/math.like";
 import { IsExponentOfTwo, Mix } from "./tools.functions";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 declare function importScripts(...urls: string[]): void;
 
@@ -44,6 +44,17 @@ export class Tools {
 
     public static set BaseUrl(value: string) {
         FileToolsOptions.BaseUrl = value;
+    }
+
+    /**
+     * Gets or sets the clean URL function to use to load assets
+     */
+    public static get CleanUrl() {
+        return FileToolsOptions.CleanUrl;
+    }
+
+    public static set CleanUrl(value: (url: string) => string) {
+        FileToolsOptions.CleanUrl = value;
     }
 
     /**
@@ -351,7 +362,7 @@ export class Tools {
      * @param engine defines the engine we are finding the prefix for
      * @returns "pointer" if touch is enabled. Else returns "mouse"
      */
-    public static GetPointerPrefix(engine: Engine): string {
+    public static GetPointerPrefix(engine: AbstractEngine): string {
         let eventPrefix = "pointer";
 
         // Check if pointer events are supported
@@ -393,16 +404,6 @@ export class Tools {
     }
 
     // External files
-
-    /**
-     * Removes unwanted characters from an url
-     * @param url defines the url to clean
-     * @returns the cleaned url
-     */
-    public static CleanUrl(url: string): string {
-        url = url.replace(/#/gm, "%23");
-        return url;
-    }
 
     /**
      * Gets or sets a function used to pre-process url before using them to load assets
@@ -759,7 +760,7 @@ export class Tools {
     public static async DumpFramebuffer(
         width: number,
         height: number,
-        engine: Engine,
+        engine: AbstractEngine,
         successCallback?: (data: string) => void,
         mimeType = "image/png",
         fileName?: string,
@@ -1015,7 +1016,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshot(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         successCallback?: (data: string) => void,
@@ -1044,7 +1045,7 @@ export class Tools {
      * to the src parameter of an <img> to display it
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public static CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
+    public static CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
         throw _WarnImport("ScreenshotTools");
     }
 
@@ -1073,7 +1074,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTarget(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         successCallback?: (data: string) => void,
@@ -1114,7 +1115,7 @@ export class Tools {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static CreateScreenshotUsingRenderTargetAsync(
-        engine: Engine,
+        engine: AbstractEngine,
         camera: Camera,
         size: IScreenshotSize | number,
         mimeType = "image/png",

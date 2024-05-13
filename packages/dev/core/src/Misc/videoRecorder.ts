@@ -2,7 +2,7 @@
 /* eslint-disable no-var */
 import type { Nullable } from "../types";
 import { Tools } from "./tools";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 interface MediaRecorder {
     /** Starts recording */
@@ -84,7 +84,7 @@ export class VideoRecorder {
      * @param canvas Defines the canvas to record. If not provided, the engine canvas will be used.
      * @returns true if supported otherwise false.
      */
-    public static IsSupported(engine: Engine, canvas?: HTMLCanvasElement): boolean {
+    public static IsSupported(engine: AbstractEngine, canvas?: HTMLCanvasElement): boolean {
         const targetCanvas = canvas ?? engine.getRenderingCanvas();
         return !!targetCanvas && typeof (<any>targetCanvas).captureStream === "function";
     }
@@ -110,7 +110,7 @@ export class VideoRecorder {
      * @param engine Defines the BabylonJS Engine you wish to record.
      * @param options Defines options that can be used to customize the capture.
      */
-    constructor(engine: Engine, options: Partial<VideoRecorderOptions> = {}) {
+    constructor(engine: AbstractEngine, options: Partial<VideoRecorderOptions> = {}) {
         if (!VideoRecorder.IsSupported(engine, options.canvas)) {
             // eslint-disable-next-line no-throw-literal
             throw "Your browser does not support recording so far.";

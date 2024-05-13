@@ -47,7 +47,7 @@ export class WebXRProfiledMotionController extends WebXRAbstractMotionController
         this.profileId = _profile.profileId;
     }
 
-    public dispose() {
+    public override dispose() {
         super.dispose();
         if (!this.controllerCache) {
             Object.keys(this._touchDots).forEach((visResKey) => {

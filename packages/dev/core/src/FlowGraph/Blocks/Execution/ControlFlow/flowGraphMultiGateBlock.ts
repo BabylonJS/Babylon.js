@@ -51,7 +51,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphMultiGateBlockConfiguration
+        public override config: IFlowGraphMultiGateBlockConfiguration
     ) {
         super(config);
         this.reset = this._registerSignalInput("reset");
@@ -121,7 +121,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGMultiGateBlock";
     }
 
@@ -129,7 +129,7 @@ export class FlowGraphMultiGateBlock extends FlowGraphExecutionBlock {
      * Serializes the block.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.config.numberOutputFlows = this.config.numberOutputFlows;
         serializationObject.config.isRandom = this.config.isRandom;

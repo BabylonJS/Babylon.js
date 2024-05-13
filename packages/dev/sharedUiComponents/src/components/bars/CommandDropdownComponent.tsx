@@ -29,7 +29,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
         this.state = { isExpanded: false, activeState: "" };
     }
 
-    public render() {
+    public override render() {
         return (
             <>
                 {this.state.isExpanded && (

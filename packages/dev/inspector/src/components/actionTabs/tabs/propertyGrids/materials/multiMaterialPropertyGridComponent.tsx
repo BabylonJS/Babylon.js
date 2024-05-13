@@ -47,7 +47,7 @@ export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMa
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

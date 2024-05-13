@@ -32,7 +32,7 @@ export class BonePropertyGridComponent extends React.Component<IBonePropertyGrid
         this.props.globalState.onSelectionChangedObservable.notifyObservers(node);
     }
 
-    render() {
+    override render() {
         const bone = this.props.bone;
 
         return (

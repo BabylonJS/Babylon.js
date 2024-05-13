@@ -6,7 +6,7 @@ import type { Nullable } from "../types";
 import type { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
 import { Vector2 } from "../Maths/math.vector";
-import { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import type { SubMesh } from "../Meshes/subMesh";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
@@ -31,6 +31,7 @@ import "../Shaders/glowMapMerge.vertex";
 import "../Shaders/glowBlurPostProcess.fragment";
 import "../Layers/effectLayerSceneComponent";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { GetExponentOfTwo } from "../Misc/tools.functions";
 
 declare module "../abstractScene" {
     export interface AbstractScene {
@@ -65,7 +66,7 @@ class GlowBlurPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean
     ) {
         super(name, "glowBlurPostProcess", ["screenSize", "direction", "blurWidth"], null, options, camera, samplingMode, engine, reusable);
@@ -288,7 +289,7 @@ export class HighlightLayer extends EffectLayer {
      * @param options Sets of none mandatory options to use with the layer (see IHighlightLayerOptions for more information)
      */
     constructor(
-        public name: string,
+        public override name: string,
         scene?: Scene,
         options?: Partial<IHighlightLayerOptions>
     ) {
@@ -335,7 +336,7 @@ export class HighlightLayer extends EffectLayer {
         return HighlightLayer.EffectName;
     }
 
-    protected _numInternalDraws(): number {
+    protected override _numInternalDraws(): number {
         return 2; // we need two rendering, one for the inner glow and the other for the outer glow
     }
 
@@ -355,8 +356,8 @@ export class HighlightLayer extends EffectLayer {
     protected _createTextureAndPostProcesses(): void {
         let blurTextureWidth = this._mainTextureDesiredSize.width * this._options.blurTextureSizeRatio;
         let blurTextureHeight = this._mainTextureDesiredSize.height * this._options.blurTextureSizeRatio;
-        blurTextureWidth = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
-        blurTextureHeight = this._engine.needPOTTextures ? Engine.GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
+        blurTextureWidth = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureWidth, this._maxSize) : blurTextureWidth;
+        blurTextureHeight = this._engine.needPOTTextures ? GetExponentOfTwo(blurTextureHeight, this._maxSize) : blurTextureHeight;
 
         let textureType = 0;
         if (this._engine.getCaps().textureHalfFloatRender) {
@@ -557,7 +558,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * @returns true if the layer contains information to display, otherwise false.
      */
-    public shouldRender(): boolean {
+    public override shouldRender(): boolean {
         if (super.shouldRender()) {
             return this._meshes ? true : false;
         }
@@ -570,7 +571,7 @@ export class HighlightLayer extends EffectLayer {
      * @param mesh The mesh to render
      * @returns true if it should render otherwise false
      */
-    protected _shouldRenderMesh(mesh: Mesh): boolean {
+    protected override _shouldRenderMesh(mesh: Mesh): boolean {
         // Excluded Mesh
         if (this._excludedMeshes && this._excludedMeshes[mesh.uniqueId]) {
             return false;
@@ -589,7 +590,7 @@ export class HighlightLayer extends EffectLayer {
      * @param material The material used on the mesh
      * @returns true if it can be rendered otherwise false
      */
-    protected _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
+    protected override _canRenderMesh(mesh: AbstractMesh, material: Material): boolean {
         // all meshes can be rendered in the highlight layer, even transparent ones
         return true;
     }
@@ -598,7 +599,7 @@ export class HighlightLayer extends EffectLayer {
      * Adds specific effects defines.
      * @param defines The defines to add specifics to.
      */
-    protected _addCustomEffectDefines(defines: string[]): void {
+    protected override _addCustomEffectDefines(defines: string[]): void {
         defines.push("#define HIGHLIGHT");
     }
 
@@ -683,7 +684,7 @@ export class HighlightLayer extends EffectLayer {
      * @param mesh mesh to test
      * @returns true if the mesh will be highlighted by the current HighlightLayer
      */
-    public hasMesh(mesh: AbstractMesh): boolean {
+    public override hasMesh(mesh: AbstractMesh): boolean {
         if (!this._meshes) {
             return false;
         }
@@ -809,7 +810,7 @@ export class HighlightLayer extends EffectLayer {
     /**
      * Dispose the highlight layer and free resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         if (this._meshes) {
             // Clean mesh references
             for (const id in this._meshes) {
@@ -850,7 +851,7 @@ export class HighlightLayer extends EffectLayer {
      * Gets the class name of the effect layer
      * @returns the string with the class name of the effect layer
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "HighlightLayer";
     }
 
@@ -902,7 +903,7 @@ export class HighlightLayer extends EffectLayer {
      * @param rootUrl defines the root URL containing the Highlight layer information
      * @returns a parsed Highlight layer
      */
-    public static Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer {
+    public static override Parse(parsedHightlightLayer: any, scene: Scene, rootUrl: string): HighlightLayer {
         const hl = SerializationHelper.Parse(() => new HighlightLayer(parsedHightlightLayer.name, scene, parsedHightlightLayer.options), parsedHightlightLayer, scene, rootUrl);
         let index;
 

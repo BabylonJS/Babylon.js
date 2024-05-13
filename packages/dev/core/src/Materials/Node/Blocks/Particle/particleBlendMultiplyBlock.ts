@@ -29,7 +29,7 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ParticleBlendMultiplyBlock";
     }
 
@@ -65,11 +65,11 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("sourceAlpha");
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
@@ -78,12 +78,12 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
 
         state.compilationString += `
             #ifdef BLENDMULTIPLYMODE
-                ${this._declareOutput(this.blendColor, state)};
+                ${state._declareOutput(this.blendColor)};
                 float sourceAlpha = ${this.alphaColor.associatedVariableName} * ${this.alphaTexture.associatedVariableName};
                 ${this.blendColor.associatedVariableName}.rgb = ${this.color.associatedVariableName}.rgb * sourceAlpha + vec3(1.0) * (1.0 - sourceAlpha);
                 ${this.blendColor.associatedVariableName}.a = ${this.color.associatedVariableName}.a;
             #else
-                ${this._declareOutput(this.blendColor, state)} = ${this.color.associatedVariableName};
+                ${state._declareOutput(this.blendColor)} = ${this.color.associatedVariableName};
             #endif
         `;
 

@@ -23,7 +23,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
         super(props);
     }
 
-    render() {
+    override render() {
         const textBlock = this.props.textBlock;
 
         const horizontalOptions = [

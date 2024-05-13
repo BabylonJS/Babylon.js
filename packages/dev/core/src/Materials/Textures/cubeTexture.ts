@@ -7,8 +7,9 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
+import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../../Engines/Extensions/engine.cubeTexture";
 import { Observable } from "../../Misc/observable";
 
@@ -89,7 +90,7 @@ export class CubeTexture extends BaseTexture {
     /**
      * Are mip maps generated for this texture or not.
      */
-    public get noMipmap(): boolean {
+    public override get noMipmap(): boolean {
         return this._noMipmap;
     }
 
@@ -179,7 +180,7 @@ export class CubeTexture extends BaseTexture {
      */
     constructor(
         rootUrl: string,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         extensions: Nullable<string[]> = null,
         noMipmap: boolean = false,
         files: Nullable<string[]> = null,
@@ -224,7 +225,7 @@ export class CubeTexture extends BaseTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "CubeTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "CubeTexture";
     }
 
@@ -308,7 +309,7 @@ export class CubeTexture extends BaseTexture {
      * Delays loading of the cube texture
      * @param forcedExtension defines the extension to use
      */
-    public delayLoad(forcedExtension?: string): void {
+    public override delayLoad(forcedExtension?: string): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
@@ -324,7 +325,7 @@ export class CubeTexture extends BaseTexture {
      * Returns the reflection texture matrix
      * @returns the reflection texture matrix
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         return this._textureMatrix;
     }
 
@@ -364,7 +365,7 @@ export class CubeTexture extends BaseTexture {
      * There's a separate function from getReflectionTextureMatrix because refraction requires a special configuration of the matrix in right-handed mode.
      * @returns The refraction matrix
      */
-    public getRefractionTextureMatrix(): Matrix {
+    public override getRefractionTextureMatrix(): Matrix {
         return this.getScene()?.useRightHandedSystem ? this._textureMatrixRefraction : this._textureMatrix;
     }
 
@@ -492,7 +493,7 @@ export class CubeTexture extends BaseTexture {
      * Makes a clone, or deep copy, of the cube texture
      * @returns a new cube texture
      */
-    public clone(): CubeTexture {
+    public override clone(): CubeTexture {
         let uniqueId = 0;
 
         const newCubeTexture = SerializationHelper.Clone(() => {

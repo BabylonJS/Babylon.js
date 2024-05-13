@@ -188,6 +188,13 @@ uniform mat4 view;
     uniform vec3 vDiffusionDistance;
     uniform vec4 vTintColor;
     uniform vec3 vSubSurfaceIntensity;
+
+    uniform vec4 vTranslucencyColor;
+
+    #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
+        uniform vec2 vTranslucencyColorInfos;
+        uniform mat4 translucencyColorMatrix;
+    #endif
 #endif
 
 #ifdef PREPASS

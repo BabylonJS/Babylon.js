@@ -5,7 +5,8 @@ import { Observable } from "../../Misc/observable";
 import { Constants } from "../../Engines/constants";
 import { WebGLHardwareTexture } from "../../Engines/WebGL/webGLHardwareTexture";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
-import { BaseTexture } from "core/Materials/Textures/baseTexture";
+import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { ThinEngine } from "../../Engines";
 
 /**
  * Options for raw camera access
@@ -84,18 +85,18 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
         this.xrNativeFeatureName = "camera-access";
     }
 
-    public attach(force?: boolean | undefined): boolean {
+    public override attach(force?: boolean | undefined): boolean {
         if (!super.attach(force)) {
             return false;
         }
 
-        this._glContext = this._xrSessionManager.scene.getEngine()._gl;
+        this._glContext = (this._xrSessionManager.scene.getEngine() as ThinEngine)._gl;
         this._glBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
 
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -113,7 +114,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onTexturesUpdatedObservable.clear();
     }

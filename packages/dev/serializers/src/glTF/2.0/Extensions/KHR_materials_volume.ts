@@ -65,7 +65,7 @@ export class KHR_materials_volume implements IGLTFExporterExtensionV2 {
             return false;
         }
         const subs = mat.subSurface;
-        // this extension requires either the KHR_materials_transmission or KHR_materials_translucency extensions.
+        // this extension requires either the KHR_materials_transmission or KHR_materials_diffuse_transmission extensions.
         if (!subs.isRefractionEnabled && !subs.isTranslucencyEnabled) {
             return false;
         }

@@ -147,7 +147,7 @@ export class AsciiArtFontTexture extends BaseTexture {
      * Clones the current AsciiArtTexture.
      * @returns the clone of the texture.
      */
-    public clone(): AsciiArtFontTexture {
+    public override clone(): AsciiArtFontTexture {
         return new AsciiArtFontTexture(this.name, this._font, this._text, this.getScene());
     }
 

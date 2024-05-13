@@ -31,7 +31,7 @@ export class InstantiateLinearBlock extends InstantiateBaseBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstantiateLinearBlock";
     }
 
@@ -56,7 +56,7 @@ export class InstantiateLinearBlock extends InstantiateBaseBlock {
         return this._inputs[4];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
             state.pushExecutionContext(this);
             state.pushInstancingContext(this);

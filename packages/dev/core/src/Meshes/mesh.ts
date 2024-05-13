@@ -15,7 +15,6 @@ import type { Vector4 } from "../Maths/math.vector";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import type { Color4 } from "../Maths/math.color";
 import { Color3 } from "../Maths/math.color";
-import type { Engine } from "../Engines/engine";
 import { Node } from "../node";
 import { VertexBuffer, Buffer } from "../Buffers/buffer";
 import type { IGetSetVerticesData } from "./mesh.vertexData";
@@ -50,6 +49,7 @@ import type { ICreateCapsuleOptions } from "./Builders/capsuleBuilder";
 import type { LinesMesh } from "./linesMesh";
 import type { GroundMesh } from "./groundMesh";
 import type { DataBuffer } from "core/Buffers/dataBuffer";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * @internal
@@ -277,10 +277,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      */
     public onMeshReadyObservable: Observable<Mesh>;
 
-    public get computeBonesUsingShaders(): boolean {
+    public override get computeBonesUsingShaders(): boolean {
         return this._internalAbstractMeshDataInfo._computeBonesUsingShaders;
     }
-    public set computeBonesUsingShaders(value: boolean) {
+    public override set computeBonesUsingShaders(value: boolean) {
         if (this._internalAbstractMeshDataInfo._computeBonesUsingShaders === value) {
             return;
         }
@@ -367,11 +367,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._onBeforeDrawObserver = this.onBeforeDrawObservable.add(callback);
     }
 
-    public get hasInstances(): boolean {
+    public override get hasInstances(): boolean {
         return this.instances.length > 0;
     }
 
-    public get hasThinInstances(): boolean {
+    public override get hasThinInstances(): boolean {
         return (this.forcedInstanceCount || this._thinInstanceDataStorage.instancesCount || 0) > 0;
     }
 
@@ -761,7 +761,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    public instantiateHierarchy(
+    public override instantiateHierarchy(
         newParent: Nullable<TransformNode> = null,
         options?: { doNotInstantiate: boolean | ((node: TransformNode) => boolean) },
         onNewNodeCreated?: (source: TransformNode, clone: TransformNode) => void
@@ -807,7 +807,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Gets the class name
      * @returns the string "Mesh".
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "Mesh";
     }
 
@@ -821,7 +821,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param fullDetails define if full details about this mesh must be used
      * @returns a descriptive string representing this mesh
      */
-    public toString(fullDetails?: boolean): string {
+    public override toString(fullDetails?: boolean): string {
         let ret = super.toString(fullDetails);
         ret += ", n vertices: " + this.getTotalVertices();
         ret += ", parent: " + (this._waitingParentId ? this._waitingParentId : this.parent ? this.parent.name : "NONE");
@@ -848,7 +848,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _unBindEffect() {
+    public override _unBindEffect() {
         super._unBindEffect();
 
         for (const instance of this.instances) {
@@ -959,7 +959,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param boundingSphere defines a custom bounding sphere to use instead of the one from this mesh
      * @returns This mesh (for chaining)
      */
-    public getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
+    public override getLOD(camera: Camera, boundingSphere?: BoundingSphere): Nullable<AbstractMesh> {
         const internalDataInfo = this._internalMeshDataInfo;
         if (!internalDataInfo._LODLevels || internalDataInfo._LODLevels.length === 0) {
             return this;
@@ -1029,7 +1029,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns the total number of vertices within the mesh geometry or zero if the mesh has no geometry.
      * @returns the total number of vertices
      */
-    public getTotalVertices(): number {
+    public override getTotalVertices(): number {
         if (this._geometry === null || this._geometry === undefined) {
             return 0;
         }
@@ -1056,7 +1056,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a FloatArray or null if the mesh has no geometry or no vertex buffer for this kind.
      */
-    public getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean, bypassInstanceData?: boolean): Nullable<FloatArray> {
+    public override getVerticesData(kind: string, copyWhenShared?: boolean, forceCopy?: boolean, bypassInstanceData?: boolean): Nullable<FloatArray> {
         if (!this._geometry) {
             return null;
         }
@@ -1118,7 +1118,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param bypassInstanceData defines a boolean indicating that the function should not take into account the instance data (applies only if the mesh has instances). Default: false
      * @returns a boolean
      */
-    public isVerticesDataPresent(kind: string, bypassInstanceData?: boolean): boolean {
+    public override isVerticesDataPresent(kind: string, bypassInstanceData?: boolean): boolean {
         if (!this._geometry) {
             if (this._delayInfo) {
                 return this._delayInfo.indexOf(kind) !== -1;
@@ -1192,7 +1192,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * Returns a positive integer : the total number of indices in this mesh geometry.
      * @returns the numner of indices or zero if the mesh has no geometry.
      */
-    public getTotalIndices(): number {
+    public override getTotalIndices(): number {
         if (!this._geometry) {
             return 0;
         }
@@ -1205,14 +1205,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param forceCopy defines a boolean indicating that the returned array must be cloned upon returning it
      * @returns the indices array or an empty array if the mesh has no geometry
      */
-    public getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
+    public override getIndices(copyWhenShared?: boolean, forceCopy?: boolean): Nullable<IndicesArray> {
         if (!this._geometry) {
             return [];
         }
         return this._geometry.getIndices(copyWhenShared, forceCopy);
     }
 
-    public get isBlocked(): boolean {
+    public override get isBlocked(): boolean {
         return this._masterMesh !== null && this._masterMesh !== undefined;
     }
 
@@ -1222,7 +1222,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param forceInstanceSupport will check if the mesh will be ready when used with instances (false by default)
      * @returns true if all associated assets are ready (material, textures, shaders)
      */
-    public isReady(completeCheck = false, forceInstanceSupport = false): boolean {
+    public override isReady(completeCheck = false, forceInstanceSupport = false): boolean {
         if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
             return false;
         }
@@ -1342,7 +1342,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     // Methods
     /** @internal */
-    public _preActivate(): Mesh {
+    public override _preActivate(): Mesh {
         const internalDataInfo = this._internalMeshDataInfo;
         const sceneRenderId = this.getScene().getRenderId();
         if (internalDataInfo._preActivateId === sceneRenderId) {
@@ -1357,7 +1357,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _preActivateForIntermediateRendering(renderId: number): Mesh {
+    public override _preActivateForIntermediateRendering(renderId: number): Mesh {
         if (this._instanceDataStorage.visibleInstances) {
             this._instanceDataStorage.visibleInstances.intermediateDefaultRenderId = renderId;
         }
@@ -1387,7 +1387,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return this;
     }
 
-    protected _afterComputeWorldMatrix(): void {
+    protected override _afterComputeWorldMatrix(): void {
         super._afterComputeWorldMatrix();
 
         if (!this.hasThinInstances) {
@@ -1400,7 +1400,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _postActivate(): void {
+    public override _postActivate(): void {
         if (this.edgesShareWithInstances && this.edgesRenderer && this.edgesRenderer.isEnabled && this._renderingGroup) {
             this._renderingGroup._edgesRenderers.pushNoDuplicate(this.edgesRenderer);
             this.edgesRenderer.customInstances.push(this.getWorldMatrix());
@@ -1414,7 +1414,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param applyMorph  defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): Mesh {
+    public override refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): Mesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
@@ -1522,7 +1522,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param stride defines the data stride size (can be null)
      * @returns the current mesh
      */
-    public setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): AbstractMesh {
+    public override setVerticesData(kind: string, data: FloatArray, updatable: boolean = false, stride?: number): AbstractMesh {
         if (!this._geometry) {
             const vertexData = new VertexData();
             vertexData.set(data, kind);
@@ -1622,7 +1622,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param makeItUnique defines if the geometry associated with the mesh must be cloned to make the change only for this mesh (and not all meshes associated with the same geometry)
      * @returns the current mesh
      */
-    public updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
+    public override updateVerticesData(kind: string, data: FloatArray, updateExtends?: boolean, makeItUnique?: boolean): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1706,7 +1706,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param updatable defines if the updated index buffer must be flagged as updatable (default is false)
      * @returns the current mesh
      */
-    public setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): AbstractMesh {
+    public override setIndices(indices: IndicesArray, totalVertices: Nullable<number> = null, updatable: boolean = false): AbstractMesh {
         if (!this._geometry) {
             const vertexData = new VertexData();
             vertexData.indices = indices;
@@ -1727,7 +1727,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param gpuMemoryOnly defines a boolean indicating that only the GPU memory must be updated leaving the CPU version of the indices unchanged (false by default)
      * @returns the current mesh
      */
-    public updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
+    public override updateIndices(indices: IndicesArray, offset?: number, gpuMemoryOnly = false): AbstractMesh {
         if (!this._geometry) {
             return this;
         }
@@ -1906,7 +1906,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
+    public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: AbstractEngine): Mesh {
         const visibleInstances = batch.visibleInstances[subMesh._id];
         const visibleInstanceCount = visibleInstances ? visibleInstances.length : 0;
 
@@ -2066,7 +2066,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: Engine) {
+    public _renderWithThinInstances(subMesh: SubMesh, fillMode: number, effect: Effect, engine: AbstractEngine) {
         // Stats
         const instancesCount = this._thinInstanceDataStorage?.instancesCount ?? 0;
 
@@ -2170,7 +2170,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * @internal
      */
-    public _rebuild(dispose = false): void {
+    public override _rebuild(dispose = false): void {
         if (this._instanceDataStorage.instancesBuffer) {
             // Dispose instance buffer to be recreated in _renderWithInstances when rendered
             if (dispose) {
@@ -2198,7 +2198,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _freeze() {
+    public override _freeze() {
         if (!this.subMeshes) {
             return;
         }
@@ -2213,7 +2213,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _unFreeze() {
+    public override _unFreeze() {
         this._instanceDataStorage.isFrozen = false;
         this._instanceDataStorage.previousBatch = null;
     }
@@ -2688,7 +2688,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param frustumPlanes defines the frustum to test
      * @returns true if the mesh is in the frustum planes
      */
-    public isInFrustum(frustumPlanes: Plane[]): boolean {
+    public override isInFrustum(frustumPlanes: Plane[]): boolean {
         if (this.delayLoadState === Constants.DELAYLOADSTATE_LOADING) {
             return false;
         }
@@ -2826,7 +2826,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     // Cache
 
     /** @internal */
-    public get _positions(): Nullable<Vector3[]> {
+    public override get _positions(): Nullable<Vector3[]> {
         if (this._internalAbstractMeshDataInfo._positions) {
             return this._internalAbstractMeshDataInfo._positions;
         }
@@ -2846,7 +2846,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _generatePointsArray(): boolean {
+    public override _generatePointsArray(): boolean {
         if (this._geometry) {
             return this._geometry._generatePointsArray();
         }
@@ -2862,7 +2862,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param clonePhysicsImpostor allows/denies the cloning in the same time of the original mesh `body` used by the physics engine, if any (default `true`)
      * @returns a new mesh
      */
-    public clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
+    public override clone(name: string = "", newParent: Nullable<Node> = null, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true): Mesh {
         return new Mesh(name, this.getScene(), newParent, this, doNotCloneChildren, clonePhysicsImpostor);
     }
 
@@ -2871,7 +2871,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         this.morphTargetManager = null;
 
         if (this._geometry) {
@@ -3631,7 +3631,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param serializationObject defines the object which will receive the serialization data
      * @returns the serialized object
      */
-    public serialize(serializationObject: any = {}): any {
+    public override serialize(serializationObject: any = {}): any {
         serializationObject.name = this.name;
         serializationObject.id = this.id;
         serializationObject.uniqueId = this.uniqueId;
@@ -3853,7 +3853,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _syncGeometryWithMorphTargetManager() {
+    public override _syncGeometryWithMorphTargetManager() {
         if (!this.geometry) {
             return;
         }
@@ -3975,7 +3975,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * @param rootUrl is the root URL to prefix the `delayLoadingFile` property with
      * @returns a new Mesh
      */
-    public static Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
+    public static override Parse(parsedMesh: any, scene: Scene, rootUrl: string): Mesh {
         let mesh: Mesh;
 
         if (parsedMesh.type && parsedMesh.type === "LinesMesh") {
@@ -4821,7 +4821,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /** @internal */
-    public _shouldConvertRHS() {
+    public override _shouldConvertRHS() {
         return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
     }
 

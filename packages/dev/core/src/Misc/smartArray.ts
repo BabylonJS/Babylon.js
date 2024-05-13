@@ -143,7 +143,7 @@ export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
      * THIS DOES NOT PREVENT DUPPLICATE DATA
      * @param value defines the object to push in the array.
      */
-    public push(value: T): void {
+    public override push(value: T): void {
         super.push(value);
 
         if (!(<any>value).__smartArrayFlags) {
@@ -170,7 +170,7 @@ export class SmartArrayNoDuplicate<T> extends SmartArray<T> {
     /**
      * Resets the active data to an empty array.
      */
-    public reset(): void {
+    public override reset(): void {
         super.reset();
         this._duplicateId++;
     }

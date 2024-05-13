@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to get the derivative value on x and y of a given input
@@ -28,7 +29,7 @@ export class DerivativeBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DerivativeBlock";
     }
 
@@ -53,20 +54,27 @@ export class DerivativeBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const dx = this._outputs[0];
         const dy = this._outputs[1];
 
         state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+        let dpdx = "dFdx";
+        let dpdy = "dFdy";
+
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            dpdx = "dpdx";
+            dpdy = "dpdy";
+        }
 
         if (dx.hasEndpoints) {
-            state.compilationString += this._declareOutput(dx, state) + ` = dFdx(${this.input.associatedVariableName});\n`;
+            state.compilationString += state._declareOutput(dx) + ` = ${dpdx}(${this.input.associatedVariableName});\n`;
         }
 
         if (dy.hasEndpoints) {
-            state.compilationString += this._declareOutput(dy, state) + ` = dFdy(${this.input.associatedVariableName});\n`;
+            state.compilationString += state._declareOutput(dy) + ` = ${dpdy}(${this.input.associatedVariableName});\n`;
         }
 
         return this;

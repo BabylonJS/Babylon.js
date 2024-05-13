@@ -35,7 +35,7 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryOutputBlock";
     }
     /**
@@ -45,7 +45,7 @@ export class GeometryOutputBlock extends NodeGeometryBlock {
         return this._inputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         state.vertexData = this.geometry.getConnectedValue(state);
         this._vertexData = state.vertexData;
     }

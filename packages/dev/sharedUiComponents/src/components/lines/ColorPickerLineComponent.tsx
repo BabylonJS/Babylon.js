@@ -59,7 +59,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
     }
 
-    shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
+    override shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
         const diffProps = this.getHexString(nextProps) !== this.getHexString();
 
         if (diffProps) {
@@ -74,15 +74,15 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         return props.value.toHexString();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.syncPositions();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.syncPositions();
     }
 
-    render() {
+    override render() {
         return (
             <div className={style.colorPicker}>
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

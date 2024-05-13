@@ -27,8 +27,8 @@ import { Viewport } from "../Maths/math.viewport";
 import { RegisterClass } from "../Misc/typeStore";
 import type { Nullable } from "../types";
 
-import type { Engine } from "../Engines/engine";
 import { PushAttributesForInstances } from "../Materials/materialHelper.functions";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  *  Inspired by https://developer.nvidia.com/gpugems/gpugems3/part-ii-light-and-shadows/chapter-13-volumetric-light-scattering-post-process
@@ -137,7 +137,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
         mesh?: Mesh,
         samples: number = 100,
         samplingMode: number = Texture.BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         scene?: Scene
     ) {
@@ -188,7 +188,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Returns the string "VolumetricLightScatteringPostProcess"
      * @returns "VolumetricLightScatteringPostProcess"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VolumetricLightScatteringPostProcess";
     }
 
@@ -292,7 +292,7 @@ export class VolumetricLightScatteringPostProcess extends PostProcess {
      * Disposes the internal assets and detaches the post-process from the camera
      * @param camera The camera from which to detach the post-process
      */
-    public dispose(camera: Camera): void {
+    public override dispose(camera: Camera): void {
         const rttIndex = camera.getScene().customRenderTargets.indexOf(this._volumetricLightScatteringRTT);
         if (rttIndex !== -1) {
             camera.getScene().customRenderTargets.splice(rttIndex, 1);

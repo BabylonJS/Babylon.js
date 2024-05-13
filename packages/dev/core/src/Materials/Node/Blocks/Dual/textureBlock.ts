@@ -20,6 +20,8 @@ import { ImageSourceBlock } from "./imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { WebGPUEngine } from "core/Engines";
 
 /**
  * Block used to read a texture from a sampler
@@ -30,6 +32,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _gammaDefineName: string;
     private _tempTextureRead: string;
     private _samplerName: string;
+    private _textureName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
@@ -189,7 +192,7 @@ export class TextureBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TextureBlock";
     }
 
@@ -270,7 +273,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    public get target() {
+    public override get target() {
         if (this._fragmentOnly) {
             return NodeMaterialBlockTargets.Fragment;
         }
@@ -316,9 +319,9 @@ export class TextureBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.VertexAndFragment;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {}
+    public override set target(value: NodeMaterialBlockTargets) {}
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             if (material.mode === NodeMaterialModes.PostProcess) {
                 const uvInput = material.getBlockByPredicate((b) => b.name === "uv" && additionalFilteringInfo(b));
@@ -340,7 +343,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override initializeDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -350,7 +353,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -383,7 +386,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public isReady() {
+    public override isReady() {
         if (this._isSourcePrePass) {
             return true;
         }
@@ -395,7 +398,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect) {
+    public override bind(effect: Effect) {
         if (this._isSourcePrePass) {
             effect.setFloat(this._textureInfoName, 1);
         }
@@ -410,7 +413,17 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this._imageSource) {
-            effect.setTexture(this._samplerName, this.texture);
+            if (this._textureName) {
+                const engineWebGPU = effect.getEngine() as WebGPUEngine;
+
+                effect.setTexture(this._textureName, this.texture);
+                const setTextureSampler = engineWebGPU.setTextureSampler;
+                if (setTextureSampler) {
+                    setTextureSampler.call(engineWebGPU, this._samplerName, this.texture._texture);
+                }
+            } else {
+                effect.setTexture(this._samplerName, this.texture);
+            }
         }
     }
 
@@ -423,24 +436,27 @@ export class TextureBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         this._defineName = state._getFreeDefineName("UVTRANSFORM");
-        this._mainUVDefineName = "VMAIN" + uvInput.associatedVariableName.toUpperCase();
+        this._mainUVDefineName = "VMAIN" + uvInput.declarationVariableName.toUpperCase();
 
-        this._mainUVName = "vMain" + uvInput.associatedVariableName;
+        this._mainUVName = "vMain" + uvInput.declarationVariableName;
         this._transformedUVName = state._getFreeVariableName("transformedUV");
         this._textureTransformName = state._getFreeVariableName("textureTransform");
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
         this.level.associatedVariableName = this._textureInfoName;
 
-        state._emitVaryingFromString(this._transformedUVName, "vec2", this._defineName);
-        state._emitVaryingFromString(this._mainUVName, "vec2", this._mainUVDefineName);
+        state._emitVaryingFromString(this._transformedUVName, NodeMaterialBlockConnectionPointTypes.Vector2, this._defineName);
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2, this._mainUVDefineName);
 
-        state._emitUniformFromString(this._textureTransformName, "mat4", this._defineName);
+        state._emitUniformFromString(this._textureTransformName, NodeMaterialBlockConnectionPointTypes.Matrix, this._defineName);
+
+        const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec2 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += `#ifdef ${this._defineName}\n`;
-        state.compilationString += `${this._transformedUVName} = vec2(${this._textureTransformName} * vec4(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
+        state.compilationString += `${state._getVaryingName(this._transformedUVName)} = ${vec2}(${this._textureTransformName} * ${vec4}(${uvInput.associatedVariableName}.xy, 1.0, 0.0));\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
+        state.compilationString += `${state._getVaryingName(this._mainUVName)} = ${uvInput.associatedVariableName}.xy;\n`;
         state.compilationString += `#endif\n`;
 
         if (!this._outputs.some((o) => o.isConnectedInVertexShader)) {
@@ -473,7 +489,10 @@ export class TextureBlock extends NodeMaterialBlock {
         return coords;
     }
 
-    private get _samplerFunc() {
+    private _samplerFunc(state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return state.target === NodeMaterialBlockTargets.Vertex ? "textureSampleLevel" : "textureSample";
+        }
         return this.lod.isConnected ? "texture2DLodEXT" : "texture2D";
     }
 
@@ -481,15 +500,19 @@ export class TextureBlock extends NodeMaterialBlock {
         return this.lod.isConnected ? `, ${this.lod.associatedVariableName}` : "";
     }
 
-    private _generateTextureLookup(state: NodeMaterialBuildState): void {
-        const samplerName = this.samplerName;
+    private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
+            return `${this._samplerFunc(state)}(${this._textureName},${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+        }
+        return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
+    }
 
+    private _generateTextureLookup(state: NodeMaterialBuildState): void {
         state.compilationString += `#ifdef ${this._defineName}\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(this._transformedUVName)}${this._samplerLodSuffix});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(state._getVaryingName(this._transformedUVName), state)};\n`;
         state.compilationString += `#elif defined(${this._mainUVDefineName})\n`;
-        state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${samplerName}, ${this._getUVW(
-            this._mainUVName ? this._mainUVName : this.uv.associatedVariableName
-        )}${this._samplerLodSuffix});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(this._mainUVName ? state._getVaryingName(this._mainUVName) : this.uv.associatedVariableName, state)}${this._samplerLodSuffix};\n`;
         state.compilationString += `#endif\n`;
     }
 
@@ -506,9 +529,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = ${this._samplerFunc}(${this.samplerName}, ${this._getUVW(uvInput.associatedVariableName)}${
-                this._samplerLodSuffix
-            });\n`;
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(uvInput.associatedVariableName, state)}${this._samplerLodSuffix};\n`;
             return;
         }
 
@@ -538,27 +559,27 @@ export class TextureBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             this._generateConversionCode(state, output, swizzle);
             return;
         }
         let complement = "";
 
         if (!this.disableLevelMultiplication) {
-            complement = ` * ${this._textureInfoName}`;
+            complement = ` * ${(state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "") + this._textureInfoName}`;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
         this._generateConversionCode(state, output, swizzle);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.source.isConnected) {
@@ -575,12 +596,16 @@ export class TextureBlock extends NodeMaterialBlock {
 
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
-                this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+                const varName = state._getFreeVariableName(this.name);
+                this._samplerName = varName + "Sampler";
+                if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    this._textureName = varName + "Texture";
+                }
 
                 if (this._texture?._texture?.is2DArray) {
                     state._emit2DArraySampler(this._samplerName);
                 } else {
-                    state._emit2DSampler(this._samplerName);
+                    state._emit2DSampler(this._samplerName, this._textureName);
                 }
             }
 
@@ -607,7 +632,7 @@ export class TextureBlock extends NodeMaterialBlock {
             if (this._texture?._texture?.is2DArray) {
                 state._emit2DArraySampler(this._samplerName);
             } else {
-                state._emit2DSampler(this._samplerName);
+                state._emit2DSampler(this._samplerName, this._textureName);
             }
         }
 
@@ -615,7 +640,7 @@ export class TextureBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("helperFunctions", comments);
 
         if (this._isMixed) {
-            state._emitUniformFromString(this._textureInfoName, "float");
+            state._emitUniformFromString(this._textureInfoName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         this._writeTextureRead(state);
@@ -629,7 +654,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
@@ -655,7 +680,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
@@ -669,7 +694,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;

@@ -95,7 +95,7 @@ export class ValueGradientGridComponent extends React.Component<IValueGradientGr
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const gradients = this.props.gradients as Nullable<Array<IValueGradient>>;
 
         return (

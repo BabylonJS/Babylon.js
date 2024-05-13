@@ -18,7 +18,7 @@ interface IContainerPropertyGridComponentProps {
 }
 
 export class ContainerPropertyGridComponent extends React.Component<IContainerPropertyGridComponentProps> {
-    render() {
+    override render() {
         const { containers, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(containers, onPropertyChangedObservable);
         return (

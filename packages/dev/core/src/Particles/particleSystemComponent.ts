@@ -3,14 +3,13 @@ import type { IParticleSystem } from "./IParticleSystem";
 import { GPUParticleSystem } from "./gpuParticleSystem";
 import { AbstractScene } from "../abstractScene";
 import type { Effect } from "../Materials/effect";
-import { Engine } from "../Engines/engine";
 import { ParticleSystem } from "./particleSystem";
 import type { Scene } from "../scene";
 import { SceneComponentConstants } from "../sceneComponent";
 import type { AssetContainer } from "../assetContainer";
-
 import "../Shaders/particles.vertex";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 // Adds the parsers to the scene parsers.
 AbstractScene.AddParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (parsedData: any, scene: Scene, container: AssetContainer, rootUrl: string) => {
@@ -39,8 +38,8 @@ AbstractScene.AddIndividualParser(SceneComponentConstants.NAME_PARTICLESYSTEM, (
     }
 });
 
-declare module "../Engines/engine" {
-    export interface Engine {
+declare module "../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Create an effect to use with particle systems.
          * Please note that some parameters like animation sheets or not being billboard are not supported in this configuration, except if you pass
@@ -68,7 +67,7 @@ declare module "../Engines/engine" {
     }
 }
 
-Engine.prototype.createEffectForParticles = function (
+AbstractEngine.prototype.createEffectForParticles = function (
     fragmentName: string,
     uniformsNames: string[] = [],
     samplers: string[] = [],

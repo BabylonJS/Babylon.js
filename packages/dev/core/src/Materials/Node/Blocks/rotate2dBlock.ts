@@ -26,7 +26,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "Rotate2dBlock";
     }
 
@@ -51,7 +51,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.angle.isConnected) {
             const angleInput = new InputBlock("angle");
             angleInput.value = 0;
@@ -59,7 +59,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
@@ -67,7 +67,7 @@ export class Rotate2dBlock extends NodeMaterialBlock {
         const input = this.input;
 
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = vec2(cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.x - sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.y, sin(${angle.associatedVariableName}) * ${input.associatedVariableName}.x + cos(${angle.associatedVariableName}) * ${input.associatedVariableName}.y);\n`;
 
         return this;

@@ -1,5 +1,4 @@
 import type { Nullable } from "../types";
-import type { Engine } from "../Engines/engine";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Effect } from "../Materials/effect";
@@ -11,6 +10,7 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/circleOfConfusion.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * The CircleOfConfusionPostProcess computes the circle of confusion value for each pixel given required lens parameters. See https://en.wikipedia.org/wiki/Circle_of_confusion
@@ -41,7 +41,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "CircleOfConfusionPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "CircleOfConfusionPostProcess";
     }
 
@@ -64,7 +64,7 @@ export class CircleOfConfusionPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false

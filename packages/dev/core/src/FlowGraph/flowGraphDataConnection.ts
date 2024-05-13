@@ -35,7 +35,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * but an input data block can only connect to one output data block.
      * @returns true if the connection is singular
      */
-    public _isSingularConnection(): boolean {
+    public override _isSingularConnection(): boolean {
         return this.connectionType === FlowGraphConnectionType.Input;
     }
 
@@ -52,7 +52,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * Connect this point to another point.
      * @param point the point to connect to.
      */
-    public connectTo(point: FlowGraphDataConnection<T>): void {
+    public override connectTo(point: FlowGraphDataConnection<T>): void {
         super.connectTo(point);
     }
 
@@ -86,7 +86,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
     /**
      * @returns class name of the object.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGDataConnection";
     }
 
@@ -94,7 +94,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * Serializes this object.
      * @param serializationObject the object to serialize to
      */
-    public serialize(serializationObject: any = {}) {
+    public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.richType = {};
         this.richType.serialize(serializationObject.richType);
@@ -106,7 +106,7 @@ export class FlowGraphDataConnection<T> extends FlowGraphConnection<FlowGraphBlo
      * @param ownerBlock the block that owns the connection
      * @returns the parsed connection
      */
-    public static Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
+    public static override Parse(serializationObject: any, ownerBlock: FlowGraphBlock): FlowGraphDataConnection<any> {
         const obj = FlowGraphConnection.Parse(serializationObject, ownerBlock);
         obj.richType = RichType.Parse(serializationObject.richType);
         return obj;

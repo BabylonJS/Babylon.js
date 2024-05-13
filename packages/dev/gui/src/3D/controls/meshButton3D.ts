@@ -54,13 +54,13 @@ export class MeshButton3D extends Button3D {
         };
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "MeshButton3D";
     }
 
     // Mesh association
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _createNode(scene: Scene): TransformNode {
+    protected override _createNode(scene: Scene): TransformNode {
         this._currentMesh.getChildMeshes().forEach((mesh) => {
             this._injectGUI3DReservedDataStore(mesh).control = this;
         });
@@ -68,5 +68,5 @@ export class MeshButton3D extends Button3D {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _affectMaterial(mesh: AbstractMesh) {}
+    protected override _affectMaterial(mesh: AbstractMesh) {}
 }

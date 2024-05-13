@@ -31,7 +31,7 @@ export class DistanceBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DistanceBlock";
     }
 
@@ -56,12 +56,12 @@ export class DistanceBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = length(${this.left.associatedVariableName} - ${this.right.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = length(${this.left.associatedVariableName} - ${this.right.associatedVariableName});\n`;
 
         return this;
     }

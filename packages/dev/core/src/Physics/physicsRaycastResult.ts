@@ -76,7 +76,7 @@ export class PhysicsRaycastResult extends CastingResult {
      * @param from The from point on world space
      * @param to The to point on world space
      */
-    public reset(from: Vector3 = Vector3.Zero(), to: Vector3 = Vector3.Zero()) {
+    public override reset(from: Vector3 = Vector3.Zero(), to: Vector3 = Vector3.Zero()) {
         super.reset();
         this._rayFromWorld.copyFrom(from);
         this._rayToWorld.copyFrom(to);

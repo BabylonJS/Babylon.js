@@ -6,7 +6,7 @@ interface IToolSettingsProps {
 }
 
 export class ToolSettings extends React.Component<IToolSettingsProps> {
-    render() {
+    override render() {
         if (!this.props.tool || !this.props.tool.settingsComponent) return <></>;
         return <div id="tool-ui">{<this.props.tool.settingsComponent instance={this.props.tool.instance} />}</div>;
     }

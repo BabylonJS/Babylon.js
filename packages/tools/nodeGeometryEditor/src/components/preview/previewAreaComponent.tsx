@@ -28,7 +28,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
@@ -77,7 +77,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <div id="preview" style={{ height: this.props.width + "px" }}>

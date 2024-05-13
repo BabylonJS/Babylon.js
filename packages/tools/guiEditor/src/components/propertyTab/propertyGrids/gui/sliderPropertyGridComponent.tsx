@@ -34,7 +34,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
         super(props);
     }
 
-    render() {
+    override render() {
         const { sliders, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(sliders, onPropertyChangedObservable);
 

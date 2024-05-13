@@ -30,7 +30,7 @@ export class FlowGraphPlayAudioBlock extends FlowGraphExecutionBlockWithOutSigna
         this.out._activateSignal(context);
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGPlayAudioBlock";
     }
 }

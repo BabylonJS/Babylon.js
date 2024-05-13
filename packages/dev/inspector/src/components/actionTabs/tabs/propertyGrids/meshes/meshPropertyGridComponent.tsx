@@ -351,7 +351,7 @@ export class MeshPropertyGridComponent extends React.Component<
         return "[INVALID ID]";
     }
 
-    render() {
+    override render() {
         const mesh = this.props.mesh;
         const scene = mesh.getScene();
 

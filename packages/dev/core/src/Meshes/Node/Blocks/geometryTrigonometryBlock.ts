@@ -110,7 +110,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryTrigonometryBlock";
     }
 
@@ -128,7 +128,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
         let func: Nullable<(value: number) => number> = null;
 
@@ -265,7 +265,7 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.operation = this.operation;
@@ -273,13 +273,13 @@ export class GeometryTrigonometryBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this.operation = serializationObject.operation;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString =
             super._dumpPropertiesCode() +
             `${this._codeVariableName}.operation = BABYLON.GeometryTrigonometryBlockOperations.${GeometryTrigonometryBlockOperations[this.operation]};\n`;

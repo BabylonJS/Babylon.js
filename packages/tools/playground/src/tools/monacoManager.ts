@@ -529,7 +529,7 @@ declare var canvas: HTMLCanvasElement;
         }
 
         const model = this._editor.getModel();
-        if (!model) {
+        if (!model || model.isDisposed()) {
             return;
         }
 

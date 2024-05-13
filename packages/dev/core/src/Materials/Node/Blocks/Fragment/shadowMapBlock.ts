@@ -30,7 +30,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ShadowMapBlock";
     }
 
@@ -38,7 +38,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("vPositionWSM");
         state._excludeVariableName("lightDataSM");
         state._excludeVariableName("biasAndScaleSM");
@@ -76,14 +76,14 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const comments = `//${this.name}`;
 
-        state._emitUniformFromString("biasAndScaleSM", "vec3");
-        state._emitUniformFromString("lightDataSM", "vec3");
-        state._emitUniformFromString("depthValuesSM", "vec2");
+        state._emitUniformFromString("biasAndScaleSM", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("lightDataSM", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("depthValuesSM", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         state._emitFunctionFromInclude("packingFunctions", comments);
 
@@ -127,7 +127,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        state.compilationString += `${this._declareOutput(this.depth, state)} = vec3(depthSM, 1., 1.);\n`;
+        state.compilationString += `${state._declareOutput(this.depth)} = vec3(depthSM, 1., 1.);\n`;
 
         return this;
     }

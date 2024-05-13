@@ -20,7 +20,7 @@ export class RenderingPipelinePropertyGridComponent extends React.Component<IRen
         super(props);
     }
 
-    render() {
+    override render() {
         const renderPipeline = this.props.renderPipeline;
 
         return (

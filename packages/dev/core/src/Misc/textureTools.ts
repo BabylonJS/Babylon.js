@@ -7,7 +7,10 @@ import { PassPostProcess } from "../PostProcesses/passPostProcess";
 import { Constants } from "../Engines/constants";
 import type { Scene } from "../scene";
 import { PostProcess } from "../PostProcesses/postProcess";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+
+import "../Shaders/lod.fragment";
+import "../Shaders/lodCube.fragment";
 
 /**
  * Uses the GPU to create a copy texture rescaled at a given size
@@ -104,7 +107,7 @@ export function ApplyPostProcess(
     height?: number
 ): Promise<InternalTexture> {
     // Gets everything ready.
-    const engine = internalTexture.getEngine() as Engine;
+    const engine = internalTexture.getEngine() as AbstractEngine;
 
     internalTexture.isReady = false;
 

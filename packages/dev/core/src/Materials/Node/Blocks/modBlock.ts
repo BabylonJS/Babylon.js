@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to compute value of one parameter modulo another
  */
@@ -29,7 +30,7 @@ export class ModBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ModBlock";
     }
 
@@ -54,12 +55,16 @@ export class ModBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
+        if (state.shaderLanguage === ShaderLanguage.GLSL) {
+            state.compilationString += state._declareOutput(output) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
+        } else {
+            state.compilationString += state._declareOutput(output) + ` = (${this.left.associatedVariableName} % ${this.right.associatedVariableName});\n`;
+        }
 
         return this;
     }

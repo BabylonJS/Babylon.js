@@ -11,7 +11,7 @@ interface IMatrixPropertyTabComponentProps {
 }
 
 export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyTabComponentProps> {
-    render() {
+    override render() {
         return (
             <MatrixLineComponent
                 lockObject={this.props.lockObject}

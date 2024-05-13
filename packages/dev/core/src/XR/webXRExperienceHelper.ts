@@ -10,6 +10,7 @@ import { WebXRFeatureName, WebXRFeaturesManager } from "./webXRFeaturesManager";
 import { Logger } from "../Misc/logger";
 import { UniversalCamera } from "../Cameras/universalCamera";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * Options for setting up XR spectator camera.
@@ -286,7 +287,7 @@ export class WebXRExperienceHelper implements IDisposable {
                     this._scene.onAfterRenderCameraObservable.add((camera) => {
                         if (camera === this.camera) {
                             // reset the dimensions object for correct resizing
-                            this._scene.getEngine().framebufferDimensionsObject = null;
+                            (this._scene.getEngine() as ThinEngine).framebufferDimensionsObject = null;
                         }
                     });
                 } else if (this.state === WebXRState.EXITING_XR) {

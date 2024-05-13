@@ -16,7 +16,7 @@ export class SoundTreeItemComponent extends React.Component<ISoundTreeItemCompon
         super(props);
     }
 
-    render() {
+    override render() {
         const sound = this.props.sound;
 
         return (

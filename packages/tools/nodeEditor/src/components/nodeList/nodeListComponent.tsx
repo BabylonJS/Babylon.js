@@ -52,6 +52,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         Float: "A floating point number representing a value with a fractional component",
         TextureBlock: "A node for reading a linked or embedded texture file",
         PrePassTextureBlock: "A node for reading textures from the prepass",
+        MouseInfoBlock: "return a Vector4 that contains x, y, leftButton, rightButton",
         TimeBlock: "A float value that represents the time that has passed since the scene was loaded (it is incremented by 0.6 each second)",
         RealTimeBlock: "A float value that represents the number of seconds that have elapsed since the engine was initialized",
         Vector2: "a vector composed of X and Y channels",
@@ -209,7 +210,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
 
@@ -309,7 +310,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
         }
     }
 
-    render() {
+    override render() {
         const customFrameNames: string[] = [];
         for (const frame in this._customFrameList) {
             customFrameNames.push(frame);
@@ -336,6 +337,7 @@ export class NodeListComponent extends React.Component<INodeListComponentProps, 
                 "Color4",
                 "TextureBlock",
                 "ReflectionTextureBlock",
+                "MouseInfoBlock",
                 "TimeBlock",
                 "RealTimeBlock",
                 "DeltaTimeBlock",

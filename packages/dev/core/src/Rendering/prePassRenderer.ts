@@ -1,6 +1,6 @@
 import { PrePassRenderTarget } from "../Materials/Textures/prePassRenderTarget";
 import type { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Effect } from "../Materials/effect";
@@ -42,7 +42,7 @@ export class PrePassRenderer {
     public excludedMaterials: Material[] = [];
 
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     /**
      * Number of textures in the multi render target texture where the scene is directly rendered

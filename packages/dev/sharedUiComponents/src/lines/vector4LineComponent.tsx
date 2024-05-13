@@ -40,7 +40,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
         return this.props.value || this.props.target[this.props.propertyName!];
     }
 
-    shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean; value: Vector4 }) {
+    override shouldComponentUpdate(nextProps: IVector4LineComponentProps, nextState: { isExpanded: boolean; value: Vector4 }) {
         const nextPropsValue = nextProps.value || nextProps.target[nextProps.propertyName!];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -114,7 +114,7 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
         this.updateVector4();
     }
 
-    render() {
+    override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
         return (

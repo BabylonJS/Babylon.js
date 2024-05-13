@@ -9,7 +9,7 @@ import type { BoxParticleEmitter } from "../Particles/EmitterTypes/boxParticleEm
 import { Constants } from "../Engines/constants";
 import type { BaseTexture } from "../Materials/Textures/baseTexture";
 import { Color4 } from "../Maths/math.color";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.dynamicBuffer";
 import type { IClipPlanesHolder } from "../Misc/interfaces/iClipPlanesHolder";
@@ -24,6 +24,7 @@ import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParti
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
 import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { RegisterClass } from "../Misc/typeStore";
 
 /**
  * This represents the base class for particle system in Babylon.
@@ -656,7 +657,7 @@ export class BaseParticleSystem implements IClipPlanesHolder {
     /**
      * The engine the particle system belongs to.
      */
-    protected _engine: ThinEngine;
+    protected _engine: AbstractEngine;
 
     /**
      * Local cache of defines for image processing.
@@ -824,3 +825,6 @@ export class BaseParticleSystem implements IClipPlanesHolder {
         throw new Error("Method not implemented.");
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.BaseParticleSystem", BaseParticleSystem);

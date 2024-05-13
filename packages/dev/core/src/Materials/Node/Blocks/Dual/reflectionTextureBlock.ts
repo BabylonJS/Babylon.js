@@ -14,7 +14,7 @@ import { Logger } from "core/Misc/logger";
  * Block used to read a reflection texture from a sampler
  */
 export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
-    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+    protected override _onGenerateOnlyFragmentCodeChanged(): boolean {
         if (this.position.isConnected) {
             this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
             Logger.Error("The position input must not be connected to be able to switch!");
@@ -32,7 +32,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         return true;
     }
 
-    protected _setTarget(): void {
+    protected override _setTarget(): void {
         super._setTarget();
         this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
         this.getInputByName("worldPosition")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
@@ -69,7 +69,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ReflectionTextureBlock";
     }
 
@@ -157,7 +157,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         return this._outputs[5];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         super.autoConfigure(material);
 
         if (!this.cameraPosition.isConnected) {
@@ -171,7 +171,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (!this.texture) {

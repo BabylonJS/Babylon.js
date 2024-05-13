@@ -8,7 +8,7 @@ export class SettingsTabComponent extends PaneComponent {
         super(props);
     }
 
-    render() {
+    override render() {
         const state = this.props.globalState;
 
         return (

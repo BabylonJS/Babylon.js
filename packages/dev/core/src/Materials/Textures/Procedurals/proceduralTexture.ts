@@ -2,9 +2,9 @@ import { serialize } from "../../../Misc/decorators";
 import { Observable } from "../../../Misc/observable";
 import type { Nullable } from "../../../types";
 import type { Scene } from "../../../scene";
-import type { Matrix, Vector3, Vector2 } from "../../../Maths/math.vector";
+import type { Matrix, Vector4, Vector3, Vector2 } from "../../../Maths/math.vector";
 import type { Color4, Color3 } from "../../../Maths/math.color";
-import type { Engine } from "../../../Engines/engine";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { SceneComponentConstants } from "../../../sceneComponent";
 
@@ -106,10 +106,11 @@ export class ProceduralTexture extends Texture {
     private _colors4: { [key: string]: Color4 } = {};
     private _vectors2: { [key: string]: Vector2 } = {};
     private _vectors3: { [key: string]: Vector3 } = {};
+    private _vectors4: { [key: string]: Vector4 } = {};
     private _matrices: { [key: string]: Matrix } = {};
 
     private _fallbackTextureUsed = false;
-    private _fullEngine: Engine;
+    private _fullEngine: AbstractEngine;
 
     private _cachedDefines: Nullable<string> = null;
 
@@ -266,7 +267,7 @@ export class ProceduralTexture extends Texture {
     }
 
     /** @internal */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         const vb = this._vertexBuffers[VertexBuffer.PositionKind];
 
         if (vb) {
@@ -316,7 +317,7 @@ export class ProceduralTexture extends Texture {
      * Is the texture ready to be used ? (rendered at least once)
      * @returns true if ready, otherwise, false.
      */
-    public isReady(): boolean {
+    public override isReady(): boolean {
         const engine = this._fullEngine;
 
         if (this.nodeMaterialSource) {
@@ -571,6 +572,19 @@ export class ProceduralTexture extends Texture {
     }
 
     /**
+     * Set a vec4 in the shader from a Vector4.
+     * @param name Define the name of the uniform as defined in the shader
+     * @param value Define the value to give to the uniform
+     * @returns the texture itself allowing "fluent" like uniform updates
+     */
+    public setVector4(name: string, value: Vector4): ProceduralTexture {
+        this._checkUniform(name);
+        this._vectors4[name] = value;
+
+        return this;
+    }
+
+    /**
      * Set a mat4 in the shader from a MAtrix.
      * @param name Define the name of the uniform as defined in the shader
      * @param value Define the value to give to the uniform
@@ -644,6 +658,11 @@ export class ProceduralTexture extends Texture {
                 this._drawWrapper.effect!.setVector3(name, this._vectors3[name]);
             }
 
+            // Vector4
+            for (const name in this._vectors4) {
+                this._drawWrapper.effect!.setVector4(name, this._vectors4[name]);
+            }
+
             // Matrix
             for (const name in this._matrices) {
                 this._drawWrapper.effect!.setMatrix(name, this._matrices[name]);
@@ -697,7 +716,7 @@ export class ProceduralTexture extends Texture {
 
         // Mipmaps
         if (this.isCube) {
-            engine.generateMipMapsForCubemap(this._texture);
+            engine.generateMipMapsForCubemap(this._texture, true);
         }
 
         engine._debugPopGroup?.(1);
@@ -713,7 +732,7 @@ export class ProceduralTexture extends Texture {
      * Clone the texture.
      * @returns the cloned texture
      */
-    public clone(): ProceduralTexture {
+    public override clone(): ProceduralTexture {
         const textureSize = this.getSize();
         const newTexture = new ProceduralTexture(this.name, textureSize.width, this._fragment, <Scene>this.getScene(), this._fallbackTexture, this._generateMipMaps);
 
@@ -730,7 +749,7 @@ export class ProceduralTexture extends Texture {
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         const scene = this.getScene();
 
         if (!scene) {

@@ -144,4 +144,4 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.unshift(new _KTXTextureLoader());
+Engine._TextureLoaders.push(new _KTXTextureLoader());

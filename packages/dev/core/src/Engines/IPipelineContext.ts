@@ -1,6 +1,7 @@
 import type { Nullable } from "../types";
 import type { Effect } from "../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../Maths/math.like";
+import type { AbstractEngine } from "./abstractEngine";
 
 /**
  * Class used to store and describe the pipeline context associated with an effect
@@ -41,6 +42,9 @@ export interface IPipelineContext {
 
     /** Releases the resources associated with the pipeline. */
     dispose(): void;
+
+    /** set the engine, in case it is not a part of the constructor */
+    setEngine<T extends AbstractEngine>(engine: T): void;
 
     /**
      * Sets an integer value on a uniform variable.

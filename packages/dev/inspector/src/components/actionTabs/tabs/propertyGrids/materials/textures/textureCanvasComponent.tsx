@@ -9,7 +9,7 @@ interface ITextureCanvasComponentProps {
 }
 
 export class TextureCanvasComponent extends React.Component<ITextureCanvasComponentProps> {
-    render() {
+    override render() {
         return (
             <div>
                 <canvas id="canvas-ui" ref={this.props.canvasUI} tabIndex={1}></canvas>

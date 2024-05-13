@@ -36,7 +36,7 @@ export class InstancesBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InstancesBlock";
     }
 
@@ -89,7 +89,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.world0.connectedPoint) {
             let world0Input = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "world0" && additionalFilteringInfo(b));
 
@@ -139,7 +139,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         this.world.define = "!INSTANCES || THIN_INSTANCES";
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, useInstances: boolean = false, subMesh?: SubMesh) {
         let changed = false;
         if (defines["INSTANCES"] !== useInstances) {
             defines.setValue("INSTANCES", useInstances);
@@ -156,7 +156,7 @@ export class InstancesBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const engine = state.sharedData.scene.getEngine();
@@ -174,19 +174,19 @@ export class InstancesBlock extends NodeMaterialBlock {
 
         state.compilationString += `#ifdef INSTANCES\n`;
         state.compilationString +=
-            this._declareOutput(output, state) +
+            state._declareOutput(output) +
             ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\n`;
         state.compilationString += `#ifdef THIN_INSTANCES\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\n`;
         state.compilationString += `#endif\n`;
         if (engine._caps.canUseGLInstanceID) {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = float(gl_InstanceID);\n`;
+            state.compilationString += state._declareOutput(instanceID) + ` = float(gl_InstanceID);\n`;
         } else {
-            state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
+            state.compilationString += state._declareOutput(instanceID) + ` = 0.0;\n`;
         }
         state.compilationString += `#else\n`;
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.world.associatedVariableName};\n`;
-        state.compilationString += this._declareOutput(instanceID, state) + ` = 0.0;\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${this.world.associatedVariableName};\n`;
+        state.compilationString += state._declareOutput(instanceID) + ` = 0.0;\n`;
         state.compilationString += `#endif\n`;
         return this;
     }

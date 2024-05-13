@@ -40,7 +40,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "WorleyNoise3DBlock";
     }
 
@@ -79,7 +79,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (!this.seed.isConnected) {
@@ -249,15 +249,15 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         state.compilationString += `vec2 ${tempVariable} = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\n`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempVariable};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempVariable};\n`;
         }
 
         if (this.x.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempVariable}.x;\n`;
+            state.compilationString += state._declareOutput(this.x) + ` = ${tempVariable}.x;\n`;
         }
 
         if (this.y.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempVariable}.y;\n`;
+            state.compilationString += state._declareOutput(this.y) + ` = ${tempVariable}.y;\n`;
         }
         return this;
     }
@@ -265,7 +265,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Exposes the properties to the UI?
      * @returns - boolean indicating if the block has properties or not
      */
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.manhattanDistance = ${this.manhattanDistance};\n`;
 
         return codeString;
@@ -274,7 +274,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * Exposes the properties to the Serialize?
      * @returns - a serialized object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.manhattanDistance = this.manhattanDistance;
@@ -287,7 +287,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
      * @param scene
      * @param rootUrl
      */
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.manhattanDistance = serializationObject.manhattanDistance;

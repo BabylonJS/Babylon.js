@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to compute arc tangent of 2 values
  */
@@ -24,7 +25,7 @@ export class ArcTan2Block extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ArcTan2Block";
     }
 
@@ -49,12 +50,13 @@ export class ArcTan2Block extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = atan(${this.x.associatedVariableName}, ${this.y.associatedVariableName});\n`;
+        const func = state.shaderLanguage === ShaderLanguage.WGSL ? "atan2" : "atan";
+        state.compilationString += state._declareOutput(output) + ` = ${func}(${this.x.associatedVariableName}, ${this.y.associatedVariableName});\n`;
 
         return this;
     }

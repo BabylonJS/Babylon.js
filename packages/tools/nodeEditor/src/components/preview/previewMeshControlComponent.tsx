@@ -46,7 +46,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
         this.props.globalState.onDropEventReceivedObservable.remove(this._onDropEventObserver);
         this.props.globalState.onRefreshPreviewMeshControlComponentRequiredObservable.remove(this._onRefreshPreviewMeshControlComponentRequiredObserver);
@@ -120,7 +120,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
         this._colorInputRef.current?.click();
     }
 
-    render() {
+    override render() {
         const meshTypeOptions = [
             { label: "Cube", value: PreviewType.Box },
             { label: "Cylinder", value: PreviewType.Cylinder },

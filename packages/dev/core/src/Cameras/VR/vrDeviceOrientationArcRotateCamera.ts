@@ -50,9 +50,9 @@ export class VRDeviceOrientationArcRotateCamera extends ArcRotateCamera {
      * Gets camera class name
      * @returns VRDeviceOrientationArcRotateCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VRDeviceOrientationArcRotateCamera";
     }
 
-    protected _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
+    protected override _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
 }

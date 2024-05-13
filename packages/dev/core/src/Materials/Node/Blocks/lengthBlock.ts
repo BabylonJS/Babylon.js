@@ -26,7 +26,7 @@ export class LengthBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "LengthBlock";
     }
 
@@ -44,12 +44,12 @@ export class LengthBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = length(${this.value.associatedVariableName});\n`;
+        state.compilationString += state._declareOutput(output) + ` = length(${this.value.associatedVariableName});\n`;
 
         return this;
     }

@@ -63,7 +63,12 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * @internal
      */
-    public setSourceTexture(sourceTexture: RenderTargetTexture, depthRedux: boolean, type: number = Constants.TEXTURETYPE_HALF_FLOAT, forceFullscreenViewport = true): void {
+    public override setSourceTexture(
+        sourceTexture: RenderTargetTexture,
+        depthRedux: boolean,
+        type: number = Constants.TEXTURETYPE_HALF_FLOAT,
+        forceFullscreenViewport = true
+    ): void {
         super.setSourceTexture(sourceTexture, depthRedux, type, forceFullscreenViewport);
     }
 
@@ -72,7 +77,7 @@ export class DepthReducer extends MinMaxReducer {
      * When activated, the observers registered in onAfterReductionPerformed are
      * called after the computation is performed
      */
-    public activate(): void {
+    public override activate(): void {
         if (this._depthRenderer) {
             this._depthRenderer.enabled = true;
         }
@@ -83,7 +88,7 @@ export class DepthReducer extends MinMaxReducer {
     /**
      * Deactivates the reduction computation.
      */
-    public deactivate(): void {
+    public override deactivate(): void {
         super.deactivate();
 
         if (this._depthRenderer) {
@@ -95,7 +100,7 @@ export class DepthReducer extends MinMaxReducer {
      * Disposes the depth reducer
      * @param disposeAll true to dispose all the resources. You should always call this function with true as the parameter (or without any parameter as it is the default one). This flag is meant to be used internally.
      */
-    public dispose(disposeAll = true): void {
+    public override dispose(disposeAll = true): void {
         super.dispose(disposeAll);
 
         if (this._depthRenderer && disposeAll) {

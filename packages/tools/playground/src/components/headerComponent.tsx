@@ -40,11 +40,11 @@ export class HeaderComponent extends React.Component<IHeaderComponentProps> {
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.updateDescription();
     }
 
-    public render() {
+    public override render() {
         return (
             <div id="pg-header">
                 <div className="logo-area">

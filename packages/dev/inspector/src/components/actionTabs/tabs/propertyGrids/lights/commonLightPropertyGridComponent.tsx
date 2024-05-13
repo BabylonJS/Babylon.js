@@ -25,7 +25,7 @@ export class CommonLightPropertyGridComponent extends React.Component<ICommonLig
         super(props);
     }
 
-    render() {
+    override render() {
         const light = this.props.light;
 
         return (

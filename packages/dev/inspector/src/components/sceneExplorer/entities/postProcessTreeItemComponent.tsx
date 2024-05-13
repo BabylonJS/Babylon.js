@@ -17,7 +17,7 @@ export class PostProcessItemComponent extends React.Component<IPostProcessItemCo
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="postProcessTools">
                 <TreeItemLabelComponent label={this.props.postProcess.name} onClick={() => this.props.onClick()} icon={faMagic} color="red" />

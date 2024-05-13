@@ -7,7 +7,7 @@ import type { Vector3 } from "../../Maths/math.vector";
 import { VertexData } from "../mesh.vertexData";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineSimpleMaterial } from "../../Materials/GreasedLine/greasedLineSimpleMaterial";
-import type { Engine } from "../../Engines/engine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { FloatArray, IndicesArray } from "../../types";
 
 /**
@@ -149,10 +149,10 @@ export abstract class GreasedLineBaseMesh extends Mesh {
     protected _lazy = false;
     protected _updatable = false;
 
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
 
     constructor(
-        public readonly name: string,
+        public override readonly name: string,
         scene: Scene,
         protected _options: GreasedLineMeshOptions
     ) {
@@ -175,7 +175,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * "GreasedLineMesh"
      * @returns "GreasedLineMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GreasedLineMesh";
     }
 
@@ -228,7 +228,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false) {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false) {
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
 
@@ -372,7 +372,7 @@ export abstract class GreasedLineBaseMesh extends Mesh {
      * Serializes this GreasedLineMesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
 

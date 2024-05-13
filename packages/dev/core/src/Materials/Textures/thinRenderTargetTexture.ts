@@ -61,7 +61,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      * Get the underlying lower level texture from Babylon.
      * @returns the internal texture
      */
-    public getInternalTexture(): Nullable<InternalTexture> {
+    public override getInternalTexture(): Nullable<InternalTexture> {
         return this._texture;
     }
 
@@ -69,7 +69,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      * Get the class name of the texture.
      * @returns "ThinRenderTargetTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "ThinRenderTargetTexture";
     }
 
@@ -77,7 +77,7 @@ export class ThinRenderTargetTexture extends ThinTexture implements IRenderTarge
      * Dispose the texture and release its associated resources.
      * @param disposeOnlyFramebuffers if set to true it will dispose only the frame buffers (default: false)
      */
-    public dispose(disposeOnlyFramebuffers = false): void {
+    public override dispose(disposeOnlyFramebuffers = false): void {
         this._renderTarget?.dispose(true);
         this._renderTarget = null;
 

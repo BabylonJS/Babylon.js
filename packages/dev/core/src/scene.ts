@@ -41,7 +41,6 @@ import type {
     CameraStageFrameBufferAction,
 } from "./sceneComponent";
 import { Stage } from "./sceneComponent";
-import type { Engine } from "./Engines/engine";
 import { Constants } from "./Engines/constants";
 import { IsWindowObjectExist } from "./Misc/domManagement";
 import { EngineStore } from "./Engines/engineStore";
@@ -90,6 +89,8 @@ import type { Animatable } from "./Animations/animatable";
 import type { Texture } from "./Materials/Textures/texture";
 import { PointerPickingConfiguration } from "./Inputs/pointerPickingConfiguration";
 import { Logger } from "./Misc/logger";
+import type { AbstractEngine } from "./Engines/abstractEngine";
+import { RegisterClass } from "./Misc/typeStore";
 
 /**
  * Define an interface for all classes that will hold resources
@@ -227,7 +228,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to reference from here than from all the materials.
      */
-    public get environmentTexture(): Nullable<BaseTexture> {
+    public override get environmentTexture(): Nullable<BaseTexture> {
         return this._environmentTexture;
     }
     /**
@@ -235,7 +236,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * As in the majority of the scene they are the same (exception for multi room and so on),
      * this is easier to set here than in all the materials.
      */
-    public set environmentTexture(value: Nullable<BaseTexture>) {
+    public override set environmentTexture(value: Nullable<BaseTexture>) {
         if (this._environmentTexture === value) {
             return;
         }
@@ -1353,7 +1354,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
     public proceduralTexturesEnabled = true;
 
     // Private
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     // Performance counters
     private _totalVertices = new PerfCounter();
@@ -1653,7 +1654,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * @param engine defines the engine to use to render this scene
      * @param options defines the scene options
      */
-    constructor(engine: Engine, options?: SceneOptions) {
+    constructor(engine: AbstractEngine, options?: SceneOptions) {
         super();
 
         this.activeCameras = [] as Camera[];
@@ -1824,7 +1825,7 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
      * Gets the engine associated with the scene
      * @returns an Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
@@ -5755,3 +5756,6 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
         return this.getLastSkeletonById(id);
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.Scene", Scene);

@@ -4,12 +4,12 @@ import type { Observer } from "../../Misc/observable";
 import type { ICameraInput } from "../../Cameras/cameraInputsManager";
 import { CameraInputTypes } from "../../Cameras/cameraInputsManager";
 import type { FlyCamera } from "../../Cameras/flyCamera";
-import type { Engine } from "../../Engines/engine";
 import type { KeyboardInfo } from "../../Events/keyboardEvents";
 import { KeyboardEventTypes } from "../../Events/keyboardEvents";
 import type { Scene } from "../../scene";
 import { Vector3 } from "../../Maths/math.vector";
 import { Tools } from "../../Misc/tools";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Listen to keyboard events to control the camera.
@@ -58,9 +58,9 @@ export class FlyCameraKeyboardInput implements ICameraInput<FlyCamera> {
     public keysLeft = [65];
 
     private _keys = new Array<number>();
-    private _onCanvasBlurObserver: Nullable<Observer<Engine>>;
+    private _onCanvasBlurObserver: Nullable<Observer<AbstractEngine>>;
     private _onKeyboardObserver: Nullable<Observer<KeyboardInfo>>;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _scene: Scene;
 
     /**

@@ -75,7 +75,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         super("KHR_materials_common");
     }
 
-    public loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime): boolean {
+    public override loadRuntimeExtensionsAsync(gltfRuntime: IGLTFRuntime): boolean {
         if (!gltfRuntime.extensions) {
             return false;
         }
@@ -141,7 +141,7 @@ export class GLTFMaterialsCommonExtension extends GLTFLoaderExtension {
         return false;
     }
 
-    public loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
+    public override loadMaterialAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (material: Material) => void, onError: (message: string) => void): boolean {
         const material: IGLTFMaterial = gltfRuntime.materials[id];
         if (!material || !material.extensions) {
             return false;

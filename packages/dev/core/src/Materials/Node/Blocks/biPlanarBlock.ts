@@ -18,11 +18,11 @@ export class BiPlanarBlock extends TriPlanarBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "BiPlanarBlock";
     }
 
-    protected _generateTextureLookup(state: NodeMaterialBuildState): void {
+    protected override _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
         const samplerYName = this.samplerYName ?? this.samplerName;
 

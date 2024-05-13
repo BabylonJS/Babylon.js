@@ -14,7 +14,7 @@ export class FooterFileButton extends React.Component<IFooterFileButtonProps> {
         this.props.onFilesPicked(evt.nativeEvent, evt.target.files);
     }
 
-    public render() {
+    public override render() {
         if (!this.props.enabled) {
             return null;
         }

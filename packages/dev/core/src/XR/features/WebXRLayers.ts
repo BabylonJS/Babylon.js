@@ -5,10 +5,11 @@ import type { WebXRLayerWrapper } from "../webXRLayerWrapper";
 import { WebXRWebGLLayerWrapper } from "../webXRWebGLLayer";
 import { WebXRProjectionLayerWrapper, defaultXRProjectionLayerInit } from "./Layers/WebXRProjectionLayer";
 import { WebXRCompositionLayerRenderTargetTextureProvider, WebXRCompositionLayerWrapper } from "./Layers/WebXRCompositionLayer";
-import type { ThinTexture } from "core/Materials/Textures/thinTexture";
-import type { DynamicTexture } from "core/Materials/Textures/dynamicTexture";
-import { Color4 } from "core/Maths/math.color";
-import type { LensFlareSystem } from "core/LensFlares/lensFlareSystem";
+import type { ThinTexture } from "../../Materials/Textures/thinTexture";
+import type { DynamicTexture } from "../../Materials/Textures/dynamicTexture";
+import { Color4 } from "../../Maths/math.color";
+import type { LensFlareSystem } from "../../LensFlares/lensFlareSystem";
+import type { ThinEngine } from "../../Engines";
 
 const defaultXRWebGLLayerInit: XRWebGLLayerInit = {};
 
@@ -69,13 +70,13 @@ export class WebXRLayers extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
 
         const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = engine._gl;
+        this._glContext = (engine as ThinEngine)._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
         this._existingLayers.length = 0;
 
@@ -87,7 +88,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -330,7 +331,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
         }
     }
 
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         // TODO (rgerd): Add native support.
         return !this._xrSessionManager.isNative && typeof XRWebGLBinding !== "undefined" && !!XRWebGLBinding.prototype.createProjectionLayer;
     }
@@ -338,7 +339,7 @@ export class WebXRLayers extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
     }
 

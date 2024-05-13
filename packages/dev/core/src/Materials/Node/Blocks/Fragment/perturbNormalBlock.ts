@@ -78,7 +78,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "PerturbNormalBlock";
     }
 
@@ -174,7 +174,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return this._outputs[1];
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const normalSamplerName = (this.normalMapColor.connectedPoint!._ownerBlock as TextureBlock).samplerName;
         const useParallax = this.viewDirection.isConnected && ((this.useParallaxOcclusion && normalSamplerName) || (!this.useParallaxOcclusion && this.parallaxHeight.isConnected));
 
@@ -185,7 +185,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         defines.setValue("OBJECTSPACE_NORMALMAP", this.useObjectSpaceNormalMap, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (nodeMaterial.getScene()._mirroredCameraPosition) {
             effect.setFloat2(this._tangentSpaceParameterName, this.invertX ? 1.0 : -1.0, this.invertY ? 1.0 : -1.0);
         } else {
@@ -202,7 +202,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "uv" && additionalFilteringInfo(b));
 
@@ -220,7 +220,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const comments = `//${this.name}`;
@@ -234,15 +234,15 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
 
         this._tangentSpaceParameterName = state._getFreeDefineName("tangentSpaceParameter");
 
-        state._emitUniformFromString(this._tangentSpaceParameterName, "vec2");
+        state._emitUniformFromString(this._tangentSpaceParameterName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
 
-        state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+        state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
 
         this._worldMatrixName = state._getFreeDefineName("perturbNormalWorldMatrix");
 
-        state._emitUniformFromString(this._worldMatrixName, "mat4");
+        state._emitUniformFromString(this._worldMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let normalSamplerName = null;
         if (this.normalMapColor.connectedPoint) {
@@ -301,7 +301,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const uvForPerturbNormal =
             !useParallax || !normalSamplerName ? this.normalMapColor.associatedVariableName : `texture2D(${normalSamplerName}, ${uv.associatedVariableName} + uvOffset).xyz`;
 
-        state.compilationString += this._declareOutput(this.output, state) + " = vec4(0.);\n";
+        state.compilationString += state._declareOutput(this.output) + " = vec4(0.);\n";
         state.compilationString += state._emitCodeFromInclude("bumpFragment", comments, {
             replaceStrings: [
                 { search: /texture2D\(bumpSampler,vBumpUV\)/g, replace: `${uvForPerturbNormal}` },
@@ -336,7 +336,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.invertX = ${this.invertX};\n`;
 
         codeString += `${this._codeVariableName}.invertY = ${this.invertY};\n`;
@@ -346,7 +346,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.invertX = this.invertX;
@@ -357,7 +357,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.invertX = serializationObject.invertX;

@@ -20,7 +20,7 @@ export class HandMenu extends TouchHolographicMenu {
         return this._handConstraintBehavior;
     }
 
-    protected _createNode(scene: Scene): Nullable<TransformNode> {
+    protected override _createNode(scene: Scene): Nullable<TransformNode> {
         const node = super._createNode(scene)! as Mesh;
 
         this._handConstraintBehavior.attach(node);
@@ -45,7 +45,7 @@ export class HandMenu extends TouchHolographicMenu {
     /**
      * Disposes the hand menu
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this._handConstraintBehavior.detach();

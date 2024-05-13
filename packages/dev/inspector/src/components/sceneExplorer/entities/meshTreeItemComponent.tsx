@@ -63,7 +63,7 @@ export class MeshTreeItemComponent extends React.Component<IMeshTreeItemComponen
         });
     }
 
-    render() {
+    override render() {
         const mesh = this.props.mesh;
 
         const visibilityElement = this.state.isVisible ? <FontAwesomeIcon icon={faEye} /> : <FontAwesomeIcon icon={faEyeSlash} className="isNotActive" />;

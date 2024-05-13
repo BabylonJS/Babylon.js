@@ -16,7 +16,7 @@ export class EffectLayerItemComponent extends React.Component<IEffectLayerItemCo
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="effectLayerTools">
                 <TreeItemLabelComponent label={this.props.layer.name} onClick={() => this.props.onClick()} icon={faSun} color="Plum" />

@@ -89,7 +89,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Returns the class name
      * @returns "GaussianSplattingMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GaussianSplattingMesh";
     }
 
@@ -97,7 +97,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Returns the total number of vertices (splats) within the mesh
      * @returns the total number of vertices
      */
-    public getTotalVertices(): number {
+    public override getTotalVertices(): number {
         return this._vertexCount;
     }
 
@@ -108,7 +108,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         if (!this.material) {
             this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
             this.material = this._material;
@@ -305,7 +305,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Releases resources associated with this mesh.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      */
-    public dispose(doNotRecurse?: boolean): void {
+    public override dispose(doNotRecurse?: boolean): void {
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
@@ -498,7 +498,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         let height = 1;
 
-        if (engine.webGLVersion === 1 && !engine.isWebGPU) {
+        if (engine.version === 1 && !engine.isWebGPU) {
             while (width * height < length) {
                 height *= 2;
             }

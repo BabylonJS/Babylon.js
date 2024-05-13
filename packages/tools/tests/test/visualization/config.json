@@ -519,17 +519,23 @@
         },
         {
             "title": "Draco Mesh Compression (decodeMeshAsync, numWorkers = 1)",
-            "playgroundId": "#22MFU2#4",
+            "playgroundId": "#22MFU2#77",
             "referenceImage": "draco.png"
         },
         {
             "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 0)",
-            "playgroundId": "#22MFU2#65",
+            "playgroundId": "#22MFU2#78",
             "referenceImage": "draco.png"
         },
         {
             "title": "Draco Mesh Compression (decodeMeshToGeometryAsync, numWorkers = 1)",
-            "playgroundId": "#22MFU2#65",
+            "playgroundId": "#22MFU2#78",
+            "replace": "numWorkers = 0, numWorkers = 1",
+            "referenceImage": "draco.png"
+        },
+        {
+            "title": "Draco Mesh Compression (fallback)",
+            "playgroundId": "#22MFU2#75",
             "replace": "numWorkers = 0, numWorkers = 1",
             "referenceImage": "draco.png"
         },
@@ -781,12 +787,14 @@
         {
             "title": "GLTF Serializer Morph Target Animation Group",
             "playgroundId": "#T087A8#29",
-            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png"
+            "referenceImage": "gltfSerializerMorphTargetAnimationGroup.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GLTF Serializer KHR materials clearcoat",
             "playgroundId": "#9N6CLU#23",
-            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png"
+            "referenceImage": "glTFSerializerKhrMaterialsClearcoat.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "GLTF Serializer KHR gpu instancing",
@@ -931,17 +939,17 @@
         },
         {
             "title": "PBR shader code coverage 1",
-            "playgroundId": "#QI7TL3#16",
+            "playgroundId": "#QI7TL3#55",
             "referenceImage": "pbr-codecoverage1.png"
         },
         {
             "title": "PBR shader code coverage 2",
-            "playgroundId": "#QI7TL3#17",
+            "playgroundId": "#QI7TL3#57",
             "referenceImage": "pbr-codecoverage2.png"
         },
         {
             "title": "PBR shader code coverage 3",
-            "playgroundId": "#QI7TL3#18",
+            "playgroundId": "#QI7TL3#56",
             "referenceImage": "pbr-codecoverage3.png"
         },
         {
@@ -976,6 +984,12 @@
             "title": "Up Vector",
             "playgroundId": "#2FNBTG#27",
             "referenceImage": "upVector.png"
+        },
+        {
+            "title": "Procedural textures playground",
+            "playgroundId": "#24C4KC#67",
+            "referenceImage": "proceduralTexturePlayground.png",
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "Procedural textures",

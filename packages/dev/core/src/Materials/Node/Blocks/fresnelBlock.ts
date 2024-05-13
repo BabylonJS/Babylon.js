@@ -33,7 +33,7 @@ export class FresnelBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "FresnelBlock";
     }
 
@@ -72,7 +72,7 @@ export class FresnelBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial) {
+    public override autoConfigure(material: NodeMaterial) {
         if (!this.viewDirection.isConnected) {
             const viewDirectionInput = new ViewDirectionBlock("View direction");
             viewDirectionInput.output.connectTo(this.viewDirection);
@@ -92,7 +92,7 @@ export class FresnelBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const comments = `//${this.name}`;
@@ -100,7 +100,7 @@ export class FresnelBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("fresnelFunction", comments, { removeIfDef: true });
 
         state.compilationString +=
-            this._declareOutput(this.fresnel, state) +
+            state._declareOutput(this.fresnel) +
             ` = computeFresnelTerm(${this.viewDirection.associatedVariableName}.xyz, ${this.worldNormal.associatedVariableName}.xyz, ${this.bias.associatedVariableName}, ${this.power.associatedVariableName});\n`;
 
         return this;

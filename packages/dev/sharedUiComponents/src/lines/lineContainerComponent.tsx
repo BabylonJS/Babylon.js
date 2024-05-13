@@ -40,7 +40,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         );
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this.props.selection) {
             return;
         }
@@ -69,7 +69,7 @@ export class LineContainerComponent extends React.Component<ILineContainerCompon
         }
     }
 
-    render() {
+    override render() {
         if (!this.state.isExpanded) {
             return (
                 <div className="paneContainer">

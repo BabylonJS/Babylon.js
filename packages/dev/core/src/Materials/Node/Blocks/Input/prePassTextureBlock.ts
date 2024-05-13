@@ -124,11 +124,11 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "PrePassTextureBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
@@ -155,7 +155,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const scene = nodeMaterial.getScene();
         const prePassRenderer = scene.enablePrePassRenderer();
         if (!prePassRenderer) {

@@ -42,7 +42,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphSetPropertyBlockConfiguration
+        public override config: IFlowGraphSetPropertyBlockConfiguration
     ) {
         super(config);
 
@@ -62,7 +62,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
      * Serializes the block to a JSON object.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject: any = {}) {
+    public override serialize(serializationObject: any = {}) {
         super.serialize(serializationObject);
         serializationObject.config.path = this.config.path;
     }
@@ -70,7 +70,7 @@ export class FlowGraphSetPropertyBlock<ValueT> extends FlowGraphExecutionBlockWi
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphSetPropertyBlock.ClassName;
     }
 

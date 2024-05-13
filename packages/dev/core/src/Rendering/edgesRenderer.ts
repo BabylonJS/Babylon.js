@@ -1030,7 +1030,7 @@ export class LineEdgesRenderer extends EdgesRenderer {
     /**
      * Generate edges for each line in LinesMesh. Every Line should be rendered as edge.
      */
-    _generateEdgesLines(): void {
+    override _generateEdgesLines(): void {
         const positions = this._source.getVerticesData(VertexBuffer.PositionKind);
         const indices = this._source.getIndices();
 
