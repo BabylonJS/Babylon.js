@@ -9,7 +9,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { CommonMaterialPropertyGridComponent } from "./commonMaterialPropertyGridComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
@@ -1205,7 +1205,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                         propertyName="realTimeFiltering"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         allowNullValue={true}
                         label="Realtime Filtering quality"
                         options={realTimeFilteringQualityOptions}
@@ -1258,7 +1258,7 @@ export class PBRMaterialPropertyGridComponent extends React.Component<IPBRMateri
                     <CheckBoxLineComponent label="Unlit" target={material} propertyName="unlit" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
-                    <OptionsLineComponent label="Debug mode" options={debugMode} target={material} propertyName="debugMode" />
+                    <OptionsLine label="Debug mode" options={debugMode} target={material} propertyName="debugMode" />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         label="Split position"

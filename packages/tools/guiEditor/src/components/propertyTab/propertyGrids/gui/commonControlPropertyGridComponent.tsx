@@ -12,7 +12,7 @@ import type { TextBlock } from "gui/2D/controls/textBlock";
 import { Container } from "gui/2D/controls/container";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { ValueAndUnit } from "gui/2D/valueAndUnit";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy, conflictingValuesPlaceholder } from "shared-ui-components/lines/targetsProxy";
 import type { DimensionProperties } from "../../../../diagram/coordinateHelper";
 import { CoordinateHelper } from "../../../../diagram/coordinateHelper";
@@ -696,13 +696,13 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 ) && (
                     <div className="ge-divider">
                         <IconComponent icon={colorIcon} label={"Outline Color"} />
-                        <ColorLineComponent lockObject={this.props.lockObject} label="Outline Color" target={proxy} propertyName="color" />
+                        <ColorLine lockObject={this.props.lockObject} label="Outline Color" target={proxy} propertyName="color" />
                     </div>
                 )}
                 {controls.every((control) => (control as any).background !== undefined) && (
                     <div className="ge-divider">
                         <IconComponent icon={fillColorIcon} label={"Background Color"} />
-                        <ColorLineComponent lockObject={this.props.lockObject} label="Background Color" target={proxy} propertyName="background" />
+                        <ColorLine lockObject={this.props.lockObject} label="Background Color" target={proxy} propertyName="background" />
                     </div>
                 )}
                 <div className="ge-divider">
@@ -711,7 +711,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={shadowColorIcon} label={"Shadow Color"} />
-                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" disableAlpha={true} />
+                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="shadowColor" disableAlpha={true} />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={shadowOffsetXIcon} label={"Shadow Offset"} />

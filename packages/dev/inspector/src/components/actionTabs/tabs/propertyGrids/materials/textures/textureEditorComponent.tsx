@@ -23,11 +23,8 @@ import { Constants } from "core/Engines/constants";
 
 import "./textureEditor.scss";
 
-declare global {
-    // eslint-disable-next-line no-var, @typescript-eslint/naming-convention
-    var _TOOL_DATA_: IToolData;
-}
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare const _TOOL_DATA_: IToolData;
 interface ITextureEditorComponentProps {
     texture: BaseTexture;
     url: string;

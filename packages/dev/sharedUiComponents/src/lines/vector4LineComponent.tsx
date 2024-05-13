@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Vector4 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 
-import { NumericInputComponent } from "./numericInputComponent";
+import { NumericInput } from "./numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
@@ -133,28 +133,28 @@ export class Vector4LineComponent extends React.Component<IVector4LineComponentP
                 </div>
                 {
                     <div className="secondLine">
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="x"
                             step={this.props.step}
                             value={this.state.value.x}
                             onChange={(value) => this.updateStateX(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="y"
                             step={this.props.step}
                             value={this.state.value.y}
                             onChange={(value) => this.updateStateY(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="z"
                             step={this.props.step}
                             value={this.state.value.z}
                             onChange={(value) => this.updateStateZ(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="w"
                             step={this.props.step}

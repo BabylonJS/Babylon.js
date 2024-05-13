@@ -6,7 +6,7 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
@@ -90,7 +90,7 @@ export class CommonCameraPropertyGridComponent extends React.Component<ICommonCa
                         propertyName="layerMask"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Mode"
                         options={modeOptions}
                         target={camera}

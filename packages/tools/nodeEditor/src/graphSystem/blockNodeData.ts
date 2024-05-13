@@ -7,7 +7,8 @@ import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
 import square from "../imgs/square.svg";
 import styles from "./blockNodeData.modules.scss";
-import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks";
+import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
+import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
@@ -87,7 +88,7 @@ export class BlockNodeData implements INodeData {
         iconDiv.classList.add(styles.hidden);
     }
 
-    public get invisibleEndpoints() {
+    public get invisibleEndpoints(): NodeMaterialTeleportOutBlock[] | null {
         if (this.data.isTeleportIn) {
             const teleportIn = this.data as NodeMaterialTeleportInBlock;
             return teleportIn.endpoints;

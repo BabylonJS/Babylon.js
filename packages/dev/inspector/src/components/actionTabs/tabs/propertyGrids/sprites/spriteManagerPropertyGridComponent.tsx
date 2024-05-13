@@ -17,9 +17,9 @@ import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponen
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { Sprite } from "core/Sprites/sprite";
 import { Tools } from "core/Misc/tools";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Constants } from "core/Engines/constants";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface ISpriteManagerPropertyGridComponentProps {
     globalState: GlobalState;
@@ -180,7 +180,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                     <ButtonLineComponent label="Dispose" onClick={() => this.disposeManager()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="FILE" selection={this.props.globalState}>
-                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
+                    <FileButtonLine label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="SNIPPET" selection={this.props.globalState}>
@@ -213,7 +213,7 @@ export class SpriteManagerPropertyGridComponent extends React.Component<ISpriteM
                         step={1}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Alpha mode"
                         options={alphaModeOptions}
                         target={spriteManager}

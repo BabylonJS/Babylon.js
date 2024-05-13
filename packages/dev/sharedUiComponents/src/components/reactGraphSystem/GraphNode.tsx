@@ -17,7 +17,7 @@ export interface IGraphNodeProps {
     parentContainerId: string;
 }
 
-export const GraphNode: FC<IGraphNodeProps> = (props) => {
+export const SingleGraphNode: FC<IGraphNodeProps> = (props) => {
     const { id, name, x, y, selected, width = 100, height = 40, highlighted, parentContainerId } = props;
     const { onNodeSelected } = useGraphContext();
 

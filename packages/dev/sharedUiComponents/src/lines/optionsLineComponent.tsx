@@ -8,7 +8,7 @@ import copyIcon from "./copy.svg";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 
-export interface IOptionsLineComponentProps {
+export interface IOptionsLineProps {
     label: string;
     target: any;
     propertyName: string;
@@ -25,7 +25,7 @@ export interface IOptionsLineComponentProps {
     defaultIfNull?: number;
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
+export class OptionsLine extends React.Component<IOptionsLineProps, { value: number | string }> {
     private _localChange = false;
 
     private _remapValueIn(value: number | null): number {
@@ -36,20 +36,20 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
-    private _getValue(props: IOptionsLineComponentProps) {
+    private _getValue(props: IOptionsLineProps) {
         if (props.extractValue) {
             return props.extractValue(props.target);
         }
         return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     }
 
-    constructor(props: IOptionsLineComponentProps) {
+    constructor(props: IOptionsLineProps) {
         super(props);
 
         this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
-    override shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
+    override shouldComponentUpdate(nextProps: IOptionsLineProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
