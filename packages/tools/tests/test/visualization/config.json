@@ -2058,6 +2058,11 @@
             "title": "CesiumMan from Khronos Sample Assets",
             "playgroundId": "#4GWX8M",
             "referenceImage": "CesiumMan.png"
+        },
+        {
+            "title": "Two vertex buffers pointing to one buffer",
+            "playgroundId": "#RZNHXT#7",
+            "referenceImage": "two-vertex-buffers.png"
         }
     ]
 }
