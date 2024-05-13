@@ -694,7 +694,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
@@ -703,7 +703,12 @@ export class TextureBlock extends NodeMaterialBlock {
         this.disableLevelMultiplication = !!serializationObject.disableLevelMultiplication;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
+            if (serializationObject.texture.url.indexOf("data:") === 0) {
+                rootUrl = "";
+            } else if (urlRewriter) {
+                serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
+                serializationObject.texture.name = serializationObject.texture.url;
+            }
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }
