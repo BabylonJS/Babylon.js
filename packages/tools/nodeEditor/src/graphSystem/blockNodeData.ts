@@ -7,8 +7,8 @@ import { ConnectionPointPortData } from "./connectionPointPortData";
 import triangle from "../imgs/triangle.svg";
 import square from "../imgs/square.svg";
 import styles from "./blockNodeData.modules.scss";
-import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
-import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
+import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
+import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];

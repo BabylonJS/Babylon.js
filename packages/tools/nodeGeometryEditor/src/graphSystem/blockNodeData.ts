@@ -7,7 +7,7 @@ import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { TeleportInBlock } from "core/Meshes/Node/Blocks/Teleport/teleportInBlock";
-import { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
+import type { TeleportOutBlock } from "core/Meshes/Node/Blocks/Teleport/teleportOutBlock";
 
 export class BlockNodeData implements INodeData {
     private _inputs: IPortData[] = [];
