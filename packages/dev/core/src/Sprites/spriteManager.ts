@@ -213,6 +213,14 @@ export class SpriteManager implements ISpriteManager {
         this._spriteRenderer.fogEnabled = value;
     }
 
+    /** Gets or sets a boolean indicating if the manager must use logarithmic depth when rendering */
+    public get useLogarithmicDepth(): boolean {
+        return this._spriteRenderer.useLogarithmicDepth;
+    }
+    public set useLogarithmicDepth(value: boolean) {
+        this._spriteRenderer.useLogarithmicDepth = value;
+    }
+
     /**
      * Blend mode use to render the particle, it can be any of
      * the static Constants.ALPHA_x properties provided in this class.
@@ -672,6 +680,7 @@ export class SpriteManager implements ISpriteManager {
         serializationObject.blendMode = this.blendMode;
         serializationObject.disableDepthWrite = this.disableDepthWrite;
         serializationObject.pixelPerfect = this.pixelPerfect;
+        serializationObject.useLogarithmicDepth = this.useLogarithmicDepth;
 
         if (this.texture) {
             if (serializeTexture) {
@@ -723,6 +732,9 @@ export class SpriteManager implements ISpriteManager {
         }
         if (parsedManager.pixelPerfect !== undefined) {
             manager.pixelPerfect = parsedManager.pixelPerfect;
+        }
+        if (parsedManager.useLogarithmicDepth !== undefined) {
+            manager.useLogarithmicDepth = parsedManager.useLogarithmicDepth;
         }
 
         if (parsedManager.metadata !== undefined) {

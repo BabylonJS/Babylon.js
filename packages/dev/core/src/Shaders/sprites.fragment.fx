@@ -1,4 +1,8 @@
-﻿uniform bool alphaTest;
+﻿#ifdef LOGARITHMICDEPTH
+#extension GL_EXT_frag_depth : enable
+#endif
+
+uniform bool alphaTest;
 
 varying vec4 vColor;
 
@@ -9,6 +13,7 @@ uniform sampler2D diffuseSampler;
 // Fog
 #include<fogFragmentDeclaration>
 
+#include<logDepthDeclaration>
 
 #define CUSTOM_FRAGMENT_DEFINITIONS
 
@@ -46,6 +51,7 @@ void main(void) {
 
 	color *= vColor;
 
+#include<logDepthFragment>
 #include<fogFragment>
 
 	gl_FragColor = color;
