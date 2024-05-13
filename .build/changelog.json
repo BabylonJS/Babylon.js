@@ -1,6 +1,283 @@
 {
-    "fromTag": "7.5.0",
+    "fromTag": "7.6.0",
     "changelog": {
+        "7.6.1": [
+            {
+                "pr": "15095",
+                "title": "Add comments for render loop code",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15092",
+                "title": "Fixing errors when compiling UMD types",
+                "description": "This will fix the issue found on thursday (preventing ts playgrounds from running)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/lines/meshPickerComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/lines/quaternionLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/lines/textureLinkLineComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/gradientStepComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/performanceViewer/performanceViewerComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/performanceViewer/performanceViewerSidebarComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/cameras/commonCameraPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/customPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/fogPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/lights/commonShadowLightPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/pbrMaterialPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/texturePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditorComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/skeletonPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/parentPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/colorGradientStepGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/particleSystems/particleSystemPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/postProcesses/defaultRenderingPipelinePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/scenePropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/sprites/spriteManagerPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/variantsPropertyGridComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/tools/gltfComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/toolsTabComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/entities/gui/guiTools.ts",
+                    "packages/dev/inspector/src/components/sceneExplorer/treeNodeDebugger.ts",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorComponentEntry.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/ColorPicker.tsx",
+                    "packages/dev/sharedUiComponents/src/components/colorPicker/HexColor.tsx",
+                    "packages/dev/sharedUiComponents/src/components/lines/ColorPickerLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/GraphNode.tsx",
+                    "packages/dev/sharedUiComponents/src/components/reactGraphSystem/NodeRenderer.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/color4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/colorPickerComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/fileButtonLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/matrixLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/numericInputComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/optionsLineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector2LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector3LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/lines/vector4LineComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/colorPicker/ColorPicker.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/ColorPickerLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/imagePropertyGridComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/tabs/propertyGrids/gui/textBlockPropertyGridComponent.tsx",
+                    "packages/public/umd/babylonjs-testproject/src/index.ts",
+                    "packages/tools/guiEditor/src/components/commandBarComponent.tsx",
+                    "packages/tools/guiEditor/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/colorPickerPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/commonControlPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/displayGridPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/imagePropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/inputTextPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/scrollViewerPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/sliderPropertyGridComponent.tsx",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyGrids/gui/textBlockPropertyGridComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewAreaComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/preview/previewMeshControlComponent.tsx",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/colorMergerPropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/conditionalNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/curveNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/gradientStepComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/imageSourcePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/lightInformationPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/lightPropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/texturePropertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/vectorMergerPropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/blockTools.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/blockNodeData.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/inputNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/meshNodePropertyComponent.tsx",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/teleportOutNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15086",
+                "title": "Add back check to make sure there are active render loops before queuing a new one",
+                "description": "This is a follow up to #14868. The main reason for adding this check is to make Babylon Native work again, but it also prevents an additional queuing of a new frame if `stopRenderLoop` is called during render.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15089",
+                "title": "Add directly constructed Nodes to rootNodes",
+                "description": "This is in response to this forum post: https://forum.babylonjs.com/t/root-node-not-shown-in-inspector-but-transformnodes-are/50432\r\n\r\nWhen a `Node` is created directly (not a subclass of `Node`), it does not get added to the `rootNodes` of the `Scene`. However, if you set the `parent` on that `Node` and then set it back to `null`, then it does get added to `rootNodes`. From what I can tell, this is just wrong behavior and is a bug. My proposed fix is to add an optional parameter to the `Node` constructor that controls whether it gets added to the `rootNodes`. This is the same pattern that already existed for the same purpose with `TransformNode` and it's derived classes (e.g. `AbstratMesh`). That said, I personally don't love this pattern because as far as I can tell the `isPure` idea is meant to be an implementation detail to deal with the subclassing, but is publicly exposed (I know there is already a lot of this across the API). An alternative would be to just add this to the `Node` constructor and not change any of the subclasses:\r\n\r\n```ts\r\nif (this.constructor === Node) {\r\n    this._addToSceneRootNodes();\r\n}\r\n```\r\n\r\nThis would just be saying \"if a `Node` is directly constructed, add it to the scene's rootNodes, otherwise it must be a subclass, and the subclass is responsible for deciding how to add it to the rootNodes.\" Thoughts @deltakosh or anyone else?",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Bones/bone.ts",
+                    "packages/dev/core/src/Cameras/camera.ts",
+                    "packages/dev/core/src/Lights/light.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/node.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15090",
+                "title": "Set Block",
+                "description": "an emty block,  for \"a = b\"",
+                "author": {
+                    "name": "onekit-boss",
+                    "url": "https://github.com/onekit-boss"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/trigonometryBlock.ts",
+                    "packages/tools/nodeEditor/src/blockTools.ts",
+                    "packages/tools/nodeEditor/src/components/nodeList/nodeListComponent.tsx",
+                    "packages/tools/nodeEditor/src/graphSystem/properties/trigonometryNodePropertyComponent.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15088",
+                "title": "Sprites: Add logarithmic depth support",
+                "description": "See https://forum.babylonjs.com/t/problem-with-sprites-and-uselogarithmicdepth/50409",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/sprites.fragment.fx",
+                    "packages/dev/core/src/Shaders/sprites.vertex.fx",
+                    "packages/dev/core/src/Sprites/spriteManager.ts",
+                    "packages/dev/core/src/Sprites/spriteRenderer.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "sprite"
+                ]
+            },
+            {
+                "pr": "15074",
+                "title": "Add visual test for two position vertex buffers pointing to same buffer",
+                "description": "This test is currently failing in native. Adding to JS to make sure we have the same coverage on both sides.\r\n\r\nhttps://github.com/BabylonJS/BabylonNative/pull/1376 is a potential fix for native, but it causes the buffer to be retained on the CPU. The right thing to do is to fix it like we did for WebGPU.\r\n\r\nI will be adding this test to native also.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/two-vertex-buffers.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15085",
+                "title": "SSAO2: Don't clear post processes if not necessary",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "15084",
+                "title": "SSAO2: Fix flash when switching between SSAO2 enabled/disabled",
+                "description": "See https://forum.babylonjs.com/t/flashing-during-ssao-switching/50391",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "post-process"
+                ]
+            },
+            {
+                "pr": "15083",
+                "title": "Material node editor Image source node accepting relative links",
+                "description": "I went down a slightly different path to offer more flexibility. Now when parsing your node material you can provide an url rewriter to change the urls the way you want:\r\n\r\nSee this PG when this PR will be merged: https://playground.babylonjs.com/#3DMXME",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/imageSourceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15087",
+                "title": "Updated dynamic texture clip test",
+                "description": "Updated dynamic texture clipping test to make it no longer pass in Babylon Native when texture is not rendered correctly. ",
+                "author": {
+                    "name": "SergioRZMasson",
+                    "url": "https://github.com/SergioRZMasson"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/dynamicTextureClip.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15091",
+                "title": "Fluid renderer: Add compositeMode property",
+                "description": "See https://forum.babylonjs.com/t/adjusting-transparency-of-fluid-rendered-with-babylon-js-and-cesium-integration/50369",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/Shaders/fluidRenderingRender.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            }
+        ],
         "7.6.0": [
             {
                 "pr": "15082",
