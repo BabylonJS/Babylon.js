@@ -731,7 +731,7 @@ export class Engine extends ThinEngine {
             }
         }
 
-        if (this._frameHandler === 0) {
+        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             // Register new frame
             if (this.customAnimationFrameRequester) {
                 this.customAnimationFrameRequester.requestID = this._queueNewFrame(
