@@ -12,7 +12,7 @@ import colorPicker from "./svgs/colorPicker.svg";
 import envPicker from "./svgs/envPicker.svg";
 import pauseIcon from "./svgs/pauseIcon.svg";
 import playIcon from "./svgs/playIcon.svg";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewMeshControlComponent {
     globalState: GlobalState;
@@ -159,7 +159,7 @@ export class PreviewMeshControlComponent extends React.Component<IPreviewMeshCon
             <div id="preview-mesh-bar">
                 {(this.props.globalState.mode === NodeMaterialModes.Material || this.props.globalState.mode === NodeMaterialModes.Particle) && (
                     <>
-                        <OptionsLineComponent
+                        <OptionsLine
                             label=""
                             options={options}
                             target={this.props.globalState}

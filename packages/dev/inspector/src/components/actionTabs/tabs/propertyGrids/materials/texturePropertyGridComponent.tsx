@@ -17,8 +17,8 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextureLineComponent } from "../../../lines/textureLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ValueLineComponent } from "shared-ui-components/lines/valueLineComponent";
 import type { GlobalState } from "../../../../../components/globalState";
@@ -275,7 +275,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
             <>
                 <LineContainerComponent title="PREVIEW" selection={this.props.globalState}>
                     <TextureLineComponent ref={this._textureLineRef} texture={texture} width={256} height={256} globalState={this.props.globalState} />
-                    <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                    <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                     <ButtonLineComponent
                         label="Edit"
                         onClick={() => {
@@ -379,7 +379,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         decimalCount={0}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Mode"
                         options={coordinatesMode}
                         target={texture}
@@ -398,7 +398,7 @@ export class TexturePropertyGridComponent extends React.Component<ITextureProper
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     {texture.updateSamplingMode && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Sampling"
                             options={samplingMode}
                             target={texture}

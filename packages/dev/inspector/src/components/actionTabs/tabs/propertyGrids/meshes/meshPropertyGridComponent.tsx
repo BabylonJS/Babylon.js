@@ -24,7 +24,7 @@ import { StandardMaterial } from "core/Materials/standardMaterial";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import type { MorphTarget } from "core/Morph/morphTarget";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { AbstractMesh } from "core/Meshes/abstractMesh";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
@@ -455,7 +455,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         <TextLineComponent label="Link to material" value={mesh.material.name} onLink={() => this.onMaterialLink()} />
                     )}
                     {!mesh.isAnInstance && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Active material"
                             options={materialOptions}
                             target={mesh}
@@ -687,7 +687,7 @@ export class MeshPropertyGridComponent extends React.Component<
                     />
                 )}
                 <LineContainerComponent title="OCCLUSIONS" closed={true} selection={this.props.globalState}>
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Type"
                         options={occlusionTypeOptions}
                         target={mesh}
@@ -705,7 +705,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         propertyName="occlusionRetryCount"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Algorithm"
                         options={algorithmOptions}
                         target={mesh}
@@ -790,7 +790,7 @@ export class MeshPropertyGridComponent extends React.Component<
                         <CheckBoxLineComponent label="Display BoneWeights" isSelected={() => displayBoneWeights} onSelect={() => this.displayBoneWeights()} />
                     )}
                     {!mesh.isAnInstance && this.state.displayBoneWeights && mesh.skeleton && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Target Bone Name"
                             options={targetBoneOptions}
                             target={mesh.reservedDataStore}

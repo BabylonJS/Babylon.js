@@ -46,7 +46,7 @@ import { MapRangeBlock } from "core/Meshes/Node/Blocks/mapRangeBlock";
 import { GeometryOptimizeBlock } from "core/Meshes/Node/Blocks/geometryOptimizeBlock";
 import { IntFloatConverterBlock } from "core/Meshes/Node/Blocks/intFloatConverterBlock";
 import { ConditionBlock, ConditionBlockTests } from "core/Meshes/Node/Blocks/conditionBlock";
-import { InstantiateLinearBlock } from "core/Meshes/Node/Blocks//Instances/instantiateLinearBlock";
+import { InstantiateLinearBlock } from "core/Meshes/Node/Blocks/Instances/instantiateLinearBlock";
 import { InstantiateRadialBlock } from "core/Meshes/Node/Blocks/Instances/instantiateRadialBlock";
 import { GeometryCollectionBlock } from "core/Meshes/Node/Blocks/geometryCollectionBlock";
 import { GeometryInfoBlock } from "core/Meshes/Node/Blocks/geometryInfoBlock";

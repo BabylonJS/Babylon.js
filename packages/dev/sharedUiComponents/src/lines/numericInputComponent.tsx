@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
-interface INumericInputComponentProps {
+interface INumericInputProps {
     label: string;
     value: number;
     step?: number;
@@ -12,14 +12,14 @@ interface INumericInputComponentProps {
     lockObject: LockObject;
 }
 
-export class NumericInputComponent extends React.Component<INumericInputComponentProps, { value: string }> {
+export class NumericInput extends React.Component<INumericInputProps, { value: string }> {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     static defaultProps = {
         step: 1,
     };
 
     private _localChange = false;
-    constructor(props: INumericInputComponentProps) {
+    constructor(props: INumericInputProps) {
         super(props);
 
         this.state = { value: this.props.value.toFixed(this.props.precision !== undefined ? this.props.precision : 3) };
@@ -31,7 +31,7 @@ export class NumericInputComponent extends React.Component<INumericInputComponen
         }
     }
 
-    override shouldComponentUpdate(nextProps: INumericInputComponentProps, nextState: { value: string }) {
+    override shouldComponentUpdate(nextProps: INumericInputProps, nextState: { value: string }) {
         if (this._localChange) {
             this._localChange = false;
             return true;

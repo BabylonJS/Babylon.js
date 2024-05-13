@@ -12,7 +12,7 @@ import type { Skeleton } from "core/Bones/skeleton";
 import { AnimationGridComponent } from "../animations/animationPropertyGridComponent";
 import { SkeletonViewer } from "core/Debug/skeletonViewer";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 
@@ -238,7 +238,7 @@ export class SkeletonPropertyGridComponent extends React.Component<ISkeletonProp
                 </LineContainerComponent>
                 <LineContainerComponent title="DEBUG" selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Enabled" isSelected={() => this._skeletonViewersEnabled} onSelect={() => this.switchSkeletonViewers()} />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="displayMode"
                         options={debugModeOptions}
                         target={this._skeletonViewerDisplayOptions}

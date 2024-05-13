@@ -10,7 +10,7 @@ import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingP
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { ImageProcessingConfiguration } from "core/Materials/imageProcessingConfiguration";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import type { GlobalState } from "../../../../globalState";
@@ -211,7 +211,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 decimalCount={0}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Blur level"
                                 options={depthOfFieldBlurOptions}
                                 target={renderPipeline}
@@ -340,7 +340,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 propertyName="toneMappingEnabled"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Tone mapping type"
                                 options={toneMappingOptions}
                                 target={renderPipeline.imageProcessing}
@@ -411,7 +411,7 @@ export class DefaultRenderingPipelinePropertyGridComponent extends React.Compone
                                 propertyName="vignetteColor"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Vignette blend mode"
                                 options={vignetteModeOptions}
                                 target={renderPipeline.imageProcessing}

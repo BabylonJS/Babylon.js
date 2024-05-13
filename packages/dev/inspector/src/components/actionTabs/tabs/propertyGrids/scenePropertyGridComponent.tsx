@@ -15,12 +15,12 @@ import { RadioButtonLineComponent } from "shared-ui-components/lines/radioLineCo
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { FogPropertyGridComponent } from "./fogPropertyGridComponent";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { TextureLinkLineComponent } from "../../lines/textureLinkLineComponent";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../globalState";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
@@ -201,7 +201,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                     {scene.environmentTexture && (
                         <TextureLinkLineComponent label="Env. texture" texture={scene.environmentTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
                     )}
-                    <FileButtonLineComponent label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
+                    <FileButtonLine label="Update environment texture" onClick={(file) => this.updateEnvironmentTexture(file)} accept=".dds, .env" />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
                         minimum={0}
@@ -247,7 +247,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         propertyName="toneMappingEnabled"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Tone mapping type"
                         options={toneMappingOptions}
                         target={imageProcessing}
@@ -318,7 +318,7 @@ export class ScenePropertyGridComponent extends React.Component<IScenePropertyGr
                         propertyName="vignetteColor"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Vignette blend mode"
                         options={vignetteModeOptions}
                         target={imageProcessing}
