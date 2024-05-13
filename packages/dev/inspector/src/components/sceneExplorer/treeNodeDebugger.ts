@@ -1,10 +1,3 @@
-// globalThis.debugNode will be able to receive any object selected in the inspector
-declare global {
-    interface GlobalThis {
-        debugNode: any;
-    }
-}
-
 // globalThis.debugNode receives the selected node in the inspector
 export function setDebugNode(node: any) {
     if (typeof globalThis !== "undefined") {
