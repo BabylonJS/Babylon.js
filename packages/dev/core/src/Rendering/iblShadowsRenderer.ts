@@ -19,8 +19,8 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
-import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
-import { FreeCamera } from "../Cameras/freeCamera";
+// import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+// import { FreeCamera } from "../Cameras/freeCamera";
 
 // class IblShadowsSettings {
 //     public resolution: number = 64;
@@ -172,7 +172,7 @@ export class IblShadowsRenderer {
             this._debugPass = new PostProcess(
                 "iblShadows_GBuffer_Debug",
                 "iblShadowGBufferDebug",
-                ["sizeParams"], // attributes
+                ["sizeParams", "maxDepth"], // attributes
                 samplerNames,
                 1.0, // options
                 this._scene._activeCamera, // camera
@@ -345,33 +345,33 @@ export class IblShadowsRenderer {
 
     private _listenForCameraChanges() {
         // We want to listen for camera changes and change settings while the camera is moving.
-        if (this._scene.activeCamera instanceof ArcRotateCamera) {
-            this._scene.onBeforeCameraRenderObservable.add((camera) => {
-                // let isMoving: boolean = false;
-                // if (camera instanceof ArcRotateCamera) {
-                //     isMoving =
-                //         camera.inertialAlphaOffset !== 0 ||
-                //         camera.inertialBetaOffset !== 0 ||
-                //         camera.inertialRadiusOffset !== 0 ||
-                //         camera.inertialPanningX !== 0 ||
-                //         camera.inertialPanningY !== 0;
-                // } else if (camera instanceof FreeCamera) {
-                //     isMoving =
-                //         camera.cameraDirection.x !== 0 ||
-                //         camera.cameraDirection.y !== 0 ||
-                //         camera.cameraDirection.z !== 0 ||
-                //         camera.cameraRotation.x !== 0 ||
-                //         camera.cameraRotation.y !== 0;
-                // }
-                // if (isMoving) {
-                //     this._accumulationPass.reset = true;
-                //     this._accumulationPass.remenance = 1.0;
-                // } else {
-                //     this._accumulationPass.reset = false;
-                //     this._accumulationPass.remenance = 0.9;
-                // }
-            });
-        }
+        // if (this._scene.activeCamera instanceof ArcRotateCamera) {
+        //     this._scene.onBeforeCameraRenderObservable.add((camera) => {
+        //         let isMoving: boolean = false;
+        //         if (camera instanceof ArcRotateCamera) {
+        //             isMoving =
+        //                 camera.inertialAlphaOffset !== 0 ||
+        //                 camera.inertialBetaOffset !== 0 ||
+        //                 camera.inertialRadiusOffset !== 0 ||
+        //                 camera.inertialPanningX !== 0 ||
+        //                 camera.inertialPanningY !== 0;
+        //         } else if (camera instanceof FreeCamera) {
+        //             isMoving =
+        //                 camera.cameraDirection.x !== 0 ||
+        //                 camera.cameraDirection.y !== 0 ||
+        //                 camera.cameraDirection.z !== 0 ||
+        //                 camera.cameraRotation.x !== 0 ||
+        //                 camera.cameraRotation.y !== 0;
+        //         }
+        //         if (isMoving) {
+        //             this._accumulationPass.reset = true;
+        //             this._accumulationPass.remenance = 1.0;
+        //         } else {
+        //             this._accumulationPass.reset = false;
+        //             this._accumulationPass.remenance = 0.9;
+        //         }
+        //     });
+        // }
     }
 
     /**
