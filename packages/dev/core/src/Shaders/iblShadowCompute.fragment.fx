@@ -41,6 +41,7 @@ uniform mat4 viewMtx;
 uniform mat4 invProjMtx;
 uniform mat4 invViewMtx;
 uniform mat4 wsNormalizationMtx;
+uniform mat4 invVPMtx;
 
 #define PI 3.1415927
 #define GOLD 0.618034
@@ -603,9 +604,12 @@ void main(void) {
   mat3 RotMatrix = transpose(mat3(r1, r2, r3));
 
   float depth = texelFetch(depthSampler, PixelCoord, 0).x;
+  depth = depth * 2.0 - 1.0;
   vec2 temp = (vec2(PixelCoord) + vec2(0.5)) * 2.0 / Resolution - vec2(1.0);
-  vec4 VP = invProjMtx * vec4(temp.x, temp.y, depth, 1.0);
+  vec2 temp2 = vUV * vec2(2.0) - vec2(1.0);
+  vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
+  // vec4 WP_new = invVPMtx * vec4(temp.x, -temp.y, depth, 1.0);
 
   N = normalize(N);
   vec3 noise = texelFetch(blueNoiseSampler, PixelCoord & 0xFF, 0).xyz;
@@ -636,8 +640,8 @@ void main(void) {
       vec4 VP2 = VP;
       VP2.y *= -1.0;
       // rte world-space normalization
-      // vec4 unormWP = invViewMtx * VP2;
-      vec4 unormWP = texelFetch(worldPositionSampler, PixelCoord, 0);
+      vec4 unormWP = invViewMtx * VP2;
+      // vec4 unormWP = texelFetch(worldPositionSampler, PixelCoord, 0);
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));

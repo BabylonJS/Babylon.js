@@ -42,9 +42,9 @@ void main(void) {
   if (uv.x <= 0.125) { // show only base texture
     gl_FragColor = first;
   } else if (uv.x <= 0.25) { // show only depth texture
-    gl_FragColor.rgb = vec3(-linearDepth.r / 10.0 + 1.0);
+    gl_FragColor.rgb = vec3(-linearDepth.r / maxDepth);
   } else if (uv.x <= 0.375) {
-    gl_FragColor.rgb = linearDepth.rgb / vec3(maxDepth);
+    gl_FragColor.rgb = depth.rgb;
     gl_FragColor.a = 1.0;
   } else if (uv.x <= 0.5) {
     velocity.rg = velocity.rg * 2.0 - 1.0;

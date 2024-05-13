@@ -111,11 +111,17 @@ export class IblShadowsComputePass {
             return;
         }
         this._outputPT.setMatrix("viewMtx", this._scene.activeCamera.getViewMatrix());
+        this._outputPT.setMatrix("projMtx", this._scene.activeCamera.getProjectionMatrix());
         this._scene.activeCamera.getProjectionMatrix().invertToRef(this._cameraInvProj);
         this._scene.activeCamera.getViewMatrix().invertToRef(this._cameraInvView);
         this._outputPT.setMatrix("invProjMtx", this._cameraInvProj);
         this._outputPT.setMatrix("invViewMtx", this._cameraInvView);
         this._outputPT.setMatrix("wsNormalizationMtx", this._invWorldScaleMatrix);
+        // if (this._scene.getTransformMatrix()) {
+        //     const invVPMtx = new Matrix();
+        //     this._scene.getTransformMatrix().invertToRef(invVPMtx);
+        //     this._outputPT.setMatrix("invVPMtx", invVPMtx);
+        // }
 
         this._frameId++;
 
