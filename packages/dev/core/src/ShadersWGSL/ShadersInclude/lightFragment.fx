@@ -1,4 +1,4 @@
-﻿#ifdef LIGHT{X}
+#ifdef LIGHT{X}
     #if defined(SHADOWONLY) || defined(LIGHTMAP) && defined(LIGHTMAPEXCLUDED{X}) && defined(LIGHTMAPNOSPECULAR{X})
         //No light calculation
     #else
@@ -130,78 +130,98 @@
         #endif
 
         #ifdef PROJECTEDLIGHTTEXTURE{X}
-            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X});
+            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, projectionLightTexture{X}Sampler, textureProjectionMatrix{X});
         #endif
     #endif
 
     #ifdef SHADOW{X}
+            #ifdef SHADOWCSMDEBUG{X}               
+                var shadowDebug{X}: vec3f;
+            #endif
         #ifdef SHADOWCSM{X}
-            for (int i = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
+            #ifdef SHADOWCSMUSESHADOWMAXZ{X}
+                var index{X}: i32 = -1;
+            #else
+                var index{X}: i32 = SHADOWCSMNUM_CASCADES{X} - 1;
+            #endif
+
+            var diff{X}: f32 = 0.;
+            
+            vPositionFromLight{X}[0] = fragmentInputs.vPositionFromLight{X}_0;
+            vPositionFromLight{X}[1] = fragmentInputs.vPositionFromLight{X}_1;
+            vPositionFromLight{X}[2] = fragmentInputs.vPositionFromLight{X}_2;
+            vPositionFromLight{X}[3] = fragmentInputs.vPositionFromLight{X}_3;
+                       
+            vDepthMetric{X}[0] = fragmentInputs.vDepthMetric{X}_0;
+            vDepthMetric{X}[1] = fragmentInputs.vDepthMetric{X}_1;
+            vDepthMetric{X}[2] = fragmentInputs.vDepthMetric{X}_2;
+            vDepthMetric{X}[3] = fragmentInputs.vDepthMetric{X}_3;
+            
+            for (var i:i32 = 0; i < SHADOWCSMNUM_CASCADES{X}; i++) 
             {
                 #ifdef SHADOWCSM_RIGHTHANDED{X}
-                    diff{X} = viewFrustumZ{X}[i] + vPositionFromCamera{X}.z;
+                    diff{X} = uniforms.viewFrustumZ{X}[i] + fragmentInputs.vPositionFromCamera{X}.z;
                 #else
-                    diff{X} = viewFrustumZ{X}[i] - vPositionFromCamera{X}.z;
+                    diff{X} = uniforms.viewFrustumZ{X}[i] - fragmentInputs.vPositionFromCamera{X}.z;
                 #endif
                 if (diff{X} >= 0.) {
                     index{X} = i;
                     break;
                 }
             }
-
             #ifdef SHADOWCSMUSESHADOWMAXZ{X}
             if (index{X} >= 0)
             #endif
             {
                 #if defined(SHADOWPCF{X})
                     #if defined(SHADOWLOWQUALITY{X})
-                        shadow = computeShadowWithCSMPCF1(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                        shadow = computeShadowWithCSMPCF1(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                     #elif defined(SHADOWMEDIUMQUALITY{X})
-                        shadow = computeShadowWithCSMPCF3(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                        shadow = computeShadowWithCSMPCF3(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                     #else
-                        shadow = computeShadowWithCSMPCF5(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                        shadow = computeShadowWithCSMPCF5(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                     #endif
                 #elif defined(SHADOWPCSS{X})
                     #if defined(SHADOWLOWQUALITY{X})
-                        shadow = computeShadowWithCSMPCSS16(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                        shadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                     #elif defined(SHADOWMEDIUMQUALITY{X})
-                        shadow = computeShadowWithCSMPCSS32(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                        shadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                     #else
-                        shadow = computeShadowWithCSMPCSS64(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                        shadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                     #endif
                 #else
-                    shadow = computeShadowCSM(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                    shadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                 #endif
 
                 #ifdef SHADOWCSMDEBUG{X}
-                    shadowDebug{X} = vec3(shadow) * vCascadeColorsMultiplier{X}[index{X}];
+                    shadowDebug{X} = vec3f(shadow) * vCascadeColorsMultiplier{X}[index{X}];
                 #endif
 
                 #ifndef SHADOWCSMNOBLEND{X}
-                    float frustumLength = frustumLengths{X}[index{X}];
-                    float diffRatio = clamp(diff{X} / frustumLength, 0., 1.) * cascadeBlendFactor{X};
+                    var frustumLength:f32 = uniforms.frustumLengths{X}[index{X}];
+                    var diffRatio:f32 = clamp(diff{X} / frustumLength, 0., 1.) * uniforms.cascadeBlendFactor{X};
                     if (index{X} < (SHADOWCSMNUM_CASCADES{X} - 1) && diffRatio < 1.)
                     {
                         index{X} += 1;
-                        float nextShadow = 0.;
+                        var nextShadow: f32 = 0.;
                         #if defined(SHADOWPCF{X})
                             #if defined(SHADOWLOWQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCF1(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                                nextShadow = computeShadowWithCSMPCF1(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], , shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                             #elif defined(SHADOWMEDIUMQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCF3(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                                nextShadow = computeShadowWithCSMPCF3(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                             #else
-                                nextShadow = computeShadowWithCSMPCF5(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                                nextShadow = computeShadowWithCSMPCF5(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                             #endif
                         #elif defined(SHADOWPCSS{X})
                             #if defined(SHADOWLOWQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCSS16(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                                nextShadow = computeShadowWithCSMPCSS16(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                             #elif defined(SHADOWMEDIUMQUALITY{X})
-                                nextShadow = computeShadowWithCSMPCSS32(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                                nextShadow = computeShadowWithCSMPCSS32(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                             #else
-                                nextShadow = computeShadowWithCSMPCSS64(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, lightSizeUVCorrection{X}[index{X}], depthCorrection{X}[index{X}], penumbraDarkness{X});
+                                nextShadow = computeShadowWithCSMPCSS64(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w, uniforms.lightSizeUVCorrection{X}[index{X}], uniforms.depthCorrection{X}[index{X}], uniforms.penumbraDarkness{X});
                             #endif
                         #else
-                            nextShadow = computeShadowCSM(float(index{X}), vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                            nextShadow = computeShadowCSM(index{X}, vPositionFromLight{X}[index{X}], vDepthMetric{X}[index{X}], shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
                         #endif
 
                         shadow = mix(nextShadow, shadow, diffRatio);
@@ -213,43 +233,43 @@
             }
         #elif defined(SHADOWCLOSEESM{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithCloseESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
+                shadow = computeShadowWithCloseESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
             #else
-                shadow = computeShadowWithCloseESM(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithCloseESM(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWESM{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
+                shadow = computeShadowWithESMCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.depthValues);
             #else
-                shadow = computeShadowWithESM(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithESM(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.z, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWPOISSON{X})
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowWithPoissonSamplingCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
+                shadow = computeShadowWithPoissonSamplingCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.depthValues);
             #else
-                shadow = computeShadowWithPoissonSampling(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPoissonSampling(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWPCF{X})
             #if defined(SHADOWLOWQUALITY{X})
-                shadow = computeShadowWithPCF1(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCF1(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #elif defined(SHADOWMEDIUMQUALITY{X})
-                shadow = computeShadowWithPCF3(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCF3(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #else
-                shadow = computeShadowWithPCF5(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCF5(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.yz, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
         #elif defined(SHADOWPCSS{X})
             #if defined(SHADOWLOWQUALITY{X})
-                shadow = computeShadowWithPCSS16(vPositionFromLight{X}, vDepthMetric{X}, depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCSS16(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #elif defined(SHADOWMEDIUMQUALITY{X})
-                shadow = computeShadowWithPCSS32(vPositionFromLight{X}, vDepthMetric{X}, depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCSS32(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #else
-                shadow = computeShadowWithPCSS64(vPositionFromLight{X}, vDepthMetric{X}, depthTexture{X}, shadowTexture{X}, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadowWithPCSS64(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, depthTexture{X}, depthTexture{X}Sampler, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.y, light{X}.shadowsInfo.z, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
         #else
             #if defined(SHADOWCUBE{X})
-                shadow = computeShadowCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.depthValues);
+                shadow = computeShadowCube(vPositionW, light{X}.vLightData.xyz, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.depthValues);
             #else
-                shadow = computeShadow(vPositionFromLight{X}, vDepthMetric{X}, shadowTexture{X}, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
+                shadow = computeShadow(fragmentInputs.vPositionFromLight{X}, fragmentInputs.vDepthMetric{X}, shadowTexture{X}, shadowTexture{X}Sampler, light{X}.shadowsInfo.x, light{X}.shadowsInfo.w);
             #endif
         #endif
 

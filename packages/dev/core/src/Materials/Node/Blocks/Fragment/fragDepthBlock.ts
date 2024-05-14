@@ -5,6 +5,7 @@ import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to write the fragment depth
  */
@@ -53,16 +54,18 @@ export class FragDepthBlock extends NodeMaterialBlock {
     protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
+        const fragDepth = state.shaderLanguage === ShaderLanguage.GLSL ? "gl_FragDepth" : "fragmentOutputs.fragDepth";
+
         if (this.depth.isConnected) {
-            state.compilationString += `gl_FragDepth = ${this.depth.associatedVariableName};\n`;
+            state.compilationString += `${fragDepth} = ${this.depth.associatedVariableName};\n`;
         } else if (this.worldPos.isConnected && this.viewProjection.isConnected) {
             state.compilationString += `
-                vec4 p = ${this.viewProjection.associatedVariableName} * ${this.worldPos.associatedVariableName};
-                float v = p.z / p.w;
+                ${state._declareLocalVar("p", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.viewProjection.associatedVariableName} * ${this.worldPos.associatedVariableName};
+                ${state._declareLocalVar("v", NodeMaterialBlockConnectionPointTypes.Vector4)} = p.z / p.w;
                 #ifndef IS_NDC_HALF_ZRANGE
                     v = v * 0.5 + 0.5;
                 #endif
-                gl_FragDepth = v;
+                ${fragDepth} = v;
     
             `;
         } else {

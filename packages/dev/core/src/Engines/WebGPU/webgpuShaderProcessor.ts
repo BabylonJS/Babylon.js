@@ -9,7 +9,6 @@ import type { WebGPUSamplerDescription, WebGPUShaderProcessingContext, WebGPUTex
 
 /** @internal */
 export abstract class WebGPUShaderProcessor implements IShaderProcessor {
-    public static readonly AutoSamplerSuffix = "Sampler";
     public static readonly LeftOvertUBOName = "LeftOver";
     public static readonly InternalsUBOName = "Internals";
 

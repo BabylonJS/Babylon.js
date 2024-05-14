@@ -262,6 +262,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Defines default shader language when no option is defined */
+    public static DefaultShaderLanguage = ShaderLanguage.GLSL;
+
     /**
      * Checks if a block is a texture block
      * @param block The block to check
@@ -425,9 +428,13 @@ export class NodeMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || EngineStore.LastCreatedScene!);
 
+        if (options && options.shaderLanguage === ShaderLanguage.WGSL && !this.getScene().getEngine().isWebGPU) {
+            throw new Error("WebGPU shader language is only supported with WebGPU engine");
+        }
+
         this._options = {
             emitComments: false,
-            shaderLanguage: ShaderLanguage.GLSL,
+            shaderLanguage: NodeMaterial.DefaultShaderLanguage,
             ...options,
         };
 
@@ -1552,27 +1559,6 @@ export class NodeMaterial extends PushMaterial {
         }
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
-
-        // //*********************** */
-        // const tempA = `
-        // uniform u_World : mat4x4<f32>;
-        // uniform u_ViewProjection : mat4x4<f32>;
-        // attribute position : vec3<f32>;
-
-        // @vertex
-        // fn main(input : VertexInputs) -> FragmentInputs {
-        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
-        // }
-        // `;
-
-        // const tempB = `
-        // uniform u_color : vec4<f32>;
-
-        // @fragment
-        // fn main(input : FragmentInputs) -> FragmentOutputs {
-        //     fragmentOutputs.color = uniforms.u_color;
-        // }`;
-        // /*********************** */
 
         if (result) {
             const previousEffect = subMesh.effect;

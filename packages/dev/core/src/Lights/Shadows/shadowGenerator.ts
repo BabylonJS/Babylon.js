@@ -1783,12 +1783,13 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Only PCF uses depth stencil texture.
+        const shadowMapForRendering = this.getShadowMapForRendering();
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), shadowMap.getSize().width, 1 / shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-            effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMapForRendering);
+            effect.setTexture("depthTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4(
                 "shadowsInfo",
                 this.getDarkness(),
@@ -1798,7 +1799,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 lightIndex
             );
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setTexture("shadowTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
         }
 

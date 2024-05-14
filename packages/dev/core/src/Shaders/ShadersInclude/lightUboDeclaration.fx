@@ -18,7 +18,7 @@
 	} light{X};
 #ifdef PROJECTEDLIGHTTEXTURE{X}
 	uniform mat4 textureProjectionMatrix{X};
-	uniform sampler2D projectionLightSampler{X};
+	uniform sampler2D projectionLightTexture{X};
 #endif
 #ifdef SHADOW{X}
 	#ifdef SHADOWCSM{X}
@@ -32,15 +32,15 @@
 		varying vec4 vPositionFromCamera{X};
 
 		#if defined(SHADOWPCSS{X})
-			uniform highp sampler2DArrayShadow shadowSampler{X};
-			uniform highp sampler2DArray depthSampler{X};
+			uniform highp sampler2DArrayShadow shadowTexture{X};
+			uniform highp sampler2DArray depthTexture{X};
             uniform vec2 lightSizeUVCorrection{X}[SHADOWCSMNUM_CASCADES{X}];
             uniform float depthCorrection{X}[SHADOWCSMNUM_CASCADES{X}];
             uniform float penumbraDarkness{X};
 		#elif defined(SHADOWPCF{X})
-			uniform highp sampler2DArrayShadow shadowSampler{X};
+			uniform highp sampler2DArrayShadow shadowTexture{X};
 		#else
-			uniform highp sampler2DArray shadowSampler{X};
+			uniform highp sampler2DArray shadowTexture{X};
 		#endif
 
         #ifdef SHADOWCSMDEBUG{X}
@@ -66,18 +66,18 @@
 
         float diff{X} = 0.;
 	#elif defined(SHADOWCUBE{X})
-		uniform samplerCube shadowSampler{X};		
+		uniform samplerCube shadowTexture{X};		
 	#else
 		varying vec4 vPositionFromLight{X};
 		varying float vDepthMetric{X};
 
 		#if defined(SHADOWPCSS{X})
-				uniform highp sampler2DShadow shadowSampler{X};
-				uniform highp sampler2D depthSampler{X};
+				uniform highp sampler2DShadow shadowTexture{X};
+				uniform highp sampler2D depthTexture{X};
 		#elif defined(SHADOWPCF{X})
-			uniform highp sampler2DShadow shadowSampler{X};
+			uniform highp sampler2DShadow shadowTexture{X};
 		#else
-			uniform sampler2D shadowSampler{X};
+			uniform sampler2D shadowTexture{X};
 		#endif
 		uniform mat4 lightMatrix{X};
 	#endif

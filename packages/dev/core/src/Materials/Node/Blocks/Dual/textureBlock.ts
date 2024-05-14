@@ -21,7 +21,6 @@ import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConne
 import { EngineStore } from "../../../../Engines/engineStore";
 import type { PrePassTextureBlock } from "../Input/prePassTextureBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import type { WebGPUEngine } from "core/Engines";
 
 /**
  * Block used to read a texture from a sampler
@@ -32,7 +31,6 @@ export class TextureBlock extends NodeMaterialBlock {
     private _gammaDefineName: string;
     private _tempTextureRead: string;
     private _samplerName: string;
-    private _textureName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
@@ -413,17 +411,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this._imageSource) {
-            if (this._textureName) {
-                const engineWebGPU = effect.getEngine() as WebGPUEngine;
-
-                effect.setTexture(this._textureName, this.texture);
-                const setTextureSampler = engineWebGPU.setTextureSampler;
-                if (setTextureSampler) {
-                    setTextureSampler.call(engineWebGPU, this._samplerName, this.texture._texture);
-                }
-            } else {
-                effect.setTexture(this._samplerName, this.texture);
-            }
+            effect.setTexture(this._samplerName, this.texture);
         }
     }
 
@@ -503,7 +491,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
-            return `${this._samplerFunc(state)}(${this._textureName},${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+            return `${this._samplerFunc(state)}(${this.samplerName},${this.samplerName + Constants.AUTOSAMPLERSUFFIX}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
         return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }
@@ -597,15 +585,12 @@ export class TextureBlock extends NodeMaterialBlock {
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
                 const varName = state._getFreeVariableName(this.name);
-                this._samplerName = varName + "Sampler";
-                if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    this._textureName = varName + "Texture";
-                }
+                this._samplerName = varName + "Texture";
 
                 if (this._texture?._texture?.is2DArray) {
                     state._emit2DArraySampler(this._samplerName);
                 } else {
-                    state._emit2DSampler(this._samplerName, this._textureName);
+                    state._emit2DSampler(this._samplerName);
                 }
             }
 
@@ -632,7 +617,7 @@ export class TextureBlock extends NodeMaterialBlock {
             if (this._texture?._texture?.is2DArray) {
                 state._emit2DArraySampler(this._samplerName);
             } else {
-                state._emit2DSampler(this._samplerName, this._textureName);
+                state._emit2DSampler(this._samplerName);
             }
         }
 
