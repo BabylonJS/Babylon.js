@@ -610,6 +610,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 // transform position/orientation in parent space
                 if (parent && !parent.getWorldMatrix().isIdentity()) {
                     parent.computeWorldMatrix(true);
+                    // Save scaling for future use
+                    TmpVectors.Vector3[1].copyFrom(transformNode.scaling);
 
                     quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
@@ -624,6 +626,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     finalTransform.multiplyToRef(parentInverseTransform, localTransform);
                     localTransform.decomposeToTransformNode(transformNode);
                     transformNode.rotationQuaternion?.normalize();
+                    // Keep original scaling. Re-injecting scaling can introduce discontinuity between frames. Basically, it grows or shrinks.
+                    transformNode.scaling.copyFrom(TmpVectors.Vector3[1]);
                 } else {
                     transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
                     if (transformNode.rotationQuaternion) {
