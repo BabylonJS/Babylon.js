@@ -19,8 +19,9 @@ import { PostProcess } from "../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
-// import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
-// import { FreeCamera } from "../Cameras/freeCamera";
+import type { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
+import { ArcRotateCamera } from "../Cameras/arcRotateCamera";
+import { FreeCamera } from "../Cameras/freeCamera";
 
 // class IblShadowsSettings {
 //     public resolution: number = 64;
@@ -81,6 +82,7 @@ export class IblShadowsRenderer {
     private _shadowComputePass: IblShadowsComputePass;
     private _spatialBlurPass: IblShadowsSpatialBlurPass;
     private _accumulationPass: IblShadowsAccumulationPass;
+    private _noiseTexture: Texture;
 
     public setIblTexture(iblSource: Texture) {
         this._importanceSamplingRenderer.iblSource = iblSource;
@@ -98,13 +100,13 @@ export class IblShadowsRenderer {
         return this._importanceSamplingRenderer!.getIcdfxTexture();
     }
 
-    public getRawShadowTexture(): Texture {
+    public getRawShadowTexture(): CustomProceduralTexture {
         return this._shadowComputePass!.getTexture();
     }
-    public getBlurShadowTexture(): Texture {
+    public getBlurShadowTexture(): CustomProceduralTexture {
         return this._spatialBlurPass!.getTexture();
     }
-    public getAccumulatedShadowTexture(): Texture {
+    public getAccumulatedShadowTexture(): CustomProceduralTexture {
         return this._accumulationPass!.getTexture();
     }
 
@@ -240,9 +242,13 @@ export class IblShadowsRenderer {
         this._shadowComputePass = new IblShadowsComputePass(this._scene);
         this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
         this._accumulationPass = new IblShadowsAccumulationPass(this._scene);
+        this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this._scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
+        const shadowPassPT = this.getRawShadowTexture();
+        shadowPassPT.setTexture("blueNoiseSampler", this._noiseTexture);
+        shadowPassPT.setTexture("voxelGridSampler", this._voxelRenderer.getVoxelGrid());
 
-        this._scene.onNewMeshAddedObservable.add(this._updateSceneBounds.bind(this));
-        this._scene.onMeshRemovedObservable.add(this._updateSceneBounds.bind(this));
+        this._scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
+        this._scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
         this._scene.onActiveCameraChanged.add(this._listenForCameraChanges.bind(this));
         this._scene.onBeforeRenderObservable.add(this._updateBeforeRender.bind(this));
 
@@ -331,7 +337,7 @@ export class IblShadowsRenderer {
         }
     }
 
-    private _updateSceneBounds() {
+    public updateSceneBounds() {
         this._voxelizationDirty = true;
         this._boundsNeedUpdate = true;
     }
@@ -345,33 +351,33 @@ export class IblShadowsRenderer {
 
     private _listenForCameraChanges() {
         // We want to listen for camera changes and change settings while the camera is moving.
-        // if (this._scene.activeCamera instanceof ArcRotateCamera) {
-        //     this._scene.onBeforeCameraRenderObservable.add((camera) => {
-        //         let isMoving: boolean = false;
-        //         if (camera instanceof ArcRotateCamera) {
-        //             isMoving =
-        //                 camera.inertialAlphaOffset !== 0 ||
-        //                 camera.inertialBetaOffset !== 0 ||
-        //                 camera.inertialRadiusOffset !== 0 ||
-        //                 camera.inertialPanningX !== 0 ||
-        //                 camera.inertialPanningY !== 0;
-        //         } else if (camera instanceof FreeCamera) {
-        //             isMoving =
-        //                 camera.cameraDirection.x !== 0 ||
-        //                 camera.cameraDirection.y !== 0 ||
-        //                 camera.cameraDirection.z !== 0 ||
-        //                 camera.cameraRotation.x !== 0 ||
-        //                 camera.cameraRotation.y !== 0;
-        //         }
-        //         if (isMoving) {
-        //             this._accumulationPass.reset = true;
-        //             this._accumulationPass.remenance = 1.0;
-        //         } else {
-        //             this._accumulationPass.reset = false;
-        //             this._accumulationPass.remenance = 0.9;
-        //         }
-        //     });
-        // }
+        if (this._scene.activeCamera instanceof ArcRotateCamera) {
+            this._scene.onBeforeCameraRenderObservable.add((camera) => {
+                let isMoving: boolean = false;
+                if (camera instanceof ArcRotateCamera) {
+                    isMoving =
+                        camera.inertialAlphaOffset !== 0 ||
+                        camera.inertialBetaOffset !== 0 ||
+                        camera.inertialRadiusOffset !== 0 ||
+                        camera.inertialPanningX !== 0 ||
+                        camera.inertialPanningY !== 0;
+                } else if (camera instanceof FreeCamera) {
+                    isMoving =
+                        camera.cameraDirection.x !== 0 ||
+                        camera.cameraDirection.y !== 0 ||
+                        camera.cameraDirection.z !== 0 ||
+                        camera.cameraRotation.x !== 0 ||
+                        camera.cameraRotation.y !== 0;
+                }
+                if (isMoving) {
+                    this._accumulationPass.reset = true;
+                    this._accumulationPass.remenance = 1.0;
+                } else {
+                    this._accumulationPass.reset = false;
+                    this._accumulationPass.remenance = 0.9;
+                }
+            });
+        }
     }
 
     /**
@@ -389,6 +395,7 @@ export class IblShadowsRenderer {
      */
     public isReady() {
         return (
+            this._noiseTexture.isReady() &&
             this._voxelRenderer.isReady() &&
             this._importanceSamplingRenderer.isReady() &&
             this._shadowComputePass.isReady() &&
@@ -445,8 +452,11 @@ export class IblShadowsRenderer {
      * Disposes the IBL shadow renderer and associated resources
      */
     public dispose() {
+        this._noiseTexture.dispose();
         this._voxelRenderer.dispose();
         this._importanceSamplingRenderer.dispose();
         this._shadowComputePass.dispose();
+        this._spatialBlurPass.dispose();
+        this._accumulationPass.dispose();
     }
 }
