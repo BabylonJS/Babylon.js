@@ -3120,12 +3120,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const indices = this.getIndices()!;
         const data: { [kind: string]: FloatArray } = {};
 
-        const separateVertices = (data: FloatArray, stride: number): Float32Array => {
-            const newData = new Float32Array(indices.length * stride);
+        const separateVertices = (data: FloatArray, size: number): Float32Array => {
+            const newData = new Float32Array(indices.length * size);
             let count = 0;
             for (let index = 0; index < indices.length; index++) {
-                for (let offset = 0; offset < stride; offset++) {
-                    newData[count++] = data[indices[index] * stride + offset];
+                for (let offset = 0; offset < size; offset++) {
+                    newData[count++] = data[indices[index] * size + offset];
                 }
             }
             return newData;
@@ -3142,13 +3142,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Update vertex data
         for (const kind of kinds) {
             const vertexBuffer = this.getVertexBuffer(kind)!;
-            const stride = vertexBuffer.getStrideSize();
+            const size = vertexBuffer.getSize();
 
             if (flattenNormals && kind === VertexBuffer.NormalKind) {
                 const normals = this._getFlattenedNormals(indices, data[VertexBuffer.PositionKind]);
-                this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), stride);
+                this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), size);
             } else {
-                this.setVerticesData(kind, separateVertices(data[kind], stride), vertexBuffer.isUpdatable(), stride);
+                this.setVerticesData(kind, separateVertices(data[kind], size), vertexBuffer.isUpdatable(), size);
             }
         }
 
