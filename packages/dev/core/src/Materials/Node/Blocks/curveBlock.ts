@@ -174,7 +174,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 registeredFunction = `return (1.0 - v) * (1.0 - v)`;
                 break;
             case CurveBlockTypes.EaseInOutQuad: {
-                const entry = state._generateTertiary("2.0 * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 2.0) / 2.0", "VAL < 0.5");
+                const entry = state._generateTernary("2.0 * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 2.0) / 2.0", "VAL < 0.5");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
@@ -187,7 +187,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutCubic: {
-                const entry = state._generateTertiary("4.0 * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 3.0) / 2.0", "VAL < 0.5");
+                const entry = state._generateTernary("4.0 * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 3.0) / 2.0", "VAL < 0.5");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
@@ -200,7 +200,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutQuart: {
-                const entry = state._generateTertiary("8.0 * VAL * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 4.0) / 2.0", "VAL < 0.5");
+                const entry = state._generateTernary("8.0 * VAL * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 4.0) / 2.0", "VAL < 0.5");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
@@ -213,26 +213,26 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutQuint: {
-                const entry = state._generateTertiary("16.0 * VAL * VAL * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 5.0) / 2.0", "VAL < 0.5");
+                const entry = state._generateTernary("16.0 * VAL * VAL * VAL * VAL * VAL", "1.0 - pow(-2.0 * VAL + 2.0, 5.0) / 2.0", "VAL < 0.5");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
             case CurveBlockTypes.EaseInExpo: {
-                const entry = state._generateTertiary("0.0", "pow(2.0, 10.0 * VAL - 10.0)", "VAL == 0.0");
+                const entry = state._generateTernary("0.0", "pow(2.0, 10.0 * VAL - 10.0)", "VAL == 0.0");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
             case CurveBlockTypes.EaseOutExpo: {
-                const entry = state._generateTertiary("1.0", "1.0 - pow(2.0, -10.0 * VAL)", "VAL == 1.0");
+                const entry = state._generateTernary("1.0", "1.0 - pow(2.0, -10.0 * VAL)", "VAL == 1.0");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
             case CurveBlockTypes.EaseInOutExpo: {
-                const entry = state._generateTertiary(
+                const entry = state._generateTernary(
                     "0.0",
-                    state._generateTertiary(
+                    state._generateTernary(
                         "1.0",
-                        state._generateTertiary("pow(2.0, 20.0 * VAL - 10.0) / 2.0", "(2.0 - pow(2.0, -20.0 * VAL + 10.0)) / 2.0", "VAL < 0.5"),
+                        state._generateTernary("pow(2.0, 20.0 * VAL - 10.0) / 2.0", "(2.0 - pow(2.0, -20.0 * VAL + 10.0)) / 2.0", "VAL < 0.5"),
                         "VAL == 1.0"
                     ),
                     "VAL == 0.0"
@@ -251,7 +251,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutCirc: {
-                const entry = state._generateTertiary("(1.0 - sqrt(1.0 - pow(2.0 * VAL, 2.0))) / 2.0", "(sqrt(1.0 - pow(-2.0 * VAL + 2.0, 2.0)) + 1.0) / 2.0", "VAL < 0.5");
+                const entry = state._generateTernary("(1.0 - sqrt(1.0 - pow(2.0 * VAL, 2.0))) / 2.0", "(sqrt(1.0 - pow(-2.0 * VAL + 2.0, 2.0)) + 1.0) / 2.0", "VAL < 0.5");
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
@@ -265,7 +265,7 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInOutBack: {
-                const entry = state._generateTertiary(
+                const entry = state._generateTernary(
                     "(pow(2.0 * VAL, 2.0) * ((3.5949095) * 2.0 * VAL - 2.5949095)) / 2.0",
                     "(pow(2.0 * VAL - 2.0, 2.0) * (3.5949095 * (VAL * 2.0 - 2.0) + 3.5949095) + 2.0) / 2.0",
                     "VAL < 0.5"
@@ -274,9 +274,9 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseInElastic: {
-                const entry = state._generateTertiary(
+                const entry = state._generateTernary(
                     "0.0",
-                    state._generateTertiary("1.0", "-pow(2.0, 10.0 * VAL - 10.0) * sin((VAL * 10.0 - 10.75) * ((2.0 * 3.1415) / 3.0))", "VAL == 1.0"),
+                    state._generateTernary("1.0", "-pow(2.0, 10.0 * VAL - 10.0) * sin((VAL * 10.0 - 10.75) * ((2.0 * 3.1415) / 3.0))", "VAL == 1.0"),
                     "VAL == 0.0"
                 );
 
@@ -284,20 +284,20 @@ export class CurveBlock extends NodeMaterialBlock {
                 break;
             }
             case CurveBlockTypes.EaseOutElastic: {
-                const entry = state._generateTertiary(
+                const entry = state._generateTernary(
                     "0.0",
-                    state._generateTertiary("1.0", "pow(2.0, -10.0 * VAL) * sin((VAL * 10.0 - 0.75) * ((2.0 * 3.1415) / 3.0)) + 1.0", "VAL == 1.0"),
+                    state._generateTernary("1.0", "pow(2.0, -10.0 * VAL) * sin((VAL * 10.0 - 0.75) * ((2.0 * 3.1415) / 3.0)) + 1.0", "VAL == 1.0"),
                     "VAL == 0.0"
                 );
                 registeredFunction = this._duplicateVector(entry, inputType, isWGSL);
                 break;
             }
             case CurveBlockTypes.EaseInOutElastic: {
-                const entry = state._generateTertiary(
+                const entry = state._generateTernary(
                     "0.0",
-                    state._generateTertiary(
+                    state._generateTernary(
                         "1.0",
-                        state._generateTertiary(
+                        state._generateTernary(
                             "-(pow(2.0, 20.0 * VAL - 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0",
                             "(pow(2.0, -20.0 * VAL + 10.0) * sin((20.0 * VAL - 11.125) * ((2.0 * 3.1415) / 4.5))) / 2.0 + 1.0",
                             "VAL < 0.5"

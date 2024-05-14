@@ -46,7 +46,7 @@ export class FrontFacingBlock extends NodeMaterialBlock {
 
         state.compilationString +=
             state._declareOutput(output) +
-            ` = ${state._generateTertiary("1.0", "0.0", state.shaderLanguage === ShaderLanguage.GLSL ? "gl_FrontFacing" : "fragmentInputs.frontFacing")};\n`;
+            ` = ${state._generateTernary("1.0", "0.0", state.shaderLanguage === ShaderLanguage.GLSL ? "gl_FrontFacing" : "fragmentInputs.frontFacing")};\n`;
 
         return this;
     }

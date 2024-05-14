@@ -76,16 +76,16 @@ export class BiPlanarBlock extends TriPlanarBlock {
             ${state._declareLocalVar(n, NodeMaterialBlockConnectionPointTypes.Vector3)} = abs(${this.normal.associatedVariableName}.xyz);
         
             // determine major axis (in x; yz are following axis)
-            ${this._declareLocalVarAsVec3I(ma, state)} = ${state._generateTertiary(
+            ${this._declareLocalVarAsVec3I(ma, state)} = ${state._generateTernary(
                 `${ivec3}(0,1,2)`,
-                `${state._generateTertiary(`${ivec3}(1,2,0)`, `${ivec3}(2,0,1)`, `(${n}.y>${n}.z)`)}`,
+                `${state._generateTernary(`${ivec3}(1,2,0)`, `${ivec3}(2,0,1)`, `(${n}.y>${n}.z)`)}`,
                 `(${n}.x>${n}.y && ${n}.x>${n}.z)`
             )};                    
 
             // determine minor axis (in x; yz are following axis)
-            ${this._declareLocalVarAsVec3I(mi, state)} =  ${state._generateTertiary(
+            ${this._declareLocalVarAsVec3I(mi, state)} =  ${state._generateTernary(
                 `${ivec3}(0,1,2)`,
-                `${state._generateTertiary(`${ivec3}(1,2,0)`, `${ivec3}(2,0,1)`, `(${n}.y<${n}.z)`)}`,
+                `${state._generateTernary(`${ivec3}(1,2,0)`, `${ivec3}(2,0,1)`, `(${n}.y<${n}.z)`)}`,
                 `(${n}.x<${n}.y && ${n}.x<${n}.z)`
             )};  
                               
