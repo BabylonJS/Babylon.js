@@ -230,7 +230,7 @@ export class LightBlock extends NodeMaterialBlock {
         if (!this.light) {
             BindLights(scene, mesh, effect, true, nodeMaterial.maxSimultaneousLights);
         } else {
-            BindLight(this.light, this._lightId, scene, effect, true, undefined);
+            BindLight(this.light, this._lightId, scene, effect, true);
         }
     }
 
