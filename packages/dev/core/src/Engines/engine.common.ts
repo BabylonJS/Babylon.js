@@ -144,7 +144,7 @@ export function _CommonDispose(commonEngine: AbstractEngine, canvas: Nullable<HT
  */
 export function GetFontOffset(font: string): { ascent: number; height: number; descent: number } {
     const text = document.createElement("span");
-    text.innerHTML = "Hg";
+    text.textContent = "Hg";
     text.style.font = `${font} !important`;
 
     const block = document.createElement("div");
