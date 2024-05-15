@@ -222,9 +222,9 @@ export class GaussianSplattingMaterial extends PushMaterial {
                 const cameraRenderWidth = renderWidth / camera.viewport.width;
                 const cameraRenderHeight = renderHeight / camera.viewport.height;
                 if (camera.fovMode == Camera.FOVMODE_VERTICAL_FIXED) {
-                    focal = cameraRenderHeight / 2.0 / Math.tan(camera.fov / 2.0);
+                    focal = renderHeight / 2.0 / Math.tan(camera.fov / 2.0);
                 } else {
-                    focal = cameraRenderWidth / 2.0 / Math.tan(camera.fov / 2.0);
+                    focal = renderWidth / 2.0 / Math.tan(camera.fov / 2.0);
                 }
                 this._activeEffect.setFloat2("viewport", cameraRenderWidth, cameraRenderHeight);
             } else {
