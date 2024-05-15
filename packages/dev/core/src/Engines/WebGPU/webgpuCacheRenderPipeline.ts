@@ -12,6 +12,7 @@ import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
+import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";
 
 enum StatePosition {
     StencilReadMask = 0,
@@ -961,7 +962,7 @@ export abstract class WebGPUCacheRenderPipeline {
         const colorBlend = this._getColorBlendState();
 
         if (this._vertexBuffers) {
-            effect.getEngine().checkNonFloatVertexBuffers(this._vertexBuffers, effect);
+            checkNonFloatVertexBuffers(this._vertexBuffers, effect);
         }
 
         if (this._mrtAttachments1 > 0) {

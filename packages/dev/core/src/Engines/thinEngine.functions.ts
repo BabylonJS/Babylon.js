@@ -2,7 +2,6 @@ import type { Nullable } from "../types";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { WebGLPipelineContext } from "./WebGL/webGLPipelineContext";
-import type { WebGL2ShaderProcessingContext } from "./WebGL/webgl2ShaderProcessingContext";
 import type { _loadFile } from "./abstractEngine.functions";
 import { _ConcatenateShader } from "./abstractEngine.functions";
 
@@ -147,7 +146,7 @@ export function createShaderProgram(
  * @returns the new pipeline
  */
 export function createPipelineContext(context: WebGLContext, _shaderProcessingContext: Nullable<ShaderProcessingContext>): IPipelineContext {
-    const pipelineContext = new WebGLPipelineContext(_shaderProcessingContext as Nullable<WebGL2ShaderProcessingContext>);
+    const pipelineContext = new WebGLPipelineContext();
     const stateObject = getStateObject(context);
     if (stateObject.parallelShaderCompile) {
         pipelineContext.isParallelCompiled = true;

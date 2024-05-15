@@ -5,7 +5,7 @@ import type { ShaderProcessingContext } from "../Processors/shaderProcessingOpti
 /**
  * @internal
  */
-export class WebGL2ShaderProcessingContext implements ShaderProcessingContext {
+export class NativeShaderProcessingContext implements ShaderProcessingContext {
     public vertexBufferKindToNumberOfComponents: { [kind: string]: number } = {};
     public remappedAttributeNames: { [name: string]: string } = {};
     public injectInVertexMain = "";

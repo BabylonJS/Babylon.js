@@ -54,7 +54,6 @@ import { Effect } from "../Materials/effect";
 import { _WarnImport } from "../Misc/devTools";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
-import { WebGL2ShaderProcessingContext } from "./WebGL/webgl2ShaderProcessingContext";
 
 /**
  * Keeps track of all the buffer info used in engine.
@@ -474,7 +473,7 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
-        return this.webGLVersion > 1 && this._features.checkNonFloatVertexBuffers ? new WebGL2ShaderProcessingContext() : null;
+        return null;
     }
 
     /**
@@ -788,8 +787,7 @@ export class ThinEngine extends AbstractEngine {
             supportRenderPasses: false,
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
-            checkNonFloatVertexBuffers: false,
-            checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
+            _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1399,7 +1397,7 @@ export class ThinEngine extends AbstractEngine {
 
         if (changed || this._vaoRecordInProgress) {
             this.bindArrayBuffer(buffer);
-            if (type !== this._gl.FLOAT && !normalized && this._features.checkNonFloatVertexBuffers) {
+            if (type === this._gl.UNSIGNED_INT || type === this._gl.INT) {
                 this._gl.vertexAttribIPointer(indx, size, type, stride, offset);
             } else {
                 this._gl.vertexAttribPointer(indx, size, type, normalized, stride, offset);
@@ -1433,10 +1431,6 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this.unbindAllAttributes();
-
-        if (this._features.checkNonFloatVertexBuffers) {
-            this.checkNonFloatVertexBuffers(vertexBuffers, effect);
-        }
 
         for (let index = 0; index < attributes.length; index++) {
             const order = effect.getAttributeLocation(index);
@@ -2163,13 +2157,10 @@ export class ThinEngine extends AbstractEngine {
     public getAttributes(pipelineContext: IPipelineContext, attributesNames: string[]): number[] {
         const results = [];
         const webGLPipelineContext = pipelineContext as WebGLPipelineContext;
-        const webGLShaderProcessingContext = webGLPipelineContext.shaderProcessingContext;
 
         for (let index = 0; index < attributesNames.length; index++) {
-            const origAttributeName = attributesNames[index];
-            const attributeName = webGLShaderProcessingContext ? webGLShaderProcessingContext.remappedAttributeNames[origAttributeName] ?? origAttributeName : origAttributeName;
             try {
-                results.push(this._gl.getAttribLocation(webGLPipelineContext.program!, attributeName));
+                results.push(this._gl.getAttribLocation(webGLPipelineContext.program!, attributesNames[index]));
             } catch (e) {
                 results.push(-1);
             }

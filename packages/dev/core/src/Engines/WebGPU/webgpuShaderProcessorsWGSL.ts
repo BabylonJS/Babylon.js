@@ -10,7 +10,7 @@ import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { RemoveComments } from "../../Misc/codeStringParsingTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { injectStartingAndEndingCode } from "../Processors/iShaderProcessor";
+import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 import { Constants } from "../constants";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
@@ -346,7 +346,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         vertexCode =
             (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
-            injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
+            InjectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
@@ -394,7 +394,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
 
         fragmentCode =
-            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();

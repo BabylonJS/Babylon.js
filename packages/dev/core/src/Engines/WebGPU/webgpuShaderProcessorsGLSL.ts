@@ -8,7 +8,7 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { injectStartingAndEndingCode } from "../Processors/iShaderProcessor";
+import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 import { Constants } from "../constants";
 
 /** @internal */
@@ -322,7 +322,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace("##INJECTCODE##", injectCode);
 
             if (hasFragCoord) {
-                code = injectStartingAndEndingCode(code, "void main", fragCoordCode);
+                code = InjectStartingAndEndingCode(code, "void main", fragCoordCode);
             }
         } else {
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");

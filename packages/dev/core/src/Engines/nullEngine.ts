@@ -190,8 +190,7 @@ export class NullEngine extends Engine {
             supportRenderPasses: true,
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
-            checkNonFloatVertexBuffers: false,
-            checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
+            _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
             _collectUbosUpdatedInFrame: false,
         };
 

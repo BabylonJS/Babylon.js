@@ -1,12 +1,9 @@
-/* eslint-disable babylonjs/available */
-/* eslint-disable jsdoc/require-jsdoc */
 import type { IPipelineContext } from "../IPipelineContext";
 import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
 import type { AbstractEngine } from "../abstractEngine";
-import type { WebGL2ShaderProcessingContext } from "./webgl2ShaderProcessingContext";
 
 /** @internal */
 export class WebGLPipelineContext implements IPipelineContext {
@@ -27,9 +24,6 @@ export class WebGLPipelineContext implements IPipelineContext {
     public programLinkError: Nullable<string> = null;
     public programValidationError: Nullable<string> = null;
 
-    public vertexBufferKindToType: { [kind: string]: number } = {};
-    public shaderProcessingContext: Nullable<WebGL2ShaderProcessingContext>;
-
     /** @internal */
     public _isDisposed = false;
 
@@ -46,10 +40,6 @@ export class WebGLPipelineContext implements IPipelineContext {
         }
 
         return false;
-    }
-
-    constructor(shaderProcessingContext: Nullable<WebGL2ShaderProcessingContext>) {
-        this.shaderProcessingContext = shaderProcessingContext;
     }
 
     public _handlesSpectorRebuildCallback(onCompiled: (program: WebGLProgram) => void): void {

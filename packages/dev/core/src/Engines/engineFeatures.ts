@@ -72,11 +72,8 @@ export interface EngineFeatures {
     /** Indicates that the stride and (byte) offset of a vertex buffer must always be a multiple of 4 bytes */
     forceVertexBufferStrideAndOffsetMultiple4Bytes: boolean;
 
-    /** Check whether the type of some vertex buffers (position, uv, normal, etc.) that are supposed to be FLOAT is not FLOAT, in which case a shader update / recompilation will be performed */
-    checkNonFloatVertexBuffers: boolean;
-
-    /** If checkNonFloatVertexBuffers is true, this setting indicates if the pipeline context should be recreated as part of the shader recompilation */
-    checkNonFloatVertexBuffersDontRecreatePipelineContext: boolean;
+    /** @internal */
+    _checkNonFloatVertexBuffersDontRecreatePipelineContext: boolean;
 
     /** @internal */
     _collectUbosUpdatedInFrame: boolean;
