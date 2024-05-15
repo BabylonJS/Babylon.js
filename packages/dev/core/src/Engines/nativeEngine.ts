@@ -2472,7 +2472,7 @@ export class NativeEngine extends Engine {
     }
 
     /**
-     * Unbind all textures from the webGL context
+     * Unbind all textures
      */
     public override unbindAllTextures(): void {
         if (!_native.Engine.COMMAND_DISCARDALLTEXTURES) {
