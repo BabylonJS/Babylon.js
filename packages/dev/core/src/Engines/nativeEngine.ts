@@ -51,10 +51,10 @@ import {
     getNativeAddressMode,
 } from "./Native/nativeHelpers";
 import { AbstractEngine } from "./abstractEngine";
-import { checkNonFloatVertexBuffers } from "core/Buffers/buffer.nonFloatVertexBuffers";
+import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuffers";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
-import type { ShaderLanguage } from "core/Materials/shaderLanguage";
+import type { ShaderLanguage } from "../Materials/shaderLanguage";
 
 declare const _native: INative;
 
