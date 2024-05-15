@@ -17,6 +17,34 @@ import { PostProcess } from "../PostProcesses/postProcess";
 export class IblShadowsComputePass {
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _sssSamples: number = 16;
+    private _sssStride: number = 12;
+    private _sssMaxDist: number = 0.1;
+    private _sssThickness: number = 0.005;
+    public get sssSamples(): number {
+        return this._sssSamples;
+    }
+    public set sssSamples(value: number) {
+        this._sssSamples = value;
+    }
+    public get sssStride(): number {
+        return this._sssStride;
+    }
+    public set sssStride(value: number) {
+        this._sssStride = value;
+    }
+    public get sssMaxDist(): number {
+        return this._sssMaxDist;
+    }
+    public set sssMaxDist(value: number) {
+        this._sssMaxDist = value;
+    }
+    public get sssThickness(): number {
+        return this._sssThickness;
+    }
+    public set sssThickness(value: number) {
+        this._sssThickness = value;
+    }
 
     private _outputPT: CustomProceduralTexture;
     private _cameraInvView: Matrix = Matrix.Identity();
@@ -135,11 +163,9 @@ export class IblShadowsComputePass {
 
         // SSS Options.
         const worldScale = (1.0 / this._invWorldScaleMatrix.m[0]) * 2.0;
-        const samples = 16;
-        const stride = 8;
-        const maxDist = 0.05 * worldScale;
-        const thickness = 0.01 * worldScale;
-        this._outputPT.setVector4("sssParameters", new Vector4(samples, stride, maxDist, thickness));
+        const maxDist = this._sssMaxDist * worldScale;
+        const thickness = this._sssThickness * worldScale;
+        this._outputPT.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
 
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
         this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());

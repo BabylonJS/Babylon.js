@@ -84,6 +84,13 @@ export class IblShadowsRenderer {
     private _accumulationPass: IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
 
+    public configureScreenSpaceShadow(samples: number, stride: number, maxDist: number, thickness: number) {
+        this._shadowComputePass.sssSamples = samples !== undefined ? samples : this._shadowComputePass.sssSamples;
+        this._shadowComputePass.sssStride = stride !== undefined ? stride : this._shadowComputePass.sssStride;
+        this._shadowComputePass.sssMaxDist = maxDist !== undefined ? maxDist : this._shadowComputePass.sssMaxDist;
+        this._shadowComputePass.sssThickness = thickness !== undefined ? thickness : this._shadowComputePass.sssThickness;
+    }
+
     public setIblTexture(iblSource: Texture) {
         this._importanceSamplingRenderer.iblSource = iblSource;
     }

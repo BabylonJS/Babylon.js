@@ -527,7 +527,6 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
              Z += dZ) { // 'sceneDepth > 0.0' instead of 'sceneDepth < 0.0'
     vec2 linearZ_alpha =
         texelFetch(linearDepthSampler, ivec2(permute ? P.yx : P), 0).xy;
-        linearZ_alpha.x *= -1.0;
     sceneDepth = csZDir * linearZ_alpha.x;
     if (sceneDepth <= 0.0)
       break;
@@ -609,7 +608,6 @@ void main(void) {
   vec2 temp2 = vUV * vec2(2.0) - vec2(1.0);
   vec4 VP = invProjMtx * vec4(temp.x, -temp.y, depth, 1.0);
   VP /= VP.w;
-  // vec4 WP_new = invVPMtx * vec4(temp.x, -temp.y, depth, 1.0);
 
   N = normalize(N);
   vec3 noise = texelFetch(blueNoiseSampler, PixelCoord & 0xFF, 0).xyz;
@@ -652,7 +650,7 @@ void main(void) {
       VL.y *= -1.0;
       float nearPlaneZ =
           -projMtx[3][2] / projMtx[2][2]; // retreive camera Z near value
-      float ssShadow = screenSpaceShadow(VP.xyz, VL, Resolution, nearPlaneZ,
+      float ssShadow = screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
