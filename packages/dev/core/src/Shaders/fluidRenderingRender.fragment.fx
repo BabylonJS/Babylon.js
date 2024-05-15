@@ -1,4 +1,4 @@
-/* disable_uniformity_analysis */
+#define DISABLE_UNIFORMITY_ANALYSIS
 
 // Index of refraction for water
 #define IOR 1.333
