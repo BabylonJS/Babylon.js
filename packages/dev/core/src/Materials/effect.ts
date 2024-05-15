@@ -363,8 +363,12 @@ export class Effect implements IDisposable {
     }
 
     /** @internal */
-    public _processShaderCode(shaderProcessor: Nullable<IShaderProcessor> = null, keepExistingPipelineContext = false) {
-        this._processingContext = this._engine._getShaderProcessingContext(this._shaderLanguage);
+    public _processShaderCode(
+        shaderProcessor: Nullable<IShaderProcessor> = null,
+        keepExistingPipelineContext = false,
+        shaderProcessingContext: Nullable<ShaderProcessingContext> = null
+    ) {
+        this._processingContext = shaderProcessingContext || this._engine._getShaderProcessingContext(this._shaderLanguage);
 
         const processorOptions: ProcessingOptions = {
             defines: this.defines.split("\n"),

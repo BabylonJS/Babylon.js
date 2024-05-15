@@ -16,6 +16,12 @@ export interface IPipelineContext {
      */
     readonly isReady: boolean;
 
+    /**
+     * Property used to handle vertex buffers with int values when the shader code expect float values.
+     * @internal
+     */
+    vertexBufferKindToType?: { [kind: string]: number };
+
     /** @internal */
     _name?: string;
 

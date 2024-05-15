@@ -948,6 +948,8 @@ export class WebGPUEngine extends AbstractEngine {
             supportRenderPasses: true,
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
+            checkNonFloatVertexBuffers: true,
+            checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
             _collectUbosUpdatedInFrame: false,
         };
     }

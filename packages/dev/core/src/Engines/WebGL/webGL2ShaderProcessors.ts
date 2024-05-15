@@ -1,5 +1,11 @@
-import { ShaderLanguage } from "../../Materials/shaderLanguage";
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
+import type { Nullable } from "core/types";
 import type { IShaderProcessor } from "../Processors/iShaderProcessor";
+import type { WebGL2ShaderProcessingContext } from "./webgl2ShaderProcessingContext";
+import type { ShaderProcessingContext } from "../Processors/shaderProcessingOptions";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import { injectStartingAndEndingCode } from "../Processors/iShaderProcessor";
 
 const varyingRegex = /(flat\s)?\s*varying\s*.*/;
 
@@ -7,8 +13,42 @@ const varyingRegex = /(flat\s)?\s*varying\s*.*/;
 export class WebGL2ShaderProcessor implements IShaderProcessor {
     public shaderLanguage = ShaderLanguage.GLSL;
 
+    protected _webgl2ProcessingContext: Nullable<WebGL2ShaderProcessingContext>;
+
+    public initializeShaders(processingContext: Nullable<ShaderProcessingContext>): void {
+        this._webgl2ProcessingContext = processingContext as Nullable<WebGL2ShaderProcessingContext>;
+        if (this._webgl2ProcessingContext) {
+            this._webgl2ProcessingContext.remappedAttributeNames = {};
+            this._webgl2ProcessingContext.injectInVertexMain = "";
+        }
+    }
+
     public attributeProcessor(attribute: string) {
-        return attribute.replace("attribute", "in");
+        if (!this._webgl2ProcessingContext) {
+            return attribute.replace("attribute", "in");
+        }
+
+        const attribRegex = /\s*(?:attribute|in)\s+(\S+)\s+(\S+)\s*;/gm;
+        const match = attribRegex.exec(attribute);
+        if (match !== null) {
+            const attributeType = match[1];
+            const name = match[2];
+
+            const numComponents = this._webgl2ProcessingContext.vertexBufferKindToNumberOfComponents[name];
+            if (numComponents !== undefined) {
+                // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
+                const newType = numComponents < 0 ? (numComponents === -1 ? "int" : "ivec" + -numComponents) : numComponents === 1 ? "uint" : "uvec" + numComponents;
+                const newName = `_int_${name}_`;
+
+                attribute = attribute.replace(match[0], `in ${newType} ${newName}; ${attributeType} ${name};`);
+
+                this._webgl2ProcessingContext.injectInVertexMain += `${name} = ${attributeType}(${newName});\n`;
+                this._webgl2ProcessingContext.remappedAttributeNames[name] = newName;
+            } else {
+                attribute = attribute.replace(match[0], `in ${attributeType} ${name};`);
+            }
+        }
+        return attribute;
     }
 
     public varyingCheck(varying: string, _isFragment: boolean) {
@@ -39,6 +79,9 @@ export class WebGL2ShaderProcessor implements IShaderProcessor {
             code = code.replace(/gl_FragData/g, "glFragData");
             code = code.replace(/void\s+?main\s*\(/g, (hasDrawBuffersExtension || hasOutput ? "" : "layout(location = 0) out vec4 glFragColor;\n") + "void main(");
         } else {
+            if (this._webgl2ProcessingContext?.injectInVertexMain) {
+                code = injectStartingAndEndingCode(code, "void main", this._webgl2ProcessingContext.injectInVertexMain);
+            }
             const hasMultiviewExtension = defines.indexOf("#define MULTIVIEW") !== -1;
             if (hasMultiviewExtension) {
                 return "#extension GL_OVR_multiview2 : require\nlayout (num_views = 2) in;\n" + code;

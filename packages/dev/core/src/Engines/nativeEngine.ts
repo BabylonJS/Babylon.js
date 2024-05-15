@@ -315,6 +315,8 @@ export class NativeEngine extends Engine {
             supportRenderPasses: true,
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
+            checkNonFloatVertexBuffers: true,
+            checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
             _collectUbosUpdatedInFrame: false,
         };
 

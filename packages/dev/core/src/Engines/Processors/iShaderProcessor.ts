@@ -1,3 +1,4 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import type { ShaderLanguage } from "../../Materials/shaderLanguage";
 import type { Nullable } from "../../types";
 import type { ShaderProcessingContext } from "./shaderProcessingOptions";
@@ -37,4 +38,29 @@ export interface IShaderProcessor {
     ) => string;
     initializeShaders?: (processingContext: Nullable<ShaderProcessingContext>) => void;
     finalizeShaders?: (vertexCode: string, fragmentCode: string, processingContext: Nullable<ShaderProcessingContext>) => { vertexCode: string; fragmentCode: string };
+}
+
+/** @internal */
+export function injectStartingAndEndingCode(code: string, mainFuncDecl: string, startingCode?: string, endingCode?: string): string {
+    let idx = code.indexOf(mainFuncDecl);
+    if (idx < 0) {
+        return code;
+    }
+    if (startingCode) {
+        // eslint-disable-next-line no-empty
+        while (idx++ < code.length && code.charAt(idx) != "{") {}
+        if (idx < code.length) {
+            const part1 = code.substring(0, idx + 1);
+            const part2 = code.substring(idx + 1);
+            code = part1 + startingCode + part2;
+        }
+    }
+
+    if (endingCode) {
+        const lastClosingCurly = code.lastIndexOf("}");
+        code = code.substring(0, lastClosingCurly);
+        code += endingCode + "\n}";
+    }
+
+    return code;
 }

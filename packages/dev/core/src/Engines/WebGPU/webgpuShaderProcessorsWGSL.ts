@@ -9,6 +9,8 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { RemoveComments } from "../../Misc/codeStringParsingTools";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import { injectStartingAndEndingCode } from "../Processors/iShaderProcessor";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bonesVertex";
@@ -28,7 +30,6 @@ import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
-import { ShaderLanguage } from "../../Materials/shaderLanguage";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
@@ -156,7 +157,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            const numComponents = this.vertexBufferKindToNumberOfComponents[name];
+            const numComponents = this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents[name];
             if (numComponents !== undefined) {
                 // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
                 const newType =
@@ -317,7 +318,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
         const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
 
-        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
+        vertexCode = injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
@@ -362,12 +363,12 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
         const fragmentEndingCode = "  return fragmentOutputs;";
 
-        fragmentCode = this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+        fragmentCode = injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();
 
-        this.vertexBufferKindToNumberOfComponents = {};
+        this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents = {};
 
         return { vertexCode, fragmentCode };
     }
