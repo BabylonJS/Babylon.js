@@ -2063,6 +2063,11 @@
             "title": "Two vertex buffers pointing to one buffer",
             "playgroundId": "#RZNHXT#7",
             "referenceImage": "two-vertex-buffers.png"
+        },
+        {
+            "title": "Shadows in RHS mode",
+            "playgroundId": "#RO51RT#14",
+            "referenceImage": "shadows-rhs.png"
         }
     ]
 }
