@@ -10,7 +10,6 @@ import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { Nullable } from "../../types";
 import type { WebGPUHardwareTexture } from "./webgpuHardwareTexture";
 import type { WebGPUPipelineContext } from "./webgpuPipelineContext";
-import type { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import { renderableTextureFormatToIndex } from "./webgpuTextureManager";
 
