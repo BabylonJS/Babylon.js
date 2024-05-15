@@ -34,6 +34,27 @@ const vertexBufferKindForNonFloatProcessing: { [kind: string]: boolean } = {
     [VertexBuffer.MatricesWeightsExtraKind]: true,
 };
 
+/**
+ * Indicates if the type is a signed or unsigned type
+ * @param type Type to check
+ * @returns True if it is a signed type
+ */
+function isSignedType(type: number): boolean {
+    switch (type) {
+        case VertexBuffer.BYTE:
+        case VertexBuffer.SHORT:
+        case VertexBuffer.INT:
+        case VertexBuffer.FLOAT:
+            return true;
+        case VertexBuffer.UNSIGNED_BYTE:
+        case VertexBuffer.UNSIGNED_SHORT:
+        case VertexBuffer.UNSIGNED_INT:
+            return false;
+        default:
+            throw new Error(`Invalid type '${type}'`);
+    }
+}
+
 AbstractEngine.prototype.checkNonFloatVertexBuffers = function (vertexBuffers: { [key: string]: Nullable<VertexBuffer> }, effect: Effect): void {
     const pipelineContext = effect._pipelineContext;
 
@@ -63,7 +84,7 @@ AbstractEngine.prototype.checkNonFloatVertexBuffers = function (vertexBuffers: {
             pipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
             if (currentVertexBufferType !== VertexBuffer.FLOAT) {
                 shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] = VertexBuffer.DeduceStride(kind);
-                if (VertexBuffer.IsSignedType(currentVertexBufferType)) {
+                if (isSignedType(currentVertexBufferType)) {
                     shaderProcessingContext.vertexBufferKindToNumberOfComponents![kind] *= -1;
                 }
             }
