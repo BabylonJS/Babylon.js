@@ -4,7 +4,7 @@ import type { ConditionalBlock } from "core/Materials/Node/Blocks/conditionalBlo
 import { ConditionalBlockConditions } from "core/Materials/Node/Blocks/conditionalBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class ConditionalPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -34,7 +34,7 @@ export class ConditionalPropertyTabComponent extends React.Component<IPropertyCo
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Condition"
                         options={conditionOptions}
                         target={conditionBlock}

@@ -185,7 +185,7 @@ export class TransformNode extends Node {
     public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();
 
     constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
-        super(name, scene);
+        super(name, scene, false);
 
         if (isPure) {
             this.getScene().addTransformNode(this);

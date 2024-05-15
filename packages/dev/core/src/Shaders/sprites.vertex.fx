@@ -15,6 +15,7 @@ varying vec2 vUV;
 varying vec4 vColor;
 
 #include<fogVertexDeclaration>
+#include<logDepthDeclaration>
 
 
 #define CUSTOM_VERTEX_DEFINITIONS
@@ -57,6 +58,8 @@ void main(void) {
 #ifdef FOG
 	vFogDistance = viewPos;
 #endif
+
+#include<logDepthVertex>
 
 #define CUSTOM_VERTEX_MAIN_END
 }

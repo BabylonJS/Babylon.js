@@ -262,6 +262,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Defines default shader language when no option is defined */
+    public static DefaultShaderLanguage = ShaderLanguage.GLSL;
+
     /**
      * Checks if a block is a texture block
      * @param block The block to check
@@ -425,9 +428,13 @@ export class NodeMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || EngineStore.LastCreatedScene!);
 
+        if (options && options.shaderLanguage === ShaderLanguage.WGSL && !this.getScene().getEngine().isWebGPU) {
+            throw new Error("WebGPU shader language is only supported with WebGPU engine");
+        }
+
         this._options = {
             emitComments: false,
-            shaderLanguage: ShaderLanguage.GLSL,
+            shaderLanguage: NodeMaterial.DefaultShaderLanguage,
             ...options,
         };
 
@@ -1553,27 +1560,6 @@ export class NodeMaterial extends PushMaterial {
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
 
-        // //*********************** */
-        // const tempA = `
-        // uniform u_World : mat4x4<f32>;
-        // uniform u_ViewProjection : mat4x4<f32>;
-        // attribute position : vec3<f32>;
-
-        // @vertex
-        // fn main(input : VertexInputs) -> FragmentInputs {
-        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
-        // }
-        // `;
-
-        // const tempB = `
-        // uniform u_color : vec4<f32>;
-
-        // @fragment
-        // fn main(input : FragmentInputs) -> FragmentOutputs {
-        //     fragmentOutputs.color = uniforms.u_color;
-        // }`;
-        // /*********************** */
-
         if (result) {
             const previousEffect = subMesh.effect;
             // Compilation
@@ -2227,8 +2213,9 @@ export class NodeMaterial extends PushMaterial {
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param merge defines whether or not the source must be merged or replace the current content
+     * @param urlRewriter defines a function used to rewrite urls
      */
-    public parseSerializedObject(source: any, rootUrl: string = "", merge = false) {
+    public parseSerializedObject(source: any, rootUrl: string = "", merge = false, urlRewriter?: (url: string) => string) {
         if (!merge) {
             this.clear();
         }
@@ -2240,7 +2227,7 @@ export class NodeMaterial extends PushMaterial {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 const block: NodeMaterialBlock = new blockType();
-                block._deserialize(parsedBlock, this.getScene(), rootUrl);
+                block._deserialize(parsedBlock, this.getScene(), rootUrl, urlRewriter);
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
@@ -2414,6 +2401,7 @@ export class NodeMaterial extends PushMaterial {
      * @param rootUrl defines the root URL for nested url in the node material
      * @param skipBuild defines whether to build the node material
      * @param targetMaterial defines a material to use instead of creating a new one
+     * @param urlRewriter defines a function used to rewrite urls
      * @returns a promise that will resolve to the new node material
      */
     public static async ParseFromFileAsync(
@@ -2422,13 +2410,14 @@ export class NodeMaterial extends PushMaterial {
         scene: Scene,
         rootUrl: string = "",
         skipBuild: boolean = false,
-        targetMaterial?: NodeMaterial
+        targetMaterial?: NodeMaterial,
+        urlRewriter?: (url: string) => string
     ): Promise<NodeMaterial> {
         const material = targetMaterial ?? new NodeMaterial(name, scene);
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
-        material.parseSerializedObject(serializationObject, rootUrl);
+        material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
         if (!skipBuild) {
             material.build();
         }
@@ -2443,6 +2432,7 @@ export class NodeMaterial extends PushMaterial {
      * @param nodeMaterial defines a node material to update (instead of creating a new one)
      * @param skipBuild defines whether to build the node material
      * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
+     * @param urlRewriter defines a function used to rewrite urls
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(
@@ -2451,7 +2441,8 @@ export class NodeMaterial extends PushMaterial {
         rootUrl: string = "",
         nodeMaterial?: NodeMaterial,
         skipBuild: boolean = false,
-        waitForTextureReadyness: boolean = false
+        waitForTextureReadyness: boolean = false,
+        urlRewriter?: (url: string) => string
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
@@ -2470,7 +2461,7 @@ export class NodeMaterial extends PushMaterial {
                             nodeMaterial.uniqueId = scene.getUniqueId();
                         }
 
-                        nodeMaterial.parseSerializedObject(serializationObject);
+                        nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);
                         nodeMaterial.snippetId = snippetId;
 
                         try {

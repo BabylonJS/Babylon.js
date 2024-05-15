@@ -858,7 +858,7 @@ export class NodeMaterialBlock {
      * @internal
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         this.name = serializationObject.name;
         this.comments = serializationObject.comments;
         this.visibleInInspector = !!serializationObject.visibleInInspector;

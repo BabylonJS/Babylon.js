@@ -459,6 +459,25 @@ export class FluidRenderingTargetRenderer {
         this._needInitialization = true;
     }
 
+    private _compositeMode = false;
+
+    /**
+     * If compositeMode is true (default: false), when the alpha value of the background (the scene rendered without the fluid objects) is 0, the final alpha value of the pixel will be set to the thickness value.
+     * This way, it is possible to composite the fluid rendering on top of the HTML background.
+     */
+    public get compositeMode() {
+        return this._compositeMode;
+    }
+
+    public set compositeMode(value: boolean) {
+        if (this._compositeMode === value) {
+            return;
+        }
+
+        this._compositeMode = value;
+        this._needInitialization = true;
+    }
+
     /**
      * Gets the camera used for the rendering
      */
@@ -683,6 +702,10 @@ export class FluidRenderingTargetRenderer {
         } else {
             uniformNames.push("minimumThickness");
             samplerNames.push("thicknessSampler");
+        }
+
+        if (this._compositeMode) {
+            defines.push("#define FLUIDRENDERING_COMPOSITE_MODE");
         }
 
         if (this._debug) {

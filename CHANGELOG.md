@@ -1,5 +1,31 @@
 # Changelog
 
+## 7.6.1
+
+### Core
+
+- Add back check to make sure there are active render loops before queuing a new one - by [bghgary](https://github.com/bghgary) ([#15086](https://github.com/BabylonJS/Babylon.js/pull/15086))
+- Add directly constructed Nodes to rootNodes - [_Bug Fix_] by [ryantrem](https://github.com/ryantrem) ([#15089](https://github.com/BabylonJS/Babylon.js/pull/15089))
+- Set Block - by [onekit-boss](https://github.com/onekit-boss) ([#15090](https://github.com/BabylonJS/Babylon.js/pull/15090))
+- Sprites: Add logarithmic depth support - by [Popov72](https://github.com/Popov72) ([#15088](https://github.com/BabylonJS/Babylon.js/pull/15088))
+- SSAO2: Don't clear post processes if not necessary - by [Popov72](https://github.com/Popov72) ([#15085](https://github.com/BabylonJS/Babylon.js/pull/15085))
+- SSAO2: Fix flash when switching between SSAO2 enabled/disabled - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15084](https://github.com/BabylonJS/Babylon.js/pull/15084))
+- Material node editor Image source node accepting relative links - by [deltakosh](https://github.com/deltakosh) ([#15083](https://github.com/BabylonJS/Babylon.js/pull/15083))
+- Fluid renderer: Add compositeMode property - by [Popov72](https://github.com/Popov72) ([#15091](https://github.com/BabylonJS/Babylon.js/pull/15091))
+
+### GUI Editor
+
+- Fixing errors when compiling UMD types - by [RaananW](https://github.com/RaananW) ([#15092](https://github.com/BabylonJS/Babylon.js/pull/15092))
+
+### Inspector
+
+- Fixing errors when compiling UMD types - by [RaananW](https://github.com/RaananW) ([#15092](https://github.com/BabylonJS/Babylon.js/pull/15092))
+
+### Node Editor
+
+- Fixing errors when compiling UMD types - by [RaananW](https://github.com/RaananW) ([#15092](https://github.com/BabylonJS/Babylon.js/pull/15092))
+- Set Block - by [onekit-boss](https://github.com/onekit-boss) ([#15090](https://github.com/BabylonJS/Babylon.js/pull/15090))
+
 ## 7.6.0
 
 ### Core

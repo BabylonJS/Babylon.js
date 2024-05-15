@@ -12,7 +12,7 @@ export interface IColorComponentEntryProps {
     lockObject: LockObject;
 }
 
-export class ColorComponentEntry extends React.Component<IColorComponentEntryProps> {
+export class ColorComponentComponentEntry extends React.Component<IColorComponentEntryProps> {
     constructor(props: IColorComponentEntryProps) {
         super(props);
     }

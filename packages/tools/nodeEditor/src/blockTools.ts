@@ -355,6 +355,11 @@ export class BlockTools {
                 triangleWaveBlock.kind = WaveBlockKind.Triangle;
                 return triangleWaveBlock;
             }
+            case "SetBlock": {
+                const cosBlock = new TrigonometryBlock("Set");
+                cosBlock.operation = TrigonometryBlockOperations.Set;
+                return cosBlock;
+            }
             case "WorldMatrixBlock": {
                 const worldMatrixBlock = new InputBlock("World");
                 worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);

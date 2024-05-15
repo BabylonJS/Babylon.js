@@ -206,7 +206,7 @@
         },
         {
             "title": "Dynamic Texture context clip",
-            "playgroundId": "#FU0ES5#37",
+            "playgroundId": "#FU0ES5#47",
             "referenceImage": "dynamicTextureClip.png"
         },
         {
@@ -2058,6 +2058,16 @@
             "title": "CesiumMan from Khronos Sample Assets",
             "playgroundId": "#4GWX8M",
             "referenceImage": "CesiumMan.png"
+        },
+        {
+            "title": "Two vertex buffers pointing to one buffer",
+            "playgroundId": "#RZNHXT#7",
+            "referenceImage": "two-vertex-buffers.png"
+        },
+        {
+            "title": "Shadows in RHS mode",
+            "playgroundId": "#RO51RT#14",
+            "referenceImage": "shadows-rhs.png"
         }
     ]
 }

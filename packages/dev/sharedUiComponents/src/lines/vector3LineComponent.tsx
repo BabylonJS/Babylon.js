@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Vector3 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
-import { NumericInputComponent } from "../lines/numericInputComponent";
+import { NumericInput } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
@@ -148,21 +148,21 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent
+                        <NumericInput
                             label="x"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
                             value={this.state.value.x}
                             onChange={(value) => this.updateStateX(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             label="y"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
                             value={this.state.value.y}
                             onChange={(value) => this.updateStateY(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             label="z"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
@@ -207,21 +207,21 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 )}
                 {this.state.isExpanded && this.props.useEuler && this.props.noSlider && (
                     <div className="secondLine">
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="x"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.x)}
                             onChange={(value) => this.updateStateX(Tools.ToRadians(value))}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="y"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.y)}
                             onChange={(value) => this.updateStateY(Tools.ToRadians(value))}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="z"
                             step={this.props.step}

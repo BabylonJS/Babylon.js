@@ -1,10 +1,10 @@
 import * as React from "react";
 import type { Color4, Color3 } from "core/Maths/math.color";
-import { ColorPicker } from "../colorPicker/ColorPicker";
+import { ColorPickerComponent } from "../colorPicker/ColorPicker";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 import style from "./ColorPickerLineComponent.modules.scss";
 
-export interface IColorPickerComponentProps {
+export interface IColorPickerLineComponentProps {
     value: Color4 | Color3;
     linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
@@ -21,12 +21,12 @@ interface IColorPickerComponentState {
     hex: string;
 }
 
-export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+export class ColorPickerLineComponent extends React.Component<IColorPickerLineComponentProps, IColorPickerComponentState> {
     private _floatRef: React.RefObject<HTMLDivElement>;
     private _floatHostRef: React.RefObject<HTMLDivElement>;
     private _coverRef: React.RefObject<HTMLDivElement>;
 
-    constructor(props: IColorPickerComponentProps) {
+    constructor(props: IColorPickerLineComponentProps) {
         super(props);
 
         this.state = { pickerEnabled: false, color: this.props.value, hex: this.getHexString(props) };
@@ -59,7 +59,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
     }
 
-    override shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
+    override shouldComponentUpdate(nextProps: IColorPickerLineComponentProps, nextState: IColorPickerComponentState) {
         const diffProps = this.getHexString(nextProps) !== this.getHexString();
 
         if (diffProps) {
@@ -102,7 +102,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
                             }}
                         >
                             <div className={style.colorPickerFloat} ref={this._floatRef}>
-                                <ColorPicker
+                                <ColorPickerComponent
                                     backgroundColor={this.props.backgroundColor}
                                     lockObject={this.props.lockObject || ({} as any)}
                                     color={this.state.color}

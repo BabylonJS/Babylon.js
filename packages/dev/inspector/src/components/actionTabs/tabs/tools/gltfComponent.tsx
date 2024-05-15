@@ -4,7 +4,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import type { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -117,11 +117,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 <LineContainerComponent title="GLTF LOADER" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Always compute bounding box" target={loaderState} propertyName="alwaysComputeBoundingBox" />
                     <CheckBoxLineComponent label="Always compute skeleton root node" target={loaderState} propertyName="alwaysComputeSkeletonRootNode" />
-                    <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
+                    <OptionsLine label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
                     <CheckBoxLineComponent label="Compile shadow generators" target={loaderState} propertyName="compileShadowGenerators" />
-                    <OptionsLineComponent label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
+                    <OptionsLine label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
                     <CheckBoxLineComponent label="Create instances" target={loaderState} propertyName="createInstances" />
                     <CheckBoxLineComponent label="Enable logging" target={loaderState} propertyName="loggingEnabled" />
                     <CheckBoxLineComponent label="Load all materials" target={loaderState} propertyName="loadAllMaterials" />

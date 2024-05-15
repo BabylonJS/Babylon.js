@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 /**
  * Block used to test if the fragment shader is front facing
  */
@@ -43,7 +44,9 @@ export class FrontFacingBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += state._declareOutput(output) + ` = gl_FrontFacing ? 1.0 : 0.0;\n`;
+        state.compilationString +=
+            state._declareOutput(output) +
+            ` = ${state._generateTernary("1.0", "0.0", state.shaderLanguage === ShaderLanguage.GLSL ? "gl_FrontFacing" : "fragmentInputs.frontFacing")};\n`;
 
         return this;
     }

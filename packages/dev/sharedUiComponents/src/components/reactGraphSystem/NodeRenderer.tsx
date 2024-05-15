@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import { useState, useEffect, useMemo } from "react";
 import { GraphContainer } from "./GraphContainer";
 import { GraphLine } from "./GraphLine";
-import { GraphNode } from "./GraphNode";
+import { SingleGraphNode } from "./GraphNode";
 import { GraphNodesContainer } from "./GraphNodesContainer";
 import { GraphLinesContainer } from "./GraphLinesContainer";
 import { GraphContextManager } from "./GraphContextManager";
@@ -125,7 +125,7 @@ export const NodeRenderer = (props: INodeRendererProps) => {
                             // eslint-disable-next-line @typescript-eslint/naming-convention
                             const CustomComponent = customData && customData.type && props.customComponents && props.customComponents[customData.type];
                             return (
-                                <GraphNode
+                                <SingleGraphNode
                                     parentContainerId={props.id}
                                     key={id}
                                     id={id}
@@ -136,7 +136,7 @@ export const NodeRenderer = (props: INodeRendererProps) => {
                                     highlighted={id === highlightedNode}
                                 >
                                     {CustomComponent && <CustomComponent {...customData.value} />}
-                                </GraphNode>
+                                </SingleGraphNode>
                             );
                         })}
                     </GraphNodesContainer>

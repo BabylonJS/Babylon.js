@@ -708,6 +708,7 @@ export class Engine extends ThinEngine {
     }
 
     public override _renderLoop(): void {
+        // Reset the frame handler before rendering a frame to determine if a new frame has been queued.
         this._frameHandler = 0;
 
         if (!this._contextWasLost) {
@@ -731,8 +732,10 @@ export class Engine extends ThinEngine {
             }
         }
 
-        if (this._frameHandler === 0) {
-            // Register new frame
+        // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
+        // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
+        // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
+        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             if (this.customAnimationFrameRequester) {
                 this.customAnimationFrameRequester.requestID = this._queueNewFrame(
                     this.customAnimationFrameRequester.renderFunction || this._boundRenderFunction,

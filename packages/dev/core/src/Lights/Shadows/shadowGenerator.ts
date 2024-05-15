@@ -1184,9 +1184,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Culling
+        // Note:
+        // In rhs mode, we assume that meshes will be rendered in right-handed space (i.e. with an RHS camera), so the default value of material.sideOrientation is updated accordingly (see material constructor).
+        // However, when generating a shadow map, we render from the point of view of the light, whose view/projection matrices are always in lhs mode.
+        // We therefore need to "undo" the sideOrientation inversion that was previously performed when constructing the material.
+        const useRHS = scene.useRightHandedSystem;
         const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
         let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-        if (detNeg) {
+        if ((detNeg && !useRHS) || (!detNeg && useRHS)) {
             sideOrientation =
                 sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
         }
@@ -1783,12 +1788,13 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Only PCF uses depth stencil texture.
+        const shadowMapForRendering = this.getShadowMapForRendering();
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), shadowMap.getSize().width, 1 / shadowMap.getSize().width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
-            effect.setTexture("depthSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMapForRendering);
+            effect.setTexture("depthTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4(
                 "shadowsInfo",
                 this.getDarkness(),
@@ -1798,7 +1804,7 @@ export class ShadowGenerator implements IShadowGenerator {
                 lightIndex
             );
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, this.getShadowMapForRendering());
+            effect.setTexture("shadowTexture" + lightIndex, shadowMapForRendering);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), this.blurScale / shadowMap.getSize().width, this.depthScale, this.frustumEdgeFalloff, lightIndex);
         }
 

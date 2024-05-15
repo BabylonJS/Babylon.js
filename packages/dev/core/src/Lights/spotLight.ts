@@ -383,7 +383,7 @@ export class SpotLight extends ShadowLight {
                 this._computeProjectionTextureMatrix();
             }
             effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
+            effect.setTexture("projectionLightTexture" + lightIndex, this.projectionTexture);
         }
         return this;
     }

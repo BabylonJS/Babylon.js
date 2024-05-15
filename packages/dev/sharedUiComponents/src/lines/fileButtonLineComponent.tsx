@@ -1,6 +1,6 @@
 import * as React from "react";
 
-interface IFileButtonLineComponentProps {
+interface IFileButtonLineProps {
     label: string;
     onClick: (file: File) => void;
     accept: string;
@@ -8,12 +8,12 @@ interface IFileButtonLineComponentProps {
     iconLabel?: string;
 }
 
-export class FileButtonLineComponent extends React.Component<IFileButtonLineComponentProps> {
+export class FileButtonLine extends React.Component<IFileButtonLineProps> {
     private static _IDGenerator = 0;
-    private _id = FileButtonLineComponent._IDGenerator++;
+    private _id = FileButtonLine._IDGenerator++;
     private _uploadInputRef: React.RefObject<HTMLInputElement>;
 
-    constructor(props: IFileButtonLineComponentProps) {
+    constructor(props: IFileButtonLineProps) {
         super(props);
         this._uploadInputRef = React.createRef();
     }

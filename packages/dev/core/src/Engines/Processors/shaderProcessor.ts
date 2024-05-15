@@ -330,7 +330,7 @@ function _ProcessShaderConversion(sourceCode: string, options: ProcessingOptions
 
     // General pre processing
     if (options.processor.preProcessor) {
-        preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+        preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
     preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);
@@ -367,7 +367,7 @@ function _ApplyPreProcessing(sourceCode: string, options: ProcessingOptions, eng
 
     // General pre processing
     if (options.processor?.preProcessor) {
-        preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, options.isFragment, options.processingContext);
+        preparedSourceCode = options.processor.preProcessor(preparedSourceCode, defines, preprocessors, options.isFragment, options.processingContext);
     }
 
     preparedSourceCode = _EvaluatePreProcessors(preparedSourceCode, preprocessors, options);

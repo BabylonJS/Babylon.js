@@ -211,7 +211,7 @@ checkBabylonVersionAsync().then(() => {
                                     if (xmlHttp.status == 200) {
                                         let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                                         let snippet = JSON.parse(xmlHttp.responseText);
-                                        let newUrl = baseUrl + "#" + snippet.id;
+                                        let newUrl = baseUrl + (useWebGPU ? "?webgpu" : "") + "#" + snippet.id;
                                         currentSnippetToken = snippet.id;
                                         if (snippet.version && snippet.version != "0") {
                                             newUrl += "#" + snippet.version;

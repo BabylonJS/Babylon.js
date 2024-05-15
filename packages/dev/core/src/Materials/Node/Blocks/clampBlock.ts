@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to clamp a float
@@ -58,8 +59,11 @@ export class ClampBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
+        const cast = state.shaderLanguage === ShaderLanguage.WGSL ? state._getShaderType(this.value.type) : "";
+
         state.compilationString +=
-            state._declareOutput(output) + ` = clamp(${this.value.associatedVariableName}, ${this._writeFloat(this.minimum)}, ${this._writeFloat(this.maximum)});\n`;
+            state._declareOutput(output) +
+            ` = clamp(${this.value.associatedVariableName}, ${cast}(${this._writeFloat(this.minimum)}), ${cast}(${this._writeFloat(this.maximum)}));\n`;
 
         return this;
     }
