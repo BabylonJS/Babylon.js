@@ -92,8 +92,8 @@ void main () {
     vec2 vCenter = vec2(pos2d);
     gl_Position = vec4(
         vCenter 
-        + (position.x * majorAxis * 1. / viewport 
-        + position.y * minorAxis * 1. / viewport) * pos2d.w, pos2d.zw);
+        + (position.x * majorAxis * 1. / viewport.x 
+        + position.y * minorAxis * 1. / viewport.y) * pos2d.w, pos2d.zw);
 
 #include<clipPlaneVertex>
 #include<fogVertex>
