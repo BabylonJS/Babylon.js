@@ -1184,9 +1184,14 @@ export class ShadowGenerator implements IShadowGenerator {
         }
 
         // Culling
+        // Note:
+        // In rhs mode, we assume that meshes will be rendered in right-handed space (i.e. with an RHS camera), so the default value of material.sideOrientation is updated accordingly (see material constructor).
+        // However, when generating a shadow map, we render from the point of view of the light, whose view/projection matrices are always in lhs mode.
+        // We therefore need to "undo" the sideOrientation inversion that was previously performed when constructing the material.
+        const useRHS = scene.useRightHandedSystem;
         const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
         let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
-        if (detNeg) {
+        if ((detNeg && !useRHS) || (!detNeg && useRHS)) {
             sideOrientation =
                 sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
         }
