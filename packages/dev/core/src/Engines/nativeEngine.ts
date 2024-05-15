@@ -2351,6 +2351,7 @@ export class NativeEngine extends Engine {
             if (this._boundTexturesCache[channel] != null) {
                 this._activeChannel = channel;
                 this._boundTexturesCache[channel] = null;
+                this._unsetNativeTexture(uniform);
             }
             return false;
         }
@@ -2394,7 +2395,7 @@ export class NativeEngine extends Engine {
         );
         this._updateAnisotropicLevel(texture);
 
-        this._setTextureCore(uniform, internalTexture._hardwareTexture.underlyingResource);
+        this._setNativeTexture(uniform, internalTexture._hardwareTexture.underlyingResource);
 
         return true;
     }
@@ -2417,10 +2418,20 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
-    private _setTextureCore(uniform: NativeUniform, texture: NativeTexture) {
+    private _setNativeTexture(uniform: NativeUniform, texture: NativeTexture) {
         this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_SETTEXTURE);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform);
         this._commandBufferEncoder.encodeCommandArgAsNativeData(texture);
+        this._commandBufferEncoder.finishEncodingCommand();
+    }
+
+    private _unsetNativeTexture(uniform: NativeUniform) {
+        if (!_native.Engine.COMMAND_UNSETTEXTURE) {
+            return;
+        }
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_UNSETTEXTURE);
+        this._commandBufferEncoder.encodeCommandArgAsNativeData(uniform);
         this._commandBufferEncoder.finishEncodingCommand();
     }
 
@@ -2446,15 +2457,30 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _bindTexture(channel: number, texture: InternalTexture): void {
+    public override _bindTexture(channel: number, texture: Nullable<InternalTexture>): void {
         const uniform = this._boundUniforms[channel] as unknown as NativeUniform;
         if (!uniform) {
             return;
         }
+
         if (texture && texture._hardwareTexture) {
             const underlyingResource = texture._hardwareTexture.underlyingResource;
-            this._setTextureCore(uniform, underlyingResource);
+            this._setNativeTexture(uniform, underlyingResource);
+        } else {
+            this._unsetNativeTexture(uniform);
         }
+    }
+
+    /**
+     * Unbind all textures
+     */
+    public override unbindAllTextures(): void {
+        if (!_native.Engine.COMMAND_DISCARDALLTEXTURES) {
+            return;
+        }
+
+        this._commandBufferEncoder.startEncodingCommand(_native.Engine.COMMAND_DISCARDALLTEXTURES);
+        this._commandBufferEncoder.finishEncodingCommand();
     }
 
     protected override _deleteBuffer(buffer: NativeDataBuffer): void {
