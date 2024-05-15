@@ -2273,7 +2273,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     public dispose(): void {
         if (this._queryCollector) {
             this._hknp.HP_QueryCollector_Release(this._queryCollector);
-            this._queryCollector = BigInt(0);
+            this._queryCollector = undefined;
         }
         if (this.world) {
             this._hknp.HP_World_Release(this.world);
