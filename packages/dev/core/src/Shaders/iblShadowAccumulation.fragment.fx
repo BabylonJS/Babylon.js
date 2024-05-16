@@ -24,7 +24,7 @@ void main(void) {
   // vec4 LP = texture(localPositionSampler, vUV);
   vec4 LP = texelFetch(localPositionSampler, currentPixel, 0);
   if (0.0 == LP.w) {
-    gl_FragColor = vec4(0.0);
+    gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
     return;
   }
   vec2 velocityColor = texelFetch(motionSampler, currentPixel, 0).xy;

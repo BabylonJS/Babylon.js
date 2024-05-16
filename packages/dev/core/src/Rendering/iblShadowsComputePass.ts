@@ -17,10 +17,18 @@ import { PostProcess } from "../PostProcesses/postProcess";
 export class IblShadowsComputePass {
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _voxelShadowEnabled: boolean = true;
+    private _sssEnabled: boolean = true;
     private _sssSamples: number = 16;
-    private _sssStride: number = 12;
-    private _sssMaxDist: number = 0.1;
-    private _sssThickness: number = 0.005;
+    private _sssStride: number = 8;
+    private _sssMaxDist: number = 0.15;
+    private _sssThickness: number = 0.01;
+    public get sssEnabled(): boolean {
+        return this._sssEnabled;
+    }
+    public set sssEnabled(value: boolean) {
+        this._sssEnabled = value;
+    }
     public get sssSamples(): number {
         return this._sssSamples;
     }
@@ -52,6 +60,20 @@ export class IblShadowsComputePass {
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
     private _frameId: number = 0;
     private _sampleDirections: number = 4;
+    public get sampleDirections(): number {
+        return this._sampleDirections;
+    }
+    public set sampleDirections(value: number) {
+        this._sampleDirections = value;
+    }
+    public get envRotation(): number {
+        return this._envRotation;
+    }
+    public set envRotation(value: number) {
+        this._envRotation = value;
+    }
+    /** The default rotation of the environment map will align the shadows with the default lighting orientation */
+    private _envRotation: number = -Math.PI / 2.0;
     private _downscale: number = 1.0;
 
     public getTexture(): CustomProceduralTexture {
@@ -154,8 +176,7 @@ export class IblShadowsComputePass {
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
-        const envmapRotation = 0.0;
-        this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, envmapRotation));
+        this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, this._envRotation));
         const offset = new Vector2(0.0, 0.0);
         const voxelGrid = this._scene.iblShadowsRenderer!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
@@ -166,7 +187,7 @@ export class IblShadowsComputePass {
         const maxDist = this._sssMaxDist * worldScale;
         const thickness = this._sssThickness * worldScale;
         this._outputPT.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
-
+        this._outputPT.setVector4("shadowOpacity", new Vector4(this._voxelShadowEnabled ? 1.0 : 0.0, this._sssEnabled ? 1.0 : 0.0, 0.0, 0.0));
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
         this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());
         this._outputPT.setTexture("icdfxSampler", this._scene.iblShadowsRenderer!.getIcdfxTexture());
