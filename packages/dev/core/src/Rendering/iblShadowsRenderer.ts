@@ -133,6 +133,14 @@ export class IblShadowsRenderer {
         this._voxelRenderer.voxelDebugEnabled = enabled;
     }
 
+    public get voxelDebugAxis(): number {
+        return this._voxelRenderer.voxelDebugAxis;
+    }
+
+    public set voxelDebugAxis(axisNum: number) {
+        this._voxelRenderer.voxelDebugAxis = axisNum;
+    }
+
     public set voxelDebugDisplayMip(mipNum: number) {
         this._voxelRenderer.setDebugMipNumber(mipNum);
     }
