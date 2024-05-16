@@ -227,6 +227,22 @@ export class IblShadowsRenderer {
         this._voxelizationDirty = true;
     }
 
+    public get sampleDirections() {
+        return this._shadowComputePass.sampleDirections;
+    }
+
+    public set sampleDirections(value: number) {
+        this._shadowComputePass.sampleDirections = value;
+    }
+
+    public get envRotation() {
+        return this._shadowComputePass.envRotation;
+    }
+
+    public set envRotation(value: number) {
+        this._shadowComputePass.envRotation = value;
+    }
+
     /**
      * Instanciates the IBL Shadow renderer
      * @param scene Scene to attach to

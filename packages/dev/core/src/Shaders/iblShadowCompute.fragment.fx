@@ -35,6 +35,8 @@ uniform vec4 sssParameters;
 #define SSSmaxDistance sssParameters.z
 #define SSSthickness sssParameters.w
 
+uniform vec4 shadowOpacity;
+
 // Uniform matrices
 uniform mat4 projMtx;
 uniform mat4 viewMtx;
@@ -588,8 +590,8 @@ void main(void) {
       uint(PixelCoord.x);
 
   vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
-  if (all(equal(N, vec3(0, 0, 0)))) {
-    gl_FragColor = vec4(0, 0, 0, 0);
+  if (length(N) < 0.01) {
+    glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
     return;
   }
 
@@ -643,21 +645,23 @@ void main(void) {
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
-      opacity = max(opacity, voxelShadow(WP, L.xyz, N, vxNoise));
+      opacity =
+          max(opacity, shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise));
 
       // sss
       vec3 VL = (viewMtx * L).xyz;
-      VL.y *= -1.0;
+      // VL.y *= -1.0;
       float nearPlaneZ =
           -projMtx[3][2] / projMtx[2][2]; // retreive camera Z near value
-      float ssShadow = screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
+      float ssShadow = shadowOpacity.y *
+                       screenSpaceShadow(VP2.xyz, VL, Resolution, nearPlaneZ,
                                          abs(2.0 * noise.z - 1.0));
       opacity = max(opacity, ssShadow);
       shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
       // } else if (linearZ_alpha.y > 0.0) {
       //   shadowAccum += opacity / float(nbDirs);
     } else {
-      shadowAccum += 1.0; // min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
+      shadowAccum += min(1.0 - opacity, smoothstep(-0.1, 0.2, cosNL));
     }
     noise.z = fract(noise.z + GOLD);
   }

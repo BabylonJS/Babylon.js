@@ -25,8 +25,10 @@ void main(void)
     ivec2 PixelCoord = ivec2(vUV * Resolution);
 
     vec3 N = texelFetch(worldNormalSampler, PixelCoord, 0).xyz;
-    if(N == vec3(0.0))
-        return;
+    if (length(N) < 0.01) {
+      glFragColor = vec4(1.0, 1.0, 0.0, 1.0);
+      return;
+    }
 
     float depth = -texelFetch(linearDepthSampler, PixelCoord, 0).x;
 

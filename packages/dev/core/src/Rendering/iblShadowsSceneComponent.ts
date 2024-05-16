@@ -25,7 +25,7 @@ declare module "../scene" {
 
 Object.defineProperty(Scene.prototype, "iblShadowsRenderer", {
     get: function (this: Scene) {
-        if (!this._iblShadowsRenderer) {
+        if (!this._iblShadowsRenderer && this._useIblShadows) {
             let component = this._getComponent(SceneComponentConstants.NAME_IBLSHADOWSRENDERER) as IblShadowsSceneComponent;
             if (!component) {
                 component = new IblShadowsSceneComponent(this);
