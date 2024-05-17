@@ -694,11 +694,18 @@ export class ProceduralTexture extends Texture {
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
         } else {
-            const numLayers = this._rtWrapper.is3D ? this._rtWrapper.depth : this._rtWrapper.layers;
+            let numLayers = 1;
+            if (this._rtWrapper.is3D) {
+                numLayers = this._rtWrapper.depth;
+            } else if (this._rtWrapper.is2DArray) {
+                numLayers = this._rtWrapper.layers;
+            }
             for (let layer = 0; layer < numLayers; layer++) {
                 engine.bindFramebuffer(this._rtWrapper, 0, undefined, undefined, true, 0, layer);
 
-                this._drawWrapper.effect?.setFloat("layer", layer / numLayers);
+                if (this._rtWrapper.is3D || this._rtWrapper.is2DArray) {
+                    this._drawWrapper.effect?.setFloat("layer", numLayers !== 1 ? layer / (numLayers - 1) : 0);
+                }
 
                 // VBOs
                 engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
