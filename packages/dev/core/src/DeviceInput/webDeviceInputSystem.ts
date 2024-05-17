@@ -429,7 +429,7 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             const deviceType = this._getPointerType(evt);
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : this._activeTouchIds.indexOf(evt.pointerId);
 
-            // In the event that we're gettting pointermove events from touch inputs that we aren't tracking,
+            // In the event that we're getting pointermove events from touch inputs that we aren't tracking,
             // look for an available slot and retroactively connect it.
             if (deviceType === DeviceType.Touch && deviceSlot === -1) {
                 const idx = this._activeTouchIds.indexOf(-1);
@@ -487,7 +487,13 @@ export class WebDeviceInputSystem implements IDeviceInputSystem {
             let deviceSlot = deviceType === DeviceType.Mouse ? 0 : evt.pointerId;
 
             if (deviceType === DeviceType.Touch) {
-                const idx = this._activeTouchIds.indexOf(-1);
+                // See if this pointerId is already using an existing slot
+                // (possible on some devices which raise the pointerMove event before the pointerDown event, e.g. when using a pen)
+                let idx = this._activeTouchIds.indexOf(evt.pointerId);
+                if (idx === -1) {
+                    // If the pointerId wasn't already using a slot, find an open one
+                    idx = this._activeTouchIds.indexOf(-1);
+                }
 
                 if (idx >= 0) {
                     deviceSlot = idx;
