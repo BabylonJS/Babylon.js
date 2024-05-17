@@ -214,7 +214,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
             const renderWidth = engine.getRenderWidth();
             const renderHeight = engine.getRenderHeight();
 
-            this._activeEffect.setFloat2("invViewport", 1 / renderWidth, 1 / renderHeight);
+            // check if rigcamera, get number of rigs
+            const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
+
+            this._activeEffect.setFloat2("invViewport", 1 / (renderWidth / numberOfRigs), 1 / renderHeight);
 
             let focal = 1000;
 
