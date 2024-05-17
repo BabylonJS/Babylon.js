@@ -694,18 +694,23 @@ export class ProceduralTexture extends Texture {
                 engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
         } else {
-            engine.bindFramebuffer(this._rtWrapper, 0, undefined, undefined, true);
+            const numLayers = this._rtWrapper.is3D ? this._rtWrapper.depth : this._rtWrapper.layers;
+            for (let layer = 0; layer < numLayers; layer++) {
+                engine.bindFramebuffer(this._rtWrapper, 0, undefined, undefined, true, 0, layer);
 
-            // VBOs
-            engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
+                this._drawWrapper.effect?.setFloat("layer", layer / numLayers);
 
-            // Clear
-            if (this.autoClear) {
-                engine.clear(scene.clearColor, true, false, false);
+                // VBOs
+                engine.bindBuffers(this._vertexBuffers, this._indexBuffer, this._drawWrapper.effect!);
+
+                // Clear
+                if (this.autoClear) {
+                    engine.clear(scene.clearColor, true, false, false);
+                }
+
+                // Draw order
+                engine.drawElementsType(Material.TriangleFillMode, 0, 6);
             }
-
-            // Draw order
-            engine.drawElementsType(Material.TriangleFillMode, 0, 6);
         }
 
         // Unbind and restore viewport

@@ -2068,6 +2068,12 @@
             "title": "Shadows in RHS mode",
             "playgroundId": "#RO51RT#14",
             "referenceImage": "shadows-rhs.png"
+        },
+        {
+            "title": "3D Procedural Textures",
+            "playgroundId": "#AYZY4Q#6",
+            "renderCount": 5,
+            "excludedEngines": ["webgl1"]
         }
     ]
 }
