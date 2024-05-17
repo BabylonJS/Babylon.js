@@ -54,7 +54,10 @@ describe("Babylon WebXR Features Manager", function () {
      */
     describe("Conflicting Features cannot be enabled simultaneously", () => {
         it("Cannot enable Movement feature while Teleportation feature is enabled", () => {
-            const teleportationFeature = subject.enableFeature(WebXRMotionControllerTeleportation.Name, undefined, { xrInput: { xrCamera: {} } });
+            const teleportationFeature = subject.enableFeature(WebXRMotionControllerTeleportation.Name, undefined, {
+                xrInput: { xrCamera: {} },
+                defaultTargetMeshOptions: { teleportationCircleMaterial: {} },
+            });
             expect(teleportationFeature).toBeDefined();
             expect(subject.getEnabledFeatures()).toStrictEqual([WebXRMotionControllerTeleportation.Name]);
 
