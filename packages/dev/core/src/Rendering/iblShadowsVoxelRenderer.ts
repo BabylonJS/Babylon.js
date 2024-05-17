@@ -6,7 +6,7 @@ import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetTextureOptions } from "../Materials/Textures/renderTargetTexture";
 import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
 import { Color4 } from "../Maths/math.color";
-import { Matrix, Vector3 } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector4 } from "../Maths/math.vector";
 import { Mesh } from "../Meshes/mesh";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
@@ -15,8 +15,9 @@ import "../Shaders/voxelGrid.fragment";
 import "../Shaders/voxelGrid.vertex";
 import "../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../Shaders/voxelGrid3dDebug.fragment";
+import "../Shaders/combineVoxelGrids.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
-import { Vector4 } from "../Maths/math.vector";
+import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -26,7 +27,7 @@ export class IblShadowsVoxelRenderer {
     private _scene: Scene;
     private _engine: Engine;
 
-    private _voxelGridRT: RenderTargetTexture;
+    private _voxelGridRT: ProceduralTexture;
     private _voxelGridXaxis: RenderTargetTexture;
     private _voxelGridYaxis: RenderTargetTexture;
     private _voxelGridZaxis: RenderTargetTexture;
@@ -34,8 +35,8 @@ export class IblShadowsVoxelRenderer {
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
-    public getVoxelGrid(): RenderTargetTexture {
-        return this._voxelGridZaxis;
+    public getVoxelGrid(): ProceduralTexture {
+        return this._voxelGridRT;
     }
     private _maxDrawBuffers: number;
 
@@ -156,11 +157,10 @@ export class IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_R,
-            samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
-            generateMipMaps: true,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            generateMipMaps: false,
         };
 
-        this._voxelGridRT = new RenderTargetTexture("voxelGrid", size, this._scene, options);
         this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, options);
         this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, options);
         this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, options);
@@ -171,6 +171,14 @@ export class IblShadowsVoxelRenderer {
         this._voxelMrtsXaxis = this._createVoxelMRTs("x_axis_", this._voxelGridXaxis, numSlabs);
         this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
         this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
+
+        this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, options, true);
+        this._voxelGridRT.setFloat("layer", 0.0);
+        this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
+        this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
+        this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
+        this._voxelGridRT.autoClear = false;
+        this._voxelGridRT.refreshRate = 0;
     }
 
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
@@ -287,11 +295,12 @@ export class IblShadowsVoxelRenderer {
             // TODO - this seems to be removing the MRT's too early??
             setTimeout(() => {
                 this._stopVoxelization();
+                this._voxelGridRT.render();
                 this._voxelizationInProgress = false;
                 if (this._voxelGridRT.getInternalTexture()) {
                     this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
                 }
-            }, 5000);
+            }, 1000);
         });
     }
 
