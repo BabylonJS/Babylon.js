@@ -389,7 +389,7 @@ export class Inspector {
         };
 
         // load the font, unless asked to skip it
-        if (!options.skipDefaultFontLoading || (globalThis as any)?.BABYLON_SKIP_FONT_LOADING !== true) {
+        if (!options.skipDefaultFontLoading && !(globalThis as any)?.BABYLON_SKIP_FONT_LOADING) {
             const font = document.createElement("link");
             font.rel = "stylesheet";
             font.href = "https://use.typekit.net/cta4xsb.css";
