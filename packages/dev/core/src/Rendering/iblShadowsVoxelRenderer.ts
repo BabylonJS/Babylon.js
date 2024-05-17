@@ -153,17 +153,17 @@ export class IblShadowsVoxelRenderer {
             layers: this._isVoxelGrid3D ? undefined : this._voxelResolution,
             depth: this._isVoxelGrid3D ? this._voxelResolution : undefined,
         };
-        const options: RenderTargetTextureOptions = {
+        const voxelAxisOptions: RenderTargetTextureOptions = {
             generateDepthBuffer: false,
+            generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_R,
-            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
-            generateMipMaps: false,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
-        this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, options);
-        this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, options);
-        this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, options);
+        this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
+        this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
+        this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelAxisOptions);
 
         // We can render up to maxDrawBuffers voxel slices of the grid per render.
         // We call this a slab.
@@ -172,11 +172,20 @@ export class IblShadowsVoxelRenderer {
         this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
         this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
-        this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, options, true);
+        const voxelCombinedOptions: RenderTargetTextureOptions = {
+            generateDepthBuffer: false,
+            generateMipMaps: true,
+            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+            format: Constants.TEXTUREFORMAT_R,
+            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+        };
+
+        this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
         this._voxelGridRT.setFloat("layer", 0.0);
         this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
         this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
         this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
+        // We will render this only after voxelization is completed for the 3 axes.
         this._voxelGridRT.autoClear = false;
         this._voxelGridRT.refreshRate = 0;
     }
