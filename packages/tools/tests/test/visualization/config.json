@@ -2073,6 +2073,7 @@
             "title": "3D Procedural Textures",
             "playgroundId": "#AYZY4Q#6",
             "renderCount": 5,
+            "referenceImage": "procedural_textures_3d.png",
             "excludedEngines": ["webgl1"]
         }
     ]
