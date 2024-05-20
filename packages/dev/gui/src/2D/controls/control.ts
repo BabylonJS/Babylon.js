@@ -2432,7 +2432,7 @@ export class Control implements IAnimatable {
             "px " +
             this._getStyleProperty("fontFamily", "Arial");
 
-        this._fontOffset = Control._GetFontOffset(this._font, this._host.getScene()?.getEngine());
+        this._fontOffset = Control._GetFontOffset(this._font, this._host?.getScene()?.getEngine());
 
         //children need to be refreshed
         this.getDescendants().forEach((child) => child._markAllAsDirty());
