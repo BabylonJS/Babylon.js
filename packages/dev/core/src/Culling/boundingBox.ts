@@ -26,11 +26,11 @@ export class BoundingBox implements ICullable {
      */
     public readonly centerWorld: Vector3 = Vector3.Zero();
     /**
-     * Gets the extend size in local space
+     * Gets half the size of the extent in local space. Multiply by 2 to obtain the full size of the box!
      */
     public readonly extendSize: Vector3 = Vector3.Zero();
     /**
-     * Gets the extend size in world space
+     * Gets half the size of the extent in world space. Multiply by 2 to obtain the full size of the box!
      */
     public readonly extendSizeWorld: Vector3 = Vector3.Zero();
     /**
