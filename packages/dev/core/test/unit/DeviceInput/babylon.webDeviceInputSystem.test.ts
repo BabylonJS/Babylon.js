@@ -57,7 +57,7 @@ describe("WebDeviceInputSystem", () => {
     });
 
     describe("when pointerdown comes before pointermove", () => {
-        describe("initial pointerdown", () => {
+        describe("pointerdown", () => {
             it("should raise deviceConnected", () => {
                 // Act
                 raiseOnPointerDown({ pointerType: "touch", button: 0, pointerId: 1 });
