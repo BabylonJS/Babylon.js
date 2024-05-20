@@ -2,9 +2,13 @@
  * @jest-environment jsdom
  */
 
+jest.mock("core/Misc/logger");
+
 import { WebDeviceInputSystem } from "core/DeviceInput/webDeviceInputSystem";
 import { NullEngine, NullEngineOptions } from "core/Engines/nullEngine";
 import { Logger } from "core/Misc/logger";
+
+const mockTraceWarn = Logger.Warn as jest.Mock<any, any>;
 
 describe("WebDeviceInputSystem", () => {
     let engine: NullEngine;
@@ -14,9 +18,9 @@ describe("WebDeviceInputSystem", () => {
     let mockOnDeviceDisconnected: jest.Mock<any, any>;
     let renderElement: HTMLCanvasElement;
     let addEventListenerSpy: jest.SpyInstance;
-    let raiseOnPointerDown = (evt: any) => {};
-    let raiseOnPointerMove = (evt: any) => {};
-    let raiseOnPointerUp = (evt: any) => {};
+    let raiseOnPointerDown: (evt: any) => {};
+    let raiseOnPointerMove: (evt: any) => {};
+    let raiseOnPointerUp: (evt: any) => {};
 
     beforeEach(() => {
         // So that GetPointerPrefix knows we are going to simulate pointer events
@@ -46,8 +50,6 @@ describe("WebDeviceInputSystem", () => {
         nullEngineOptions.renderingCanvas = renderElement;
         engine = new NullEngine(nullEngineOptions);
         wdis = new WebDeviceInputSystem(engine, mockOnDeviceConnected, mockOnDeviceDisconnected, mockOnInputChanged);
-
-        Logger.Warn = jest.fn();
     });
 
     afterEach(() => {
@@ -64,7 +66,7 @@ describe("WebDeviceInputSystem", () => {
 
                 // Assert
                 expect(mockOnDeviceConnected).toHaveBeenCalled();
-                expect(Logger.Warn).not.toHaveBeenCalled();
+                expect(mockTraceWarn).not.toHaveBeenCalled();
             });
         });
         describe("many pointerdown, pointermove, pointerup cycles", () => {
@@ -81,7 +83,7 @@ describe("WebDeviceInputSystem", () => {
                     raiseOnPointerUp({ pointerType: "touch", button: 0, pointerId });
 
                     // Assert
-                    expect(Logger.Warn).not.toHaveBeenCalled();
+                    expect(mockTraceWarn).not.toHaveBeenCalled();
                     expect(mockOnDeviceConnected).toHaveBeenCalled();
                     expect(mockOnInputChanged).toHaveBeenCalled();
                     expect(mockOnDeviceDisconnected).toHaveBeenCalled();
@@ -98,7 +100,7 @@ describe("WebDeviceInputSystem", () => {
 
                 // Assert
                 expect(mockOnDeviceConnected).toHaveBeenCalled();
-                expect(Logger.Warn).not.toHaveBeenCalled();
+                expect(mockTraceWarn).not.toHaveBeenCalled();
             });
         });
         describe("subsequent pointermove", () => {
@@ -112,7 +114,7 @@ describe("WebDeviceInputSystem", () => {
 
                 // Assert
                 expect(mockOnDeviceConnected).not.toHaveBeenCalled();
-                expect(Logger.Warn).not.toHaveBeenCalled();
+                expect(mockTraceWarn).not.toHaveBeenCalled();
             });
         });
         describe("many pointermove, pointerdown, pointerup cycles", () => {
@@ -129,7 +131,7 @@ describe("WebDeviceInputSystem", () => {
                     raiseOnPointerUp({ pointerType: "touch", button: 0, pointerId });
 
                     // Assert
-                    expect(Logger.Warn).not.toHaveBeenCalled();
+                    expect(mockTraceWarn).not.toHaveBeenCalled();
                     expect(mockOnDeviceConnected).toHaveBeenCalled();
                     expect(mockOnInputChanged).toHaveBeenCalled();
                     expect(mockOnDeviceDisconnected).toHaveBeenCalled();
