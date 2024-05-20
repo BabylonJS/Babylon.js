@@ -320,7 +320,7 @@ export class NativeEngine extends Engine {
             needToAlwaysBindUniformBuffers: false,
             supportRenderPasses: true,
             supportSpriteInstancing: false,
-            forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
+            forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
             _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
             _collectUbosUpdatedInFrame: false,
         };
@@ -555,14 +555,14 @@ export class NativeEngine extends Engine {
                 }
 
                 if (vertexBuffer) {
-                    const buffer = vertexBuffer.getBuffer() as Nullable<NativeDataBuffer>;
+                    const buffer = vertexBuffer.effectiveBuffer as Nullable<NativeDataBuffer>;
                     if (buffer && buffer.nativeVertexBuffer) {
                         this._engine.recordVertexBuffer(
                             vertexArray,
                             buffer.nativeVertexBuffer!,
                             location,
-                            vertexBuffer.byteOffset,
-                            vertexBuffer.byteStride,
+                            vertexBuffer.effectiveByteOffset,
+                            vertexBuffer.effectiveByteStride,
                             vertexBuffer.getSize(),
                             getNativeAttribType(vertexBuffer.type),
                             vertexBuffer.normalized,
