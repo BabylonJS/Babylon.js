@@ -534,6 +534,8 @@ export class NativeEngine extends Engine {
         effect: Effect,
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): void {
+        checkNonFloatVertexBuffers(vertexBuffers, effect);
+
         if (indexBuffer) {
             this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);
         }
@@ -576,7 +578,6 @@ export class NativeEngine extends Engine {
         if (this._boundBuffersVertexArray) {
             this._deleteVertexArray(this._boundBuffersVertexArray);
         }
-        checkNonFloatVertexBuffers(vertexBuffers, effect);
         this._boundBuffersVertexArray = this._engine.createVertexArray();
         this._recordVertexArrayObject(this._boundBuffersVertexArray, vertexBuffers, indexBuffer, effect);
         this.bindVertexArrayObject(this._boundBuffersVertexArray);
