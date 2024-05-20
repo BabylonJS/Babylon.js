@@ -136,7 +136,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize", "focal"];
+            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
             const uniformBuffers = ["Scene", "Mesh"];
 
@@ -214,7 +214,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
             const renderWidth = engine.getRenderWidth();
             const renderHeight = engine.getRenderHeight();
 
-            this._activeEffect.setFloat2("viewport", renderWidth, renderHeight);
+            // check if rigcamera, get number of rigs
+            const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
+
+            this._activeEffect.setFloat2("invViewport", 1 / (renderWidth / numberOfRigs), 1 / renderHeight);
 
             let focal = 1000;
 

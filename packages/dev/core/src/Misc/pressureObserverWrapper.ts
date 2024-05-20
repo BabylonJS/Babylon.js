@@ -31,7 +31,7 @@ export class PressureObserverWrapper {
      * Returns true if PressureObserver is available for use, false otherwise.
      */
     public static get IsAvailable() {
-        return typeof PressureObserver !== "undefined" && PressureObserver.supportedSources.includes("cpu");
+        return typeof PressureObserver !== "undefined" && PressureObserver.knownSources && PressureObserver.knownSources.includes("cpu");
     }
 
     /**

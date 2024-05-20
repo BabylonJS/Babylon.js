@@ -1,14 +1,17 @@
 import { defineConfig, devices } from "@playwright/test";
+import { getCdpEndpoint } from "./browserstack.config";
 
 const isCI = !!process.env.CI;
 const browserType = process.env.BROWSER || (isCI ? "Firefox" : "Chrome");
-const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : undefined;
+const numberOfWorkers = process.env.CIWORKERS ? +process.env.CIWORKERS : process.env.CI ? 1 : browserType === "BrowserStack" ? 1 : undefined;
 const customFlags = process.env.CUSTOM_FLAGS ? process.env.CUSTOM_FLAGS.split(" ") : [];
 const headless = process.env.HEADLESS !== "false";
 const forceChrome = process.env.FORCE_CHROME === "true";
 
 const args = browserType === "Chrome" ? ["--use-angle=default", "--js-flags=--expose-gc"] : ["-wait-for-browser"];
 args.push(...customFlags);
+
+const browserStackBrowser = process.env.BROWSERSTACK_BROWSER || "chrome@latest:OSX Sonoma";
 
 export default defineConfig({
     testDir: "./test/playwright",
@@ -29,6 +32,9 @@ export default defineConfig({
         ignoreHTTPSErrors: true,
     },
 
+    globalSetup: browserType === "BrowserStack" ? require.resolve("./globalSetup.ts") : undefined,
+    globalTeardown: browserType === "BrowserStack" ? require.resolve("./globalTeardown.ts") : undefined,
+
     /* Project configuration */
     projects: [
         {
@@ -43,13 +49,17 @@ export default defineConfig({
                           args,
                       },
                   }
-                : {
-                      ...devices["Desktop " + browserType],
-                      headless,
-                      launchOptions: {
-                          args,
-                      },
-                  },
+                : browserType === "BrowserStack"
+                  ? {
+                        connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGL2") },
+                    }
+                  : {
+                        ...devices["Desktop " + browserType],
+                        headless,
+                        launchOptions: {
+                            args,
+                        },
+                    },
         },
 
         {
@@ -64,26 +74,35 @@ export default defineConfig({
                           args,
                       },
                   }
-                : {
-                      ...devices["Desktop " + browserType],
-                      headless,
-                      launchOptions: {
-                          args,
-                      },
-                  },
+                : browserType === "BrowserStack"
+                  ? {
+                        connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGL1") },
+                    }
+                  : {
+                        ...devices["Desktop " + browserType],
+                        headless,
+                        launchOptions: {
+                            args,
+                        },
+                    },
         },
 
         {
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
-            use: {
-                // use real chrome (not chromium) for webgpu tests
-                channel: "chrome",
-                headless,
-                launchOptions: {
-                    args,
-                },
-            },
+            use:
+                browserType === "BrowserStack"
+                    ? {
+                          connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGPU") },
+                      }
+                    : {
+                          // use real chrome (not chromium) for webgpu tests
+                          channel: "chrome",
+                          headless,
+                          launchOptions: {
+                              args,
+                          },
+                      },
         },
     ],
 

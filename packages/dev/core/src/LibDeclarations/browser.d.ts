@@ -120,5 +120,5 @@ declare const PressureObserver: {
     prototype: PressureObserver;
     new (callback: PressureUpdateCallback, options?: PressureObserverOptions): PressureObserver;
 
-    supportedSources: ReadonlyArray<PressureSource>;
+    knownSources: ReadonlyArray<PressureSource>;
 };
