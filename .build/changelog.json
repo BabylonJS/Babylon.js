@@ -1,7 +1,221 @@
 {
-    "fromTag": "7.6.2",
+    "fromTag": "7.7.0",
     "changelog": {
         "7.7.0": [],
+        "7.7.1": [
+            {
+                "pr": "15107",
+                "title": "Engine: add support for non float vertex buffers in native",
+                "description": "Let's hope it works in Native!\r\n\r\n~~Note that the support has been added to WebGL2 (as it's what Native uses under the hood), but it is disabled for WebGL2 in Babylon.js because ANGLE is already doing the job~~\r\n\r\nTo reduce the footprint of thinEngine, the changes are only specific to Native and WebGPU. I had to create/update a number of things in the native engine without being able to test them... So don't be surprised if the tests fail!",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.nonFloatVertexBuffers.ts",
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativePipelineContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativeShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/Native/nativeShaderProcessors.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessingOptions.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuCacheRenderPipeline.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessingContext.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessor.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsGLSL.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/engineFeatures.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Misc/codeStringParsingTools.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "native"
+                ]
+            },
+            {
+                "pr": "15123",
+                "title": "Nme webgpu3",
+                "description": "More nodes!",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/lightInformationBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/morphTargetsBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15121",
+                "title": "Add vscode launch config for \"Run and Debug current unit test file (Dev)\", and add \"Jest Runner\" to recommended VSCode extension list",
+                "description": "This VSCode launch config will build then run just the unit test file current selected in VSCode, making it easier to iterate quickly on a single unit test file.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    ".vscode/extensions.json",
+                    ".vscode/launch.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15120",
+                "title": "Add WebDeviceInputSystem unit tests to cover pointermove before pointerdown cases",
+                "description": "These unit tests protect against regressions of the fix which addressed the bug where systems which call pointermove before pointedown got the WebDeviceInputSystem into a bad state where it would no longer accept additional touch events.  See commit: https://github.com/BabylonJS/Babylon.js/commit/aa2398ea386c16739839384e7d50fb6bfe032f55",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nullEngine.ts",
+                    "packages/dev/core/test/unit/DeviceInput/babylon.webDeviceInputSystem.test.ts"
+                ],
+                "tags": [
+                    "tests"
+                ]
+            },
+            {
+                "pr": "15122",
+                "title": "Mesh: Fix bounding infos when calling convertToUnIndexedMesh",
+                "description": "See https://forum.babylonjs.com/t/object-display-truncated-by-camera/50632/8\r\n\r\nI preferred to save and restore the existing submeshes / mesh bounding info rather than recalculate them with a call to `mesh.refreshBoundingInfo(true)`, because the bounding info may come from a glTF file, in which case the extents may be different from the extents calculated by `refreshBoundingInfo`. In addition, the user may have defined a custom bounding info.",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15115",
+                "title": "_pointerDownEvent now reuses the _activeTouchIds slot if _pointerMove…",
+                "description": "On some devices, pen inputs can start with pointerMove instead of pointerDown. In that case, we were adding the pointerId to the _activeTouchIds in pointerMove, and instead of reusing that slot when pointerDown came along later, we were grabbing a second slot for the pointerId.  Then later, when pointerUp came along, we only cleaned up one of them.\r\n\r\nWith this change, pointerDown will reuse the existing slot if found - grabbing a new slot only if this pointerId doesn't already have one, so we should no longer get one pointerId in two slots.",
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/DeviceInput/webDeviceInputSystem.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15118",
+                "title": "BoundingBox: Fix doc for extendSize and extendSizeWorld",
+                "description": "See https://forum.babylonjs.com/t/should-extendsizeworld-returns-half-of-the-size-of-a-mesh/50676",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/boundingBox.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15113",
+                "title": "GS ratio",
+                "description": "follow up https://forum.babylonjs.com/t/gaussian-splatting-looks-bad-with-custom-aspect-ratio/50629/3\r\nregression with https://github.com/BabylonJS/Babylon.js/pull/15104",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts",
+                    "packages/dev/core/src/Shaders/gaussianSplatting.vertex.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15116",
+                "title": "Update control.ts",
+                "description": "fix Uncaught TypeError: Cannot read properties of undefined (reading 'getScene')\r\n\r\nWhen trying to use BabylonJS version 7.6.0 or later I get a crash, I believe this proposed change should fix it, if there is more to it let me know and I can share the complete setup to reproduce the crash.",
+                "author": {
+                    "name": "Debenben",
+                    "url": "https://github.com/Debenben"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15117",
+                "title": "Replaced voronoi noise code",
+                "description": "Pls see forum [post](https://forum.babylonjs.com/t/voronoi-node-noise-artifact/50465/9) on voronoi noise node artifact in nme.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/voronoiNoiseBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15112",
+                "title": "fix test failing in node 22",
+                "description": "This will avoid using the context to generating an unneeded material",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/test/unit/XR/webXRFeaturesManager.test.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15111",
+                "title": "Optional Vis-tests with browserstack",
+                "description": "This will enable CI testing with browserstack. This is optional and is only turned on if providing username, access key and browserType \"BrowserStack\".",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/tests/browserstack.config.ts",
+                    "packages/tools/tests/globalSetup.ts",
+                    "packages/tools/tests/globalTeardown.ts",
+                    "packages/tools/tests/package.json",
+                    "packages/tools/tests/playwright.config.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15110",
+                "title": "Nine patch for fox UIs with ideal width and ideal height",
+                "description": "Playground to test with:\n\n#QMQI2Z#5\n\nor\n\n#QMQI2Z#1",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.6.2": [
             {
                 "pr": "15108",

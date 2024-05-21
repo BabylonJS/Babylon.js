@@ -1,5 +1,24 @@
 # Changelog
 
+## 7.7.1
+
+### Core
+
+- Engine: add support for non float vertex buffers in native - by [Popov72](https://github.com/Popov72) ([#15107](https://github.com/BabylonJS/Babylon.js/pull/15107))
+- Nme webgpu3 - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15123](https://github.com/BabylonJS/Babylon.js/pull/15123))
+- Add WebDeviceInputSystem unit tests to cover pointermove before pointerdown cases - by [AmoebaChant](https://github.com/AmoebaChant) ([#15120](https://github.com/BabylonJS/Babylon.js/pull/15120))
+- Mesh: Fix bounding infos when calling convertToUnIndexedMesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15122](https://github.com/BabylonJS/Babylon.js/pull/15122))
+- _pointerDownEvent now reuses the _activeTouchIds slot if _pointerMove… - [_Bug Fix_] by [AmoebaChant](https://github.com/AmoebaChant) ([#15115](https://github.com/BabylonJS/Babylon.js/pull/15115))
+- BoundingBox: Fix doc for extendSize and extendSizeWorld - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15118](https://github.com/BabylonJS/Babylon.js/pull/15118))
+- GS ratio - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15113](https://github.com/BabylonJS/Babylon.js/pull/15113))
+- Replaced voronoi noise code - by [lockphase](https://github.com/lockphase) ([#15117](https://github.com/BabylonJS/Babylon.js/pull/15117))
+- fix test failing in node 22 - by [RaananW](https://github.com/RaananW) ([#15112](https://github.com/BabylonJS/Babylon.js/pull/15112))
+
+### GUI
+
+- Update control.ts - by [Debenben](https://github.com/Debenben) ([#15116](https://github.com/BabylonJS/Babylon.js/pull/15116))
+- Nine patch for fox UIs with ideal width and ideal height - by [RaananW](https://github.com/RaananW) ([#15110](https://github.com/BabylonJS/Babylon.js/pull/15110))
+
 ## 7.7.0
 
 ## 7.6.2
