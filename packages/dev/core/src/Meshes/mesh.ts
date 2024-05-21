@@ -3131,6 +3131,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             return newData;
         };
 
+        // Save mesh bounding info
+        const meshBoundingInfo = this.getBoundingInfo();
+
         // Save previous submeshes
         const previousSubmeshes = this.geometry ? this.subMeshes.slice(0) : [];
 
@@ -3189,8 +3192,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Update submeshes
         this.releaseSubMeshes();
         for (const previousOne of previousSubmeshes) {
-            SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            const boundingInfo = previousOne.getBoundingInfo();
+            const subMesh = SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            subMesh.setBoundingInfo(boundingInfo);
         }
+
+        this.setBoundingInfo(meshBoundingInfo);
 
         this.synchronizeInstances();
 
