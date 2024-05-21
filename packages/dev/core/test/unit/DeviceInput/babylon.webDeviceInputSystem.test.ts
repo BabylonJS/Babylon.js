@@ -53,8 +53,8 @@ describe("WebDeviceInputSystem", () => {
     });
 
     afterEach(() => {
-        engine.dispose();
         wdis.dispose();
+        engine.dispose();
         window.PointerEvent = undefined;
     });
 
