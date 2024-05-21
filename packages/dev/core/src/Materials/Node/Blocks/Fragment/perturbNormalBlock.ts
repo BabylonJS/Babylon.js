@@ -19,6 +19,7 @@ import { TBNBlock } from "./TBNBlock";
 import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/bumpFragment";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to perturb normals based on a normal map
@@ -228,6 +229,7 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         const worldPosition = this.worldPosition;
         const worldNormal = this.worldNormal;
         const worldTangent = this.worldTangent;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state.sharedData.blocksWithDefines.push(this);
         state.sharedData.bindableBlocks.push(this);
@@ -275,10 +277,10 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
             #endif
             `;
         } else if (worldTangent.isConnected) {
-            state.compilationString += `vec3 tbnNormal = normalize(${worldNormal.associatedVariableName}.xyz);\n`;
-            state.compilationString += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
-            state.compilationString += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
-            state.compilationString += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\n`;
+            state.compilationString += `${state._declareLocalVar("tbnNormal", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldNormal.associatedVariableName}.xyz);\n`;
+            state.compilationString += `${state._declareLocalVar("tbnTangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
+            state.compilationString += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
+            state.compilationString += `${isWebGPU ? "var" : "mat3"} vTBN = ${isWebGPU ? "mat3x3f" : "mat3"}(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
