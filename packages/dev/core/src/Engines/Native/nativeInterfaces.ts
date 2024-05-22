@@ -102,7 +102,7 @@ export interface INativeEngine {
 /** @internal */
 interface INativeEngineInfo {
     version: string;
-    nonFloatVertexBuffers: boolean;
+    nonFloatVertexBuffers: true;
 }
 
 /** @internal */
