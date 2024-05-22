@@ -200,6 +200,7 @@ export class NativeEngine extends Engine {
     private static readonly PROTOCOL_VERSION = 8;
 
     private readonly _engine: INativeEngine = new _native.Engine({
+        version: Engine.Version,
         nonFloatVertexBuffers: true,
     });
 
