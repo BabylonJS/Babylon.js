@@ -2465,7 +2465,7 @@ export class ThinEngine extends AbstractEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    public setArray(uniform: Nullable<WebGLUniformLocation>, array: FloatArray): boolean {
         if (!uniform) {
             return false;
         }
@@ -2483,7 +2483,7 @@ export class ThinEngine extends AbstractEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    public setArray2(uniform: Nullable<WebGLUniformLocation>, array: FloatArray): boolean {
         if (!uniform || array.length % 2 !== 0) {
             return false;
         }
@@ -2498,7 +2498,7 @@ export class ThinEngine extends AbstractEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    public setArray3(uniform: Nullable<WebGLUniformLocation>, array: FloatArray): boolean {
         if (!uniform || array.length % 3 !== 0) {
             return false;
         }
@@ -2513,7 +2513,7 @@ export class ThinEngine extends AbstractEngine {
      * @param array defines the array of number to store
      * @returns true if the value was set
      */
-    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: number[] | Float32Array): boolean {
+    public setArray4(uniform: Nullable<WebGLUniformLocation>, array: FloatArray): boolean {
         if (!uniform || array.length % 4 !== 0) {
             return false;
         }
