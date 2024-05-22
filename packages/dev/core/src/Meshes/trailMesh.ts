@@ -66,7 +66,7 @@ export class TrailMesh extends Mesh {
         this._generator = generator;
         this.diameter = options.diameter || 1;
         this._length = options.length || 60;
-        this._segments = options.segments ? (options.segments > options.length ? options.length : options.segments) : options.length;
+        this._segments = options.segments ? (options.segments > this._length ? this._length : options.segments) : this._length;
         this._sectionPolygonPointsCount = options.sections || 4;
         this._doNotTaper = options.doNotTaper || false;
         this._sectionVectors = [];
