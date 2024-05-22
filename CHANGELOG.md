@@ -1,5 +1,13 @@
 # Changelog
 
+## 7.7.2
+
+### Core
+
+- Add features object passed as option to C++ native engine for backwards compatibility - by [bghgary](https://github.com/bghgary) ([#15128](https://github.com/BabylonJS/Babylon.js/pull/15128))
+- Animation: Use the right weight when calling RuntimeAnimation.goToFrame - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15126](https://github.com/BabylonJS/Babylon.js/pull/15126))
+- Use FloatArray everywhere - by [axeljaeger](https://github.com/axeljaeger) ([#15124](https://github.com/BabylonJS/Babylon.js/pull/15124))
+
 ## 7.7.1
 
 ### Core

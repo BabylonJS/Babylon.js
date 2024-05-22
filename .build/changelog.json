@@ -1,7 +1,73 @@
 {
-    "fromTag": "7.7.0",
+    "fromTag": "7.7.1",
     "changelog": {
-        "7.7.0": [],
+        "7.7.2": [
+            {
+                "pr": "15128",
+                "title": "Add features object passed as option to C++ native engine for backwards compatibility",
+                "description": "This makes it possible for the C++ native engine to check if some features are available on the JS side and then do different things based on what the flags say. This will ensure better backwards compatibility with versions.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Native/nativeInterfaces.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15127",
+                "title": "Add globalThis definitions to Draco modules",
+                "description": "The UMD definition of some of the modules didn't populate the global namespace if no loader is available. This solves it.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/babylonServer/public/draco_decoder.js",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper_gltf.js"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15126",
+                "title": "Animation: Use the right weight when calling RuntimeAnimation.goToFrame",
+                "description": null,
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/runtimeAnimation.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "15124",
+                "title": "Use FloatArray everywhere",
+                "description": "I took the liberty to use FloatArray everywhere where applicable.",
+                "author": {
+                    "name": "axeljaeger",
+                    "url": "https://github.com/axeljaeger"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/IPipelineContext.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts",
+                    "packages/dev/core/src/Particles/solidParticleSystem.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.7.1": [
             {
                 "pr": "15107",
@@ -216,6 +282,7 @@
                 "tags": []
             }
         ],
+        "7.7.0": [],
         "7.6.2": [
             {
                 "pr": "15108",
