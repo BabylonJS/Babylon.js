@@ -296,7 +296,7 @@ export class Animatable {
         }
 
         for (let index = 0; index < runtimeAnimations.length; index++) {
-            runtimeAnimations[index].goToFrame(frame);
+            runtimeAnimations[index].goToFrame(frame, this._weight);
         }
 
         this._goToFrame = frame;
