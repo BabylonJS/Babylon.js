@@ -38,7 +38,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TeleportOutBlock";
     }
 
@@ -57,18 +57,18 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         this._entryPoint.detachFromEndpoint(this);
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         // Do nothing
         // All work done by the emitter
     }
 
-    protected _customBuildStep(state: NodeGeometryBuildState): void {
+    protected override _customBuildStep(state: NodeGeometryBuildState): void {
         if (this.entryPoint) {
             this.entryPoint.build(state);
         }
     }
 
-    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeGeometryBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
             if (alreadyDumped.indexOf(this.entryPoint) === -1) {
@@ -79,7 +79,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
-    public _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
+    public override _dumpCodeForOutputConnections(alreadyDumped: NodeGeometryBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
         if (this.entryPoint) {
@@ -93,7 +93,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
      * Clone the current block to a new identical block
      * @returns a copy of the current block
      */
-    public clone() {
+    public override clone() {
         const clone = super.clone();
 
         if (this.entryPoint) {
@@ -103,7 +103,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return clone;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         if (this.entryPoint) {
             codeString += `${this.entryPoint._codeVariableName}.attachToEndpoint(${this._codeVariableName});\n`;
@@ -115,7 +115,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
      * Serializes this block in a JSON representation
      * @returns the serialized block object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.entryPoint = this.entryPoint?.uniqueId ?? "";
@@ -123,7 +123,7 @@ export class TeleportOutBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this._tempEntryPointUniqueId = serializationObject.entryPoint;

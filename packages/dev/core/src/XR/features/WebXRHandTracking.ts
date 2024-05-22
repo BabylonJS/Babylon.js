@@ -283,6 +283,12 @@ const handPartsDefinition: { [key in HandPart]: WebXRHandJoint[] } = {
  * Representing a single hand (with its corresponding native XRHand object)
  */
 export class WebXRHand implements IDisposable {
+    /**
+     * This observable will notify registered observers when the hand object has been set with a new mesh.
+     * you can get the hand mesh using `webxrHand.handMesh`
+     */
+    public onHandMeshSetObservable = new Observable<WebXRHand>();
+
     private _scene: Scene;
 
     /**
@@ -405,6 +411,8 @@ export class WebXRHand implements IDisposable {
                 }
             });
         }
+
+        this.onHandMeshSetObservable.notifyObservers(this);
     }
 
     /**
@@ -710,7 +718,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      * This does not mean that the feature is enabled, but that the objects needed are well defined.
      * @returns true if the needed objects for this feature are defined
      */
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         return typeof XRHand !== "undefined";
     }
 
@@ -792,7 +800,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
@@ -883,7 +891,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -907,7 +915,7 @@ export class WebXRHandTracking extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this.onHandAddedObservable.clear();
         this.onHandRemovedObservable.clear();

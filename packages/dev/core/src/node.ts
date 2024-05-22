@@ -2,7 +2,7 @@
 import type { Scene } from "./scene";
 import type { Nullable } from "./types";
 import { Matrix, Vector3 } from "./Maths/math.vector";
-import type { Engine } from "./Engines/engine";
+import type { AbstractEngine } from "./Engines/abstractEngine";
 import type { IBehaviorAware, Behavior } from "./Behaviors/behavior";
 import { serialize } from "./Misc/decorators";
 import type { Observer } from "./Misc/observable";
@@ -239,6 +239,7 @@ export class Node implements IBehaviorAware<Node> {
 
         // Store new parent
         this._parentNode = parent;
+        this._isDirty = true;
 
         // Add as child to new parent
         if (this._parentNode) {
@@ -348,13 +349,18 @@ export class Node implements IBehaviorAware<Node> {
      * Creates a new Node
      * @param name the name and id to be given to this node
      * @param scene the scene this node will be added to
+     * @param isPure indicates this Node is just a Node, and not a derived class like Mesh or Camera
      */
-    constructor(name: string, scene: Nullable<Scene> = null) {
+    public constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
         this.name = name;
         this.id = name;
         this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
         this.uniqueId = this._scene.getUniqueId();
         this._initCache();
+
+        if (isPure) {
+            this._addToSceneRootNodes();
+        }
     }
 
     /**
@@ -369,7 +375,7 @@ export class Node implements IBehaviorAware<Node> {
      * Gets the engine of the node
      * @returns a Engine
      */
-    public getEngine(): Engine {
+    public getEngine(): AbstractEngine {
         return this._scene.getEngine();
     }
 
@@ -480,7 +486,6 @@ export class Node implements IBehaviorAware<Node> {
     /** @internal */
     public _initCache() {
         this._cache = {};
-        this._cache.parent = undefined;
     }
 
     /**
@@ -490,8 +495,6 @@ export class Node implements IBehaviorAware<Node> {
         if (!force && this.isSynchronized()) {
             return;
         }
-
-        this._cache.parent = this.parent;
 
         this._updateCache();
     }
@@ -542,11 +545,6 @@ export class Node implements IBehaviorAware<Node> {
 
     /** @internal */
     public isSynchronized(): boolean {
-        if (this._cache.parent !== this._parentNode) {
-            this._cache.parent = this._parentNode;
-            return false;
-        }
-
         if (this._parentNode && !this.isSynchronizedWithParent()) {
             return false;
         }

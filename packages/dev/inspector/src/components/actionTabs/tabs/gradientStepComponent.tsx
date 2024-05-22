@@ -2,7 +2,7 @@ import * as React from "react";
 import type { GlobalState } from "../../globalState";
 import { Color3 } from "core/Maths/math.color";
 import type { GradientBlockColorStep } from "core/Materials/Node/Blocks/gradientBlock";
-import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
+import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent";
 
 import deleteButton from "../lines/delete.svg";
 import copyIcon from "../lines/copyStep.svg";
@@ -45,14 +45,14 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
         this.props.onCheckForReOrder();
     }
 
-    render() {
+    override render() {
         const step = this.props.step;
 
         return (
             <div className="gradient-step">
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color">
-                    <ColorPickerLineComponent
+                    <ColorPickerLine
                         lockObject={this.props.lockObject}
                         value={step.color}
                         onColorChanged={(color) => {

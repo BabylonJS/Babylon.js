@@ -11,7 +11,7 @@ import { DumpTools } from "./dumpTools";
 import type { Nullable } from "../types";
 import { ApplyPostProcess } from "./textureTools";
 
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
 
@@ -34,7 +34,7 @@ let screenshotCanvas: Nullable<HTMLCanvasElement> = null;
  * @param quality The quality of the image if lossy mimeType is used (e.g. image/jpeg, image/webp). See {@link https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob | HTMLCanvasElement.toBlob()}'s `quality` parameter.
  */
 export function CreateScreenshot(
-    engine: Engine,
+    engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
     successCallback?: (data: string) => void,
@@ -132,7 +132,7 @@ export function CreateScreenshot(
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
+export function CreateScreenshotAsync(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number, mimeType = "image/png", quality?: number): Promise<string> {
     return new Promise((resolve, reject) => {
         CreateScreenshot(
             engine,
@@ -165,7 +165,7 @@ export function CreateScreenshotAsync(engine: Engine, camera: Camera, size: IScr
  * @returns screenshot as a string of base64-encoded characters. This string can be assigned
  * to the src parameter of an <img> to display it
  */
-export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, width: number, height: number, mimeType = "image/png", quality?: number): Promise<void> {
+export function CreateScreenshotWithResizeAsync(engine: AbstractEngine, camera: Camera, width: number, height: number, mimeType = "image/png", quality?: number): Promise<void> {
     return new Promise((resolve) => {
         CreateScreenshot(
             engine,
@@ -206,7 +206,7 @@ export function CreateScreenshotWithResizeAsync(engine: Engine, camera: Camera, 
  * @param customizeTexture An optional callback that can be used to modify the render target texture before taking the screenshot. This can be used, for instance, to enable camera post-processes before taking the screenshot.
  */
 export function CreateScreenshotUsingRenderTarget(
-    engine: Engine,
+    engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
     successCallback?: (data: string) => void,
@@ -349,7 +349,7 @@ export function CreateScreenshotUsingRenderTarget(
  * to the src parameter of an <img> to display it
  */
 export function CreateScreenshotUsingRenderTargetAsync(
-    engine: Engine,
+    engine: AbstractEngine,
     camera: Camera,
     size: IScreenshotSize | number,
     mimeType = "image/png",
@@ -392,7 +392,7 @@ export function CreateScreenshotUsingRenderTargetAsync(
  * @param size
  * @private
  */
-function _GetScreenshotSize(engine: Engine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
+function _GetScreenshotSize(engine: AbstractEngine, camera: Camera, size: IScreenshotSize | number): { height: number; width: number; finalWidth: number; finalHeight: number } {
     let height = 0;
     let width = 0;
     let finalWidth = 0;

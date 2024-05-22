@@ -27,7 +27,7 @@ class TreeItemExpandableHeaderComponent extends React.Component<ITreeItemExpanda
         this.props.onExpandAll(!this.props.isExpanded);
     }
 
-    render() {
+    override render() {
         const chevron = this.props.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
         const expandAll = this.props.isExpanded ? <FontAwesomeIcon icon={faCompress} /> : <FontAwesomeIcon icon={faExpandArrowsAlt} />;
 
@@ -56,7 +56,7 @@ class TreeItemRootHeaderComponent extends React.Component<ITreeItemRootHeaderCom
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="expandableHeader">
                 <div className="text">
@@ -97,7 +97,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         this.setState({ isExpanded: !this.state.isExpanded, mustExpand: false });
     }
 
-    shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: { isExpanded: boolean }) {
+    override shouldComponentUpdate(nextProps: ITreeItemComponentProps, nextState: { isExpanded: boolean }) {
         if (!nextState.isExpanded && this.state.isExpanded) {
             return true;
         }
@@ -141,7 +141,7 @@ export class TreeItemComponent extends React.Component<ITreeItemComponentProps, 
         );
     }
 
-    render() {
+    override render() {
         let items = this.props.items;
 
         const marginStyle = {

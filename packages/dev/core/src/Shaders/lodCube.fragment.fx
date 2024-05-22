@@ -1,7 +1,3 @@
-import { Effect } from "core/Materials/effect";
-
-const name = "lodCubePixelShader";
-const shader = `
 precision highp float;
 
 const float GammaEncodePowerApprox = 1.0 / 2.2;
@@ -34,9 +30,4 @@ void main(void)
     if (!gamma) {
         gl_FragColor.rgb = pow(gl_FragColor.rgb, vec3(GammaEncodePowerApprox));
     }
-}`;
-
-Effect.ShadersStore[name] = shader;
-/** @internal */
-// eslint-disable-next-line no-var
-export var lodCubePixelShader = { name, shader };
+}

@@ -75,7 +75,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("clearcoatOut");
         state._excludeVariableName("vClearCoatParams");
         state._excludeVariableName("vClearCoatTintParams");
@@ -88,7 +88,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ClearCoatBlock";
     }
 
@@ -177,7 +177,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("ClearCoat intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
@@ -185,7 +185,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("CLEARCOAT", true);
@@ -201,7 +201,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         defines.setValue("CLEARCOAT_REMAP_F0", this.remapF0OnInterfaceChange, true);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         // Clear Coat Refraction params
@@ -293,8 +293,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         const tintTexture = "vec4(0.)";
 
         if (ccBlock) {
-            state._emitUniformFromString("vClearCoatRefractionParams", "vec4");
-            state._emitUniformFromString("vClearCoatTangentSpaceParams", "vec2");
+            state._emitUniformFromString("vClearCoatRefractionParams", NodeMaterialBlockConnectionPointTypes.Vector4);
+            state._emitUniformFromString("vClearCoatTangentSpaceParams", NodeMaterialBlockConnectionPointTypes.Vector2);
 
             const normalShading = ccBlock.worldNormal;
             code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
@@ -383,7 +383,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         this._scene = state.sharedData.scene;
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
@@ -391,13 +391,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             state.sharedData.blocksWithDefines.push(this);
 
             this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
-            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.remapF0OnInterfaceChange = ${this.remapF0OnInterfaceChange};\n`;
@@ -405,7 +405,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.remapF0OnInterfaceChange = this.remapF0OnInterfaceChange;
@@ -413,7 +413,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.remapF0OnInterfaceChange = serializationObject.remapF0OnInterfaceChange ?? true;

@@ -100,7 +100,7 @@ export class InputsPropertyTabComponent extends React.Component<IInputsPropertyT
         return null;
     }
 
-    render() {
+    override render() {
         return (
             <LineContainerComponent title="INPUTS">
                 {this.props.inputs.map((ib) => {

@@ -3,7 +3,7 @@ import type { Color4, Color3 } from "core/Maths/math.color";
 import { ColorPicker } from "../colorPicker/colorPicker";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
-export interface IColorPickerComponentProps {
+export interface IColorPickerLineProps {
     value: Color4 | Color3;
     linearHint?: boolean;
     onColorChanged: (newOne: string) => void;
@@ -19,11 +19,11 @@ interface IColorPickerComponentState {
     hex: string;
 }
 
-export class ColorPickerLineComponent extends React.Component<IColorPickerComponentProps, IColorPickerComponentState> {
+export class ColorPickerLine extends React.Component<IColorPickerLineProps, IColorPickerComponentState> {
     private _floatRef: React.RefObject<HTMLDivElement>;
     private _floatHostRef: React.RefObject<HTMLDivElement>;
 
-    constructor(props: IColorPickerComponentProps) {
+    constructor(props: IColorPickerLineProps) {
         super(props);
 
         this.state = { pickerEnabled: false, color: this.props.value, hex: this.getHexString(props) };
@@ -55,7 +55,7 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         }
     }
 
-    shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerComponentState) {
+    override shouldComponentUpdate(nextProps: IColorPickerLineProps, nextState: IColorPickerComponentState) {
         const diffProps = this.getHexString(nextProps) !== this.getHexString();
 
         if (diffProps) {
@@ -70,15 +70,15 @@ export class ColorPickerLineComponent extends React.Component<IColorPickerCompon
         return props.value.toHexString();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this.syncPositions();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.syncPositions();
     }
 
-    render() {
+    override render() {
         return (
             <div className="color-picker">
                 {this.props.icon && <img src={this.props.icon} title={this.props.iconLabel} alt={this.props.iconLabel} className="icon" />}

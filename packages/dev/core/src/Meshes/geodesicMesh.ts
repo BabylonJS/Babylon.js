@@ -579,7 +579,7 @@ export class GeodesicData extends PolyhedronData {
     /**
      * @internal
      */
-    public edgematch: (number | string)[][];
+    public override edgematch: (number | string)[][];
     /**
      * @internal
      */

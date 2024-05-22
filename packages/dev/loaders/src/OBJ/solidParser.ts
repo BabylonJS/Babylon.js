@@ -442,6 +442,11 @@ export class SolidParser {
             //Set the data into Array for the mesh
             this._unwrapData();
 
+            if (this._loadingOptions.useLegacyBehavior) {
+                // Reverse tab. Otherwise face are displayed in the wrong sens
+                this._indicesForBabylon.reverse();
+            }
+
             //Set the information for the mesh
             //Slice the array to avoid rewriting because of the fact this is the same var which be rewrited
             this._handledMesh.indices = this._indicesForBabylon.slice();
@@ -522,10 +527,16 @@ export class SolidParser {
      * @param onFileToLoadFound defines a callback that will be called if a MTL file is found
      */
     public parse(meshesNames: any, data: string, scene: Scene, assetContainer: Nullable<AssetContainer>, onFileToLoadFound: (fileToLoad: string) => void): void {
-        this._pushTriangle = scene.useRightHandedSystem
-            ? (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex])
-            : (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
-        this._handednessSign = scene.useRightHandedSystem ? 1 : -1;
+        if (this._loadingOptions.useLegacyBehavior) {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
+            this._handednessSign = 1;
+        } else if (scene.useRightHandedSystem) {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex + 1], faces[faceIndex]);
+            this._handednessSign = 1;
+        } else {
+            this._pushTriangle = (faces, faceIndex) => this._triangles.push(faces[0], faces[faceIndex], faces[faceIndex + 1]);
+            this._handednessSign = -1;
+        }
 
         // Split the file into lines
         const lines = data.split("\n");
@@ -738,6 +749,11 @@ export class SolidParser {
             // Set the data for the last mesh
             this._handledMesh = this._meshesFromObj[this._meshesFromObj.length - 1];
 
+            if (this._loadingOptions.useLegacyBehavior) {
+                //Reverse indices for displaying faces in the good sense
+                this._indicesForBabylon.reverse();
+            }
+
             //Get the good array
             this._unwrapData();
             //Set array
@@ -755,6 +771,11 @@ export class SolidParser {
         if (!this._hasMeshes) {
             let newMaterial: Nullable<StandardMaterial> = null;
             if (this._indicesForBabylon.length) {
+                if (this._loadingOptions.useLegacyBehavior) {
+                    // reverse tab of indices
+                    this._indicesForBabylon.reverse();
+                }
+
                 //Get positions normals uvs
                 this._unwrapData();
             } else {

@@ -183,7 +183,7 @@ export class WebXRCamera extends FreeCamera {
      * Gets the current instance class name ("WebXRCamera").
      * @returns the class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "WebXRCamera";
     }
 
@@ -192,7 +192,7 @@ export class WebXRCamera extends FreeCamera {
      * Note that this only rotates around the Y axis, as opposed to the default behavior of other cameras
      * @param target the target to set the camera to look at
      */
-    public setTarget(target: Vector3): void {
+    public override setTarget(target: Vector3): void {
         // only rotate around the y axis!
         const tmpVector = TmpVectors.Vector3[1];
         target.subtractToRef(this.position, tmpVector);
@@ -203,7 +203,7 @@ export class WebXRCamera extends FreeCamera {
         Quaternion.FromEulerAnglesToRef(tmpVector.x, yRotation, tmpVector.z, this.rotationQuaternion);
     }
 
-    public dispose() {
+    public override dispose() {
         super.dispose();
         this._lastXRViewerPose = undefined;
     }
@@ -319,8 +319,12 @@ export class WebXRCamera extends FreeCamera {
                 currentRig._projectionMatrix.toggleProjectionMatrixHandInPlace();
             }
 
+            // fov
+            const fov = Math.atan2(1, view.projectionMatrix[5]) * 2;
+            currentRig.fov = fov;
             // first camera?
             if (i === 0) {
+                this.fov = fov;
                 this._projectionMatrix.copyFrom(currentRig._projectionMatrix);
             }
 

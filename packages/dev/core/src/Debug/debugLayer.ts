@@ -157,6 +157,11 @@ export interface IInspectorOptions {
      * List of context menu items that should be completely overridden by custom items from the contextMenu property.
      */
     contextMenuOverride?: IInspectorContextMenuType[];
+
+    /**
+     * Should the default font loading be skipped
+     */
+    skipDefaultFontLoading?: boolean;
 }
 
 declare module "../scene" {

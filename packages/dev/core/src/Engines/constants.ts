@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 /** Defines the cross module used constants to avoid circular dependencies */
 export class Constants {
+    /** Sampler suffix when associated with a texture name */
+    public static readonly AUTOSAMPLERSUFFIX = "Sampler";
+    /** Flag used to disable diagnostics for WebGPU */
+    public static readonly DISABLEUA = "#define DISABLE_UNIFORMITY_ANALYSIS";
     /** Defines that alpha blending is disabled */
     public static readonly ALPHA_DISABLE = 0;
     /** Defines that alpha blending is SRC ALPHA * SRC + DEST */
@@ -634,6 +638,8 @@ export class Constants {
     public static readonly BUFFER_CREATIONFLAG_INDEX = 16;
     /** Flag to create a buffer suitable to be used as a storage buffer */
     public static readonly BUFFER_CREATIONFLAG_STORAGE = 32;
+    /** Flag to create a buffer suitable to be used for indirect calls, such as `dispatchIndirect` */
+    public static readonly BUFFER_CREATIONFLAG_INDIRECT = 64;
 
     /**
      * Prefixes used by the engine for sub mesh draw wrappers

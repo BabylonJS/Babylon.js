@@ -6,7 +6,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { Image } from "gui/2D/controls/image";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -37,7 +37,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         this.updateObservers([], props.images);
     }
 
-    shouldComponentUpdate(nextProps: IImagePropertyGridComponentProps) {
+    override shouldComponentUpdate(nextProps: IImagePropertyGridComponentProps) {
         this.updateObservers(this.props.images, nextProps.images);
         return true;
     }
@@ -56,7 +56,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.updateObservers(this.props.images, []);
     }
 
@@ -94,7 +94,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const images = this.props.images;
         const image = images[0]; // for nine slice
 
@@ -184,7 +184,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={stretchFillIcon} label="Stretch" />
-                    <OptionsLineComponent label=" " options={stretchOptions} target={proxy} propertyName="stretch" onSelect={(value) => this.setState({ mode: value })} />
+                    <OptionsLine label=" " options={stretchOptions} target={proxy} propertyName="stretch" onSelect={(value) => this.setState({ mode: value })} />
                 </div>
                 {images.length === 1 && image.stretch === Image.STRETCH_NINE_PATCH && (
                     <>

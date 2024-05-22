@@ -6,10 +6,10 @@ import type { TextBlock } from "gui/2D/controls/textBlock";
 import { TextWrapping } from "gui/2D/controls/textBlock";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 import type { GlobalState } from "../../../../globalState";
 
@@ -36,7 +36,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
         super(props);
     }
 
-    render() {
+    override render() {
         const { onPropertyChangedObservable } = this.props;
         const textBlocks = this.props.textBlocks;
         const proxy = makeTargetsProxy(textBlocks, onPropertyChangedObservable);
@@ -68,7 +68,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={wordWrapIcon} label="Text Wrapping" />
-                    <OptionsLineComponent label=" " options={wrappingOptions} target={proxy} propertyName="textWrapping" />
+                    <OptionsLine label=" " options={wrappingOptions} target={proxy} propertyName="textWrapping" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={lineSpacingIcon} label="Line Spacing" />
@@ -91,7 +91,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Outline Color" />
-                    <ColorLineComponent lockObject={this.props.lockObject} label=" " target={proxy} propertyName="outlineColor" />
+                    <ColorLine lockObject={this.props.lockObject} label=" " target={proxy} propertyName="outlineColor" />
                 </div>
             </div>
         );

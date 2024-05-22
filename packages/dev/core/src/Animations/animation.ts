@@ -472,7 +472,7 @@ export class Animation {
         for (let index = startIndex; index <= endIndex; index++) {
             let key = animation._keys[index];
 
-            if (clippedKeys) {
+            if (clippedKeys || options.cloneOriginalAnimation) {
                 key = {
                     frame: key.frame,
                     value: key.value.clone ? key.value.clone() : key.value,
@@ -481,11 +481,13 @@ export class Animation {
                     interpolation: key.interpolation,
                     lockedTangent: key.lockedTangent,
                 };
-                if (startFrame === Number.MAX_VALUE) {
-                    startFrame = key.frame;
+                if (clippedKeys) {
+                    if (startFrame === Number.MAX_VALUE) {
+                        startFrame = key.frame;
+                    }
+                    key.frame -= startFrame;
+                    clippedKeys.push(key);
                 }
-                key.frame -= startFrame;
-                clippedKeys.push(key);
             }
 
             // If this key was duplicated to create a frame 0 key, skip it because its value has already been updated
@@ -744,8 +746,8 @@ export class Animation {
     }
 
     /**
-     * Gets the highest frame rate of the animation
-     * @returns Highest frame rate of the animation
+     * Gets the highest frame of the animation
+     * @returns Highest frame of the animation
      */
     public getHighestFrame(): number {
         let ret = 0;

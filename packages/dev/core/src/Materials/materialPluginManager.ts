@@ -21,9 +21,9 @@ import type { Observer } from "core/Misc/observable";
 import { EngineStore } from "../Engines/engineStore";
 
 import type { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { MaterialPluginBase } from "./materialPluginBase";
-import { ShaderProcessor } from "../Engines/Processors/shaderProcessor";
+import { _ProcessIncludes } from "../Engines/Processors/shaderProcessor";
 import { ShaderLanguage } from "./shaderLanguage";
 import { ShaderStore } from "../Engines/shaderStore";
 
@@ -49,7 +49,7 @@ export class MaterialPluginManager {
 
     protected _material: Material;
     protected _scene: Scene;
-    protected _engine: Engine;
+    protected _engine: AbstractEngine;
     /** @internal */
     public _plugins: MaterialPluginBase[] = [];
     protected _activePlugins: MaterialPluginBase[] = [];
@@ -378,7 +378,7 @@ export class MaterialPluginManager {
                             };
                         }
                         processorOptions.isFragment = shaderType === "fragment";
-                        ShaderProcessor._ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
+                        _ProcessIncludes(customCode, processorOptions, (code) => (customCode = code));
                     }
                     injectedCode += customCode + "\n";
                 }

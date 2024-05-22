@@ -111,6 +111,8 @@ export class RuntimeAnimation {
      */
     private _previousElapsedTime: number = 0;
 
+    private _yoyoDirection: number = 1;
+
     /**
      * The previous absolute frame of the runtime animation (meaning, without taking into account the from/to values, only the elapsed time and the fps)
      */
@@ -241,10 +243,13 @@ export class RuntimeAnimation {
         const targetPropertyPath = this._animation.targetPropertyPath;
 
         if (targetPropertyPath.length > 1) {
-            let property = target[targetPropertyPath[0]];
-
-            for (let index = 1; index < targetPropertyPath.length - 1; index++) {
-                property = property[targetPropertyPath[index]];
+            let property = target;
+            for (let index = 0; index < targetPropertyPath.length - 1; index++) {
+                const name = targetPropertyPath[index];
+                property = property[name];
+                if (property === undefined) {
+                    throw new Error(`Invalid property (${name}) in property path (${targetPropertyPath.join(".")})`);
+                }
             }
 
             this._targetPath = targetPropertyPath[targetPropertyPath.length - 1];
@@ -252,6 +257,10 @@ export class RuntimeAnimation {
         } else {
             this._targetPath = targetPropertyPath[0];
             this._activeTargets[targetIndex] = target;
+        }
+
+        if (this._activeTargets[targetIndex][this._targetPath] === undefined) {
+            throw new Error(`Invalid property (${this._targetPath}) in property path (${targetPropertyPath.join(".")})`);
         }
     }
 
@@ -505,14 +514,24 @@ export class RuntimeAnimation {
         let highLimitValue = 0;
 
         // Apply the yoyo function if required
-        if (loop && this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_YOYO) {
+        let yoyoLoop = false;
+        const yoyoMode = loop && this._animationState.loopMode === Animation.ANIMATIONLOOPMODE_YOYO;
+        if (yoyoMode) {
             const position = (absoluteFrame - from) / frameRange;
 
             // Apply the yoyo curve
-            const yoyoPosition = Math.abs(Math.sin(position * Math.PI));
+            const sin = Math.sin(position * Math.PI);
+            const yoyoPosition = Math.abs(sin);
 
             // Map the yoyo position back to the range
             absoluteFrame = yoyoPosition * frameRange + from;
+
+            const direction = sin >= 0 ? 1 : -1;
+            if (this._yoyoDirection !== direction) {
+                yoyoLoop = true;
+            }
+
+            this._yoyoDirection = direction;
         }
 
         this._previousElapsedTime = elapsedTimeSinceAnimationStart;
@@ -621,7 +640,7 @@ export class RuntimeAnimation {
         const events = this._events;
 
         // Reset event/state if looping
-        if ((speedRatio > 0 && this.currentFrame > currentFrame) || (speedRatio < 0 && this.currentFrame < currentFrame)) {
+        if ((!yoyoMode && ((speedRatio > 0 && this.currentFrame > currentFrame) || (speedRatio < 0 && this.currentFrame < currentFrame))) || (yoyoMode && yoyoLoop)) {
             this._onLoop();
 
             // Need to reset animation events

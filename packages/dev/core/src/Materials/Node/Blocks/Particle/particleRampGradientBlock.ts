@@ -27,7 +27,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ParticleRampGradientBlock";
     }
 
@@ -49,7 +49,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("remapRanges");
         state._excludeVariableName("rampSampler");
         state._excludeVariableName("baseColor");
@@ -59,7 +59,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
         state._excludeVariableName("finalAlpha");
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
@@ -67,7 +67,7 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
         }
 
         state._emit2DSampler("rampSampler");
-        state._emitVaryingFromString("remapRanges", "vec4", "RAMPGRADIENT");
+        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
         state.compilationString += `
             #ifdef RAMPGRADIENT
@@ -83,9 +83,9 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
                 float finalAlpha = baseColor.a;
                 baseColor.a = clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0);
 
-                ${this._declareOutput(this.rampColor, state)} = baseColor;
+                ${state._declareOutput(this.rampColor)} = baseColor;
             #else
-                ${this._declareOutput(this.rampColor, state)} = ${this.color.associatedVariableName};
+                ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
             #endif
         `;
 

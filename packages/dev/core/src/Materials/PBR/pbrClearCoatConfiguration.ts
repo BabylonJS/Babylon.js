@@ -30,7 +30,6 @@ export class MaterialClearCoatDefines extends MaterialDefines {
     public CLEARCOAT_BUMP = false;
     public CLEARCOAT_BUMPDIRECTUV = 0;
     public CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-    public CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
     public CLEARCOAT_REMAP_F0 = false;
 
     public CLEARCOAT_TINT = false;
@@ -43,7 +42,7 @@ export class MaterialClearCoatDefines extends MaterialDefines {
  * Plugin that implements the clear coat component of the PBR material
  */
 export class PBRClearCoatConfiguration extends MaterialPluginBase {
-    protected _material: PBRBaseMaterial;
+    protected override _material: PBRBaseMaterial;
 
     /**
      * This defaults to 1.5 corresponding to a 0.04 f0 or a 4% reflectance at normal incidence
@@ -182,7 +181,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
+    public override isReadyForSubMesh(defines: MaterialClearCoatDefines, scene: Scene, engine: Engine): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -220,12 +219,10 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefinesBeforeAttributes(defines: MaterialClearCoatDefines, scene: Scene): void {
+    public override prepareDefinesBeforeAttributes(defines: MaterialClearCoatDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.CLEARCOAT = true;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = this._useRoughnessFromMainTexture;
-            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL =
-                this._texture !== null && this._texture._texture === this._textureRoughness?._texture && this._texture.checkTransformsAreIdentical(this._textureRoughness);
             defines.CLEARCOAT_REMAP_F0 = this._remapF0OnInterfaceChange;
 
             if (defines._areTexturesDirty) {
@@ -272,7 +269,6 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
             defines.CLEARCOAT_TINT = false;
             defines.CLEARCOAT_TINT_TEXTURE = false;
             defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE = false;
-            defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL = false;
             defines.CLEARCOAT_DEFAULTIOR = false;
             defines.CLEARCOAT_TEXTUREDIRECTUV = 0;
             defines.CLEARCOAT_TEXTURE_ROUGHNESSDIRECTUV = 0;
@@ -283,7 +279,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
         if (!this._isEnabled) {
             return;
         }
@@ -296,13 +292,8 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         const invertNormalMapX = this._material._invertNormalMapX;
         const invertNormalMapY = this._material._invertNormalMapY;
 
-        const identicalTextures = defines.CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL;
-
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures && MaterialFlags.ClearCoatTextureEnabled) {
-                uniformBuffer.updateFloat4("vClearCoatInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                BindTextureMatrix(this._texture!, uniformBuffer, "clearCoat");
-            } else if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
+            if ((this._texture || this._textureRoughness) && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vClearCoatInfos",
                     this._texture?.coordinatesIndex ?? 0,
@@ -313,7 +304,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                 if (this._texture) {
                     BindTextureMatrix(this._texture, uniformBuffer, "clearCoat");
                 }
-                if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE) {
+                if (this._textureRoughness && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE) {
                     BindTextureMatrix(this._textureRoughness, uniformBuffer, "clearCoatRoughness");
                 }
             }
@@ -356,7 +347,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
                 uniformBuffer.setTexture("clearCoatSampler", this._texture);
             }
 
-            if (this._textureRoughness && !identicalTextures && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.ClearCoatTextureEnabled) {
+            if (this._textureRoughness && !defines.CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE && MaterialFlags.ClearCoatTextureEnabled) {
                 uniformBuffer.setTexture("clearCoatRoughnessSampler", this._textureRoughness);
             }
 
@@ -370,7 +361,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
         }
@@ -390,7 +381,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
@@ -408,7 +399,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
-    public getAnimatables(animatables: IAnimatable[]): void {
+    public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
@@ -426,7 +417,7 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
-    public dispose(forceDisposeTextures?: boolean): void {
+    public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
             this._textureRoughness?.dispose();
@@ -435,11 +426,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         }
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRClearCoatConfiguration";
     }
 
-    public addFallbacks(defines: MaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public override addFallbacks(defines: MaterialClearCoatDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.CLEARCOAT_BUMP) {
             fallbacks.addFallback(currentRank++, "CLEARCOAT_BUMP");
         }
@@ -452,11 +443,11 @@ export class PBRClearCoatConfiguration extends MaterialPluginBase {
         return currentRank;
     }
 
-    public getSamplers(samplers: string[]): void {
+    public override getSamplers(samplers: string[]): void {
         samplers.push("clearCoatSampler", "clearCoatRoughnessSampler", "clearCoatBumpSampler", "clearCoatTintSampler");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+    public override getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vClearCoatParams", size: 2, type: "vec2" },

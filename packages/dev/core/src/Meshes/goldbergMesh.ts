@@ -234,7 +234,7 @@ export class GoldbergMesh extends Mesh {
      * Serialize current mesh
      * @param serializationObject defines the object which will receive the serialization data
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = "GoldbergMesh";
 
@@ -285,7 +285,7 @@ export class GoldbergMesh extends Mesh {
      * @param scene the scene to create the goldberg mesh in
      * @returns the created goldberg mesh
      */
-    public static Parse(parsedMesh: any, scene: Scene): GoldbergMesh {
+    public static override Parse(parsedMesh: any, scene: Scene): GoldbergMesh {
         const goldbergData = parsedMesh.goldbergData;
         goldbergData.faceColors = goldbergData.faceColors.map((el: number[]) => Color4.FromArray(el));
         goldbergData.faceCenters = goldbergData.faceCenters.map((el: number[]) => Vector3.FromArray(el));

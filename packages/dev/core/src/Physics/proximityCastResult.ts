@@ -24,7 +24,7 @@ export class ProximityCastResult extends CastingResult {
     /**
      * Resets all the values to default
      */
-    public reset() {
+    public override reset() {
         super.reset();
         this._hitDistance = 0;
     }

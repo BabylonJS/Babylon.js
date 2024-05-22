@@ -97,7 +97,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "SceneDepthBlock";
     }
 
@@ -119,11 +119,11 @@ export class SceneDepthBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("textureSampler");
     }
 
-    public get target() {
+    public override get target() {
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
@@ -141,7 +141,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return depthRenderer.getDepthMap();
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial) {
         const texture = this._getTexture(nodeMaterial.getScene());
 
         effect.setTexture(this._samplerName, texture);
@@ -156,14 +156,18 @@ export class SceneDepthBlock extends NodeMaterialBlock {
             if (!uvInputOwnerBlock.isAttribute) {
                 state._emitUniformFromString(
                     uvInput.associatedVariableName,
-                    "vec" + (uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector3 ? "3" : uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? "4" : "2")
+                    uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector3
+                        ? NodeMaterialBlockConnectionPointTypes.Vector3
+                        : uvInput.type === NodeMaterialBlockConnectionPointTypes.Vector4
+                          ? NodeMaterialBlockConnectionPointTypes.Vector4
+                          : NodeMaterialBlockConnectionPointTypes.Vector2
                 );
             }
         }
 
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
 
-        state._emitVaryingFromString(this._mainUVName, "vec2");
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
 
@@ -206,19 +210,19 @@ export class SceneDepthBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             return;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         this._samplerName = state._getFreeVariableName(this.name + "Sampler");
@@ -253,7 +257,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.useNonLinearDepth = this.useNonLinearDepth;
@@ -263,7 +267,7 @@ export class SceneDepthBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.useNonLinearDepth = serializationObject.useNonLinearDepth;

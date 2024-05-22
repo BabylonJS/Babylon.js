@@ -3,7 +3,7 @@ import type { GlobalState } from "../../globalState";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import type { Scene } from "core/scene";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 
 interface IMeshPickerComponentProps {
@@ -20,7 +20,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
         super(props);
     }
 
-    render() {
+    override render() {
         const meshEmitters = this.props.scene.meshes.filter((m) => !!m.name);
         meshEmitters.sort((a, b) => a.name.localeCompare(b.name));
 
@@ -35,7 +35,7 @@ export class MeshPickerComponent extends React.Component<IMeshPickerComponentPro
         );
         return (
             <>
-                <OptionsLineComponent
+                <OptionsLine
                     label={this.props.label}
                     options={emitterOptions}
                     target={this.props.target}

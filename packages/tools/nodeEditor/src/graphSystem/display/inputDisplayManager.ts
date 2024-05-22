@@ -145,8 +145,12 @@ export class InputDisplayManager implements IDisplayManager {
                     break;
                 }
                 case NodeMaterialBlockConnectionPointTypes.Vector4: {
-                    const vec4Value = inputBlock.value as Vector4;
-                    value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                    if (inputBlock.animationType !== AnimatedInputBlockTypes.None) {
+                        value = AnimatedInputBlockTypes[inputBlock.animationType];
+                    } else {
+                        const vec4Value = inputBlock.value as Vector4;
+                        value = `(${vec4Value.x.toFixed(2)}, ${vec4Value.y.toFixed(2)}, ${vec4Value.z.toFixed(2)}, ${vec4Value.w.toFixed(2)})`;
+                    }
                     break;
                 }
             }

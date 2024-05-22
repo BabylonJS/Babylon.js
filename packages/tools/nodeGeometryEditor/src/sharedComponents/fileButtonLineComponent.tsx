@@ -25,7 +25,7 @@ export class FileButtonLineComponent extends React.Component<IFileButtonLineComp
         evt.target.value = "";
     }
 
-    render() {
+    override render() {
         return (
             <div className="buttonLine">
                 <label htmlFor={this.props.uploadName ? this.props.uploadName : "file-upload"} className="file-upload">

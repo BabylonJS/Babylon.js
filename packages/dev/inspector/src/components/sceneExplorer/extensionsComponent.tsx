@@ -24,21 +24,21 @@ export class ExtensionsComponent extends React.Component<IExtensionsComponentPro
         this.setState({ popupVisible: true });
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this._popup) {
             return;
         }
         this._popup.focus();
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         if (!this._popup) {
             return;
         }
         this._popup.focus();
     }
 
-    render() {
+    override render() {
         if (!this.props.extensibilityGroups) {
             return null;
         }

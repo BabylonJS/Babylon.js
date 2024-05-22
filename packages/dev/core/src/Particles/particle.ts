@@ -187,7 +187,7 @@ export class Particle {
             }
         }
 
-        const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID;
+        const dist = this._initialEndSpriteCellID - this._initialStartSpriteCellID + 1;
         let ratio: number;
         if (this._initialSpriteCellLoop) {
             ratio = Clamp(((offsetAge * changeSpeed) % this.lifeTime) / this.lifeTime);

@@ -4,7 +4,7 @@ import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { Logger } from "../Misc/logger";
@@ -21,7 +21,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "SubSurfaceScatteringPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SubSurfaceScatteringPostProcess";
     }
 
@@ -31,7 +31,7 @@ export class SubSurfaceScatteringPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
     ) {

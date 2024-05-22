@@ -1,15 +1,33 @@
 import { Observable } from "core/Misc/observable";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * The data structure of a telemetry event.
  */
 export interface TelemetryData {
+    /**
+     *
+     */
     event: string;
+    /**
+     *
+     */
     session: string;
+    /**
+     *
+     */
     date: Date;
+    /**
+     *
+     */
     now: number;
+    /**
+     *
+     */
     viewerId?: string;
+    /**
+     *
+     */
     detail: any;
 }
 
@@ -17,6 +35,9 @@ export interface TelemetryData {
  * Receives Telemetry events and raises events to the API
  */
 export class TelemetryManager {
+    /**
+     *
+     */
     public onEventBroadcastedObservable: Observable<TelemetryData> = new Observable();
 
     private _currentSessionId: string;
@@ -35,7 +56,7 @@ export class TelemetryManager {
      * @param engine The Babylon engine with the WebGL context.
      * @param viewerId
      */
-    public flushWebGLErrors(engine: Engine, viewerId?: string) {
+    public flushWebGLErrors(engine: AbstractEngine, viewerId?: string) {
         if (!engine) {
             return;
         }

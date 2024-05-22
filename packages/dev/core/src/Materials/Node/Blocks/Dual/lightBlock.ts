@@ -24,8 +24,9 @@ import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
 import "../../../../Shaders/ShadersInclude/shadowsVertex";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 /**
  * Block used to add light in the fragment shader
@@ -90,7 +91,7 @@ export class LightBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "LightBlock";
     }
 
@@ -171,7 +172,7 @@ export class LightBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.cameraPosition.isConnected) {
             let cameraPositionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.CameraPosition && additionalFilteringInfo(b));
 
@@ -183,7 +184,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areLightsDirty) {
             return;
         }
@@ -209,7 +210,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    public updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
+    public override updateUniformsAndSamples(state: NodeMaterialBuildState, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines, uniformBuffers: string[]) {
         for (let lightIndex = 0; lightIndex < nodeMaterial.maxSimultaneousLights; lightIndex++) {
             if (!defines["LIGHT" + lightIndex]) {
                 break;
@@ -219,7 +220,7 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
@@ -262,8 +263,9 @@ export class LightBlock extends NodeMaterialBlock {
 
         // Inject code in vertex
         const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
-        if (state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
-            state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
+
+        if (state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
+            state.compilationString += (state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "") + `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
         }
 
         if (this.light) {
@@ -274,9 +276,9 @@ export class LightBlock extends NodeMaterialBlock {
                 ],
             });
         } else {
-            state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\n`;
+            state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldPos.associatedVariableName};\n`;
             if (this.view.isConnected) {
-                state.compilationString += `mat4 view = ${this.view.associatedVariableName};\n`;
+                state.compilationString += `${state._declareLocalVar("view", NodeMaterialBlockConnectionPointTypes.Matrix)} = ${this.view.associatedVariableName};\n`;
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
@@ -284,50 +286,8 @@ export class LightBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
-
-        if (state.target !== NodeMaterialBlockTargets.Fragment) {
-            // Vertex
-            this._injectVertexCode(state);
-
-            return;
-        }
-
-        if (this.generateOnlyFragmentCode) {
-            state.sharedData.dynamicUniformBlocks.push(this);
-        }
-
-        // Fragment
-        state.sharedData.forcedBindableBlocks.push(this);
-        state.sharedData.blocksWithDefines.push(this);
-
+    private _injectUBODeclaration(state: NodeMaterialBuildState) {
         const comments = `//${this.name}`;
-        const worldPos = this.worldPosition;
-
-        let worldPosVariableName = worldPos.associatedVariableName;
-        if (this.generateOnlyFragmentCode) {
-            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction("light_globalworldpos", `vec3 ${worldPosVariableName};\n`, comments);
-            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\n`;
-
-            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
-                repeatKey: "maxSimultaneousLights",
-                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
-            });
-        } else {
-            worldPosVariableName = "v_" + worldPosVariableName + ".xyz";
-        }
-
-        state._emitFunctionFromInclude("helperFunctions", comments);
-
-        state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
-        });
-
-        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
-        });
 
         if (!this.light) {
             // Emit for all lights
@@ -345,22 +305,72 @@ export class LightBlock extends NodeMaterialBlock {
                 this._lightId.toString()
             );
         }
+    }
+
+    protected override _buildBlock(state: NodeMaterialBuildState) {
+        super._buildBlock(state);
+
+        const isWGSL = state.shaderLanguage === ShaderLanguage.WGSL;
+        const addF = isWGSL ? "f" : "";
+
+        const comments = `//${this.name}`;
+
+        if (state.target !== NodeMaterialBlockTargets.Fragment) {
+            // Vertex
+            this._injectVertexCode(state);
+            return;
+        }
+
+        if (this.generateOnlyFragmentCode) {
+            state.sharedData.dynamicUniformBlocks.push(this);
+        }
+        // Fragment
+        const accessor = state.shaderLanguage === ShaderLanguage.WGSL ? "fragmentInputs." : "";
+        state.sharedData.forcedBindableBlocks.push(this);
+        state.sharedData.blocksWithDefines.push(this);
+        const worldPos = this.worldPosition;
+
+        let worldPosVariableName = worldPos.associatedVariableName;
+        if (this.generateOnlyFragmentCode) {
+            worldPosVariableName = state._getFreeVariableName("globalWorldPos");
+            state._emitFunction("light_globalworldpos", `${state._declareLocalVar(worldPosVariableName, NodeMaterialBlockConnectionPointTypes.Vector3)};\n`, comments);
+            state.compilationString += `${worldPosVariableName} = ${worldPos.associatedVariableName}.xyz;\n`;
+
+            state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
+                repeatKey: "maxSimultaneousLights",
+                substitutionVars: this.generateOnlyFragmentCode ? `worldPos,${worldPos.associatedVariableName}` : undefined,
+            });
+        } else {
+            worldPosVariableName = accessor + "v_" + worldPosVariableName + ".xyz";
+        }
+
+        state._emitFunctionFromInclude("helperFunctions", comments);
+
+        state._emitFunctionFromInclude("lightsFragmentFunctions", comments, {
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+        });
+
+        state._emitFunctionFromInclude("shadowsFragmentFunctions", comments, {
+            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVariableName }],
+        });
+
+        this._injectUBODeclaration(state);
 
         // Code
         if (this._lightId === 0) {
             if (state._registerTempVariable("viewDirectionW")) {
-                state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVariableName});\n`;
+                state.compilationString += `${state._declareLocalVar("viewDirectionW", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVariableName});\n`;
             }
-            state.compilationString += `lightingInfo info;\n`;
-            state.compilationString += `float shadow = 1.;\n`;
-            state.compilationString += `float aggShadow = 0.;\n`;
-            state.compilationString += `float numLights = 0.;\n`;
-            state.compilationString += `float glossiness = ${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "1.0"} * ${
+            state.compilationString += isWGSL ? `var info: lightingInfo;\n` : `lightingInfo info;\n`;
+            state.compilationString += `${state._declareLocalVar("shadow", NodeMaterialBlockConnectionPointTypes.Float)} = 1.;\n`;
+            state.compilationString += `${state._declareLocalVar("aggShadow", NodeMaterialBlockConnectionPointTypes.Float)} = 0.;\n`;
+            state.compilationString += `${state._declareLocalVar("numLights", NodeMaterialBlockConnectionPointTypes.Float)} = 0.;\n`;
+            state.compilationString += `${state._declareLocalVar("glossiness", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.glossiness.isConnected ? this.glossiness.associatedVariableName : "1.0"} * ${
                 this.glossPower.isConnected ? this.glossPower.associatedVariableName : "1024.0"
             };\n`;
-            state.compilationString += `vec3 diffuseBase = vec3(0., 0., 0.);\n`;
-            state.compilationString += `vec3 specularBase = vec3(0., 0., 0.);\n`;
-            state.compilationString += `vec3 normalW = ${this.worldNormal.associatedVariableName}.xyz;\n`;
+            state.compilationString += `${state._declareLocalVar("diffuseBase", NodeMaterialBlockConnectionPointTypes.Vector3)} = vec3${addF}(0., 0., 0.);\n`;
+            state.compilationString += `${state._declareLocalVar("specularBase", NodeMaterialBlockConnectionPointTypes.Vector3)}  = vec3${addF}(0., 0., 0.);\n`;
+            state.compilationString += `${state._declareLocalVar("normalW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this.worldNormal.associatedVariableName}.xyz;\n`;
         }
 
         if (this.light) {
@@ -385,20 +395,20 @@ export class LightBlock extends NodeMaterialBlock {
         const specularOutput = this.specularOutput;
 
         state.compilationString +=
-            this._declareOutput(diffuseOutput, state) + ` = diffuseBase${this.diffuseColor.isConnected ? " * " + this.diffuseColor.associatedVariableName : ""};\n`;
+            state._declareOutput(diffuseOutput) + ` = diffuseBase${this.diffuseColor.isConnected ? " * " + this.diffuseColor.associatedVariableName : ""};\n`;
         if (specularOutput.hasEndpoints) {
             state.compilationString +=
-                this._declareOutput(specularOutput, state) + ` = specularBase${this.specularColor.isConnected ? " * " + this.specularColor.associatedVariableName : ""};\n`;
+                state._declareOutput(specularOutput) + ` = specularBase${this.specularColor.isConnected ? " * " + this.specularColor.associatedVariableName : ""};\n`;
         }
 
         if (this.shadow.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.shadow, state) + ` = aggShadow;\n`;
+            state.compilationString += state._declareOutput(this.shadow) + ` = aggShadow;\n`;
         }
 
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.generateOnlyFragmentCode = this.generateOnlyFragmentCode;
@@ -410,7 +420,7 @@ export class LightBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.lightId) {

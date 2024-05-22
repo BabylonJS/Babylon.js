@@ -6,7 +6,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { DisplayGrid } from "gui/2D/controls/displayGrid";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import sizeIcon from "shared-ui-components/imgs/sizeIcon.svg";
@@ -33,7 +33,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
         super(props);
     }
 
-    render() {
+    override render() {
         const { displayGrids, lockObject, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(displayGrids, onPropertyChangedObservable);
 
@@ -95,13 +95,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={colorIcon} label="Minor Line Color" />
-                            <ColorLineComponent
-                                lockObject={lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="minorLineColor"
-                                onPropertyChangedObservable={onPropertyChangedObservable}
-                            />
+                            <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="minorLineColor" onPropertyChangedObservable={onPropertyChangedObservable} />
                         </div>
                     </>
                 )}
@@ -127,13 +121,7 @@ export class DisplayGridPropertyGridComponent extends React.Component<IDisplayGr
                         </div>
                         <div className="ge-divider">
                             <IconComponent icon={colorIcon} label="Major Line Color" />
-                            <ColorLineComponent
-                                lockObject={lockObject}
-                                label=""
-                                target={proxy}
-                                propertyName="majorLineColor"
-                                onPropertyChangedObservable={onPropertyChangedObservable}
-                            />
+                            <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="majorLineColor" onPropertyChangedObservable={onPropertyChangedObservable} />
                         </div>
                         <div className="ge-divider double">
                             <IconComponent icon={frequencyIcon} label="Major Line Frequency" />

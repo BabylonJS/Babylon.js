@@ -23,7 +23,7 @@ export class SSAO2RenderingPipelinePropertyGridComponent extends React.Component
         super(props);
     }
 
-    render() {
+    override render() {
         const renderPipeline = this.props.renderPipeline;
 
         const camera = renderPipeline.scene.activeCamera!;

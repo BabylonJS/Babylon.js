@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { VertexBuffer } from "../Buffers/buffer";
 import { Viewport } from "../Maths/math.viewport";
 import { Constants } from "../Engines/constants";
@@ -42,13 +42,13 @@ export class EffectRenderer {
     /**
      * The engine the effect renderer has been created for.
      */
-    public readonly engine: ThinEngine;
+    public readonly engine: AbstractEngine;
 
     private _vertexBuffers: { [key: string]: VertexBuffer };
     private _indexBuffer: DataBuffer;
 
     private _fullscreenViewport = new Viewport(0, 0, 1, 1);
-    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
+    private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     private _savedStateDepthTest: boolean;
     private _savedStateStencilTest: boolean;
@@ -58,7 +58,7 @@ export class EffectRenderer {
      * @param engine the engine to use for rendering
      * @param options defines the options of the effect renderer
      */
-    constructor(engine: ThinEngine, options: IEffectRendererOptions = defaultOptions) {
+    constructor(engine: AbstractEngine, options: IEffectRendererOptions = defaultOptions) {
         const positions = options.positions ?? defaultOptions.positions;
         const indices = options.indices ?? defaultOptions.indices;
 
@@ -197,7 +197,7 @@ interface EffectWrapperCreationOptions {
     /**
      * Engine to use to create the effect
      */
-    engine: ThinEngine;
+    engine: AbstractEngine;
     /**
      * Fragment shader for the effect
      */
@@ -262,7 +262,7 @@ export class EffectWrapper {
     /** @internal */
     public _drawWrapper: DrawWrapper;
 
-    private _onContextRestoredObserver: Nullable<Observer<ThinEngine>>;
+    private _onContextRestoredObserver: Nullable<Observer<AbstractEngine>>;
 
     /**
      * Creates an effect to be renderer

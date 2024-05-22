@@ -59,7 +59,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     /**
      * Name of the CSM class
      */
-    public static CLASSNAME = "CascadedShadowGenerator";
+    public static override CLASSNAME = "CascadedShadowGenerator";
 
     /**
      * Defines the default number of cascades used by the CSM.
@@ -74,7 +74,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      */
     public static MAX_CASCADES_COUNT = 4;
 
-    protected _validateFilter(filter: number): number {
+    protected override _validateFilter(filter: number): number {
         if (filter === ShadowGenerator.FILTER_NONE || filter === ShadowGenerator.FILTER_PCF || filter === ShadowGenerator.FILTER_PCSS) {
             return filter;
         }
@@ -251,7 +251,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * Gets the class name of that object
      * @returns "CascadedShadowGenerator"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return CascadedShadowGenerator.CLASSNAME;
     }
 
@@ -746,7 +746,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
     /**
      * @internal
      */
-    public static _SceneComponentInitialization: (scene: Scene) => void = (_) => {
+    public static override _SceneComponentInitialization: (scene: Scene) => void = (_) => {
         throw _WarnImport("ShadowGeneratorSceneComponent");
     };
 
@@ -772,7 +772,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this.usePercentageCloserFiltering = true;
     }
 
-    protected _initializeGenerator(): void {
+    protected override _initializeGenerator(): void {
         this.penumbraDarkness = this.penumbraDarkness ?? 1.0;
         this._numCascades = this._numCascades ?? CascadedShadowGenerator.DEFAULT_CASCADES_COUNT;
         this.stabilizeCascades = this.stabilizeCascades ?? false;
@@ -797,7 +797,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         super._initializeGenerator();
     }
 
-    protected _createTargetRenderTexture(): void {
+    protected override _createTargetRenderTexture(): void {
         const engine = this._scene.getEngine();
         const size = { width: this._mapSize, height: this._mapSize, layers: this.numCascades };
         this._shadowMap = new RenderTargetTexture(
@@ -814,11 +814,18 @@ export class CascadedShadowGenerator extends ShadowGenerator {
             undefined,
             this._useRedTextureType ? Constants.TEXTUREFORMAT_RED : Constants.TEXTUREFORMAT_RGBA
         );
-        this._shadowMap.createDepthStencilTexture(engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS, true);
+        this._shadowMap.createDepthStencilTexture(
+            engine.useReverseDepthBuffer ? Constants.GREATER : Constants.LESS,
+            true,
+            undefined,
+            undefined,
+            undefined,
+            `DepthStencilForCSMShadowGenerator-${this._light.name}`
+        );
         this._shadowMap.noPrePassRenderer = true;
     }
 
-    protected _initializeShadowMap(): void {
+    protected override _initializeShadowMap(): void {
         super._initializeShadowMap();
 
         if (this._shadowMap === null) {
@@ -893,11 +900,11 @@ export class CascadedShadowGenerator extends ShadowGenerator {
         this._splitFrustum();
     }
 
-    protected _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
+    protected override _bindCustomEffectForRenderSubMeshForShadowMap(subMesh: SubMesh, effect: Effect): void {
         effect.setMatrix("viewProjection", this.getCascadeTransformMatrix(this._currentLayer)!);
     }
 
-    protected _isReadyCustomDefines(defines: any): void {
+    protected override _isReadyCustomDefines(defines: any): void {
         defines.push("#define SM_DEPTHCLAMP " + (this._depthClamp && this._filter !== ShadowGenerator.FILTER_PCSS ? "1" : "0"));
     }
 
@@ -906,7 +913,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param defines Defines of the material we want to update
      * @param lightIndex Index of the light in the enabled light list of the material
      */
-    public prepareDefines(defines: any, lightIndex: number): void {
+    public override prepareDefines(defines: any, lightIndex: number): void {
         super.prepareDefines(defines, lightIndex);
 
         const scene = this._scene;
@@ -938,7 +945,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param lightIndex Index of the light in the enabled light list of the material owning the effect
      * @param effect The effect we are binfing the information for
      */
-    public bindShadowLight(lightIndex: string, effect: Effect): void {
+    public override bindShadowLight(lightIndex: string, effect: Effect): void {
         const light = this._light;
         const scene = this._scene;
 
@@ -965,7 +972,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         // Only PCF uses depth stencil texture.
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
             for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
@@ -982,14 +989,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                         ? 1
                         : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
             }
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
-            effect.setTexture("depthSampler" + lightIndex, shadowMap);
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
+            effect.setTexture("depthTexture" + lightIndex, shadowMap);
+
             effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
             effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
             effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, shadowMap);
+            effect.setTexture("shadowTexture" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 
@@ -1006,7 +1014,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * (eq to view projection * shadow projection matrices)
      * @returns The transform matrix used to create the shadow map
      */
-    public getTransformMatrix(): Matrix {
+    public override getTransformMatrix(): Matrix {
         return this.getCascadeTransformMatrix(0)!;
     }
 
@@ -1014,7 +1022,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * Disposes the ShadowGenerator.
      * Returns nothing.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         if (this._freezeShadowCastersBoundingInfoObservable) {
@@ -1032,7 +1040,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * Serializes the shadow generator setup to a json object.
      * @returns The serialized JSON object
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject: any = super.serialize();
         const shadowMap = this.getShadowMap();
 
@@ -1072,7 +1080,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
      * @param scene The scene to create the shadow map for
      * @returns The parsed shadow generator
      */
-    public static Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
+    public static override Parse(parsedShadowGenerator: any, scene: Scene): ShadowGenerator {
         const shadowGenerator = ShadowGenerator.Parse(
             parsedShadowGenerator,
             scene,

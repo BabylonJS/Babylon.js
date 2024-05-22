@@ -64,6 +64,12 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
      * Defaults to true for backwards compatibility.
      */
     public static MATERIAL_LOADING_FAILS_SILENTLY = true;
+
+    /**
+     * Loads assets without handedness conversions. This flag is for compatibility. Use it only if absolutely required. Defaults to false.
+     */
+    public static USE_LEGACY_BEHAVIOR = false;
+
     /**
      * Defines the name of the plugin.
      */
@@ -98,6 +104,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
             materialLoadingFailsSilently: OBJFileLoader.MATERIAL_LOADING_FAILS_SILENTLY,
             optimizeWithUV: OBJFileLoader.OPTIMIZE_WITH_UV,
             skipMaterials: OBJFileLoader.SKIP_MATERIALS,
+            useLegacyBehavior: OBJFileLoader.USE_LEGACY_BEHAVIOR,
         };
     }
 

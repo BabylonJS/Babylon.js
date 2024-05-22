@@ -24,7 +24,7 @@ export class PushButtonComponent extends React.Component<IPushButtonComponentPro
         this.state = { isPushed: !!this.props.isPushed };
     }
 
-    public render() {
+    public override render() {
         return (
             <div
                 title={this.props.tooltip}

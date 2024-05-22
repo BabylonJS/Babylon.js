@@ -7,7 +7,7 @@ import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
 import { Image } from "gui/2D/controls/image";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLine } from "../../../lines/optionsLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface IImagePropertyGridComponentProps {
@@ -21,7 +21,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
         super(props);
     }
 
-    render() {
+    override render() {
         const image = this.props.image;
 
         const stretchOptions = [
@@ -72,7 +72,7 @@ export class ImagePropertyGridComponent extends React.Component<IImagePropertyGr
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     <CheckBoxLineComponent label="Autoscale" target={image} propertyName="autoScale" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Stretch"
                         options={stretchOptions}
                         target={image}

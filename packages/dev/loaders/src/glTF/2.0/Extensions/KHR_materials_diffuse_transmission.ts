@@ -5,16 +5,17 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { IMaterial, ITextureInfo } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader } from "../glTFLoader";
-import type { IKHRMaterialsTranslucency } from "babylonjs-gltf2interface";
+import type { IKHRMaterialsDiffuseTransmission } from "babylonjs-gltf2interface";
+import { Color3 } from "core/Maths/math.color";
 
-const NAME = "KHR_materials_translucency";
+const NAME = "KHR_materials_diffuse_transmission";
 
 /**
  * [Proposed Specification](https://github.com/KhronosGroup/glTF/pull/1825)
  * !!! Experimental Extension Subject to Changes !!!
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class KHR_materials_translucency implements IGLTFLoaderExtension {
+export class KHR_materials_diffuse_transmission implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -52,7 +53,7 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
      * @internal
      */
     public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsTranslucency>(context, material, this.name, (extensionContext, extension) => {
+        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsDiffuseTransmission>(context, material, this.name, (extensionContext, extension) => {
             const promises = new Array<Promise<any>>();
             promises.push(this._loader.loadMaterialBasePropertiesAsync(context, material, babylonMaterial));
             promises.push(this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial));
@@ -61,10 +62,11 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         });
     }
 
-    private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsTranslucency): Promise<void> {
+    private _loadTranslucentPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material, extension: IKHRMaterialsDiffuseTransmission): Promise<void> {
         if (!(babylonMaterial instanceof PBRMaterial)) {
             throw new Error(`${context}: Material type not supported`);
         }
+
         const pbrMaterial = babylonMaterial as PBRMaterial;
 
         // Enables "translucency" texture which represents diffusely-transmitted light.
@@ -76,26 +78,46 @@ export class KHR_materials_translucency implements IGLTFLoaderExtension {
         pbrMaterial.subSurface.minimumThickness = 0.0;
         pbrMaterial.subSurface.maximumThickness = 0.0;
 
-        // Albedo colour will tint transmission.
-        pbrMaterial.subSurface.useAlbedoToTintTranslucency = true;
+        // Tint color will be used for transmission.
+        pbrMaterial.subSurface.useAlbedoToTintTranslucency = false;
 
-        if (extension.translucencyFactor !== undefined) {
-            pbrMaterial.subSurface.translucencyIntensity = extension.translucencyFactor;
+        if (extension.diffuseTransmissionFactor !== undefined) {
+            pbrMaterial.subSurface.translucencyIntensity = extension.diffuseTransmissionFactor;
         } else {
             pbrMaterial.subSurface.translucencyIntensity = 0.0;
             pbrMaterial.subSurface.isTranslucencyEnabled = false;
             return Promise.resolve();
         }
 
-        if (extension.translucencyTexture) {
-            (extension.translucencyTexture as ITextureInfo).nonColorData = true;
-            return this._loader.loadTextureInfoAsync(`${context}/translucencyTexture`, extension.translucencyTexture).then((texture: BaseTexture) => {
-                pbrMaterial.subSurface.translucencyIntensityTexture = texture;
-            });
-        } else {
-            return Promise.resolve();
+        const promises = new Array<Promise<any>>();
+
+        pbrMaterial.subSurface.useGltfStyleTextures = true;
+
+        if (extension.diffuseTransmissionTexture) {
+            (extension.diffuseTransmissionTexture as ITextureInfo).nonColorData = true;
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionTexture`, extension.diffuseTransmissionTexture).then((texture: BaseTexture) => {
+                    pbrMaterial.subSurface.translucencyIntensityTexture = texture;
+                })
+            );
         }
+
+        if (extension.diffuseTransmissionColorFactor !== undefined) {
+            pbrMaterial.subSurface.translucencyColor = Color3.FromArray(extension.diffuseTransmissionColorFactor);
+        } else {
+            pbrMaterial.subSurface.translucencyColor = Color3.White();
+        }
+
+        if (extension.diffuseTransmissionColorTexture) {
+            promises.push(
+                this._loader.loadTextureInfoAsync(`${context}/diffuseTransmissionColorTexture`, extension.diffuseTransmissionColorTexture).then((texture: BaseTexture) => {
+                    pbrMaterial.subSurface.translucencyColorTexture = texture;
+                })
+            );
+        }
+
+        return Promise.all(promises).then(() => {});
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_translucency(loader));
+GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_diffuse_transmission(loader));

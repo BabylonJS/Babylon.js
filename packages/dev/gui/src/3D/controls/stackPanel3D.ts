@@ -43,7 +43,7 @@ export class StackPanel3D extends Container3D {
         this._isVertical = isVertical;
     }
 
-    protected _arrangeChildren() {
+    protected override _arrangeChildren() {
         let width = 0;
         let height = 0;
         let controlCount = 0;

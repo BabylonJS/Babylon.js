@@ -12,3 +12,4 @@ export * from "./KHR_materials_dispersion";
 export * from "./KHR_materials_transmission";
 export * from "./EXT_mesh_gpu_instancing";
 export * from "./KHR_materials_emissive_strength";
+export * from "./KHR_materials_diffuse_transmission";

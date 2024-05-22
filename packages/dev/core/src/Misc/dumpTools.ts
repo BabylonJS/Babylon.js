@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { _WarnImport } from "./devTools";
-import type { Engine } from "../Engines/engine";
 
 import { ThinEngine } from "../Engines/thinEngine";
 import { Constants } from "../Engines/constants";
@@ -10,6 +9,8 @@ import type { Nullable } from "../types";
 
 import { passPixelShader } from "../Shaders/pass.fragment";
 import { Scalar } from "../Maths/math.scalar";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+import { EngineStore } from "../Engines/engineStore";
 
 type DumpToolsEngine = {
     canvas: HTMLCanvasElement | OffscreenCanvas;
@@ -45,6 +46,16 @@ export class DumpTools {
                 canvas = document.createElement("canvas");
                 engine = new ThinEngine(canvas, false, options);
             }
+            // remove this engine from the list of instances to avoid using it for other purposes
+            EngineStore.Instances.pop();
+            // However, make sure to dispose it when no other engines are left
+            EngineStore.OnEnginesDisposedObservable.add((e) => {
+                // guaranteed to run when no other instances are left
+                // only dispose if it's not the current engine
+                if (engine && e !== engine && !engine.isDisposed) {
+                    engine.dispose();
+                }
+            });
             engine.getCaps().parallelShaderCompile = undefined;
             const renderer = new EffectRenderer(engine);
             const wrapper = new EffectWrapper({
@@ -60,7 +71,7 @@ export class DumpTools {
                 wrapper,
             };
         }
-        return DumpTools._DumpToolsEngine!;
+        return DumpTools._DumpToolsEngine;
     }
 
     /**
@@ -77,7 +88,7 @@ export class DumpTools {
     public static async DumpFramebuffer(
         width: number,
         height: number,
-        engine: Engine,
+        engine: AbstractEngine,
         successCallback?: (data: string) => void,
         mimeType = "image/png",
         fileName?: string,

@@ -292,7 +292,7 @@ export class CustomMaterial extends StandardMaterial {
         this._createdShaderName = "custom_" + CustomMaterial.ShaderIndexer;
     }
 
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
+    protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         if (!effect) {
             return;
         }

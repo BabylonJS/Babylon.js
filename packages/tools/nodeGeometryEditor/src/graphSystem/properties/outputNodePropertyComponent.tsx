@@ -15,17 +15,17 @@ export class OutputPropertyTabComponent extends React.Component<IPropertyCompone
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._onUpdateRequiredObserver = this.props.stateManager.onUpdateRequiredObservable.add(() => {
             this.forceUpdate();
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.stateManager.onUpdateRequiredObservable.remove(this._onUpdateRequiredObserver);
     }
 
-    render() {
+    override render() {
         const outputBlock = this.props.nodeData.data as GeometryOutputBlock;
         const vertexData = outputBlock.currentVertexData;
 

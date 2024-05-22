@@ -34,7 +34,7 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ScreenSpaceBlock";
     }
 
@@ -73,7 +73,7 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.worldViewProjection.isConnected) {
             let worldViewProjectionInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.WorldViewProjection && additionalFilteringInfo(b));
 
@@ -85,7 +85,7 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const vector = this.vector;
@@ -112,13 +112,13 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
         state.compilationString += `${tempVariableName}.xy = ${tempVariableName}.xy * 0.5 + vec2(0.5, 0.5);`;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempVariableName}.xy;\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempVariableName}.xy;\n`;
         }
         if (this.x.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempVariableName}.x;\n`;
+            state.compilationString += state._declareOutput(this.x) + ` = ${tempVariableName}.x;\n`;
         }
         if (this.y.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempVariableName}.y;\n`;
+            state.compilationString += state._declareOutput(this.y) + ` = ${tempVariableName}.y;\n`;
         }
 
         return this;

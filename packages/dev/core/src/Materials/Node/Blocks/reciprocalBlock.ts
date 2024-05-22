@@ -25,7 +25,7 @@ export class ReciprocalBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ReciprocalBlock";
     }
 
@@ -43,15 +43,15 @@ export class ReciprocalBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
         if (this.input.type === NodeMaterialBlockConnectionPointTypes.Matrix) {
-            state.compilationString += this._declareOutput(output, state) + ` = inverse(${this.input.associatedVariableName});\n`;
+            state.compilationString += state._declareOutput(output) + ` = inverse(${this.input.associatedVariableName});\n`;
         } else {
-            state.compilationString += this._declareOutput(output, state) + ` = 1. / ${this.input.associatedVariableName};\n`;
+            state.compilationString += state._declareOutput(output) + ` = 1. / ${this.input.associatedVariableName};\n`;
         }
 
         return this;

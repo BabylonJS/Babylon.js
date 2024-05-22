@@ -89,7 +89,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Returns the class name
      * @returns "GaussianSplattingMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GaussianSplattingMesh";
     }
 
@@ -97,7 +97,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Returns the total number of vertices (splats) within the mesh
      * @returns the total number of vertices
      */
-    public getTotalVertices(): number {
+    public override getTotalVertices(): number {
         return this._vertexCount;
     }
 
@@ -108,7 +108,7 @@ export class GaussianSplattingMesh extends Mesh {
      * @param effectiveMeshReplacement defines an optional mesh used to provide info for the rendering
      * @returns the current mesh
      */
-    public render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
+    public override render(subMesh: SubMesh, enableAlphaMode: boolean, effectiveMeshReplacement?: AbstractMesh): Mesh {
         if (!this.material) {
             this._material = new GaussianSplattingMaterial(this.name + "_material", this._scene);
             this.material = this._material;
@@ -123,7 +123,9 @@ export class GaussianSplattingMesh extends Mesh {
                 this._frameIdLastUpdate = frameId;
                 this._canPostToWorker = false;
                 this._lastProj = this._modelViewMatrix.m.slice(0);
-                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix }, [this._depthMix.buffer]);
+                this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
+                    this._depthMix.buffer,
+                ]);
             }
         }
 
@@ -305,7 +307,7 @@ export class GaussianSplattingMesh extends Mesh {
      * Releases resources associated with this mesh.
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      */
-    public dispose(doNotRecurse?: boolean): void {
+    public override dispose(doNotRecurse?: boolean): void {
         this._covariancesATexture?.dispose();
         this._covariancesBTexture?.dispose();
         this._centersTexture?.dispose();
@@ -355,8 +357,13 @@ export class GaussianSplattingMesh extends Mesh {
                     indices[2 * j] = j;
                 }
 
+                let depthFactor = -1;
+                if (e.data.useRightHandedSystem) {
+                    depthFactor = 1;
+                }
+
                 for (let j = 0; j < vertexCount; j++) {
-                    floatMix[2 * j + 1] = 10000 - (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]);
+                    floatMix[2 * j + 1] = 10000 + (viewProj[2] * positions[3 * j + 0] + viewProj[6] * positions[3 * j + 1] + viewProj[10] * positions[3 * j + 2]) * depthFactor;
                 }
 
                 depthMix.sort();
@@ -498,7 +505,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         let height = 1;
 
-        if (engine.webGLVersion === 1 && !engine.isWebGPU) {
+        if (engine.version === 1 && !engine.isWebGPU) {
             while (width * height < length) {
                 height *= 2;
             }

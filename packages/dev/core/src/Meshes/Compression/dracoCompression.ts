@@ -176,6 +176,21 @@ export class DracoCompression implements IDisposable {
     }
 
     /**
+     * Reset the default draco compression object to null and disposing the removed default instance.
+     * Note that if the workerPool is a member of the static Configuration object it is recommended not to run dispose,
+     * unless the static worker pool is no longer needed.
+     * @param skipDispose set to true to not dispose the removed default instance
+     */
+    public static ResetDefault(skipDispose?: boolean): void {
+        if (DracoCompression._Default) {
+            if (!skipDispose) {
+                DracoCompression._Default.dispose();
+            }
+            DracoCompression._Default = null;
+        }
+    }
+
+    /**
      * Constructor
      * @param numWorkers The number of workers for async operations Or an options object. Specify `0` to disable web workers and run synchronously in the current context.
      */
@@ -211,7 +226,7 @@ export class DracoCompression implements IDisposable {
 
                     return new AutoReleaseWorkerPool(numberOfWorkers as number, () => {
                         const worker = new Worker(workerBlobUrl);
-                        return initializeWebWorker(worker, decoderWasmBinary!, decoderInfo.url);
+                        return initializeWebWorker(worker, decoderWasmBinary, decoderInfo.url);
                     });
                 });
             } else {
@@ -260,7 +275,14 @@ export class DracoCompression implements IDisposable {
         }
     }
 
-    private _decodeMeshAsync(
+    /**
+     * Decode Draco compressed mesh data to mesh data.
+     * @param data The ArrayBuffer or ArrayBufferView for the Draco compression data
+     * @param attributes A map of attributes from vertex buffer kinds to Draco unique ids
+     * @param gltfNormalizedOverride A map of attributes from vertex buffer kinds to normalized flags to override the Draco normalization
+     * @returns A promise that resolves with the decoded mesh data
+     */
+    public decodeMeshToMeshDataAsync(
         data: ArrayBuffer | ArrayBufferView,
         attributes?: { [kind: string]: number },
         gltfNormalizedOverride?: { [kind: string]: boolean }
@@ -373,7 +395,7 @@ export class DracoCompression implements IDisposable {
      * @returns A promise that resolves with the decoded geometry
      */
     public async decodeMeshToGeometryAsync(name: string, scene: Scene, data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<Geometry> {
-        const meshData = await this._decodeMeshAsync(data, attributes);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes);
         const geometry = new Geometry(name, scene);
         if (meshData.indices) {
             geometry.setIndices(meshData.indices);
@@ -408,7 +430,7 @@ export class DracoCompression implements IDisposable {
         attributes: { [kind: string]: number },
         gltfNormalizedOverride: { [kind: string]: boolean }
     ): Promise<Geometry> {
-        const meshData = await this._decodeMeshAsync(data, attributes, gltfNormalizedOverride);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes, gltfNormalizedOverride);
         const geometry = new Geometry(name, scene);
         if (meshData.indices) {
             geometry.setIndices(meshData.indices);
@@ -443,7 +465,7 @@ export class DracoCompression implements IDisposable {
      * @deprecated Use {@link decodeMeshToGeometryAsync} for better performance in some cases
      */
     public async decodeMeshAsync(data: ArrayBuffer | ArrayBufferView, attributes?: { [kind: string]: number }): Promise<VertexData> {
-        const meshData = await this._decodeMeshAsync(data, attributes);
+        const meshData = await this.decodeMeshToMeshDataAsync(data, attributes);
         const vertexData = new VertexData();
         if (meshData.indices) {
             vertexData.indices = meshData.indices;

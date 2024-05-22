@@ -51,7 +51,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         this.state = { selectedEntity: null, selectedIndex: initialIndex };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.props.globalState) {
             this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
                 this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.Properties });
@@ -63,7 +63,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.globalState) {
             if (this._onSelectionChangeObserver) {
                 this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
@@ -119,7 +119,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         this.props.onPopup();
     }
 
-    render() {
+    override render() {
         if (this.props.popupMode) {
             return (
                 <div id="actionTabs">

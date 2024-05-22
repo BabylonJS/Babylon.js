@@ -29,7 +29,7 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphSequenceBlockConfiguration
+        public override config: IFlowGraphSequenceBlockConfiguration
     ) {
         super(config);
         this.outFlows = [];
@@ -47,7 +47,7 @@ export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphSequenceBlock.ClassName;
     }
 

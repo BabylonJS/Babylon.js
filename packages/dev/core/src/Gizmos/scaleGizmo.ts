@@ -133,10 +133,10 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /** Fires an event when any of it's sub gizmos are released from dragging */
     public onDragEndObservable = new Observable();
 
-    public get attachedMesh() {
+    public override get attachedMesh() {
         return this._meshAttached;
     }
-    public set attachedMesh(mesh: Nullable<AbstractMesh>) {
+    public override set attachedMesh(mesh: Nullable<AbstractMesh>) {
         this._meshAttached = mesh;
         this._nodeAttached = mesh;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
@@ -148,10 +148,10 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         });
     }
 
-    public get attachedNode() {
+    public override get attachedNode() {
         return this._nodeAttached;
     }
-    public set attachedNode(node: Nullable<Node>) {
+    public override set attachedNode(node: Nullable<Node>) {
         this._meshAttached = null;
         this._nodeAttached = node;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
@@ -163,21 +163,21 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         });
     }
 
-    public set updateScale(value: boolean) {
+    public override set updateScale(value: boolean) {
         if (this.xGizmo) {
             this.xGizmo.updateScale = value;
             this.yGizmo.updateScale = value;
             this.zGizmo.updateScale = value;
         }
     }
-    public get updateScale() {
+    public override get updateScale() {
         return this.xGizmo.updateScale;
     }
     /**
      * True when the mouse pointer is hovering a gizmo mesh
      */
-    public get isHovered() {
-        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered;
+    public override get isHovered() {
+        return this.xGizmo.isHovered || this.yGizmo.isHovered || this.zGizmo.isHovered || this.uniformScaleGizmo.isHovered;
     }
 
     /**
@@ -187,11 +187,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return this.xGizmo.dragBehavior.dragging || this.yGizmo.dragBehavior.dragging || this.zGizmo.dragBehavior.dragging || this.uniformScaleGizmo.dragBehavior.dragging;
     }
 
-    public get additionalTransformNode() {
+    public override get additionalTransformNode() {
         return this._additionalTransformNode;
     }
 
-    public set additionalTransformNode(transformNode: TransformNode | undefined) {
+    public override set additionalTransformNode(transformNode: TransformNode | undefined) {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             gizmo.additionalTransformNode = transformNode;
         });
@@ -267,7 +267,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
 
         const cache: GizmoAxisCache = {
             gizmoMeshes: [this._octahedron, this._uniformScalingMesh],
-            colliderMeshes: [this._uniformScalingMesh],
+            colliderMeshes: [this._octahedron, this._uniformScalingMesh],
             material: this._coloredMaterial,
             hoverMaterial: this._hoverMaterial,
             disableMaterial: this._disableMaterial,
@@ -280,7 +280,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
         return uniformScaleGizmo;
     }
 
-    public set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
+    public override set updateGizmoRotationToMatchAttachedMesh(value: boolean) {
         if (!value) {
             Logger.Warn("Setting updateGizmoRotationToMatchAttachedMesh = false on scaling gizmo is not supported.");
         } else {
@@ -292,11 +292,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             });
         }
     }
-    public get updateGizmoRotationToMatchAttachedMesh() {
+    public override get updateGizmoRotationToMatchAttachedMesh() {
         return this._updateGizmoRotationToMatchAttachedMesh;
     }
 
-    public set anchorPoint(value: GizmoAnchorPoint) {
+    public override set anchorPoint(value: GizmoAnchorPoint) {
         this._anchorPoint = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -304,7 +304,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             }
         });
     }
-    public get anchorPoint() {
+    public override get anchorPoint() {
         return this._anchorPoint;
     }
 
@@ -312,11 +312,11 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * posture that the gizmo will be display
      * When set null, default value will be used (Quaternion(0, 0, 0, 1))
      */
-    public get customRotationQuaternion(): Nullable<Quaternion> {
+    public override get customRotationQuaternion(): Nullable<Quaternion> {
         return this._customRotationQuaternion;
     }
 
-    public set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
+    public override set customRotationQuaternion(customRotationQuaternion: Nullable<Quaternion>) {
         this._customRotationQuaternion = customRotationQuaternion;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -330,7 +330,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
      * But it's possible for a user to tweak so its local for translation and world for rotation.
      * In that case, setting the coordinate system will change `updateGizmoRotationToMatchAttachedMesh` and `updateGizmoPositionToMatchAttachedMesh`
      */
-    public set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
+    public override set coordinatesMode(coordinatesMode: GizmoCoordinatesMode) {
         if (coordinatesMode == GizmoCoordinatesMode.World) {
             Logger.Warn("Setting coordinates Mode to world on scaling gizmo is not supported.");
         }
@@ -371,7 +371,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /**
      * Ratio for the scale of the gizmo (Default: 1)
      */
-    public set scaleRatio(value: number) {
+    public override set scaleRatio(value: number) {
         this._scaleRatio = value;
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
@@ -379,7 +379,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
             }
         });
     }
-    public get scaleRatio() {
+    public override get scaleRatio() {
         return this._scaleRatio;
     }
 
@@ -408,6 +408,15 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     }
 
     /**
+     * Get the cache set with addToAxisCache for a specific mesh
+     * @param mesh Axis gizmo mesh
+     * @returns Gizmo axis definition used for reactive gizmo UI
+     */
+    public getAxisCache(mesh: Mesh): GizmoAxisCache | undefined {
+        return this._gizmoAxisCache.get(mesh);
+    }
+
+    /**
      * Force release the drag action by code
      */
     public releaseDrag() {
@@ -420,7 +429,7 @@ export class ScaleGizmo extends Gizmo implements IScaleGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         [this.xGizmo, this.yGizmo, this.zGizmo, this.uniformScaleGizmo].forEach((gizmo) => {
             if (gizmo) {
                 gizmo.dispose();

@@ -23,7 +23,7 @@ export class DiscardBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DiscardBlock";
     }
 
@@ -41,7 +41,7 @@ export class DiscardBlock extends NodeMaterialBlock {
         return this._inputs[1];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         state.sharedData.hints.needAlphaTesting = true;
@@ -50,7 +50,7 @@ export class DiscardBlock extends NodeMaterialBlock {
             return;
         }
 
-        state.compilationString += `if (${this.value.associatedVariableName} < ${this.cutoff.associatedVariableName}) discard;\n`;
+        state.compilationString += `if (${this.value.associatedVariableName} < ${this.cutoff.associatedVariableName}) { discard; }\n`;
 
         return this;
     }

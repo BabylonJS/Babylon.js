@@ -259,7 +259,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * If computeTransformedInformation has been called, returns the ShadowLight absolute position in the world. Otherwise, returns the local position.
      * @returns the position vector in world space
      */
-    public getAbsolutePosition(): Vector3 {
+    public override getAbsolutePosition(): Vector3 {
         return this.transformedPosition ? this.transformedPosition : this.position;
     }
 
@@ -308,14 +308,14 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     }
 
     /** @internal */
-    public _initCache() {
+    public override _initCache() {
         super._initCache();
 
         this._cache.position = Vector3.Zero();
     }
 
     /** @internal */
-    public _isSynchronized(): boolean {
+    public override _isSynchronized(): boolean {
         if (!this._cache.position.equals(this.position)) {
             return false;
         }
@@ -328,7 +328,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param force defines if the cache version should be invalidated forcing the world matrix to be created from scratch
      * @returns the world matrix
      */
-    public computeWorldMatrix(force?: boolean): Matrix {
+    public override computeWorldMatrix(force?: boolean): Matrix {
         if (!force && this.isSynchronized()) {
             this._currentRenderId = this.getScene().getRenderId();
             return this._worldMatrix;
@@ -390,7 +390,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
     }
 
     /** @internal */
-    protected _syncParentEnabledState() {
+    protected override _syncParentEnabledState() {
         super._syncParentEnabledState();
         if (!this.parent || !this.parent.getWorldMatrix) {
             (this.transformedPosition as any) = null;
@@ -406,7 +406,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param faceIndex The index of the face for which we want to extract the view matrix. Only used for point light types.
      * @returns The view matrix. Can be null, if a view matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
      */
-    public getViewMatrix(faceIndex?: number): Nullable<Matrix> {
+    public override getViewMatrix(faceIndex?: number): Nullable<Matrix> {
         const lightDirection = TmpVectors.Vector3[0];
 
         let lightPosition = this.position;
@@ -434,7 +434,7 @@ export abstract class ShadowLight extends Light implements IShadowLight {
      * @param renderList The list of meshes to take into account when calculating the projection matrix (optional).
      * @returns The projection matrix. Can be null, if a projection matrix cannot be defined for the type of light considered (as for a hemispherical light, for example).
      */
-    public getProjectionMatrix(viewMatrix?: Matrix, renderList?: Array<AbstractMesh>): Nullable<Matrix> {
+    public override getProjectionMatrix(viewMatrix?: Matrix, renderList?: Array<AbstractMesh>): Nullable<Matrix> {
         this.setShadowProjectionMatrix(this._projectionMatrix, viewMatrix ?? this._viewMatrix, renderList ?? []);
 
         return this._projectionMatrix;

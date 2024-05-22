@@ -1,3 +1,4 @@
+import { GetExponentOfTwo } from "core/Misc/tools.functions";
 import { ThinEngine } from "../../Engines/thinEngine";
 import { InternalTexture, InternalTextureSource } from "../../Materials/Textures/internalTexture";
 import type { ImageSource, Nullable } from "../../types";
@@ -43,8 +44,8 @@ ThinEngine.prototype.createDynamicTexture = function (width: number, height: num
     texture.baseHeight = height;
 
     if (generateMipMaps) {
-        width = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
-        height = this.needPOTTextures ? ThinEngine.GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
+        width = this.needPOTTextures ? GetExponentOfTwo(width, this._caps.maxTextureSize) : width;
+        height = this.needPOTTextures ? GetExponentOfTwo(height, this._caps.maxTextureSize) : height;
     }
 
     //  this.resetTextureCache();

@@ -41,11 +41,11 @@ export class CustomBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "CustomBlock";
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         let code = this._code;
@@ -70,7 +70,7 @@ export class CustomBlock extends NodeMaterialBlock {
 
         // Declare the output variables
         this._outputs.forEach((output) => {
-            state.compilationString += this._declareOutput(output, state) + ";\n";
+            state.compilationString += state._declareOutput(output) + ";\n";
         });
 
         // Generate the function call
@@ -101,7 +101,7 @@ export class CustomBlock extends NodeMaterialBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.options = ${JSON.stringify(this._options)};\n`;
@@ -109,7 +109,7 @@ export class CustomBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.options = this._options;
@@ -117,7 +117,7 @@ export class CustomBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._deserializeOptions(serializationObject.options);
 
         super._deserialize(serializationObject, scene, rootUrl);

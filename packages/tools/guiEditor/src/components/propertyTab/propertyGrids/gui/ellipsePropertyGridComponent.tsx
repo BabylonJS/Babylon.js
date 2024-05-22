@@ -27,7 +27,7 @@ export class EllipsePropertyGridComponent extends React.Component<IEllipseProper
         super(props);
     }
 
-    render() {
+    override render() {
         const { ellipses, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(ellipses, onPropertyChangedObservable);
 

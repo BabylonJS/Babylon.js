@@ -10,7 +10,7 @@ import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import type { InputBlock } from "core/Materials/Node/Blocks/Input/inputBlock";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class GradientPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     private _onValueChangedObserver: Nullable<Observer<GradientBlock>>;
@@ -19,7 +19,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         super(props);
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
         this._onValueChangedObserver = gradientBlock.onValueChangedObservable.add(() => {
             this.forceUpdate();
@@ -27,7 +27,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
         if (this._onValueChangedObserver) {
             gradientBlock.onValueChangedObservable.remove(this._onValueChangedObserver);
@@ -93,7 +93,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const gradientBlock = this.props.nodeData.data as GradientBlock;
 
         const typeOptions = [
@@ -105,7 +105,7 @@ export class GradientPropertyTabComponent extends React.Component<IPropertyCompo
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Type"
                         options={typeOptions}
                         target={gradientBlock}

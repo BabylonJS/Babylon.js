@@ -1,4 +1,4 @@
-/* disable_uniformity_analysis */
+#define DISABLE_UNIFORMITY_ANALYSIS
 
 // Index of refraction for water
 #define IOR 1.333
@@ -102,7 +102,12 @@ void main(void) {
 #else
     if (depth >= cameraFar || depth <= 0. || bgDepth <= depthNonLinear) {
 #endif
+    #ifdef FLUIDRENDERING_COMPOSITE_MODE
+        glFragColor.rgb = backColor.rgb * backColor.a;
+        glFragColor.a = backColor.a;
+    #else
         glFragColor = backColor;
+    #endif
         return;
     }
 
@@ -160,6 +165,9 @@ void main(void) {
     vec3 refractionDir = refract(rayDir, normal, ETA);
 
     vec4 transmitted = textureLod(textureSampler, vec2(texCoord + refractionDir.xy * thickness * refractionStrength), 0.0);
+#ifdef FLUIDRENDERING_COMPOSITE_MODE
+    if (transmitted.a == 0.) transmitted.a = thickness;
+#endif
     vec3 transmittance = exp(-density * thickness * (1.0 - diffuseColor)); // Beer law
    
     vec3 refractionColor = transmitted.rgb * transmittance;

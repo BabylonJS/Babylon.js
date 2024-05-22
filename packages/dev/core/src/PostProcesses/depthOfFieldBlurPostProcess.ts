@@ -5,11 +5,11 @@ import type { Effect } from "../Materials/effect";
 import { Texture } from "../Materials/Textures/texture";
 import type { PostProcess, PostProcessOptions } from "./postProcess";
 import { BlurPostProcess } from "./blurPostProcess";
-import type { Engine } from "../Engines/engine";
 import type { Scene } from "../scene";
 import { Constants } from "../Engines/constants";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * The DepthOfFieldBlurPostProcess applied a blur in a give direction.
@@ -22,13 +22,13 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
      * The direction the blur should be applied
      */
     @serialize()
-    public direction: Vector2;
+    public override direction: Vector2;
 
     /**
      * Gets a string identifying the name of the class
      * @returns "DepthOfFieldBlurPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "DepthOfFieldBlurPostProcess";
     }
 
@@ -59,7 +59,7 @@ export class DepthOfFieldBlurPostProcess extends BlurPostProcess {
         circleOfConfusion: PostProcess,
         imageToBlur: Nullable<PostProcess> = null,
         samplingMode = Texture.BILINEAR_SAMPLINGMODE,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false,

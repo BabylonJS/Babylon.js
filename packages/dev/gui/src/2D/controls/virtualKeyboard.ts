@@ -73,7 +73,7 @@ export class VirtualKeyboard extends StackPanel {
     /** Gets shift key state */
     public shiftState = 0;
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "VirtualKeyboard";
     }
 
@@ -298,7 +298,7 @@ export class VirtualKeyboard extends StackPanel {
     /**
      * Release all resources
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this.disconnect();
@@ -327,7 +327,7 @@ export class VirtualKeyboard extends StackPanel {
     /**
      * @internal
      */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         for (const row of this.children) {
             if (row.getClassName() === "StackPanel") {

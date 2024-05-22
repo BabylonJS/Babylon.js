@@ -16,11 +16,11 @@ export class ImageBasedSlider extends BaseSlider {
     private _tempMeasure = new Measure(0, 0, 0, 0);
 
     @serialize()
-    public get displayThumb(): boolean {
+    public override get displayThumb(): boolean {
         return this._displayThumb && this.thumbImage != null;
     }
 
-    public set displayThumb(value: boolean) {
+    public override set displayThumb(value: boolean) {
         if (this._displayThumb === value) {
             return;
         }
@@ -96,15 +96,15 @@ export class ImageBasedSlider extends BaseSlider {
      * Creates a new ImageBasedSlider
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "ImageBasedSlider";
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -173,7 +173,7 @@ export class ImageBasedSlider extends BaseSlider {
      * Serializes the current control
      * @param serializationObject defined the JSON serialized object
      */
-    public serialize(serializationObject: any) {
+    public override serialize(serializationObject: any) {
         super.serialize(serializationObject);
         const backgroundImage = {};
         const thumbImage = {};
@@ -189,7 +189,7 @@ export class ImageBasedSlider extends BaseSlider {
     /**
      * @internal
      */
-    public _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
+    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializedObject, host);
         this.backgroundImage = Image.Parse(serializedObject.backgroundImage, host) as Image;
         this.thumbImage = Image.Parse(serializedObject.thumbImage, host) as Image;

@@ -29,7 +29,7 @@ export abstract class FlowGraphCachedOperationBlock<OutputT> extends FlowGraphBl
      */
     public abstract _doOperation(context: FlowGraphContext): OutputT;
 
-    public _updateOutputs(context: FlowGraphContext) {
+    public override _updateOutputs(context: FlowGraphContext) {
         const cachedExecutionId = context._getExecutionVariable(this, cacheExecIdName);
         const cachedValue = context._getExecutionVariable(this, cacheName);
         if (cachedValue !== undefined && cachedExecutionId === context.executionId) {

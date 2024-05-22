@@ -161,7 +161,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryInputBlock";
     }
 
@@ -197,7 +197,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         if (this.isContextual) {
@@ -211,13 +211,13 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         }
     }
 
-    public dispose() {
+    public override dispose() {
         this.onValueChangedObservable.clear();
 
         super.dispose();
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
 
         if (this.isContextual) {
@@ -258,7 +258,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         return super._dumpPropertiesCode() + codes.join(";\n");
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.type = this.type;
@@ -280,7 +280,7 @@ export class GeometryInputBlock extends NodeGeometryBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any) {
+    public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
 
         this._type = serializationObject.type;

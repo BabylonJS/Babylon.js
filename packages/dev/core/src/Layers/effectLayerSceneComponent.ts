@@ -1,6 +1,6 @@
 import { Camera } from "../Cameras/camera";
 import type { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { ISceneSerializableComponent } from "../sceneComponent";
@@ -75,7 +75,7 @@ export class EffectLayerSceneComponent implements ISceneSerializableComponent {
      */
     public scene: Scene;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _renderEffects = false;
     private _needStencil = false;
     private _previousStencilState = false;

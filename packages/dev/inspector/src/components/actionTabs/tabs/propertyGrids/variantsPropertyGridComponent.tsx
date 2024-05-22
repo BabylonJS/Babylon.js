@@ -7,7 +7,7 @@ import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../globalState";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 import type { KHR_materials_variants } from "loaders/glTF/2.0/Extensions/KHR_materials_variants";
@@ -28,7 +28,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         return this.props.globalState?.glTFLoaderExtensions["KHR_materials_variants"] as KHR_materials_variants;
     }
 
-    render() {
+    override render() {
         const extension = this._getVariantsExtension();
         if (!extension) {
             return null;
@@ -48,7 +48,7 @@ export class VariantsPropertyGridComponent extends React.Component<IVariantsProp
         return (
             <div>
                 <LineContainerComponent title="VARIANTS" selection={this.props.globalState}>
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Active variant"
                         options={options}
                         noDirectUpdate={true}

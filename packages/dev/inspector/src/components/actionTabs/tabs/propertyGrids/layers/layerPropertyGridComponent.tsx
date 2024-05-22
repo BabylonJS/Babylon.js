@@ -28,7 +28,7 @@ export class LayerPropertyGridComponent extends React.Component<ILayerPropertyGr
         super(props);
     }
 
-    render() {
+    override render() {
         const layer = this.props.layer;
 
         return (

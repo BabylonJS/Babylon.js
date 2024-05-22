@@ -4,7 +4,7 @@ import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
 import type { HardwareTextureWrapper } from "./hardwareTextureWrapper";
 import { TextureSampler } from "./textureSampler";
 
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { SphericalPolynomial } from "../../Maths/sphericalPolynomial";
 
@@ -113,10 +113,10 @@ export class InternalTexture extends TextureSampler {
      * Gets a boolean indicating if the texture uses mipmaps
      * TODO implements useMipMaps as a separate setting from generateMipMaps
      */
-    public get useMipMaps() {
+    public override get useMipMaps() {
         return this.generateMipMaps;
     }
-    public set useMipMaps(value: boolean) {
+    public override set useMipMaps(value: boolean) {
         this.generateMipMaps = value;
     }
     /**
@@ -261,7 +261,7 @@ export class InternalTexture extends TextureSampler {
     /** @internal */
     public _dynamicTextureSource: Nullable<ImageSource> = null;
 
-    private _engine: ThinEngine;
+    private _engine: AbstractEngine;
     private _uniqueId: number;
 
     /** @internal */
@@ -281,7 +281,7 @@ export class InternalTexture extends TextureSampler {
      * Gets the Engine the texture belongs to.
      * @returns The babylon engine
      */
-    public getEngine(): ThinEngine {
+    public getEngine(): AbstractEngine {
         return this._engine;
     }
 
@@ -298,7 +298,7 @@ export class InternalTexture extends TextureSampler {
      * @param source defines the type of data that will be used
      * @param delayAllocation if the texture allocation should be delayed (default: false)
      */
-    constructor(engine: ThinEngine, source: InternalTextureSource, delayAllocation = false) {
+    constructor(engine: AbstractEngine, source: InternalTextureSource, delayAllocation = false) {
         super();
 
         this._engine = engine;

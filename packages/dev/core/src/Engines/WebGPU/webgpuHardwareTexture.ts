@@ -29,6 +29,9 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
     /** @internal */
     public _copyInvertYBindGroupWithOfst: GPUBindGroup;
 
+    /** @internal */
+    public _originalFormatIsRGB = false;
+
     private _webgpuTexture: Nullable<GPUTexture>;
     // There can be multiple MSAA textures for a single WebGPU texture because different layers of a 2DArrayTexture / 3DTexture
     // or different faces of a cube texture can be bound to different render targets at the same time (in a multi RenderTargetWrapper)
@@ -88,6 +91,7 @@ export class WebGPUHardwareTexture implements HardwareTextureWrapper {
             arrayLayerCount = 6 * (depth || 1);
         } else if (is3D) {
             viewDimension = WebGPUConstants.TextureViewDimension.E3d;
+            arrayLayerCount = 1;
         } else if (is2DArray) {
             viewDimension = WebGPUConstants.TextureViewDimension.E2dArray;
             arrayLayerCount = depth;

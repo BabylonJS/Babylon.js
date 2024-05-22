@@ -6,7 +6,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { ScrollViewer } from "gui/2D/controls/scrollViewers/scrollViewer";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
 import colorIcon from "shared-ui-components/imgs/colorIcon.svg";
@@ -32,7 +32,7 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
         super(props);
     }
 
-    render() {
+    override render() {
         const { scrollViewers, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(scrollViewers, onPropertyChangedObservable);
 
@@ -66,11 +66,11 @@ export class ScrollViewerPropertyGridComponent extends React.Component<IScrollVi
                 </div>
                 <div className="e-divider">
                     <IconComponent icon={colorIcon} label="Bar Color" />
-                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barColor" />
+                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barColor" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Bar Background Color" />
-                    <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barBackground" />
+                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barBackground" />
                 </div>
                 <div className="ge-divider double">
                     <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />

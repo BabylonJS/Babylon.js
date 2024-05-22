@@ -43,7 +43,7 @@ export class StatisticsTabComponent extends PaneComponent {
         this._timerIntervalId = window.setInterval(() => this.forceUpdate(), 500);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._sceneInstrumentation) {
             this._sceneInstrumentation.dispose();
             this._sceneInstrumentation = null;
@@ -57,7 +57,7 @@ export class StatisticsTabComponent extends PaneComponent {
         window.clearInterval(this._timerIntervalId);
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         if (!scene || !this._sceneInstrumentation || !this._engineInstrumentation) {
@@ -98,8 +98,8 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="Render" value={sceneInstrumentation.renderTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Frame total" value={sceneInstrumentation.frameTimeCounter.lastSecAverage} units="ms" />
                     <ValueLineComponent label="Inter-frame" value={sceneInstrumentation.interFrameTimeCounter.lastSecAverage} units="ms" />
-                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter.lastSecAverage * 0.000001} units="ms" />
-                    <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter.average * 0.000001} units="ms" />
+                    <ValueLineComponent label="GPU Frame time" value={engineInstrumentation.gpuFrameTimeCounter!.lastSecAverage * 0.000001} units="ms" />
+                    <ValueLineComponent label="GPU Frame time (average)" value={engineInstrumentation.gpuFrameTimeCounter!.average * 0.000001} units="ms" />
                 </LineContainerComponent>
                 <LineContainerComponent title="SYSTEM INFO">
                     <TextLineComponent label="Resolution" value={engine.getRenderWidth() + "x" + engine.getRenderHeight()} />
@@ -123,7 +123,7 @@ export class StatisticsTabComponent extends PaneComponent {
                     <ValueLineComponent label="Max textures units" value={caps.maxTexturesImageUnits} fractionDigits={0} />
                     <ValueLineComponent label="Max textures size" value={caps.maxTextureSize} fractionDigits={0} />
                     <ValueLineComponent label="Max anisotropy" value={caps.maxAnisotropy} fractionDigits={0} />
-                    <TextLineComponent label="Driver" value={engine.getGlInfo().renderer} />
+                    <TextLineComponent label="Driver" value={engine.extractDriverInfo()} />
                 </LineContainerComponent>
             </div>
         );

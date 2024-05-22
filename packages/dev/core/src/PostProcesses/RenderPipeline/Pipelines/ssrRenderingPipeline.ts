@@ -619,7 +619,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
     /**
      * Returns true if SSR is supported by the running hardware
      */
-    public get isSupported(): boolean {
+    public override get isSupported(): boolean {
         const caps = this._scene.getEngine().getCaps();
 
         return caps.drawBuffersExtension && caps.texelFetch;
@@ -669,7 +669,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Get the class name
      * @returns "SSRRenderingPipeline"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SSRRenderingPipeline";
     }
 
@@ -696,7 +696,7 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      * @param disableGeometryBufferRenderer if the geometry buffer renderer should be disabled
      */
-    public dispose(disableGeometryBufferRenderer: boolean = false): void {
+    public override dispose(disableGeometryBufferRenderer: boolean = false): void {
         this._disposeDepthRenderer();
         this._disposePostProcesses();
 
@@ -799,6 +799,12 @@ export class SSRRenderingPipeline extends PostProcessRenderPipeline {
 
         if (this._geometryBufferRenderer?.normalsAreUnsigned) {
             defines.push("#define SSR_DECODE_NORMAL");
+        }
+
+        const camera = this._cameras?.[0];
+
+        if (camera && camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+            defines.push("#define ORTHOGRAPHIC_CAMERA");
         }
 
         this._ssrPostProcess?.updateEffect(defines.join("\n"));

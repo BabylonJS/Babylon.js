@@ -184,3 +184,37 @@ export function FindBackward(s: string, index: number, c: string, c2?: string): 
 export function EscapeRegExp(s: string): string {
     return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
+
+/**
+ * Injects code at the beginning and/or end of a function.
+ * The function is identified by "mainFuncDecl". The starting code is injected just after the first "\{" found after the mainFuncDecl.
+ * The ending code is injected just before the last "\}" of the whole block of code (so, it is assumed that the function is the last of the block of code).
+ * @param code code to inject into
+ * @param mainFuncDecl Function declaration to find in the code (for eg: "void main")
+ * @param startingCode The code to inject at the beginning of the function
+ * @param endingCode The code to inject at the end of the function
+ * @returns The code with the injected code
+ */
+export function InjectStartingAndEndingCode(code: string, mainFuncDecl: string, startingCode?: string, endingCode?: string): string {
+    let idx = code.indexOf(mainFuncDecl);
+    if (idx < 0) {
+        return code;
+    }
+    if (startingCode) {
+        // eslint-disable-next-line no-empty
+        while (idx++ < code.length && code.charAt(idx) != "{") {}
+        if (idx < code.length) {
+            const part1 = code.substring(0, idx + 1);
+            const part2 = code.substring(idx + 1);
+            code = part1 + startingCode + part2;
+        }
+    }
+
+    if (endingCode) {
+        const lastClosingCurly = code.lastIndexOf("}");
+        code = code.substring(0, lastClosingCurly);
+        code += endingCode + "\n}";
+    }
+
+    return code;
+}

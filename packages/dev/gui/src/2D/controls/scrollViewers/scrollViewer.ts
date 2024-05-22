@@ -68,7 +68,7 @@ export class ScrollViewer extends Rectangle {
      * @param control defines the control to add
      * @returns the current container
      */
-    public addControl(control: Nullable<Control>): Container {
+    public override addControl(control: Nullable<Control>): Container {
         if (!control) {
             return this;
         }
@@ -83,17 +83,17 @@ export class ScrollViewer extends Rectangle {
      * @param control defines the control to remove
      * @returns the current container
      */
-    public removeControl(control: Control): Container {
+    public override removeControl(control: Control): Container {
         this._window.removeControl(control);
         return this;
     }
 
     /** Gets the list of children */
-    public get children(): Control[] {
+    public override get children(): Control[] {
         return this._window.children;
     }
 
-    public _flagDescendantsAsMatrixDirty(): void {
+    public override _flagDescendantsAsMatrixDirty(): void {
         for (const child of this._children) {
             child._markMatrixAsDirty();
         }
@@ -229,6 +229,8 @@ export class ScrollViewer extends Rectangle {
         this._dragSpace.thickness = 1;
         this._grid.addControl(this._dragSpace, 1, 1);
 
+        this._grid.clipChildren = false;
+
         // Colors
         if (!this._useImageBar) {
             this.barColor = "grey";
@@ -242,7 +244,7 @@ export class ScrollViewer extends Rectangle {
         this._window.height = "100%";
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "ScrollViewer";
     }
 
@@ -256,13 +258,13 @@ export class ScrollViewer extends Rectangle {
         this._clientHeight = this._window.parentClientHeight;
     }
 
-    protected _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
+    protected override _additionalProcessing(parentMeasure: Measure, context: ICanvasRenderingContext): void {
         super._additionalProcessing(parentMeasure, context);
 
         this._buildClientSizes();
     }
 
-    protected _postMeasure(): void {
+    protected override _postMeasure(): void {
         super._postMeasure();
 
         this._updateScroller();
@@ -627,7 +629,7 @@ export class ScrollViewer extends Rectangle {
         this._verticalBar.thumbWidth = this._thumbLength * 0.9 * (this._clientHeight / ratio) + "px";
     }
 
-    public _link(host: AdvancedDynamicTexture): void {
+    public override _link(host: AdvancedDynamicTexture): void {
         super._link(host);
 
         this._attachWheel();
@@ -683,7 +685,7 @@ export class ScrollViewer extends Rectangle {
         });
     }
 
-    public _renderHighlightSpecific(context: ICanvasRenderingContext): void {
+    public override _renderHighlightSpecific(context: ICanvasRenderingContext): void {
         if (!this.isHighlighted) {
             return;
         }
@@ -696,7 +698,7 @@ export class ScrollViewer extends Rectangle {
     }
 
     /** Releases associated resources */
-    public dispose() {
+    public override dispose() {
         this.onWheelObservable.remove(this._onWheelObserver);
         this._onWheelObserver = null;
         super.dispose();

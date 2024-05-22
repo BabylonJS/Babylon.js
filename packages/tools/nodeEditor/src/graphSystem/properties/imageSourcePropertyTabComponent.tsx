@@ -12,7 +12,7 @@ import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
@@ -30,7 +30,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
+    override UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.nodeData.data !== this.props.nodeData.data) {
             const texture = (nextProps.nodeData.data as ImageSourceBlock).texture as BaseTexture;
 
@@ -118,7 +118,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
         (texture as Texture).updateURL(url, null, () => this.updateAfterTextureLoad());
     }
 
-    render() {
+    override render() {
         let url = "";
         const block = this.props.nodeData.data as NodeMaterialBlock;
 
@@ -153,7 +153,7 @@ export class ImageSourcePropertyTabComponent extends React.Component<IPropertyCo
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
                     {texture && texture.updateSamplingMode && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Sampling"
                             options={samplingMode}
                             target={texture}

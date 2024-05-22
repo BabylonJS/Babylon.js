@@ -67,7 +67,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
     /**
      * Gets a boolean indicating that current material needs to register RTT
      */
-    public get hasRenderTargetTextures(): boolean {
+    public override get hasRenderTargetTextures(): boolean {
         return false;
     }
 
@@ -75,7 +75,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Specifies whether or not this material should be rendered in alpha test mode.
      * @returns false
      */
-    public needAlphaTesting(): boolean {
+    public override needAlphaTesting(): boolean {
         return false;
     }
 
@@ -83,7 +83,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Specifies whether or not this material should be rendered in alpha blend mode.
      * @returns true
      */
-    public needAlphaBlending(): boolean {
+    public override needAlphaBlending(): boolean {
         return true;
     }
 
@@ -93,7 +93,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param subMesh The submesh to check against
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
-    public isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
         const useInstances = true;
 
         const drawWrapper = subMesh._drawWrapper;
@@ -136,7 +136,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
 
             PrepareAttributesForInstances(attribs, defines);
 
-            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "viewport", "dataTextureSize", "focal"];
+            const uniforms = ["world", "view", "projection", "vFogInfos", "vFogColor", "logarithmicDepthConstant", "invViewport", "dataTextureSize", "focal"];
             const samplers = ["covariancesATexture", "covariancesBTexture", "centersTexture", "colorsTexture"];
             const uniformBuffers = ["Scene", "Mesh"];
 
@@ -183,7 +183,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param mesh defines the mesh containing the submesh
      * @param subMesh defines the submesh to bind the material to
      */
-    public bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
         const scene = this.getScene();
 
         const defines = <GaussianSplattingMaterialDefines>subMesh.materialDefines;
@@ -214,7 +214,10 @@ export class GaussianSplattingMaterial extends PushMaterial {
             const renderWidth = engine.getRenderWidth();
             const renderHeight = engine.getRenderHeight();
 
-            this._activeEffect.setFloat2("viewport", renderWidth, renderHeight);
+            // check if rigcamera, get number of rigs
+            const numberOfRigs = camera?.rigParent?.rigCameras.length || 1;
+
+            this._activeEffect.setFloat2("invViewport", 1 / (renderWidth / numberOfRigs), 1 / renderHeight);
 
             let focal = 1000;
 
@@ -263,7 +266,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param name The cloned name.
      * @returns The cloned material.
      */
-    public clone(name: string): GaussianSplattingMaterial {
+    public override clone(name: string): GaussianSplattingMaterial {
         return SerializationHelper.Clone(() => new GaussianSplattingMaterial(name, this.getScene()), this);
     }
 
@@ -271,7 +274,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Serializes the current material to its JSON representation.
      * @returns The JSON representation.
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.customType = "BABYLON.GaussianSplattingMaterial";
         return serializationObject;
@@ -281,7 +284,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * Gets the class name of the material
      * @returns "GaussianSplattingMaterial"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GaussianSplattingMaterial";
     }
 
@@ -292,7 +295,7 @@ export class GaussianSplattingMaterial extends PushMaterial {
      * @param rootUrl The root url of the assets the material depends upon
      * @returns the instantiated GaussianSplattingMaterial.
      */
-    public static Parse(source: any, scene: Scene, rootUrl: string): GaussianSplattingMaterial {
+    public static override Parse(source: any, scene: Scene, rootUrl: string): GaussianSplattingMaterial {
         return SerializationHelper.Parse(() => new GaussianSplattingMaterial(source.name, scene), source, scene, rootUrl);
     }
 }

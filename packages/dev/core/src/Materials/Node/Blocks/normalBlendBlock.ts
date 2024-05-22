@@ -38,7 +38,7 @@ export class NormalBlendBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NormalBlendBlock";
     }
 
@@ -63,7 +63,7 @@ export class NormalBlendBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
@@ -72,9 +72,9 @@ export class NormalBlendBlock extends NodeMaterialBlock {
         const stepR = state._getFreeVariableName("stepR");
         const stepG = state._getFreeVariableName("stepG");
 
-        state.compilationString += `float ${stepR} = step(0.5, ${input0.associatedVariableName}.r);\n`;
-        state.compilationString += `float ${stepG} = step(0.5, ${input0.associatedVariableName}.g);\n`;
-        state.compilationString += this._declareOutput(output, state) + `;\n`;
+        state.compilationString += `${state._declareLocalVar(stepR, NodeMaterialBlockConnectionPointTypes.Float)} = step(0.5, ${input0.associatedVariableName}.r);\n`;
+        state.compilationString += `${state._declareLocalVar(stepG, NodeMaterialBlockConnectionPointTypes.Float)} = step(0.5, ${input0.associatedVariableName}.g);\n`;
+        state.compilationString += state._declareOutput(output) + `;\n`;
         state.compilationString += `${output.associatedVariableName}.r = (1.0 - ${stepR}) * ${input0.associatedVariableName}.r * ${input1.associatedVariableName}.r * 2.0 + ${stepR} * (1.0 - (1.0 - ${input0.associatedVariableName}.r) * (1.0 - ${input1.associatedVariableName}.r) * 2.0);\n`;
         state.compilationString += `${output.associatedVariableName}.g = (1.0 - ${stepG}) * ${input0.associatedVariableName}.g * ${input1.associatedVariableName}.g * 2.0 + ${stepG} * (1.0 - (1.0 - ${input0.associatedVariableName}.g) * (1.0 - ${input1.associatedVariableName}.g) * 2.0);\n`;
         state.compilationString += `${output.associatedVariableName}.b = ${input0.associatedVariableName}.b * ${input1.associatedVariableName}.b;\n`;

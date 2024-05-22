@@ -285,7 +285,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onSelectAllKeysObserver) {
             this.props.context.onSelectAllKeys.remove(this._onSelectAllKeysObserver);
         }
@@ -339,7 +339,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         }
     }
 
-    shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState) {
+    override shouldComponentUpdate(newProps: IKeyPointComponentProps, newState: IKeyPointComponentState) {
         if (newProps !== this.props) {
             newState.x = newProps.x;
             newState.y = newProps.y;
@@ -630,7 +630,7 @@ export class KeyPointComponent extends React.Component<IKeyPointComponentProps, 
         this._controlMode = ControlMode.None;
     }
 
-    public render() {
+    public override render() {
         if (!this.props.context.isChannelEnabled(this.props.curve.animation, this.props.curve.color)) {
             return null;
         }

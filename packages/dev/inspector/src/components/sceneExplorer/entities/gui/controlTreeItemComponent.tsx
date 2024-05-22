@@ -33,7 +33,7 @@ export class ControlTreeItemComponent extends React.Component<IControlTreeItemCo
         this.props.control.isVisible = newState;
     }
 
-    render() {
+    override render() {
         const control = this.props.control;
         const name = (control.name || "No name") + ` [${control.getClassName()}]`;
         const isActiveElement = this.state.isActive ? <FontAwesomeIcon icon={faHighlighter} /> : <FontAwesomeIcon icon={faHighlighter} className="isNotActive" />;

@@ -288,7 +288,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * We only have a single raycast in-flight right now
      */
-    private _queryCollector: bigint;
+    private _queryCollector;
     private _fixedTimeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
@@ -527,6 +527,11 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         if (instancesCount > pluginInstancesCount) {
             this._createOrUpdateBodyInstances(body, motionType, matrixData, pluginInstancesCount, instancesCount, false);
             const firstBodyShape = this._hknp.HP_Body_GetShape(body._pluginDataInstances[0].hpBodyId)[1];
+            // firstBodyShape[0] might be 0 in the case where thin instances data is set (with thinInstancesSetBuffer call) after body creation
+            // in that case, use the shape provided at body creation.
+            if (!firstBodyShape[0]) {
+                firstBodyShape[0] = body.shape?._pluginData[0];
+            }
             for (let i = pluginInstancesCount; i < instancesCount; i++) {
                 this._hknp.HP_Body_SetShape(body._pluginDataInstances[i].hpBodyId, firstBodyShape);
                 this._internalUpdateMassProperties(body._pluginDataInstances[i]);
@@ -605,6 +610,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 // transform position/orientation in parent space
                 if (parent && !parent.getWorldMatrix().isIdentity()) {
                     parent.computeWorldMatrix(true);
+                    // Save scaling for future use
+                    TmpVectors.Vector3[1].copyFrom(transformNode.scaling);
 
                     quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
@@ -619,6 +626,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     finalTransform.multiplyToRef(parentInverseTransform, localTransform);
                     localTransform.decomposeToTransformNode(transformNode);
                     transformNode.rotationQuaternion?.normalize();
+                    // Keep original scaling. Re-injecting scaling can introduce discontinuity between frames. Basically, it grows or shrinks.
+                    transformNode.scaling.copyFrom(TmpVectors.Vector3[1]);
                 } else {
                     transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
                     if (transformNode.rotationQuaternion) {
@@ -1026,6 +1035,21 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         );
     }
 
+    /**
+     * Applies an angular impulse(torque) to a physics body
+     * @param body - The physics body to apply the impulse to.
+     * @param angularImpulse - The torque value
+     * @param instanceIndex - The index of the instance to apply the impulse to. If not specified, the impulse will be applied to all instances.
+     */
+    public applyAngularImpulse(body: PhysicsBody, angularImpulse: Vector3, instanceIndex?: number): void {
+        this._applyToBodyOrInstances(
+            body,
+            (pluginRef) => {
+                this._hknp.HP_Body_ApplyAngularImpulse(pluginRef.hpBodyId, this._bVecToV3(angularImpulse));
+            },
+            instanceIndex
+        );
+    }
     /**
      * Applies a force to a physics body at a given location.
      * @param body - The physics body to apply the impulse to.
@@ -2247,10 +2271,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Dispose the world and free resources
      */
     public dispose(): void {
-        this._hknp.HP_QueryCollector_Release(this._queryCollector);
-        this._queryCollector = BigInt(0);
-        this._hknp.HP_World_Release(this.world);
-        this.world = undefined;
+        if (this._queryCollector) {
+            this._hknp.HP_QueryCollector_Release(this._queryCollector);
+            this._queryCollector = undefined;
+        }
+        if (this.world) {
+            this._hknp.HP_World_Release(this.world);
+            this.world = undefined;
+        }
     }
 
     private _v3ToBvecRef(v: any, vec3: Vector3): void {

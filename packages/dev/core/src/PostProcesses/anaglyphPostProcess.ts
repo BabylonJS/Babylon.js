@@ -18,7 +18,7 @@ export class AnaglyphPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "AnaglyphPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AnaglyphPostProcess";
     }
 

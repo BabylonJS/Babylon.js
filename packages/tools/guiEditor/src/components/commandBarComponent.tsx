@@ -4,10 +4,10 @@ import type { GlobalState } from "../globalState";
 import { GUIEditorTool } from "../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { CommandButtonComponent } from "./commandButtonComponent";
 import { CommandDropdownComponent } from "./commandDropdownComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 import hamburgerIcon from "../imgs/hamburgerIcon.svg";
@@ -92,7 +92,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         });
     }
 
-    public render() {
+    public override render() {
         const isPasteDisabled = this.props.globalState.workbench ? this.props.globalState.workbench.pasteDisabled : true;
         const size = this.props.globalState.workbench ? { ...this.props.globalState.workbench.guiSize } : { width: 0, height: 0 };
         const copyyIcon = this.props.globalState.selectedControls.length === 0 ? copyIconDisabled : copyIcon;
@@ -252,7 +252,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         />
                     </div>
                     <div className="divider padded">
-                        <ColorLineComponent lockObject={this._lockObject} label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
+                        <ColorLine lockObject={this._lockObject} label={"Artboard:"} target={this.props.globalState} propertyName="backgroundColor" disableAlpha={true} />
                     </div>
                     <div className="divider padded">
                         <CheckBoxLineComponent
@@ -275,7 +275,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                             large
                         />
                         {responsiveUI && (
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label=""
                                 iconLabel="Size"
                                 options={_sizeOptions}

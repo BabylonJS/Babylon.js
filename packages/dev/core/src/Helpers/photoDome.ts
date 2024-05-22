@@ -12,15 +12,15 @@ export class PhotoDome extends TextureDome<Texture> {
     /**
      * Define the image as a Monoscopic panoramic 360 image.
      */
-    public static readonly MODE_MONOSCOPIC = TextureDome.MODE_MONOSCOPIC;
+    public static override readonly MODE_MONOSCOPIC = TextureDome.MODE_MONOSCOPIC;
     /**
      * Define the image as a Stereoscopic TopBottom/OverUnder panoramic 360 image.
      */
-    public static readonly MODE_TOPBOTTOM = TextureDome.MODE_TOPBOTTOM;
+    public static override readonly MODE_TOPBOTTOM = TextureDome.MODE_TOPBOTTOM;
     /**
      * Define the image as a Stereoscopic Side by Side panoramic 360 image.
      */
-    public static readonly MODE_SIDEBYSIDE = TextureDome.MODE_SIDEBYSIDE;
+    public static override readonly MODE_SIDEBYSIDE = TextureDome.MODE_SIDEBYSIDE;
     /**
      * Gets or sets the texture being displayed on the sphere
      */

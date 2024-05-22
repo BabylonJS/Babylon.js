@@ -21,6 +21,7 @@ import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import type { SubMesh } from "../../../..//Meshes/subMesh";
+import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
 
 /**
  * Base block used to read a reflection texture from a sampler
@@ -131,7 +132,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ReflectionTextureBaseBlock";
     }
 
@@ -174,7 +175,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
      * @param material defines the material to configure
      * @param additionalFilteringInfo defines additional info to be used when filtering inputs (we might want to skip some non relevant blocks)
      */
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.position.isConnected) {
             let positionInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position" && additionalFilteringInfo(b));
 
@@ -206,7 +207,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         if (!defines._areTexturesDirty) {
             return;
         }
@@ -231,7 +232,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         defines.setValue(this._defineMirroredEquirectangularFixedName, texture.coordinatesMode === Constants.TEXTURE_FIXED_EQUIRECTANGULAR_MIRRORED_MODE, true);
     }
 
-    public isReady() {
+    public override isReady() {
         const texture = this._getTexture();
 
         if (texture && !texture.isReadyOrNotBlocking()) {
@@ -241,7 +242,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, _subMesh?: SubMesh) {
         const texture = this._getTexture();
 
         if (!mesh || !texture) {
@@ -288,21 +289,21 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         this._reflectionMatrixName = state._getFreeVariableName("reflectionMatrix");
 
-        state._emitUniformFromString(this._reflectionMatrixName, "mat4");
+        state._emitUniformFromString(this._reflectionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let code = "";
 
         this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
 
         const worldPosVaryingName = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName;
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, "vec4")) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
             code += `${this.generateOnlyFragmentCode ? "vec4 " : ""}${worldPosVaryingName} = ${this.worldPosition.associatedVariableName};\n`;
         }
 
         this._positionUVWName = state._getFreeVariableName("positionUVW");
         this._directionWName = state._getFreeVariableName("directionW");
 
-        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, "vec3", this._defineSkyboxName)) {
+        if (this.generateOnlyFragmentCode || state._emitVaryingFromString(this._positionUVWName, NodeMaterialBlockConnectionPointTypes.Vector3, this._defineSkyboxName)) {
             code += `#ifdef ${this._defineSkyboxName}\n`;
             code += `${this.generateOnlyFragmentCode ? "vec3 " : ""}${this._positionUVWName} = ${this.position.associatedVariableName}.xyz;\n`;
             code += `#endif\n`;
@@ -312,7 +313,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             this.generateOnlyFragmentCode ||
             state._emitVaryingFromString(
                 this._directionWName,
-                "vec3",
+                NodeMaterialBlockConnectionPointTypes.Vector3,
                 `defined(${this._defineEquirectangularFixedName}) || defined(${this._defineMirroredEquirectangularFixedName})`
             )
         ) {
@@ -362,10 +363,10 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._reflectionCoordsName = state._getFreeVariableName("reflectionCoords");
 
         this._reflectionPositionName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionPositionName, "vec3");
+        state._emitUniformFromString(this._reflectionPositionName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._reflectionSizeName = state._getFreeVariableName("vReflectionPosition");
-        state._emitUniformFromString(this._reflectionSizeName, "vec3");
+        state._emitUniformFromString(this._reflectionSizeName, NodeMaterialBlockConnectionPointTypes.Vector3);
     }
 
     /**
@@ -495,7 +496,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             for (const output of this._outputs) {
                 if (output.hasEndpoints) {
-                    code += `${this._declareOutput(output, state)} = ${varName}.${output.name};\n`;
+                    code += `${state._declareOutput(output)} = ${varName}.${output.name};\n`;
                 }
             }
         }
@@ -503,12 +504,12 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (!this.texture) {
@@ -528,7 +529,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget) {
@@ -540,7 +541,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime) {

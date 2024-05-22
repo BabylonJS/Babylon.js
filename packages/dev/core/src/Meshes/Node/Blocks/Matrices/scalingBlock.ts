@@ -25,7 +25,7 @@ export class ScalingBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ScalingBlock";
     }
 
@@ -43,7 +43,7 @@ export class ScalingBlock extends NodeGeometryBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.scale.isConnected) {
             const scaleInput = new GeometryInputBlock("Scale");
             scaleInput.value = new Vector3(1, 1, 1);
@@ -51,7 +51,7 @@ export class ScalingBlock extends NodeGeometryBlock {
         }
     }
 
-    protected _buildBlock(state: NodeGeometryBuildState) {
+    protected override _buildBlock(state: NodeGeometryBuildState) {
         super._buildBlock(state);
 
         this.matrix._storedFunction = (state) => {

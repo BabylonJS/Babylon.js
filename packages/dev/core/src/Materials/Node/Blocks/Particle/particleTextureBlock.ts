@@ -65,7 +65,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ParticleTextureBlock";
     }
 
@@ -122,11 +122,11 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("diffuseSampler");
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.uv.isConnected) {
             let uvInput = material.getInputBlockByPredicate((b) => b.isAttribute && b.name === "particle_uv" && additionalFilteringInfo(b));
 
@@ -138,12 +138,12 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
     }
 
-    public isReady() {
+    public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -152,7 +152,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
     }
 
     private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
         state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\n`;
@@ -163,7 +163,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\n`;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
@@ -195,7 +195,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
@@ -207,7 +207,7 @@ export class ParticleTextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;

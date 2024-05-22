@@ -32,7 +32,7 @@ export class ButtonPropertyGridComponent extends React.Component<IButtonProperty
         super(props);
     }
 
-    render() {
+    override render() {
         const { rectangles, lockObject, onPropertyChangedObservable, onAddComponent } = this.props;
         const proxy = makeTargetsProxy(rectangles, onPropertyChangedObservable);
 

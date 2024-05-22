@@ -3,7 +3,7 @@ import type { Camera } from "../Cameras/camera";
 import type { Effect } from "../Materials/effect";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 
 import "../Shaders/grain.fragment";
@@ -32,7 +32,7 @@ export class GrainPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "GrainPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GrainPostProcess";
     }
 
@@ -52,7 +52,7 @@ export class GrainPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
@@ -67,7 +67,7 @@ export class GrainPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new GrainPostProcess(

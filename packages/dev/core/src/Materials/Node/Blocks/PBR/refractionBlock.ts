@@ -108,7 +108,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("vRefractionPosition");
         state._excludeVariableName("vRefractionSize");
     }
@@ -117,7 +117,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "RefractionBlock";
     }
 
@@ -171,7 +171,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return this._scene.environmentTexture;
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.intensity.isConnected) {
             const intensityInput = new InputBlock("Refraction intensity", NodeMaterialBlockTargets.Fragment, NodeMaterialBlockConnectionPointTypes.Float);
             intensityInput.value = 1;
@@ -189,7 +189,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         const refractionTexture = this._getTexture();
@@ -213,7 +213,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         defines.setValue("SS_USE_THICKNESS_AS_DEPTH", this.useThicknessAsDepth, true);
     }
 
-    public isReady() {
+    public override isReady() {
         const texture = this._getTexture();
 
         if (texture && !texture.isReadyOrNotBlocking()) {
@@ -223,7 +223,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return true;
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         const refractionTexture = this._getTexture();
@@ -306,7 +306,7 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._refractionMatrixName = state._getFreeVariableName("refractionMatrix");
 
-        state._emitUniformFromString(this._refractionMatrixName, "mat4");
+        state._emitUniformFromString(this._refractionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         state._emitFunction(
             "sampleRefraction",
@@ -332,29 +332,29 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, "vec4");
+        state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
-        state._emitUniformFromString(this._vRefractionInfosName, "vec4");
+        state._emitUniformFromString(this._vRefractionInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 
-        state._emitUniformFromString(this._vRefractionFilteringInfoName, "vec2");
+        state._emitUniformFromString(this._vRefractionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
-        state._emitUniformFromString("vRefractionPosition", "vec3");
-        state._emitUniformFromString("vRefractionSize", "vec3");
+        state._emitUniformFromString("vRefractionPosition", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("vRefractionSize", NodeMaterialBlockConnectionPointTypes.Vector3);
 
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         this._scene = state.sharedData.scene;
 
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
@@ -373,7 +373,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         if (this.texture && !this.texture.isRenderTarget) {
@@ -387,7 +387,7 @@ export class RefractionBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         if (serializationObject.texture) {

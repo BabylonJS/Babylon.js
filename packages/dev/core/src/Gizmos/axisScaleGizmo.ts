@@ -294,7 +294,12 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
             if (this._customMeshSet) {
                 return;
             }
-            this._isHovered = !!(cache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            // axis mesh cache
+            let meshCache = this._parent?.getAxisCache(this._gizmoMesh);
+            this._isHovered = !!meshCache && !!(meshCache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
+            // uniform mesh cache
+            meshCache = this._parent?.getAxisCache(this._rootMesh);
+            this._isHovered ||= !!meshCache && !!(meshCache.colliderMeshes.indexOf(<Mesh>pointerInfo?.pickInfo?.pickedMesh) != -1);
             if (!this._parent) {
                 const material = this.dragBehavior.enabled ? (this._isHovered || this._dragging ? this._hoverMaterial : this._coloredMaterial) : this._disableMaterial;
                 this._setGizmoMeshMaterial(cache.gizmoMeshes, material);
@@ -346,7 +351,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
         return { arrowMesh, arrowTail };
     }
 
-    protected _attachedNodeChanged(value: Nullable<Node>) {
+    protected override _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
@@ -375,7 +380,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();
@@ -395,7 +400,7 @@ export class AxisScaleGizmo extends Gizmo implements IAxisScaleGizmo {
      * @param mesh The mesh to replace the default mesh of the gizmo
      * @param useGizmoMaterial If the gizmo's default material should be used (default: false)
      */
-    public setCustomMesh(mesh: Mesh, useGizmoMaterial: boolean = false) {
+    public override setCustomMesh(mesh: Mesh, useGizmoMaterial: boolean = false) {
         super.setCustomMesh(mesh);
         if (useGizmoMaterial) {
             this._rootMesh.getChildMeshes().forEach((m) => {

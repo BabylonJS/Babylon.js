@@ -96,7 +96,7 @@ export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
     /**
      * Remove all attached input methods from a camera
      */
-    public clear(): void {
+    public override clear(): void {
         super.clear();
         this._mouseInput = null;
     }

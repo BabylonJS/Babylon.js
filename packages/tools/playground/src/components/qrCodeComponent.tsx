@@ -19,7 +19,7 @@ export class QRCodeComponent extends React.Component<IQRCodeComponentProps, { is
         });
     }
 
-    componentDidUpdate() {
+    override componentDidUpdate() {
         this._syncQRCOde();
     }
 
@@ -32,7 +32,7 @@ export class QRCodeComponent extends React.Component<IQRCodeComponentProps, { is
         $("#qr-code-image").qrcode({ text: "https://playground.babylonjs.com/frame.html" + location.hash });
     }
 
-    public render() {
+    public override render() {
         if (!this.state.isVisible) {
             return null;
         }

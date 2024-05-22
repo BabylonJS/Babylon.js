@@ -23,6 +23,7 @@ export * from "./materialFlags";
 export * from "./Node/index";
 export * from "./effectRenderer";
 export * from "./shadowDepthWrapper";
+export * from "./drawWrapper.functions";
 export * from "./drawWrapper";
 export * from "./materialPluginBase";
 export * from "./materialPluginManager";

@@ -64,7 +64,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
     @editableInPropertyPage("Force irradiance in fragment", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
     public forceIrradianceInFragment: boolean = false;
 
-    protected _onGenerateOnlyFragmentCodeChanged(): boolean {
+    protected override _onGenerateOnlyFragmentCodeChanged(): boolean {
         if (this.position.isConnected) {
             this.generateOnlyFragmentCode = !this.generateOnlyFragmentCode;
             Logger.Error("The position input must not be connected to be able to switch!");
@@ -76,7 +76,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return true;
     }
 
-    protected _setTarget(): void {
+    protected override _setTarget(): void {
         super._setTarget();
         this.getInputByName("position")!.target = this.generateOnlyFragmentCode ? NodeMaterialBlockTargets.Fragment : NodeMaterialBlockTargets.Vertex;
         if (this.generateOnlyFragmentCode) {
@@ -113,7 +113,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ReflectionBlock";
     }
 
@@ -187,7 +187,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this.color.isConnected ? this.color.associatedVariableName : "vec3(1., 1., 1.)";
     }
 
-    protected _getTexture(): Nullable<BaseTexture> {
+    protected override _getTexture(): Nullable<BaseTexture> {
         if (this.texture) {
             return this.texture;
         }
@@ -195,7 +195,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this._scene.environmentTexture;
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         const reflectionTexture = this._getTexture();
@@ -228,7 +228,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         }
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh, subMesh?: SubMesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         const reflectionTexture = this._getTexture();
@@ -282,7 +282,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      * @param state current state of the node material building
      * @returns the shader code
      */
-    public handleVertexSide(state: NodeMaterialBuildState): string {
+    public override handleVertexSide(state: NodeMaterialBuildState): string {
         let code = super.handleVertexSide(state);
 
         state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
@@ -296,27 +296,31 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vEnvironmentIrradianceName = state._getFreeVariableName("vEnvironmentIrradiance");
 
-        state._emitVaryingFromString(this._vEnvironmentIrradianceName, "vec3", "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)");
+        state._emitVaryingFromString(
+            this._vEnvironmentIrradianceName,
+            NodeMaterialBlockConnectionPointTypes.Vector3,
+            "defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)"
+        );
 
-        state._emitUniformFromString("vSphericalL00", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL1_1", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL10", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL11", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL2_2", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL2_1", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL20", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL21", "vec3", "SPHERICAL_HARMONICS");
-        state._emitUniformFromString("vSphericalL22", "vec3", "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL00", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL1_1", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL10", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL11", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL2_2", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL2_1", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL20", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL21", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
+        state._emitUniformFromString("vSphericalL22", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS");
 
-        state._emitUniformFromString("vSphericalX", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalY", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalXX_ZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalYY_ZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalXY", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalYZ", "vec3", "SPHERICAL_HARMONICS", true);
-        state._emitUniformFromString("vSphericalZX", "vec3", "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalY", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalXX_ZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalYY_ZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalXY", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalYZ", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
+        state._emitUniformFromString("vSphericalZX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
 
         code += `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
                 vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
@@ -379,13 +383,13 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         this._vReflectionMicrosurfaceInfosName = state._getFreeVariableName("vReflectionMicrosurfaceInfos");
 
-        state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, "vec3");
+        state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
         this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
 
         this._vReflectionFilteringInfoName = state._getFreeVariableName("vReflectionFilteringInfo");
 
-        state._emitUniformFromString(this._vReflectionFilteringInfoName, "vec2");
+        state._emitUniformFromString(this._vReflectionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         code += `#ifdef REFLECTION
             vec2 ${this._vReflectionInfosName} = vec2(1., 0.);
@@ -443,7 +447,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return code;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         this._scene = state.sharedData.scene;
 
         if (state.target !== NodeMaterialBlockTargets.Fragment) {
@@ -454,7 +458,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return this;
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         if (this.texture) {
@@ -466,7 +470,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return codeString;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.useSphericalHarmonics = this.useSphericalHarmonics;
@@ -476,7 +480,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.useSphericalHarmonics = serializationObject.useSphericalHarmonics;

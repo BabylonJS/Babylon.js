@@ -7,7 +7,7 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import type { ImageBasedSlider } from "gui/2D/controls/sliders/imageBasedSlider";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
 
@@ -34,7 +34,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
         super(props);
     }
 
-    render() {
+    override render() {
         const { sliders, onPropertyChangedObservable } = this.props;
         const proxy = makeTargetsProxy(sliders, onPropertyChangedObservable);
 
@@ -45,7 +45,7 @@ export class SliderPropertyGridComponent extends React.Component<ISliderProperty
                 {sliders.every((slider) => slider.typeName === "Slider") && (
                     <div className="ge-divider">
                         <IconComponent icon={colorIcon} label="Border Color" />
-                        <ColorLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="borderColor" />
+                        <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="borderColor" />
                     </div>
                 )}
                 <div className="ge-divider">

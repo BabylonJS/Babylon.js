@@ -13,10 +13,10 @@ import { Constants } from "../../Engines/constants";
 import { ShaderMaterial } from "../../Materials/shaderMaterial";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { Material } from "../../Materials/material";
-
 import "../../Shaders/velocity.fragment";
 import "../../Shaders/velocity.vertex";
-import type { Observer } from "core/Misc/observable";
+import type { Observer } from "../../Misc/observable";
+import type { ThinEngine } from "../../Engines/thinEngine";
 
 /**
  * Used for Space Warp render process
@@ -36,9 +36,12 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
      */
     constructor(motionVectorTexture: WebGLTexture, depthStencilTexture: WebGLTexture, scene?: Scene, size: number | { width: number; height: number } | { ratio: number } = 512) {
         super("spacewarp rtt", size, scene, false, true, Constants.TEXTURETYPE_HALF_FLOAT, false, undefined, false, false, true, undefined, true);
-        this._renderTarget = this.getScene()!
-            .getEngine()
-            .createMultiviewRenderTargetTexture(this.getRenderWidth(), this.getRenderHeight(), motionVectorTexture, depthStencilTexture);
+        this._renderTarget = (this.getScene()!.getEngine() as Engine).createMultiviewRenderTargetTexture(
+            this.getRenderWidth(),
+            this.getRenderHeight(),
+            motionVectorTexture,
+            depthStencilTexture
+        );
         (this._renderTarget as WebGLRenderTargetWrapper)._disposeOnlyFramebuffers = true;
         this._texture = this._renderTarget.texture!;
         this._texture.isMultiview = true;
@@ -76,7 +79,7 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
         }
     }
 
-    public render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
+    public override render(useCameraPostProcess: boolean = false, dumpForDebug: boolean = false): void {
         // Swap to use velocity material
         this._originalPairing.length = 0;
         const scene = this.getScene();
@@ -99,22 +102,22 @@ export class XRSpaceWarpRenderTarget extends RenderTargetTexture {
     /**
      * @internal
      */
-    public _bindFrameBuffer() {
+    public override _bindFrameBuffer() {
         if (!this._renderTarget) {
             return;
         }
-        this.getScene()!.getEngine().bindSpaceWarpFramebuffer(this._renderTarget);
+        (this.getScene()!.getEngine() as Engine).bindSpaceWarpFramebuffer(this._renderTarget);
     }
 
     /**
      * Gets the number of views the corresponding to the texture (eg. a SpaceWarpRenderTarget will have > 1)
      * @returns the view count
      */
-    public getViewCount() {
+    public override getViewCount() {
         return 2;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
         this._velocityMaterial.dispose();
         this._previousTransforms.length = 0;
@@ -137,7 +140,7 @@ export class WebXRSpaceWarpRenderTargetTextureProvider implements IWebXRRenderTa
         protected readonly _xrSessionManager: WebXRSessionManager,
         protected readonly _xrWebGLBinding: XRWebGLBinding
     ) {
-        this._engine = _scene.getEngine();
+        this._engine = _scene.getEngine() as Engine;
     }
 
     private _getSubImageForView(view: XRView): XRWebGLSubImage {
@@ -291,13 +294,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public attach(): boolean {
+    public override attach(): boolean {
         if (!super.attach()) {
             return false;
         }
 
         const engine = this._xrSessionManager.scene.getEngine();
-        this._glContext = engine._gl;
+        this._glContext = (engine as ThinEngine)._gl;
         this._xrWebGLBinding = new XRWebGLBinding(this._xrSessionManager.session, this._glContext);
 
         this.spaceWarpRTTProvider = new WebXRSpaceWarpRenderTargetTextureProvider(this._xrSessionManager.scene, this._xrSessionManager, this._xrWebGLBinding);
@@ -307,7 +310,7 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         return true;
     }
 
-    public detach(): boolean {
+    public override detach(): boolean {
         this._xrSessionManager.scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
         return super.detach();
     }
@@ -318,13 +321,13 @@ export class WebXRSpaceWarp extends WebXRAbstractFeature {
         }
     }
 
-    public dependsOn: string[] = [WebXRFeatureName.LAYERS];
+    public override dependsOn: string[] = [WebXRFeatureName.LAYERS];
 
-    public isCompatible(): boolean {
+    public override isCompatible(): boolean {
         return this._xrSessionManager.scene.getEngine().getCaps().colorBufferHalfFloat || false;
     }
 
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
     }
 

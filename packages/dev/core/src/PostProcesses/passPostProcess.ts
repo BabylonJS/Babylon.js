@@ -3,7 +3,7 @@ import { Constants } from "../Engines/constants";
 import type { Camera } from "../Cameras/camera";
 import type { PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
-import { Engine } from "../Engines/engine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Shaders/pass.fragment";
 import "../Shaders/passCube.fragment";
@@ -20,7 +20,7 @@ export class PassPostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "PassPostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PassPostProcess";
     }
 
@@ -40,7 +40,7 @@ export class PassPostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
@@ -51,7 +51,7 @@ export class PassPostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new PassPostProcess(
@@ -123,7 +123,7 @@ export class PassCubePostProcess extends PostProcess {
      * Gets a string identifying the name of the class
      * @returns "PassCubePostProcess" string
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PassCubePostProcess";
     }
 
@@ -143,7 +143,7 @@ export class PassCubePostProcess extends PostProcess {
         options: number | PostProcessOptions,
         camera: Nullable<Camera> = null,
         samplingMode?: number,
-        engine?: Engine,
+        engine?: AbstractEngine,
         reusable?: boolean,
         textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT,
         blockCompilation = false
@@ -154,7 +154,7 @@ export class PassCubePostProcess extends PostProcess {
     /**
      * @internal
      */
-    public static _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
         return SerializationHelper.Parse(
             () => {
                 return new PassCubePostProcess(
@@ -173,6 +173,6 @@ export class PassCubePostProcess extends PostProcess {
     }
 }
 
-Engine._RescalePostProcessFactory = (engine: Engine) => {
+AbstractEngine._RescalePostProcessFactory = (engine: AbstractEngine) => {
     return new PassPostProcess("rescale", 1, null, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, engine, false, Constants.TEXTURETYPE_UNSIGNED_INT);
 };

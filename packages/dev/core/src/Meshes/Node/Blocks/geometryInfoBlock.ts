@@ -30,7 +30,7 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GeometryInfoBlock";
     }
 
@@ -76,7 +76,7 @@ export class GeometryInfoBlock extends NodeGeometryBlock {
         return this._outputs[4];
     }
 
-    protected _buildBlock() {
+    protected override _buildBlock() {
         if (!this.geometry.isConnected) {
             this.id._storedValue = 0;
             this.collectionId._storedValue = 0;

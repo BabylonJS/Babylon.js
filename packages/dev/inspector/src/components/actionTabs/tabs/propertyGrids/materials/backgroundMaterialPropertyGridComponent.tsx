@@ -65,7 +65,7 @@ export class BackgroundMaterialPropertyGridComponent extends React.Component<IBa
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

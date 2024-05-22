@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
-import { ColorLineComponent } from "./colorLineComponent";
+import { ColorLine } from "./colorLineComponent";
 
 export interface IColor4LineComponentProps {
     label: string;
@@ -17,8 +17,8 @@ export interface IColor4LineComponentProps {
 }
 
 export class Color4LineComponent extends React.Component<IColor4LineComponentProps> {
-    render() {
+    override render() {
         const props = this.props;
-        return <ColorLineComponent {...props} />;
+        return <ColorLine {...props} />;
     }
 }

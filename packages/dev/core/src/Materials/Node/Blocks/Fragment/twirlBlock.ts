@@ -31,7 +31,7 @@ export class TwirlBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "TwirlBlock";
     }
 
@@ -84,7 +84,7 @@ export class TwirlBlock extends NodeMaterialBlock {
         return this._outputs[2];
     }
 
-    public autoConfigure() {
+    public override autoConfigure() {
         if (!this.center.isConnected) {
             const centerInput = new InputBlock("center");
             centerInput.value = new Vector2(0.5, 0.5);
@@ -107,7 +107,7 @@ export class TwirlBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const tempDelta = state._getFreeVariableName("delta");
@@ -116,24 +116,24 @@ export class TwirlBlock extends NodeMaterialBlock {
         const tempY = state._getFreeVariableName("y");
         const tempResult = state._getFreeVariableName("result");
 
-        state.compilationString += `
-            vec2 ${tempDelta} = ${this.input.associatedVariableName} - ${this.center.associatedVariableName};
-            float ${tempAngle} = ${this.strength.associatedVariableName} * length(${tempDelta});
-            float ${tempX} = cos(${tempAngle}) * ${tempDelta}.x - sin(${tempAngle}) * ${tempDelta}.y;
-            float ${tempY} = sin(${tempAngle}) * ${tempDelta}.x + cos(${tempAngle}) * ${tempDelta}.y;
-            vec2 ${tempResult} = vec2(${tempX} + ${this.center.associatedVariableName}.x + ${this.offset.associatedVariableName}.x, ${tempY} + ${this.center.associatedVariableName}.y + ${this.offset.associatedVariableName}.y);
+        state.compilationString += `        
+            ${state._declareLocalVar(tempDelta, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.input.associatedVariableName} - ${this.center.associatedVariableName};
+            ${state._declareLocalVar(tempAngle, NodeMaterialBlockConnectionPointTypes.Float)} = ${this.strength.associatedVariableName} * length(${tempDelta});
+            ${state._declareLocalVar(tempX, NodeMaterialBlockConnectionPointTypes.Float)} = cos(${tempAngle}) * ${tempDelta}.x - sin(${tempAngle}) * ${tempDelta}.y;
+            ${state._declareLocalVar(tempY, NodeMaterialBlockConnectionPointTypes.Float)} = sin(${tempAngle}) * ${tempDelta}.x + cos(${tempAngle}) * ${tempDelta}.y;
+            ${state._declareLocalVar(tempResult, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2(${tempX} + ${this.center.associatedVariableName}.x + ${this.offset.associatedVariableName}.x, ${tempY} + ${this.center.associatedVariableName}.y + ${this.offset.associatedVariableName}.y);
         `;
 
         if (this.output.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.output, state) + ` = ${tempResult};\n`;
+            state.compilationString += state._declareOutput(this.output) + ` = ${tempResult};\n`;
         }
 
         if (this.x.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.x, state) + ` = ${tempResult}.x;\n`;
+            state.compilationString += state._declareOutput(this.x) + ` = ${tempResult}.x;\n`;
         }
 
         if (this.y.hasEndpoints) {
-            state.compilationString += this._declareOutput(this.y, state) + ` = ${tempResult}.y;\n`;
+            state.compilationString += state._declareOutput(this.y) + ` = ${tempResult}.y;\n`;
         }
 
         return this;

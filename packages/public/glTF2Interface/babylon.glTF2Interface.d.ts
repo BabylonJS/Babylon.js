@@ -148,6 +148,10 @@ declare module BABYLON.GLTF2 {
          * WEBP Mime-type
          */
         WEBP = "image/webp",
+        /**
+         * AVIF Mime-type
+         */
+        AVIF = "image/avif",
     }
 
     /**
@@ -1154,14 +1158,16 @@ declare module BABYLON.GLTF2 {
     }
 
     /**
-     * Interfaces from the KHR_materials_translucency extension
+     * Interfaces from the KHR_materials_diffuse_transmission extension
      * !!! Experimental Extension Subject to Changes !!!
      */
 
     /** @internal */
-    interface IKHRMaterialsTranslucency extends IMaterialExtension {
-        translucencyFactor?: number;
-        translucencyTexture?: ITextureInfo;
+    interface IKHRMaterialsDiffuseTransmission extends IMaterialExtension {
+        diffuseTransmissionFactor?: number;
+        diffuseTransmissionTexture?: ITextureInfo;
+        diffuseTransmissionColorFactor?: number[];
+        diffuseTransmissionColorTexture?: ITextureInfo;
     }
 
     /**
@@ -1201,6 +1207,15 @@ declare module BABYLON.GLTF2 {
 
     /** @internal */
     interface IEXTTextureWebP {
+        source: number;
+    }
+
+    /**
+     * Interfaces from the EXT_texture_avif extension
+     */
+
+    /** @internal */
+    interface IEXTTextureAVIF {
         source: number;
     }
 

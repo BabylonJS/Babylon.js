@@ -31,7 +31,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         super("KHR_binary_glTF");
     }
 
-    public loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void): boolean {
+    public override loadRuntimeAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onSuccess: (gltfRuntime: IGLTFRuntime) => void): boolean {
         const extensionsUsed = (<any>data.json).extensionsUsed;
         if (!extensionsUsed || extensionsUsed.indexOf(this.name) === -1 || !data.bin) {
             return false;
@@ -42,7 +42,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         return true;
     }
 
-    public loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
+    public override loadBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void, onError: (message: string) => void): boolean {
         if (gltfRuntime.extensionsUsed.indexOf(this.name) === -1) {
             return false;
         }
@@ -55,7 +55,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         return true;
     }
 
-    public loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void): boolean {
+    public override loadTextureBufferAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (buffer: ArrayBufferView) => void): boolean {
         const texture: IGLTFTexture = gltfRuntime.textures[id];
         const source: IGLTFImage = gltfRuntime.images[texture.source];
         if (!source.extensions || !(this.name in source.extensions)) {
@@ -69,7 +69,7 @@ export class GLTFBinaryExtension extends GLTFLoaderExtension {
         return true;
     }
 
-    public loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void): boolean {
+    public override loadShaderStringAsync(gltfRuntime: IGLTFRuntime, id: string, onSuccess: (shaderString: string) => void): boolean {
         const shader: IGLTFShader = gltfRuntime.shaders[id];
         if (!shader.extensions || !(this.name in shader.extensions)) {
             return false;

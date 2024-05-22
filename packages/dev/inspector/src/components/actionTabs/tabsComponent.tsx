@@ -28,7 +28,7 @@ export class TabsComponent extends React.Component<ITabsComponentProps> {
         );
     }
 
-    render() {
+    override render() {
         return (
             <div className="tabsMenu" onContextMenu={(e) => e.preventDefault()}>
                 <div className="labels">

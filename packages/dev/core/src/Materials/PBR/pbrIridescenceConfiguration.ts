@@ -6,12 +6,10 @@ import { MaterialFlags } from "../materialFlags";
 import type { UniformBuffer } from "../../Materials/uniformBuffer";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 import type { EffectFallbacks } from "../effectFallbacks";
-import type { SubMesh } from "../../Meshes/subMesh";
 import { Constants } from "../../Engines/constants";
 import { MaterialPluginBase } from "../materialPluginBase";
 import { MaterialDefines } from "../materialDefines";
 
-import type { Engine } from "../../Engines/engine";
 import type { Scene } from "../../scene";
 import type { PBRBaseMaterial } from "./pbrBaseMaterial";
 import { BindTextureMatrix, PrepareDefinesForMergedUV } from "../materialHelper.functions";
@@ -25,14 +23,13 @@ export class MaterialIridescenceDefines extends MaterialDefines {
     public IRIDESCENCE_TEXTUREDIRECTUV = 0;
     public IRIDESCENCE_THICKNESS_TEXTURE = false;
     public IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
-    public IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
 }
 
 /**
  * Plugin that implements the iridescence (thin film) component of the PBR material
  */
 export class PBRIridescenceConfiguration extends MaterialPluginBase {
-    protected _material: PBRBaseMaterial;
+    protected override _material: PBRBaseMaterial;
 
     /**
      * The default minimum thickness of the thin-film layer given in nanometers (nm).
@@ -118,7 +115,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         this._internalMarkAllSubMeshesAsTexturesDirty = material._dirtyCallbacks[Constants.MATERIAL_TextureDirtyFlag];
     }
 
-    public isReadyForSubMesh(defines: MaterialIridescenceDefines, scene: Scene): boolean {
+    public override isReadyForSubMesh(defines: MaterialIridescenceDefines, scene: Scene): boolean {
         if (!this._isEnabled) {
             return true;
         }
@@ -142,11 +139,9 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return true;
     }
 
-    public prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
+    public override prepareDefinesBeforeAttributes(defines: MaterialIridescenceDefines, scene: Scene): void {
         if (this._isEnabled) {
             defines.IRIDESCENCE = true;
-            defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE =
-                this._texture !== null && this._texture._texture === this._thicknessTexture?._texture && this._texture.checkTransformsAreIdentical(this._thicknessTexture);
 
             if (defines._areTexturesDirty) {
                 if (scene.texturesEnabled) {
@@ -156,7 +151,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                         defines.IRIDESCENCE_TEXTURE = false;
                     }
 
-                    if (!defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE && this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
+                    if (this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
                         PrepareDefinesForMergedUV(this._thicknessTexture, defines, "IRIDESCENCE_THICKNESS_TEXTURE");
                     } else {
                         defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
@@ -167,28 +162,20 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
             defines.IRIDESCENCE = false;
             defines.IRIDESCENCE_TEXTURE = false;
             defines.IRIDESCENCE_THICKNESS_TEXTURE = false;
-            defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE = false;
             defines.IRIDESCENCE_TEXTUREDIRECTUV = 0;
             defines.IRIDESCENCE_THICKNESS_TEXTUREDIRECTUV = 0;
         }
     }
 
-    public bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
+    public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene): void {
         if (!this._isEnabled) {
             return;
         }
 
-        const defines = subMesh!.materialDefines as unknown as MaterialIridescenceDefines;
-
         const isFrozen = this._material.isFrozen;
 
-        const identicalTextures = defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE;
-
         if (!uniformBuffer.useUbo || !isFrozen || !uniformBuffer.isSync) {
-            if (identicalTextures && MaterialFlags.IridescenceTextureEnabled) {
-                uniformBuffer.updateFloat4("vIridescenceInfos", this._texture!.coordinatesIndex, this._texture!.level, -1, -1);
-                BindTextureMatrix(this._texture!, uniformBuffer, "iridescence");
-            } else if ((this._texture || this._thicknessTexture) && MaterialFlags.IridescenceTextureEnabled) {
+            if ((this._texture || this._thicknessTexture) && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.updateFloat4(
                     "vIridescenceInfos",
                     this._texture?.coordinatesIndex ?? 0,
@@ -199,7 +186,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                 if (this._texture) {
                     BindTextureMatrix(this._texture, uniformBuffer, "iridescence");
                 }
-                if (this._thicknessTexture && !identicalTextures && !defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE) {
+                if (this._thicknessTexture) {
                     BindTextureMatrix(this._thicknessTexture, uniformBuffer, "iridescenceThickness");
                 }
             }
@@ -214,13 +201,13 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
                 uniformBuffer.setTexture("iridescenceSampler", this._texture);
             }
 
-            if (this._thicknessTexture && !identicalTextures && !defines.IRIDESCENCE_USE_THICKNESS_FROM_MAINTEXTURE && MaterialFlags.IridescenceTextureEnabled) {
+            if (this._thicknessTexture && MaterialFlags.IridescenceTextureEnabled) {
                 uniformBuffer.setTexture("iridescenceThicknessSampler", this._thicknessTexture);
             }
         }
     }
 
-    public hasTexture(texture: BaseTexture): boolean {
+    public override hasTexture(texture: BaseTexture): boolean {
         if (this._texture === texture) {
             return true;
         }
@@ -232,7 +219,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         return false;
     }
 
-    public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this._texture) {
             activeTextures.push(this._texture);
         }
@@ -242,7 +229,7 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public getAnimatables(animatables: IAnimatable[]): void {
+    public override getAnimatables(animatables: IAnimatable[]): void {
         if (this._texture && this._texture.animations && this._texture.animations.length > 0) {
             animatables.push(this._texture);
         }
@@ -252,29 +239,29 @@ export class PBRIridescenceConfiguration extends MaterialPluginBase {
         }
     }
 
-    public dispose(forceDisposeTextures?: boolean): void {
+    public override dispose(forceDisposeTextures?: boolean): void {
         if (forceDisposeTextures) {
             this._texture?.dispose();
             this._thicknessTexture?.dispose();
         }
     }
 
-    public getClassName(): string {
+    public override getClassName(): string {
         return "PBRIridescenceConfiguration";
     }
 
-    public addFallbacks(defines: MaterialIridescenceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
+    public override addFallbacks(defines: MaterialIridescenceDefines, fallbacks: EffectFallbacks, currentRank: number): number {
         if (defines.IRIDESCENCE) {
             fallbacks.addFallback(currentRank++, "IRIDESCENCE");
         }
         return currentRank;
     }
 
-    public getSamplers(samplers: string[]): void {
+    public override getSamplers(samplers: string[]): void {
         samplers.push("iridescenceSampler", "iridescenceThicknessSampler");
     }
 
-    public getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
+    public override getUniforms(): { ubo?: Array<{ name: string; size: number; type: string }>; vertex?: string; fragment?: string } {
         return {
             ubo: [
                 { name: "vIridescenceParams", size: 4, type: "vec4" },

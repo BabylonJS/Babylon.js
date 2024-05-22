@@ -18,7 +18,7 @@ export class MaterialTreeItemComponent extends React.Component<IMaterialTreeItem
         super(props);
     }
 
-    render() {
+    override render() {
         const nmeIcon =
             this.props.material.getClassName() === "NodeMaterial" ? (
                 <div

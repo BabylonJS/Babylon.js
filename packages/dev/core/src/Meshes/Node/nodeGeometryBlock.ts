@@ -392,6 +392,7 @@ export class NodeGeometryBlock {
         serializationObject.customType = "BABYLON." + this.getClassName();
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
+        serializationObject.visibleOnFrame = this.visibleOnFrame;
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];

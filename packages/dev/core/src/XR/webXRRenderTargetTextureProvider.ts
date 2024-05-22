@@ -53,7 +53,7 @@ export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRen
         private readonly _scene: Scene,
         public readonly layerWrapper: WebXRLayerWrapper
     ) {
-        this._engine = _scene.getEngine();
+        this._engine = _scene.getEngine() as Engine;
     }
 
     private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {

@@ -126,7 +126,7 @@ export class GLTFValidation {
                         case "getExternalResource": {
                             getExternalResource(data.uri).then(
                                 (value) => {
-                                    worker.postMessage({ id: "getExternalResource.resolve", index: data.index, value: value }, [value]);
+                                    worker.postMessage({ id: "getExternalResource.resolve", index: data.index, value: value }, [value.buffer]);
                                 },
                                 (reason) => {
                                     worker.postMessage({ id: "getExternalResource.reject", index: data.index, reason: reason });

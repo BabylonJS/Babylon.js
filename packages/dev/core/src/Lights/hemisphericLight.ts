@@ -7,6 +7,7 @@ import { Node } from "../node";
 import type { Effect } from "../Materials/effect";
 import { Light } from "./light";
 import type { IShadowGenerator } from "./Shadows/shadowGenerator";
+import { RegisterClass } from "../Misc/typeStore";
 
 Node.AddNodeConstructor("Light_Type_3", (name, scene) => {
     return () => new HemisphericLight(name, Vector3.Zero(), scene);
@@ -58,7 +59,7 @@ export class HemisphericLight extends Light {
      * Returns the string "HemisphericLight".
      * @returns The class name
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "HemisphericLight";
     }
 
@@ -77,7 +78,7 @@ export class HemisphericLight extends Light {
      * Returns the shadow generator associated to the light.
      * @returns Always null for hemispheric lights because it does not support shadows.
      */
-    public getShadowGenerator(): Nullable<IShadowGenerator> {
+    public override getShadowGenerator(): Nullable<IShadowGenerator> {
         return null;
     }
 
@@ -104,7 +105,7 @@ export class HemisphericLight extends Light {
      * Computes the world matrix of the node
      * @returns the world matrix
      */
-    public computeWorldMatrix(): Matrix {
+    public override computeWorldMatrix(): Matrix {
         if (!this._worldMatrix) {
             this._worldMatrix = Matrix.Identity();
         }
@@ -115,7 +116,7 @@ export class HemisphericLight extends Light {
      * Returns the integer 3.
      * @returns The light Type id as a constant defines in Light.LIGHTTYPEID_x
      */
-    public getTypeID(): number {
+    public override getTypeID(): number {
         return Light.LIGHTTYPEID_HEMISPHERICLIGHT;
     }
 
@@ -128,3 +129,6 @@ export class HemisphericLight extends Light {
         defines["HEMILIGHT" + lightIndex] = true;
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.HemisphericLight", HemisphericLight);

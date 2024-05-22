@@ -369,7 +369,7 @@ export class InputText extends Control implements IFocusableControl {
         this.onTextChangedObservable.notifyObservers(this);
     }
 
-    protected _applyStates(context: ICanvasRenderingContext): void {
+    protected override _applyStates(context: ICanvasRenderingContext): void {
         super._applyStates(context);
         if (this.outlineWidth) {
             context.lineWidth = this.outlineWidth;
@@ -379,11 +379,11 @@ export class InputText extends Control implements IFocusableControl {
 
     /** Gets or sets control width */
     @serialize()
-    public get width(): string | number {
+    public override get width(): string | number {
         return this._width.toString(this._host);
     }
 
-    public set width(value: string | number) {
+    public override set width(value: string | number) {
         if (this._width.toString(this._host) === value) {
             return;
         }
@@ -401,7 +401,7 @@ export class InputText extends Control implements IFocusableControl {
      * @param text defines the text of the control
      */
     constructor(
-        public name?: string,
+        public override name?: string,
         text: string = ""
     ) {
         super(name);
@@ -507,7 +507,7 @@ export class InputText extends Control implements IFocusableControl {
         this._host.focusedControl = null;
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "InputText";
     }
 
@@ -896,7 +896,7 @@ export class InputText extends Control implements IFocusableControl {
         this._textHasChanged();
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -927,7 +927,7 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         if (!this._fontOffset || this._wasDirty) {
-            this._fontOffset = Control._GetFontOffset(context.font);
+            this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
         }
 
         // Text
@@ -1079,7 +1079,7 @@ export class InputText extends Control implements IFocusableControl {
         context.restore();
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         if (!super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi)) {
             return false;
         }
@@ -1108,7 +1108,7 @@ export class InputText extends Control implements IFocusableControl {
 
         return true;
     }
-    public _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
+    public override _onPointerMove(target: Control, coordinates: Vector2, pointerId: number, pi: PointerInfoBase): void {
         if (this._host.focusedControl === this && this._isPointerDown && !this.isReadOnly) {
             this._clickedCoordinate = coordinates.x;
             this._markAsDirty();
@@ -1117,7 +1117,7 @@ export class InputText extends Control implements IFocusableControl {
         super._onPointerMove(target, coordinates, pointerId, pi);
     }
 
-    public _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
+    public override _onPointerUp(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, notifyClick: boolean): void {
         this._isPointerDown = false;
         delete this._host._capturingControl[pointerId];
         super._onPointerUp(target, coordinates, pointerId, buttonIndex, notifyClick);
@@ -1145,7 +1145,7 @@ export class InputText extends Control implements IFocusableControl {
         return this._isTextHighlightOn;
     }
 
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         this.onBlurObservable.clear();

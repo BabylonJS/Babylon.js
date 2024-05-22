@@ -4,15 +4,13 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
-import type { NodeMaterialDefines } from "../../nodeMaterial";
+import type { NodeMaterialDefines, NodeMaterial } from "../../nodeMaterial";
 import type { BaseTexture } from "../../../Textures/baseTexture";
 import type { Nullable } from "../../../../types";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
-
-import type { NodeMaterial } from "../../nodeMaterial";
 
 /**
  * Base block used as input for post process
@@ -68,7 +66,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "CurrentScreenBlock";
     }
 
@@ -125,11 +123,11 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("textureSampler");
     }
 
-    public get target() {
+    public override get target() {
         if (!this.uv.isConnected) {
             return NodeMaterialBlockTargets.VertexAndFragment;
         }
@@ -141,12 +139,12 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return NodeMaterialBlockTargets.Fragment;
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         defines.setValue(this._linearDefineName, this.convertToGammaSpace, true);
         defines.setValue(this._gammaDefineName, this.convertToLinearSpace, true);
     }
 
-    public isReady() {
+    public override isReady() {
         if (this.texture && !this.texture.isReadyOrNotBlocking()) {
             return false;
         }
@@ -161,13 +159,13 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             const uvInputOwnerBlock = uvInput.connectedPoint!.ownerBlock as InputBlock;
 
             if (!uvInputOwnerBlock.isAttribute) {
-                state._emitUniformFromString(uvInput.associatedVariableName, "vec2");
+                state._emitUniformFromString(uvInput.associatedVariableName, NodeMaterialBlockConnectionPointTypes.Vector2);
             }
         }
 
         this._mainUVName = "vMain" + uvInput.associatedVariableName;
 
-        state._emitVaryingFromString(this._mainUVName, "vec2");
+        state._emitVaryingFromString(this._mainUVName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state.compilationString += `${this._mainUVName} = ${uvInput.associatedVariableName}.xy;\n`;
 
@@ -210,17 +208,17 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
                 return;
             }
 
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
 
             return;
         }
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+            state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
             return;
         }
 
-        state.compilationString += `${this._declareOutput(output, state)} = ${this._tempTextureRead}.${swizzle};\n`;
+        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle};\n`;
 
         state.compilationString += `#ifdef ${this._linearDefineName}\n`;
         state.compilationString += `${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});\n`;
@@ -231,7 +229,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\n`;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
@@ -277,7 +275,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.convertToGammaSpace = this.convertToGammaSpace;
@@ -289,7 +287,7 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;

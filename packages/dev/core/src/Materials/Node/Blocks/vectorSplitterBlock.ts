@@ -35,7 +35,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "VectorSplitterBlock";
     }
 
@@ -109,7 +109,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[6];
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         switch (name) {
             case "xy ":
                 return "xyIn";
@@ -120,7 +120,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _outputRename(name: string) {
+    protected override _outputRename(name: string) {
         switch (name) {
             case "xy":
                 return "xyOut";
@@ -131,7 +131,7 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const input = this.xyzw.isConnected ? this.xyzw : this.xyzIn.isConnected ? this.xyzIn : this.xyIn;
@@ -144,30 +144,31 @@ export class VectorSplitterBlock extends NodeMaterialBlock {
         const zOutput = this._outputs[5];
         const wOutput = this._outputs[6];
 
+        const vec3 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector3);
         if (xyzOutput.hasEndpoints) {
             if (input === this.xyIn) {
-                state.compilationString += this._declareOutput(xyzOutput, state) + ` = vec3(${input.associatedVariableName}, 0.0);\n`;
+                state.compilationString += state._declareOutput(xyzOutput) + ` = ${vec3}(${input.associatedVariableName}, 0.0);\n`;
             } else {
-                state.compilationString += this._declareOutput(xyzOutput, state) + ` = ${input.associatedVariableName}.xyz;\n`;
+                state.compilationString += state._declareOutput(xyzOutput) + ` = ${input.associatedVariableName}.xyz;\n`;
             }
         }
         if (zwOutput.hasEndpoints && this.xyzw.isConnected) {
-            state.compilationString += this._declareOutput(zwOutput, state) + ` = ${this.xyzw.associatedVariableName}.zw;\n`;
+            state.compilationString += state._declareOutput(zwOutput) + ` = ${this.xyzw.associatedVariableName}.zw;\n`;
         }
         if (xyOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(xyOutput, state) + ` = ${input.associatedVariableName}.xy;\n`;
+            state.compilationString += state._declareOutput(xyOutput) + ` = ${input.associatedVariableName}.xy;\n`;
         }
         if (xOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(xOutput, state) + ` = ${input.associatedVariableName}.x;\n`;
+            state.compilationString += state._declareOutput(xOutput) + ` = ${input.associatedVariableName}.x;\n`;
         }
         if (yOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(yOutput, state) + ` = ${input.associatedVariableName}.y;\n`;
+            state.compilationString += state._declareOutput(yOutput) + ` = ${input.associatedVariableName}.y;\n`;
         }
         if (zOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(zOutput, state) + ` = ${input.associatedVariableName}.z;\n`;
+            state.compilationString += state._declareOutput(zOutput) + ` = ${input.associatedVariableName}.z;\n`;
         }
         if (wOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(wOutput, state) + ` = ${input.associatedVariableName}.w;\n`;
+            state.compilationString += state._declareOutput(wOutput) + ` = ${input.associatedVariableName}.w;\n`;
         }
 
         return this;

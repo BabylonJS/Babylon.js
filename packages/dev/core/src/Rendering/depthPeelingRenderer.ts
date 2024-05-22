@@ -2,7 +2,7 @@
  * Implementation based on https://medium.com/@shrekshao_71662/dual-depth-peeling-implementation-in-webgl-11baa061ba4b
  */
 import { Constants } from "../Engines/constants";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Effect } from "../Materials/effect";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import type { InternalTextureCreationOptions } from "../Materials/Textures/textureCreationOptions";
@@ -50,7 +50,7 @@ class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
  */
 export class DepthPeelingRenderer {
     private _scene: Scene;
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _depthMrts: MultiRenderTarget[];
     private _thinTextures: ThinTexture[] = [];
     private _colorMrts: MultiRenderTarget[];
@@ -310,7 +310,7 @@ export class DepthPeelingRenderer {
             }
             this._thinTextures[6] = new ThinTexture(this._blendBackTexture);
 
-            prePassRenderer.defaultRT.renderTarget!._shareDepth(this._depthMrts[0].renderTarget!);
+            prePassRenderer.defaultRT.renderTarget!.shareDepth(this._depthMrts[0].renderTarget!);
         }
 
         return true;

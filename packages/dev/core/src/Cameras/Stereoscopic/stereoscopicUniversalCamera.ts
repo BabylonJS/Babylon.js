@@ -34,9 +34,9 @@ export class StereoscopicUniversalCamera extends UniversalCamera {
      * Gets camera class name
      * @returns StereoscopicUniversalCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicUniversalCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => setStereoscopicRigMode(this);
 }

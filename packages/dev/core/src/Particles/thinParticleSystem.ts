@@ -23,7 +23,7 @@ import "../Shaders/particles.vertex";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Color4, Color3, TmpColors } from "../Maths/math.color";
 import type { ISize } from "../Maths/math.size";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 import "../Engines/Extensions/engine.alpha";
 import { addClipPlaneUniforms, prepareStringDefinesForClipPlanes, bindClipPlane } from "../Materials/clipPlaneMaterialHelper";
@@ -35,6 +35,7 @@ import { BindFogParameters, BindLogDepth } from "../Materials/materialHelper.fun
 import { BoxParticleEmitter } from "./EmitterTypes/boxParticleEmitter";
 import { Clamp, Lerp, RandomRange } from "../Maths/math.scalar.functions";
 import { PrepareSamplersForImageProcessing, PrepareUniformsForImageProcessing } from "../Materials/imageProcessingConfiguration.functions";
+import type { ThinEngine } from "../Engines/thinEngine";
 
 /**
  * This represents a thin particle system in Babylon.
@@ -276,7 +277,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
     constructor(
         name: string,
         capacity: number,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         customEffect: Nullable<Effect> = null,
         isAnimationSheetEnabled: boolean = false,
         epsilon: number = 0.01
@@ -294,7 +295,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             this.uniqueId = this._scene.getUniqueId();
             this._scene.particleSystems.push(this);
         } else {
-            this._engine = sceneOrEngine as ThinEngine;
+            this._engine = sceneOrEngine as AbstractEngine;
             this.defaultProjectionMatrix = Matrix.PerspectiveFovLH(0.8, 1, 0.1, 100, this._engine.isNDCHalfZRange);
         }
 
@@ -1042,7 +1043,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         return pixels[position] / 255;
     }
 
-    protected _reset() {
+    protected override _reset() {
         this._resetEffect();
     }
 
@@ -1058,7 +1059,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._vertexArrayObject) {
-            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
             this._vertexArrayObject = null;
         }
 
@@ -2003,10 +2004,10 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
                 engine.bindBuffers(this._vertexBuffers, this._linesIndexBufferUseInstancing, effect);
             } else {
                 if (!this._vertexArrayObject) {
-                    this._vertexArrayObject = this._engine.recordVertexArrayObject(this._vertexBuffers, null, effect);
+                    this._vertexArrayObject = (this._engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, null, effect);
                 }
 
-                this._engine.bindVertexArrayObject(this._vertexArrayObject, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : this._indexBuffer);
+                (this._engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._scene?.forceWireframe ? this._linesIndexBufferUseInstancing : this._indexBuffer);
             }
         } else {
             if (!this._indexBuffer) {
@@ -2137,7 +2138,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
         }
 
         if (this._vertexArrayObject) {
-            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
             this._vertexArrayObject = null;
         }
 

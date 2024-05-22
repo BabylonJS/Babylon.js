@@ -19,7 +19,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     /**
      * Gets or sets the target of the block
      */
-    public get target() {
+    public override get target() {
         const input = this._inputs[0];
         if (input.isConnected) {
             const block = input.connectedPoint!.ownerBlock;
@@ -35,7 +35,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
         return this._target;
     }
 
-    public set target(value: NodeMaterialBlockTargets) {
+    public override set target(value: NodeMaterialBlockTargets) {
         if ((this._target & value) !== 0) {
             return;
         }
@@ -56,7 +56,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "NodeMaterialTeleportInBlock";
     }
 
@@ -70,11 +70,11 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     /**
      * @returns a boolean indicating that this connection will be used in the fragment shader
      */
-    public isConnectedInFragmentShader() {
+    public override isConnectedInFragmentShader() {
         return this.endpoints.some((e) => e.output.isConnectedInFragmentShader);
     }
 
-    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeMaterialBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 
         for (const endpoint of this.endpoints) {
@@ -91,7 +91,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
      * @param block defines the potential descendant block to check
      * @returns true if block is a descendant
      */
-    public isAnAncestorOf(block: NodeMaterialBlock): boolean {
+    public override isAnAncestorOf(block: NodeMaterialBlock): boolean {
         for (const endpoint of this.endpoints) {
             if (endpoint === block) {
                 return true;
@@ -136,7 +136,7 @@ export class NodeMaterialTeleportInBlock extends NodeMaterialBlock {
     /**
      * Release resources
      */
-    public dispose() {
+    public override dispose() {
         super.dispose();
 
         for (const endpoint of this._endpoints) {

@@ -212,7 +212,7 @@ export class AddAnimationComponent extends React.Component<IAddAnimationComponen
         return value.getClassName();
     }
 
-    public render() {
+    public override render() {
         const types = ["Float", "Vector2", "Vector3", "Quaternion", "Color3", "Color4"];
         const loopModes = ["Cycle", "Relative", "Relative from current", "Constant"];
         const modes = ["Custom", "List"];

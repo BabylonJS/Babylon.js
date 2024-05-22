@@ -48,7 +48,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ColorMergerBlock";
     }
 
@@ -109,7 +109,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this.rgbOut;
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "rgb ") {
             return "rgbIn";
         }
@@ -121,7 +121,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return "." + swizzle.substr(0, len);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const rInput = this.r;
@@ -133,29 +133,32 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         const color4Output = this._outputs[0];
         const color3Output = this._outputs[1];
 
+        const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+        const vec3 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector3);
+
         if (rgbInput.isConnected) {
             if (color4Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color4Output, state) +
-                    ` = vec4(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
+                    state._declareOutput(color4Output) +
+                    ` = ${vec4}(${rgbInput.associatedVariableName}, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
-                state.compilationString += this._declareOutput(color3Output, state) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
+                state.compilationString += state._declareOutput(color3Output) + ` = ${rgbInput.associatedVariableName}${this._buildSwizzle(3)};\n`;
             }
         } else {
             if (color4Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color4Output, state) +
-                    ` = vec4(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
+                    state._declareOutput(color4Output) +
+                    ` = ${vec4}(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
                     }, ${aInput.isConnected ? this._writeVariable(aInput) : "0.0"})${this._buildSwizzle(4)};\n`;
             }
 
             if (color3Output.hasEndpoints) {
                 state.compilationString +=
-                    this._declareOutput(color3Output, state) +
-                    ` = vec3(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
+                    state._declareOutput(color3Output) +
+                    ` = ${vec3}(${rInput.isConnected ? this._writeVariable(rInput) : "0.0"}, ${gInput.isConnected ? this._writeVariable(gInput) : "0.0"}, ${
                         bInput.isConnected ? this._writeVariable(bInput) : "0.0"
                     })${this._buildSwizzle(3)};\n`;
             }
@@ -164,7 +167,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.rSwizzle = this.rSwizzle;
@@ -175,7 +178,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.rSwizzle = serializationObject.rSwizzle ?? "r";
@@ -184,7 +187,7 @@ export class ColorMergerBlock extends NodeMaterialBlock {
         this.aSwizzle = serializationObject.aSwizzle ?? "a";
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
         codeString += `${this._codeVariableName}.rSwizzle = "${this.rSwizzle}";\n`;
         codeString += `${this._codeVariableName}.gSwizzle = "${this.gSwizzle}";\n`;

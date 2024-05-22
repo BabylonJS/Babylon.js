@@ -13,6 +13,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 
 import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
 import { GetFogState } from "core/Materials/materialHelper.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to add support for scene fog
@@ -50,7 +51,7 @@ export class FogBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "FogBlock";
     }
 
@@ -89,7 +90,7 @@ export class FogBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    public autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
+    public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
         if (!this.view.isConnected) {
             let viewInput = material.getInputBlockByPredicate((b) => b.systemValue === NodeMaterialSystemValues.View && additionalFilteringInfo(b));
 
@@ -110,12 +111,12 @@ export class FogBlock extends NodeMaterialBlock {
         }
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         const scene = mesh.getScene();
         defines.setValue("FOG", nodeMaterial.fogEnabled && GetFogState(mesh, scene));
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         if (!mesh) {
             return;
         }
@@ -124,18 +125,35 @@ export class FogBlock extends NodeMaterialBlock {
         effect.setFloat4(this._fogParameters, scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
             state.sharedData.bindableBlocks.push(this);
 
+            let replaceStrings = [];
+            let prefix1 = "";
+            let prefix2 = "";
+
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                replaceStrings = [
+                    { search: /fn CalcFogFactor\(\)/, replace: "fn CalcFogFactor(vFogDistance: vec3f, vFogInfos: vec4f)" },
+                    { search: /uniforms.vFogInfos/g, replace: "vFogInfos" },
+                    { search: /fragmentInputs.vFogDistance/g, replace: "vFogDistance" },
+                ];
+
+                prefix1 = "fragmentInputs.";
+                prefix2 = "uniforms.";
+            } else {
+                replaceStrings = [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }];
+            }
+
             state._emitFunctionFromInclude("fogFragmentDeclaration", `//${this.name}`, {
                 removeUniforms: true,
                 removeVaryings: true,
                 removeIfDef: false,
-                replaceStrings: [{ search: /float CalcFogFactor\(\)/, replace: "float CalcFogFactor(vec3 vFogDistance, vec4 vFogInfos)" }],
+                replaceStrings: replaceStrings,
             });
 
             const tempFogVariablename = state._getFreeVariableName("fog");
@@ -144,21 +162,22 @@ export class FogBlock extends NodeMaterialBlock {
             this._fogParameters = state._getFreeVariableName("fogParameters");
             const output = this._outputs[0];
 
-            state._emitUniformFromString(this._fogParameters, "vec4");
+            state._emitUniformFromString(this._fogParameters, NodeMaterialBlockConnectionPointTypes.Vector4);
 
             state.compilationString += `#ifdef FOG\n`;
-            state.compilationString += `float ${tempFogVariablename} = CalcFogFactor(${this._fogDistanceName}, ${this._fogParameters});\n`;
+            state.compilationString += `${state._declareLocalVar(tempFogVariablename, NodeMaterialBlockConnectionPointTypes.Float)} = CalcFogFactor(${prefix1}${this._fogDistanceName}, ${prefix2}${this._fogParameters});\n`;
             state.compilationString +=
-                this._declareOutput(output, state) +
+                state._declareOutput(output) +
                 ` = ${tempFogVariablename} * ${color.associatedVariableName}.rgb + (1.0 - ${tempFogVariablename}) * ${fogColor.associatedVariableName}.rgb;\n`;
-            state.compilationString += `#else\n${this._declareOutput(output, state)} =  ${color.associatedVariableName}.rgb;\n`;
+            state.compilationString += `#else\n${state._declareOutput(output)} =  ${color.associatedVariableName}.rgb;\n`;
             state.compilationString += `#endif\n`;
         } else {
             const worldPos = this.worldPosition;
             const view = this.view;
             this._fogDistanceName = state._getFreeVariableName("vFogDistance");
-            state._emitVaryingFromString(this._fogDistanceName, "vec3");
-            state.compilationString += `${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\n`;
+            state._emitVaryingFromString(this._fogDistanceName, NodeMaterialBlockConnectionPointTypes.Vector3);
+            const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "vertexOutputs." : "";
+            state.compilationString += `${prefix}${this._fogDistanceName} = (${view.associatedVariableName} * ${worldPos.associatedVariableName}).xyz;\n`;
         }
 
         return this;

@@ -3,7 +3,7 @@ import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "shared-ui-components/propertyChangedEvent";
 import { CommonControlPropertyGridComponent } from "../gui/commonControlPropertyGridComponent";
 import type { ColorPicker } from "gui/2D/controls/colorpicker";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
@@ -25,7 +25,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
         super(props);
     }
 
-    render() {
+    override render() {
         const colorPickers = this.props.colorPickers;
 
         return (
@@ -40,7 +40,7 @@ export class ColorPickerPropertyGridComponent extends React.Component<IColorPick
                 <TextLineComponent label="COLOR PICKER" value=" " color="grey"></TextLineComponent>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label={"Color Picker Value"} />
-                    <ColorLineComponent
+                    <ColorLine
                         label=""
                         target={makeTargetsProxy(colorPickers, this.props.onPropertyChangedObservable)}
                         propertyName="value"

@@ -1,5 +1,5 @@
 import type { Nullable } from "../types";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { WebXRRenderTarget } from "./webXRTypes";
 import type { WebXRSessionManager } from "./webXRSessionManager";
 import { Observable } from "../Misc/observable";
@@ -30,7 +30,7 @@ export class WebXRManagedOutputCanvasOptions {
      * @param engine defines the engine to use (can be null)
      * @returns default values of this configuration object
      */
-    public static GetDefaults(engine?: ThinEngine): WebXRManagedOutputCanvasOptions {
+    public static GetDefaults(engine?: AbstractEngine): WebXRManagedOutputCanvasOptions {
         const defaults = new WebXRManagedOutputCanvasOptions();
         defaults.canvasOptions = {
             antialias: true,
@@ -50,7 +50,7 @@ export class WebXRManagedOutputCanvasOptions {
  */
 export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     private _canvas: Nullable<HTMLCanvasElement> = null;
-    private _engine: Nullable<ThinEngine> = null;
+    private _engine: Nullable<AbstractEngine> = null;
     private _originalCanvasSize: {
         width: number;
         height: number;
@@ -72,6 +72,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
      * Observers registered here will be triggered when the xr layer was initialized
      */
     public onXRLayerInitObservable: Observable<XRWebGLLayer> = new Observable();
+
+    private _canvasCompatiblePromise: Promise<void>;
 
     /**
      * Initializes the canvas to be added/removed upon entering/exiting xr
@@ -102,6 +104,8 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         _xrSessionManager.onXRSessionEnded.add(() => {
             this._removeCanvas();
         });
+
+        this._makeCanvasCompatibleAsync();
     }
 
     /**
@@ -110,6 +114,18 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     public dispose() {
         this._removeCanvas();
         this._setManagedOutputCanvas(null);
+    }
+
+    private _makeCanvasCompatibleAsync() {
+        this._canvasCompatiblePromise = new Promise<void>((resolve) => {
+            if (this.canvasContext && (this.canvasContext as any).makeXRCompatible) {
+                (this.canvasContext as any).makeXRCompatible().then(() => {
+                    resolve();
+                });
+            } else {
+                resolve();
+            }
+        });
     }
 
     /**
@@ -125,13 +141,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             return this.xrLayer;
         };
 
-        // support canvases without makeXRCompatible
-        if (!(this.canvasContext as any).makeXRCompatible) {
-            return Promise.resolve(createLayer());
-        }
-
-        return (this.canvasContext as any)
-            .makeXRCompatible()
+        return this._canvasCompatiblePromise
             .then(
                 // catch any error and continue. When using the emulator is throws this error for no apparent reason.
                 () => {},

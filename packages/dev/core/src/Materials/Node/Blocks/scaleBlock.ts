@@ -26,7 +26,7 @@ export class ScaleBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ScaleBlock";
     }
 
@@ -51,12 +51,12 @@ export class ScaleBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
 
-        state.compilationString += this._declareOutput(output, state) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${this.input.associatedVariableName} * ${this.factor.associatedVariableName};\n`;
 
         return this;
     }

@@ -10,7 +10,7 @@ import type { Viewport } from "core/Maths/math.viewport";
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
     constructor(
-        public readonly layer: XRProjectionLayer,
+        public override readonly layer: XRProjectionLayer,
         isMultiview: boolean,
         xrGLBinding: XRWebGLBinding
     ) {
@@ -35,7 +35,7 @@ class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLa
     constructor(
         _xrSessionManager: WebXRSessionManager,
         _xrWebGLBinding: XRWebGLBinding,
-        public readonly layerWrapper: WebXRProjectionLayerWrapper
+        public override readonly layerWrapper: WebXRProjectionLayerWrapper
     ) {
         super(_xrSessionManager, _xrWebGLBinding, layerWrapper);
         this._projectionLayer = layerWrapper.layer;
@@ -45,11 +45,11 @@ class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLa
         return this._xrWebGLBinding.getViewSubImage(this._projectionLayer, view);
     }
 
-    public getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
+    public override getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
         return this._getRenderTargetForSubImage(this._getSubImageForView(view), view.eye);
     }
 
-    public getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
+    public override getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
         const lastSubImage = this._lastSubImages.get(eye);
         if (lastSubImage) {
             return this._getRenderTargetForSubImage(lastSubImage, eye);
@@ -57,7 +57,7 @@ class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLa
         return null;
     }
 
-    public trySetViewportForView(viewport: Viewport, view: XRView): boolean {
+    public override trySetViewportForView(viewport: Viewport, view: XRView): boolean {
         const subImage = this._lastSubImages.get(view.eye) || this._getSubImageForView(view);
         if (subImage) {
             this._setViewportForSubImage(viewport, subImage);

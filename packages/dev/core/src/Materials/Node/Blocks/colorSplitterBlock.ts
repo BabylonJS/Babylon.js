@@ -32,7 +32,7 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "ColorSplitterBlock";
     }
 
@@ -83,21 +83,21 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         return this._outputs[4];
     }
 
-    protected _inputRename(name: string) {
+    protected override _inputRename(name: string) {
         if (name === "rgb ") {
             return "rgbIn";
         }
         return name;
     }
 
-    protected _outputRename(name: string) {
+    protected override _outputRename(name: string) {
         if (name === "rgb") {
             return "rgbOut";
         }
         return name;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const input = this.rgba.isConnected ? this.rgba : this.rgbIn;
@@ -113,19 +113,19 @@ export class ColorSplitterBlock extends NodeMaterialBlock {
         const aOutput = this._outputs[4];
 
         if (rgbOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(rgbOutput, state) + ` = ${input.associatedVariableName}.rgb;\n`;
+            state.compilationString += state._declareOutput(rgbOutput) + ` = ${input.associatedVariableName}.rgb;\n`;
         }
         if (rOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(rOutput, state) + ` = ${input.associatedVariableName}.r;\n`;
+            state.compilationString += state._declareOutput(rOutput) + ` = ${input.associatedVariableName}.r;\n`;
         }
         if (gOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(gOutput, state) + ` = ${input.associatedVariableName}.g;\n`;
+            state.compilationString += state._declareOutput(gOutput) + ` = ${input.associatedVariableName}.g;\n`;
         }
         if (bOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(bOutput, state) + ` = ${input.associatedVariableName}.b;\n`;
+            state.compilationString += state._declareOutput(bOutput) + ` = ${input.associatedVariableName}.b;\n`;
         }
         if (aOutput.hasEndpoints) {
-            state.compilationString += this._declareOutput(aOutput, state) + ` = ${input.associatedVariableName}.a;\n`;
+            state.compilationString += state._declareOutput(aOutput) + ` = ${input.associatedVariableName}.a;\n`;
         }
 
         return this;

@@ -34,9 +34,9 @@ export class AnaglyphArcRotateCamera extends ArcRotateCamera {
      * Gets camera class name
      * @returns AnaglyphArcRotateCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AnaglyphArcRotateCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
+    protected override _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

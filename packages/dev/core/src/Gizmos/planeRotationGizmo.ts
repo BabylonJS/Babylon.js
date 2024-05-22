@@ -466,7 +466,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
         return { rotationMesh, collider };
     }
 
-    protected _attachedNodeChanged(value: Nullable<Node>) {
+    protected override _attachedNodeChanged(value: Nullable<Node>) {
         if (this.dragBehavior) {
             this.dragBehavior.enabled = value ? true : false;
         }
@@ -493,7 +493,7 @@ export class PlaneRotationGizmo extends Gizmo implements IPlaneRotationGizmo {
     /**
      * Disposes of the gizmo
      */
-    public dispose() {
+    public override dispose() {
         this.onSnapObservable.clear();
         this.gizmoLayer.utilityLayerScene.onPointerObservable.remove(this._pointerObserver);
         this.dragBehavior.detach();

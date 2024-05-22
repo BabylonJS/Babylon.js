@@ -19,11 +19,12 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
-import { Engine } from "../../Engines/engine";
 import { _ObserveArray } from "../../Misc/arrayTools";
 import { DumpTools } from "../../Misc/dumpTools";
 
 import type { Material } from "../material";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
 
 /**
  * Options for the RenderTargetTexture constructor
@@ -197,7 +198,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         return this._postProcesses;
     }
     private _postProcesses: PostProcess[];
-    private _resizeObserver: Nullable<Observer<Engine>>;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>>;
 
     private get _prePassEnabled() {
         return !!this._prePassRenderTarget && this._prePassRenderTarget.enabled;
@@ -262,14 +263,14 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * An event triggered after the texture clear
      */
-    public onClearObservable = new Observable<Engine>();
+    public onClearObservable = new Observable<AbstractEngine>();
 
-    private _onClearObserver: Nullable<Observer<Engine>>;
+    private _onClearObserver: Nullable<Observer<AbstractEngine>>;
     /**
      * Set a clear callback in the texture.
      * This has been kept for backward compatibility and use of onClearObservable is recommended.
      */
-    public set onClear(callback: (Engine: Engine) => void) {
+    public set onClear(callback: (Engine: AbstractEngine) => void) {
         if (this._onClearObserver) {
             this.onClearObservable.remove(this._onClearObserver);
         }
@@ -286,7 +287,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     public clearColor: Color4;
     protected _size: TextureSize;
-    protected _initialSizeParameter: number | { width: number; height: number } | { ratio: number };
+    protected _initialSizeParameter: TextureSize | { ratio: number };
     protected _sizeRatio: Nullable<number>;
     /** @internal */
     public _generateMipMaps: boolean;
@@ -420,7 +421,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param scene The scene the RTT belongs to. Default is the last created scene.
      * @param options The options for creating the render target texture.
      */
-    constructor(name: string, size: number | { width: number; height: number; layers?: number } | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
+    constructor(name: string, size: TextureSize | { ratio: number }, scene?: Nullable<Scene>, options?: RenderTargetTextureOptions);
 
     /**
      * Instantiate a render target texture. This is mainly used to render of screen the scene to for instance apply post process
@@ -445,7 +446,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps?: boolean,
         doNotChangeAspectRatio?: boolean,
@@ -466,7 +467,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /** @internal */
     constructor(
         name: string,
-        size: number | { width: number; height: number; layers?: number } | { ratio: number },
+        size: TextureSize | { ratio: number },
         scene?: Nullable<Scene>,
         generateMipMaps: boolean | RenderTargetTextureOptions = false,
         doNotChangeAspectRatio: boolean = true,
@@ -583,15 +584,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * @param generateStencil Specifies whether or not a stencil should be allocated in the texture (default: false)
      * @param samples sample count of the depth/stencil texture (default: 1)
      * @param format format of the depth texture (default: Constants.TEXTUREFORMAT_DEPTH32_FLOAT)
+     * @param label defines the label of the texture (for debugging purpose)
      */
     public createDepthStencilTexture(
         comparisonFunction: number = 0,
         bilinearFiltering: boolean = true,
         generateStencil: boolean = false,
         samples: number = 1,
-        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT
+        format: number = Constants.TEXTUREFORMAT_DEPTH32_FLOAT,
+        label?: string
     ): void {
-        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format);
+        this._renderTarget?.createDepthStencilTexture(comparisonFunction, bilinearFiltering, generateStencil, samples, format, label);
     }
 
     private _releaseRenderPassId(): void {
@@ -615,7 +618,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    protected _processSizeParameter(size: number | { width: number; height: number } | { ratio: number }, createRenderPassIds = true): void {
+    protected _processSizeParameter(size: TextureSize | { ratio: number }, createRenderPassIds = true): void {
         if ((<{ ratio: number }>size).ratio) {
             this._sizeRatio = (<{ ratio: number }>size).ratio;
             const engine = this._getEngine()!;
@@ -624,7 +627,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 height: this._bestReflectionRenderTargetDimension(engine.getRenderHeight(), this._sizeRatio),
             };
         } else {
-            this._size = <number | { width: number; height: number; layers?: number }>size;
+            this._size = <TextureSize>size;
         }
 
         if (createRenderPassIds) {
@@ -775,13 +778,17 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /**
-     * Gets the actual number of layers of the texture.
+     * Gets the actual number of layers of the texture or, in the case of a 3D texture, return the depth.
      * @returns the number of layers
      */
     public getRenderLayers(): number {
-        const layers = (<{ width: number; height: number; layers?: number }>this._size).layers;
+        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).layers;
         if (layers) {
             return layers;
+        }
+        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>this._size).depth;
+        if (depth) {
+            return depth;
         }
 
         return 0;
@@ -797,7 +804,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Get if the texture can be rescaled or not.
      */
-    public get canRescale(): boolean {
+    public override get canRescale(): boolean {
         return this._canRescale;
     }
 
@@ -805,7 +812,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Resize the texture using a ratio.
      * @param ratio the ratio to apply to the texture size in order to compute the new target size
      */
-    public scale(ratio: number): void {
+    public override scale(ratio: number): void {
         const newSize = Math.max(1, this.getRenderSize() * ratio);
 
         this.resize(newSize);
@@ -815,7 +822,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Get the texture reflection matrix used to rotate/transform the reflection.
      * @returns the reflection matrix
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         if (this.isCube) {
             return this._textureMatrix;
         }
@@ -831,7 +838,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      *   - an object containing { width: number, height: number }
      *   - or an object containing a ratio { ratio: number }
      */
-    public resize(size: number | { width: number; height: number } | { ratio: number }): void {
+    public resize(size: TextureSize | { ratio: number }): void {
         const wasCube = this.isCube;
 
         this._renderTarget?.dispose();
@@ -953,7 +960,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         let returnValue = checkReadiness;
 
         if (!checkReadiness) {
-            if (this.is2DArray && !this.isMulti) {
+            if ((this.is2DArray || this.is3D) && !this.isMulti) {
                 for (let layer = 0; layer < this.getRenderLayers(); layer++) {
                     this._renderToTarget(0, useCameraPostProcess, dumpForDebug, layer, camera);
                     scene.incrementRenderId();
@@ -973,7 +980,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                 // We probably didn't execute scene.render() yet, so make sure we have a view/projection matrix setup for the scene
                 scene.updateTransformMatrix();
             }
-            const numLayers = this.is2DArray ? this.getRenderLayers() : this.isCube ? 6 : 1;
+            const numLayers = this.is2DArray || this.is3D ? this.getRenderLayers() : this.isCube ? 6 : 1;
             for (let layer = 0; layer < numLayers && returnValue; layer++) {
                 let currentRenderList: Nullable<Array<AbstractMesh>> = null;
                 const defaultRenderList = this.renderList ? this.renderList : scene.getActiveMeshes().data;
@@ -1015,7 +1022,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
 
                 this.onAfterRenderObservable.notifyObservers(layer);
 
-                if (this.is2DArray || this.isCube) {
+                if (this.is2DArray || this.is3D || this.isCube) {
                     scene.incrementRenderId();
                     scene.resetCachedMaterial();
                 }
@@ -1042,10 +1049,10 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     private _bestReflectionRenderTargetDimension(renderDimension: number, scale: number): number {
         const minimum = 128;
         const x = renderDimension * scale;
-        const curved = Engine.NearestPOT(x + (minimum * minimum) / (minimum + x));
+        const curved = NearestPOT(x + (minimum * minimum) / (minimum + x));
 
         // Ensure we don't exceed the render dimension (while staying POT)
-        return Math.min(Engine.FloorPOT(renderDimension), curved);
+        return Math.min(FloorPOT(renderDimension), curved);
     }
 
     private _prepareRenderingManager(currentRenderList: Array<AbstractMesh>, currentRenderListLength: number, camera: Nullable<Camera>, checkLayerMask: boolean): void {
@@ -1146,7 +1153,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         }
     }
 
-    protected _unbindFrameBuffer(engine: Engine, faceIndex: number): void {
+    protected _unbindFrameBuffer(engine: AbstractEngine, faceIndex: number): void {
         if (!this._renderTarget) {
             return;
         }
@@ -1182,7 +1189,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         // Bind
         this._prepareFrame(scene, faceIndex, layer, useCameraPostProcess);
 
-        if (this.is2DArray) {
+        if (this.is2DArray || this.is3D) {
             engine.currentRenderPassId = this._renderPassIds[layer];
             this.onBeforeRenderObservable.notifyObservers(layer);
         } else {
@@ -1199,7 +1206,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
             const defaultRenderListLength = this.renderList ? this.renderList.length : scene.getActiveMeshes().length;
 
             if (this.getCustomRenderList) {
-                currentRenderList = this.getCustomRenderList(this.is2DArray ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
+                currentRenderList = this.getCustomRenderList(this.is2DArray || this.is3D ? layer : faceIndex, defaultRenderList, defaultRenderListLength);
             }
 
             if (!currentRenderList) {
@@ -1289,7 +1296,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
         this._unbindFrameBuffer(engine, faceIndex);
 
         if (this._texture && this.isCube && faceIndex === 5) {
-            engine.generateMipMapsForCubemap(this._texture);
+            engine.generateMipMapsForCubemap(this._texture, true);
         }
 
         engine._debugPopGroup?.(1);
@@ -1328,7 +1335,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): RenderTargetTexture {
+    public override clone(): RenderTargetTexture {
         const textureSize = this.getSize();
         const newTexture = new RenderTargetTexture(
             this.name,
@@ -1364,7 +1371,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
      * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }
@@ -1393,7 +1400,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Release and destroy the underlying lower level texture aka internalTexture.
      */
-    public releaseInternalTexture(): void {
+    public override releaseInternalTexture(): void {
         this._renderTarget?.releaseTextures();
         this._texture = null;
     }
@@ -1401,7 +1408,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.onResizeObservable.clear();
         this.onClearObservable.clear();
         this.onAfterRenderObservable.clear();
@@ -1457,7 +1464,7 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
     }
 
     /** @internal */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         if (this.refreshRate === RenderTargetTexture.REFRESHRATE_RENDER_ONCE) {
             this.refreshRate = RenderTargetTexture.REFRESHRATE_RENDER_ONCE;
         }

@@ -17,7 +17,7 @@ export class ParticleSystemTreeItemComponent extends React.Component<IParticleSy
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div className="particleSystemTools">
                 <TreeItemLabelComponent label={this.props.system.name || "Particle system"} onClick={() => this.props.onClick()} icon={faBraille} color="crimson" />

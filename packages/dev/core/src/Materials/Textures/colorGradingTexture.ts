@@ -5,7 +5,7 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Constants } from "../../Engines/constants";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 // Ensures Raw texture are included
 import "../../Engines/Extensions/engine.rawTexture";
@@ -39,7 +39,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @param sceneOrEngine The scene or engine the texture will be used in
      * @param onLoad defines a callback triggered when the texture has been loaded
      */
-    constructor(url: string, sceneOrEngine: Scene | ThinEngine, onLoad: Nullable<() => void> = null) {
+    constructor(url: string, sceneOrEngine: Scene | AbstractEngine, onLoad: Nullable<() => void> = null) {
         super(sceneOrEngine);
 
         if (!url) {
@@ -82,7 +82,7 @@ export class ColorGradingTexture extends BaseTexture {
      * @returns the texture matrix used in most of the material.
      * This is not used in color grading but keep for troubleshooting purpose (easily swap diffuse by colorgrading to look in).
      */
-    public getTextureMatrix(): Matrix {
+    public override getTextureMatrix(): Matrix {
         return this._textureMatrix;
     }
 
@@ -252,7 +252,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Clones the color grading texture.
      * @returns the cloned texture
      */
-    public clone(): ColorGradingTexture {
+    public override clone(): ColorGradingTexture {
         const newTexture = new ColorGradingTexture(this.url, this.getScene() || this._getEngine()!);
 
         // Base texture
@@ -264,7 +264,7 @@ export class ColorGradingTexture extends BaseTexture {
     /**
      * Called during delayed load for textures.
      */
-    public delayLoad(): void {
+    public override delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
@@ -297,7 +297,7 @@ export class ColorGradingTexture extends BaseTexture {
      * Serializes the LUT texture to json format.
      * @returns The JSON representation of the texture
      */
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }

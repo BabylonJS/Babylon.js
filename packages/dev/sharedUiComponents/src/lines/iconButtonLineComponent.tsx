@@ -12,7 +12,7 @@ export class IconButtonLineComponent extends React.Component<IIconButtonLineComp
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <div
                 style={{ backgroundColor: this.props.active ? "#111111" : "" }}

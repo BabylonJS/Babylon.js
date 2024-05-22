@@ -1,5 +1,5 @@
 import { Scene } from "core/scene";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { FloatArray, Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { Camera } from "core/Cameras/camera";
@@ -188,8 +188,8 @@ export class FluidRenderer {
     }
 
     private _scene: Scene;
-    private _engine: Engine;
-    private _onEngineResizeObserver: Nullable<Observer<Engine>>;
+    private _engine: AbstractEngine;
+    private _onEngineResizeObserver: Nullable<Observer<AbstractEngine>>;
     private _cameras: Map<Camera, CameraMapForFluidRendering>;
 
     /** Retrieves all the render objects managed by the class */
@@ -441,7 +441,7 @@ export class FluidRenderer {
                         if (!copyDepthTexture) {
                             copyDepthTexture = copyDepthTextures[key] = new FluidRenderingDepthTextureCopy(this._engine, thicknessTexture.width, thicknessTexture.height);
                         }
-                        copyDepthTexture.depthRTWrapper._shareDepth(thicknessRT);
+                        copyDepthTexture.depthRTWrapper.shareDepth(thicknessRT);
                     }
                 }
             });

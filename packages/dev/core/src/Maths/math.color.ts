@@ -1,11 +1,11 @@
-import type { Constructor, DeepImmutable, FloatArray, Tuple } from "../types";
-import { Scalar } from "./math.scalar";
-import { Clamp, ToHex } from "./math.scalar.functions";
-import { ToLinearSpace, ToGammaSpace, Epsilon } from "./math.constants";
 import { ArrayTools } from "../Misc/arrayTools";
 import { RegisterClass } from "../Misc/typeStore";
-import type { Tensor } from "./tensor";
+import type { DeepImmutable, FloatArray, Tuple } from "../types";
+import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
 import type { IColor3Like, IColor4Like } from "./math.like";
+import { Scalar } from "./math.scalar";
+import { Clamp, ToHex } from "./math.scalar.functions";
+import type { Tensor } from "./tensor";
 
 function colorChannelToLinearSpace(color: number): number {
     return Math.pow(color, ToLinearSpace);
@@ -32,7 +32,7 @@ function colorChannelToGammaSpaceExact(color: number): number {
 /**
  * Class used to hold a RGB color
  */
-export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
+export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Like {
     /**
      * @see Tensor.dimension
      */
@@ -148,8 +148,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the new Color3 object
      */
-    public multiply(otherColor: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
+    public multiply(otherColor: DeepImmutable<IColor3Like>): Color3 {
+        return new Color3(this.r * otherColor.r, this.g * otherColor.g, this.b * otherColor.b);
     }
 
     /**
@@ -158,7 +158,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines the Color3 object where to store the result
      * @returns the result Color3
      */
-    public multiplyToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+    public multiplyToRef<T extends IColor3Like>(otherColor: DeepImmutable<IColor3Like>, result: T): T {
         result.r = this.r * otherColor.r;
         result.g = this.g * otherColor.g;
         result.b = this.b * otherColor.b;
@@ -170,7 +170,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public multiplyInPlace(otherColor: DeepImmutable<Color3>): this {
+    public multiplyInPlace(otherColor: DeepImmutable<IColor3Like>): this {
         this.r *= otherColor.r;
         this.g *= otherColor.g;
         this.b *= otherColor.b;
@@ -184,15 +184,15 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param b defines the b coordinate of the operand
      * @returns the new Color3
      */
-    public multiplyByFloats(r: number, g: number, b: number): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * r, this.g * g, this.b * b);
+    public multiplyByFloats(r: number, g: number, b: number): Color3 {
+        return new Color3(this.r * r, this.g * g, this.b * b);
     }
 
     /**
      * @internal
      * Do not use
      */
-    public divide(_other: DeepImmutable<this>): this {
+    public divide(_other: DeepImmutable<IColor3Like>): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -200,7 +200,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+    public divideToRef(_other: DeepImmutable<IColor3Like>, _result: IColor3Like): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -208,7 +208,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public divideInPlace(_other: DeepImmutable<this>): this {
+    public divideInPlace(_other: DeepImmutable<IColor3Like>): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -217,7 +217,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param other defines the second operand
      * @returns the current updated Color3
      */
-    public minimizeInPlace(other: DeepImmutable<this>): this {
+    public minimizeInPlace(other: DeepImmutable<IColor3Like>): this {
         return this.minimizeInPlaceFromFloats(other.r, other.g, other.b);
     }
 
@@ -226,7 +226,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param other defines the second operand
      * @returns the current updated Color3
      */
-    public maximizeInPlace(other: DeepImmutable<this>): this {
+    public maximizeInPlace(other: DeepImmutable<IColor3Like>): this {
         return this.maximizeInPlaceFromFloats(other.r, other.g, other.b);
     }
 
@@ -262,7 +262,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public floorToRef<T extends this>(_result: T): T {
+    public floorToRef(_result: IColor3Like): never {
         throw new ReferenceError("Can not floor a color");
     }
 
@@ -270,7 +270,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public floor(): this {
+    public floor(): never {
         throw new ReferenceError("Can not floor a color");
     }
 
@@ -278,7 +278,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public fractToRef<T extends this>(_result: T): T {
+    public fractToRef(_result: IColor3Like): never {
         throw new ReferenceError("Can not fract a color");
     }
 
@@ -286,7 +286,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public fract(): this {
+    public fract(): never {
         throw new ReferenceError("Can not fract a color");
     }
 
@@ -295,7 +295,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns true if the rgb values are equal to the given ones
      */
-    public equals(otherColor: DeepImmutable<this>): boolean {
+    public equals(otherColor: DeepImmutable<IColor3Like>): boolean {
         return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b;
     }
 
@@ -327,7 +327,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param epsilon defines the minimal distance to define values as equals
      * @returns true if both colors are distant less than epsilon
      */
-    public equalsWithEpsilon(otherColor: DeepImmutable<this>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherColor: DeepImmutable<IColor3Like>, epsilon: number = Epsilon): boolean {
         return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
     }
 
@@ -335,7 +335,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public negate(): this {
+    public negate(): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -343,7 +343,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public negateInPlace(): this {
+    public negateInPlace(): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -351,7 +351,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @internal
      * Do not use
      */
-    public negateToRef<T extends this>(_result: T): T {
+    public negateToRef(_result: IColor3Like): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -360,8 +360,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param scale defines the scaling factor to apply
      * @returns a new Color3 object
      */
-    public scale(scale: number): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r * scale, this.g * scale, this.b * scale);
+    public scale(scale: number): Color3 {
+        return new Color3(this.r * scale, this.g * scale, this.b * scale);
     }
 
     /**
@@ -382,7 +382,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines the Color3 object where to store the result
      * @returns the result Color3
      */
-    public scaleToRef<T extends this>(scale: number, result: T): T {
+    public scaleToRef<T extends IColor3Like>(scale: number, result: T): T {
         result.r = this.r * scale;
         result.g = this.g * scale;
         result.b = this.b * scale;
@@ -395,7 +395,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines color to store the result into
      * @returns the result Color3
      */
-    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends IColor3Like>(scale: number, result: T): T {
         result.r += this.r * scale;
         result.g += this.g * scale;
         result.b += this.b * scale;
@@ -409,7 +409,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines color to store the result into
      * @returns the result Color3
      */
-    public clampToRef<T extends this>(min: number = 0, max: number = 1, result: T): T {
+    public clampToRef<T extends IColor3Like>(min: number = 0, max: number = 1, result: T): T {
         result.r = Clamp(this.r, min, max);
         result.g = Clamp(this.g, min, max);
         result.b = Clamp(this.b, min, max);
@@ -421,8 +421,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public add(otherColor: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
+    public add(otherColor: DeepImmutable<IColor3Like>): Color3 {
+        return new Color3(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b);
     }
 
     /**
@@ -430,7 +430,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public addInPlace(otherColor: DeepImmutable<this>): this {
+    public addInPlace(otherColor: DeepImmutable<IColor3Like>): this {
         this.r += otherColor.r;
         this.g += otherColor.g;
         this.b += otherColor.b;
@@ -457,7 +457,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public addToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+    public addToRef<T extends IColor3Like>(otherColor: DeepImmutable<IColor3Like>, result: T): T {
         result.r = this.r + otherColor.r;
         result.g = this.g + otherColor.g;
         result.b = this.b + otherColor.b;
@@ -469,8 +469,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the new Color3
      */
-    public subtract(otherColor: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
+    public subtract(otherColor: DeepImmutable<IColor3Like>): Color3 {
+        return new Color3(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b);
     }
 
     /**
@@ -479,7 +479,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines Color3 object to store the result into
      * @returns the unmodified current Color3
      */
-    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+    public subtractToRef<T extends IColor3Like>(otherColor: DeepImmutable<IColor3Like>, result: T): T {
         result.r = this.r - otherColor.r;
         result.g = this.g - otherColor.g;
         result.b = this.b - otherColor.b;
@@ -491,7 +491,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color3
      */
-    public subtractInPlace(otherColor: DeepImmutable<this>): this {
+    public subtractInPlace(otherColor: DeepImmutable<IColor3Like>): this {
         this.r -= otherColor.r;
         this.g -= otherColor.g;
         this.b -= otherColor.b;
@@ -505,8 +505,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param b defines the b coordinate of the operand
      * @returns the resulting Color3
      */
-    public subtractFromFloats(r: number, g: number, b: number): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r - r, this.g - g, this.b - b);
+    public subtractFromFloats(r: number, g: number, b: number): Color3 {
+        return new Color3(this.r - r, this.g - g, this.b - b);
     }
 
     /**
@@ -517,16 +517,19 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param result defines the Color3 object where to store the result
      * @returns the result
      */
-    public subtractFromFloatsToRef<T extends Color3>(r: number, g: number, b: number, result: T): T {
-        return result.copyFromFloats(this.r - r, this.g - g, this.b - b);
+    public subtractFromFloatsToRef<T extends IColor3Like>(r: number, g: number, b: number, result: T): T {
+        result.r = this.r - r;
+        result.g = this.g - g;
+        result.b = this.b - b;
+        return result;
     }
 
     /**
      * Copy the current object
      * @returns a new Color3 copied the current one
      */
-    public clone(): this {
-        return new (this.constructor as Constructor<typeof Color3, this>)(this.r, this.g, this.b);
+    public clone(): Color3 {
+        return new Color3(this.r, this.g, this.b);
     }
 
     /**
@@ -534,7 +537,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param source defines the source Color3 object
      * @returns the updated Color3 object
      */
-    public copyFrom(source: DeepImmutable<this>): this {
+    public copyFrom(source: DeepImmutable<IColor3Like>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -591,19 +594,16 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * Converts current color in rgb space to HSV values
      * @returns a new color3 representing the HSV values
      */
-    public toHSV(): this {
-        const result = new (this.constructor as Constructor<typeof Color3, this>)();
-
-        this.toHSVToRef(result);
-
-        return result;
+    public toHSV(): Color3 {
+        return this.toHSVToRef(new Color3());
     }
 
     /**
      * Converts current color in rgb space to HSV values
      * @param result defines the Color3 where to store the HSV values
+     * @returns the updated result
      */
-    public toHSVToRef(result: this) {
+    public toHSVToRef<T extends IColor3Like>(result: T): T {
         const r = this.r;
         const g = this.g;
         const b = this.b;
@@ -637,6 +637,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         result.r = h;
         result.g = s;
         result.b = v;
+        return result;
     }
 
     /**
@@ -644,8 +645,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toLinearSpace(exact = false): this {
-        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
+    public toLinearSpace(exact = false): Color3 {
+        const convertedColor = new Color3();
         this.toLinearSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -656,7 +657,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toLinearSpaceToRef(convertedColor: this, exact = false): this {
+    public toLinearSpaceToRef(convertedColor: IColor3Like, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToLinearSpaceExact(this.r);
             convertedColor.g = colorChannelToLinearSpaceExact(this.g);
@@ -674,8 +675,8 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns a new Color3 object
      */
-    public toGammaSpace(exact = false): this {
-        const convertedColor = new (this.constructor as Constructor<typeof Color3, this>)();
+    public toGammaSpace(exact = false): Color3 {
+        const convertedColor = new Color3();
         this.toGammaSpaceToRef(convertedColor, exact);
         return convertedColor;
     }
@@ -686,7 +687,7 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color3
      */
-    public toGammaSpaceToRef(convertedColor: this, exact = false): this {
+    public toGammaSpaceToRef(convertedColor: IColor3Like, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToGammaSpaceExact(this.r);
             convertedColor.g = colorChannelToGammaSpaceExact(this.g);
@@ -709,8 +710,9 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
      * @param saturation defines the saturation (value between 0 and 1)
      * @param value defines the value (value between 0 and 1)
      * @param result defines the Color3 where to store the RGB values
+     * @returns the updated result
      */
-    public static HSVtoRGBToRef(hue: number, saturation: number, value: number, result: Color3) {
+    public static HSVtoRGBToRef<T extends IColor3Like>(hue: number, saturation: number, value: number, result: T): T {
         const chroma = value * saturation;
         const h = hue / 60;
         const x = chroma * (1 - Math.abs((h % 2) - 1));
@@ -739,7 +741,10 @@ export class Color3 implements Tensor<Tuple<number, 3>>, IColor3Like {
         }
 
         const m = value - chroma;
-        result.set(r + m, g + m, b + m);
+        result.r = r + m;
+        result.g = g + m;
+        result.b = b + m;
+        return result;
     }
 
     /**
@@ -995,7 +1000,7 @@ Object.defineProperties(Color3.prototype, {
 /**
  * Class used to hold a RBGA color
  */
-export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
+export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Like {
     /**
      * @see Tensor.dimension
      */
@@ -1075,7 +1080,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor defines the second operand
      * @returns true if the rgba values are equal to the given ones
      */
-    public equals(otherColor: DeepImmutable<this>): boolean {
+    public equals(otherColor: DeepImmutable<IColor4Like>): boolean {
         return otherColor && this.r === otherColor.r && this.g === otherColor.g && this.b === otherColor.b && this.a === otherColor.a;
     }
 
@@ -1084,8 +1089,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public add(otherColor: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b, this.a + otherColor.a);
+    public add(otherColor: DeepImmutable<IColor4Like>): Color4 {
+        return new Color4(this.r + otherColor.r, this.g + otherColor.g, this.b + otherColor.b, this.a + otherColor.a);
     }
 
     /**
@@ -1094,7 +1099,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result the color to store the result
      * @returns result input
      */
-    public addToRef<T extends Color4>(otherColor: DeepImmutable<this>, result: T): T {
+    public addToRef<T extends IColor4Like>(otherColor: DeepImmutable<IColor4Like>, result: T): T {
         result.r = this.r + otherColor.r;
         result.g = this.g + otherColor.g;
         result.b = this.b + otherColor.b;
@@ -1107,7 +1112,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor defines the second operand
      * @returns the current updated Color4 object
      */
-    public addInPlace(otherColor: DeepImmutable<this>): this {
+    public addInPlace(otherColor: DeepImmutable<IColor4Like>): this {
         this.r += otherColor.r;
         this.g += otherColor.g;
         this.b += otherColor.b;
@@ -1136,8 +1141,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor defines the second operand
      * @returns a new Color4 object
      */
-    public subtract(otherColor: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b, this.a - otherColor.a);
+    public subtract(otherColor: DeepImmutable<IColor4Like>): Color4 {
+        return new Color4(this.r - otherColor.r, this.g - otherColor.g, this.b - otherColor.b, this.a - otherColor.a);
     }
 
     /**
@@ -1146,7 +1151,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result defines the Color4 object where to store the result
      * @returns the result Color4 object
      */
-    public subtractToRef<T extends this>(otherColor: DeepImmutable<this>, result: T): T {
+    public subtractToRef<T extends IColor4Like>(otherColor: DeepImmutable<IColor4Like>, result: T): T {
         result.r = this.r - otherColor.r;
         result.g = this.g - otherColor.g;
         result.b = this.b - otherColor.b;
@@ -1159,7 +1164,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor the color to subtract
      * @returns the updated Color4.
      */
-    public subtractInPlace(otherColor: DeepImmutable<Color4>): this {
+    public subtractInPlace(otherColor: DeepImmutable<IColor4Like>): this {
         this.r -= otherColor.r;
         this.g -= otherColor.g;
         this.b -= otherColor.b;
@@ -1175,8 +1180,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param a value to subtract
      * @returns new color containing the result
      */
-    public subtractFromFloats(r: number, g: number, b: number, a: number): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r - r, this.g - g, this.b - b, this.a - a);
+    public subtractFromFloats(r: number, g: number, b: number, a: number): Color4 {
+        return new Color4(this.r - r, this.g - g, this.b - b, this.a - a);
     }
 
     /**
@@ -1188,7 +1193,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result the color to store the result in
      * @returns result input
      */
-    public subtractFromFloatsToRef<T extends Color4>(r: number, g: number, b: number, a: number, result: T): T {
+    public subtractFromFloatsToRef<T extends IColor4Like>(r: number, g: number, b: number, a: number, result: T): T {
         result.r = this.r - r;
         result.g = this.g - g;
         result.b = this.b - b;
@@ -1201,8 +1206,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param scale defines the scaling factor to apply
      * @returns a new Color4 object
      */
-    public scale(scale: number): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
+    public scale(scale: number): Color4 {
+        return new Color4(this.r * scale, this.g * scale, this.b * scale, this.a * scale);
     }
 
     /**
@@ -1224,7 +1229,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result defines the Color4 object where to store the result
      * @returns the result Color4
      */
-    public scaleToRef<T extends this>(scale: number, result: T): T {
+    public scaleToRef<T extends IColor4Like>(scale: number, result: T): T {
         result.r = this.r * scale;
         result.g = this.g * scale;
         result.b = this.b * scale;
@@ -1238,7 +1243,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result defines the Color4 object where to store the result
      * @returns the result Color4
      */
-    public scaleAndAddToRef<T extends this>(scale: number, result: T): T {
+    public scaleAndAddToRef<T extends IColor4Like>(scale: number, result: T): T {
         result.r += this.r * scale;
         result.g += this.g * scale;
         result.b += this.b * scale;
@@ -1253,7 +1258,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result defines color to store the result into.
      * @returns the result Color4
      */
-    public clampToRef<T extends this>(min: number = 0, max: number = 1, result: T): T {
+    public clampToRef<T extends IColor4Like>(min: number = 0, max: number = 1, result: T): T {
         result.r = Clamp(this.r, min, max);
         result.g = Clamp(this.g, min, max);
         result.b = Clamp(this.b, min, max);
@@ -1266,8 +1271,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param color defines the Color4 value to multiply by
      * @returns a new Color4 object
      */
-    public multiply(color: DeepImmutable<this>): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
+    public multiply(color: DeepImmutable<IColor4Like>): Color4 {
+        return new Color4(this.r * color.r, this.g * color.g, this.b * color.b, this.a * color.a);
     }
 
     /**
@@ -1276,7 +1281,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result defines the Color4 to fill the result in
      * @returns the result Color4
      */
-    public multiplyToRef<T extends this>(color: DeepImmutable<this>, result: T): T {
+    public multiplyToRef<T extends IColor4Like>(color: DeepImmutable<IColor4Like>, result: T): T {
         result.r = this.r * color.r;
         result.g = this.g * color.g;
         result.b = this.b * color.b;
@@ -1289,7 +1294,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param otherColor color to multiple with
      * @returns the updated Color4.
      */
-    public multiplyInPlace(otherColor: DeepImmutable<Color4>): this {
+    public multiplyInPlace(otherColor: DeepImmutable<IColor4Like>): this {
         this.r *= otherColor.r;
         this.g *= otherColor.g;
         this.b *= otherColor.b;
@@ -1305,15 +1310,15 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param a value multiply with
      * @returns resulting new color
      */
-    public multiplyByFloats(r: number, g: number, b: number, a: number): this {
-        return new (this.constructor as Constructor<typeof Color4, this>)(this.r * r, this.g * g, this.b * b, this.a * a);
+    public multiplyByFloats(r: number, g: number, b: number, a: number): Color4 {
+        return new Color4(this.r * r, this.g * g, this.b * b, this.a * a);
     }
 
     /**
      * @internal
      * Do not use
      */
-    public divide(_other: DeepImmutable<this>): this {
+    public divide(_other: DeepImmutable<IColor4Like>): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -1321,7 +1326,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public divideToRef<T extends this>(_other: DeepImmutable<this>, _result: T): T {
+    public divideToRef(_other: DeepImmutable<IColor4Like>, _result: IColor4Like): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -1329,7 +1334,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public divideInPlace(_other: DeepImmutable<this>): this {
+    public divideInPlace(_other: DeepImmutable<IColor4Like>): never {
         throw new ReferenceError("Can not divide a color");
     }
 
@@ -1338,7 +1343,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param other defines the second operand
      * @returns the current updated Color4
      */
-    public minimizeInPlace(other: DeepImmutable<Color4>): this {
+    public minimizeInPlace(other: DeepImmutable<IColor4Like>): this {
         this.r = Math.min(this.r, other.r);
         this.g = Math.min(this.g, other.g);
         this.b = Math.min(this.b, other.b);
@@ -1350,7 +1355,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param other defines the second operand
      * @returns the current updated Color4
      */
-    public maximizeInPlace(other: DeepImmutable<Color4>): this {
+    public maximizeInPlace(other: DeepImmutable<IColor4Like>): this {
         this.r = Math.max(this.r, other.r);
         this.g = Math.max(this.g, other.g);
         this.b = Math.max(this.b, other.b);
@@ -1394,7 +1399,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public floorToRef<T extends this>(_result: T): T {
+    public floorToRef(_result: IColor4Like): never {
         throw new ReferenceError("Can not floor a color");
     }
 
@@ -1402,7 +1407,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public floor(): this {
+    public floor(): never {
         throw new ReferenceError("Can not floor a color");
     }
 
@@ -1410,7 +1415,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public fractToRef<T extends this>(_result: T): T {
+    public fractToRef(_result: IColor4Like): never {
         throw new ReferenceError("Can not fract a color");
     }
 
@@ -1418,7 +1423,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public fract(): this {
+    public fract(): never {
         throw new ReferenceError("Can not fract a color");
     }
 
@@ -1426,7 +1431,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public negate(): this {
+    public negate(): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -1434,7 +1439,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public negateInPlace(): this {
+    public negateInPlace(): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -1442,7 +1447,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @internal
      * Do not use
      */
-    public negateToRef<T extends this>(_result: T): T {
+    public negateToRef(_result: IColor4Like): never {
         throw new ReferenceError("Can not negate a color");
     }
 
@@ -1452,7 +1457,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param epsilon (Default: very small number)
      * @returns true if they are equal
      */
-    public equalsWithEpsilon(otherColor: DeepImmutable<Color4>, epsilon: number = Epsilon): boolean {
+    public equalsWithEpsilon(otherColor: DeepImmutable<IColor4Like>, epsilon: number = Epsilon): boolean {
         return (
             Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
             Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
@@ -1505,8 +1510,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * Creates a new Color4 copied from the current one
      * @returns a new Color4 object
      */
-    public clone(): this {
-        const result = new (this.constructor as Constructor<typeof Color4, this>)();
+    public clone(): Color4 {
+        const result = new Color4();
         return result.copyFrom(this);
     }
 
@@ -1515,7 +1520,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param source defines the source Color4 object
      * @returns the current updated Color4 object
      */
-    public copyFrom(source: DeepImmutable<Color4>): this {
+    public copyFrom(source: DeepImmutable<IColor4Like>): this {
         this.r = source.r;
         this.g = source.g;
         this.b = source.b;
@@ -1596,7 +1601,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color4
      */
-    public toLinearSpaceToRef(convertedColor: Color4, exact = false): Color4 {
+    public toLinearSpaceToRef(convertedColor: IColor4Like, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToLinearSpaceExact(this.r);
             convertedColor.g = colorChannelToLinearSpaceExact(this.g);
@@ -1627,7 +1632,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param exact defines if the conversion will be done in an exact way which is slower but more accurate (default is false)
      * @returns the unmodified Color4
      */
-    public toGammaSpaceToRef(convertedColor: Color4, exact = false): Color4 {
+    public toGammaSpaceToRef(convertedColor: IColor4Like, exact = false): this {
         if (exact) {
             convertedColor.r = colorChannelToGammaSpaceExact(this.r);
             convertedColor.g = colorChannelToGammaSpaceExact(this.g);
@@ -1677,10 +1682,8 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param amount defines the gradient factor
      * @returns a new Color4 object
      */
-    public static Lerp(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number): Color4 {
-        const result = new Color4(0.0, 0.0, 0.0, 0.0);
-        Color4.LerpToRef(left, right, amount, result);
-        return result;
+    public static Lerp(left: DeepImmutable<IColor4Like>, right: DeepImmutable<IColor4Like>, amount: number): Color4 {
+        return Color4.LerpToRef(left, right, amount, new Color4());
     }
 
     /**
@@ -1689,12 +1692,14 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param right defines the end value
      * @param amount defines the gradient factor
      * @param result defines the Color4 object where to store data
+     * @returns the updated result
      */
-    public static LerpToRef(left: DeepImmutable<Color4>, right: DeepImmutable<Color4>, amount: number, result: Color4): void {
+    public static LerpToRef<T extends IColor4Like>(left: DeepImmutable<IColor4Like>, right: DeepImmutable<IColor4Like>, amount: number, result: T): T {
         result.r = left.r + (right.r - left.r) * amount;
         result.g = left.g + (right.g - left.g) * amount;
         result.b = left.b + (right.b - left.b) * amount;
         result.a = left.a + (right.a - left.a) * amount;
+        return result;
     }
 
     /**
@@ -1706,7 +1711,13 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param amount defines the target Color4
      * @returns the new interpolated Color4
      */
-    public static Hermite(value1: DeepImmutable<Color4>, tangent1: DeepImmutable<Color4>, value2: DeepImmutable<Color4>, tangent2: DeepImmutable<Color4>, amount: number): Color4 {
+    public static Hermite(
+        value1: DeepImmutable<IColor4Like>,
+        tangent1: DeepImmutable<IColor4Like>,
+        value2: DeepImmutable<IColor4Like>,
+        tangent2: DeepImmutable<IColor4Like>,
+        amount: number
+    ): Color4 {
         const squared = amount * amount;
         const cubed = amount * squared;
         const part1 = 2.0 * cubed - 3.0 * squared + 1.0;
@@ -1731,10 +1742,10 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @returns 1st derivative
      */
     public static Hermite1stDerivative(
-        value1: DeepImmutable<Color4>,
-        tangent1: DeepImmutable<Color4>,
-        value2: DeepImmutable<Color4>,
-        tangent2: DeepImmutable<Color4>,
+        value1: DeepImmutable<IColor4Like>,
+        tangent1: DeepImmutable<IColor4Like>,
+        value2: DeepImmutable<IColor4Like>,
+        tangent2: DeepImmutable<IColor4Like>,
         time: number
     ): Color4 {
         const result = new Color4();
@@ -1754,12 +1765,12 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param result define where to store the derivative
      */
     public static Hermite1stDerivativeToRef(
-        value1: DeepImmutable<Color4>,
-        tangent1: DeepImmutable<Color4>,
-        value2: DeepImmutable<Color4>,
-        tangent2: DeepImmutable<Color4>,
+        value1: DeepImmutable<IColor4Like>,
+        tangent1: DeepImmutable<IColor4Like>,
+        value2: DeepImmutable<IColor4Like>,
+        tangent2: DeepImmutable<IColor4Like>,
         time: number,
-        result: Color4
+        result: IColor4Like
     ) {
         const t2 = time * time;
 
@@ -1775,7 +1786,7 @@ export class Color4 implements Tensor<Tuple<number, 4>>, IColor4Like {
      * @param alpha defines the alpha component (1.0 by default)
      * @returns a new Color4 object
      */
-    public static FromColor3(color3: DeepImmutable<Color3>, alpha: number = 1.0): Color4 {
+    public static FromColor3(color3: DeepImmutable<IColor3Like>, alpha: number = 1.0): Color4 {
         return new Color4(color3.r, color3.g, color3.b, alpha);
     }
 

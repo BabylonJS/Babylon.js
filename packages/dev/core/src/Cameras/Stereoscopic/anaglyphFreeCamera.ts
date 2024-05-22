@@ -31,9 +31,9 @@ export class AnaglyphFreeCamera extends FreeCamera {
      * Gets camera class name
      * @returns AnaglyphFreeCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AnaglyphFreeCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
+    protected override _setRigMode = () => setStereoscopicAnaglyphRigMode(this);
 }

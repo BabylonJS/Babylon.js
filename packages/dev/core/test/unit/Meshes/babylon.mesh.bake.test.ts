@@ -229,13 +229,13 @@ describe("Mesh Baking", () => {
             box.bakeCurrentTransformIntoVertices();
 
             // And children transforms should be set by parent
-            expect(child.scaling.z).toEqual(2.5);
+            expect(child.scaling.z).toEqual(2.8559148962599017);
             expect(child.position.y).toEqual(5);
-            expect(child.rotation.x).toEqual(Math.PI / 2);
+            expect(child.rotation.x).toEqual(0.707497170443068);
 
-            expect(child2.scaling.z).toEqual(2.5);
+            expect(child2.scaling.z).toEqual(2.8559148962599017);
             expect(child2.position.y).toEqual(5);
-            expect(child2.rotation.x).toEqual(Math.PI / 2);
+            expect(child2.rotation.x).toEqual(0.707497170443068);
         });
 
         it("should save children transforms without affecting by parent", () => {

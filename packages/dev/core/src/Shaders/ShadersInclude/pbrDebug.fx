@@ -155,7 +155,7 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
 // Misc
     #elif DEBUGMODE == 80 && defined(RADIANCEOCCLUSION)
         gl_FragColor.rgb = vec3(seo);
-    #elif DEBUGMODE == 81 && defined(HORIZONOCCLUSION)
+    #elif DEBUGMODE == 81 && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
         gl_FragColor.rgb = vec3(eho);
     #elif DEBUGMODE == 82 && defined(MS_BRDF_ENERGY_CONSERVATION)
         gl_FragColor.rgb = vec3(energyConservationFactor);
@@ -174,6 +174,8 @@ if (vClipSpacePosition.x / vClipSpacePosition.w >= vDebugMode.x) {
         gl_FragColor.rgb = vec3(alpha);
     #elif DEBUGMODE == 88 && defined(ALBEDO)
         gl_FragColor.rgb = vec3(albedoTexture.a);
+    #elif DEBUGMODE == 89
+        gl_FragColor.rgb = aoOut.ambientOcclusionColor.rgb;
     // Does Not Exist
     #else
         float stripeWidth = 30.;

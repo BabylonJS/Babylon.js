@@ -1,12 +1,12 @@
 import { Constants } from "core/Engines/constants";
-import type { Engine } from "core/Engines/engine";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
 import type { InternalTexture } from "core/Materials/Textures/internalTexture";
 import { CopyTextureToTexture } from "core/Misc/copyTextureToTexture";
 
 /** @internal */
 export class FluidRenderingDepthTextureCopy {
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _depthRTWrapper: RenderTargetWrapper;
     private _copyTextureToTexture: CopyTextureToTexture;
 
@@ -14,7 +14,7 @@ export class FluidRenderingDepthTextureCopy {
         return this._depthRTWrapper;
     }
 
-    constructor(engine: Engine, width: number, height: number, samples = 1) {
+    constructor(engine: AbstractEngine, width: number, height: number, samples = 1) {
         this._engine = engine;
         this._copyTextureToTexture = new CopyTextureToTexture(engine, true);
 

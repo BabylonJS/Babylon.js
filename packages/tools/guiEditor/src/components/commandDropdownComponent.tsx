@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { GlobalState } from "../globalState";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 
 interface ICommandDropdownComponentProps {
     globalState: GlobalState;
@@ -29,7 +29,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
         this.state = { isExpanded: false, activeState: "" };
     }
 
-    public render() {
+    public override render() {
         return (
             <>
                 {this.state.isExpanded && (
@@ -124,7 +124,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                     );
                                 } else {
                                     return (
-                                        <FileButtonLineComponent
+                                        <FileButtonLine
                                             key={m.label}
                                             label={!m.loadControlButton ? "Load" : "Load control"}
                                             onClick={(file) => this.props.globalState[!m.loadControlButton ? "onLoadObservable" : "onControlLoadObservable"].notifyObservers(file)}

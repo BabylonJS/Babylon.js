@@ -121,11 +121,11 @@ export class PropertyGridTabComponent extends PaneComponent {
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         window.clearInterval(this._timerIntervalId);
     }
 
@@ -697,7 +697,7 @@ export class PropertyGridTabComponent extends PaneComponent {
         return null;
     }
 
-    render() {
+    override render() {
         const entity = this.props.selectedEntity || {};
         const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
         return (

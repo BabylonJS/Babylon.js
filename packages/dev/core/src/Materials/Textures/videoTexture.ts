@@ -6,6 +6,7 @@ import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
+import type { WebGPUEngine } from "core/Engines";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -192,8 +193,10 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        if (this._engine?.createExternalTexture) {
-            this._externalTexture = this._engine.createExternalTexture(this.video);
+        const engineWebGPU = this._engine as Nullable<WebGPUEngine>;
+        const createExternalTexture = engineWebGPU?.createExternalTexture;
+        if (createExternalTexture) {
+            this._externalTexture = createExternalTexture.call(engineWebGPU, this.video);
         }
 
         if (!this._settings.independentVideoSource) {
@@ -238,7 +241,7 @@ export class VideoTexture extends Texture {
      * Get the current class name of the video texture useful for serialization or dynamic coding.
      * @returns "VideoTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "VideoTexture";
     }
 
@@ -355,7 +358,7 @@ export class VideoTexture extends Texture {
     /**
      * @internal Internal method to initiate `update`.
      */
-    public _rebuild(): void {
+    public override _rebuild(): void {
         this.update();
     }
 
@@ -418,7 +421,7 @@ export class VideoTexture extends Texture {
      * Change video content. Changing video instance or setting multiple urls (as in constructor) is not supported.
      * @param url New url.
      */
-    public updateURL(url: string): void {
+    public override updateURL(url: string): void {
         this.video.src = url;
         this._currentSrc = url;
     }
@@ -427,14 +430,14 @@ export class VideoTexture extends Texture {
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): VideoTexture {
+    public override clone(): VideoTexture {
         return new VideoTexture(this.name, this._currentSrc!, this.getScene(), this._generateMipMaps, this.invertY, this.samplingMode, this._settings);
     }
 
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this._currentSrc = null;

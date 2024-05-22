@@ -171,32 +171,32 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * No billboard
      */
-    public static get BILLBOARDMODE_NONE(): number {
+    public static override get BILLBOARDMODE_NONE(): number {
         return TransformNode.BILLBOARDMODE_NONE;
     }
 
     /** Billboard on X axis */
-    public static get BILLBOARDMODE_X(): number {
+    public static override get BILLBOARDMODE_X(): number {
         return TransformNode.BILLBOARDMODE_X;
     }
 
     /** Billboard on Y axis */
-    public static get BILLBOARDMODE_Y(): number {
+    public static override get BILLBOARDMODE_Y(): number {
         return TransformNode.BILLBOARDMODE_Y;
     }
 
     /** Billboard on Z axis */
-    public static get BILLBOARDMODE_Z(): number {
+    public static override get BILLBOARDMODE_Z(): number {
         return TransformNode.BILLBOARDMODE_Z;
     }
 
     /** Billboard on all axes */
-    public static get BILLBOARDMODE_ALL(): number {
+    public static override get BILLBOARDMODE_ALL(): number {
         return TransformNode.BILLBOARDMODE_ALL;
     }
 
     /** Billboard on using position instead of orientation */
-    public static get BILLBOARDMODE_USE_POSITION(): number {
+    public static override get BILLBOARDMODE_USE_POSITION(): number {
         return TransformNode.BILLBOARDMODE_USE_POSITION;
     }
 
@@ -327,7 +327,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * @internal
      */
-    public _updateNonUniformScalingState(value: boolean): boolean {
+    public override _updateNonUniformScalingState(value: boolean): boolean {
         if (!super._updateNonUniformScalingState(value)) {
             return false;
         }
@@ -432,12 +432,15 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public isPickable = true;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near picked. Default is false
+     * Gets or sets a boolean indicating if the mesh can be near picked (touched by the XR controller or hands). Default is false
      */
     public isNearPickable = false;
 
     /**
-     * Gets or sets a boolean indicating if the mesh can be near grabbed. Default is false
+     * Gets or sets a boolean indicating if the mesh can be grabbed. Default is false.
+     * Setting this to true, while using the XR near interaction feature, will trigger a pointer event when the mesh is grabbed.
+     * Grabbing means that the controller is using the squeeze or main trigger button to grab the mesh.
+     * This is different from nearPickable which only triggers the event when the mesh is touched by the controller
      */
     public isNearGrabbable = false;
 
@@ -903,7 +906,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Returns the string "AbstractMesh"
      * @returns "AbstractMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "AbstractMesh";
     }
 
@@ -912,7 +915,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param fullDetails defines a boolean indicating if full details must be included
      * @returns a string representation of the current mesh
      */
-    public toString(fullDetails?: boolean): string {
+    public override toString(fullDetails?: boolean): string {
         let ret = "Name: " + this.name + ", isInstance: " + (this.getClassName() !== "InstancedMesh" ? "YES" : "NO");
         ret += ", # of submeshes: " + (this.subMeshes ? this.subMeshes.length : 0);
 
@@ -930,7 +933,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * @internal
      */
-    protected _getEffectiveParent(): Nullable<Node> {
+    protected override _getEffectiveParent(): Nullable<Node> {
         if (this._masterMesh && this.billboardMode !== TransformNode.BILLBOARDMODE_NONE) {
             return this._masterMesh;
         }
@@ -941,7 +944,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /**
      * @internal
      */
-    public _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
+    public override _getActionManagerForTrigger(trigger?: number, initialCall = true): Nullable<AbstractActionManager> {
         if (this.actionManager && (initialCall || this.actionManager.isRecursive)) {
             if (trigger) {
                 if (this.actionManager.hasSpecificTrigger(trigger)) {
@@ -1082,7 +1085,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns this AbstractMesh
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public markAsDirty(property?: string): AbstractMesh {
+    public override markAsDirty(property?: string): AbstractMesh {
         this._currentRenderId = Number.MAX_VALUE;
         this._isDirty = true;
         return this;
@@ -1295,7 +1298,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param predicate predicate that is passed in to getHierarchyBoundingVectors when selecting which object should be included when scaling
      * @returns the current mesh
      */
-    public normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
+    public override normalizeToUnitCube(includeDescendants = true, ignoreRotation = false, predicate?: Nullable<(node: AbstractMesh) => boolean>): AbstractMesh {
         return <AbstractMesh>super.normalizeToUnitCube(includeDescendants, ignoreRotation, predicate);
     }
 
@@ -1346,7 +1349,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * Gets the current world matrix
      * @returns a Matrix
      */
-    public getWorldMatrix(): Matrix {
+    public override getWorldMatrix(): Matrix {
         if (this._masterMesh && this.billboardMode === TransformNode.BILLBOARDMODE_NONE) {
             return this._masterMesh.getWorldMatrix();
         }
@@ -1355,7 +1358,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @internal */
-    public _getWorldMatrixDeterminant(): number {
+    public override _getWorldMatrixDeterminant(): number {
         if (this._masterMesh) {
             return this._masterMesh._getWorldMatrixDeterminant();
         }
@@ -1668,7 +1671,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /** @internal */
-    protected _afterComputeWorldMatrix(): void {
+    protected override _afterComputeWorldMatrix(): void {
         if (this.doNotSyncBoundingInfo) {
             return;
         }
@@ -2026,7 +2029,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @returns the new mesh
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
+    public override clone(name: string, newParent: Nullable<Node>, doNotCloneChildren?: boolean): Nullable<AbstractMesh> {
         return null;
     }
 
@@ -2050,7 +2053,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
      * @param doNotRecurse Set to true to not recurse into each children (recurse into each children by default)
      * @param disposeMaterialAndTextures Set to true to also dispose referenced materials and textures (false by default)
      */
-    public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
+    public override dispose(doNotRecurse?: boolean, disposeMaterialAndTextures = false): void {
         let index: number;
 
         const scene = this.getScene();

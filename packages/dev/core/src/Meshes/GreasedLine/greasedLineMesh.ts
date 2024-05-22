@@ -5,7 +5,7 @@ import { Mesh } from "../mesh";
 import type { Ray, TrianglePickingPredicate } from "../../Culling/ray";
 import { Buffer, VertexBuffer } from "../../Buffers/buffer";
 import { PickingInfo } from "../../Collisions/pickingInfo";
-import type { Nullable } from "../../types";
+import type { Nullable, FloatArray } from "../../types";
 import type { Node } from "../../node";
 import { DeepCopier } from "../../Misc/deepCopier";
 import { GreasedLineTools } from "../../Misc/greasedLineTools";
@@ -22,8 +22,8 @@ Mesh._GreasedLineMeshParser = (parsedMesh: any, scene: Scene): Mesh => {
  * Use the GreasedLineBuilder.CreateGreasedLine function to create an instance of this class.
  */
 export class GreasedLineMesh extends GreasedLineBaseMesh {
-    private _previousAndSide: number[];
-    private _nextAndCounters: number[];
+    private _previousAndSide: FloatArray;
+    private _nextAndCounters: FloatArray;
 
     private static _V_START = new Vector3();
     private static _V_END = new Vector3();
@@ -42,7 +42,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param _options mesh options
      */
     constructor(
-        public readonly name: string,
+        public override readonly name: string,
         scene: Scene,
         _options: GreasedLineMeshOptions
     ) {
@@ -60,7 +60,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * "GreasedLineMesh"
      * @returns "GreasedLineMesh"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "GreasedLineMesh";
     }
 
@@ -80,7 +80,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
     }
 
     protected _updateWidths(): void {
-        super._updateWidthsWithValue(0);
+        // intentionally left blank
     }
 
     protected _setPoints(points: number[][]) {
@@ -90,57 +90,111 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         this._initGreasedLine();
 
         let indiceOffset = 0;
+        let vertexPositionsLen = 0,
+            indicesLength = 0,
+            uvLength = 0,
+            previousAndSideLength = 0;
+        points.forEach((p) => {
+            vertexPositionsLen += p.length * 2;
+            indicesLength += (p.length - 3) * 2;
+            uvLength += (p.length * 4) / 3;
+            previousAndSideLength += (p.length * 8) / 3;
+        });
+        const vertexPositionsArr = new Float32Array(vertexPositionsLen);
+        const indicesArr = vertexPositionsLen > 65535 ? new Uint32Array(indicesLength) : new Uint16Array(indicesLength);
+        const uvArr = new Float32Array(uvLength);
+        const previousAndSide = new Float32Array(previousAndSideLength);
+        // it's the same length here
+        const nextAndCounters = new Float32Array(previousAndSideLength);
+        let vertexPositionsOffset = 0,
+            indicesOffset = 0,
+            uvOffset = 0,
+            previousAndSideOffset = 0,
+            nextAndCountersOffset = 0;
 
         points.forEach((p) => {
-            const counters: number[] = [];
-            const positions: number[] = [];
-            const indices: number[] = [];
-
-            const totalLength = GreasedLineTools.GetLineLength(p);
+            const lengthArray = GreasedLineTools.GetLineLengthArray(p);
+            const totalLength = lengthArray[lengthArray.length - 1];
             for (let j = 0, jj = 0; jj < p.length; j++, jj += 3) {
-                const partialLine = p.slice(0, jj + 3);
-                const partialLineLength = GreasedLineTools.GetLineLength(partialLine);
-                const c = partialLineLength / totalLength;
-
-                positions.push(p[jj], p[jj + 1], p[jj + 2]);
-                positions.push(p[jj], p[jj + 1], p[jj + 2]);
-                counters.push(c);
-                counters.push(c);
+                const baseOffset = vertexPositionsOffset + jj * 2;
+                vertexPositionsArr[baseOffset + 0] = p[jj + 0];
+                vertexPositionsArr[baseOffset + 1] = p[jj + 1];
+                vertexPositionsArr[baseOffset + 2] = p[jj + 2];
+                vertexPositionsArr[baseOffset + 3] = p[jj + 0];
+                vertexPositionsArr[baseOffset + 4] = p[jj + 1];
+                vertexPositionsArr[baseOffset + 5] = p[jj + 2];
 
                 if (jj < p.length - 3) {
                     const n = j * 2 + indiceOffset;
-                    indices.push(n, n + 1, n + 2);
-                    indices.push(n + 2, n + 1, n + 3);
+                    const baseIndicesOffset = indicesOffset + jj * 2;
+                    indicesArr[baseIndicesOffset + 0] = n;
+                    indicesArr[baseIndicesOffset + 1] = n + 1;
+                    indicesArr[baseIndicesOffset + 2] = n + 2;
+                    indicesArr[baseIndicesOffset + 3] = n + 2;
+                    indicesArr[baseIndicesOffset + 4] = n + 1;
+                    indicesArr[baseIndicesOffset + 5] = n + 3;
                 }
             }
 
             indiceOffset += (p.length / 3) * 2;
+            const currVertexPositionsOffsetLength = p.length * 2;
+            const positions = vertexPositionsArr.subarray(vertexPositionsOffset, vertexPositionsOffset + currVertexPositionsOffsetLength);
+            vertexPositionsOffset += currVertexPositionsOffsetLength;
+            indicesOffset += (p.length - 3) * 2;
 
-            const previous: number[] = [];
-            const next: number[] = [];
-            const side: number[] = [];
-            let uvs: number[] = [];
-
-            this._preprocess(positions, previous, next, side, uvs);
-
-            for (const vp of positions) {
-                this._vertexPositions.push(vp);
+            const previous = new Float32Array(positions.length);
+            const next = new Float32Array(positions.length);
+            const l = positions.length / 6;
+            let v;
+            if (GreasedLineMesh._CompareV3(0, l - 1, positions)) {
+                v = positions.subarray((l - 2) * 6, (l - 1) * 6);
+            } else {
+                v = positions.subarray(0, 6);
             }
-
-            for (const i of indices) {
-                this._indices.push(i);
+            previous.set(v);
+            previous.set(positions.subarray(0, positions.length - 6), 6);
+            next.set(positions.subarray(6));
+            if (GreasedLineMesh._CompareV3(l - 1, 0, positions)) {
+                v = positions.subarray(6, 12);
+            } else {
+                v = positions.subarray((l - 1) * 6, l * 6);
             }
+            next.set(v, next.length - 6);
 
-            for (let i = 0; i < side.length; i++) {
-                this._previousAndSide.push(previous[i * 3], previous[i * 3 + 1], previous[i * 3 + 2], side[i]);
-                this._nextAndCounters.push(next[i * 3], next[i * 3 + 1], next[i * 3 + 2], counters[i]);
+            for (let i = 0, sidesLength = positions.length / 3; i < sidesLength; i++) {
+                previousAndSide[previousAndSideOffset++] = previous[i * 3];
+                previousAndSide[previousAndSideOffset++] = previous[i * 3 + 1];
+                previousAndSide[previousAndSideOffset++] = previous[i * 3 + 2];
+                // side[i] = i % 2 ? -1 : 1;
+                // side[i] = 1 - ((i & 1) << 1);
+                previousAndSide[previousAndSideOffset++] = 1 - ((i & 1) << 1);
+                nextAndCounters[nextAndCountersOffset++] = next[i * 3];
+                nextAndCounters[nextAndCountersOffset++] = next[i * 3 + 1];
+                nextAndCounters[nextAndCountersOffset++] = next[i * 3 + 2];
+                // counters[i] = lengthArray[i >> 1] / totalLength;
+                nextAndCounters[nextAndCountersOffset++] = lengthArray[i >> 1] / totalLength;
             }
-
-            uvs = this._options.uvs ?? uvs;
-            for (const uv of uvs) {
-                this._uvs.push(uv);
+            if (this._options.uvs) {
+                for (let i = 0; i < this._options.uvs.length; i++) {
+                    uvArr[uvOffset++] = this._options.uvs[i];
+                }
+            } else {
+                for (let j = 0; j < l; j++) {
+                    // uvs
+                    const uvOffsetBase = uvOffset + j * 4;
+                    uvArr[uvOffsetBase + 0] = j / (l - 1);
+                    uvArr[uvOffsetBase + 1] = 0;
+                    uvArr[uvOffsetBase + 2] = j / (l - 1);
+                    uvArr[uvOffsetBase + 3] = 1;
+                }
+                uvOffset += l * 4;
             }
         });
+        this._vertexPositions = vertexPositionsArr;
+        this._indices = indicesArr;
+        this._uvs = uvArr;
+        this._previousAndSide = previousAndSide;
+        this._nextAndCounters = nextAndCounters;
 
         if (!this._lazy) {
             if (!this._options.colorPointers) {
@@ -157,7 +211,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param newParent new parent node
      * @returns cloned line
      */
-    public clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
+    public override clone(name: string = `${this.name}-cloned`, newParent?: Nullable<Node>) {
         const lineOptions = this._createLineOptions();
         const deepCopiedLineOptions = {};
         DeepCopier.DeepCopy(lineOptions, deepCopiedLineOptions, ["instance"], undefined, true);
@@ -176,7 +230,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * Serializes this GreasedLineMesh
      * @param serializationObject object to write serialization to
      */
-    public serialize(serializationObject: any): void {
+    public override serialize(serializationObject: any): void {
         super.serialize(serializationObject);
         serializationObject.type = this.getClassName();
 
@@ -189,14 +243,14 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param scene the scene to create the GreasedLineMesh in
      * @returns the created GreasedLineMesh
      */
-    public static Parse(parsedMesh: any, scene: Scene): Mesh {
+    public static override Parse(parsedMesh: any, scene: Scene): Mesh {
         const lineOptions = <GreasedLineMeshOptions>parsedMesh.lineOptions;
         const name = <string>parsedMesh.name;
         const result = new GreasedLineMesh(name, scene, lineOptions);
         return result;
     }
 
-    protected _initGreasedLine() {
+    protected override _initGreasedLine() {
         super._initGreasedLine();
 
         this._previousAndSide = [];
@@ -212,7 +266,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
      * @param skipBoundingInfo a boolean indicating if we should skip the bounding info check
      * @returns the picking info
      */
-    public intersects(
+    public override intersects(
         ray: Ray,
         fastCheck?: boolean,
         trianglePredicate?: TrianglePickingPredicate,
@@ -306,69 +360,13 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         return this.getBoundingInfo().boundingSphere;
     }
 
-    private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: number[]) {
+    private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: number[] | Float32Array) {
         const arrayIdx1 = positionIdx1 * 6;
         const arrayIdx2 = positionIdx2 * 6;
         return positions[arrayIdx1] === positions[arrayIdx2] && positions[arrayIdx1 + 1] === positions[arrayIdx2 + 1] && positions[arrayIdx1 + 2] === positions[arrayIdx2 + 2];
     }
 
-    private static _CopyV3(positionIdx: number, positions: number[]) {
-        const arrayIdx = positionIdx * 6;
-        return [positions[arrayIdx], positions[arrayIdx + 1], positions[arrayIdx + 2]];
-    }
-
-    private _preprocess(positions: number[], previous: number[], next: number[], side: number[], uvs: number[]) {
-        const l = positions.length / 6;
-
-        let v: number[] = [];
-
-        if (GreasedLineMesh._CompareV3(0, l - 1, positions)) {
-            v = GreasedLineMesh._CopyV3(l - 2, positions);
-        } else {
-            v = GreasedLineMesh._CopyV3(0, positions);
-        }
-        previous.push(v[0], v[1], v[2]);
-        previous.push(v[0], v[1], v[2]);
-
-        for (let j = 0; j < l; j++) {
-            side.push(1);
-            side.push(-1);
-
-            // uvs
-            if (!this._options.uvs) {
-                uvs.push(j / (l - 1), 0);
-                uvs.push(j / (l - 1), 1);
-            }
-
-            if (j < l - 1) {
-                v = GreasedLineMesh._CopyV3(j, positions);
-                previous.push(v[0], v[1], v[2]);
-                previous.push(v[0], v[1], v[2]);
-            }
-            if (j > 0) {
-                v = GreasedLineMesh._CopyV3(j, positions);
-                next.push(v[0], v[1], v[2]);
-                next.push(v[0], v[1], v[2]);
-            }
-        }
-
-        if (GreasedLineMesh._CompareV3(l - 1, 0, positions)) {
-            v = GreasedLineMesh._CopyV3(1, positions);
-        } else {
-            v = GreasedLineMesh._CopyV3(l - 1, positions);
-        }
-        next.push(v[0], v[1], v[2]);
-        next.push(v[0], v[1], v[2]);
-
-        return {
-            previous,
-            next,
-            uvs,
-            side,
-        };
-    }
-
-    protected _createVertexBuffers() {
+    protected override _createVertexBuffers() {
         const vertexData: VertexData = super._createVertexBuffers();
 
         const engine = this._scene.getEngine();

@@ -90,11 +90,11 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         this._pointerMoveObserver = this.props.globalState.onPointerMoveObservable.add(() => this._onMove());
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.updateGizmo();
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onGizmoUpdateRequireObservable.remove(this._gizmoUpdateObserver);
         this.props.globalState.onPointerUpObservable.remove(this._pointerUpObserver);
         this.props.globalState.onPointerMoveObservable.remove(this._pointerMoveObserver);
@@ -400,7 +400,7 @@ export class GizmoGeneric extends React.Component<IGuiGizmoProps, IGuiGizmoState
         this.setState({ isRotating: true });
     };
 
-    render() {
+    override render() {
         return (
             <div className="gizmo">
                 {lines.map((line, index) => {

@@ -22,7 +22,7 @@ export class FreeCameraPropertyGridComponent extends React.Component<IFreeCamera
         super(props);
     }
 
-    render() {
+    override render() {
         const camera = this.props.camera;
 
         return (

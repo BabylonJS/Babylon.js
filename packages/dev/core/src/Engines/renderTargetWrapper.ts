@@ -3,7 +3,7 @@ import { InternalTextureSource } from "../Materials/Textures/internalTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { Nullable } from "../types";
 import { Constants } from "./constants";
-import type { ThinEngine } from "./thinEngine";
+import type { AbstractEngine } from "./abstractEngine";
 import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
 
 /**
@@ -20,7 +20,7 @@ export interface IRenderTargetTexture {
  * Wrapper around a render target (either single or multi textures)
  */
 export class RenderTargetWrapper {
-    protected _engine: ThinEngine;
+    protected _engine: AbstractEngine;
     private _size: TextureSize;
     private _isCube: boolean;
     private _isMulti: boolean;
@@ -84,6 +84,13 @@ export class RenderTargetWrapper {
     }
 
     /**
+     * Defines if the render target wrapper is for a 3D texture
+     */
+    public get is3D(): boolean {
+        return this.depth > 0;
+    }
+
+    /**
      * Gets the size of the render target wrapper (used for cubes, as width=height in this case)
      */
     public get size(): number {
@@ -108,7 +115,14 @@ export class RenderTargetWrapper {
      * Gets the number of layers of the render target wrapper (only used if is2DArray is true and wrapper is not a multi render target)
      */
     public get layers(): number {
-        return (<{ width: number; height: number; layers?: number }>this._size).layers || 0;
+        return (<{ width: number; height: number; depth?: number; layers?: number }>this._size).layers || 0;
+    }
+
+    /**
+     * Gets the depth of the render target wrapper (only used if is3D is true and wrapper is not a multi render target)
+     */
+    public get depth(): number {
+        return (<{ width: number; height: number; depth?: number; layers?: number }>this._size).depth || 0;
     }
 
     /**
@@ -173,7 +187,7 @@ export class RenderTargetWrapper {
      * @param engine engine used to create the render target
      * @param label defines the label to use for the wrapper (for debugging purpose only)
      */
-    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: ThinEngine, label?: string) {
+    constructor(isMulti: boolean, isCube: boolean, size: TextureSize, engine: AbstractEngine, label?: string) {
         this._isMulti = isMulti;
         this._isCube = isCube;
         this._size = size;
@@ -289,17 +303,25 @@ export class RenderTargetWrapper {
     }
 
     /**
-     * Shares the depth buffer of this render target with another render target.
-     * @internal
+     * @deprecated Use shareDepth instead
      * @param renderTarget Destination renderTarget
      */
     public _shareDepth(renderTarget: RenderTargetWrapper): void {
+        this.shareDepth(renderTarget);
+    }
+
+    /**
+     * Shares the depth buffer of this render target with another render target.
+     * @param renderTarget Destination renderTarget
+     */
+    public shareDepth(renderTarget: RenderTargetWrapper): void {
         if (this._depthStencilTexture) {
             if (renderTarget._depthStencilTexture) {
                 renderTarget._depthStencilTexture.dispose();
             }
 
             renderTarget._depthStencilTexture = this._depthStencilTexture;
+            renderTarget._depthStencilTextureWithStencil = this._depthStencilTextureWithStencil;
             this._depthStencilTexture.incrementReferences();
         }
     }
@@ -399,6 +421,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
+                    depth: this.depth,
                 };
 
                 rtw = this._engine.createMultipleRenderTarget(size, optionsMRT);
@@ -429,7 +452,7 @@ export class RenderTargetWrapper {
                 const size = {
                     width: this.width,
                     height: this.height,
-                    layers: this.is2DArray ? this.texture?.depth : undefined,
+                    layers: this.is2DArray || this.is3D ? this.texture?.depth : undefined,
                 };
 
                 rtw = this._engine.createRenderTargetTexture(size, options);

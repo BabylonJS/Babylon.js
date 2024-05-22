@@ -74,7 +74,7 @@ export class DebugTabComponent extends PaneComponent {
         }
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         if (!scene) {

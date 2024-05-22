@@ -10,7 +10,7 @@ import { TextLineComponent } from "shared-ui-components/lines/textLineComponent"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faWrench, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Texture } from "core/Materials/Textures/texture";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { Scene } from "core/scene";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
@@ -42,7 +42,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.state = { isDebugSelected: material && material.reservedDataStore && material.reservedDataStore.debugTexture === texture };
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this.props.onDebugSelectionChangeObservable) {
             return;
         }
@@ -53,7 +53,7 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.onDebugSelectionChangeObservable && this._onDebugSelectionChangeObserver) {
             this.props.onDebugSelectionChangeObservable.remove(this._onDebugSelectionChangeObserver);
         }
@@ -189,13 +189,13 @@ export class TextureLinkLineComponent extends React.Component<ITextureLinkLineCo
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const texture = this.props.texture;
 
         if (!texture) {
             if (this.props.propertyName || this.props.onTextureCreated) {
                 return (
-                    <FileButtonLineComponent
+                    <FileButtonLine
                         label={`Add ${this.props.label} texture`}
                         onClick={(file) => this.updateTexture(file)}
                         accept={this.props.fileFormats ?? ".jpg, .png, .tga, .dds, .env"}

@@ -4,7 +4,7 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import type { GlobalState } from "../../../globalState";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
 import { faCheck, faTimesCircle } from "@fortawesome/free-solid-svg-icons";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
@@ -47,7 +47,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         return `${singularForm}`;
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (this.props.globalState) {
             this._onValidationResultsUpdatedObserver = this.props.globalState.onValidationResultsUpdatedObservable.add(() => {
                 this.forceUpdate();
@@ -55,7 +55,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         }
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this.props.globalState) {
             if (this._onValidationResultsUpdatedObserver) {
                 this.props.globalState.onValidationResultsUpdatedObservable.remove(this._onValidationResultsUpdatedObserver);
@@ -84,7 +84,7 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
         );
     }
 
-    render() {
+    override render() {
         const extensionStates = this.props.globalState.glTFLoaderExtensionDefaults;
         const loaderState = this.props.globalState.glTFLoaderDefaults;
 
@@ -117,11 +117,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                 <LineContainerComponent title="GLTF LOADER" closed={true} selection={this.props.globalState}>
                     <CheckBoxLineComponent label="Always compute bounding box" target={loaderState} propertyName="alwaysComputeBoundingBox" />
                     <CheckBoxLineComponent label="Always compute skeleton root node" target={loaderState} propertyName="alwaysComputeSkeletonRootNode" />
-                    <OptionsLineComponent label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
+                    <OptionsLine label="Animation start mode" options={animationStartMode} target={loaderState} propertyName="animationStartMode" />
                     <CheckBoxLineComponent label="Capture performance counters" target={loaderState} propertyName="capturePerformanceCounters" />
                     <CheckBoxLineComponent label="Compile materials" target={loaderState} propertyName="compileMaterials" />
                     <CheckBoxLineComponent label="Compile shadow generators" target={loaderState} propertyName="compileShadowGenerators" />
-                    <OptionsLineComponent label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
+                    <OptionsLine label="Coordinate system" options={coordinateSystemMode} target={loaderState} propertyName="coordinateSystemMode" />
                     <CheckBoxLineComponent label="Create instances" target={loaderState} propertyName="createInstances" />
                     <CheckBoxLineComponent label="Enable logging" target={loaderState} propertyName="loggingEnabled" />
                     <CheckBoxLineComponent label="Load all materials" target={loaderState} propertyName="loadAllMaterials" />
@@ -147,6 +147,11 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                         label="EXT_texture_webp"
                         isSelected={() => extensionStates["EXT_texture_webp"].enabled}
                         onSelect={(value) => (extensionStates["EXT_texture_webp"].enabled = value)}
+                    />
+                    <CheckBoxLineComponent
+                        label="EXT_texture_avif"
+                        isSelected={() => extensionStates["EXT_texture_avif"].enabled}
+                        onSelect={(value) => (extensionStates["EXT_texture_avif"].enabled = value)}
                     />
                     <CheckBoxLineComponent
                         label="KHR_draco_mesh_compression"
@@ -209,9 +214,9 @@ export class GLTFComponent extends React.Component<IGLTFComponentProps> {
                         onSelect={(value) => (extensionStates["KHR_materials_transmission"].enabled = value)}
                     />
                     <CheckBoxLineComponent
-                        label="KHR_materials_translucency"
-                        isSelected={() => extensionStates["KHR_materials_translucency"].enabled}
-                        onSelect={(value) => (extensionStates["KHR_materials_translucency"].enabled = value)}
+                        label="KHR_materials_diffuse_transmission"
+                        isSelected={() => extensionStates["KHR_materials_diffuse_transmission"].enabled}
+                        onSelect={(value) => (extensionStates["KHR_materials_diffuse_transmission"].enabled = value)}
                     />
                     <CheckBoxLineComponent
                         label="KHR_materials_volume"

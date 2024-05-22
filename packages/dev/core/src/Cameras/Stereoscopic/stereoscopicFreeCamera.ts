@@ -35,9 +35,9 @@ export class StereoscopicFreeCamera extends FreeCamera {
      * Gets camera class name
      * @returns StereoscopicFreeCamera
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "StereoscopicFreeCamera";
     }
 
-    protected _setRigMode = () => setStereoscopicRigMode(this);
+    protected override _setRigMode = () => setStereoscopicRigMode(this);
 }

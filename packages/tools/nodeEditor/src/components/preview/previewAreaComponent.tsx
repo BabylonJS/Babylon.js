@@ -12,7 +12,7 @@ import omni from "./svgs/omni.svg";
 import directionalRight from "./svgs/directionalRight.svg";
 import directionalLeft from "./svgs/directionalLeft.svg";
 import background from "./svgs/icon-ibl.svg";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 interface IPreviewAreaComponentProps {
     globalState: GlobalState;
@@ -34,7 +34,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onIsLoadingChanged.remove(this._onIsLoadingChangedObserver);
         this.props.globalState.onResetRequiredObservable.remove(this._onResetRequiredObserver);
     }
@@ -74,7 +74,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
         this.forceUpdate();
     }
 
-    render() {
+    override render() {
         const blendModeOptions = [
             { label: "Add", value: ParticleSystem.BLENDMODE_ADD },
             { label: "Multiply", value: ParticleSystem.BLENDMODE_MULTIPLY },
@@ -91,7 +91,7 @@ export class PreviewAreaComponent extends React.Component<IPreviewAreaComponentP
                 </div>
                 {this.props.globalState.mode === NodeMaterialModes.Particle && (
                     <div id="preview-config-bar" className="extended">
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Blend mode"
                             options={blendModeOptions}
                             target={this.props.globalState}

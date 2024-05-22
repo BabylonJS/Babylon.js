@@ -322,7 +322,7 @@ export class SlateGizmo extends Gizmo {
         handle.setDragBehavior(dragStart, dragging, dragEnd);
     }
 
-    protected _attachedNodeChanged(value: Nullable<AbstractMesh>) {
+    protected override _attachedNodeChanged(value: Nullable<AbstractMesh>) {
         if (value) {
             this.updateBoundingBox();
         }
@@ -413,7 +413,7 @@ export class SlateGizmo extends Gizmo {
         }
     }
 
-    protected _update() {
+    protected override _update() {
         super._update();
 
         if (!this.gizmoLayer.utilityLayerScene.activeCamera) {
@@ -435,7 +435,7 @@ export class SlateGizmo extends Gizmo {
         }
     }
 
-    public dispose() {
+    public override dispose() {
         this.gizmoLayer.originalScene.onBeforeRenderObservable.remove(this._renderObserver);
 
         // Will dispose rootMesh and all descendants

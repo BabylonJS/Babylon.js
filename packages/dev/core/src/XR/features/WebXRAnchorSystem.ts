@@ -257,7 +257,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
      *
      * @returns true if successful.
      */
-    public detach(): boolean {
+    public override detach(): boolean {
         if (!super.detach()) {
             return false;
         }
@@ -284,7 +284,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     /**
      * Dispose this feature and all of the resources attached
      */
-    public dispose(): void {
+    public override dispose(): void {
         this._futureAnchors.length = 0;
         super.dispose();
         this.onAnchorAddedObservable.clear();

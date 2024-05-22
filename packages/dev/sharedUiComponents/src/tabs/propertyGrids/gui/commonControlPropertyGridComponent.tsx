@@ -9,7 +9,7 @@ import { SliderLineComponent } from "../../../lines/sliderLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLine } from "../../../lines/optionsLineComponent";
 import { makeTargetsProxy } from "../../../lines/targetsProxy";
 
 interface ICommonControlPropertyGridComponentProps {
@@ -52,7 +52,7 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
         );
     }
 
-    render() {
+    override render() {
         let controls: Control[];
         if (this.props.controls) {
             controls = this.props.controls;
@@ -125,14 +125,14 @@ export class CommonControlPropertyGridComponent extends React.Component<ICommonC
                 </LineContainerComponent>
                 {this.renderGridInformation(control)}
                 <LineContainerComponent title="ALIGNMENT">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Horizontal"
                         options={horizontalOptions}
                         target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}
                         propertyName="horizontalAlignment"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Vertical"
                         options={verticalOptions}
                         target={makeTargetsProxy(controls, this.props.onPropertyChangedObservable)}

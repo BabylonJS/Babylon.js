@@ -86,7 +86,7 @@ export class PBRMetallicRoughnessMaterialPropertyGridComponent extends React.Com
         );
     }
 
-    render() {
+    override render() {
         const material = this.props.material;
 
         return (

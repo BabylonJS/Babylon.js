@@ -26,7 +26,7 @@ export class InputArrowsComponent extends React.Component<IInputArrowsComponentP
         }
     };
 
-    render() {
+    override render() {
         return (
             <div
                 className="arrows"

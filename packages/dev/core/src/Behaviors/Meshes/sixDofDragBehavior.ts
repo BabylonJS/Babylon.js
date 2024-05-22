@@ -50,7 +50,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      *  The name of the behavior
      */
-    public get name(): string {
+    public override get name(): string {
         return "SixDofDrag";
     }
 
@@ -66,12 +66,17 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
 
     /**
      * Attaches the six DoF drag behavior
+     * In XR mode the mesh and its children will have their isNearGrabbable property set to true
      * @param ownerNode The mesh that will be dragged around once attached
      */
-    public attach(ownerNode: Mesh): void {
+    public override attach(ownerNode: Mesh): void {
         super.attach(ownerNode);
 
         ownerNode.isNearGrabbable = true;
+        // if it has children, make sure they are grabbable too
+        ownerNode.getChildMeshes().forEach((m) => {
+            m.isNearGrabbable = true;
+        });
 
         // Node that will save the owner's transform
         this._virtualTransformNode = new TransformNode("virtual_sixDof", BaseSixDofDragBehavior._virtualScene);
@@ -189,7 +194,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         this._ownerNode.setParent(oldParent);
     }
 
-    protected _targetDragStart() {
+    protected override _targetDragStart() {
         const pointerCount = this.currentDraggingPointerIds.length;
 
         if (!this._ownerNode.rotationQuaternion) {
@@ -229,7 +234,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         }
     }
 
-    protected _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
+    protected override _targetDrag(worldDeltaPosition: Vector3, worldDeltaRotation: Quaternion) {
         if (this.currentDraggingPointerIds.length === 1) {
             this._onePointerPositionUpdated(worldDeltaPosition, worldDeltaRotation);
         } else if (this.currentDraggingPointerIds.length === 2) {
@@ -237,7 +242,7 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
         }
     }
 
-    protected _targetDragEnd() {
+    protected override _targetDragEnd() {
         if (this.currentDraggingPointerIds.length === 1) {
             // We still have 1 active pointer, we must simulate a dragstart with a reseted position/orientation
             this._resetVirtualMeshesPosition();
@@ -251,11 +256,10 @@ export class SixDofDragBehavior extends BaseSixDofDragBehavior {
     /**
      *  Detaches the behavior from the mesh
      */
-    public detach(): void {
+    public override detach(): void {
         super.detach();
 
         if (this._ownerNode) {
-            (this._ownerNode as Mesh).isNearGrabbable = false;
             this._ownerNode.getScene().onBeforeRenderObservable.remove(this._sceneRenderObserver);
         }
 

@@ -34,7 +34,7 @@ import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComp
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -55,7 +55,7 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
-    private _modeSelect: React.RefObject<OptionsLineComponent>;
+    private _modeSelect: React.RefObject<OptionsLine>;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
@@ -65,7 +65,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         this._modeSelect = React.createRef();
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         this.props.globalState.stateManager.onSelectionChangedObservable.add((options) => {
             const { selection } = options || {};
             if (selection instanceof GraphNode) {
@@ -86,7 +86,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         this.props.globalState.onBuiltObservable.remove(this._onBuiltObserver);
     }
 
@@ -389,7 +389,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
         return true;
     }
 
-    render() {
+    override render() {
         if (this.state.currentNode) {
             return (
                 <div id="propertyTab">
@@ -448,7 +448,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent
+                        <OptionsLine
                             ref={this._modeSelect}
                             label="Mode"
                             target={this}
@@ -589,7 +589,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             propertyName="forceAlphaBlending"
                             onValueChanged={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
                         />
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Alpha mode"
                             options={alphaModeOptions}
                             target={this.props.globalState.nodeMaterial}

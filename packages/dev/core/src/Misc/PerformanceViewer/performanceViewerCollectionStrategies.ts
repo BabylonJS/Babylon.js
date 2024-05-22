@@ -550,7 +550,7 @@ export class PerfCollectionStrategy {
             engineInstrumentation.captureGPUFrameTime = true;
             return {
                 id: "GPU frame time",
-                getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter.current * 0.000001, 0),
+                getData: () => Math.max(engineInstrumentation.gpuFrameTimeCounter!.current * 0.000001, 0),
                 dispose: () => {
                     engineInstrumentation.dispose();
                 },

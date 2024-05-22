@@ -26,7 +26,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphSendCustomEventBlockConfiguration
+        public override config: IFlowGraphSendCustomEventBlockConfiguration
     ) {
         super(config);
         for (let i = 0; i < this.config.eventData.length; i++) {
@@ -47,7 +47,7 @@ export class FlowGraphSendCustomEventBlock extends FlowGraphExecutionBlockWithOu
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return FlowGraphSendCustomEventBlock.ClassName;
     }
 

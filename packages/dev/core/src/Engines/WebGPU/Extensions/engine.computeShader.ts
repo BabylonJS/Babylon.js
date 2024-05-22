@@ -1,20 +1,36 @@
 import { Logger } from "core/Misc/logger";
-import type { IComputeEffectCreationOptions } from "../../../Compute/computeEffect";
+import type { IComputeEffectCreationOptions, IComputeShaderPath } from "../../../Compute/computeEffect";
 import { ComputeEffect } from "../../../Compute/computeEffect";
 import type { IComputeContext } from "../../../Compute/IComputeContext";
 import type { IComputePipelineContext } from "../../../Compute/IComputePipelineContext";
 import type { Nullable } from "../../../types";
-import type { ComputeBindingList, ComputeBindingMapping } from "../../Extensions/engine.computeShader";
+import type { ComputeBindingList, ComputeBindingMapping, ComputeCompilationMessages } from "../../Extensions/engine.computeShader";
 import { WebGPUEngine } from "../../webgpuEngine";
 import { WebGPUComputeContext } from "../webgpuComputeContext";
 import { WebGPUComputePipelineContext } from "../webgpuComputePipelineContext";
 import * as WebGPUConstants from "../webgpuConstants";
 import type { WebGPUPerfCounter } from "../webgpuPerfCounter";
+import type { DataBuffer } from "../../../Buffers/dataBuffer";
 
 declare module "../../webgpuEngine" {
     export interface WebGPUEngine {
         /** @internal */
         _createComputePipelineStageDescriptor(computeShader: string, defines: Nullable<string>, entryPoint: string): GPUProgrammableStage;
+        /** @internal
+         * Either all of x,y,z or buffer and offset should be defined.
+         */
+        _computeDispatch(
+            effect: ComputeEffect,
+            context: IComputeContext,
+            bindings: ComputeBindingList,
+            x?: number,
+            y?: number,
+            z?: number,
+            buffer?: DataBuffer,
+            offset?: number,
+            bindingsMapping?: ComputeBindingMapping,
+            gpuPerfCounter?: WebGPUPerfCounter
+        ): void;
     }
 }
 
@@ -24,8 +40,8 @@ WebGPUEngine.prototype.createComputeContext = function (): IComputeContext | und
     return new WebGPUComputeContext(this._device, this._cacheSampler);
 };
 
-WebGPUEngine.prototype.createComputeEffect = function (baseName: any, options: IComputeEffectCreationOptions): ComputeEffect {
-    const compute = baseName.computeElement || baseName.compute || baseName.computeToken || baseName.computeSource || baseName;
+WebGPUEngine.prototype.createComputeEffect = function (baseName: string | (IComputeShaderPath & { computeToken?: string }), options: IComputeEffectCreationOptions): ComputeEffect {
+    const compute = typeof baseName === "string" ? baseName : baseName.computeToken || baseName.computeSource || baseName.computeElement || baseName.compute;
 
     const name = compute + "@" + options.defines;
     if (this._compiledComputeEffects[name]) {
@@ -68,6 +84,33 @@ WebGPUEngine.prototype.computeDispatch = function (
     bindingsMapping?: ComputeBindingMapping,
     gpuPerfCounter?: WebGPUPerfCounter
 ): void {
+    this._computeDispatch(effect, context, bindings, x, y, z, undefined, undefined, bindingsMapping, gpuPerfCounter);
+};
+
+WebGPUEngine.prototype.computeDispatchIndirect = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    buffer: DataBuffer,
+    offset: number = 0,
+    bindingsMapping?: ComputeBindingMapping,
+    gpuPerfCounter?: WebGPUPerfCounter
+): void {
+    this._computeDispatch(effect, context, bindings, undefined, undefined, undefined, buffer, offset, bindingsMapping, gpuPerfCounter);
+};
+
+WebGPUEngine.prototype._computeDispatch = function (
+    effect: ComputeEffect,
+    context: IComputeContext,
+    bindings: ComputeBindingList,
+    x?: number,
+    y?: number,
+    z?: number,
+    buffer?: DataBuffer,
+    offset?: number,
+    bindingsMapping?: ComputeBindingMapping,
+    gpuPerfCounter?: WebGPUPerfCounter
+): void {
     this._endCurrentRenderPass();
 
     const contextPipeline = effect._pipelineContext as WebGPUComputePipelineContext;
@@ -97,8 +140,12 @@ WebGPUEngine.prototype.computeDispatch = function (
         computePass.setBindGroup(i, bindGroup);
     }
 
-    if (x + y + z > 0) {
-        computePass.dispatchWorkgroups(x, y, z);
+    if (buffer !== undefined) {
+        computePass.dispatchWorkgroupsIndirect(buffer.underlyingResource, <number>offset);
+    } else {
+        if (<number>x + <number>y + <number>z > 0) {
+            computePass.dispatchWorkgroups(<number>x, <number>y, <number>z);
+        }
     }
     computePass.end();
 
@@ -155,6 +202,32 @@ WebGPUEngine.prototype._rebuildComputeEffects = function (): void {
         effect._wasPreviouslyReady = false;
         effect._prepareEffect();
     }
+};
+
+WebGPUEngine.prototype._executeWhenComputeStateIsCompiled = function (
+    pipelineContext: WebGPUComputePipelineContext,
+    action: (messages: Nullable<ComputeCompilationMessages>) => void
+): void {
+    pipelineContext.stage!.module.getCompilationInfo().then((info) => {
+        const compilationMessages: ComputeCompilationMessages = {
+            numErrors: 0,
+            messages: [],
+        };
+        for (const message of info.messages) {
+            if (message.type === "error") {
+                compilationMessages.numErrors++;
+            }
+            compilationMessages.messages.push({
+                type: message.type,
+                text: message.message,
+                line: message.lineNum,
+                column: message.linePos,
+                length: message.length,
+                offset: message.offset,
+            });
+        }
+        action(compilationMessages);
+    });
 };
 
 WebGPUEngine.prototype._deleteComputePipelineContext = function (pipelineContext: IComputePipelineContext): void {

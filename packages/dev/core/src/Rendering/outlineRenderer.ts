@@ -3,7 +3,7 @@ import type { SubMesh } from "../Meshes/subMesh";
 import type { _InstancesBatch } from "../Meshes/mesh";
 import { Mesh } from "../Meshes/mesh";
 import { Scene } from "../scene";
-import type { Engine } from "../Engines/engine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import { Constants } from "../Engines/constants";
 import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
@@ -117,7 +117,7 @@ export class OutlineRenderer implements ISceneComponent {
      */
     public zOffsetUnits = 4; // 4 to account for projection a bit by default
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
     private _savedDepthWrite: boolean;
     private _passIdForDrawWrapper: number[];
 

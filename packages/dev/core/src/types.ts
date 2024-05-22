@@ -108,7 +108,7 @@ export type Member<T, D = null> = D extends 0 ? T : T extends (infer U)[] ? Memb
 /**
  * Flattens an array
  */
-export type FlattenArray<A extends unknown[], D = null> = A extends (infer U)[] ? Member<U, D>[] : A extends unknown[] ? { [K in keyof A]: Member<A[K], D> } : A;
+export type FlattenArray<A extends unknown[], D = null> = A extends (infer U)[] ? Member<Exclude<U, A>, D>[] : A extends unknown[] ? { [K in keyof A]: Member<A[K], D> } : A;
 
 /**
  * Whether T is a tuple

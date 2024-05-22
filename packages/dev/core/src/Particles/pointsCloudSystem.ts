@@ -399,7 +399,7 @@ export class PointsCloudSystem implements IDisposable {
                 this._addParticle(idxPoints, pointsGroup, this._groupCounter, index + i);
                 particle = this.particles[idxPoints];
                 //form a point inside the facet v0, v1, v2;
-                lamda = Scalar.RandomRange(0, 1);
+                lamda = Math.sqrt(Scalar.RandomRange(0, 1));
                 mu = Scalar.RandomRange(0, 1);
                 facetPoint = vertex0.add(vec0.scale(lamda)).add(vec1.scale(lamda * mu));
                 if (isVolume) {
@@ -540,7 +540,6 @@ export class PointsCloudSystem implements IDisposable {
 
     // calculates the point density per facet of a mesh for surface points
     private _calculateDensity(nbPoints: number, positions: FloatArray, indices: IndicesArray): number[] {
-        let density: number[] = new Array<number>();
         let id0: number;
         let id1: number;
         let id2: number;
@@ -558,14 +557,10 @@ export class PointsCloudSystem implements IDisposable {
         const vertex2 = Vector3.Zero();
         const vec0 = Vector3.Zero();
         const vec1 = Vector3.Zero();
-        const vec2 = Vector3.Zero();
+        const normal = Vector3.Zero();
 
-        let a: number; //length of side of triangle
-        let b: number; //length of side of triangle
-        let c: number; //length of side of triangle
-        let p: number; //perimeter of triangle
         let area: number;
-        const areas: number[] = new Array<number>();
+        const cumulativeAreas: number[] = [];
         let surfaceArea: number = 0;
 
         const nbFacets = indices.length / 3;
@@ -589,32 +584,31 @@ export class PointsCloudSystem implements IDisposable {
             vertex2.set(v2X, v2Y, v2Z);
             vertex1.subtractToRef(vertex0, vec0);
             vertex2.subtractToRef(vertex1, vec1);
-            vertex2.subtractToRef(vertex0, vec2);
-            a = vec0.length();
-            b = vec1.length();
-            c = vec2.length();
-            p = (a + b + c) / 2;
-            area = Math.sqrt(p * (p - a) * (p - b) * (p - c));
+            Vector3.CrossToRef(vec0, vec1, normal);
+            area = 0.5 * normal.length();
             surfaceArea += area;
-            areas[index] = area;
-        }
-        let pointCount: number = 0;
-        for (let index = 0; index < nbFacets; index++) {
-            density[index] = Math.floor((nbPoints * areas[index]) / surfaceArea);
-            pointCount += density[index];
+            cumulativeAreas[index] = surfaceArea;
         }
 
-        const diff: number = nbPoints - pointCount;
-        const pointsPerFacet: number = Math.floor(diff / nbFacets);
-        const extraPoints: number = diff % nbFacets;
-
-        if (pointsPerFacet > 0) {
-            density = density.map((x) => x + pointsPerFacet);
+        const density: number[] = new Array<number>(nbFacets);
+        let remainingPoints = nbPoints;
+        for (let index = nbFacets - 1; index > 0; index--) {
+            const cumulativeArea = cumulativeAreas[index];
+            if (cumulativeArea === 0) {
+                // avoiding division by 0 upon degenerate triangles
+                density[index] = 0;
+            } else {
+                const area = cumulativeArea - cumulativeAreas[index - 1];
+                const facetPointsWithFraction = (area / cumulativeArea) * remainingPoints;
+                const floored = Math.floor(facetPointsWithFraction);
+                const fraction = facetPointsWithFraction - floored;
+                const extraPoint = Number(Math.random() < fraction);
+                const facetPoints = floored + extraPoint;
+                density[index] = facetPoints;
+                remainingPoints -= facetPoints;
+            }
         }
-
-        for (let index = 0; index < extraPoints; index++) {
-            density[index] += 1;
-        }
+        density[0] = remainingPoints;
 
         return density;
     }

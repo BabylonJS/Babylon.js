@@ -13,11 +13,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this.reset();
     }
 
-    public get func(): number {
+    public override get func(): number {
         return this._func;
     }
 
-    public set func(value: number) {
+    public override set func(value: number) {
         if (this._func === value) {
             return;
         }
@@ -26,11 +26,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilCompare(value);
     }
 
-    public get funcMask(): number {
+    public override get funcMask(): number {
         return this._funcMask;
     }
 
-    public set funcMask(value: number) {
+    public override set funcMask(value: number) {
         if (this._funcMask === value) {
             return;
         }
@@ -39,11 +39,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilReadMask(value);
     }
 
-    public get opStencilFail(): number {
+    public override get opStencilFail(): number {
         return this._opStencilFail;
     }
 
-    public set opStencilFail(value: number) {
+    public override set opStencilFail(value: number) {
         if (this._opStencilFail === value) {
             return;
         }
@@ -52,11 +52,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilFailOp(value);
     }
 
-    public get opDepthFail(): number {
+    public override get opDepthFail(): number {
         return this._opDepthFail;
     }
 
-    public set opDepthFail(value: number) {
+    public override set opDepthFail(value: number) {
         if (this._opDepthFail === value) {
             return;
         }
@@ -65,11 +65,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilDepthFailOp(value);
     }
 
-    public get opStencilDepthPass(): number {
+    public override get opStencilDepthPass(): number {
         return this._opStencilDepthPass;
     }
 
-    public set opStencilDepthPass(value: number) {
+    public override set opStencilDepthPass(value: number) {
         if (this._opStencilDepthPass === value) {
             return;
         }
@@ -78,11 +78,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilPassOp(value);
     }
 
-    public get mask(): number {
+    public override get mask(): number {
         return this._mask;
     }
 
-    public set mask(value: number) {
+    public override set mask(value: number) {
         if (this._mask === value) {
             return;
         }
@@ -91,11 +91,11 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilWriteMask(value);
     }
 
-    public get enabled(): boolean {
+    public override get enabled(): boolean {
         return this._enabled;
     }
 
-    public set enabled(value: boolean) {
+    public override set enabled(value: boolean) {
         if (this._enabled === value) {
             return;
         }
@@ -104,12 +104,12 @@ export class WebGPUStencilStateComposer extends StencilStateComposer {
         this._cache.setStencilEnabled(value);
     }
 
-    public reset() {
+    public override reset() {
         super.reset();
         this._cache.resetStencilState();
     }
 
-    public apply() {
+    public override apply() {
         const stencilMaterialEnabled = this.stencilMaterial?.enabled;
 
         this.enabled = stencilMaterialEnabled ? this.stencilMaterial!.enabled : this.stencilGlobal.enabled;

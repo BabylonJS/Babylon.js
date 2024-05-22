@@ -14,9 +14,9 @@ import { LineContainerComponent } from "shared-ui-components/lines/lineContainer
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { Logger } from "core/Misc/logger";
 
 interface ICustomPropertyGridComponentProps {
@@ -129,7 +129,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 );
             case InspectableType.Options:
                 return (
-                    <OptionsLineComponent
+                    <OptionsLine
                         key={inspectable.label}
                         label={inspectable.label}
                         target={this.props.target}
@@ -147,7 +147,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
                 return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
             case InspectableType.FileButton:
                 return (
-                    <FileButtonLineComponent
+                    <FileButtonLine
                         key={inspectable.label}
                         label={inspectable.label}
                         onClick={
@@ -164,7 +164,7 @@ export class CustomPropertyGridComponent extends React.Component<ICustomProperty
         return null;
     }
 
-    render() {
+    override render() {
         const inspectables: IInspectable[] = this.props.target.inspectableCustomProperties;
 
         if (!inspectables || inspectables.length === 0) {

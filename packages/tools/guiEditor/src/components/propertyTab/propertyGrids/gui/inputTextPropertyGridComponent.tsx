@@ -10,7 +10,7 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { makeTargetsProxy } from "shared-ui-components/lines/targetsProxy";
-import { ColorLineComponent } from "shared-ui-components/lines/colorLineComponent";
+import { ColorLine } from "shared-ui-components/lines/colorLineComponent";
 
 import fillColorIcon from "shared-ui-components/imgs/fillColorIcon.svg";
 import strokeWeightIcon from "shared-ui-components/imgs/strokeWeightIcon.svg";
@@ -41,7 +41,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
         super(props);
     }
 
-    render() {
+    override render() {
         const { inputTexts, onPropertyChangedObservable, lockObject } = this.props;
         const proxy = makeTargetsProxy(inputTexts, onPropertyChangedObservable);
 
@@ -86,7 +86,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={highlightIcon} label="Highlight Color" />
-                    <ColorLineComponent lockObject={lockObject} label="" target={proxy} propertyName="textHighlightColor" />
+                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="textHighlightColor" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={alphaIcon} label="Highlight Opacity" />
@@ -94,7 +94,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={fillColorIcon} label="Background Color when Focused" />
-                    <ColorLineComponent lockObject={lockObject} label="" target={proxy} propertyName="focusedBackground" />
+                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="focusedBackground" />
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={textPlaceholderIcon} label="Placeholder Text" />
@@ -102,7 +102,7 @@ export class InputTextPropertyGridComponent extends React.Component<IInputTextPr
                 </div>
                 <div className="ge-divider">
                     <IconComponent icon={colorIcon} label="Placeholder Color" />
-                    <ColorLineComponent lockObject={lockObject} label="" target={proxy} propertyName="placeholderColor" />
+                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="placeholderColor" />
                 </div>
             </div>
         );

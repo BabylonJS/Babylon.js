@@ -1,7 +1,7 @@
 import type { Nullable } from "../types";
 import { Constants } from "../Engines/constants";
 import type { IMatrixLike } from "../Maths/math.like";
-import type { ThinEngine } from "../Engines/thinEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { DataBuffer } from "../Buffers/dataBuffer";
 import { Buffer, VertexBuffer } from "../Buffers/buffer";
 import { DrawWrapper } from "../Materials/drawWrapper";
@@ -16,6 +16,9 @@ import "../Engines/Extensions/engine.dynamicBuffer";
 
 import "../Shaders/sprites.fragment";
 import "../Shaders/sprites.vertex";
+import type { ThinEngine } from "../Engines/thinEngine";
+import { Logger } from "core/Misc/logger";
+import { BindLogDepth } from "core/Materials/materialHelper.functions";
 
 /**
  * Class used to render sprites.
@@ -58,10 +61,45 @@ export class SpriteRenderer {
      */
     public disableDepthWrite: boolean = false;
 
+    private _fogEnabled = true;
+
     /**
      * Gets or sets a boolean indicating if the manager must consider scene fog when rendering
      */
-    public fogEnabled = true;
+    public get fogEnabled() {
+        return this._fogEnabled;
+    }
+
+    public set fogEnabled(value: boolean) {
+        if (this._fogEnabled === value) {
+            return;
+        }
+
+        this._fogEnabled = value;
+        this._createEffects();
+    }
+
+    protected _useLogarithmicDepth: boolean;
+
+    /**
+     * In case the depth buffer does not allow enough depth precision for your scene (might be the case in large scenes)
+     * You can try switching to logarithmic depth.
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/logarithmicDepthBuffer
+     */
+    public get useLogarithmicDepth(): boolean {
+        return this._useLogarithmicDepth;
+    }
+
+    public set useLogarithmicDepth(value: boolean) {
+        const fragmentDepthSupported = !!this._scene?.getEngine().getCaps().fragmentDepthSupported;
+
+        if (value && !fragmentDepthSupported) {
+            Logger.Warn("Logarithmic depth has been requested for a sprite renderer on a device that doesn't support it.");
+        }
+
+        this._useLogarithmicDepth = value && fragmentDepthSupported;
+        this._createEffects();
+    }
 
     /**
      * Gets the capacity of the manager
@@ -89,7 +127,7 @@ export class SpriteRenderer {
         this._createEffects();
     }
 
-    private readonly _engine: ThinEngine;
+    private readonly _engine: AbstractEngine;
     private readonly _useVAO: boolean = false;
     private readonly _useInstancing: boolean = false;
     private readonly _scene: Nullable<Scene>;
@@ -104,9 +142,7 @@ export class SpriteRenderer {
     private _spriteBuffer: Nullable<Buffer>;
     private _indexBuffer: DataBuffer;
     private _drawWrapperBase: DrawWrapper;
-    private _drawWrapperFog: DrawWrapper;
     private _drawWrapperDepth: DrawWrapper;
-    private _drawWrapperFogDepth: DrawWrapper;
     private _vertexArrayObject: WebGLVertexArrayObject;
 
     /**
@@ -116,7 +152,7 @@ export class SpriteRenderer {
      * @param epsilon defines the epsilon value to align texture (0.01 by default)
      * @param scene defines the hosting scene
      */
-    constructor(engine: ThinEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
+    constructor(engine: AbstractEngine, capacity: number, epsilon: number = 0.01, scene: Nullable<Scene> = null) {
         this._capacity = capacity;
         this._epsilon = epsilon;
 
@@ -167,54 +203,40 @@ export class SpriteRenderer {
 
     private _createEffects() {
         this._drawWrapperBase?.dispose();
-        this._drawWrapperFog?.dispose();
         this._drawWrapperDepth?.dispose();
-        this._drawWrapperFogDepth?.dispose();
 
         this._drawWrapperBase = new DrawWrapper(this._engine);
-        this._drawWrapperFog = new DrawWrapper(this._engine);
         this._drawWrapperDepth = new DrawWrapper(this._engine, false);
-        this._drawWrapperFogDepth = new DrawWrapper(this._engine, false);
 
         if (this._drawWrapperBase.drawContext) {
             this._drawWrapperBase.drawContext.useInstancing = this._useInstancing;
         }
-        if (this._drawWrapperFog.drawContext) {
-            this._drawWrapperFog.drawContext.useInstancing = this._useInstancing;
-        }
         if (this._drawWrapperDepth.drawContext) {
             this._drawWrapperDepth.drawContext.useInstancing = this._useInstancing;
         }
-        if (this._drawWrapperFogDepth.drawContext) {
-            this._drawWrapperFogDepth.drawContext.useInstancing = this._useInstancing;
-        }
 
-        const defines = this._pixelPerfect ? "#define PIXEL_PERFECT\n" : "";
+        let defines = "";
+
+        if (this._pixelPerfect) {
+            defines += "#define PIXEL_PERFECT\n";
+        }
+        if (this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0 && this._fogEnabled) {
+            defines += "#define FOG\n";
+        }
+        if (this._useLogarithmicDepth) {
+            defines += "#define LOGARITHMICDEPTH\n";
+        }
 
         this._drawWrapperBase.effect = this._engine.createEffect(
             "sprites",
             [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-            ["view", "projection", "textureInfos", "alphaTest"],
+            ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor", "logarithmicDepthConstant"],
             ["diffuseSampler"],
             defines
         );
 
         this._drawWrapperDepth.effect = this._drawWrapperBase.effect;
         this._drawWrapperDepth.materialContext = this._drawWrapperBase.materialContext;
-
-        if (this._scene) {
-            this._drawWrapperFog.effect = this._scene
-                .getEngine()
-                .createEffect(
-                    "sprites",
-                    [VertexBuffer.PositionKind, "options", "offsets", "inverts", "cellInfo", VertexBuffer.ColorKind],
-                    ["view", "projection", "textureInfos", "alphaTest", "vFogInfos", "vFogColor"],
-                    ["diffuseSampler"],
-                    defines + "#define FOG"
-                );
-            this._drawWrapperFogDepth.effect = this._drawWrapperFog.effect;
-            this._drawWrapperFogDepth.materialContext = this._drawWrapperFog.materialContext;
-        }
     }
 
     /**
@@ -236,14 +258,9 @@ export class SpriteRenderer {
             return;
         }
 
-        let drawWrapper = this._drawWrapperBase;
-        let drawWrapperDepth = this._drawWrapperDepth;
-        let shouldRenderFog = false;
-        if (this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0) {
-            drawWrapper = this._drawWrapperFog;
-            drawWrapperDepth = this._drawWrapperFogDepth;
-            shouldRenderFog = true;
-        }
+        const drawWrapper = this._drawWrapperBase;
+        const drawWrapperDepth = this._drawWrapperDepth;
+        const shouldRenderFog = this.fogEnabled && this._scene && this._scene.fogEnabled && this._scene.fogMode !== 0;
 
         const effect = drawWrapper.effect!;
 
@@ -306,11 +323,16 @@ export class SpriteRenderer {
             effect.setColor3("vFogColor", scene.fogColor);
         }
 
+        // Log. depth
+        if (this.useLogarithmicDepth && this._scene) {
+            BindLogDepth(drawWrapper.defines, effect, this._scene);
+        }
+
         if (this._useVAO) {
             if (!this._vertexArrayObject) {
-                this._vertexArrayObject = engine.recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
+                this._vertexArrayObject = (engine as ThinEngine).recordVertexArrayObject(this._vertexBuffers, this._indexBuffer, effect);
             }
-            engine.bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
+            (engine as ThinEngine).bindVertexArrayObject(this._vertexArrayObject, this._indexBuffer);
         } else {
             // VBOs
             engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
@@ -484,7 +506,7 @@ export class SpriteRenderer {
         }
 
         if (this._vertexArrayObject) {
-            this._engine.releaseVertexArrayObject(this._vertexArrayObject);
+            (this._engine as ThinEngine).releaseVertexArrayObject(this._vertexArrayObject);
             (<any>this._vertexArrayObject) = null;
         }
 
@@ -493,8 +515,6 @@ export class SpriteRenderer {
             (<any>this.texture) = null;
         }
         this._drawWrapperBase.dispose();
-        this._drawWrapperFog.dispose();
         this._drawWrapperDepth.dispose();
-        this._drawWrapperFogDepth.dispose();
     }
 }

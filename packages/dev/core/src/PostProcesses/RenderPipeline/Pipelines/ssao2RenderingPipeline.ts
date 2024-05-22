@@ -377,7 +377,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * Get the class name
      * @returns "SSAO2RenderingPipeline"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "SSAO2RenderingPipeline";
     }
 
@@ -385,7 +385,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
      * Removes the internal pipeline assets and detaches the pipeline from the scene cameras
      * @param disableGeometryBufferRenderer Set to true if you want to disable the Geometry Buffer renderer
      */
-    public dispose(disableGeometryBufferRenderer: boolean = false): void {
+    public override dispose(disableGeometryBufferRenderer: boolean = false): void {
         for (let i = 0; i < this._scene.cameras.length; i++) {
             const camera = this._scene.cameras[i];
 
@@ -410,7 +410,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
     // Private Methods
 
     /** @internal */
-    public _rebuild() {
+    public override _rebuild() {
         super._rebuild();
     }
 
@@ -472,6 +472,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
         };
 
         blurFilter.samples = this.textureSamples;
+        blurFilter.autoClear = false;
         return blurFilter;
     }
 
@@ -566,6 +567,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             defines,
             textureType
         );
+        this._ssaoPostProcess.autoClear = false;
 
         this._ssaoPostProcess.onApply = (effect: Effect) => {
             if (!this._scene.activeCamera) {
@@ -635,6 +637,7 @@ export class SSAO2RenderingPipeline extends PostProcessRenderPipeline {
             effect.setVector4("viewport", TmpVectors.Vector4[0].copyFromFloats(viewport.x, viewport.y, viewport.width, viewport.height));
             effect.setTextureFromPostProcessOutput("originalColor", this._originalColorPostProcess);
         };
+        this._ssaoCombinePostProcess.autoClear = false;
         this._ssaoCombinePostProcess.samples = this.textureSamples;
     }
 

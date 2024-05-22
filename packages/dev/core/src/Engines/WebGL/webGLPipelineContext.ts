@@ -3,6 +3,7 @@ import type { Nullable } from "../../types";
 import type { Effect } from "../../Materials/effect";
 import type { IMatrixLike, IVector2Like, IVector3Like, IVector4Like, IColor3Like, IColor4Like, IQuaternionLike } from "../../Maths/math.like";
 import type { ThinEngine } from "../thinEngine";
+import type { AbstractEngine } from "../abstractEngine";
 
 /** @internal */
 export class WebGLPipelineContext implements IPipelineContext {
@@ -45,6 +46,10 @@ export class WebGLPipelineContext implements IPipelineContext {
         if (onCompiled && this.program) {
             onCompiled(this.program);
         }
+    }
+
+    public setEngine(engine: AbstractEngine): void {
+        this.engine = engine as ThinEngine;
     }
 
     public _fillEffectInformation(
@@ -458,7 +463,7 @@ export class WebGLPipelineContext implements IPipelineContext {
      */
     public setMatrix(uniformName: string, matrix: IMatrixLike): void {
         if (this._cacheMatrix(uniformName, matrix)) {
-            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.asArray() as Float32Array)) {
+            if (!this.engine.setMatrices(this._uniforms[uniformName], matrix.asArray())) {
                 this._valueCache[uniformName] = null;
             }
         }

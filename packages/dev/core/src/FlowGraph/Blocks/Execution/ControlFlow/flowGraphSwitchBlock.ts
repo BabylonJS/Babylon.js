@@ -34,7 +34,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
         /**
          * the configuration of the block
          */
-        public config: IFlowGraphSwitchBlockConfiguration<T>
+        public override config: IFlowGraphSwitchBlockConfiguration<T>
     ) {
         super(config);
 
@@ -62,7 +62,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
     /**
      * @returns class name of the block.
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "FGSwitchBlock";
     }
 
@@ -70,7 +70,7 @@ export class FlowGraphSwitchBlock<T> extends FlowGraphExecutionBlock {
      * Serialize the block to a JSON representation.
      * @param serializationObject the object to serialize to.
      */
-    public serialize(serializationObject?: any): void {
+    public override serialize(serializationObject?: any): void {
         super.serialize(serializationObject);
         serializationObject.cases = this.config.cases;
     }

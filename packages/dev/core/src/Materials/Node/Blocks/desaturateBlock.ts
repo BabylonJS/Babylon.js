@@ -24,7 +24,7 @@ export class DesaturateBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "DesaturateBlock";
     }
 
@@ -49,7 +49,7 @@ export class DesaturateBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
@@ -59,11 +59,12 @@ export class DesaturateBlock extends NodeMaterialBlock {
         const tempMax = state._getFreeVariableName("colorMax");
         const tempMerge = state._getFreeVariableName("colorMerge");
 
-        state.compilationString += `float ${tempMin} = min(min(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
-        state.compilationString += `float ${tempMax} = max(max(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
-        state.compilationString += `float ${tempMerge} = 0.5 * (${tempMin} + ${tempMax});\n`;
+        state.compilationString += `${state._declareLocalVar(tempMin, NodeMaterialBlockConnectionPointTypes.Float)} = min(min(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
+        state.compilationString += `${state._declareLocalVar(tempMax, NodeMaterialBlockConnectionPointTypes.Float)} = max(max(${colorName}.x, ${colorName}.y), ${colorName}.z);\n`;
+        state.compilationString += `${state._declareLocalVar(tempMerge, NodeMaterialBlockConnectionPointTypes.Float)} = 0.5 * (${tempMin} + ${tempMax});\n`;
         state.compilationString +=
-            this._declareOutput(output, state) + ` = mix(${colorName}, vec3(${tempMerge}, ${tempMerge}, ${tempMerge}), ${this.level.associatedVariableName});\n`;
+            state._declareOutput(output) +
+            ` = mix(${colorName}, ${state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector3)}(${tempMerge}, ${tempMerge}, ${tempMerge}), ${this.level.associatedVariableName});\n`;
 
         return this;
     }

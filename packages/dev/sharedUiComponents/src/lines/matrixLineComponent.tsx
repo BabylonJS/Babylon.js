@@ -4,7 +4,7 @@ import { Matrix, Quaternion } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 import { Vector4LineComponent } from "./vector4LineComponent";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { OptionsLineComponent } from "./optionsLineComponent";
+import { OptionsLine } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
@@ -52,7 +52,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
         this.state = { value: matrix, mode: this.props.mode || 0, angle: angle };
     }
 
-    shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix; mode: number; angle: number }) {
+    override shouldComponentUpdate(nextProps: IMatrixLineComponentProps, nextState: { value: Matrix; mode: number; angle: number }) {
         const nextPropsValue = nextProps.target[nextProps.propertyName];
 
         if (!nextPropsValue.equals(nextState.value) || this._localChange) {
@@ -115,7 +115,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
         this.setState({ angle: value });
     }
 
-    render() {
+    override render() {
         const modeOptions = [
             { label: "User-defined", value: 0 },
             { label: "Rotation over X axis", value: 1 },
@@ -131,7 +131,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                     </div>
                 </div>
                 <div className="secondLine">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Mode"
                         className="no-right-margin"
                         options={modeOptions}

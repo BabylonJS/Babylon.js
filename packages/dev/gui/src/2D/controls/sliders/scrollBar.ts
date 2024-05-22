@@ -79,15 +79,15 @@ export class ScrollBar extends BaseSlider {
      * Creates a new Slider
      * @param name defines the control name
      */
-    constructor(public name?: string) {
+    constructor(public override name?: string) {
         super(name);
     }
 
-    protected _getTypeName(): string {
+    protected override _getTypeName(): string {
         return "Scrollbar";
     }
 
-    protected _getThumbThickness(): number {
+    protected override _getThumbThickness(): number {
         let thumbThickness = 0;
         if (this._thumbWidth.isPixel) {
             thumbThickness = this._thumbWidth.getValue(this._host);
@@ -101,7 +101,7 @@ export class ScrollBar extends BaseSlider {
         return this._backgroundGradient ? this._backgroundGradient.getCanvasGradient(context) : this._background;
     }
 
-    public _draw(context: ICanvasRenderingContext): void {
+    public override _draw(context: ICanvasRenderingContext): void {
         context.save();
 
         this._applyStates(context);
@@ -141,7 +141,7 @@ export class ScrollBar extends BaseSlider {
     /**
      * @internal
      */
-    protected _updateValueFromPointer(x: number, y: number): void {
+    protected override _updateValueFromPointer(x: number, y: number): void {
         if (this.rotation != 0) {
             this._invertTransformMatrix.transformCoordinates(x, y, this._transformedPosition);
             x = this._transformedPosition.x;
@@ -184,13 +184,13 @@ export class ScrollBar extends BaseSlider {
         this._originY = y;
     }
 
-    public _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
         this._first = true;
 
         return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
     }
 
-    public serialize(serializationObject: any) {
+    public override serialize(serializationObject: any) {
         super.serialize(serializationObject);
 
         if (this.backgroundGradient) {
@@ -199,7 +199,7 @@ export class ScrollBar extends BaseSlider {
         }
     }
 
-    public _parseFromContent(serializationObject: any, host: AdvancedDynamicTexture) {
+    public override _parseFromContent(serializationObject: any, host: AdvancedDynamicTexture) {
         super._parseFromContent(serializationObject, host);
 
         if (serializationObject.backgroundGradient) {

@@ -69,7 +69,7 @@ export class RawCubeTexture extends CubeTexture {
      * Clones the raw cube texture.
      * @returns a new cube texture
      */
-    public clone(): CubeTexture {
+    public override clone(): CubeTexture {
         return SerializationHelper.Clone(() => {
             const scene = this.getScene()!;
             const internalTexture = this._texture!;

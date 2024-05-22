@@ -10,7 +10,7 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { Observable } from "../../Misc/observable";
 import { Tools } from "../../Misc/tools";
 import { ToGammaSpace } from "../../Maths/math.constants";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { HDRFiltering } from "../../Materials/Textures/Filtering/hdrFiltering";
 import { ToHalfFloat } from "../../Misc/textureTools";
 import "../../Engines/Extensions/engine.rawTexture";
@@ -43,13 +43,13 @@ export class HDRCubeTexture extends BaseTexture {
     /**
      * Sets whether or not the texture is blocking during loading.
      */
-    public set isBlocking(value: boolean) {
+    public override set isBlocking(value: boolean) {
         this._isBlocking = value;
     }
     /**
      * Gets whether or not the texture is blocking during loading.
      */
-    public get isBlocking(): boolean {
+    public override get isBlocking(): boolean {
         return this._isBlocking;
     }
 
@@ -117,7 +117,7 @@ export class HDRCubeTexture extends BaseTexture {
      */
     constructor(
         url: string,
-        sceneOrEngine: Scene | ThinEngine,
+        sceneOrEngine: Scene | AbstractEngine,
         size: number,
         noMipmap = false,
         generateHarmonics = true,
@@ -176,7 +176,7 @@ export class HDRCubeTexture extends BaseTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "HDRCubeTexture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "HDRCubeTexture";
     }
 
@@ -297,7 +297,7 @@ export class HDRCubeTexture extends BaseTexture {
         );
     }
 
-    public clone(): HDRCubeTexture {
+    public override clone(): HDRCubeTexture {
         const newTexture = new HDRCubeTexture(this.url, this.getScene() || this._getEngine()!, this._size, this._noMipmap, this._generateHarmonics, this.gammaSpace);
 
         // Base texture
@@ -311,7 +311,7 @@ export class HDRCubeTexture extends BaseTexture {
     }
 
     // Methods
-    public delayLoad(): void {
+    public override delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
@@ -328,7 +328,7 @@ export class HDRCubeTexture extends BaseTexture {
      * Get the texture reflection matrix used to rotate/transform the reflection.
      * @returns the reflection matrix
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         return this._textureMatrix;
     }
 
@@ -351,7 +351,7 @@ export class HDRCubeTexture extends BaseTexture {
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.onLoadObservable.clear();
         super.dispose();
     }
@@ -394,7 +394,7 @@ export class HDRCubeTexture extends BaseTexture {
         return texture;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         if (!this.name) {
             return null;
         }

@@ -5,7 +5,7 @@ import { Scene } from "core/scene";
 import type { PropertyChangedEvent } from "../../../propertyChangedEvent";
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../globalState";
 
@@ -22,7 +22,7 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
         this.state = { mode: this.props.scene.fogMode };
     }
 
-    render() {
+    override render() {
         const scene = this.props.scene;
 
         const fogModeOptions = [
@@ -34,7 +34,7 @@ export class FogPropertyGridComponent extends React.Component<IFogPropertyGridCo
 
         return (
             <div>
-                <OptionsLineComponent
+                <OptionsLine
                     label="Fog mode"
                     options={fogModeOptions}
                     target={scene}

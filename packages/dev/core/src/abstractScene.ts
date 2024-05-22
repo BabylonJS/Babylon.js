@@ -17,6 +17,7 @@ import type { Light } from "./Lights/light";
 import type { Node } from "./node";
 import type { PostProcess } from "./PostProcesses/postProcess";
 import type { Animation } from "./Animations/animation";
+import { RegisterClass } from "./Misc/typeStore";
 
 /**
  * Defines how the parser contract is defined.
@@ -228,3 +229,6 @@ export abstract class AbstractScene {
         return nodes;
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.AbstractScene", AbstractScene);

@@ -41,7 +41,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param initialConfiguration the initial configuration. Defaults to extending the default configuration
      */
     constructor(
-        public containerElement: Element,
+        public override containerElement: Element,
         initialConfiguration: ViewerConfiguration = { extends: "default" }
     ) {
         super(containerElement, initialConfiguration);
@@ -118,7 +118,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * This will be executed when the templates initialize.
      * @returns a promise that will be resolved when the templates are loaded
      */
-    protected _onTemplatesLoaded() {
+    protected override _onTemplatesLoaded() {
         this.showLoadingScreen();
 
         // navbar
@@ -411,7 +411,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         this._updateAnimationSpeed("1.0", paramsObject);
     };
 
-    protected _initVR() {
+    protected override _initVR() {
         if (this.sceneManager.vrHelper) {
             // due to the way the experience helper is exisintg VR, this must be added.
             this.sceneManager.vrHelper.onExitingVR.add(() => {
@@ -519,7 +519,7 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
      * @param model the configuration object (or URL) to load.
      * @returns a promise that will be resolved when the model is loaded
      */
-    public async loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel> {
+    public override async loadModel(model?: string | File | IModelConfiguration): Promise<ViewerModel> {
         if (!model) {
             model = this.configuration.model;
         }
@@ -690,12 +690,12 @@ export class DefaultViewer extends AbstractViewerWithTemplate {
         });
     }
 
-    public dispose() {
+    public override dispose() {
         this.templateManager.dispose();
         super.dispose();
     }
 
-    protected _onConfigurationLoaded(configuration: ViewerConfiguration) {
+    protected override _onConfigurationLoaded(configuration: ViewerConfiguration) {
         super._onConfigurationLoaded(configuration);
 
         this.templateManager = new TemplateManager(this.containerElement);

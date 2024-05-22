@@ -21,6 +21,8 @@ import { TmpVectors, Vector3 } from "core/Maths/math";
 import { GizmoCoordinatesMode } from "core/Gizmos/gizmo";
 import type { Bone } from "core/Bones/bone";
 
+import { setDebugNode } from "../treeNodeDebugger";
+
 interface ISceneTreeItemComponentProps {
     scene: Scene;
     gizmoCamera?: Camera;
@@ -67,7 +69,7 @@ export class SceneTreeItemComponent extends React.Component<
         this.state = { isSelected: false, isInPickingMode: false, gizmoMode: gizmoMode, isInWorldCoodinatesMode: false };
     }
 
-    shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean; isInPickingMode: boolean }) {
+    override shouldComponentUpdate(nextProps: ISceneTreeItemComponentProps, nextState: { isSelected: boolean; isInPickingMode: boolean }) {
         if (nextProps.selectedEntity) {
             if (nextProps.scene === nextProps.selectedEntity) {
                 nextState.isSelected = true;
@@ -88,7 +90,7 @@ export class SceneTreeItemComponent extends React.Component<
         }
     }
 
-    componentDidMount() {
+    override componentDidMount() {
         if (!this.props.onSelectionChangedObservable) {
             return;
         }
@@ -148,7 +150,7 @@ export class SceneTreeItemComponent extends React.Component<
         return undefined;
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         const scene = this.props.scene;
 
         if (this._onPointerObserver) {
@@ -171,6 +173,8 @@ export class SceneTreeItemComponent extends React.Component<
             return;
         }
         const scene = this.props.scene;
+        // Put scene object into window.debugNode
+        setDebugNode(scene);
         this.props.onSelectionChangedObservable.notifyObservers(scene);
     }
 
@@ -454,7 +458,7 @@ export class SceneTreeItemComponent extends React.Component<
         this.setState({ gizmoMode: mode });
     }
 
-    render() {
+    override render() {
         return (
             <div className={this.state.isSelected ? "itemContainer selected" : "itemContainer"}>
                 <div className="sceneNode">

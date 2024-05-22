@@ -41,7 +41,7 @@ export class IndentedTextLineComponent extends React.Component<IIndentedTextLine
         );
     }
 
-    render() {
+    override render() {
         return (
             <div className={"indented " + (this.props.underline ? "textLine underline" : "textLine" + (this.props.additionalClass ? " " + this.props.additionalClass : ""))}>
                 {this.renderContent()}

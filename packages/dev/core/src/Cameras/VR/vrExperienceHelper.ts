@@ -217,7 +217,7 @@ class VRExperienceHelperCameraGazer extends VRExperienceHelperGazer {
         super(scene);
     }
 
-    _getForwardRay(length: number): Ray {
+    override _getForwardRay(length: number): Ray {
         const camera = this._getCamera();
         if (camera) {
             return camera.getForwardRay(length);

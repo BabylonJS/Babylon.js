@@ -1,7 +1,6 @@
 import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -12,6 +11,7 @@ import { TBNBlock } from "../Fragment/TBNBlock";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
 import { Logger } from "core/Misc/logger";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
@@ -64,7 +64,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
      * Initialize the block and prepare the context for build
      * @param state defines the state that will be used for the build
      */
-    public initialize(state: NodeMaterialBuildState) {
+    public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("anisotropicOut");
         state._excludeVariableName("TBN");
     }
@@ -73,7 +73,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "AnisotropyBlock";
     }
 
@@ -210,7 +210,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         return code;
     }
 
-    public prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
         super.prepareDefines(mesh, nodeMaterial, defines);
 
         defines.setValue("ANISOTROPIC", true);
@@ -218,7 +218,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         defines.setValue("ANISOTROPIC_LEGACY", !this.roughness.isConnected);
     }
 
-    public bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
         super.bind(effect, nodeMaterial, mesh);
 
         if (mesh) {
@@ -226,13 +226,13 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.sharedData.blocksWithDefines.push(this);
             state.sharedData.bindableBlocks.push(this);
 
             this._tangentCorrectionFactorName = state._getFreeDefineName("tangentCorrectionFactor");
-            state._emitUniformFromString(this._tangentCorrectionFactorName, "float");
+            state._emitUniformFromString(this._tangentCorrectionFactorName, NodeMaterialBlockConnectionPointTypes.Float);
         }
 
         return this;

@@ -19,7 +19,7 @@ import type { GlobalState } from "../../globalState";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { TriPlanarBlock } from "core/Materials/Node/Blocks/triPlanarBlock";
@@ -42,7 +42,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
+    override UNSAFE_componentWillUpdate(nextProps: IPropertyComponentProps, nextState: { isEmbedded: boolean; loadAsCubeTexture: boolean }) {
         if (nextProps.nodeData.data !== this.props.nodeData.data) {
             const texture = (nextProps.nodeData.data as AnyTexture).texture as BaseTexture;
 
@@ -163,7 +163,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
         }
     }
 
-    render() {
+    override render() {
         let url = "";
         const block = this.props.nodeData.data as NodeMaterialBlock;
 
@@ -291,7 +291,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         />
                     }
                     {texture && texture.updateSamplingMode && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Sampling"
                             options={samplingMode}
                             target={texture}
@@ -304,7 +304,7 @@ export class TexturePropertyTabComponent extends React.Component<IPropertyCompon
                         />
                     )}
                     {texture && isInReflectionMode && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Reflection mode"
                             options={reflectionModeOptions}
                             target={texture}

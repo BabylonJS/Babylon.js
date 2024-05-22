@@ -7,7 +7,7 @@ import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import { _WarnImport } from "../../Misc/devTools";
 import type { IInspectable } from "../../Misc/iInspectable";
-import type { ThinEngine } from "../../Engines/thinEngine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { TimingTools } from "../../Misc/timingTools";
 import { InstantiationTools } from "../../Misc/instantiationTools";
 import { Plane } from "../../Maths/math.plane";
@@ -286,7 +286,7 @@ export class Texture extends BaseTexture {
     /**
      * Are mip maps generated for this texture or not.
      */
-    get noMipmap(): boolean {
+    override get noMipmap(): boolean {
         return this._noMipmap;
     }
 
@@ -319,6 +319,7 @@ export class Texture extends BaseTexture {
     private _cachedVRotationCenter: number = -1;
     private _cachedWRotationCenter: number = -1;
     private _cachedHomogeneousRotationInUVTransform: boolean = false;
+    private _cachedIdentity3x2: boolean = true;
 
     private _cachedReflectionTextureMatrix: Nullable<Matrix> = null;
     private _cachedReflectionUOffset = -1;
@@ -355,11 +356,11 @@ export class Texture extends BaseTexture {
      * Is the texture preventing material to render while loading.
      * If false, a default texture will be used instead of the loading one during the preparation step.
      */
-    public set isBlocking(value: boolean) {
+    public override set isBlocking(value: boolean) {
         this._isBlocking = value;
     }
     @serialize()
-    public get isBlocking(): boolean {
+    public override get isBlocking(): boolean {
         return this._isBlocking;
     }
 
@@ -391,7 +392,7 @@ export class Texture extends BaseTexture {
      */
     constructor(
         url: Nullable<string>,
-        sceneOrEngine?: Nullable<Scene | ThinEngine>,
+        sceneOrEngine?: Nullable<Scene | AbstractEngine>,
         noMipmapOrOptions?: boolean | ITextureCreationOptions,
         invertY?: boolean,
         samplingMode: number = Texture.TRILINEAR_SAMPLINGMODE,
@@ -592,7 +593,7 @@ export class Texture extends BaseTexture {
      * Finish the loading sequence of a texture flagged as delayed load.
      * @internal
      */
-    public delayLoad(): void {
+    public override delayLoad(): void {
         if (this.delayLoadState !== Constants.DELAYLOADSTATE_NOTLOADED) {
             return;
         }
@@ -658,29 +659,11 @@ export class Texture extends BaseTexture {
     }
 
     /**
-     * Checks if the texture has the same transform matrix than another texture
-     * @param texture texture to check against
-     * @returns true if the transforms are the same, else false
-     */
-    public checkTransformsAreIdentical(texture: Nullable<Texture>): boolean {
-        return (
-            texture !== null &&
-            this.uOffset === texture.uOffset &&
-            this.vOffset === texture.vOffset &&
-            this.uScale === texture.uScale &&
-            this.vScale === texture.vScale &&
-            this.uAng === texture.uAng &&
-            this.vAng === texture.vAng &&
-            this.wAng === texture.wAng
-        );
-    }
-
-    /**
      * Get the current texture matrix which includes the requested offsetting, tiling and rotation components.
      * @param uBase The horizontal base offset multiplier (1 by default)
      * @returns the transform matrix of the texture.
      */
-    public getTextureMatrix(uBase = 1): Matrix {
+    public override getTextureMatrix(uBase = 1): Matrix {
         if (
             this.uOffset === this._cachedUOffset &&
             this.vOffset === this._cachedVOffset &&
@@ -767,7 +750,10 @@ export class Texture extends BaseTexture {
             return this._cachedTextureMatrix;
         }
 
-        if (this.optimizeUVAllocation) {
+        const previousIdentity3x2 = this._cachedIdentity3x2;
+        this._cachedIdentity3x2 = this._cachedTextureMatrix.isIdentityAs3x2();
+
+        if (this.optimizeUVAllocation && previousIdentity3x2 !== this._cachedIdentity3x2) {
             // We flag the materials that are using this texture as "texture dirty" because depending on the fact that the matrix is the identity or not, some defines
             // will get different values (see PrepareDefinesForMergedUV), meaning we should regenerate the effect accordingly
             scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
@@ -782,7 +768,7 @@ export class Texture extends BaseTexture {
      * Get the current matrix used to apply reflection. This is useful to rotate an environment texture for instance.
      * @returns The reflection texture transform
      */
-    public getReflectionTextureMatrix(): Matrix {
+    public override getReflectionTextureMatrix(): Matrix {
         const scene = this.getScene();
 
         if (!scene) {
@@ -858,7 +844,7 @@ export class Texture extends BaseTexture {
      * Clones the texture.
      * @returns the cloned texture
      */
-    public clone(): Texture {
+    public override clone(): Texture {
         const options: ITextureCreationOptions = {
             noMipmap: this._noMipmap,
             invertY: this._invertY,
@@ -883,7 +869,7 @@ export class Texture extends BaseTexture {
      * Serialize the texture to a JSON representation we can easily use in the respective Parse function.
      * @returns The JSON representation of the texture
      */
-    public serialize(): any {
+    public override serialize(): any {
         const savedName = this.name;
 
         if (!Texture.SerializeBuffers) {
@@ -932,14 +918,14 @@ export class Texture extends BaseTexture {
      * Get the current class name of the texture useful for serialization or dynamic coding.
      * @returns "Texture"
      */
-    public getClassName(): string {
+    public override getClassName(): string {
         return "Texture";
     }
 
     /**
      * Dispose the texture and release its associated resources.
      */
-    public dispose(): void {
+    public override dispose(): void {
         super.dispose();
 
         this.onLoadObservable.clear();
@@ -1138,6 +1124,7 @@ export class Texture extends BaseTexture {
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param forcedExtension defines the extension to use to pick the right loader
      * @returns the created texture
      */
     public static CreateFromBase64String(
@@ -1150,9 +1137,25 @@ export class Texture extends BaseTexture {
         onLoad: Nullable<() => void> = null,
         onError: Nullable<() => void> = null,
         format: number = Constants.TEXTUREFORMAT_RGBA,
-        creationFlags?: number
+        creationFlags?: number,
+        forcedExtension?: string
     ): Texture {
-        return new Texture("data:" + name, scene, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, data, false, format, undefined, undefined, creationFlags);
+        return new Texture(
+            "data:" + name,
+            scene,
+            noMipmapOrOptions,
+            invertY,
+            samplingMode,
+            onLoad,
+            onError,
+            data,
+            false,
+            format,
+            undefined,
+            undefined,
+            creationFlags,
+            forcedExtension
+        );
     }
 
     /**
@@ -1168,6 +1171,7 @@ export class Texture extends BaseTexture {
      * @param onError define a callback triggered when an error occurred during the loading session
      * @param format define the format of the texture we are trying to load (Engine.TEXTUREFORMAT_RGBA...)
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
+     * @param forcedExtension defines the extension to use to pick the right loader
      * @returns the created texture
      */
     public static LoadFromDataString(
@@ -1181,13 +1185,29 @@ export class Texture extends BaseTexture {
         onLoad: Nullable<() => void> = null,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         format: number = Constants.TEXTUREFORMAT_RGBA,
-        creationFlags?: number
+        creationFlags?: number,
+        forcedExtension?: string
     ): Texture {
         if (name.substr(0, 5) !== "data:") {
             name = "data:" + name;
         }
 
-        return new Texture(name, scene, noMipmapOrOptions, invertY, samplingMode, onLoad, onError, buffer, deleteBuffer, format, undefined, undefined, creationFlags);
+        return new Texture(
+            name,
+            scene,
+            noMipmapOrOptions,
+            invertY,
+            samplingMode,
+            onLoad,
+            onError,
+            buffer,
+            deleteBuffer,
+            format,
+            undefined,
+            undefined,
+            creationFlags,
+            forcedExtension
+        );
     }
 }
 

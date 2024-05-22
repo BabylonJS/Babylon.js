@@ -7,7 +7,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { ParticleSystem } from "core/Particles/particleSystem";
-import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
+import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent";
 
 interface IColorGradientStepGridComponent {
     globalState: GlobalState;
@@ -73,14 +73,14 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
         }
     }
 
-    render() {
+    override render() {
         const gradient = this.props.gradient;
 
         return (
             <div className="gradient-step">
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color1">
-                    <ColorPickerLineComponent
+                    <ColorPickerLine
                         lockObject={this.props.lockObject}
                         value={gradient instanceof Color3Gradient ? gradient.color : gradient.color1}
                         onColorChanged={(color) => {
@@ -90,7 +90,7 @@ export class ColorGradientStepGridComponent extends React.Component<IColorGradie
                 </div>
                 {this.props.host instanceof ParticleSystem && gradient instanceof ColorGradient && (
                     <div className="color2">
-                        <ColorPickerLineComponent
+                        <ColorPickerLine
                             lockObject={this.props.lockObject}
                             value={gradient.color2 ? gradient.color2 : new Color4()}
                             onColorChanged={(color) => {

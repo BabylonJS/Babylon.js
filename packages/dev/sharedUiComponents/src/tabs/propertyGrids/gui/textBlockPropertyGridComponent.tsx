@@ -8,7 +8,7 @@ import { Control } from "gui/2D/controls/control";
 import { LineContainerComponent } from "../../../lines/lineContainerComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
-import { OptionsLineComponent } from "../../../lines/optionsLineComponent";
+import { OptionsLine } from "../../../lines/optionsLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { FloatLineComponent } from "../../../lines/floatLineComponent";
 
@@ -23,7 +23,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
         super(props);
     }
 
-    render() {
+    override render() {
         const textBlock = this.props.textBlock;
 
         const horizontalOptions = [
@@ -56,14 +56,14 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                         propertyName="text"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Horizontal text alignment"
                         options={horizontalOptions}
                         target={textBlock}
                         propertyName="textHorizontalAlignment"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Vertical text alignment"
                         options={verticalOptions}
                         target={textBlock}
@@ -76,7 +76,7 @@ export class TextBlockPropertyGridComponent extends React.Component<ITextBlockPr
                         propertyName="resizeToFit"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Wrapping"
                         options={wrappingOptions}
                         target={textBlock}

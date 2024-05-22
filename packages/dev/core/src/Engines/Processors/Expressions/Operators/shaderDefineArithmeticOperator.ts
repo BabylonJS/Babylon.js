@@ -10,7 +10,7 @@ export class ShaderDefineArithmeticOperator extends ShaderDefineExpression {
         super();
     }
 
-    public isTrue(preprocessors: { [key: string]: string }) {
+    public override isTrue(preprocessors: { [key: string]: string }) {
         let value = preprocessors[this.define];
 
         if (value === undefined) {

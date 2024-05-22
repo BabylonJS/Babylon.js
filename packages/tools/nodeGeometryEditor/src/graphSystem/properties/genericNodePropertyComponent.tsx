@@ -4,7 +4,7 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
@@ -21,7 +21,7 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
@@ -138,7 +138,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         return null;
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock;
 
         const nonConnectedInputs = block.inputs.filter((input) => {
@@ -218,7 +218,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeGeometryBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
@@ -312,7 +312,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 }
                 case PropertyTypeForEdition.List: {
                     components.push(
-                        <OptionsLineComponent
+                        <OptionsLine
                             key={`options-${propertyName}`}
                             label={displayName}
                             options={options.options as IEditablePropertyListOption[]}

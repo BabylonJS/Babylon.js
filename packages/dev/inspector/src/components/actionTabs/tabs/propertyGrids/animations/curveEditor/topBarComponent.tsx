@@ -70,7 +70,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         });
     }
 
-    componentWillUnmount() {
+    override componentWillUnmount() {
         if (this._onFrameSetObserver) {
             this.props.context.onFrameSet.remove(this._onFrameSetObserver);
         }
@@ -85,7 +85,7 @@ export class TopBarComponent extends React.Component<ITopBarComponentProps, ITop
         }
     }
 
-    public render() {
+    public override render() {
         const hasActiveAnimations = this.props.context.activeAnimations.length > 0;
         return (
             <div id="top-bar">

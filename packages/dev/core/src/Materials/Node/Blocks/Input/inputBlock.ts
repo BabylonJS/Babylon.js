@@ -15,7 +15,8 @@ import { Color3, Color4, TmpColors } from "../../../../Maths/math";
 import { AnimatedInputBlockTypes } from "./animatedInputBlockTypes";
 import { Observable } from "../../../../Misc/observable";
 import type { NodeMaterial } from "../../nodeMaterial";
-import { PrecisionDate } from "core/Misc/precisionDate";
+import { PrecisionDate } from "../../../../Misc/precisionDate";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 const remapAttributeName: { [name: string]: string } = {
     position2d: "position",
@@ -46,6 +47,7 @@ export class InputBlock extends NodeMaterialBlock {
     private _valueCallback: () => any;
     private _type: NodeMaterialBlockConnectionPointTypes;
     private _animationType = AnimatedInputBlockTypes.None;
+    private _prefix = "";
 
     /** Gets or set a value used to limit the range of float values */
     public min: number = 0;
@@ -198,7 +200,7 @@ export class InputBlock extends NodeMaterialBlock {
      * @param newName the new name to be given to the node.
      * @returns false if the name is a reserve word, else true.
      */
-    public validateBlockName(newName: string) {
+    public override validateBlockName(newName: string) {
         if (!this.isAttribute) {
             return super.validateBlockName(newName);
         }
@@ -273,10 +275,17 @@ export class InputBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the declaration variable name in the shader
+     */
+    public get declarationVariableName(): string {
+        return this._associatedVariableName;
+    }
+
+    /**
      * Gets or sets the associated variable name in the shader
      */
     public get associatedVariableName(): string {
-        return this._associatedVariableName;
+        return this._prefix + this._associatedVariableName;
     }
 
     public set associatedVariableName(value: string) {
@@ -364,7 +373,7 @@ export class InputBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "InputBlock";
     }
 
@@ -386,6 +395,21 @@ export class InputBlock extends NodeMaterialBlock {
                 }
                 break;
             }
+            case AnimatedInputBlockTypes.MouseInfo: {
+                if (this.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+                    const event = scene._inputManager._originMouseEvent;
+                    if (event) {
+                        const x = event.offsetX;
+                        const y = event.offsetY;
+                        const z = (event.buttons & 1) != 0 ? 1 : 0;
+                        const w = (event.buttons & 2) != 0 ? 1 : 0;
+                        this.value = new Vector4(x, y, z, w);
+                    } else {
+                        this.value = new Vector4(0, 0, 0, 0);
+                    }
+                }
+                break;
+            }
         }
     }
 
@@ -397,7 +421,7 @@ export class InputBlock extends NodeMaterialBlock {
         return `#ifdef ${define}\n`;
     }
 
-    public initialize() {
+    public override initialize() {
         this.associatedVariableName = "";
     }
 
@@ -471,8 +495,8 @@ export class InputBlock extends NodeMaterialBlock {
     private _emit(state: NodeMaterialBuildState, define?: string) {
         // Uniforms
         if (this.isUniform) {
-            if (!this.associatedVariableName) {
-                this.associatedVariableName = state._getFreeVariableName("u_" + this.name);
+            if (!this._associatedVariableName) {
+                this._associatedVariableName = state._getFreeVariableName("u_" + this.name);
             }
 
             if (this.isConstant) {
@@ -480,7 +504,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += this._declareOutput(this.output, state) + ` = ${this._emitConstant(state)};\n`;
+                state._constantDeclaration += state._declareOutput(this.output, true) + ` = ${this._emitConstant(state)};\n`;
                 return;
             }
 
@@ -492,7 +516,13 @@ export class InputBlock extends NodeMaterialBlock {
             if (define) {
                 state._uniformDeclaration += this._emitDefine(define);
             }
-            state._uniformDeclaration += `uniform ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+            const shaderType = state._getShaderType(this.type);
+            if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                state._uniformDeclaration += `uniform ${this._associatedVariableName}: ${shaderType};\n`;
+                this._prefix = "uniforms.";
+            } else {
+                state._uniformDeclaration += `uniform ${shaderType} ${this.associatedVariableName};\n`;
+            }
             if (define) {
                 state._uniformDeclaration += `#endif\n`;
             }
@@ -525,9 +555,12 @@ export class InputBlock extends NodeMaterialBlock {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
                     if (attributeAsUniform[this.name]) {
-                        state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                        state._emitUniformFromString(this.associatedVariableName, this.type, define);
+                        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                            this._prefix = `vertexInputs.`;
+                        }
                     } else {
-                        state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                        state._emitVaryingFromString(this.associatedVariableName, this.type, define);
                     }
                 } else {
                     this._emit(state._vertexState, define);
@@ -543,15 +576,20 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
-                    state._emitUniformFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    state._emitUniformFromString(this.associatedVariableName, this.type, define);
                 } else {
-                    state._emitVaryingFromString(this.associatedVariableName, state._getGLType(this.type), define);
+                    state._emitVaryingFromString(this.associatedVariableName, this.type, define);
                 }
             } else {
                 if (define) {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
-                state._attributeDeclaration += `attribute ${state._getGLType(this.type)} ${this.associatedVariableName};\n`;
+                if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    state._attributeDeclaration += `attribute ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
+                    this._prefix = `vertexInputs.`;
+                } else {
+                    state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.associatedVariableName};\n`;
+                }
                 if (define) {
                     state._attributeDeclaration += `#endif\n`;
                 }
@@ -567,7 +605,7 @@ export class InputBlock extends NodeMaterialBlock {
             return;
         }
 
-        const variableName = this.associatedVariableName;
+        const variableName = this._associatedVariableName;
         switch (this._systemValue) {
             case NodeMaterialSystemValues.World:
                 effect.setMatrix(variableName, world);
@@ -589,7 +627,7 @@ export class InputBlock extends NodeMaterialBlock {
             return;
         }
 
-        const variableName = this.associatedVariableName;
+        const variableName = this._associatedVariableName;
         if (this._systemValue) {
             switch (this._systemValue) {
                 case NodeMaterialSystemValues.World:
@@ -680,7 +718,7 @@ export class InputBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         if (this.isUniform || this.isSystemValue) {
@@ -690,7 +728,7 @@ export class InputBlock extends NodeMaterialBlock {
         this._emit(state);
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         const variableName = this._codeVariableName;
 
         if (this.isAttribute) {
@@ -764,13 +802,13 @@ export class InputBlock extends NodeMaterialBlock {
         return super._dumpPropertiesCode();
     }
 
-    public dispose() {
+    public override dispose() {
         this.onValueChangedObservable.clear();
 
         super.dispose();
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.type = this.type;
@@ -799,7 +837,7 @@ export class InputBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         this._mode = serializationObject.mode;
         super._deserialize(serializationObject, scene, rootUrl);
 

@@ -1,4 +1,4 @@
-import type { Engine } from "../../Engines/engine";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { RawTexture } from "../Textures/rawTexture";
 import { MaterialPluginBase } from "../materialPluginBase";
 import type { Scene } from "../../scene";
@@ -118,7 +118,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
 
     private _cameraFacing: boolean;
 
-    private _engine: Engine;
+    private _engine: AbstractEngine;
 
     /**
      * Creates a new instance of the GreasedLinePluginMaterial
@@ -182,7 +182,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader attributes
      * @param attributes array which will be filled with the attributes
      */
-    getAttributes(attributes: string[]) {
+    override getAttributes(attributes: string[]) {
         attributes.push("grl_offsets");
         attributes.push("grl_widths");
         attributes.push("grl_colorPointers");
@@ -199,7 +199,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader samplers
      * @param samplers
      */
-    getSamplers(samplers: string[]) {
+    override getSamplers(samplers: string[]) {
         samplers.push("grl_colors");
     }
 
@@ -207,7 +207,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader textures
      * @param activeTextures array which will be filled with the textures
      */
-    public getActiveTextures(activeTextures: BaseTexture[]): void {
+    public override getActiveTextures(activeTextures: BaseTexture[]): void {
         if (this.colorsTexture) {
             activeTextures.push(this.colorsTexture);
         }
@@ -217,9 +217,10 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the shader uniforms
      * @returns uniforms
      */
-    getUniforms() {
+    override getUniforms() {
         const ubo = [
             { name: "grl_singleColor", size: 3, type: "vec3" },
+            { name: "grl_textureSize", size: 2, type: "vec2" },
             { name: "grl_dashOptions", size: 4, type: "vec4" },
             { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
         ];
@@ -237,6 +238,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 : "",
             fragment: `
                 uniform vec4 grl_dashOptions;
+                uniform vec2 grl_textureSize;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
                 uniform vec3 grl_singleColor;
                 `,
@@ -253,7 +255,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Bind the uniform buffer
      * @param uniformBuffer
      */
-    bindForSubMesh(uniformBuffer: UniformBuffer) {
+    override bindForSubMesh(uniformBuffer: UniformBuffer) {
         if (this._cameraFacing) {
             const activeCamera = this._scene.activeCamera;
 
@@ -289,8 +291,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         if (this._color) {
             uniformBuffer.updateColor3("grl_singleColor", this._color);
         }
-
-        uniformBuffer.setTexture("grl_colors", this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture);
+        const texture = this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture;
+        uniformBuffer.setTexture("grl_colors", texture);
+        uniformBuffer.updateFloat2("grl_textureSize", texture?.getSize().width ?? 1, texture?.getSize().height ?? 1);
     }
 
     /**
@@ -299,7 +302,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param _scene
      * @param _mesh
      */
-    prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
+    override prepareDefines(defines: MaterialGreasedLineDefines, _scene: Scene, _mesh: AbstractMesh) {
         defines.GREASED_LINE_HAS_COLOR = !!this.color && !this.useColors;
         defines.GREASED_LINE_SIZE_ATTENUATION = this._sizeAttenuation;
         defines.GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE = this._colorsDistributionType === GreasedLineMeshColorDistributionType.COLOR_DISTRIBUTION_TYPE_LINE;
@@ -311,7 +314,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Get the class name
      * @returns class name
      */
-    getClassName() {
+    override getClassName() {
         return GreasedLinePluginMaterial.GREASED_LINE_MATERIAL_NAME;
     }
 
@@ -320,7 +323,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param shaderType vertex/fragment
      * @returns shader code
      */
-    getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
+    override getCustomCode(shaderType: string): Nullable<{ [pointName: string]: string }> {
         if (shaderType === "vertex") {
             const obj: any = {
                 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -328,7 +331,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 attribute float grl_widths;
                 attribute vec3 grl_offsets;
                 attribute float grl_colorPointers;
-
                 varying float grlCounters;
                 varying float grlColorPointer;
 
@@ -458,7 +460,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             #ifdef GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE
                                 vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
                             #else
-                                vec4 grlColor = texture2D(grl_colors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
+                                vec2 lookup = vec2(fract(grlColorPointer / grl_textureSize.x), 1.0 - floor(grlColorPointer / grl_textureSize.x) / max(grl_textureSize.y - 1.0, 1.0));
+                                vec4 grlColor = texture2D(grl_colors, lookup, 0.0);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;
@@ -480,7 +483,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     /**
      * Disposes the plugin material.
      */
-    public dispose(): void {
+    public override dispose(): void {
         this.colorsTexture?.dispose();
         super.dispose();
     }
@@ -636,7 +639,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Serializes this plugin material
      * @returns serializationObjec
      */
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         const greasedLineMaterialOptions: GreasedLineMaterialOptions = {
@@ -668,7 +671,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * @param scene scene
      * @param rootUrl root url for textures
      */
-    public parse(source: any, scene: Scene, rootUrl: string): void {
+    public override parse(source: any, scene: Scene, rootUrl: string): void {
         super.parse(source, scene, rootUrl);
         const greasedLineMaterialOptions = <GreasedLineMaterialOptions>source.greasedLineMaterialOptions;
 
@@ -702,7 +705,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
      * Makes a duplicate of the current configuration into another one.
      * @param plugin define the config where to copy the info
      */
-    public copyTo(plugin: MaterialPluginBase): void {
+    public override copyTo(plugin: MaterialPluginBase): void {
         const dest = plugin as GreasedLinePluginMaterial;
 
         dest.colorsTexture?.dispose();

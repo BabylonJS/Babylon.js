@@ -94,7 +94,7 @@ export class GradientBlock extends NodeMaterialBlock {
      * Gets the current class name
      * @returns the class name
      */
-    public getClassName() {
+    public override getClassName() {
         return "GradientBlock";
     }
 
@@ -112,26 +112,27 @@ export class GradientBlock extends NodeMaterialBlock {
         return this._outputs[0];
     }
 
-    private _writeColorConstant(index: number) {
+    private _writeColorConstant(index: number, vec3: string) {
         const step = this.colorSteps[index];
-        return `vec3(${step.color.r}, ${step.color.g}, ${step.color.b})`;
+        return `${vec3}(${step.color.r}, ${step.color.g}, ${step.color.b})`;
     }
 
-    protected _buildBlock(state: NodeMaterialBuildState) {
+    protected override _buildBlock(state: NodeMaterialBuildState) {
         super._buildBlock(state);
 
         const output = this._outputs[0];
+        const vec3 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector3);
 
         if (!this.colorSteps.length || !this.gradient.connectedPoint) {
-            state.compilationString += this._declareOutput(output, state) + ` = vec3(0., 0., 0.);\n`;
+            state.compilationString += state._declareOutput(output) + ` = ${vec3}(0., 0., 0.);\n`;
             return;
         }
 
         const tempColor = state._getFreeVariableName("gradientTempColor");
         const tempPosition = state._getFreeVariableName("gradientTempPosition");
 
-        state.compilationString += `vec3 ${tempColor} = ${this._writeColorConstant(0)};\n`;
-        state.compilationString += `float ${tempPosition};\n`;
+        state.compilationString += `${state._declareLocalVar(tempColor, NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this._writeColorConstant(0, vec3)};\n`;
+        state.compilationString += `${state._declareLocalVar(tempPosition, NodeMaterialBlockConnectionPointTypes.Float)};\n`;
 
         let gradientSource = this.gradient.associatedVariableName;
 
@@ -145,14 +146,14 @@ export class GradientBlock extends NodeMaterialBlock {
             state.compilationString += `${tempPosition} = clamp((${gradientSource} - ${state._emitFloat(previousStep.step)}) / (${state._emitFloat(
                 step.step
             )} -  ${state._emitFloat(previousStep.step)}), 0.0, 1.0) * step(${state._emitFloat(index)}, ${state._emitFloat(this.colorSteps.length - 1)});\n`;
-            state.compilationString += `${tempColor} = mix(${tempColor}, ${this._writeColorConstant(index)}, ${tempPosition});\n`;
+            state.compilationString += `${tempColor} = mix(${tempColor}, ${this._writeColorConstant(index, vec3)}, ${tempPosition});\n`;
         }
-        state.compilationString += this._declareOutput(output, state) + ` = ${tempColor};\n`;
+        state.compilationString += state._declareOutput(output) + ` = ${tempColor};\n`;
 
         return this;
     }
 
-    public serialize(): any {
+    public override serialize(): any {
         const serializationObject = super.serialize();
 
         serializationObject.colorSteps = [];
@@ -171,7 +172,7 @@ export class GradientBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.colorSteps.length = 0;
@@ -181,7 +182,7 @@ export class GradientBlock extends NodeMaterialBlock {
         }
     }
 
-    protected _dumpPropertiesCode() {
+    protected override _dumpPropertiesCode() {
         let codeString = super._dumpPropertiesCode();
 
         codeString += `${this._codeVariableName}.colorSteps = [];\n`;

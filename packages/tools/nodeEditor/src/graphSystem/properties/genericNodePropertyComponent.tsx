@@ -10,7 +10,7 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { Vector2LineComponent } from "shared-ui-components/lines/vector2LineComponent";
 import type { GlobalState } from "../../globalState";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
@@ -20,7 +20,7 @@ export class GenericPropertyComponent extends React.Component<IPropertyComponent
         super(props);
     }
 
-    render() {
+    override render() {
         return (
             <>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
@@ -35,7 +35,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
         super(props);
     }
 
-    render() {
+    override render() {
         const targetOptions = [
             { label: "Neutral", value: NodeMaterialBlockTargets.Neutral },
             { label: "Vertex", value: NodeMaterialBlockTargets.Vertex },
@@ -65,7 +65,7 @@ export class GeneralPropertyTabComponent extends React.Component<IPropertyCompon
                         />
                     )}
                     {block._originalTargetIsNeutral && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Target"
                             options={targetOptions}
                             target={block}
@@ -123,7 +123,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
         }
     }
 
-    render() {
+    override render() {
         const block = this.props.nodeData.data as NodeMaterialBlock,
             propStore: IPropertyDescriptionForEdition[] = (block as any)._propStore;
 
@@ -217,7 +217,7 @@ export class GenericPropertyTabComponent extends React.Component<IPropertyCompon
                 }
                 case PropertyTypeForEdition.List: {
                     components.push(
-                        <OptionsLineComponent
+                        <OptionsLine
                             key={`options-${propertyName}`}
                             label={displayName}
                             options={options.options as IEditablePropertyListOption[]}
