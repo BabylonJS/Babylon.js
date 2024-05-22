@@ -199,7 +199,10 @@ export class NativeEngine extends Engine {
     // This must match the protocol version in NativeEngine.cpp
     private static readonly PROTOCOL_VERSION = 8;
 
-    private readonly _engine: INativeEngine = new _native.Engine();
+    private readonly _engine: INativeEngine = new _native.Engine({
+        nonFloatVertexBuffers: true,
+    });
+
     private readonly _camera: Nullable<INativeCamera> = _native.Camera ? new _native.Camera() : null;
 
     private readonly _commandBufferEncoder = new CommandBufferEncoder(this._engine);
