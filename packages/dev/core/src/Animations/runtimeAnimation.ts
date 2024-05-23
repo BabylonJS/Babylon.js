@@ -442,8 +442,9 @@ export class RuntimeAnimation {
     /**
      * Move the current animation to a given frame
      * @param frame defines the frame to move to
+     * @param weight defines the weight to apply to the animation (-1.0 by default)
      */
-    public goToFrame(frame: number): void {
+    public goToFrame(frame: number, weight = -1): void {
         const keys = this._animation.getKeys();
 
         if (frame < keys[0].frame) {
@@ -466,7 +467,7 @@ export class RuntimeAnimation {
         this._currentFrame = frame;
         const currentValue = this._animation._interpolate(frame, this._animationState);
 
-        this.setValue(currentValue, -1);
+        this.setValue(currentValue, weight);
     }
 
     /**

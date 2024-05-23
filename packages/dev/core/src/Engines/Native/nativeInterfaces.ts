@@ -100,9 +100,15 @@ export interface INativeEngine {
 }
 
 /** @internal */
+interface INativeEngineInfo {
+    version: string;
+    nonFloatVertexBuffers: true;
+}
+
+/** @internal */
 interface INativeEngineConstructor {
     prototype: INativeEngine;
-    new (): INativeEngine;
+    new (info: INativeEngineInfo): INativeEngine;
 
     readonly PROTOCOL_VERSION: number;
 

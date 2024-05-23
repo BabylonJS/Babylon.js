@@ -1,5 +1,5 @@
 import type { Scene } from "core/scene";
-import type { DeepImmutable, Nullable } from "core/types";
+import type { DeepImmutable, FloatArray, Nullable } from "core/types";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { SubMesh } from "../subMesh";
 import type { AbstractMesh } from "../abstractMesh";
@@ -23,7 +23,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _material: Nullable<GaussianSplattingMaterial> = null;
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
-    private _lastProj: DeepImmutable<Float32Array | number[]>;
+    private _lastProj: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;

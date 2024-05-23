@@ -567,11 +567,11 @@ export class SolidParticleSystem implements IDisposable {
         positions: number[],
         meshInd: IndicesArray,
         indices: number[],
-        meshUV: number[] | Float32Array,
+        meshUV: FloatArray,
         uvs: number[],
-        meshCol: number[] | Float32Array,
+        meshCol: FloatArray,
         colors: number[],
-        meshNor: number[] | Float32Array,
+        meshNor: FloatArray,
         normals: number[],
         idx: number,
         idxInShape: number,
@@ -702,7 +702,7 @@ export class SolidParticleSystem implements IDisposable {
      * @returns a vector3 array
      * @internal
      */
-    protected _posToShape(positions: number[] | Float32Array): Vector3[] {
+    protected _posToShape(positions: FloatArray): Vector3[] {
         const shape = [];
         for (let i = 0; i < positions.length; i += 3) {
             shape.push(Vector3.FromArray(positions, i));
@@ -716,7 +716,7 @@ export class SolidParticleSystem implements IDisposable {
      * @returns a shapeUV array
      * @internal
      */
-    protected _uvsToShapeUV(uvs: number[] | Float32Array): number[] {
+    protected _uvsToShapeUV(uvs: FloatArray): number[] {
         const shapeUV = [];
         if (uvs) {
             for (let i = 0; i < uvs.length; i++) {
@@ -1009,9 +1009,9 @@ export class SolidParticleSystem implements IDisposable {
         modelShape: ModelShape,
         shape: Vector3[],
         meshInd: IndicesArray,
-        meshUV: number[] | Float32Array,
-        meshCol: number[] | Float32Array,
-        meshNor: number[] | Float32Array,
+        meshUV: FloatArray,
+        meshCol: FloatArray,
+        meshNor: FloatArray,
         bbInfo: Nullable<BoundingInfo>,
         storage: Nullable<[]>,
         options: any
