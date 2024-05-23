@@ -87,6 +87,11 @@ export class NodeMaterialBuildState {
         return this.sharedData.nodeMaterial.shaderLanguage;
     }
 
+    /** Gets suffix to add behind type casting */
+    public get fSuffix() {
+        return this.shaderLanguage === ShaderLanguage.WGSL ? "f" : "";
+    }
+
     /**
      * Finalize the compilation strings
      * @param state defines the current compilation state

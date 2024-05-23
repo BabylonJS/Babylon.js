@@ -60,13 +60,12 @@ export class BiPlanarBlock extends TriPlanarBlock {
         let ivec3 = "ivec3";
         let dpdxFunc = "dFdx";
         let dpdyFunc = "dFdy";
-        let suffix = "";
+        const suffix = state.fSuffix;
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             ivec3 = "vec3<i32>";
             dpdxFunc = "dpdx";
             dpdyFunc = "dpdy";
-            suffix = "f";
         }
 
         state.compilationString += `
