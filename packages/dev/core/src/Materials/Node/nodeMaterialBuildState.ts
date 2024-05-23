@@ -631,6 +631,10 @@ export class NodeMaterialBuildState {
         // Remove voidnull
         code = code.replace(/\s->\svoidnull/g, "");
 
+        // Derivatives
+        code = code.replace(/dFdx/g, "dpdx");
+        code = code.replace(/dFdy/g, "dpdy");
+
         return code;
     }
 
