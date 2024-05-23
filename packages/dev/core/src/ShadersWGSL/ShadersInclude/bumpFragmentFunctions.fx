@@ -32,7 +32,7 @@
 		var keepWorking: bool = true;
 		for (var i: i32 = 0; i < iMaxSamples; i++)
 		{
-			currSampledHeight = texture2D(bumpSampler, texCoord + vCurrOffset).w;
+			currSampledHeight = textureSample(bump, bumpSampler, texCoord + vCurrOffset).w;
 
 			// Test if the view ray has intersected the surface.
 			if (!keepWorking)
@@ -68,7 +68,7 @@
 	fn parallaxOffset(viewDir: vec3f, heightScale: f32) -> vec2f
 	{
 		// calculate amount of offset for Parallax Mapping With Offset Limiting
-		var height: f32 = texture2D(bumpSampler, vBumpUV).w;
+		var height: f32 = textureSample(bump, bumpSampler, vBumpUV).w;
 		var texCoordOffset: vec2f = heightScale * viewDir.xy * height;
 	#ifdef PARALLAX_RHS
 		return texCoordOffset;

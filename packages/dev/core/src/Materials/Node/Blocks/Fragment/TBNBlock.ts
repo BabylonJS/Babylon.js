@@ -10,6 +10,7 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 /**
  * Block used to implement TBN matrix
@@ -179,28 +180,34 @@ export class TBNBlock extends NodeMaterialBlock {
         const row0 = this.row0;
         const row1 = this.row1;
         const row2 = this.row2;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        const mat3 = isWebGPU ? "mat3x3f" : "mat3";
+        const fSuffix = isWebGPU ? "f" : "";
 
         // Fragment
         if (state.target === NodeMaterialBlockTargets.Fragment) {
             state.compilationString += `
                 // ${this.name}
-                vec3 tbnNormal = normalize(${normal.associatedVariableName}).xyz;
-                vec3 tbnTangent = normalize(${tangent.associatedVariableName}.xyz);
-                vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${tangent.associatedVariableName}.w;
-                mat3 ${TBN.associatedVariableName} = mat3(${world.associatedVariableName}) * mat3(tbnTangent, tbnBitangent, tbnNormal);
+                ${state._declareLocalVar("tbnNormal", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${normal.associatedVariableName}).xyz;
+                ${state._declareLocalVar("tbnTangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${tangent.associatedVariableName}.xyz);
+                ${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${tangent.associatedVariableName}.w;
+                ${isWebGPU ? "var" : "mat3"} ${TBN.associatedVariableName} = ${mat3}(${world.associatedVariableName}[0].xyz, ${world.associatedVariableName}[1].xyz, ${world.associatedVariableName}[2].xyz) * ${mat3}(tbnTangent, tbnBitangent, tbnNormal);
             `;
 
             if (row0.hasEndpoints) {
                 state.compilationString +=
-                    state._declareOutput(row0) + ` = vec3(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\n`;
+                    state._declareOutput(row0) +
+                    ` = vec3${fSuffix}(${TBN.associatedVariableName}[0][0], ${TBN.associatedVariableName}[0][1], ${TBN.associatedVariableName}[0][2]);\n`;
             }
             if (row1.hasEndpoints) {
                 state.compilationString +=
-                    state._declareOutput(row1) + ` = vec3(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\n`;
+                    state._declareOutput(row1) +
+                    ` = vec3${fSuffix}(${TBN.associatedVariableName}[1[0], ${TBN.associatedVariableName}[1][1], ${TBN.associatedVariableName}[1][2]);\n`;
             }
             if (row2.hasEndpoints) {
                 state.compilationString +=
-                    state._declareOutput(row2) + ` = vec3(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\n`;
+                    state._declareOutput(row2) +
+                    ` = vec3${fSuffix}(${TBN.associatedVariableName}[2][0], ${TBN.associatedVariableName}[2][1], ${TBN.associatedVariableName}[2][2]);\n`;
             }
 
             state.sharedData.blocksWithDefines.push(this);

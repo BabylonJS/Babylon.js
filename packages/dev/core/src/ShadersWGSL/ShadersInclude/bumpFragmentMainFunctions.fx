@@ -84,10 +84,10 @@
 	fn cotangent_frame(normal: vec3f, p: vec3f, uv: vec2f, tangentSpaceParams: vec2f) -> mat3x3f
 	{
 		// get edge vectors of the pixel triangle
-		var dp1: vec3f = dFdx(p);
-		var dp2: vec3f = dFdy(p);
-		var duv1: vec2f = dFdx(uv);
-		var duv2: vec2f = dFdy(uv);
+		var dp1: vec3f = dpdx(p);
+		var dp2: vec3f = dpdy(p);
+		var duv1: vec2f = dpdx(uv);
+		var duv2: vec2f = dpdy(uv);
 
 		// solve the linear system
 		var dp2perp: vec3f = cross(dp2, normal);
@@ -101,7 +101,7 @@
 
 		// construct a scale-invariant frame
 		var det: f32 = max(dot(tangent, tangent), dot(bitangent, bitangent));
-		var invmax: f32 = det == 0.0 ? 0.0 : inverseSqrt(det);
+		var invmax: f32 = select(inverseSqrt(det), 0.0, det == 0.0);
 		return  mat3x3f(tangent * invmax, bitangent * invmax, normal);
 	}
 #endif
