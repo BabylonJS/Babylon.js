@@ -9,6 +9,14 @@ interface OffscreenCanvasEventMap {
     contextrestored: Event;
 }
 
+interface ImageEncodeOptions {
+    quality?: number;
+    type?: string;
+}
+
+type OffscreenRenderingContextId = "2d" | "bitmaprenderer" | "webgl" | "webgl2" | "webgpu";
+type OffscreenRenderingContext = OffscreenCanvasRenderingContext2D | ImageBitmapRenderingContext | WebGLRenderingContext | WebGL2RenderingContext;
+
 interface OffscreenCanvas extends EventTarget {
     /**
      * These attributes return the dimensions of the OffscreenCanvas object's bitmap.
