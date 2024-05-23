@@ -106,7 +106,7 @@ export class HeightToNormalBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
-        const fPrefix = isWebGPU ? "f" : "";
+        const fPrefix = state.fSuffix;
 
         if (!this.generateInWorldSpace && !this.worldTangent.isConnected) {
             Logger.Error(`You must connect the 'worldTangent' input of the ${this.name} block!`);
