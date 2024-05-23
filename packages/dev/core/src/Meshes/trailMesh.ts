@@ -14,6 +14,36 @@ Mesh._TrailMeshParser = (parsedMesh: any, scene: Scene) => {
 };
 
 /**
+ * Options to be used when creating a trail mesh
+ */
+export interface ITrailMeshOptions {
+    /**
+     * diameter of trailing mesh (default: 1)
+     */
+    diameter?: number;
+    /**
+     * length of trailing mesh (default: 60)
+     */
+    length?: number;
+    /**
+     * segments of trailing mesh (default: length)
+     */
+    segments?: number;
+    /**
+     * sections of trailing mesh (default: 4)
+     */
+    sections?: number;
+    /**
+     * tapers the trailing mesh (default: false)
+     */
+    doNotTaper?: boolean;
+    /**
+     * automatically start trailing mesh. (default: true)
+     */
+    autoStart: boolean;
+}
+
+/**
  * Class used to create a trail following a mesh
  */
 export class TrailMesh extends Mesh {
@@ -34,41 +64,45 @@ export class TrailMesh extends Mesh {
     private _beforeRenderObserver: Nullable<Observer<Scene>>;
 
     /**
-     * Creates a new TrailMesh.
+     * Constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
      * @param generator The mesh or transform node to generate a trail.
      * @param scene The scene to add this mesh to.
-     * @param options defines the options used to create the mesh
-     * * diameter Diameter of trailing mesh. Default is 1.
-     * * length Length of trailing mesh. Default is 60.
-     * * segments Segments of trailing mesh. Default is length.
-     * * sections Sections of trailing mesh. Default is 4.
-     * * doNotTaper Tapers the trailing mesh. Default false.
+     * @param diameter Diameter of trailing mesh. Default is 1.
+     * @param length Length of trailing mesh. Default is 60.
      * @param autoStart Automatically start trailing mesh. Default true.
      */
-    constructor(
-        name: string,
-        generator: TransformNode,
-        scene?: Scene,
-        options: {
-            diameter?: number;
-            length?: number;
-            segments?: number;
-            sections?: number;
-            doNotTaper?: boolean;
-        } = {},
-        autoStart: boolean = true
-    ) {
+    constructor(name: string, generator: TransformNode, scene?: Scene, diameter?: number, length?: number, autoStart?: boolean);
+
+    /**
+     * Constructor
+     * @param name The value used by scene.getMeshByName() to do a lookup.
+     * @param generator The mesh or transform node to generate a trail.
+     * @param scene The scene to add this mesh to.
+     * @param options defines the options used to create the mesh.
+     */
+    constructor(name: string, generator: TransformNode, scene?: Scene, options?: ITrailMeshOptions);
+
+    /** @internal */
+    constructor(name: string, generator: TransformNode, scene?: Scene, diameterOrOptions?: number | ITrailMeshOptions, length: number = 60, autoStart: boolean = true) {
         super(name, scene);
 
         this._running = false;
-        this._autoStart = autoStart;
         this._generator = generator;
-        this.diameter = options.diameter || 1;
-        this._length = options.length || 60;
-        this._segments = options.segments ? (options.segments > this._length ? this._length : options.segments) : this._length;
-        this._sectionPolygonPointsCount = options.sections || 4;
-        this._doNotTaper = options.doNotTaper || false;
+
+        if (typeof diameterOrOptions === "object" && diameterOrOptions !== null) {
+            this.diameter = diameterOrOptions.diameter || 1;
+            this._length = diameterOrOptions.length || 60;
+            this._segments = diameterOrOptions.segments ? (diameterOrOptions.segments > this._length ? this._length : diameterOrOptions.segments) : this._length;
+            this._sectionPolygonPointsCount = diameterOrOptions.sections || 4;
+            this._doNotTaper = diameterOrOptions.doNotTaper || false;
+            this._autoStart = diameterOrOptions.autoStart || true;
+        } else {
+            this.diameter = diameterOrOptions || 1;
+            this._length = length;
+            this._autoStart = autoStart;
+        }
+
         this._sectionVectors = [];
         this._sectionNormalVectors = [];
         for (let i: number = 0; i <= this._sectionPolygonPointsCount; i++) {
@@ -203,8 +237,9 @@ export class TrailMesh extends Mesh {
             segments: this._segments,
             sections: this._sectionPolygonPointsCount,
             doNotTaper: this._doNotTaper,
+            autoStart: this._autoStart,
         };
-        return new TrailMesh(name, newGenerator ?? this._generator, this.getScene(), options, this._autoStart);
+        return new TrailMesh(name, newGenerator ?? this._generator, this.getScene(), options);
     }
 
     /**
@@ -236,7 +271,8 @@ export class TrailMesh extends Mesh {
             segments: parsedMesh._segments,
             sections: parsedMesh._sectionPolygonPointsCount,
             doNotTaper: parsedMesh._doNotTaper,
+            autoStart: parsedMesh._autoStart,
         };
-        return new TrailMesh(parsedMesh.name, generator, scene, options, parsedMesh._autoStart);
+        return new TrailMesh(parsedMesh.name, generator, scene, options);
     }
 }
