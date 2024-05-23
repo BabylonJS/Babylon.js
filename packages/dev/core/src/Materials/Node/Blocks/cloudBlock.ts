@@ -197,7 +197,7 @@ export class CloudBlock extends NodeMaterialBlock {
         if (this.chaos.isConnected) {
             chaosValue = this.chaos.associatedVariableName;
         } else {
-            const addF = state.shaderLanguage === ShaderLanguage.WGSL ? "f" : "";
+            const addF = state.fSuffix;
             chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? `vec2${addF}(0., 0.)` : `vec3${addF}(0., 0., 0.)`;
         }
 
