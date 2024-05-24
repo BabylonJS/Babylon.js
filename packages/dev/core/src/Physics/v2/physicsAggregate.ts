@@ -187,7 +187,7 @@ export class PhysicsAggregate {
         const extents = TmpVectors.Vector3[0];
         extents.copyFrom(bb.extendSize);
         extents.scaleInPlace(2);
-        extents.multiplyInPlace(this.transformNode.scaling);
+        extents.multiplyInPlace(this.transformNode.absoluteScaling);
         // In case we had any negative scaling, we need to take the absolute value of the extents.
         extents.x = Math.abs(extents.x);
         extents.y = Math.abs(extents.y);
@@ -195,12 +195,12 @@ export class PhysicsAggregate {
 
         const min = TmpVectors.Vector3[1];
         min.copyFrom(bb.minimum);
-        min.multiplyInPlace(this.transformNode.scaling);
+        min.multiplyInPlace(this.transformNode.absoluteScaling);
 
         if (!this._options.center) {
             const center = new Vector3();
             center.copyFrom(bb.center);
-            center.multiplyInPlace(this.transformNode.scaling);
+            center.multiplyInPlace(this.transformNode.absoluteScaling);
             this._options.center = center;
         }
 
