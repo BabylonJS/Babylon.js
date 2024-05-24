@@ -40,7 +40,7 @@ export interface ITrailMeshOptions {
     /**
      * automatically start trailing mesh. (default: true)
      */
-    autoStart: boolean;
+    autoStart?: boolean;
 }
 
 /**
@@ -100,6 +100,8 @@ export class TrailMesh extends Mesh {
         } else {
             this.diameter = diameterOrOptions || 1;
             this._length = length;
+            this._segments = this._length;
+            this._doNotTaper = false;
             this._autoStart = autoStart;
         }
 
@@ -192,10 +194,12 @@ export class TrailMesh extends Mesh {
         const wm = this._generator.getWorldMatrix();
         const index = 3 * (this._sectionPolygonPointsCount + 1);
         if (positions && normals) {
-            for (let i: number = index; i < positions.length; i++) {
-                if (this._doNotTaper) {
+            if (this._doNotTaper) {
+                for (let i: number = index; i < positions.length; i++) {
                     positions[i - index] = Scalar.Lerp(positions[i - index], positions[i], this._segments / this._length);
-                } else {
+                }
+            } else {
+                for (let i: number = index; i < positions.length; i++) {
                     positions[i - index] = Scalar.Lerp(positions[i - index], positions[i], this._segments / this._length) - (normals[i] / this._length) * this.diameter;
                 }
             }
