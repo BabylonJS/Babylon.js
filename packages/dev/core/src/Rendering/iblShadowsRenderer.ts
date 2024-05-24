@@ -454,7 +454,9 @@ export class IblShadowsRenderer {
             const size = bounds.max.subtract(bounds.min);
             const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
             const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
-            const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
+            const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), new Vector3(0, 0, 0));
+            const invTranslationMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre);
+            invTranslationMatrix.multiplyToRef(invWorldScaleMatrix, invWorldScaleMatrix);
             this._shadowComputePass.setWorldScaleMatrix(invWorldScaleMatrix);
             this._voxelRenderer.setWorldScaleMatrix(invWorldScaleMatrix);
             // Set world scale for spatial blur.
