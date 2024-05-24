@@ -17,8 +17,11 @@ import "../Shaders/voxelGrid.vertex";
 import "../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../Shaders/voxelGrid3dDebug.fragment";
 import "../Shaders/combineVoxelGrids.fragment";
+import "../Shaders/generateVoxelMip.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
+import { BaseTexture } from "../Materials/Textures/baseTexture";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -67,6 +70,10 @@ export class IblShadowsVoxelRenderer {
         this._disposeTextures();
         this._createTextures();
     }
+
+    private _mipRT: BaseTexture;
+    private _mipEffectRenderer: EffectRenderer;
+    private _mipEffectWrapper: EffectWrapper;
 
     private _voxelDebugPass: PostProcess;
     private _voxelDebugEnabled: boolean = false;
@@ -144,7 +151,44 @@ export class IblShadowsVoxelRenderer {
             this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
         }
 
+        this._mipEffectRenderer = new EffectRenderer(this._engine);
+        this._mipEffectWrapper = new EffectWrapper({
+            engine: this._engine,
+            fragmentShader: "generateVoxelMip",
+            useShaderStore: true,
+            uniformNames: ["layerNum", "lodLevel"],
+            samplerNames: ["srcMip"],
+        });
+
         this._createTextures();
+    }
+
+    private _generateMipMaps() {
+        const iterations = Math.ceil(Math.log2(this._voxelResolution));
+        for (let i = 1; i < iterations; i++) {
+            this._generateMipMap(i, this._voxelResolution >> i);
+        }
+    }
+
+    private _generateMipMap(lodLevel: number, bindSize: number) {
+        const rt = (this._voxelGridRT as any)._rtWrapper;
+        if (rt) {
+            this._mipEffectRenderer.saveStates();
+            // Set previous mip as source uniform.
+            this._mipEffectWrapper.effect.setTexture("srcMip", this._mipRT);
+
+            // Render to each layer of the voxel grid.
+            for (let layer = 0; layer < bindSize; layer++) {
+                this._mipEffectWrapper.effect.setFloat("layerNum", layer);
+                this._mipEffectWrapper.effect.setInt("lodLevel", lodLevel);
+                this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
+                this._mipEffectRenderer.applyEffectWrapper(this._mipEffectWrapper);
+                this._mipEffectRenderer.draw();
+
+                this._mipEffectRenderer.restoreStates();
+                this._engine.unBindFramebuffer(rt, true);
+            }
+        }
     }
 
     private _computeNumberOfSlabs(): number {
@@ -182,7 +226,7 @@ export class IblShadowsVoxelRenderer {
             generateMipMaps: true,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             format: Constants.TEXTUREFORMAT_RGBA,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
         };
 
         this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
@@ -193,6 +237,12 @@ export class IblShadowsVoxelRenderer {
         // We will render this only after voxelization is completed for the 3 axes.
         this._voxelGridRT.autoClear = false;
         this._voxelGridRT.refreshRate = 0;
+
+        this._mipRT = new BaseTexture(this._scene, this._voxelGridRT.getInternalTexture());
+
+        // this._voxelGridRT.onGeneratedObservable.add(() => {
+        //     this._generateMipMaps();
+        // });
     }
 
     private _createVoxelMRTs(name: string, voxelRT: RenderTargetTexture, numSlabs: number): MultiRenderTarget[] {
@@ -313,6 +363,7 @@ export class IblShadowsVoxelRenderer {
                 // this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
                 // this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
                 this._voxelGridRT.render();
+                this._generateMipMaps();
                 this._voxelizationInProgress = false;
                 if (this._voxelGridRT.getInternalTexture()) {
                     // this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
