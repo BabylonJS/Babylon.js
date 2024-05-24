@@ -21,7 +21,7 @@ void main(void) {
       return;
     }
     // ***** Display all slices as a grid *******
-    ivec3 size = textureSize(voxelTexture, 0);
+    ivec3 size = textureSize(voxelTexture, int(mipNumber));
     float dimension = sqrt(float(size.z));
     vec2 samplePos = fract(uv.xy * vec2(dimension));
     int sampleIndex = int(floor(uv.x * float(dimension)) +

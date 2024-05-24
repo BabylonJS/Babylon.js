@@ -573,6 +573,8 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal, vec2 DitherNoi
     //     return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
     // #endif
 
+    // return anyHitVoxels(O, wsDirection) ? 1.0f : 0.0f;
+    // return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
     return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
 }
 
