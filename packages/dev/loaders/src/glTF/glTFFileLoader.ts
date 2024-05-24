@@ -903,6 +903,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             onOpened
         ) as IFileRequestInfo;
         request.onCompleteObservable.add(() => {
+            // Force the length computable to be true since we can guarantee the data is loaded.
             request._lengthComputable = true;
             request._total = request._loaded;
         });
