@@ -231,7 +231,7 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
-     * Gets the target at specified index
+     * Gets the first target with the specified name
      * @param name defines the name to check
      * @returns the requested target
      */
