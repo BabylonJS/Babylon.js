@@ -24,7 +24,7 @@ import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstra
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
 import { PhysicsShape } from "../physicsShape";
-import type { BoundingBox } from "../../../Culling/boundingBox";
+import { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
 import { InstancedMesh } from "../../../Meshes/instancedMesh";
@@ -1487,7 +1487,31 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * for collision detection and other physics calculations.
      */
     public getBoundingBox(_shape: PhysicsShape): BoundingBox {
-        return {} as BoundingBox;
+        // get local AABB
+        const aabb = this._hknp.HP_Shape_GetBoundingBox(_shape._pluginData, [
+            [0, 0, 0],
+            [0, 0, 0, 1],
+        ])[1];
+        TmpVectors.Vector3[0].set(aabb[0][0], aabb[0][1], aabb[0][2]); // min
+        TmpVectors.Vector3[1].set(aabb[1][0], aabb[1][1], aabb[1][2]); // max
+        const boundingbox = new BoundingBox(TmpVectors.Vector3[0], TmpVectors.Vector3[1], Matrix.IdentityReadOnly);
+        return boundingbox;
+    }
+
+    /**
+     * Calculates the world bounding box of a given physics body.
+     *
+     * @param body - The physics body to calculate the bounding box for.
+     * @returns The calculated bounding box.
+     *
+     * This method is useful for physics engines as it allows to calculate the
+     * boundaries of a given body.
+     */
+    public getBodyBoundingBox(body: PhysicsBody): BoundingBox {
+        // get local AABB
+        const aabb = this.getBoundingBox(body.shape!);
+        const boundingbox = new BoundingBox(aabb.minimum, aabb.maximum, body.transformNode.getWorldMatrix());
+        return boundingbox;
     }
 
     /**

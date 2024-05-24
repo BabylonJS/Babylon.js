@@ -443,6 +443,7 @@ export interface IPhysicsEnginePluginV2 {
     removeChild(shape: PhysicsShape, childIndex: number): void;
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;
+    getBodyBoundingBox(body: PhysicsBody): BoundingBox;
     disposeShape(shape: PhysicsShape): void;
     setTrigger(shape: PhysicsShape, isTrigger: boolean): void;
 
