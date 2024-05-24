@@ -707,6 +707,9 @@ export class ProceduralTexture extends Texture {
 
                 if (this._rtWrapper.is3D || this._rtWrapper.is2DArray) {
                     this._drawWrapper.effect?.setFloat("layer", numLayers !== 1 ? layer / (numLayers - 1) : 0);
+                    for (const name in this._textures) {
+                        this._drawWrapper.effect!.setTexture(name, this._textures[name]);
+                    }
                 }
 
                 // VBOs
