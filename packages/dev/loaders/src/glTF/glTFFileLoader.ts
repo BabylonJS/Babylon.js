@@ -902,8 +902,10 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             onError,
             onOpened
         ) as IFileRequestInfo;
-        request.onCompleteObservable.add((request) => {
-            this._requests.splice(this._requests.indexOf(request), 1);
+        request.onCompleteObservable.add(() => {
+            // Force the length computable to be true since we can guarantee the data is loaded.
+            request._lengthComputable = true;
+            request._total = request._loaded;
         });
         this._requests.push(request);
         return request;
