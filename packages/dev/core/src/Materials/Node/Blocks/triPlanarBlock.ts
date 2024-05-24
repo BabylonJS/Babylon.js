@@ -411,7 +411,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             `;
         }
 
-        const suffix = state.shaderLanguage === ShaderLanguage.WGSL ? "f" : "";
+        const suffix = state.fSuffix;
 
         state.compilationString += `
             ${state._declareLocalVar(x, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerName, uvx, state)};

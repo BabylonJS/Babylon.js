@@ -38,6 +38,10 @@ import "../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration";
 import "../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions";
 import "../../ShadersWGSL/ShadersInclude/shadowsVertex";
 import "../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration";
+import "../../ShadersWGSL/ShadersInclude/bumpFragment";
+import "../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions";
+import "../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 

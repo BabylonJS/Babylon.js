@@ -231,6 +231,21 @@ export class MorphTargetManager implements IDisposable {
     }
 
     /**
+     * Gets the target at specified index
+     * @param name defines the name to check
+     * @returns the requested target
+     */
+    public getTargetByName(name: string): Nullable<MorphTarget> {
+        for (const target of this._targets) {
+            if (target.name === name) {
+                return target;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Add a new target to this manager
      * @param target defines the target to add
      */

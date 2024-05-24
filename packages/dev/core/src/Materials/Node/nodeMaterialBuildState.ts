@@ -87,6 +87,11 @@ export class NodeMaterialBuildState {
         return this.sharedData.nodeMaterial.shaderLanguage;
     }
 
+    /** Gets suffix to add behind type casting */
+    public get fSuffix() {
+        return this.shaderLanguage === ShaderLanguage.WGSL ? "f" : "";
+    }
+
     /**
      * Finalize the compilation strings
      * @param state defines the current compilation state
@@ -630,6 +635,10 @@ export class NodeMaterialBuildState {
 
         // Remove voidnull
         code = code.replace(/\s->\svoidnull/g, "");
+
+        // Derivatives
+        code = code.replace(/dFdx/g, "dpdx");
+        code = code.replace(/dFdy/g, "dpdy");
 
         return code;
     }
