@@ -1,5 +1,6 @@
 import { Constants } from "../Engines/constants";
 import { Engine } from "../Engines/engine";
+import { WebGPUEngine } from "../Engines/webgpuEngine";
 import { ShaderMaterial } from "../Materials/shaderMaterial";
 import { MultiRenderTarget } from "../Materials/Textures/multiRenderTarget";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
@@ -137,7 +138,11 @@ export class IblShadowsVoxelRenderer {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
 
-        this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
+        if (this._engine instanceof WebGPUEngine) {
+            this._maxDrawBuffers = 8; // TODO - get this from the engine?
+        } else {
+            this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
+        }
 
         this._createTextures();
     }
@@ -157,7 +162,7 @@ export class IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_R,
+            format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -176,8 +181,8 @@ export class IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: true,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_R,
-            samplingMode: Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
         this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
@@ -282,7 +287,7 @@ export class IblShadowsVoxelRenderer {
             return false;
         });
         if (mrtIdx >= 0) {
-            this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -mrts.length);
+            this._scene.customRenderTargets.splice(mrtIdx, mrts.length);
         }
     }
 
@@ -304,10 +309,13 @@ export class IblShadowsVoxelRenderer {
             // TODO - this seems to be removing the MRT's too early??
             setTimeout(() => {
                 this._stopVoxelization();
+                // this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
+                // this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
+                // this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
                 this._voxelGridRT.render();
                 this._voxelizationInProgress = false;
                 if (this._voxelGridRT.getInternalTexture()) {
-                    this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
+                    // this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
                 }
             }, 1000);
         });

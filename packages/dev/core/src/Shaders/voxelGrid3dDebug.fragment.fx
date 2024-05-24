@@ -27,15 +27,18 @@ void main(void) {
     int sampleIndex = int(floor(uv.x * float(dimension)) +
                           floor(uv.y * float(dimension)) * dimension);
 
-    vec3 voxel =
-        textureLod(voxelTexture,
-                   vec3(samplePos.xy, float(sampleIndex) / float(size.z)),
-                   mipNumber)
-            .rrr;
-    glFragColor.rgb = vec3(voxel.r > 0.0 ? 1.0 : 0.0);
+    // vec3 voxel =
+    //     textureLod(voxelTexture,
+    //                vec3(samplePos.xy, float(sampleIndex) / float(size.z)),
+    //                mipNumber)
+    //         .rgb;
+    ivec2 samplePosInt = ivec2(samplePos.xy * vec2(size.xy));
+    vec3 voxel = texelFetch(voxelTexture,
+                            ivec3(samplePosInt.x, samplePosInt.y, sampleIndex),
+                            int(mipNumber))
+                     .rgb;
+    glFragColor.rgb = voxel; // vec3(voxel.r > 0.0 ? 1.0 : 0.0);
 
-    //ivec2 pixCoord = ivec2(uv.xy*vec2(dimension));
-    //glFragColor.r = texelFetch(voxelTexture, ivec3(pixCoord.x, pixCoord.y, sampleIndex), 2).r != 0.0 ? 1.0 : 0.0;
     glFragColor.a = 1.0;
     glFragColor.rgb += texture(textureSampler, vUV.xy).rgb;
 }
