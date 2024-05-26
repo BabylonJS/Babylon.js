@@ -9,4 +9,5 @@ import "./engine.rawTexture";
 import "./engine.readTexture";
 import "./engine.renderTarget";
 import "./engine.renderTargetCube";
+import "./engine.renderTargetTexture";
 import "./engine.videoTexture";

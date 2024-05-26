@@ -8,8 +8,13 @@ import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import type { Scene } from "../../../scene";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
+        /**
+         * @internal
+         */
+        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+
         /**
          * Creates a depth stencil cube texture.
          * This is only available in WebGL 2.
@@ -160,9 +165,11 @@ declare module "../../webgpuEngine" {
         ): void;
 
         /**
-         * @internal
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
          */
-        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
     }
 }
 
@@ -268,5 +275,17 @@ WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTex
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     if (maxLevel) {
         texture._maxLodLevel = maxLevel;
+    }
+};
+
+WebGPUEngine.prototype.generateMipMapsForCubemap = function (texture: InternalTexture) {
+    if (texture.generateMipMaps) {
+        const gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            this._textureHelper.createGPUTextureForInternalTexture(texture);
+        }
+
+        this._generateMipmaps(texture);
     }
 };

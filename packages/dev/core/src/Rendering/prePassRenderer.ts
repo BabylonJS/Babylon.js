@@ -15,6 +15,8 @@ import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
 import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import { GeometryBufferRenderer } from "../Rendering/geometryBufferRenderer";
 
+import "../Engines/Extensions/engine.multiRender";
+
 /**
  * Renders a pre pass of the scene
  * This means every mesh in the scene will be rendered to a render target texture

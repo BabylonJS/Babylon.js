@@ -7,8 +7,12 @@ import { Constants } from "../constants";
 import type { DepthTextureCreationOptions } from "../../Materials/Textures/textureCreationOptions";
 import { GetExponentOfTwo } from "../../Misc/tools.functions";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
+        /**
+         * @internal
+         */
+        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
         /**
          * Creates a depth stencil cube texture.
          * This is only available in WebGL 2.
@@ -125,9 +129,11 @@ declare module "../../Engines/thinEngine" {
         ): InternalTexture;
 
         /**
-         * @internal
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
          */
-        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
     }
 }
 
@@ -279,4 +285,15 @@ ThinEngine.prototype.createCubeTexture = function (
         },
         !!useSRGBBuffer
     );
+};
+
+ThinEngine.prototype.generateMipMapsForCubemap = function (texture: InternalTexture, unbind = true) {
+    if (texture.generateMipMaps) {
+        const gl = this._gl;
+        this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, texture, true);
+        gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+        if (unbind) {
+            this._bindTextureDirectly(gl.TEXTURE_CUBE_MAP, null);
+        }
+    }
 };

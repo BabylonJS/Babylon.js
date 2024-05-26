@@ -4,8 +4,8 @@ import { InternalTexture, InternalTextureSource } from "../../Materials/Textures
 import type { ImageSource, Nullable } from "../../types";
 import type { ICanvas } from "../ICanvas";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a dynamic texture
          * @param width defines the width of the texture

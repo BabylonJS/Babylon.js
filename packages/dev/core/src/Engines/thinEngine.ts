@@ -35,9 +35,7 @@ import {
 } from "./thinEngine.functions";
 
 import type { AbstractEngineOptions, ISceneLike, PrepareTextureFunction, PrepareTextureProcessFunction } from "./abstractEngine";
-import type { PostProcess } from "../PostProcesses/postProcess";
 import type { PerformanceMonitor } from "../Misc/performanceMonitor";
-import type { Scene } from "../scene";
 import { IsWrapper } from "../Materials/drawWrapper.functions";
 import { Logger } from "../Misc/logger";
 import { IsWindowObjectExist } from "../Misc/domManagement";
@@ -51,7 +49,6 @@ import { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 import { ShaderLanguage } from "../Materials/shaderLanguage";
 import { InternalTexture, InternalTextureSource } from "../Materials/Textures/internalTexture";
 import { Effect } from "../Materials/effect";
-import { _WarnImport } from "../Misc/devTools";
 import { _ConcatenateShader, _getGlobalDefines } from "./abstractEngine.functions";
 import { resetCachedPipeline } from "core/Materials/effect.functions";
 
@@ -2705,18 +2702,6 @@ export class ThinEngine extends AbstractEngine {
         this.bindIndexBuffer(null);
     }
 
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        // Does nothing
-    }
-
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        // Does nothing
-    }
-
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
-        // Does nothing
-    }
-
     /**
      * @internal
      */
@@ -3085,152 +3070,6 @@ export class ThinEngine extends AbstractEngine {
      */
     public _rescaleTexture(source: InternalTexture, destination: InternalTexture, scene: Nullable<any>, internalFormat: number, onComplete: () => void): void {}
 
-    // eslint-disable-next-line jsdoc/require-returns-check
-    /**
-     * Creates a raw texture
-     * @param data defines the data to store in the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param format defines the format of the data
-     * @param generateMipMaps defines if the engine should generate the mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-     * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-     * @returns the raw texture inside an InternalTexture
-     */
-    public createRawTexture(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        type: number = Constants.TEXTURETYPE_UNSIGNED_INT,
-        creationFlags = 0,
-        useSRGBBuffer: boolean = false
-    ): InternalTexture {
-        throw _WarnImport("Engine.RawTexture");
-    }
-
-    // eslint-disable-next-line jsdoc/require-returns-check
-    /**
-     * Creates a new raw cube texture
-     * @param data defines the array of data to use to create each face
-     * @param size defines the size of the textures
-     * @param format defines the format of the data
-     * @param type defines the type of the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-     * @param generateMipMaps  defines if the engine should generate the mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compression used (null by default)
-     * @returns the cube texture as an InternalTexture
-     */
-    public createRawCubeTexture(
-        data: Nullable<ArrayBufferView[]>,
-        size: number,
-        format: number,
-        type: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null
-    ): InternalTexture {
-        throw _WarnImport("Engine.RawTexture");
-    }
-
-    // eslint-disable-next-line jsdoc/require-returns-check
-    /**
-     * Creates a new raw 3D texture
-     * @param data defines the data used to create the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param depth defines the depth of the texture
-     * @param format defines the format of the texture
-     * @param generateMipMaps defines if the engine must generate mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compressed used (can be null)
-     * @param textureType defines the compressed used (can be null)
-     * @returns a new raw 3D texture (stored in an InternalTexture)
-     */
-    public createRawTexture3D(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        depth: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
-    ): InternalTexture {
-        throw _WarnImport("Engine.RawTexture");
-    }
-
-    // eslint-disable-next-line jsdoc/require-returns-check
-    /**
-     * Creates a new raw 2D array texture
-     * @param data defines the data used to create the texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param depth defines the number of layers of the texture
-     * @param format defines the format of the texture
-     * @param generateMipMaps defines if the engine must generate mip levels
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param compression defines the compressed used (can be null)
-     * @param textureType defines the compressed used (can be null)
-     * @returns a new raw 2D array texture (stored in an InternalTexture)
-     */
-    public createRawTexture2DArray(
-        data: Nullable<ArrayBufferView>,
-        width: number,
-        height: number,
-        depth: number,
-        format: number,
-        generateMipMaps: boolean,
-        invertY: boolean,
-        samplingMode: number,
-        compression: Nullable<string> = null,
-        textureType = Constants.TEXTURETYPE_UNSIGNED_INT
-    ): InternalTexture {
-        throw _WarnImport("Engine.RawTexture");
-    }
-
-    // eslint-disable-next-line jsdoc/require-returns-check
-    /**
-     * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
-     * @param rootUrl defines the url where the file to load is located
-     * @param scene defines the current scene
-     * @param lodScale defines scale to apply to the mip map selection
-     * @param lodOffset defines offset to apply to the mip map selection
-     * @param onLoad defines an optional callback raised when the texture is loaded
-     * @param onError defines an optional callback raised if there is an issue to load the texture
-     * @param format defines the format of the data
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
-     * @returns the cube texture as an InternalTexture
-     */
-    public createPrefilteredCubeTexture(
-        rootUrl: string,
-        scene: Nullable<Scene>,
-        lodScale: number,
-        lodOffset: number,
-        onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>,
-        onError?: Nullable<(message?: string, exception?: any) => void>,
-        format?: number,
-        forcedExtension?: any,
-        createPolynomials?: boolean
-    ): InternalTexture {
-        throw _WarnImport("Misc/dds");
-    }
-
     private _unpackFlipYCached: Nullable<boolean> = null;
 
     /**
@@ -3258,7 +3097,8 @@ export class ThinEngine extends AbstractEngine {
         return this._gl.getParameter(this._gl.UNPACK_ALIGNMENT);
     }
 
-    private _getTextureTarget(texture: InternalTexture): number {
+    /** @internal */
+    public _getTextureTarget(texture: InternalTexture): number {
         if (texture.isCube) {
             return this._gl.TEXTURE_CUBE_MAP;
         } else if (texture.is3D) {
@@ -3325,55 +3165,6 @@ export class ThinEngine extends AbstractEngine {
         }
 
         this._bindTextureDirectly(target, null);
-    }
-
-    /**
-     * @internal
-     */
-    public _setupDepthStencilTexture(
-        internalTexture: InternalTexture,
-        size: TextureSize,
-        generateStencil: boolean,
-        bilinearFiltering: boolean,
-        comparisonFunction: number,
-        samples = 1
-    ): void {
-        const width = (<{ width: number; height: number; layers?: number }>size).width || <number>size;
-        const height = (<{ width: number; height: number; layers?: number }>size).height || <number>size;
-        const layers = (<{ width: number; height: number; depth?: number; layers?: number }>size).layers || 0;
-        const depth = (<{ width: number; height: number; depth?: number; layers?: number }>size).depth || 0;
-
-        internalTexture.baseWidth = width;
-        internalTexture.baseHeight = height;
-        internalTexture.width = width;
-        internalTexture.height = height;
-        internalTexture.is2DArray = layers > 0;
-        internalTexture.depth = layers || depth;
-        internalTexture.isReady = true;
-        internalTexture.samples = samples;
-        internalTexture.generateMipMaps = false;
-        internalTexture.samplingMode = bilinearFiltering ? Constants.TEXTURE_BILINEAR_SAMPLINGMODE : Constants.TEXTURE_NEAREST_SAMPLINGMODE;
-        internalTexture.type = Constants.TEXTURETYPE_UNSIGNED_INT;
-        internalTexture._comparisonFunction = comparisonFunction;
-
-        const gl = this._gl;
-        const target = this._getTextureTarget(internalTexture);
-        const samplingParameters = this._getSamplingParameters(internalTexture.samplingMode, false);
-        gl.texParameteri(target, gl.TEXTURE_MAG_FILTER, samplingParameters.mag);
-        gl.texParameteri(target, gl.TEXTURE_MIN_FILTER, samplingParameters.min);
-        gl.texParameteri(target, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-        gl.texParameteri(target, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-
-        // TEXTURE_COMPARE_FUNC/MODE are only availble in WebGL2.
-        if (this.webGLVersion > 1) {
-            if (comparisonFunction === 0) {
-                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, Constants.LEQUAL);
-                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.NONE);
-            } else {
-                gl.texParameteri(target, gl.TEXTURE_COMPARE_FUNC, comparisonFunction);
-                gl.texParameteri(target, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE);
-            }
-        }
     }
 
     /**
@@ -3751,7 +3542,10 @@ export class ThinEngine extends AbstractEngine {
         }
     }
 
-    protected _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
+    /**
+     * @internal
+     */
+    public _boundUniforms: { [key: number]: WebGLUniformLocation } = {};
 
     /**
      * Binds an effect to the webGL context
@@ -3891,7 +3685,7 @@ export class ThinEngine extends AbstractEngine {
         return this._gl.REPEAT;
     }
 
-    protected _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
+    public override _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray = false, depthStencilTexture = false, name = ""): boolean {
         // Not ready?
         if (!texture) {
             if (this._boundTexturesCache[channel] != null) {
@@ -4520,16 +4314,6 @@ export class ThinEngine extends AbstractEngine {
         }
         this._gl.readPixels(x, y, width, height, format, this._gl.UNSIGNED_BYTE, data);
         return Promise.resolve(data);
-    }
-
-    /**
-     * Force the mipmap generation for the given render target texture
-     * @param texture defines the render target texture to use
-     * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
-     */
-    public generateMipMapsForCubemap(texture: InternalTexture, unbind: boolean) {
-        // Does nothing
-        // Child classes should implement this function
     }
 
     // Statics

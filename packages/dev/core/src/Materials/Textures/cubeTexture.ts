@@ -8,12 +8,12 @@ import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import { GetClass, RegisterClass } from "../../Misc/typeStore";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { Observable } from "../../Misc/observable";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
 
 import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../../Engines/Extensions/engine.cubeTexture";
-import { Observable } from "../../Misc/observable";
-
-import { SerializationHelper } from "../../Misc/decorators.serialization";
+import "../../Engines/Extensions/engine.prefilteredCubeTexture";
 
 /**
  * Class for creating a cube texture

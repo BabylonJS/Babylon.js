@@ -4,8 +4,8 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Update a video texture
          * @param texture defines the texture to update

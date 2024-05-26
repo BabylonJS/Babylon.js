@@ -19,12 +19,35 @@ import type { IRenderTargetTexture, RenderTargetWrapper } from "../../Engines/re
 
 import "../../Engines/Extensions/engine.renderTarget";
 import "../../Engines/Extensions/engine.renderTargetCube";
+import "../../Engines/Extensions/engine.renderTargetTexture";
+
 import { _ObserveArray } from "../../Misc/arrayTools";
 import { DumpTools } from "../../Misc/dumpTools";
 
 import type { Material } from "../material";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
 import { FloorPOT, NearestPOT } from "../../Misc/tools.functions";
+import { Effect } from "../effect";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
+
+declare module "../effect" {
+    export interface Effect {
+        /**
+         * Sets a depth stencil texture from a render target on the engine to be used in the shader.
+         * @param channel Name of the sampler variable.
+         * @param texture Texture to set.
+         */
+        setDepthStencilTexture(channel: string, texture: Nullable<RenderTargetTexture>): void;
+    }
+}
+
+/**
+ * Sets a depth stencil texture from a render target on the engine to be used in the shader.
+ * @param channel Name of the sampler variable.
+ * @param texture Texture to set.
+ */
+Effect.prototype.setDepthStencilTexture = function (channel: string, texture: Nullable<RenderTargetTexture>): void {
+    this._engine.setDepthStencilTexture(this._samplers[channel], this._uniforms[channel], texture, channel);
+};
 
 /**
  * Options for the RenderTargetTexture constructor
