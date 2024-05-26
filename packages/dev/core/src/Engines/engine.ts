@@ -684,15 +684,6 @@ export class Engine extends ThinEngine {
         return GetFontOffset(font);
     }
 
-    /** @internal */
-    public _renderFrame() {
-        for (let index = 0; index < this._activeRenderLoops.length; index++) {
-            const renderFunction = this._activeRenderLoops[index];
-
-            renderFunction();
-        }
-    }
-
     protected override _cancelFrame() {
         if (this.customAnimationFrameRequester) {
             if (this._frameHandler !== 0) {
@@ -746,11 +737,6 @@ export class Engine extends ThinEngine {
                 this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
             }
         }
-    }
-
-    /** @internal */
-    public _renderViews() {
-        return false;
     }
 
     /**

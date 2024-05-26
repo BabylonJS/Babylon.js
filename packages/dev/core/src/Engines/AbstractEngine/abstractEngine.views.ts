@@ -1,8 +1,8 @@
-import { Engine } from "../engine";
 import type { Camera } from "../../Cameras/camera";
 import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { Observable } from "../../Misc/observable";
+import { AbstractEngine } from "../abstractEngine";
 
 /**
  * Class used to define an additional view for the engine
@@ -76,7 +76,7 @@ declare module "../../Engines/abstractEngine" {
          * @param canvas defines the canvas to remove
          * @returns the current engine
          */
-        unRegisterView(canvas: HTMLCanvasElement): Engine;
+        unRegisterView(canvas: HTMLCanvasElement): AbstractEngine;
 
         /**
          * @internal
@@ -88,23 +88,23 @@ declare module "../../Engines/abstractEngine" {
 const _onBeforeViewRenderObservable = new Observable<EngineView>();
 const _onAfterViewRenderObservable = new Observable<EngineView>();
 
-Object.defineProperty(Engine.prototype, "onBeforeViewRenderObservable", {
-    get: function (this: Engine) {
+Object.defineProperty(AbstractEngine.prototype, "onBeforeViewRenderObservable", {
+    get: function (this: AbstractEngine) {
         return _onBeforeViewRenderObservable;
     },
 });
 
-Object.defineProperty(Engine.prototype, "onAfterViewRenderObservable", {
-    get: function (this: Engine) {
+Object.defineProperty(AbstractEngine.prototype, "onAfterViewRenderObservable", {
+    get: function (this: AbstractEngine) {
         return _onAfterViewRenderObservable;
     },
 });
 
-Object.defineProperty(Engine.prototype, "inputElement", {
-    get: function (this: Engine) {
+Object.defineProperty(AbstractEngine.prototype, "inputElement", {
+    get: function (this: AbstractEngine) {
         return this._inputElement;
     },
-    set: function (this: Engine, value: HTMLElement) {
+    set: function (this: AbstractEngine, value: HTMLElement) {
         if (this._inputElement !== value) {
             this._inputElement = value;
             this._onEngineViewChanged?.();
@@ -112,11 +112,11 @@ Object.defineProperty(Engine.prototype, "inputElement", {
     },
 });
 
-Engine.prototype.getInputElement = function (): Nullable<HTMLElement> {
+AbstractEngine.prototype.getInputElement = function (): Nullable<HTMLElement> {
     return this.inputElement || this.getRenderingCanvas();
 };
 
-Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera | Camera[], clearBeforeCopy?: boolean): EngineView {
+AbstractEngine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Camera | Camera[], clearBeforeCopy?: boolean): EngineView {
     if (!this.views) {
         this.views = [];
     }
@@ -145,7 +145,7 @@ Engine.prototype.registerView = function (canvas: HTMLCanvasElement, camera?: Ca
     return newView;
 };
 
-Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
+AbstractEngine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): AbstractEngine {
     if (!this.views || this.views.length === 0) {
         return this;
     }
@@ -164,7 +164,7 @@ Engine.prototype.unRegisterView = function (canvas: HTMLCanvasElement): Engine {
     return this;
 };
 
-Engine.prototype._renderViewStep = function (view: EngineView): boolean {
+AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean {
     const canvas = view.target;
     const context = canvas.getContext("2d");
     if (!context) {
@@ -232,7 +232,7 @@ Engine.prototype._renderViewStep = function (view: EngineView): boolean {
     return true;
 };
 
-Engine.prototype._renderViews = function () {
+AbstractEngine.prototype._renderViews = function () {
     if (!this.views || this.views.length === 0) {
         return false;
     }
