@@ -8,7 +8,7 @@ import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
-import "../../Engines/AbstractEngine/Extensions/engine.renderTarget";
+import "../../AbstractEngine/abstractEngine.texture";
 
 declare module "../../abstractEngine" {
     export interface AbstractEngine {

@@ -9,7 +9,7 @@ import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 
 import { Constants } from "../constants";
 
-import "../../Engines/AbstractEngine/Extensions/engine.renderTarget";
+import "../AbstractEngine/abstractEngine.texture";
 
 /**
  * Type used to define a texture size (either with a number or with a rect width and height)
