@@ -3,8 +3,8 @@ import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /** @internal */
         _readTexturePixels(
             texture: InternalTexture,

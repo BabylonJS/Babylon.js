@@ -4,8 +4,9 @@ import type { Scene } from "../../scene";
 import type { ISize } from "../../Maths/math.size";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
-import "../../Engines/Extensions/engine.dynamicTexture";
 import type { ICanvas, ICanvasRenderingContext } from "../../Engines/ICanvas";
+
+import "../../Engines/Extensions/engine.dynamicTexture";
 
 /**
  * A class extending Texture allowing drawing on a texture

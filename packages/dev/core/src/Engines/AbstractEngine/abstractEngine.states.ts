@@ -2,6 +2,8 @@ import type { Nullable } from "../../types";
 import { AbstractEngine } from "../abstractEngine";
 import { Constants } from "../constants";
 
+import "./abstractEngine.alpha";
+
 declare module "../../Engines/abstractEngine" {
     export interface AbstractEngine {
         /** @internal */

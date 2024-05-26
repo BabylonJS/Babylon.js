@@ -1279,15 +1279,6 @@ export class NativeEngine extends Engine {
         this._alphaMode = mode;
     }
 
-    /**
-     * Gets the current alpha mode
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-     * @returns the current alpha mode
-     */
-    public override getAlphaMode(): number {
-        return this._alphaMode;
-    }
-
     public override setInt(uniform: WebGLUniformLocation, int: number): boolean {
         if (!uniform) {
             return false;
@@ -2368,7 +2359,10 @@ export class NativeEngine extends Engine {
     }
 
     // TODO: Refactor to share more logic with base Engine implementation.
-    protected override _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
+    /**
+     * @internal
+     */
+    public override _setTexture(channel: number, texture: Nullable<BaseTexture>, isPartOfTextureArray = false, depthStencilTexture = false): boolean {
         const uniform = this._boundUniforms[channel] as unknown as NativeUniform;
         if (!uniform) {
             return false;

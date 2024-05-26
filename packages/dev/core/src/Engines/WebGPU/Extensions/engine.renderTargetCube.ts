@@ -4,8 +4,8 @@ import { Constants } from "../../constants";
 import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a new render target cube wrapper
          * @param size defines the size of the texture

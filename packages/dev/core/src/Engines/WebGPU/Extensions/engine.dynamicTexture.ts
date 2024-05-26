@@ -5,8 +5,8 @@ import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { GetExponentOfTwo } from "../../../Misc/tools.functions";
 import type { ICanvas } from "../../../Engines/ICanvas";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a dynamic texture
          * @param width defines the width of the texture

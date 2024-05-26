@@ -8,9 +8,8 @@ import type { RenderTargetWrapper } from "../../renderTargetWrapper";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
-
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active

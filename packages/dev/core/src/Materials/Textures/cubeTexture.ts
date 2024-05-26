@@ -11,6 +11,7 @@ import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 import "../../Engines/AbstractEngine/abstractEngine.cubeTexture";
 import "../../Engines/Extensions/engine.cubeTexture";
+import "../../Engines/Extensions/engine.prefilterdCubeTexture";
 import { Observable } from "../../Misc/observable";
 
 import { SerializationHelper } from "../../Misc/decorators.serialization";

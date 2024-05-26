@@ -1,8 +1,8 @@
 import { ThinEngine } from "../../Engines/thinEngine";
 import { Constants } from "../constants";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Sets the current alpha mode
          * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)

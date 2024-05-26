@@ -8,6 +8,7 @@ import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer
 import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 
+import "../../../Engine/Extensions/engine.renderTargetCube";
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
 import { Logger } from "../../../Misc/logger";
