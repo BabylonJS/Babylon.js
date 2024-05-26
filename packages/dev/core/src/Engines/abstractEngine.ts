@@ -900,10 +900,10 @@ export abstract class AbstractEngine {
                 // Start new frame
                 this.beginFrame();
 
-                for (let index = 0; index < this._activeRenderLoops.length; index++) {
-                    const renderFunction = this._activeRenderLoops[index];
-
-                    renderFunction();
+                // Child canvases
+                if (!this._renderViews()) {
+                    // Main frame
+                    this._renderFrame();
                 }
 
                 // Present
@@ -917,6 +917,20 @@ export abstract class AbstractEngine {
         if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
+    }
+
+    /** @internal */
+    public _renderFrame() {
+        for (let index = 0; index < this._activeRenderLoops.length; index++) {
+            const renderFunction = this._activeRenderLoops[index];
+
+            renderFunction();
+        }
+    }
+
+    /** @internal */
+    public _renderViews() {
+        return false;
     }
 
     /**
