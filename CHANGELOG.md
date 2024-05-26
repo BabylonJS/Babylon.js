@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.8.1
+
+### Core
+
+- WebGPU: Fix view support - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15137](https://github.com/BabylonJS/Babylon.js/pull/15137))
+- Fixes and enhancement on Havok & volumes - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15130](https://github.com/BabylonJS/Babylon.js/pull/15130))
+- add getTargetByName to MorphTargetManager - by [deltakosh](https://github.com/deltakosh) ([#15134](https://github.com/BabylonJS/Babylon.js/pull/15134))
+- Make DoubleTap work on touch devices - by [RaananW](https://github.com/RaananW) ([#15132](https://github.com/BabylonJS/Babylon.js/pull/15132))
+- 6Dof mesh flip fix for LH scene - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#14907](https://github.com/BabylonJS/Babylon.js/pull/14907))
+- Missing type definitions for older versions of typescript - by [RaananW](https://github.com/RaananW) ([#15129](https://github.com/BabylonJS/Babylon.js/pull/15129))
+
+### Loaders
+
+- Fix erratic glTF progress values - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#15136](https://github.com/BabylonJS/Babylon.js/pull/15136))
+
+### Serializers
+
+
 ## 7.8.0
 
 ## 7.7.2

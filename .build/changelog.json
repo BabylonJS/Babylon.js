@@ -1,7 +1,243 @@
 {
-    "fromTag": "7.7.2",
+    "fromTag": "7.8.0",
     "changelog": {
         "7.8.0": [],
+        "7.8.1": [
+            {
+                "pr": "15138",
+                "title": "Fix ThinEngine compilation and abstract engine split",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.states.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicBuffer.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.prefilteredCubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.renderTargetTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.alpha.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.dynamicTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.multiRender.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.rawTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.readTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTarget.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetCube.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.renderTargetTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/Filtering/hdrFiltering.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/basisTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/Loaders/ktxTextureLoader.ts",
+                    "packages/dev/core/src/Materials/Textures/baseTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/dynamicTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Misc/dds.ts",
+                    "packages/dev/core/src/Misc/minMaxReducer.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts",
+                    "packages/dev/core/src/PostProcesses/postProcess.ts",
+                    "packages/dev/core/src/Rendering/depthPeelingRenderer.ts",
+                    "packages/dev/core/src/Rendering/geometryBufferRenderer.ts",
+                    "packages/dev/core/src/Rendering/prePassRenderer.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFMaterialExporter.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15137",
+                "title": "WebGPU: Fix view support",
+                "description": "See https://forum.babylonjs.com/t/support-for-webgpuengine-register-view-in-abstract-engine-missing/50815",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.views.ts",
+                    "packages/dev/core/src/Engines/AbstractEngine/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/index.ts",
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15135",
+                "title": "Fix Doc",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15136",
+                "title": "Fix erratic glTF progress values",
+                "description": "See https://forum.babylonjs.com/t/sceneloader-load-progress-rollback/50805.\r\n\r\nThe main problem is that we were removing the requests from the array which is used for calculating the total, making the total drop as requests complete. But even if we stop removing the requests, it won't always work properly if there are requests with `lengthComputable = false`. To solve this, we can force `lengthComputable` to true and set `total` to `loaded` when the request is complete to make sure the progress is counted.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/loaders/src/glTF/glTFFileLoader.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15130",
+                "title": "Fixes and enhancement on Havok & volumes",
+                "description": "Follow up :\r\n- https://forum.babylonjs.com/t/physicsshape-getboundingbox-returns-empty-object/49133/5\r\n- https://forum.babylonjs.com/t/incorrect-size-of-physics-body/50677/5\r\n- https://forum.babylonjs.com/t/is-there-an-easy-more-efficient-way-to-set-a-havok-physics-body-box-shape-meshs-bounding-box/48512/20\r\n\r\nExpose Shape aabb from Havok and use absoluteScaling for aggregate volume computation instead of local scaling.\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsAggregate.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15134",
+                "title": "add getTargetByName to MorphTargetManager",
+                "description": "https://forum.babylonjs.com/t/animatable-not-working/50775/15",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Morph/morphTargetManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15133",
+                "title": "Nme webgpu5",
+                "description": "Associated with #14929 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/heightToNormalBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSizeBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/screenSpaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/biPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/cloudBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/triPlanarBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15132",
+                "title": "Make DoubleTap work on touch devices",
+                "description": "DoubleTap is not a multitouch event, and should be triggered even if both points are null (which is the case with double tap on touch devices).\nThey are both null because pointerup is triggered prior to doubletap.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15131",
+                "title": "More nodes to support WebGPU",
+                "description": "Associated with #14929",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/TBNBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/perturbNormalBlock.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/samplerFragmentDeclaration.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "14907",
+                "title": "6Dof mesh flip fix for LH scene",
+                "description": "- fix regression introduced https://github.com/BabylonJS/Babylon.js/pull/14708 for sixDof behavior. Introduced bug is visible with this PG : https://playground.babylonjs.com/#AZML8U#229 each new start drag  flips the mesh.\r\n\r\n\r\nI've tested this fix with LH/RH + rotations in parent transforms. \r\nThe base orientation that is https://github.com/BabylonJS/Babylon.js/blob/36212ced7bdee5e6dd0a134497eac245abeb9799/packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts#L353\r\nUsed as a conjugate and then multiply by the delta. So, everything is kept local hence rotationQuaternion and not absoluteRotationQuaternion. ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Meshes/sixDofDragBehavior.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "enhancement",
+                    "physics",
+                    "gizmos",
+                    "stale"
+                ]
+            },
+            {
+                "pr": "15129",
+                "title": "Missing type definitions for older versions of typescript",
+                "description": "Fixes #14976\n\nVideoFrame was already added in #14426",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/LibDeclarations/offscreenCanvas.d.ts",
+                    "packages/tools/babylonServer/public/draco_decoder.js",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper.js",
+                    "packages/tools/babylonServer/public/draco_wasm_wrapper_gltf.js"
+                ],
+                "tags": []
+            }
+        ],
         "7.7.2": [
             {
                 "pr": "15128",
