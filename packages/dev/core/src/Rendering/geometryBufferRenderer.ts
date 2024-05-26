@@ -23,7 +23,7 @@ import { MaterialFlags } from "../Materials/materialFlags";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
-import("../Engines/Extensions/engine.multiRender");
+import "../Engines/Extensions/engine.multiRender";
 
 /** @internal */
 interface ISavedTransformationMatrix {

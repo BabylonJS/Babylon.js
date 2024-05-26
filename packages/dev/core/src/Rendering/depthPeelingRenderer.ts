@@ -26,7 +26,7 @@ import "../Shaders/postprocess.vertex";
 import "../Shaders/oitFinal.fragment";
 import "../Shaders/oitBackBlend.fragment";
 
-import("../Engines/Extensions/engine.multiRender");
+import "../Engines/Extensions/engine.multiRender";
 
 class DepthPeelingEffectConfiguration implements PrePassEffectConfiguration {
     /**
