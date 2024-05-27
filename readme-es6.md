@@ -95,7 +95,7 @@ engine.runRenderLoop(() => {
 
 ## Contributing
 
-Please see the [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md).
+Please see the [contribution guidelines](https://doc.babylonjs.com/contribute/toBabylon).
 
 ## Useful links
 
