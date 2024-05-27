@@ -1,5 +1,4 @@
-Babylon.js inspector module
-=====================
+# Babylon.js inspector module
 
 For usage documentation please visit https://doc.babylonjs.com/how_to/debug_layer.
 
@@ -7,15 +6,15 @@ For usage documentation please visit https://doc.babylonjs.com/how_to/debug_laye
 
 To install using npm :
 
-```
-npm install --save-dev @babylonjs/core @babylonjs/inspector
+```shell
+npm install @babylonjs/core @babylonjs/inspector
 ```
 
 # How to use
 
 Afterwards it can be imported to your project using:
 
-```
+```javascript
 import "@babylonjs/core/Debug/debugLayer";
 import "@babylonjs/inspector";
 ```
