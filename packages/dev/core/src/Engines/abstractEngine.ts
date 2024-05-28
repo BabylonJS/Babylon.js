@@ -2608,6 +2608,7 @@ export abstract class AbstractEngine {
         // no more engines left in the engine store? Notify!
         if (!EngineStore.Instances.length) {
             EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables
