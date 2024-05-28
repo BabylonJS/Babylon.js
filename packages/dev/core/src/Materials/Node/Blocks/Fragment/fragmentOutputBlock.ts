@@ -188,8 +188,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.convertToGammaSpace = serializationObject.convertToGammaSpace;
-        this.convertToLinearSpace = serializationObject.convertToLinearSpace;
+        this.convertToGammaSpace = !!serializationObject.convertToGammaSpace;
+        this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
 }
