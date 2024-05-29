@@ -39,11 +39,16 @@ export class IblShadowsVoxelRenderer {
     private _voxelMrtsYaxis: MultiRenderTarget[] = [];
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
-    public getVoxelGrid(): ProceduralTexture {
-        return this._voxelGridRT;
+    public getVoxelGrid(): ProceduralTexture | RenderTargetTexture {
+        if (this._threeWayVoxelization) {
+            return this._voxelGridRT;
+        } else {
+            return this._voxelGridZaxis;
+        }
     }
     private _maxDrawBuffers: number;
 
+    private _threeWayVoxelization: boolean = true;
     private _voxelizationInProgress: boolean = false;
     private _invWorldScaleMatrix: Matrix;
     public setWorldScaleMatrix(matrix: Matrix) {
@@ -122,7 +127,11 @@ export class IblShadowsVoxelRenderer {
                 } else if (this._voxelDebugAxis === 2) {
                     effect.setTexture("voxelTexture", this._voxelGridZaxis);
                 } else {
-                    effect.setTexture("voxelTexture", this._voxelGridRT);
+                    if (this._threeWayVoxelization) {
+                        effect.setTexture("voxelTexture", this._voxelGridRT);
+                    } else {
+                        effect.setTexture("voxelTexture", this._voxelGridZaxis);
+                    }
                 }
                 effect.setVector4("sizeParams", this._debugSizeParams);
                 effect.setFloat("mipNumber", this._debugMipNumber);
@@ -171,7 +180,12 @@ export class IblShadowsVoxelRenderer {
     }
 
     private _generateMipMap(lodLevel: number, bindSize: number) {
-        const rt = (this._voxelGridRT as any)._rtWrapper;
+        let rt;
+        if (this._threeWayVoxelization) {
+            rt = (this._voxelGridRT as any)._rtWrapper;
+        } else {
+            rt = (this._voxelGridZaxis as any)._rtWrapper;
+        }
         if (rt) {
             this._mipEffectRenderer.saveStates();
             // Set previous mip as source uniform.
@@ -210,17 +224,9 @@ export class IblShadowsVoxelRenderer {
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
-        this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
-        this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
-        this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelAxisOptions);
-
         // We can render up to maxDrawBuffers voxel slices of the grid per render.
         // We call this a slab.
         const numSlabs = this._computeNumberOfSlabs();
-        this._voxelMrtsXaxis = this._createVoxelMRTs("x_axis_", this._voxelGridXaxis, numSlabs);
-        this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
-        this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
-
         const voxelCombinedOptions: RenderTargetTextureOptions = {
             generateDepthBuffer: false,
             generateMipMaps: true,
@@ -228,18 +234,30 @@ export class IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
         };
+        if (this._threeWayVoxelization) {
+            this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
+            this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
+            this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelAxisOptions);
 
-        this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
-        this._voxelGridRT.setFloat("layer", 0.0);
-        this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
-        this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
-        this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
-        // We will render this only after voxelization is completed for the 3 axes.
-        this._voxelGridRT.autoClear = false;
-        this._voxelGridRT.refreshRate = 0;
+            this._voxelMrtsXaxis = this._createVoxelMRTs("x_axis_", this._voxelGridXaxis, numSlabs);
+            this._voxelMrtsYaxis = this._createVoxelMRTs("y_axis_", this._voxelGridYaxis, numSlabs);
+            this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
 
-        this._mipRT = new BaseTexture(this._scene, this._voxelGridRT.getInternalTexture());
+            this._voxelGridRT = new ProceduralTexture("combinedVoxelGrid", size, "combineVoxelGrids", this._scene, voxelCombinedOptions, true);
+            this._voxelGridRT.setFloat("layer", 0.0);
+            this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
+            this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
+            this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
+            // We will render this only after voxelization is completed for the 3 axes.
+            this._voxelGridRT.autoClear = false;
+            this._voxelGridRT.refreshRate = 0;
 
+            this._mipRT = new BaseTexture(this._scene, this._voxelGridRT.getInternalTexture());
+        } else {
+            this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelCombinedOptions);
+            this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
+            this._mipRT = new BaseTexture(this._scene, this._voxelGridZaxis.getInternalTexture());
+        }
         // this._voxelGridRT.onGeneratedObservable.add(() => {
         //     this._generateMipMaps();
         // });
@@ -290,7 +308,7 @@ export class IblShadowsVoxelRenderer {
 
     private _disposeTextures() {
         this._stopVoxelization();
-        for (let i = 0; i < this._voxelMrtsXaxis.length; i++) {
+        for (let i = 0; i < this._voxelMrtsZaxis.length; i++) {
             this._voxelMrtsXaxis[i].dispose(true);
             this._voxelMrtsYaxis[i].dispose(true);
             this._voxelMrtsZaxis[i].dispose(true);
@@ -350,9 +368,13 @@ export class IblShadowsVoxelRenderer {
 
         this._voxelizationInProgress = true;
 
-        this._addMRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
-        this._addMRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
-        this._addMRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+        if (this._threeWayVoxelization) {
+            this._addMRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
+            this._addMRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
+            this._addMRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+        } else {
+            this._addMRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+        }
 
         this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
             // Remove the MRTs from the array so they don't get rendered again.
@@ -362,12 +384,14 @@ export class IblShadowsVoxelRenderer {
                 // this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
                 // this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
                 // this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
-                this._voxelGridRT.render();
+                if (this._threeWayVoxelization) {
+                    this._voxelGridRT.render();
+                }
                 this._generateMipMaps();
                 this._voxelizationInProgress = false;
-                if (this._voxelGridRT.getInternalTexture()) {
-                    // this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
-                }
+                // if (this._voxelGridRT.getInternalTexture()) {
+                // this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
+                // }
             }, 1000);
         });
     }
