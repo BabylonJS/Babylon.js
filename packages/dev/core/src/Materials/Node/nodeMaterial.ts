@@ -1295,7 +1295,7 @@ export class NodeMaterial extends PushMaterial {
 
             Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
 
-            particleSystem.fillDefines(particleSystemDefines, blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode, false);
 
             join = particleSystemDefines.join("\n");
 
@@ -1328,7 +1328,7 @@ export class NodeMaterial extends PushMaterial {
 
             particleSystemDefines.length = 0;
 
-            particleSystem.fillDefines(particleSystemDefines, blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode, false);
 
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
