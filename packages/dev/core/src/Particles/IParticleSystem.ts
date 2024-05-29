@@ -399,8 +399,9 @@ export interface IParticleSystem {
      * Fill the defines array according to the current settings of the particle system
      * @param defines Array to be updated
      * @param blendMode blend mode to take into account when updating the array
+     * @param fillImageProcessing fills the image processing defines
      */
-    fillDefines(defines: Array<string>, blendMode: number): void;
+    fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing?: boolean): void;
     /**
      * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
      * @param uniforms Uniforms array to fill

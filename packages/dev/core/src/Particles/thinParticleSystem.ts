@@ -1675,8 +1675,9 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
      * Fill the defines array according to the current settings of the particle system
      * @param defines Array to be updated
      * @param blendMode blend mode to take into account when updating the array
+     * @param fillImageProcessing fills the image processing defines
      */
-    public fillDefines(defines: Array<string>, blendMode: number) {
+    public fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing: boolean = true): void {
         if (this._scene) {
             prepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Constants.FOGMODE_NONE) {
@@ -1722,7 +1723,7 @@ export class ThinParticleSystem extends BaseParticleSystem implements IDisposabl
             }
         }
 
-        if (this._imageProcessingConfiguration) {
+        if (fillImageProcessing && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
             defines.push(this._imageProcessingConfigurationDefines.toString());
         }
