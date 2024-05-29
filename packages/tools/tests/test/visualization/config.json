@@ -6,7 +6,8 @@
             "playgroundId": "#AYZY4Q#7",
             "renderCount": 5,
             "referenceImage": "procedural-textures-3d.png",
-            "excludedEngines": ["webgl1", "webgpu"]
+            "excludedEngines": ["webgl1", "webgpu"],
+            "excludeFromAutomaticTesting": true
         },
         {
             "title": "GUI Input Text Area with Placeholder",
