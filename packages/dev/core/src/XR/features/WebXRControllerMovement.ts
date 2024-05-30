@@ -51,6 +51,19 @@ export interface IWebXRControllerMovementOptions {
      * Babylon XR Input class for controller
      */
     xrInput: WebXRInput;
+
+    /**
+     * If movement orientation should follow controller orientation instead of viewer pose.
+     * Make sure to set movementOrientationFollowsViewerPose to false, otherwise it will be ignored.
+     */
+    movementOrientationFollowsController: boolean;
+
+    /**
+     * If orientation follows the controller, this is the preferred handedness to use for forward movement.
+     * If not set (or handedness not found), the handedness will be selected by the controller triggering the movement.
+     * Note that this only works if movementOrientationFollowsController is true.
+     */
+    orientationPreferredHandedness?: XRHandedness;
 }
 
 /**
@@ -59,6 +72,8 @@ export interface IWebXRControllerMovementOptions {
 export type WebXRControllerMovementFeatureContext = {
     movementEnabled: boolean;
     movementOrientationFollowsViewerPose: boolean;
+    movementOrientationFollowsController: boolean;
+    orientationPreferredHandedness?: XRHandedness;
     movementSpeed: number;
     movementThreshold: number;
     rotationEnabled: boolean;
@@ -112,7 +127,7 @@ export type WebXRControllerMovementRegistrationConfiguration = {
           /**
            * Called when the button state changes.
            */
-          buttonChangedhandler: (
+          buttonChangedHandler: (
               pressed: IWebXRMotionControllerComponentChangesValues<boolean>,
               movementState: WebXRControllerMovementState,
               featureContext: WebXRControllerMovementFeatureContext,
@@ -142,7 +157,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
     } = {};
 
     private _currentRegistrationConfigurations: WebXRControllerMovementRegistrationConfiguration[] = [];
-    // Feature configuration is syncronized - this is passed to all handlers (reduce GC pressure).
+    // Feature configuration is synchronized - this is passed to all handlers (reduce GC pressure).
     private _featureContext: WebXRControllerMovementFeatureContext;
     // forward direction for movement, which may differ from viewer pose.
     private _movementDirection: Quaternion = new Quaternion();
@@ -325,6 +340,8 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
         this._featureContext = {
             movementEnabled: options.movementEnabled || true,
             movementOrientationFollowsViewerPose: options.movementOrientationFollowsViewerPose ?? true,
+            movementOrientationFollowsController: options.movementOrientationFollowsController ?? false,
+            orientationPreferredHandedness: options.orientationPreferredHandedness,
             movementSpeed: options.movementSpeed ?? 1,
             movementThreshold: options.movementThreshold ?? 0.25,
             rotationEnabled: options.rotationEnabled ?? true,
@@ -389,6 +406,15 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                 this._xrInput.xrCamera.cameraRotation.y += rotationY;
                 Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
                 this._xrInput.xrCamera.rotationQuaternion.multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
+            } else if (this._featureContext.movementOrientationFollowsController) {
+                this._xrInput.xrCamera.cameraRotation.y += rotationY;
+                // get the correct controller
+                const handedness = this._featureContext.orientationPreferredHandedness || "right";
+                const key =
+                    Object.keys(this._controllers).find((key) => this._controllers[key]?.xrController?.inputSource.handedness === handedness) || Object.keys(this._controllers)[0];
+                const controller = this._controllers[key];
+                Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
+                (controller?.xrController.pointer.rotationQuaternion || Quaternion.Identity()).multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
             } else {
                 // movement orientation direction does not affect camera.  We use rotation speed multiplier
                 // otherwise need to implement inertia and constraints for same feel as TargetCamera.
@@ -398,6 +424,13 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             }
         } else if (this._featureContext.movementOrientationFollowsViewerPose) {
             this._movementDirection.copyFrom(this._xrInput.xrCamera.rotationQuaternion);
+        } else if (this._featureContext.movementOrientationFollowsController) {
+            // get the correct controller
+            const handedness = this._featureContext.orientationPreferredHandedness || "right";
+            const key =
+                Object.keys(this._controllers).find((key) => this._controllers[key]?.xrController.inputSource.handedness === handedness) || Object.keys(this._controllers)[0];
+            const controller = this._controllers[key];
+            this._movementDirection.copyFrom(controller?.xrController.pointer.rotationQuaternion || Quaternion.Identity());
         }
 
         if ((this._movementState.moveX || this._movementState.moveY) && this._featureContext.movementEnabled) {
@@ -476,10 +509,10 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                             });
                         }
 
-                        if ("buttonChangedhandler" in registration) {
-                            registeredComponent.onButtonChangedObserver = component.onButtonStateChangedObservable.add(() => {
-                                if (component!.changes.pressed) {
-                                    registration.buttonChangedhandler(component!.changes.pressed, this._movementState, this._featureContext, this._xrInput);
+                        if ("buttonChangedHandler" in registration) {
+                            registeredComponent.onButtonChangedObserver = component.onButtonStateChangedObservable.add((component) => {
+                                if (component.changes.pressed) {
+                                    registration.buttonChangedHandler(component.changes.pressed, this._movementState, this._featureContext, this._xrInput);
                                 }
                             });
                         }
