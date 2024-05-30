@@ -2251,15 +2251,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
-                    } else if (observableB) {
-                        //<todo This seems like it would give unexpected results when both bodies have observers?
-                        // Flip collision info:
-                        collisionInfo.collider = bodyInfoB.body;
-                        collisionInfo.colliderIndex = bodyInfoB.index;
-                        collisionInfo.collidedAgainst = bodyInfoA.body;
-                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                        collisionInfo.normal = event.contactOnB.normal;
-                        observableB.notifyObservers(collisionInfo);
+                    }
+                    if (observableB) {
+                        const collisionInfoB: any = {
+                            collider: bodyInfoB.body,
+                            colliderIndex: bodyInfoB.index,
+                            collidedAgainst: bodyInfoA.body,
+                            collidedAgainstIndex: bodyInfoA.index,
+                            normal: event.contactOnB.normal,
+                            type: this._nativeCollisionValueToCollisionType(event.type),
+                        };
+                        observableB.notifyObservers(collisionInfoB);
                     }
                 } else if (this._bodyCollisionEndedObservable.size) {
                     const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
@@ -2267,15 +2269,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
-                    } else if (observableB) {
-                        //<todo This seems like it would give unexpected results when both bodies have observers?
-                        // Flip collision info:
-                        collisionInfo.collider = bodyInfoB.body;
-                        collisionInfo.colliderIndex = bodyInfoB.index;
-                        collisionInfo.collidedAgainst = bodyInfoA.body;
-                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                        collisionInfo.normal = event.contactOnB.normal;
-                        observableB.notifyObservers(collisionInfo);
+                    }
+                    if (observableB) {
+                        const collisionInfoB: any = {
+                            collider: bodyInfoB.body,
+                            colliderIndex: bodyInfoB.index,
+                            collidedAgainst: bodyInfoA.body,
+                            collidedAgainstIndex: bodyInfoA.index,
+                            normal: event.contactOnB.normal,
+                            type: this._nativeCollisionValueToCollisionType(event.type),
+                        };
+                        observableB.notifyObservers(collisionInfoB);
                     }
                 }
             }
