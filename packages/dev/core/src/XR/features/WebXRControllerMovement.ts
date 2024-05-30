@@ -10,7 +10,6 @@ import { Matrix, Quaternion, Vector3 } from "../../Maths/math.vector";
 import { WebXRAbstractFeature } from "./WebXRAbstractFeature";
 import type { MotionControllerComponentType } from "../motionController/webXRAbstractMotionController";
 import { Tools } from "../../Misc/tools";
-import { Ray } from "core/Culling/ray";
 
 /**
  * The options container for the controller movement module
@@ -388,8 +387,6 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
 
         return true;
     }
-
-    private _tmpRay = new Ray(Vector3.Zero(), Vector3.Zero(), 1);
 
     /**
      * Occurs on every XR frame.
