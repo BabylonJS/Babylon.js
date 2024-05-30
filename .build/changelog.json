@@ -1,7 +1,153 @@
 {
-    "fromTag": "7.8.1",
+    "fromTag": "7.8.2",
     "changelog": {
         "7.8.2": [],
+        "7.9.0": [
+            {
+                "pr": "15146",
+                "title": "Fix duplicate ImageProcessing defines in NME particles",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15145",
+                "title": "Allow changing sampling mode when creating GUI for mesh",
+                "description": "Changing sampling mode (to nearest) will help in this situation:\n\nhttps://forum.babylonjs.com/t/how-to-remove-gui-image-border/22924?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15144",
+                "title": "Lens flare: Fix off-centered flare in cases where the viewport is not full sized",
+                "description": "See https://forum.babylonjs.com/t/weird-lens-flare-behavior-on-viewport/50878",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15125",
+                "title": "Improvements for trailMesh",
+                "description": "Added options to constructor, deprecated old constructor. Follows existing mesh creation practices for consistency and future use. \r\n\r\nUsers can now control the trailMesh's segments, sections and switch off trail tapering when not needed. Defaults apply to preserve back-compat.\r\n\r\nUpdated trail mesh creation and update function to account for trail segments and tapering. Updated clone and parse functions to use new contructor.\r\n\r\nPls see forum [thread](https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965) here, thanks!",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15114",
+                "title": "Add support for 3D procedural textures",
+                "description": "This adds the ability to have a 3D ProceduralTexture. It renders all layers of the 3D texture, each time setting a uniform called \"layer\" to a value between 0-1.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/procedural-textures-3d.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15141",
+                "title": "Fixing an issue with touch camera initialization",
+                "description": "The code section make an incorrect assumption - \r\n\r\nIf mouse exists, disable touch on the mouse, and the same on the touch input, However, it doesn't take into account whether or not touch (or mouse) input is enabled on the camera.\r\n\r\nThe change here will enable touch on the mouse input if touch is not enabled, and will enable mouse on the touch if mouse module is not available.\r\n\r\nNot sure if we should consider this as a bug or a breaking change. I think it is a bug, looking for feedback.\r\n\r\nSee issue here - https://forum.babylonjs.com/t/the-free-camera-serialization-cannot-save-the-touch-screen-swipe-perspective-information/50715?u=raananw . The serialized camer haas only mouse enabled, so touch is disabled.\r\n\r\nPlayground ID to test (using touch input or emulated touch device) - #D4DKWL#2",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/touchCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15142",
+                "title": "Reset unneeded dump tools instead of just the dump-engine",
+                "description": "This solves the issue on two tests failing the first time (and working on the second run).\n\nFollow up of #15059",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15143",
+                "title": "NME FragmentOutputBlock: Fix deserialization",
+                "description": "See https://forum.babylonjs.com/t/nodematerial-materialdefines-keys-array-is-growing-over-time/50857/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15140",
+                "title": "Update contribution link",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "readme-es6.md",
+                    "readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15139",
+                "title": "Avoid using --save-dev in readme.md",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/inspector/readme.md",
+                    "packages/public/@babylonjs/loaders/readme.md"
+                ],
+                "tags": []
+            }
+        ],
         "7.8.1": [
             {
                 "pr": "15138",
