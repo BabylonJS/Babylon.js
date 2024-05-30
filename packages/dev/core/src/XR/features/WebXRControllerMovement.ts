@@ -416,8 +416,8 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
                 const key =
                     Object.keys(this._controllers).find((key) => this._controllers[key]?.xrController?.inputSource.handedness === handedness) || Object.keys(this._controllers)[0];
                 const controller = this._controllers[key];
-                controller?.xrController.getWorldPointerRayToRef(this._tmpRay);
-                Quaternion.RotationYawPitchRollToRef(this._tmpRay.direction.x, this._tmpRay.direction.y, this._tmpRay.direction.z, this._movementDirection);
+                Quaternion.RotationYawPitchRollToRef(rotationY, 0, 0, this._tempCacheQuaternion);
+                (controller?.xrController.pointer.rotationQuaternion || Quaternion.Identity()).multiplyToRef(this._tempCacheQuaternion, this._movementDirection);
             } else {
                 // movement orientation direction does not affect camera.  We use rotation speed multiplier
                 // otherwise need to implement inertia and constraints for same feel as TargetCamera.
@@ -433,8 +433,7 @@ export class WebXRControllerMovement extends WebXRAbstractFeature {
             const key =
                 Object.keys(this._controllers).find((key) => this._controllers[key]?.xrController.inputSource.handedness === handedness) || Object.keys(this._controllers)[0];
             const controller = this._controllers[key];
-            controller?.xrController.getWorldPointerRayToRef(this._tmpRay);
-            Quaternion.RotationYawPitchRollToRef(this._tmpRay.direction.x, this._tmpRay.direction.y, this._tmpRay.direction.z, this._movementDirection);
+            this._movementDirection.copyFrom(controller?.xrController.pointer.rotationQuaternion || Quaternion.Identity());
         }
 
         if ((this._movementState.moveX || this._movementState.moveY) && this._featureContext.movementEnabled) {
