@@ -75,7 +75,6 @@ export class GaussianSplattingMesh extends Mesh {
         this.subMeshes = [];
         new SubMesh(0, 0, 4, 0, 6, this);
 
-        this.doNotSyncBoundingInfo = true;
         this.setEnabled(false);
 
         this._lastProj = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -435,7 +434,6 @@ export class GaussianSplattingMesh extends Mesh {
         // Update the mesh
         const binfo = this.getBoundingInfo();
         binfo.reConstruct(minimum, maximum, this.getWorldMatrix());
-        binfo.isLocked = true;
 
         this.forcedInstanceCount = this._vertexCount;
         this.setEnabled(true);
