@@ -20,6 +20,10 @@ import {
 export const evaluateTests = async (engineType = "webgl2", testFileName = "config", debug = false, debugWait = false, logToConsole = true, logToFile = false) => {
     jest.retryTimes(2);
 
+    console.warn(
+        "Visualization tests with puppeteer is deprecated! please use playwright instead. See https://doc.babylonjs.com/contribute/toBabylon/HowToContribute#visualization-tests for help."
+    );
+
     debug = process.env.DEBUG === "true" || debug;
 
     if (process.env.TEST_FILENAME) {
