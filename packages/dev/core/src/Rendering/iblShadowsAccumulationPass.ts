@@ -11,6 +11,7 @@ import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../Materials/Textures/textureCreationOptions";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -18,6 +19,7 @@ import type { RenderTargetCreationOptions } from "../Materials/Textures/textureC
 export class IblShadowsAccumulationPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _renderPipeline: IblShadowsRenderPipeline;
 
     // We need two accumulation targets, each RG32F. One will be the procedural texture and the other will have this copied to it.
     // We need one local position target and then another from the prepass renderer
@@ -85,11 +87,13 @@ export class IblShadowsAccumulationPass {
     /**
      * Instantiates the accumulation pass
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The render pipeline this pass is associated with
      * @returns The accumulation pass
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -202,7 +206,7 @@ export class IblShadowsAccumulationPass {
         this._outputPT.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
         this._outputPT.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         this._outputPT.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
-        this._outputPT.setTexture("shadowSampler", this._scene.iblShadowsRenderer!.getBlurShadowTexture()!);
+        this._outputPT.setTexture("shadowSampler", this._renderPipeline.getBlurShadowTexture()!);
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {

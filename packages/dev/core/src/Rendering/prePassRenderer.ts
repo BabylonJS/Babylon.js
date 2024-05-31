@@ -871,14 +871,6 @@ export class PrePassRenderer {
             enablePrePass = true;
         }
 
-        if (this._scene._iblShadowsRenderer) {
-            const config = this._scene._iblShadowsRenderer.setPrePassRenderer(this);
-            if (config) {
-                config.enabled = true;
-            }
-            enablePrePass = true;
-        }
-
         for (let i = 0; i < this._scene.materials.length; i++) {
             if (this._scene.materials[i].setPrePassRenderer(this)) {
                 enablePrePass = true;
