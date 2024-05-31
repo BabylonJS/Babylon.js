@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "Trailmesh - tapered and untapered",
+            "playgroundId": "#XGGSWJ#1",
+            "renderCount": 100,
+            "referenceImage": "trailMesh.png"
+        },
+        {
             "title": "3D Procedural Textures",
             "playgroundId": "#AYZY4Q#7",
             "renderCount": 5,
