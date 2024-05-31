@@ -61,7 +61,6 @@ export default defineConfig({
                         },
                     },
         },
-
         {
             name: "webgl1",
             testMatch: "**/*webgl1.test.ts",
@@ -86,7 +85,6 @@ export default defineConfig({
                         },
                     },
         },
-
         {
             name: "webgpu",
             testMatch: "**/*webgpu.test.ts",
@@ -103,6 +101,30 @@ export default defineConfig({
                               args,
                           },
                       },
+        },
+        {
+            name: "performance",
+            testMatch: "**/performance.test.ts",
+            use: forceChrome
+                ? {
+                      // use real chrome (not chromium) for webgpu tests
+                      channel: "chrome",
+                      headless,
+                      launchOptions: {
+                          args,
+                      },
+                  }
+                : browserType === "BrowserStack"
+                  ? {
+                        connectOptions: { wsEndpoint: getCdpEndpoint(browserStackBrowser, "WebGL2") },
+                    }
+                  : {
+                        ...devices["Desktop " + browserType],
+                        headless,
+                        launchOptions: {
+                            args,
+                        },
+                    },
         },
     ],
 
