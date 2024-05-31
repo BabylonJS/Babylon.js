@@ -16,13 +16,12 @@ uniform vec4 sizeParams;
 void main(void) {
   vec2 uv =
       vec2((offsetX + vUV.x) * widthScale, (offsetY + vUV.y) * heightScale);
+  vec4 background = texture2D(textureSampler, vUV);
+  vec4 debugColour = texture2D(debugSampler, vUV);
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-    gl_FragColor.rgba = texture2D(textureSampler, vUV);
-    return;
+    gl_FragColor.rgba = background;
+  } else {
+    gl_FragColor.rgb = debugColour.rgb;
+    gl_FragColor.a = 1.0;
   }
-
-  vec4 debug = texture2D(debugSampler, vUV);
-
-  gl_FragColor.rgb = debug.rgb;
-  gl_FragColor.a = 1.0;
 }
