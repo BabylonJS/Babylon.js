@@ -49,17 +49,17 @@ const icdfyFragment = `
         return texelFetch(cdfy, ivec2(invocationId, y), 0).x;
     }
 
-    float bisect(int size, float target, int invocationId)
+    float bisect(int size, float targetValue, int invocationId)
     {
         int a = 0, b = size - 1;
         while (b - a > 1) {
             int c = a + b >> 1;
-            if (fetchCDF(c, invocationId) < target)
+            if (fetchCDF(c, invocationId) < targetValue)
                 a = c;
             else
                 b = c;
         }
-        return mix(float(a), float(b), (target - fetchCDF(a, invocationId)) / (fetchCDF(b, invocationId) - fetchCDF(a,invocationId))) / float(size - 1);
+        return mix(float(a), float(b), (targetValue - fetchCDF(a, invocationId)) / (fetchCDF(b, invocationId) - fetchCDF(a,invocationId))) / float(size - 1);
     }
     
     void main(void) {
@@ -75,8 +75,8 @@ const icdfyFragment = `
         else if (currentPixel.y == cdfHeight - 2) {
             gl_FragColor = vec4(1.0);
         } else {
-            float target = fetchCDF(cdfHeight - 1, currentPixel.x) * float(currentPixel.y) / float(cdfHeight - 2);
-            gl_FragColor = vec4(vec3(bisect(cdfHeight, target, currentPixel.x)), 1.0);
+            float targetValue = fetchCDF(cdfHeight - 1, currentPixel.x) * float(currentPixel.y) / float(cdfHeight - 2);
+            gl_FragColor = vec4(vec3(bisect(cdfHeight, targetValue, currentPixel.x)), 1.0);
         }
     }
 `;
@@ -111,17 +111,17 @@ const icdfxFragment = `
         return texelFetch(cdfx, ivec2(x, 0), 0).x;
     }
 
-    float bisect(int size, float target)
+    float bisect(int size, float targetValue)
     {
         int a = 0, b = size - 1;
         while (b - a > 1) {
             int c = a + b >> 1;
-            if (fetchCDF(c) < target)
+            if (fetchCDF(c) < targetValue)
                 a = c;
             else
                 b = c;
         }
-        return mix(float(a), float(b), (target - fetchCDF(a)) / (fetchCDF(b) - fetchCDF(a))) / float(size - 1);
+        return mix(float(a), float(b), (targetValue - fetchCDF(a)) / (fetchCDF(b) - fetchCDF(a))) / float(size - 1);
     }
     
     void main(void) {
@@ -138,8 +138,8 @@ const icdfxFragment = `
         else if (currentPixel.x == icdfWidth - 1) {
             gl_FragColor = vec4(1.0);
         } else {
-            float target = fetchCDF(cdfWidth - 1) * float(currentPixel.x) / float(icdfWidth - 1);
-            gl_FragColor = vec4(vec3(bisect(cdfWidth, target)), 1.0);
+            float targetValue = fetchCDF(cdfWidth - 1) * float(currentPixel.x) / float(icdfWidth - 1);
+            gl_FragColor = vec4(vec3(bisect(cdfWidth, targetValue)), 1.0);
         }
     }
 `;
@@ -240,6 +240,10 @@ export class IblShadowsImportanceSamplingRenderer {
 
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
+        if (!this._iblSource) {
+            this._iblSource = new Texture("does_not_exist", this._scene, true);
+            this._iblSource.isBlocking = true;
+        }
 
         const cdfOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
@@ -267,7 +271,9 @@ export class IblShadowsImportanceSamplingRenderer {
             true
         );
         this._cdfyPT.autoClear = false;
-        this._cdfyPT.setTexture("iblSource", this._iblSource);
+        if (this._iblSource) {
+            this._cdfyPT.setTexture("iblSource", this._iblSource);
+        }
         this._cdfyPT.refreshRate = 0;
         this._icdfyPT = new CustomProceduralTexture(
             "icdfyTexture",
@@ -319,7 +325,7 @@ export class IblShadowsImportanceSamplingRenderer {
      * @returns true if the importance sampling renderer is ready
      */
     public isReady() {
-        return true;
+        return this._iblSource && this._iblSource.isReady() && this._cdfyPT.isReady() && this._icdfyPT.isReady() && this._cdfxPT.isReady() && this._icdfxPT.isReady();
     }
 
     /**

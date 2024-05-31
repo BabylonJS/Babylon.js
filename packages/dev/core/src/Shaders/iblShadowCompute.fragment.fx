@@ -3,6 +3,8 @@ precision highp sampler3D;
 #define PI 3.1415927
 varying vec2 vUV;
 
+#define DISABLE_UNIFORMITY_ANALYSIS
+
 uniform sampler2D depthSampler;
 uniform sampler2D linearDepthSampler;
 uniform sampler2D worldNormalSampler;
@@ -252,8 +254,6 @@ bool hierarchical_march(Ray ray_vs) {
 
     return false;
 }
-
-#define VOXEL_GRID_RESOLUTION 64
 
 bool voxel_pos_in_bounds(ivec3 voxel_pos)
 {
