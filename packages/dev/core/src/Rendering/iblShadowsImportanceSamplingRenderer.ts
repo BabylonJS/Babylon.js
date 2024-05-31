@@ -4,145 +4,18 @@ import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { Scene } from "../scene";
 import { Texture } from "../Materials/Textures/texture";
 import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/customProceduralTexture";
+import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
 // import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 // import { Logger } from "../Misc/logger";
 import "../Shaders/importanceSamplingDebug.fragment";
+import "../Shaders/iblShadowsCdfx.fragment";
+import "../Shaders/iblShadowsIcdfx.fragment";
+import "../Shaders/iblShadowsCdfy.fragment";
+import "../Shaders/iblShadowsIcdfy.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
 import { Vector4 } from "../Maths/math.vector";
-
-const cdfyFragment = `
-    precision highp sampler2D;
-    #define PI 3.1415927
-    varying vec2 vUV;
-
-    uniform sampler2D iblSource;
-    uniform float iblLod;
-
-    float fetchPanoramic(ivec2 Coords, float envmapHeight) {
-        return sin(PI * (float(Coords.y) + 0.5) / envmapHeight) * dot(texelFetch(iblSource, Coords, int(iblLod)).rgb, vec3(0.3, 0.6, 0.1));
-    }
-    
-    void main(void) {
-
-        // ***** Display all slices as a grid *******
-        ivec2 size = textureSize(iblSource, 0);
-        ivec2 currentPixel = ivec2(max(vUV * vec2(size.x, size.y + 1) - vec2(0.5), vec2(0.0)));
-        
-        float cdfy = 0.0;
-        for (int y = 1; y <= currentPixel.y; y++) {
-            cdfy += fetchPanoramic(ivec2(currentPixel.x, y - 1), float(size.y));
-        }
-        gl_FragColor = vec4(cdfy, 0.0, 0.0, 1.0);
-    }
-`;
-
-const icdfyFragment = `
-    precision highp sampler2D;
-    #define PI 3.1415927
-    varying vec2 vUV;
-
-    uniform sampler2D cdfy;
-    
-    float fetchCDF(int y, int invocationId) {
-        return texelFetch(cdfy, ivec2(invocationId, y), 0).x;
-    }
-
-    float bisect(int size, float targetValue, int invocationId)
-    {
-        int a = 0, b = size - 1;
-        while (b - a > 1) {
-            int c = a + b >> 1;
-            if (fetchCDF(c, invocationId) < targetValue)
-                a = c;
-            else
-                b = c;
-        }
-        return mix(float(a), float(b), (targetValue - fetchCDF(a, invocationId)) / (fetchCDF(b, invocationId) - fetchCDF(a,invocationId))) / float(size - 1);
-    }
-    
-    void main(void) {
-
-        ivec2 cdfSize = textureSize(cdfy, 0);
-        int cdfHeight = cdfSize.y;
-        ivec2 currentPixel = ivec2(max(vUV * vec2(cdfSize.x, cdfSize.y - 1) - vec2(0.5), vec2(0.0)));
-
-        if (currentPixel.y == 0)
-        {
-            gl_FragColor = vec4(0.0);
-        }
-        else if (currentPixel.y == cdfHeight - 2) {
-            gl_FragColor = vec4(1.0);
-        } else {
-            float targetValue = fetchCDF(cdfHeight - 1, currentPixel.x) * float(currentPixel.y) / float(cdfHeight - 2);
-            gl_FragColor = vec4(vec3(bisect(cdfHeight, targetValue, currentPixel.x)), 1.0);
-        }
-    }
-`;
-
-const cdfxFragment = `
-    precision highp sampler2D;
-    #define PI 3.1415927
-    varying vec2 vUV;
-
-    uniform sampler2D cdfy;
-    void main(void) {
-
-        ivec2 cdfyRes = textureSize(cdfy, 0);
-        ivec2 currentPixel = ivec2(max(vUV * vec2(cdfyRes.x + 1, 1) - vec2(0.5), vec2(0.0)));
-
-        float cdfx = 0.0;
-        for (int x = 1; x <= currentPixel.x; x++) {
-            cdfx += texelFetch(cdfy, ivec2(x - 1, cdfyRes.y - 1), 0).x;
-        }
-        gl_FragColor = vec4(vec3(cdfx), 1.0);
-    }
-`;
-
-const icdfxFragment = `
-    precision highp sampler2D;
-    #define PI 3.1415927
-    varying vec2 vUV;
-
-    uniform sampler2D cdfx;
-    
-    float fetchCDF(int x) {
-        return texelFetch(cdfx, ivec2(x, 0), 0).x;
-    }
-
-    float bisect(int size, float targetValue)
-    {
-        int a = 0, b = size - 1;
-        while (b - a > 1) {
-            int c = a + b >> 1;
-            if (fetchCDF(c) < targetValue)
-                a = c;
-            else
-                b = c;
-        }
-        return mix(float(a), float(b), (targetValue - fetchCDF(a)) / (fetchCDF(b) - fetchCDF(a))) / float(size - 1);
-    }
-    
-    void main(void) {
-
-        ivec2 cdfSize = textureSize(cdfx, 0);
-        int cdfWidth = cdfSize.x;
-        int icdfWidth = cdfWidth - 1;
-        ivec2 currentPixel = ivec2(max(vUV * vec2(icdfWidth, 1) - vec2(0.5), vec2(0.0)));
-
-        if (currentPixel.x == 0)
-        {
-            gl_FragColor = vec4(0.0);
-        }
-        else if (currentPixel.x == icdfWidth - 1) {
-            gl_FragColor = vec4(1.0);
-        } else {
-            float targetValue = fetchCDF(cdfWidth - 1) * float(currentPixel.x) / float(icdfWidth - 1);
-            gl_FragColor = vec4(vec3(bisect(cdfWidth, targetValue)), 1.0);
-        }
-    }
-`;
+import { RawTexture } from "../Materials/Textures/rawTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -152,10 +25,10 @@ export class IblShadowsImportanceSamplingRenderer {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
-    private _cdfyPT: CustomProceduralTexture;
-    private _icdfyPT: CustomProceduralTexture;
-    private _cdfxPT: CustomProceduralTexture;
-    private _icdfxPT: CustomProceduralTexture;
+    private _cdfyPT: ProceduralTexture;
+    private _icdfyPT: ProceduralTexture;
+    private _cdfxPT: ProceduralTexture;
+    private _icdfxPT: ProceduralTexture;
     private _iblSource: Texture;
     public get iblSource(): Texture {
         return this._iblSource;
@@ -168,10 +41,10 @@ export class IblShadowsImportanceSamplingRenderer {
         this._cdfxPT.render();
         this._icdfxPT.render();
     }
-    public getIcdfyTexture(): CustomProceduralTexture {
+    public getIcdfyTexture(): ProceduralTexture {
         return this._icdfyPT;
     }
-    public getIcdfxTexture(): CustomProceduralTexture {
+    public getIcdfxTexture(): ProceduralTexture {
         return this._icdfxPT;
     }
 
@@ -241,76 +114,52 @@ export class IblShadowsImportanceSamplingRenderer {
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
         if (!this._iblSource) {
-            this._iblSource = new Texture("does_not_exist", this._scene, true);
+            this._iblSource = RawTexture.CreateRGBTexture(
+                new Uint8Array([255, 0, 0]),
+                1,
+                1,
+                this._scene,
+                false,
+                false,
+                Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                Constants.TEXTURETYPE_UNSIGNED_BYTE
+            );
             this._iblSource.isBlocking = true;
         }
 
-        const cdfOptions: ICustomProceduralTextureCreationOptions = {
+        // Create CDF maps (Cumulative Distribution Function) to assist in importance sampling
+        const cdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            skipJson: true,
         };
-        const icdfOptions: ICustomProceduralTextureCreationOptions = {
+        const icdfOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            skipJson: true,
         };
-        this._cdfyPT = new CustomProceduralTexture(
-            "cdfyTexture",
-            { fragmentSource: cdfyFragment } as any,
-            { width: size.width, height: size.height + 1 },
-            this._scene,
-            cdfOptions,
-            false,
-            true
-        );
+        this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblShadowsCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
         if (this._iblSource) {
             this._cdfyPT.setTexture("iblSource", this._iblSource);
         }
-        this._cdfyPT.refreshRate = 0;
-        this._icdfyPT = new CustomProceduralTexture(
-            "icdfyTexture",
-            { fragmentSource: icdfyFragment } as any,
-            { width: size.width, height: size.height },
-            this._scene,
-            icdfOptions,
-            false,
-            true
-        );
+        this._cdfyPT.refreshRate = 1;
+        this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblShadowsIcdfy", this._scene, icdfOptions, false, false);
         this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
-        this._icdfyPT.refreshRate = 0;
-        this._cdfxPT = new CustomProceduralTexture(
-            "cdfxTexture",
-            { fragmentSource: cdfxFragment } as any,
-            { width: size.width + 1, height: 1 },
-            this._scene,
-            cdfOptions,
-            false,
-            true
-        );
+        this._icdfyPT.refreshRate = 1;
+        this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblShadowsCdfx", this._scene, cdfOptions, false, false);
         this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
-        this._cdfxPT.refreshRate = 0;
-        this._icdfxPT = new CustomProceduralTexture(
-            "icdfxTexture",
-            { fragmentSource: icdfxFragment } as any,
-            { width: size.width, height: 1 },
-            this._scene,
-            icdfOptions,
-            false,
-            true
-        );
+        this._cdfxPT.refreshRate = 1;
+        this._icdfxPT = new ProceduralTexture("icdfxTexture", { width: size.width, height: 1 }, "iblShadowsIcdfx", this._scene, icdfOptions, false, false);
         this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
-        this._icdfxPT.refreshRate = 0;
+        this._icdfxPT.refreshRate = 1;
     }
 
     private _disposeTextures() {

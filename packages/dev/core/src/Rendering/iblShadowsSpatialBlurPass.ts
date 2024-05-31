@@ -9,6 +9,7 @@ import { Vector4 } from "../Maths/math.vector";
 import "../Shaders/iblShadowSpatialBlur.fragment";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -16,7 +17,7 @@ import { PostProcess } from "../PostProcesses/postProcess";
 export class IblShadowsSpatialBlurPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
-
+    private _renderPipeline: IblShadowsRenderPipeline;
     private _outputPT: CustomProceduralTexture;
     private _worldScale: number = 1.0;
 
@@ -65,11 +66,13 @@ export class IblShadowsSpatialBlurPass {
     /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The IBL shadows render pipeline
      * @returns The importance sampling renderer
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -107,7 +110,7 @@ export class IblShadowsSpatialBlurPass {
 
         const iterationCount = 1;
         this._outputPT.setVector4("blurParameters", new Vector4(iterationCount, this._worldScale, 0.0, 0.0));
-        this._outputPT.setTexture("shadowSampler", this._scene.iblShadowsRenderer!.getRawShadowTexture());
+        this._outputPT.setTexture("shadowSampler", this._renderPipeline!.getRawShadowTexture());
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
