@@ -149,22 +149,32 @@ export class PhysicsViewer {
      */
     protected _updateDebugMeshesV2(): void {
         const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
-        for (let i = 0; i < this._numBodies; i++) {
+        for (let i = 0; i < this._numBodies; ) {
             const body = this._bodies[i];
+            if (body && body.isDisposed) {
+                this.hideBody(body);
+                continue;
+            }
             const transform = this._bodyMeshes[i];
             if (body && transform) {
                 plugin.syncTransform(body, transform);
             }
+            i++;
         }
     }
 
     protected _updateInertiaMeshes(): void {
-        for (let i = 0; i < this._numInertiaBodies; i++) {
+        for (let i = 0; i < this._numInertiaBodies; ) {
             const body = this._inertiaBodies[i];
+            if (body && body.isDisposed) {
+                this.hideInertia(body);
+                continue;
+            }
             const mesh = this._inertiaMeshes[i];
             if (body && mesh) {
                 this._updateDebugInertia(body, mesh);
             }
+            i++;
         }
     }
 
