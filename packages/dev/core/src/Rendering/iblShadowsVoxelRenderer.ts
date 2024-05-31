@@ -410,11 +410,12 @@ export class IblShadowsVoxelRenderer {
 
         this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
             // Remove the MRTs from the array so they don't get rendered again.
-            // TODO - this seems to be removing the MRT's too early??
+            // TODO - we seem to be removing the MRT's too early if we don't have a timeout here. Why?
             setTimeout(() => {
                 this._stopVoxelization();
 
                 if (this._threeWayVoxelization) {
+                    this._voxelGridRT._generateMipMaps = false;
                     this._voxelGridRT.render();
                 }
                 this._generateMipMaps();
