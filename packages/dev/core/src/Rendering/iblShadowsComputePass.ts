@@ -9,6 +9,7 @@ import { Matrix, Vector2, Vector4 } from "../Maths/math.vector";
 import "../Shaders/iblShadowCompute.fragment";
 import "../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -17,6 +18,7 @@ import { PostProcess } from "../PostProcesses/postProcess";
 export class IblShadowsComputePass {
     private _scene: Scene;
     private _engine: AbstractEngine;
+    private _renderPipeline: IblShadowsRenderPipeline;
     private _voxelShadowEnabled: boolean = true;
     private _sssEnabled: boolean = true;
     private _sssSamples: number = 16;
@@ -121,11 +123,13 @@ export class IblShadowsComputePass {
     /**
      * Instantiates the shadow compute pass
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The IBL shadows render pipeline
      * @returns The shadow compute pass
      */
-    constructor(scene: Scene) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
         this._engine = scene.getEngine();
+        this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -173,7 +177,7 @@ export class IblShadowsComputePass {
         const downscaleSquared = this._downscale * this._downscale;
         this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, this._envRotation));
         const offset = new Vector2(0.0, 0.0);
-        const voxelGrid = this._scene.iblShadowsRenderer!.getVoxelGridTexture();
+        const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
         this._outputPT.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
 
@@ -184,8 +188,8 @@ export class IblShadowsComputePass {
         this._outputPT.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
         this._outputPT.setVector4("shadowOpacity", new Vector4(this._voxelShadowEnabled ? 1.0 : 0.0, this._sssEnabled ? 1.0 : 0.0, 0.0, 0.0));
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
-        this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());
-        this._outputPT.setTexture("icdfxSampler", this._scene.iblShadowsRenderer!.getIcdfxTexture());
+        this._outputPT.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
+        this._outputPT.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
         this._outputPT.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
         this._outputPT.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
 

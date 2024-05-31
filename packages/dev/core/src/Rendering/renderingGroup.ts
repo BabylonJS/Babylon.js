@@ -180,10 +180,6 @@ export class RenderingGroup {
             engine.setAlphaMode(Constants.ALPHA_DISABLE);
         }
 
-        if (this._scene.useIblShadows) {
-            this._scene.iblShadowsRenderer!.render();
-        }
-
         // Set back stencil to false in case it changes before the edge renderer.
         engine.setStencilBuffer(false);
 
