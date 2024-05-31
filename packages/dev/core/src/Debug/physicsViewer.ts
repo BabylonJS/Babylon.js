@@ -153,11 +153,10 @@ export class PhysicsViewer {
             const body = this._bodies[i];
             if (body && body.isDisposed && this.hideBody(body)) {
                 continue;
-            } else {
-                const transform = this._bodyMeshes[i];
-                if (body && transform) {
-                    plugin.syncTransform(body, transform);
-                }
+            }
+            const transform = this._bodyMeshes[i];
+            if (body && transform) {
+                plugin.syncTransform(body, transform);
             }
             i++;
         }
@@ -168,11 +167,10 @@ export class PhysicsViewer {
             const body = this._inertiaBodies[i];
             if (body && body.isDisposed && this.hideInertia(body)) {
                 continue;
-            } else {
-                const mesh = this._inertiaMeshes[i];
-                if (body && mesh) {
-                    this._updateDebugInertia(body, mesh);
-                }
+            }
+            const mesh = this._inertiaMeshes[i];
+            if (body && mesh) {
+                this._updateDebugInertia(body, mesh);
             }
             i++;
         }
