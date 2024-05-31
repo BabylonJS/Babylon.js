@@ -16,6 +16,8 @@ import "../Shaders/voxelGrid.fragment";
 import "../Shaders/voxelGrid.vertex";
 import "../Shaders/voxelGrid2dArrayDebug.fragment";
 import "../Shaders/voxelGrid3dDebug.fragment";
+import "../Shaders/voxelSlabDebug.vertex";
+import "../Shaders/voxelSlabDebug.fragment";
 import "../Shaders/combineVoxelGrids.fragment";
 import "../Shaders/generateVoxelMip.fragment";
 import { PostProcess } from "../PostProcesses/postProcess";
@@ -80,6 +82,7 @@ export class IblShadowsVoxelRenderer {
     private _mipEffectRenderer: EffectRenderer;
     private _mipEffectWrapper: EffectWrapper;
 
+    private _voxelSlabDebugRT: RenderTargetTexture;
     private _voxelDebugPass: PostProcess;
     private _voxelDebugEnabled: boolean = false;
     private _voxelDebugAxis: number = -1;
@@ -111,7 +114,7 @@ export class IblShadowsVoxelRenderer {
                 "Final compose shader",
                 this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
                 ["sizeParams", "mipNumber"], // attributes
-                ["voxelTexture"], // textures
+                ["voxelTexture", "voxelSlabTexture"], // textures
                 1.0, // options
                 this._scene.activeCamera, // camera
                 Texture.NEAREST_SAMPLINGMODE, // sampling
@@ -133,9 +136,21 @@ export class IblShadowsVoxelRenderer {
                         effect.setTexture("voxelTexture", this._voxelGridZaxis);
                     }
                 }
+                effect.setTexture("voxelSlabTexture", this._voxelSlabDebugRT);
                 effect.setVector4("sizeParams", this._debugSizeParams);
                 effect.setFloat("mipNumber", this._debugMipNumber);
             };
+            this._voxelSlabDebugRT = new RenderTargetTexture("voxelSlabDebug", { ratio: 1 }, this._scene, {
+                generateDepthBuffer: true,
+                generateMipMaps: false,
+                type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                format: Constants.TEXTUREFORMAT_RGBA,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            });
+        } else {
+            if (this._voxelSlabDebugRT) {
+                this._removeVoxelRTs([this._voxelSlabDebugRT]);
+            }
         }
     }
 
@@ -189,19 +204,18 @@ export class IblShadowsVoxelRenderer {
         if (rt) {
             this._mipEffectRenderer.saveStates();
             // Set previous mip as source uniform.
-            this._mipEffectWrapper.effect.setTexture("srcMip", this._mipRT);
 
             // Render to each layer of the voxel grid.
             for (let layer = 0; layer < bindSize; layer++) {
+                this._mipEffectWrapper.effect.setTexture("srcMip", this._mipRT);
                 this._mipEffectWrapper.effect.setFloat("layerNum", layer);
                 this._mipEffectWrapper.effect.setInt("lodLevel", lodLevel);
                 this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
                 this._mipEffectRenderer.applyEffectWrapper(this._mipEffectWrapper);
                 this._mipEffectRenderer.draw();
-
-                this._mipEffectRenderer.restoreStates();
-                this._engine.unBindFramebuffer(rt, true);
             }
+            this._mipEffectRenderer.restoreStates();
+            this._engine.unBindFramebuffer(rt, true);
         }
     }
 
@@ -220,7 +234,7 @@ export class IblShadowsVoxelRenderer {
             generateDepthBuffer: false,
             generateMipMaps: false,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -309,24 +323,37 @@ export class IblShadowsVoxelRenderer {
     private _disposeTextures() {
         this._stopVoxelization();
         for (let i = 0; i < this._voxelMrtsZaxis.length; i++) {
-            this._voxelMrtsXaxis[i].dispose(true);
-            this._voxelMrtsYaxis[i].dispose(true);
+            if (this._threeWayVoxelization) {
+                this._voxelMrtsXaxis[i].dispose(true);
+                this._voxelMrtsYaxis[i].dispose(true);
+            }
             this._voxelMrtsZaxis[i].dispose(true);
         }
-        this._voxelGridXaxis.dispose();
-        this._voxelGridYaxis.dispose();
+        if (this._threeWayVoxelization) {
+            this._voxelGridXaxis.dispose();
+            this._voxelGridYaxis.dispose();
+            this._voxelGridRT.dispose();
+        }
         this._voxelGridZaxis.dispose();
-        this._voxelGridRT.dispose();
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
         this._voxelMrtsZaxis = [];
+
+        if (this._voxelSlabDebugRT) {
+            this._removeVoxelRTs([this._voxelSlabDebugRT]);
+            this._voxelSlabDebugRT.dispose();
+        }
     }
 
     private _createVoxelMaterial(): ShaderMaterial {
-        return new ShaderMaterial("voxelization", this._scene, "voxelGrid", {
+        const voxelMaterial = new ShaderMaterial("voxelization", this._scene, "voxelGrid", {
             uniforms: ["world", "viewMatrix", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
             defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
         });
+        voxelMaterial.cullBackFaces = false;
+        voxelMaterial.backFaceCulling = false;
+        voxelMaterial.depthFunction = Engine.ALWAYS;
+        return voxelMaterial;
     }
 
     /**
@@ -343,19 +370,19 @@ export class IblShadowsVoxelRenderer {
      */
     private _stopVoxelization() {
         // If the MRT's are already in the list of render targets, remove them.
-        this._removeVoxelMRTs(this._voxelMrtsXaxis);
-        this._removeVoxelMRTs(this._voxelMrtsYaxis);
-        this._removeVoxelMRTs(this._voxelMrtsZaxis);
+        this._removeVoxelRTs(this._voxelMrtsXaxis);
+        this._removeVoxelRTs(this._voxelMrtsYaxis);
+        this._removeVoxelRTs(this._voxelMrtsZaxis);
     }
 
-    private _removeVoxelMRTs(mrts: MultiRenderTarget[]) {
+    private _removeVoxelRTs(rts: RenderTargetTexture[]) {
         const currentRTs = this._scene.customRenderTargets;
-        const mrtIdx = currentRTs.findIndex((rt) => {
-            if (rt === mrts[0]) return true;
+        const rtIdx = currentRTs.findIndex((rt) => {
+            if (rt === rts[0]) return true;
             return false;
         });
-        if (mrtIdx >= 0) {
-            this._scene.customRenderTargets.splice(mrtIdx, mrts.length);
+        if (rtIdx >= 0) {
+            this._scene.customRenderTargets.splice(rtIdx, rts.length);
         }
     }
 
@@ -369,11 +396,16 @@ export class IblShadowsVoxelRenderer {
         this._voxelizationInProgress = true;
 
         if (this._threeWayVoxelization) {
-            this._addMRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
-            this._addMRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
-            this._addMRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+            this._addRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
+            this._addRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
+            this._addRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
         } else {
-            this._addMRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+            this._addRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
+        }
+
+        // Add the slab debug RT if needed.
+        if (this._voxelDebugEnabled) {
+            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1);
         }
 
         this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
@@ -381,9 +413,7 @@ export class IblShadowsVoxelRenderer {
             // TODO - this seems to be removing the MRT's too early??
             setTimeout(() => {
                 this._stopVoxelization();
-                // this._voxelGridRT.setTexture("voxelXaxisSampler", this._voxelGridXaxis);
-                // this._voxelGridRT.setTexture("voxelYaxisSampler", this._voxelGridYaxis);
-                // this._voxelGridRT.setTexture("voxelZaxisSampler", this._voxelGridZaxis);
+
                 if (this._threeWayVoxelization) {
                     this._voxelGridRT.render();
                 }
@@ -396,7 +426,7 @@ export class IblShadowsVoxelRenderer {
         });
     }
 
-    private _addMRTsForRender(mrts: MultiRenderTarget[], excludedMeshes: number[], axis: number) {
+    private _addRTsForRender(mrts: RenderTargetTexture[], excludedMeshes: number[], axis: number, shaderType: number = 0) {
         const slabSize = 1.0 / this._computeNumberOfSlabs();
         const meshes = this._scene.meshes;
 
@@ -406,10 +436,20 @@ export class IblShadowsVoxelRenderer {
             const nearPlane = mrtIndex * slabSize;
             const farPlane = (mrtIndex + 1) * slabSize;
             const stepSize = slabSize / this._maxDrawBuffers;
-            // Logger.Log("Near plane for slab " + mrtIndex + " is " + nearPlane);
-            // Logger.Log("Far plane for slab " + mrtIndex + " is " + farPlane);
-            // Logger.Log("Size of slab " + mrtIndex + " is " + slabSize);
-            const voxelMaterial = this._createVoxelMaterial();
+
+            let voxelMaterial: ShaderMaterial;
+            if (shaderType === 0) {
+                voxelMaterial = this._createVoxelMaterial();
+            } else {
+                voxelMaterial = new ShaderMaterial("voxelSlabDebug", this._scene, "voxelSlabDebug", {
+                    uniforms: ["world", "viewMatrix", "cameraViewMatrix", "projection", "invWorldScale", "nearPlane", "farPlane", "stepSize"],
+                    defines: ["MAX_DRAW_BUFFERS " + this._maxDrawBuffers],
+                });
+                this._scene.onBeforeRenderObservable.add((effect) => {
+                    voxelMaterial.setMatrix("projection", this._scene.activeCamera!.getProjectionMatrix());
+                    voxelMaterial.setMatrix("cameraViewMatrix", this._scene.activeCamera!.getViewMatrix());
+                });
+            }
             const cameraPosition = new Vector3(0, 0, 0);
             let targetPosition = new Vector3(0, 0, 1);
             if (axis === 0) {
@@ -426,9 +466,6 @@ export class IblShadowsVoxelRenderer {
             voxelMaterial.setFloat("nearPlane", nearPlane);
             voxelMaterial.setFloat("farPlane", farPlane);
             voxelMaterial.setFloat("stepSize", stepSize);
-            voxelMaterial.cullBackFaces = false;
-            voxelMaterial.backFaceCulling = false;
-            voxelMaterial.depthFunction = Engine.ALWAYS;
 
             // Set this material on every mesh in the scene (for this RT)
             meshes.forEach((mesh) => {

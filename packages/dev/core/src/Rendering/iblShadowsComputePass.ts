@@ -167,11 +167,6 @@ export class IblShadowsComputePass {
         this._outputPT.setMatrix("invProjMtx", this._cameraInvProj);
         this._outputPT.setMatrix("invViewMtx", this._cameraInvView);
         this._outputPT.setMatrix("wsNormalizationMtx", this._invWorldScaleMatrix);
-        // if (this._scene.getTransformMatrix()) {
-        //     const invVPMtx = new Matrix();
-        //     this._scene.getTransformMatrix().invertToRef(invVPMtx);
-        //     this._outputPT.setMatrix("invVPMtx", invVPMtx);
-        // }
 
         this._frameId++;
 
@@ -192,6 +187,7 @@ export class IblShadowsComputePass {
         this._outputPT.setTexture("icdfySampler", this._scene.iblShadowsRenderer!.getIcdfyTexture());
         this._outputPT.setTexture("icdfxSampler", this._scene.iblShadowsRenderer!.getIcdfxTexture());
         this._outputPT.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
+        this._outputPT.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {
