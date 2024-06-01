@@ -22,7 +22,6 @@ export const evaluatePlaywrightVisTests = async (engineType = "webgl2", testFile
     const useStandardTestList = testFileName === "config";
     // load the config
     const rawJsonData = fs.readFileSync(configPath, "utf8");
-    // console.log(data);
     const config = JSON.parse(rawJsonData.replace(/^\uFEFF/, ""));
 
     const logPath = path.resolve(__dirname, `${testFileName}_${engineType}_log.txt`);
