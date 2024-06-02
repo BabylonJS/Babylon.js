@@ -879,9 +879,8 @@ export class SolidParser {
             this._materialToUse.push(this._meshesFromObj[j].materialName);
             //If the mesh is a line mesh
             if (this._handledMesh.hasLines) {
-                const lineMat = new StandardMaterial(this._handledMesh.name + "_line", scene);
-                lineMat.fillMode = 6; //draw lines
-                this._handledMesh.directMaterial = lineMat;
+                babylonMesh._internalMetadata ??= {};
+                babylonMesh._internalMetadata["_isLine"] = true; //this is a line mesh
             }
 
             if (this._handledMesh.positions?.length === 0) {
