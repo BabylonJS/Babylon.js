@@ -1297,7 +1297,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * @param effect defines the effect used to bind the material
      * @param _subMesh defines the subMesh that the material has been bound for
      */
-    protected _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, _subMesh?: SubMesh): void {
+    protected _afterBind(mesh?: AbstractMesh, effect: Nullable<Effect> = null, _subMesh?: SubMesh): void {
         this._scene._cachedMaterial = this;
         if (this._needToBindSceneUbo) {
             if (effect) {

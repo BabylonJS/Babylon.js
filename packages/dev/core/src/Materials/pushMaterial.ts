@@ -77,7 +77,7 @@ export class PushMaterial extends Material {
         this.bindForSubMesh(world, mesh, mesh.subMeshes[0]);
     }
 
-    protected override _afterBind(mesh?: Mesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
+    protected override _afterBind(mesh?: AbstractMesh, effect: Nullable<Effect> = null, subMesh?: SubMesh): void {
         super._afterBind(mesh, effect, subMesh);
         this.getScene()._cachedEffect = effect;
         if (subMesh) {

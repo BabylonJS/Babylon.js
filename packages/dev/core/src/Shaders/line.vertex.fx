@@ -1,13 +1,12 @@
-﻿#include<instancesDeclaration>
+﻿#include<__decl__lineVertex>
+
+#include<instancesDeclaration>
 
 #include<clipPlaneVertexDeclaration>
 
 // Attributes
 attribute vec3 position;
 attribute vec4 normal;
-
-// Uniforms
-uniform mat4 viewProjection;
 
 uniform float width;
 uniform float aspectRatio;
