@@ -412,6 +412,31 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     }
 
     /**
+     * Set the maximum allowed linear and angular velocities
+     * @param maxLinearVelocity maximum allowed linear velocity
+     * @param maxAngularVelocity maximum allowed angular velocity
+     */
+    setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void {
+        this._hknp.HP_World_SetSpeedLimit(this.world, maxLinearVelocity, maxAngularVelocity);
+    }
+
+    /**
+     * @returns maximum allowed linear velocity
+     */
+    getMaxLinearVelocity(): number {
+        const limits = this._hknp.HP_World_GetSpeedLimit(this.world);
+        return limits[1];
+    }
+
+    /**
+     * @returns maximum allowed angular velocity
+     */
+    getMaxAngularVelocity(): number {
+        const limits = this._hknp.HP_World_GetSpeedLimit(this.world);
+        return limits[2];
+    }
+
+    /**
      * Initializes a physics body with the given position and orientation.
      *
      * @param body - The physics body to initialize.
