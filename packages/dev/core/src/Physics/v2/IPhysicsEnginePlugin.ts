@@ -389,6 +389,9 @@ export interface IPhysicsEnginePluginV2 {
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
+    setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void;
+    getMaxLinearVelocity(): number;
+    getMaxAngularVelocity(): number;
 
     // body
     initBody(body: PhysicsBody, motionType: PhysicsMotionType, position: Vector3, orientation: Quaternion): void;
