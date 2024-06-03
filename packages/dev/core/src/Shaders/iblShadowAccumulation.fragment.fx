@@ -32,6 +32,12 @@ void main(void) {
   // 0.5. It's 127/255 = 0.49803921568.
   velocityColor.rg =
       velocityColor.rg * 2.0 + vec2(0.00392156862745) - vec2(1.0);
+  if (abs(velocityColor.r) < 0.01) {
+    velocityColor.r = 0.0;
+  }
+  if (abs(velocityColor.g) < 0.01) {
+    velocityColor.g = 0.0;
+  }
 
   vec2 prevCoord = vUV + velocityColor;
   vec3 PrevLP = textureLod(prevLocalPositionSampler, prevCoord, 0.0).xyz;
@@ -45,6 +51,6 @@ void main(void) {
           : 1.0;
   PrevShadows = max(vec2(0.0), PrevShadows);
 
-  gl_FragColor =
-      vec4(mix(PrevShadows.x, newShadows, PrevShadows.y), PrevShadows.y, 0, 1.0);
+  gl_FragColor = vec4(mix(PrevShadows.x, newShadows, PrevShadows.y),
+                      PrevShadows.y, 0, 1.0);
 }
