@@ -392,7 +392,7 @@ bool anyHitVoxelsSimple(const Ray ray_vs) {
     return false;
   }
   for (int i = 0; i < maxSteps; ++i) {
-    float voxelValue = texture(voxelGridSampler, currentPosition).r;
+    float voxelValue = textureLod(voxelGridSampler, currentPosition, 0.0).r;
     if (voxelValue > 0.0) {
       return true;
     }
