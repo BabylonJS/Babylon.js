@@ -5,7 +5,7 @@ import type { Nullable } from "../types";
 import type { PointerInfo } from "../Events/pointerEvents";
 import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
@@ -20,6 +20,7 @@ import { Color3 } from "../Maths/math.color";
 import type { LinesMesh } from "../Meshes/linesMesh";
 import { Epsilon } from "../Maths/math.constants";
 import type { IPointerEvent } from "../Events/deviceInputEvents";
+import { TransformNode } from "../Meshes/transformNode";
 
 /**
  * Interface for bounding box gizmo
@@ -111,9 +112,9 @@ export interface IBoundingBoxGizmo extends IGizmo {
  * Bounding box gizmo
  */
 export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
-    protected _lineBoundingBox: AbstractMesh;
-    protected _rotateSpheresParent: AbstractMesh;
-    protected _scaleBoxesParent: AbstractMesh;
+    protected _lineBoundingBox: TransformNode;
+    protected _rotateSpheresParent: TransformNode;
+    protected _scaleBoxesParent: TransformNode;
     protected _boundingDimensions = new Vector3(1, 1, 1);
     protected _renderObserver: Nullable<Observer<Scene>> = null;
     protected _pointerObserver: Nullable<Observer<PointerInfo>> = null;
@@ -257,7 +258,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
     /**
      * Mesh used as a pivot to rotate the attached node
      */
-    protected _anchorMesh: AbstractMesh;
+    protected _anchorMesh: TransformNode;
 
     protected _existingMeshScale = new Vector3();
 
@@ -313,7 +314,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         // Do not update the gizmo's scale so it has a fixed size to the object its attached to
         this.updateScale = false;
 
-        this._anchorMesh = new AbstractMesh("anchor", gizmoLayer.utilityLayerScene);
+        this._anchorMesh = new TransformNode("anchor", gizmoLayer.utilityLayerScene);
         // Create Materials
         this._coloredMaterial = new StandardMaterial("", gizmoLayer.utilityLayerScene);
         this._coloredMaterial.disableLighting = true;
@@ -321,7 +322,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._hoverColoredMaterial.disableLighting = true;
 
         // Build bounding box out of lines
-        this._lineBoundingBox = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+        this._lineBoundingBox = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._lineBoundingBox.rotationQuaternion = new Quaternion();
         const lines = [];
         lines.push(CreateLines("lines", { points: [new Vector3(0, 0, 0), new Vector3(this._boundingDimensions.x, 0, 0)] }, gizmoLayer.utilityLayerScene));
@@ -416,7 +417,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this.setColor(color);
 
         // Create rotation spheres
-        this._rotateSpheresParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+        this._rotateSpheresParent = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._rotateSpheresParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 12; i++) {
             const sphere = CreateSphere("", { diameter: 1 }, gizmoLayer.utilityLayerScene);
@@ -535,7 +536,7 @@ export class BoundingBoxGizmo extends Gizmo implements IBoundingBoxGizmo {
         this._rootMesh.addChild(this._rotateSpheresParent);
 
         // Create scale cubes
-        this._scaleBoxesParent = new AbstractMesh("", gizmoLayer.utilityLayerScene);
+        this._scaleBoxesParent = new TransformNode("", gizmoLayer.utilityLayerScene);
         this._scaleBoxesParent.rotationQuaternion = new Quaternion();
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {

@@ -1,7 +1,6 @@
 import type { Nullable } from "../types";
 import { Vector3, Quaternion, TmpVectors } from "../Maths/math.vector";
 import { Color3 } from "../Maths/math.color";
-import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import type { IGizmo } from "./gizmo";
 import { Gizmo } from "./gizmo";
@@ -57,7 +56,7 @@ export class LightGizmo extends Gizmo implements ILightGizmo {
      */
     constructor(gizmoLayer: UtilityLayerRenderer = UtilityLayerRenderer.DefaultUtilityLayer) {
         super(gizmoLayer);
-        this.attachedMesh = new AbstractMesh("", this.gizmoLayer.utilityLayerScene);
+        this.attachedMesh = new Mesh("", this.gizmoLayer.utilityLayerScene);
         this._attachedMeshParent = new TransformNode("parent", this.gizmoLayer.utilityLayerScene);
 
         this.attachedMesh.parent = this._attachedMeshParent;

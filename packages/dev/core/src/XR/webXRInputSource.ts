@@ -1,5 +1,5 @@
 import { Observable } from "../Misc/observable";
-import { AbstractMesh } from "../Meshes/abstractMesh";
+import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Quaternion, Vector3 } from "../Maths/math.vector";
 import type { Ray } from "../Culling/ray";
 import type { Scene } from "../scene";
@@ -8,6 +8,7 @@ import { WebXRMotionControllerManager } from "./motionController/webXRMotionCont
 import { Tools } from "../Misc/tools";
 import type { WebXRCamera } from "./webXRCamera";
 import type { WebXRSessionManager } from "./webXRSessionManager";
+import { Mesh } from "../Meshes/mesh";
 
 let idCount = 0;
 
@@ -96,11 +97,11 @@ export class WebXRInputSource {
     ) {
         this._uniqueId = `controller-${idCount++}-${inputSource.targetRayMode}-${inputSource.handedness}`;
 
-        this.pointer = new AbstractMesh(`${this._uniqueId}-pointer`, _scene);
+        this.pointer = new Mesh(`${this._uniqueId}-pointer`, _scene);
         this.pointer.rotationQuaternion = new Quaternion();
 
         if (this.inputSource.gripSpace) {
-            this.grip = new AbstractMesh(`${this._uniqueId}-grip`, this._scene);
+            this.grip = new Mesh(`${this._uniqueId}-grip`, this._scene);
             this.grip.rotationQuaternion = new Quaternion();
         }
 

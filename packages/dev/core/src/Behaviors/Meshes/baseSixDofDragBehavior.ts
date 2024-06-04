@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import type { Behavior } from "../../Behaviors/behavior";
 import type { Mesh } from "../../Meshes/mesh";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Scene } from "../../scene";
 import type { Nullable } from "../../types";
 import type { PointerInfo } from "../../Events/pointerEvents";
@@ -10,7 +10,7 @@ import { PointerEventTypes } from "../../Events/pointerEvents";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Observer } from "../../Misc/observable";
 import { Observable } from "../../Misc/observable";
-import type { TransformNode } from "../../Meshes/transformNode";
+import { TransformNode } from "../../Meshes/transformNode";
 import type { PickingInfo } from "../../Collisions/pickingInfo";
 import { Camera } from "../../Cameras/camera";
 import type { Ray } from "../../Culling/ray";
@@ -23,9 +23,9 @@ import type { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 type VirtualMeshInfo = {
     dragging: boolean;
     moving: boolean;
-    dragMesh: AbstractMesh;
-    originMesh: AbstractMesh;
-    pivotMesh: AbstractMesh;
+    dragMesh: TransformNode;
+    originMesh: TransformNode;
+    pivotMesh: TransformNode;
     startingPivotPosition: Vector3;
     startingPivotOrientation: Quaternion;
     startingPosition: Vector3;
@@ -158,11 +158,11 @@ export class BaseSixDofDragBehavior implements Behavior<Mesh> {
     private _createVirtualMeshInfo() {
         // Setup virtual meshes to be used for dragging without dirtying the existing scene
 
-        const dragMesh = new AbstractMesh("", BaseSixDofDragBehavior._virtualScene);
+        const dragMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
         dragMesh.rotationQuaternion = new Quaternion();
-        const originMesh = new AbstractMesh("", BaseSixDofDragBehavior._virtualScene);
+        const originMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
         originMesh.rotationQuaternion = new Quaternion();
-        const pivotMesh = new AbstractMesh("", BaseSixDofDragBehavior._virtualScene);
+        const pivotMesh = new TransformNode("", BaseSixDofDragBehavior._virtualScene);
         pivotMesh.rotationQuaternion = new Quaternion();
 
         return {

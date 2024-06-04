@@ -1,7 +1,7 @@
 /* eslint-disable import/no-internal-modules */
 import type { IDisposable } from "core/scene";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
@@ -38,6 +38,8 @@ import { GroupModelAnimation, AnimationPlayMode, EasingFunction, AnimationState 
 import { deepmerge, extendClassWithConfig } from "../helper/index";
 import type { ObservablesManager } from "../managers/observablesManager";
 import type { ConfigurationContainer } from "../configuration/configurationContainer";
+import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
 
 /**
  * The current state of the model
@@ -74,7 +76,7 @@ export class ViewerModel implements IDisposable {
      */
     public rootMesh: AbstractMesh;
 
-    private _pivotMesh: AbstractMesh;
+    private _pivotMesh: TransformNode;
     /**
      * ParticleSystems connected to this model
      */
@@ -148,8 +150,8 @@ export class ViewerModel implements IDisposable {
 
         const scene = this._configurationContainer && this._configurationContainer.scene;
 
-        this.rootMesh = new AbstractMesh("modelRootMesh", scene);
-        this._pivotMesh = new AbstractMesh("pivotMesh", scene);
+        this.rootMesh = new Mesh("modelRootMesh", scene);
+        this._pivotMesh = new TransformNode("pivotMesh", scene);
         this._pivotMesh.parent = this.rootMesh;
         // rotate 180, gltf fun
         this._pivotMesh.rotation.y += Math.PI;
@@ -435,11 +437,11 @@ export class ViewerModel implements IDisposable {
 
     private _configureModel() {
         // this can be changed to the meshes that have rootMesh a parent without breaking anything.
-        const meshesWithNoParent: Array<AbstractMesh> = [this.rootMesh]; //this._meshes.filter(m => m.parent === this.rootMesh);
+        const meshesWithNoParent: Array<TransformNode> = [this.rootMesh]; //this._meshes.filter(m => m.parent === this.rootMesh);
         const updateMeshesWithNoParent = (variable: string, value: any, param?: string) => {
             meshesWithNoParent.forEach((mesh) => {
                 if (param) {
-                    mesh[variable as keyof AbstractMesh][param] = value;
+                    mesh[variable as keyof TransformNode][param] = value;
                 } else {
                     (mesh as any)[variable] = value;
                 }
@@ -473,7 +475,7 @@ export class ViewerModel implements IDisposable {
                 parentIndex = this._modelConfiguration.normalize.parentIndex;
             }
 
-            let meshesToNormalize: Array<AbstractMesh> = [];
+            let meshesToNormalize: Array<TransformNode> = [];
             if (parentIndex !== undefined) {
                 meshesToNormalize.push(this._meshes[parentIndex]);
             } else {
@@ -781,8 +783,6 @@ export class ViewerModel implements IDisposable {
     public remove() {
         this.stopAllAnimations();
 
-        // hide it
-        this.rootMesh.isVisible = false;
         if (this._observablesManager) {
             this._observablesManager.onModelRemovedObservable.notifyObservers(this);
         }
