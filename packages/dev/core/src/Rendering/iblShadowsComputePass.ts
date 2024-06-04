@@ -192,6 +192,9 @@ export class IblShadowsComputePass {
         this._outputPT.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
         this._outputPT.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
         this._outputPT.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
+        if (this._debugEnabled) {
+            this._outputPT.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+        }
 
         const prePassRenderer = this._scene.prePassRenderer;
         if (prePassRenderer) {

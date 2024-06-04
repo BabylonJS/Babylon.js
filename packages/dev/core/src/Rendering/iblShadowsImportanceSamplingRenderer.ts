@@ -147,19 +147,19 @@ export class IblShadowsImportanceSamplingRenderer {
         if (this._iblSource) {
             this._cdfyPT.setTexture("iblSource", this._iblSource);
         }
-        this._cdfyPT.refreshRate = 1;
+        this._cdfyPT.refreshRate = 0;
         this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblShadowsIcdfy", this._scene, icdfOptions, false, false);
         this._icdfyPT.autoClear = false;
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
-        this._icdfyPT.refreshRate = 1;
+        this._icdfyPT.refreshRate = 0;
         this._cdfxPT = new ProceduralTexture("cdfxTexture", { width: size.width + 1, height: 1 }, "iblShadowsCdfx", this._scene, cdfOptions, false, false);
         this._cdfxPT.autoClear = false;
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
-        this._cdfxPT.refreshRate = 1;
+        this._cdfxPT.refreshRate = 0;
         this._icdfxPT = new ProceduralTexture("icdfxTexture", { width: size.width, height: 1 }, "iblShadowsIcdfx", this._scene, icdfOptions, false, false);
         this._icdfxPT.autoClear = false;
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
-        this._icdfxPT.refreshRate = 1;
+        this._icdfxPT.refreshRate = 0;
     }
 
     private _disposeTextures() {

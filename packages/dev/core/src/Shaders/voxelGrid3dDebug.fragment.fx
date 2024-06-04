@@ -26,6 +26,10 @@ void main(void) {
     vec2 samplePos = fract(uv.xy * vec2(dimension));
     int sampleIndex = int(floor(uv.x * float(dimension)) +
                           floor(uv.y * float(dimension)) * dimension);
+    float mip_separator = 0.0;
+    if (samplePos.x < 0.01 || samplePos.y < 0.01) {
+      mip_separator = 1.0;
+    }
     bool outBounds = sampleIndex > size.z - 1 ? true : false;
     sampleIndex = clamp(sampleIndex, 0, size.z - 1);
     // vec3 voxel =
@@ -44,6 +48,8 @@ void main(void) {
     } else {
       if (outBounds) {
         voxel = vec3(0.15, 0.0, 0.0);
+      } else {
+        voxel.r += mip_separator;
       }
       glFragColor.rgb = mix(background.rgb, voxelSlab.rgb, 0.5) + voxel;
 
