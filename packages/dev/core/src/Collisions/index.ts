@@ -3,3 +3,4 @@ export * from "./collisionCoordinator";
 export * from "./pickingInfo";
 export * from "./intersectionInfo";
 export * from "./meshCollisionData";
+export * from "./gpuPicker";
