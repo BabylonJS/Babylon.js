@@ -828,6 +828,28 @@ export class TransformNode extends Node {
         return this;
     }
 
+    /**
+     * Adds the passed mesh as a child to the current mesh
+     * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @returns the current mesh
+     */
+    public addChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
+        mesh.setParent(this, preserveScalingSign);
+        return this;
+    }
+
+    /**
+     * Removes the passed mesh from the current mesh children list
+     * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @returns the current mesh
+     */
+    public removeChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
+        mesh.setParent(null, preserveScalingSign);
+        return this;
+    }
+
     private _nonUniformScaling = false;
     /**
      * True if the scaling property of this object is non uniform eg. (1,2,1)

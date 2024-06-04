@@ -2,10 +2,10 @@
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
 import type { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import type { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
@@ -1098,7 +1098,7 @@ export class NodeMaterial extends PushMaterial {
 
         const defines = new NodeMaterialDefines();
 
-        const dummyMesh = new AbstractMesh(tempName + "PostProcess", this.getScene());
+        const dummyMesh = new Mesh(tempName + "PostProcess", this.getScene());
 
         let buildId = this._buildId;
 
@@ -1192,7 +1192,7 @@ export class NodeMaterial extends PushMaterial {
 
         const proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
 
-        const dummyMesh = new AbstractMesh(tempName + "Procedural", this.getScene());
+        const dummyMesh = new Mesh(tempName + "Procedural", this.getScene());
         dummyMesh.reservedDataStore = {
             hidden: true,
         };
@@ -1278,7 +1278,7 @@ export class NodeMaterial extends PushMaterial {
         if (!dummyMesh) {
             dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
             if (!dummyMesh) {
-                dummyMesh = new AbstractMesh(this.name + "Particle", this.getScene());
+                dummyMesh = new Mesh(this.name + "Particle", this.getScene());
                 dummyMesh.reservedDataStore = {
                     hidden: true,
                 };

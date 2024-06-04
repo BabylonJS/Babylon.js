@@ -121,7 +121,7 @@ class _InternalAbstractMeshDataInfo {
 /**
  * Class used to store all common mesh properties
  */
-export class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
+export abstract class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
     /** No occlusion */
     public static OCCLUSION_TYPE_NONE = 0;
     /** Occlusion set to optimistic */
@@ -2195,28 +2195,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.onRebuildObservable.clear();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-    }
-
-    /**
-     * Adds the passed mesh as a child to the current mesh
-     * @param mesh defines the child mesh
-     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
-     * @returns the current mesh
-     */
-    public addChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
-        mesh.setParent(this, preserveScalingSign);
-        return this;
-    }
-
-    /**
-     * Removes the passed mesh from the current mesh children list
-     * @param mesh defines the child mesh
-     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
-     * @returns the current mesh
-     */
-    public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
-        mesh.setParent(null, preserveScalingSign);
-        return this;
     }
 
     // Facet data
