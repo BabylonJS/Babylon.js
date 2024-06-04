@@ -190,6 +190,14 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.getTotalIndices();
     }
 
+    /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
+    public override get hasVertexAlpha(): boolean {
+        return this._sourceMesh ? this._sourceMesh.hasVertexAlpha : false;
+    }
+    public override set hasVertexAlpha(value: boolean) {
+        Logger.Warn("Setting hasVertexAlpha on an instanced mesh has no effect");
+    }
+
     /**
      * The source mesh of the instance
      */

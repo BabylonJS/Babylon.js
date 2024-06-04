@@ -84,7 +84,6 @@ class _FacetDataStorage {
  **/
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _InternalAbstractMeshDataInfo {
-    public _hasVertexAlpha = false;
     public _useVertexColors = true;
     public _numBoneInfluencers = 4;
     public _applyFog = true;
@@ -563,18 +562,8 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public overlayAlpha = 0.5;
 
     /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
-    public get hasVertexAlpha(): boolean {
-        return this._internalAbstractMeshDataInfo._hasVertexAlpha;
-    }
-    public set hasVertexAlpha(value: boolean) {
-        if (this._internalAbstractMeshDataInfo._hasVertexAlpha === value) {
-            return;
-        }
-
-        this._internalAbstractMeshDataInfo._hasVertexAlpha = value;
-        this._markSubMeshesAsAttributesDirty();
-        this._markSubMeshesAsMiscDirty();
-    }
+    public abstract get hasVertexAlpha(): boolean;
+    public abstract set hasVertexAlpha(value: boolean);
 
     /** Gets or sets a boolean indicating that this mesh needs to use vertex color data to render (if this kind of vertex data is available in the geometry) */
     public get useVertexColors(): boolean {

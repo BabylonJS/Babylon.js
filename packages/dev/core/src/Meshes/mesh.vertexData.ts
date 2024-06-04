@@ -50,7 +50,7 @@ export interface IGetSetVerticesData {
      * @param updatable defines if the vertex must be flagged as updatable (false as default)
      * @param stride defines the stride to use (0 by default). This value is deduced from the kind value if not specified
      */
-    setVerticesData(kind: string, data: FloatArray, updatable: boolean): void;
+    setVerticesData(kind: string, data: FloatArray, updatable: boolean, stride?: number): void;
     /**
      * Update a specific associated vertex buffer
      * @param kind defines which buffer to write to (positions, indices, normals, etc). Possible `kind` values :
@@ -78,6 +78,8 @@ export interface IGetSetVerticesData {
      * @param updatable defines if the index buffer must be flagged as updatable (false by default)
      */
     setIndices(indices: IndicesArray, totalVertices: Nullable<number>, updatable?: boolean): void;
+    /** Gets or sets a boolean indicating that the vertex color data has alpha values */
+    hasVertexAlpha: boolean;
 }
 
 /** Class used to attach material info to sub section of a vertex data class */
@@ -163,7 +165,8 @@ export class VertexData {
     public uvs6: Nullable<FloatArray>;
 
     /**
-     * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....]
+     * An array of the r, g, b, a, color of each vertex  [...., r, g, b, a, .....] if hasVertexAlpha is true
+     * or an array of the r, g, b, color of each vertex  [...., r, g, b, .....] if hasVertexAlpha is false
      */
     public colors: Nullable<FloatArray>;
 
@@ -208,7 +211,7 @@ export class VertexData {
     public metadata: any = {};
 
     /**
-     * Gets or sets a value indicating that the mesh must be flagged with hasVertexAlpha = true
+     * Gets or sets a value indicating whether colors has alpha values or not
      */
     public hasVertexAlpha: boolean;
 
@@ -390,10 +393,8 @@ export class VertexData {
         }
 
         if (this.colors) {
-            meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable);
-            if (this.hasVertexAlpha && (meshOrGeometry as any).hasVertexAlpha !== undefined) {
-                (meshOrGeometry as any).hasVertexAlpha = true;
-            }
+            meshOrGeometry.setVerticesData(VertexBuffer.ColorKind, this.colors, updatable, this.hasVertexAlpha ? 4 : 3);
+            meshOrGeometry.hasVertexAlpha = this.hasVertexAlpha;
 
             if (isAsync) {
                 yield;
@@ -834,7 +835,7 @@ export class VertexData {
                 }
 
                 if (this.colors && !other.colors) {
-                    other.colors = new Float32Array((other.positions!.length / 3) * 4);
+                    other.colors = new Float32Array((other.positions!.length / 3) * (this.hasVertexAlpha ? 4 : 3));
                     other.colors.fill(1); // Set to white by default
                 }
 
@@ -1201,7 +1202,7 @@ export class VertexData {
         }
 
         const getElementCount = (kind: string, values: FloatArray) => {
-            const stride = VertexBuffer.DeduceStride(kind);
+            const stride = VertexBuffer.DeduceStride(kind, this.hasVertexAlpha);
             if (values.length % stride !== 0) {
                 throw new Error("The " + kind + "s array count must be a multiple of " + stride);
             }
@@ -1417,6 +1418,7 @@ export class VertexData {
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
             result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared, forceCopy);
+            result.hasVertexAlpha = meshOrGeometry.hasVertexAlpha;
         }
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {

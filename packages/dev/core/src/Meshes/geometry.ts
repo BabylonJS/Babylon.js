@@ -131,6 +131,9 @@ export class Geometry implements IGetSetVerticesData {
      */
     public useBoundingInfoFromGeometry = false;
 
+    /** Gets or sets a boolean indicating that this geometry contains vertex color data with alpha values */
+    public hasVertexAlpha = false;
+
     /**
      * Creates a new geometry
      * @param id defines the unique ID

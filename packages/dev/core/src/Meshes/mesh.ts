@@ -534,6 +534,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.forceMatrixUpdates = value;
     }
 
+    /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
+    public override get hasVertexAlpha(): boolean {
+        return this._geometry ? this._geometry.hasVertexAlpha : false;
+    }
+    public override set hasVertexAlpha(value: boolean) {
+        if (!this._geometry) {
+            Logger.Warn(`No geometry is availble to set hasVertexAlpha`);
+            return;
+        }
+
+        this._geometry.hasVertexAlpha = value;
+        this._markSubMeshesAsAttributesDirty();
+        this._markSubMeshesAsMiscDirty();
+    }
+
     /**
      * @constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.

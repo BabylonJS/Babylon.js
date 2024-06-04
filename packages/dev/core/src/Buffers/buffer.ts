@@ -825,9 +825,10 @@ export class VertexBuffer {
     /**
      * Deduces the stride given a kind.
      * @param kind The kind string to deduce
+     * @param colorHasAlpha Whether the color component has alpha or not
      * @returns The deduced stride
      */
-    public static DeduceStride(kind: string): number {
+    public static DeduceStride(kind: string, colorHasAlpha = true): number {
         switch (kind) {
             case VertexBuffer.UVKind:
             case VertexBuffer.UV2Kind:
@@ -840,6 +841,7 @@ export class VertexBuffer {
             case VertexBuffer.PositionKind:
                 return 3;
             case VertexBuffer.ColorKind:
+                return colorHasAlpha ? 4 : 3;
             case VertexBuffer.ColorInstanceKind:
             case VertexBuffer.MatricesIndicesKind:
             case VertexBuffer.MatricesIndicesExtraKind:
