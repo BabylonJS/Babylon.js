@@ -39,6 +39,7 @@ import { deepmerge, extendClassWithConfig } from "../helper/index";
 import type { ObservablesManager } from "../managers/observablesManager";
 import type { ConfigurationContainer } from "../configuration/configurationContainer";
 import { TransformNode } from "core/Meshes/transformNode";
+import { Mesh } from "core/Meshes/mesh";
 
 /**
  * The current state of the model
@@ -73,7 +74,7 @@ export class ViewerModel implements IDisposable {
      * This model's root mesh (the parent of all other meshes).
      * This mesh does not(!) exist in the meshes array.
      */
-    public rootMesh: TransformNode;
+    public rootMesh: AbstractMesh;
 
     private _pivotMesh: TransformNode;
     /**
@@ -149,7 +150,7 @@ export class ViewerModel implements IDisposable {
 
         const scene = this._configurationContainer && this._configurationContainer.scene;
 
-        this.rootMesh = new TransformNode("modelRootMesh", scene);
+        this.rootMesh = new Mesh("modelRootMesh", scene);
         this._pivotMesh = new TransformNode("pivotMesh", scene);
         this._pivotMesh.parent = this.rootMesh;
         // rotate 180, gltf fun
