@@ -6,7 +6,7 @@ import type { PointerInfo } from "../Events/pointerEvents";
 import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
-import { Mesh } from "../Meshes/mesh";
+import type { Mesh } from "../Meshes/mesh";
 import { CreateSphere } from "../Meshes/Builders/sphereBuilder";
 import { CreateBox } from "../Meshes/Builders/boxBuilder";
 import { CreateLines } from "../Meshes/Builders/linesBuilder";

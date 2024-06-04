@@ -1,7 +1,7 @@
 /* eslint-disable import/no-internal-modules */
 import type { IDisposable } from "core/scene";
 import type { ISceneLoaderPlugin, ISceneLoaderPluginAsync, ISceneLoaderProgressEvent } from "core/Loading/sceneLoader";
-import { AbstractMesh } from "core/Meshes/abstractMesh";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import type { Skeleton } from "core/Bones/skeleton";
 import { Observable } from "core/Misc/observable";
