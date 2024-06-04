@@ -74,7 +74,7 @@ export class IblShadowsVoxelRenderer {
             return;
         }
         this._voxelResolution = resolution;
-        this._disposeTextures();
+        this._disposeVoxelTextures();
         this._createTextures();
     }
 
@@ -320,7 +320,7 @@ export class IblShadowsVoxelRenderer {
         return mrtArray;
     }
 
-    private _disposeTextures() {
+    private _disposeVoxelTextures() {
         this._stopVoxelization();
         for (let i = 0; i < this._voxelMrtsZaxis.length; i++) {
             if (this._threeWayVoxelization) {
@@ -338,11 +338,6 @@ export class IblShadowsVoxelRenderer {
         this._voxelMrtsXaxis = [];
         this._voxelMrtsYaxis = [];
         this._voxelMrtsZaxis = [];
-
-        if (this._voxelSlabDebugRT) {
-            this._removeVoxelRTs([this._voxelSlabDebugRT]);
-            this._voxelSlabDebugRT.dispose();
-        }
     }
 
     private _createVoxelMaterial(): ShaderMaterial {
@@ -488,7 +483,11 @@ export class IblShadowsVoxelRenderer {
      * Disposes the voxel renderer and associated resources
      */
     public dispose() {
-        this._disposeTextures();
+        this._disposeVoxelTextures();
+        if (this._voxelSlabDebugRT) {
+            this._removeVoxelRTs([this._voxelSlabDebugRT]);
+            this._voxelSlabDebugRT.dispose();
+        }
         // TODO - dispose all created voxel materials.
     }
 }

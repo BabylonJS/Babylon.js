@@ -200,7 +200,7 @@ bool hierarchical_march(Ray ray_vs) {
 
     voxel_stack_push(ivec3(0), VOXEL_MARCHING_NUM_MIPS);
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    uint steps = 0;
+    uint steps = 0u;
 #endif
     while (voxel_traverse_stack.stack_level > 0) {
         ivec3 node_coords;
@@ -209,8 +209,9 @@ bool hierarchical_march(Ray ray_vs) {
 
         if (lod == 0u) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-            voxel_march_diagnostic_info.heat = float(steps) / VOXEL_MARCHING_STACK_SIZE;
-            voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+          voxel_march_diagnostic_info.heat =
+              float(steps) / float(VOXEL_MARCHING_STACK_SIZE);
+          voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
 #endif
             return true;
         }
@@ -249,7 +250,8 @@ bool hierarchical_march(Ray ray_vs) {
         }
     }
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    voxel_march_diagnostic_info.heat = float(steps) / VOXEL_MARCHING_STACK_SIZE;
+    voxel_march_diagnostic_info.heat =
+        float(steps) / float(VOXEL_MARCHING_STACK_SIZE);
 #endif
 
     return false;
@@ -405,14 +407,24 @@ int stack[24];                           // Swapped dimension
 #define PUSH(i) stack[stackLevel++] = i; // order, small
 #define POP() stack[--stackLevel]        // perf improvement
 
-bool anyHitVoxels(const vec3 O, const vec3 D) {
+#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+bool anyHitVoxels(const Ray ray_vs,
+                  out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
+#else
+bool anyHitVoxels(const Ray ray_vs) {
+#endif
 
-  vec3 invD = 1.0 / D;
+  vec3 invD = ray_vs.dir_rcp;
+  vec3 D = ray_vs.dir;
+  vec3 O = ray_vs.orig;
   ivec3 negD = ivec3(lessThan(D, vec3(0, 0, 0)));
   int voxel0 = negD.x | negD.y << 1 | negD.z << 2;
   vec3 t0 = -O * invD, t1 = (1.0 - O) * invD;
   int maxLod = int(highestMipLevel);
   int stackLevel = 0;
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  uint steps = 0u;
+#endif
 
   PUSH(maxLod << 27); // Different packing
   while (stackLevel > 0) {
@@ -420,8 +432,17 @@ bool anyHitVoxels(const vec3 O, const vec3 D) {
     ivec4 Coords = ivec4(elem & 0x1FF, elem >> 9 & 0x1FF, elem >> 18 & 0x1FF,
                          elem >> 27); // Different packing
 
-    if (Coords.w == 0)
+    if (Coords.w == 0) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+      voxel_march_diagnostic_info.heat = float(steps) / 24.0;
+      //   voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+#endif
       return true;
+    }
+
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+    ++steps;
+#endif
 
     float invRes =
         1.0 / float(1 << (maxLod - Coords.w)); // Slightly faster computation
@@ -444,7 +465,8 @@ bool anyHitVoxels(const vec3 O, const vec3 D) {
     int packedCoords0 = (Coords.x | Coords.y << 9) |
                         (Coords.z << 18 | Coords.w << 27); // Different packing
 
-    if (max(max(mint.x, mint.y), mint.z) < min(min(midt.x, midt.y), midt.z) && (nodeMask >> (voxel0) & 1) != 0) {
+    if (max(max(mint.x, mint.y), mint.z) < min(min(midt.x, midt.y), midt.z) &&
+        (nodeMask >> (voxel0) & 1) != 0) {
       PUSH(packedCoords0);
     }
     if (max(max(midt.x, mint.y), mint.z) < min(min(maxt.x, midt.y), midt.z) &&
@@ -469,6 +491,10 @@ bool anyHitVoxels(const vec3 O, const vec3 D) {
         (nodeMask >> (voxel0 ^ 4) & 1) != 0)
       PUSH(packedCoords0 ^ 0x40000);
   }
+
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  voxel_march_diagnostic_info.heat = float(steps) / 24.0;
+#endif
 
   return false;
 }
@@ -542,40 +568,51 @@ float screenSpaceShadow(vec3 csOrigin, vec3 csDirection, vec2 csZBufferSize,
   return opacity;
 }
 
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
+                  vec2 DitherNoise,
+                  out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
+#else
 float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal, vec2 DitherNoise) {
-    float vxResolution = float(textureSize(voxelGridSampler, 0).x);
-    vec3 T, B;
-    genTB(wsDirection, T, B);
-    vec2 DitherXY = sqrt(DitherNoise.x) * vec2(cos(2.0 * PI * DitherNoise.y),
-                                                sin(2.0 * PI * DitherNoise.y));
-    vec3 Dithering =
-        (2.0 * wsNormal + 3.0 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
-        vxResolution;
-    vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
+#endif
+  float vxResolution = float(textureSize(voxelGridSampler, 0).x);
+  vec3 T, B;
+  genTB(wsDirection, T, B);
+  vec2 DitherXY = sqrt(DitherNoise.x) * vec2(cos(2.0 * PI * DitherNoise.y),
+                                             sin(2.0 * PI * DitherNoise.y));
+  vec3 Dithering =
+      (2.0 * wsNormal + 3.0 * wsDirection + DitherXY.x * T + DitherXY.y * B) /
+      vxResolution;
+  vec3 O = 0.5 * wsOrigin + 0.5 + Dithering;
 
-    Ray ray_vs = make_ray(O, wsDirection, 0.0, 10.0);
+  Ray ray_vs = make_ray(O, wsDirection, 0.0, 10.0);
 
-    // Early out for rays which miss the scene bounding box, common in ground plane
-    AABB3f voxel_aabb;
-    voxel_aabb.m_min = vec3(0);
-    voxel_aabb.m_max = vec3(1);
+  // Early out for rays which miss the scene bounding box, common in ground
+  // plane
+  AABB3f voxel_aabb;
+  voxel_aabb.m_min = vec3(0);
+  voxel_aabb.m_max = vec3(1);
 
-    float near, far;
-    if (!ray_box_intersection(near, far, voxel_aabb, ray_vs))
-      return 0.0;
+  float near, far;
+  if (!ray_box_intersection(near, far, voxel_aabb, ray_vs))
+    return 0.0;
 
-    ray_vs.t_min = max(ray_vs.t_min, near);
-    ray_vs.t_max = min(ray_vs.t_max, far);
+  ray_vs.t_min = max(ray_vs.t_min, near);
+  ray_vs.t_max = min(ray_vs.t_max, far);
 
-    // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    //     return hierarchical_march(ray_vs, out_diagnostic_info) ? 1.0f : 0.0f;
-    // #else
-    //     return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
-    // #endif
+  // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  //   return hierarchical_march(ray_vs, out_diagnostic_info) ? 1.0f : 0.0f;
+  // #else
+  //   return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
+  // #endif
 
-    // return anyHitVoxels(O, wsDirection) ? 1.0f : 0.0f;
-    // return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
-    return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
+#else
+  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
+#endif
+
+  // return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
 }
 
 void main(void) {
@@ -619,7 +656,9 @@ void main(void) {
 
   vec2 linearZ_alpha = texelFetch(linearDepthSampler, PixelCoord, 0).xy;
   linearZ_alpha.x *= -1.0;
-
+#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  float heat = 0.0f;
+#endif
   float shadowAccum = 0.0;
   for (uint i = 0u; i < nbDirs; i++) {
     uint dirId = nbDirs * GlobalIndex + i;
@@ -647,8 +686,16 @@ void main(void) {
       vec3 WP = (wsNormalizationMtx * unormWP).xyz;
       vec2 vxNoise =
           vec2(uint2float(hash(dirId * 2u)), uint2float(hash(dirId * 2u + 1u)));
+#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+      VoxelMarchDiagnosticInfo voxel_march_diagnostic_info;
+      opacity = max(opacity,
+                    shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise,
+                                                  voxel_march_diagnostic_info));
+      heat += voxel_march_diagnostic_info.heat;
+#else
       opacity =
           max(opacity, shadowOpacity.x * voxelShadow(WP, L.xyz, N, vxNoise));
+#endif
 
       // sss
       vec3 VL = (viewMtx * L).xyz;
@@ -667,7 +714,11 @@ void main(void) {
     }
     noise.z = fract(noise.z + GOLD);
   }
-
+#ifdef VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  gl_FragColor =
+      vec4(shadowAccum / float(nbDirs), heat / float(nbDirs), 0.0, 1.0);
+#else
   gl_FragColor = vec4(shadowAccum / float(nbDirs), 1.0, 0.0, 1.0);
+#endif
   // gl_FragColor = vec4(1.0, 1.0, 0.0, 0.0);
 }
