@@ -54,13 +54,13 @@ export class GPUPicker {
         y = rttSizeH - y;
 
         if (!this._pickingTexure) {
-            this._createRenderTarget(scene, rttSizeH, rttSizeH);
+            this._createRenderTarget(scene, rttSizeW, rttSizeH);
         } else {
             const size = this._pickingTexure.getSize();
 
-            if (size.width !== rttSizeW || size.height !== rttSizeW || this._cachedScene !== scene) {
+            if (size.width !== rttSizeW || size.height !== rttSizeH || this._cachedScene !== scene) {
                 this._pickingTexure.dispose();
-                this._createRenderTarget(scene, rttSizeH, rttSizeH);
+                this._createRenderTarget(scene, rttSizeW, rttSizeH);
             }
         }
 
@@ -182,7 +182,7 @@ export class GPUPicker {
             return null;
         }
         const engine = this._cachedScene.getEngine();
-        const buffer = engine._readTexturePixelsSync(this._pickingTexure._texture, 1, 1, -1, 0, null, true, false, x, y);
+        const buffer = engine._readTexturePixelsSync(this._pickingTexure._texture, 1, 1, -1, 0, null, false, true, x, y);
 
         return buffer as Uint8Array;
     }
