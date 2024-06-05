@@ -3888,16 +3888,6 @@ export class ThinEngine extends AbstractEngine {
      * Dispose and release all associated resources
      */
     public override dispose(): void {
-        super.dispose();
-
-        if (this._dummyFramebuffer) {
-            this._gl.deleteFramebuffer(this._dummyFramebuffer);
-        }
-
-        // Unbind
-        this.unbindAllAttributes();
-        this._boundUniforms = {};
-
         // Events
         if (IsWindowObjectExist()) {
             if (this._renderingCanvas) {
@@ -3907,6 +3897,17 @@ export class ThinEngine extends AbstractEngine {
                 }
             }
         }
+
+        // Should not be moved up of renderingCanvas will be null.
+        super.dispose();
+
+        if (this._dummyFramebuffer) {
+            this._gl.deleteFramebuffer(this._dummyFramebuffer);
+        }
+
+        // Unbind
+        this.unbindAllAttributes();
+        this._boundUniforms = {};
 
         this._workingCanvas = null;
         this._workingContext = null;
