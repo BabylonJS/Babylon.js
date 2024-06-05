@@ -23,7 +23,7 @@ import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import { RegisterClass } from "../Misc/typeStore";
 
 /**
@@ -811,6 +811,10 @@ export class BaseParticleSystem implements IClipPlanesHolder {
      * @param angle The base angle of the cone
      */
     public createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
+        throw new Error("Method not implemented.");
+    }
+
+    public createDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
         throw new Error("Method not implemented.");
     }
 
