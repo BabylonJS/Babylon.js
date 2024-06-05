@@ -79,6 +79,14 @@ export class GPUPicker {
      */
     public setPickingList(list: Nullable<Array<AbstractMesh>>) {
         if (!list) {
+            if (this._userDefinedList) {
+                for (let index = 0; index < this._pickableMeshes.length; index++) {
+                    const mesh = this._pickableMeshes[index];
+                    if (mesh.hasInstances) {
+                        (mesh as Mesh).removeVerticesData(VertexBuffer.ColorKind);
+                    }
+                }
+            }
             this._userDefinedList = false;
             this._pickableMeshes = [];
             this._idMap = {};
@@ -291,6 +299,9 @@ export class GPUPicker {
 
     /** Release the resources */
     public dispose() {
+        if (this._userDefinedList) {
+            this.setPickingList(null);
+        }
         this._pickableMeshes = [];
         this._cachedScene = null;
 
