@@ -22,9 +22,10 @@ export class GPUPicker {
     private _cachedMaterials: Array<Nullable<Material>> = [];
     private _cachedScene: Nullable<Scene>;
     private _renderMaterial: Nullable<ShaderMaterial>;
-    private _pickableMeshes: Array<Mesh>;
+    private _pickableMeshes: Array<AbstractMesh>;
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
+    private _userDefinedList = false;
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         this._pickingTexure = new RenderTargetTexture(
@@ -62,12 +63,76 @@ export class GPUPicker {
 
             const effect = this._renderMaterial!.getEffect();
 
-            effect.setColor4("color", this._idColors[mesh.uniqueId], 1);
+            if (!mesh.hasInstances && !mesh.isAnInstance) {
+                effect.setColor4("color", this._idColors[mesh.uniqueId], 1);
+            }
 
             this._meshRenderingCount++;
         };
 
         this._renderMaterial.customBindingObservable.add(callback);
+    }
+
+    /**
+     * Set the list of meshes to pick from
+     * @param list defines the list of meshes to pick from
+     */
+    public setPickingList(list: Nullable<Array<AbstractMesh>>) {
+        if (!list) {
+            this._userDefinedList = false;
+            this._pickableMeshes = [];
+            this._idMap = {};
+            this._idColors = [];
+            return;
+        }
+        this._userDefinedList = true;
+        this._pickableMeshes = list;
+
+        // We will affect colors and create vertex color buffers
+        let id = 1;
+        for (let index = 0; index < this._pickableMeshes.length; index++) {
+            const mesh = this._pickableMeshes[index];
+            mesh.useVertexColors = false;
+
+            if (mesh.isAnInstance) {
+                continue; // This will be handled by the source mesh
+            }
+
+            const r = (id & 0xff0000) >> 16;
+            const g = (id & 0x00ff00) >> 8;
+            const b = (id & 0x0000ff) >> 0;
+            this._idMap[`${r}_${g}_${b}`] = index;
+            id++;
+
+            if (mesh.hasInstances) {
+                const instances = (mesh as Mesh).instances;
+                const colorData = new Float32Array(4 * (instances.length + 1));
+                const engine = mesh.getEngine();
+
+                colorData[0] = r / 255.0;
+                colorData[1] = g / 255.0;
+                colorData[2] = b / 255.0;
+                colorData[3] = 1.0;
+                for (let i = 0; i < instances.length; i++) {
+                    const instance = instances[i];
+                    const r = (id & 0xff0000) >> 16;
+                    const g = (id & 0x00ff00) >> 8;
+                    const b = (id & 0x0000ff) >> 0;
+                    this._idMap[`${r}_${g}_${b}`] = this._pickableMeshes.indexOf(instance);
+
+                    colorData[(i + 1) * 4] = r / 255.0;
+                    colorData[(i + 1) * 4 + 1] = g / 255.0;
+                    colorData[(i + 1) * 4 + 2] = b / 255.0;
+                    colorData[(i + 1) * 4 + 3] = 1.0;
+                    id++;
+                }
+
+                const buffer = new VertexBuffer(engine, colorData, VertexBuffer.ColorKind, false, false, 4, true);
+                (mesh as Mesh).setVerticesBuffer(buffer);
+            } else {
+                this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+            }
+        }
     }
 
     /**
@@ -78,7 +143,7 @@ export class GPUPicker {
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive
      * @returns A promise with the picking results
      */
-    public pickAsync(x: number, y: number, scene: Scene, disposeWhenDone = true): Promise<Nullable<Mesh>> {
+    public pickAsync(x: number, y: number, scene: Scene, disposeWhenDone = true): Promise<Nullable<AbstractMesh>> {
         const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
@@ -119,25 +184,30 @@ export class GPUPicker {
         this._pickingTexure!.renderList = [];
         this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
-        // We need to give every mesh an unique color
+        // We need to give every mesh an unique color (when there is no picking list)
         this._pickingTexure!.onBeforeRender = () => {
-            this._pickableMeshes = scene.meshes.filter((m) => (m as Mesh).geometry && m.isPickable && (m as Mesh).onBeforeRenderObservable) as Mesh[];
+            if (!this._userDefinedList) {
+                this._pickableMeshes = scene.meshes.filter((m) => (m as Mesh).geometry && m.isPickable && (m as Mesh).onBeforeRenderObservable) as Mesh[];
+            }
 
             for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const id = index * 100 + 100;
-                const r = (id & 0xff0000) >> 16;
-                const g = (id & 0x00ff00) >> 8;
-                const b = (id & 0x0000ff) >> 0;
                 const mesh = this._pickableMeshes[index];
-                this._idMap[`${r}_${g}_${b}`] = index;
+                if (!mesh.isAnInstance) {
+                    this._cachedMaterials[index] = mesh.material;
+                    if (!this._userDefinedList) {
+                        // We need to define the color for each mesh as it was not previously defined
+                        const id = index + 1;
+                        const r = (id & 0xff0000) >> 16;
+                        const g = (id & 0x00ff00) >> 8;
+                        const b = (id & 0x0000ff) >> 0;
+                        this._idMap[`${r}_${g}_${b}`] = index;
 
-                this._cachedMaterials[index] = mesh.material;
-                this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
-
-                mesh.material = this._renderMaterial;
-                mesh.useVertexColors = true;
-                mesh.hasVertexAlpha = false;
-
+                        this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+                    } else {
+                        mesh.useVertexColors = true; // In that case we will be using vertex colors and not an uniform to support instances
+                    }
+                    mesh.material = this._renderMaterial;
+                }
                 this._pickingTexure?.renderList?.push(mesh);
             }
 
@@ -158,13 +228,19 @@ export class GPUPicker {
                     reject();
                 }
 
-                let pickedMesh: Nullable<Mesh> = null;
+                let pickedMesh: Nullable<AbstractMesh> = null;
                 const wasSuccessfull = this._meshRenderingCount > 0;
 
                 // Restore materials
                 for (let index = 0; index < this._pickableMeshes.length; index++) {
                     const mesh = this._pickableMeshes[index];
-                    mesh.material = this._cachedMaterials[index];
+                    if (!mesh.isAnInstance) {
+                        mesh.material = this._cachedMaterials[index];
+
+                        if (this._userDefinedList) {
+                            mesh.useVertexColors = false;
+                        }
+                    }
                 }
 
                 if (wasSuccessfull) {
@@ -182,10 +258,12 @@ export class GPUPicker {
                 }
 
                 // Clean-up
-                this._idMap = {};
-                this._idColors = [];
+                if (!this._userDefinedList) {
+                    this._idMap = {};
+                    this._idColors = [];
 
-                this._pickableMeshes = [];
+                    this._pickableMeshes = [];
+                }
                 this._pickingTexure!.renderList = [];
 
                 if (!wasSuccessfull) {
@@ -213,6 +291,7 @@ export class GPUPicker {
 
     /** Release the resources */
     public dispose() {
+        this._pickableMeshes = [];
         this._cachedScene = null;
 
         // Cleaning up
