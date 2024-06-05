@@ -22,12 +22,13 @@ import { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import {
     CreateConeEmitter,
     CreateCylinderEmitter,
     CreateDirectedCylinderEmitter,
     CreateDirectedSphereEmitter,
+    CreateDirectedConeEmitter,
     CreateHemisphericEmitter,
     CreatePointEmitter,
     CreateSphereEmitter,
@@ -171,6 +172,17 @@ export class ParticleSystem extends ThinParticleSystem {
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
+    public override createDirectedConeEmitter(
+        radius = 1,
+        angle = Math.PI / 4,
+        direction1 = new Vector3(0, 1.0, 0),
+        direction2 = new Vector3(0, 1.0, 0)
+    ): ConeDirectedParticleEmitter {
+        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
     /**
      * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)
      * @param direction1 Particles are emitted between the direction1 and direction2 from within the box
@@ -565,6 +577,9 @@ export class ParticleSystem extends ThinParticleSystem {
                 case "ConeEmitter":
                 case "ConeParticleEmitter":
                     emitterType = new ConeParticleEmitter();
+                    break;
+                case "ConeDirectedParticleEmitter":
+                    emitterType = new ConeDirectedParticleEmitter();
                     break;
                 case "CylinderParticleEmitter":
                     emitterType = new CylinderParticleEmitter();

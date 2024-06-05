@@ -67,7 +67,12 @@ uniform float radiusRange;
 uniform vec2 radius;
 uniform float coneAngle;
 uniform vec2 height;
-uniform float directionRandomizer;
+#ifdef DIRECTEDCONEEMITTER
+  uniform vec3 direction1;
+  uniform vec3 direction2;
+#else
+  uniform float directionRandomizer;
+#endif
 #endif
 
 // Particles state
@@ -304,13 +309,17 @@ void main() {
 
     newPosition = vec3(randX, randY, randZ); 
 
-    // Direction
-    if (abs(cos(coneAngle)) == 1.0) {
-        newDirection = vec3(0., 1.0, 0.);
-    } else {
-        vec3 randoms3 = getRandomVec3(seed.z);
-        newDirection = normalize(newPosition + directionRandomizer * randoms3);        
-    }
+    vec3 randoms3 = getRandomVec3(seed.z);
+    #ifdef DIRECTEDCONEEMITTER
+      newDirection = direction1 + (direction2 - direction1) * randoms3;
+    #else
+        // Direction
+        if (abs(cos(coneAngle)) == 1.0) {
+            newDirection = vec3(0., 1.0, 0.);
+        } else {
+            newDirection = normalize(newPosition + directionRandomizer * randoms3);        
+        }
+    #endif
 #elif defined(CUSTOMEMITTER)
       newPosition = initialPosition;
       outInitialPosition = initialPosition;

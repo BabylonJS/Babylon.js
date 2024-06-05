@@ -41,12 +41,13 @@ import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import {
     CreateConeEmitter,
     CreateCylinderEmitter,
     CreateDirectedCylinderEmitter,
     CreateDirectedSphereEmitter,
+    CreateDirectedConeEmitter,
     CreateHemisphericEmitter,
     CreatePointEmitter,
     CreateSphereEmitter,
@@ -275,6 +276,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
         const particleEmitter = CreateConeEmitter(radius, angle);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    public override createDirectedConeEmitter(
+        radius = 1,
+        angle = Math.PI / 4,
+        direction1 = new Vector3(0, 1.0, 0),
+        direction2 = new Vector3(0, 1.0, 0)
+    ): ConeDirectedParticleEmitter {
+        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
