@@ -313,12 +313,12 @@ void main() {
     #ifdef DIRECTEDCONEEMITTER
       newDirection = direction1 + (direction2 - direction1) * randoms3;
     #else
-    // Direction
-    if (abs(cos(coneAngle)) == 1.0) {
-        newDirection = vec3(0., 1.0, 0.);
-    } else {
-        newDirection = normalize(newPosition + directionRandomizer * randoms3);        
-    }
+        // Direction
+        if (abs(cos(coneAngle)) == 1.0) {
+            newDirection = vec3(0., 1.0, 0.);
+        } else {
+            newDirection = normalize(newPosition + directionRandomizer * randoms3);        
+        }
     #endif
 #elif defined(CUSTOMEMITTER)
       newPosition = initialPosition;

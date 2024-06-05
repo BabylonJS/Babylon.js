@@ -324,17 +324,17 @@ fn main(@builtin(global_invocation_id) GlobalInvocationID : vec3<u32>) {
 
             newPosition = vec3<f32>(randX, randY, randZ); 
             
-                let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
-       #ifdef DIRECTEDCONEEMITTER
+            let randoms3 : vec3<f32> = getRandomVec3(seed.z, vertexID);
+            #ifdef DIRECTEDCONEEMITTER
                 newDirection = params.direction1 + (params.direction2 - params.direction1) * randoms3;
             #else
-            // Direction
-            if (abs(cos(params.coneAngle)) == 1.0) {
-                newDirection = vec3<f32>(0., 1.0, 0.);
-            } else {
-                newDirection = normalize(newPosition + params.directionRandomizer * randoms3);        
-            }
-                   #endif
+                // Direction
+                if (abs(cos(params.coneAngle)) == 1.0) {
+                    newDirection = vec3<f32>(0., 1.0, 0.);
+                } else {
+                    newDirection = normalize(newPosition + params.directionRandomizer * randoms3);        
+                }
+            #endif
         #elif defined(CUSTOMEMITTER)
             newPosition = particlesIn.particles[index].initialPosition;
             particlesOut.particles[index].initialPosition = newPosition;
