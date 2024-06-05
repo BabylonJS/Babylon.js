@@ -562,7 +562,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /** Defines alpha to use when rendering overlay */
     public overlayAlpha = 0.5;
 
-    /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
+    /**
+     * Gets or sets a boolean indicating that this mesh needs to use vertex alpha data to render.
+     * This property is misnamed and should be `useVertexAlpha`. Note that the mesh will be rendered
+     * with alpha blending when this flag is set even if vertex alpha data is missing from the geometry.
+     */
     public get hasVertexAlpha(): boolean {
         return this._internalAbstractMeshDataInfo._hasVertexAlpha;
     }
