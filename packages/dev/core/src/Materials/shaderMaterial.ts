@@ -33,6 +33,7 @@ import {
     PrepareAttributesForBakedVertexAnimation,
     PushAttributesForInstances,
 } from "./materialHelper.functions";
+import { Observable } from "core/Misc/observable";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -140,6 +141,11 @@ export class ShaderMaterial extends PushMaterial {
     private _cachedWorldViewMatrix = new Matrix();
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _multiview = false;
+
+    /**
+     * Gets an observable raised before binding of all entities to allow custom processing.
+     */
+    public customBindingObservable = new Observable<AbstractMesh | undefined>();
 
     /**
      * @internal
@@ -1022,7 +1028,9 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
+        const mustRebind = true; //mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
+
+        this.customBindingObservable.notifyObservers(mesh);
 
         if (effect && mustRebind) {
             if (!useSceneUBO && this._options.uniforms.indexOf("view") !== -1) {
@@ -1458,6 +1466,7 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         this._textures = {};
+        this.customBindingObservable.clear();
 
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
