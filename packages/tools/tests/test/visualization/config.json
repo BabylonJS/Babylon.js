@@ -1155,6 +1155,17 @@
             "referenceImage": "objStanfordBunnyNormalsRoundTripRH.png"
         },
         {
+            "title": "glTF to OBJ (LH)",
+            "playgroundId": "#HYZWGK#3",
+            "referenceImage": "gltfToObjLH.png"
+        },
+        {
+            "title": "glTF to OBJ (RH)",
+            "playgroundId": "#HYZWGK#3",
+            "replace": "//options//, useRightHandedSystem = true;",
+            "referenceImage": "gltfToObjRH.png"
+        },
+        {
             "title": "GLTF Extension KHR_materials_variants",
             "playgroundId": "#BKGTKL#3",
             "referenceImage": "gltfExtensionKhrMaterialsVariants.png"
