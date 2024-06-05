@@ -128,7 +128,7 @@ export class GPUPicker {
                 }
 
                 const buffer = new VertexBuffer(engine, colorData, VertexBuffer.ColorKind, false, false, 4, true);
-                (mesh as Mesh).setVerticesBuffer(buffer);
+                (mesh as Mesh).setVerticesBuffer(buffer, true);
             } else {
                 this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
             }
