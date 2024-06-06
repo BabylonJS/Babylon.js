@@ -7,7 +7,7 @@ export * from "./depthPeelingSceneComponent";
 export * from "./edgesRenderer";
 export * from "./geometryBufferRenderer";
 export * from "./geometryBufferRendererSceneComponent";
-export * from "./iblShadowsRenderPipeline";
+export * from "./IBLShadows/iblShadowsRenderPipeline";
 export * from "./prePassRenderer";
 export * from "./prePassRendererSceneComponent";
 export * from "./subSurfaceSceneComponent";

@@ -1,14 +1,14 @@
-import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
-import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import { Vector4 } from "../Maths/math.vector";
+import { Constants } from "../../Engines/constants";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { Scene } from "../../scene";
+import { Texture } from "../../Materials/Textures/texture";
+import { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import type { ICustomProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import { Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
-import "../Shaders/iblShadowSpatialBlur.fragment";
-import "../Shaders/iblShadowDebug.fragment";
-import { PostProcess } from "../PostProcesses/postProcess";
+import "../../Shaders/iblShadowSpatialBlur.fragment";
+import "../../Shaders/iblShadowDebug.fragment";
+import { PostProcess } from "../../PostProcesses/postProcess";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
