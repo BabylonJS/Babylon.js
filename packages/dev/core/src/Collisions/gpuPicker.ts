@@ -195,7 +195,7 @@ export class GPUPicker {
         // We need to give every mesh an unique color (when there is no picking list)
         this._pickingTexure!.onBeforeRender = () => {
             if (!this._userDefinedList) {
-                this._pickableMeshes = scene.meshes.filter((m) => (m as Mesh).geometry && m.isPickable && (m as Mesh).onBeforeRenderObservable) as Mesh[];
+                this._pickableMeshes = scene.meshes.filter((m) => (m as Mesh).geometry && m.isPickable) as Mesh[];
             }
 
             for (let index = 0; index < this._pickableMeshes.length; index++) {
