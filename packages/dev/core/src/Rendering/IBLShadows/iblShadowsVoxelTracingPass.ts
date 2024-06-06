@@ -2,8 +2,8 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowCompute.fragment";
@@ -19,17 +19,36 @@ export class IblShadowsVoxelTracingPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
-    private _voxelShadowEnabled: boolean = true;
-    private _sssEnabled: boolean = true;
+    private _voxelShadowOpacity: number = 1.0;
+    /**
+     * The opacity of the shadow cast from the voxel grid
+     */
+    public get voxelShadowOpacity(): number {
+        return this._voxelShadowOpacity;
+    }
+    /**
+     * The opacity of the shadow cast from the voxel grid
+     */
+    public set voxelShadowOpacity(value: number) {
+        this._voxelShadowOpacity = value;
+    }
     private _sssSamples: number = 16;
     private _sssStride: number = 8;
     private _sssMaxDist: number = 0.15;
     private _sssThickness: number = 0.01;
-    public get sssEnabled(): boolean {
-        return this._sssEnabled;
+
+    private _ssShadowOpacity: number = 1.0;
+    /**
+     * The opacity of the screen-space shadow
+     */
+    public get ssShadowOpacity(): number {
+        return this._ssShadowOpacity;
     }
-    public set sssEnabled(value: boolean) {
-        this._sssEnabled = value;
+    /**
+     * The opacity of the screen-space shadow
+     */
+    public set ssShadowOpacity(value: number) {
+        this._ssShadowOpacity = value;
     }
     public get sssSamples(): number {
         return this._sssSamples;
@@ -56,7 +75,7 @@ export class IblShadowsVoxelTracingPass {
         this._sssThickness = value;
     }
 
-    private _outputPT: CustomProceduralTexture;
+    private _outputPT: ProceduralTexture;
     private _cameraInvView: Matrix = Matrix.Identity();
     private _cameraInvProj: Matrix = Matrix.Identity();
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
@@ -78,7 +97,7 @@ export class IblShadowsVoxelTracingPass {
     private _envRotation: number = -Math.PI / 2.0;
     private _downscale: number = 1.0;
 
-    public getTexture(): CustomProceduralTexture {
+    public getTexture(): ProceduralTexture {
         return this._outputPT;
     }
     public setWorldScaleMatrix(matrix: Matrix) {
@@ -134,22 +153,20 @@ export class IblShadowsVoxelTracingPass {
     }
 
     private _createTextures() {
-        const outputOptions: ICustomProceduralTextureCreationOptions = {
+        const outputOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            skipJson: true,
         };
 
-        this._outputPT = new CustomProceduralTexture(
+        this._outputPT = new ProceduralTexture(
             "shadowPassTexture1",
-            "iblShadowCompute",
             { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
+            "iblShadowCompute",
             this._scene,
-            outputOptions,
-            false
+            outputOptions
         );
         this._outputPT.autoClear = false;
         this._outputPT.refreshRate = 0;
@@ -186,7 +203,7 @@ export class IblShadowsVoxelTracingPass {
         const maxDist = this._sssMaxDist * worldScale;
         const thickness = this._sssThickness * worldScale;
         this._outputPT.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
-        this._outputPT.setVector4("shadowOpacity", new Vector4(this._voxelShadowEnabled ? 1.0 : 0.0, this._sssEnabled ? 1.0 : 0.0, 0.0, 0.0));
+        this._outputPT.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
         this._outputPT.setTexture("voxelGridSampler", voxelGrid);
         this._outputPT.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
         this._outputPT.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
@@ -207,6 +224,10 @@ export class IblShadowsVoxelTracingPass {
             if (clipDepthIndex >= 0) this._outputPT.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
             if (wPositionIndex >= 0) this._outputPT.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
         }
+    }
+
+    public resize() {
+        this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }
 
     private _disposeTextures() {
