@@ -21,7 +21,7 @@ void main(void) {
   if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
     gl_FragColor.rgba = background;
   } else {
-    gl_FragColor.rgb = debugColour.rgb;
+    gl_FragColor.rgb = mix(debugColour.rgb, background.rgb, 0.5);
     gl_FragColor.a = 1.0;
   }
 }

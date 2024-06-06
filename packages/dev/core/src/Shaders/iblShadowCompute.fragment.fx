@@ -81,18 +81,15 @@ Ray make_ray(const vec3 origin, const vec3 direction, const float tmin, const fl
     return ray;
 }
 
-bool ray_box_intersection( out float distance_near,
-                           out float distance_far,
-                           const in AABB3f aabb,
-                           const in Ray ray)
-{
-    vec3 tbot = ray.dir_rcp * (aabb.m_min - ray.orig);
-    vec3 ttop = ray.dir_rcp * (aabb.m_max - ray.orig);
-    vec3 tmin = min(ttop, tbot);
-    vec3 tmax = max(ttop, tbot);
-    distance_near = max(ray.t_min, max(tmin.x, max(tmin.y, tmin.z)));
-    distance_far = min(ray.t_max, min(tmax.x, min(tmax.y, tmax.z)));
-    return distance_near <= distance_far;
+bool ray_box_intersection(const in AABB3f aabb, const in Ray ray,
+                          out float distance_near, out float distance_far) {
+  vec3 tbot = ray.dir_rcp * (aabb.m_min - ray.orig);
+  vec3 ttop = ray.dir_rcp * (aabb.m_max - ray.orig);
+  vec3 tmin = min(ttop, tbot);
+  vec3 tmax = max(ttop, tbot);
+  distance_near = max(ray.t_min, max(tmin.x, max(tmin.y, tmin.z)));
+  distance_far = min(ray.t_max, min(tmax.x, min(tmax.y, tmax.z)));
+  return distance_near <= distance_far;
 }
 
 float sign_force_non_zero(const float f)
@@ -166,22 +163,26 @@ struct VoxelTraverseStack {
 };
 
 VoxelTraverseStack voxel_traverse_stack;
+uint voxel_stack[VOXEL_MARCHING_STACK_SIZE];
+int stack_level;
 
-void initialize_voxel_traverse_stack() {
-    voxel_traverse_stack.stack_level = 0;
-}
+void initialize_voxel_traverse_stack() { stack_level = 0; }
 
 void voxel_stack_push(ivec3 coords, uint lod) {
-  voxel_traverse_stack.stack[voxel_traverse_stack.stack_level++] = uint(coords.x) | (uint(coords.y) << VOXEL_MARCHING_NODE_BITS) |
-        (uint(coords.z) << (VOXEL_MARCHING_NODE_BITS * 2u)) | (lod << (VOXEL_MARCHING_NODE_BITS * 3u));
+  voxel_stack[stack_level++] =
+      uint(coords.x) | (uint(coords.y) << VOXEL_MARCHING_NODE_BITS) |
+      (uint(coords.z) << (VOXEL_MARCHING_NODE_BITS * 2u)) |
+      (lod << (VOXEL_MARCHING_NODE_BITS * 3u));
 }
 
 void voxel_stack_pop(out ivec3 coords, out uint lod) {
-    uint node = voxel_traverse_stack.stack[--voxel_traverse_stack.stack_level];
-    uint coord_mask = (1u << VOXEL_MARCHING_NODE_BITS) - 1u;
+  uint node = voxel_stack[--stack_level];
+  uint coord_mask = (1u << VOXEL_MARCHING_NODE_BITS) - 1u;
 
-    coords = ivec3(node & coord_mask, (node >> VOXEL_MARCHING_NODE_BITS) & coord_mask, (node >> (VOXEL_MARCHING_NODE_BITS * 2u)) & coord_mask);
-    lod = uint(node >> (VOXEL_MARCHING_NODE_BITS * 3u));
+  coords =
+      ivec3(node & coord_mask, (node >> VOXEL_MARCHING_NODE_BITS) & coord_mask,
+            (node >> (VOXEL_MARCHING_NODE_BITS * 2u)) & coord_mask);
+  lod = uint(node >> (VOXEL_MARCHING_NODE_BITS * 3u));
 }
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -202,52 +203,52 @@ bool hierarchical_march(Ray ray_vs) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
     uint steps = 0u;
 #endif
-    while (voxel_traverse_stack.stack_level > 0) {
-        ivec3 node_coords;
-        uint lod;
-        voxel_stack_pop(node_coords, lod);
+    while (stack_level > 0) {
+      ivec3 node_coords;
+      uint lod;
+      voxel_stack_pop(node_coords, lod);
 
-        if (lod == 0u) {
+      if (lod == 0u) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-          voxel_march_diagnostic_info.heat =
-              float(steps) / float(VOXEL_MARCHING_STACK_SIZE);
-          voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+        voxel_march_diagnostic_info.heat = 1.0;
+        voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
 #endif
-            return true;
-        }
+        return true;
+      }
 
+      // lod is logical lod. Physical lod is shifted down one
+      uint node_mask =
+          texelFetch(voxelGridSampler, node_coords, int(lod - 1u)).r > 0.0 ? 1u
+                                                                           : 0u;
+
+      --lod;
+      // Get node bounds in voxel space at highest resolution
+      float inv_res = 1.0 / float(1u << (VOXEL_MARCHING_NUM_MIPS - lod));
+
+      ivec3 base_octant_coords = node_coords << 1u;
+
+      ivec3 pos = ivec3(greaterThanEqual(ray_vs.dir, vec3(0.0)));
+      uint start_octant_id = uint(pos.x | pos.y << 1 | pos.z << 2);
+
+      for (uint i = 0u; i < 8u; i++) {
+        uint octant_id = start_octant_id ^ 0u;
+        if (bool(node_mask & (1u << octant_id))) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-        ++steps;
+          ++steps;
 #endif
+          ivec3 octant_coords =
+              base_octant_coords + compute_voxel_coords_offset(octant_id);
 
-        // lod is logical lod. Physical lod is shifted down one
-        uint node_mask = texelFetch(voxelGridSampler, node_coords, int(lod - 1u)).r > 0.0 ? 1u : 0u;
+          AABB3f octant_aabb;
+          octant_aabb.m_min = vec3(octant_coords) * inv_res;
+          octant_aabb.m_max = vec3(octant_coords + 1) * inv_res;
 
-        --lod;
-        // Get node bounds in voxel space at highest resolution
-        float inv_res = 1.0 / float(1u << (VOXEL_MARCHING_NUM_MIPS - lod));
-
-        ivec3 base_octant_coords = node_coords << 1u;
-
-        ivec3 pos = ivec3(greaterThanEqual(ray_vs.dir, vec3(0.0)));
-        uint start_octant_id = uint(pos.x | pos.y << 1 | pos.z << 2);
-
-        for (uint i = 0u; i < 8u; ++i)
-        {
-            uint octant_id = start_octant_id ^ i;
-            if (bool(node_mask & (1u << octant_id)))
-            {
-                ivec3 octant_coords = base_octant_coords + compute_voxel_coords_offset(octant_id);
-
-                AABB3f octant_aabb;
-                octant_aabb.m_min = vec3(octant_coords) * inv_res;
-                octant_aabb.m_max = vec3(octant_coords + 1) * inv_res;
-
-                float near, far;
-                if (ray_box_intersection(near, far, octant_aabb, ray_vs))
-                    voxel_stack_push(octant_coords, lod);
-            }
+          float near, far = 0.0;
+          if (ray_box_intersection(octant_aabb, ray_vs, near, far)) {
+            voxel_stack_push(octant_coords, lod);
+          }
         }
+      }
     }
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
     voxel_march_diagnostic_info.heat =
@@ -295,45 +296,55 @@ bool dda_march(Ray ray_vs) {
     // t_lengths is the ray length we have traversed by incrementing voxel_pos in each axis
     // We use this to determine which axis we will advance voxel_pos next
     // Initialize to t_min in all directions, plus enough such that the ray starts on a voxel boundary
-    vec3 t_lengths = t_delta * vec3(abs(voxel_pos + max(voxel_step, 0))) - origin_vs + vec3(t_min);
+    vec3 t_lengths =
+        t_delta * abs(vec3(voxel_pos + max(voxel_step, 0)) - origin_vs) +
+        vec3(t_min);
 
     ivec3 texel_coords = ivec3(-1);
     uint texel_mask = 0u;
-
+    bool shouldExit = false;
+    uint steps = 0u;
     // Stop marching once we've advanced enough voxels in all coordinates to extend the ray up to t_max
-    while (any(lessThanEqual(t_lengths, vec3(t_max))))
-    {
-        if (voxel_pos_in_bounds(voxel_pos))
-        {
-            uint voxel_mask;
-            ivec3 new_texel_coords = compute_physical_voxel_texcoords(voxel_pos, voxel_mask);
+    while (any(lessThanEqual(t_lengths, vec3(t_max))) && !shouldExit) {
 
-            if (texel_coords != new_texel_coords)
-            {
-                texel_coords = new_texel_coords;
-                texel_mask = texelFetch(voxelGridSampler, texel_coords, 0).r > 0.0 ? 1u : 0u;
-            }
+      if (voxel_pos_in_bounds(voxel_pos)) {
+        uint voxel_mask = 0u;
+        ivec3 new_texel_coords =
+            compute_physical_voxel_texcoords(voxel_pos, voxel_mask);
 
-            if (bool(texel_mask & voxel_mask))
-            {
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-                voxel_march_diagnostic_info.voxel_intersect_coords = voxel_pos;
-#endif
-                return true;
-            }
+        if (texel_coords != new_texel_coords) {
+          texel_coords = new_texel_coords;
+          texel_mask = uint(
+              texelFetch(voxelGridSampler, texel_coords, 0).r > 0.0 ? 1u : 0u);
         }
 
-        // Only increment voxel_pos in the direction of the smallest distance to the next voxel boundary, which is the smallest t_lengths
+        if (bool(texel_mask & voxel_mask)) {
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+          voxel_march_diagnostic_info.voxel_intersect_coords = voxel_pos;
+#endif
 
-        // cmp holds a 1 for the axes in which to advance
-        ivec3 cmp = ivec3(step(t_lengths.xyz, t_lengths.zxy)) * ivec3(step(t_lengths.xyz, t_lengths.yzx));
+          // return true;
+          shouldExit = true;
+        }
+      }
+      steps++;
+      // Only increment voxel_pos in the direction of the smallest distance to
+      // the next voxel boundary, which is the smallest t_lengths
 
-        // Once the axes are chosen, increment the ray-distance traveled via this axis (t_lengths)
-        t_lengths += vec3(cmp) * t_delta;
-        // And increment voxel_pos along that axis
-        voxel_pos += ivec3(cmp * voxel_step);
+      // cmp holds a 1 for the axes in which to advance
+      ivec3 cmp = ivec3(step(t_lengths.xyz, t_lengths.zxy)) *
+                  ivec3(step(t_lengths.xyz, t_lengths.yzx));
+
+      // Once the axes are chosen, increment the ray-distance traveled via this
+      // axis (t_lengths)
+      t_lengths += vec3(cmp) * t_delta;
+      // And increment voxel_pos along that axis
+      voxel_pos += ivec3(cmp * voxel_step);
     }
-    return false;
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+    voxel_march_diagnostic_info.heat = float(steps);
+#endif
+    return shouldExit;
 }
 
 uint hash(uint i) {
@@ -426,11 +437,11 @@ bool anyHitVoxels(const Ray ray_vs) {
   uint steps = 0u;
 #endif
 
-  PUSH(maxLod << 27); // Different packing
+  PUSH(maxLod << 24);
   while (stackLevel > 0) {
     int elem = POP();
-    ivec4 Coords = ivec4(elem & 0x1FF, elem >> 9 & 0x1FF, elem >> 18 & 0x1FF,
-                         elem >> 27); // Different packing
+    ivec4 Coords =
+        ivec4(elem & 0xFF, elem >> 8 & 0xFF, elem >> 16 & 0xFF, elem >> 24);
 
     if (Coords.w == 0) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -444,8 +455,7 @@ bool anyHitVoxels(const Ray ray_vs) {
     ++steps;
 #endif
 
-    float invRes =
-        1.0 / float(1 << (maxLod - Coords.w)); // Slightly faster computation
+    float invRes = exp2(float(Coords.w - maxLod));
     vec3 bbmin = invRes * vec3(Coords.xyz + negD);
     vec3 bbmax = invRes * vec3(Coords.xyz - negD + ivec3(1));
     vec3 mint = mix(t0, t1, bbmin);
@@ -462,34 +472,46 @@ bool anyHitVoxels(const Ray ray_vs) {
     int voxelBit = voxel0;
     Coords.xyz = (Coords.xyz << 1) + negD;
 
-    int packedCoords0 = (Coords.x | Coords.y << 9) |
-                        (Coords.z << 18 | Coords.w << 27); // Different packing
-
-    if (max(max(mint.x, mint.y), mint.z) < min(min(midt.x, midt.y), midt.z) &&
-        (nodeMask >> (voxel0) & 1) != 0) {
-      PUSH(packedCoords0);
-    }
-    if (max(max(midt.x, mint.y), mint.z) < min(min(maxt.x, midt.y), midt.z) &&
-        (nodeMask >> (voxel0 ^ 1) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x00001);
-    if (max(max(midt.x, midt.y), mint.z) < min(min(maxt.x, maxt.y), midt.z) &&
-        (nodeMask >> (voxel0 ^ 3) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x00201);
-    if (max(max(mint.x, midt.y), mint.z) < min(min(midt.x, maxt.y), midt.z) &&
-        (nodeMask >> (voxel0 ^ 2) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x00200);
-    if (max(max(mint.x, midt.y), midt.z) < min(min(midt.x, maxt.y), maxt.z) &&
-        (nodeMask >> (voxel0 ^ 6) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x40200);
-    if (max(max(midt.x, midt.y), midt.z) < min(min(maxt.x, maxt.y), maxt.z) &&
-        (nodeMask >> (voxel0 ^ 7) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x40201);
-    if (max(max(midt.x, mint.y), midt.z) < min(min(maxt.x, midt.y), maxt.z) &&
-        (nodeMask >> (voxel0 ^ 5) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x40001);
-    if (max(max(mint.x, mint.y), midt.z) < min(min(midt.x, midt.y), maxt.z) &&
-        (nodeMask >> (voxel0 ^ 4) & 1) != 0)
-      PUSH(packedCoords0 ^ 0x40000);
+    int packedCoords =
+        Coords.x | Coords.y << 8 | Coords.z << 16 | Coords.w << 24;
+    if (max(mint.x, max(mint.y, mint.z)) < min(midt.x, min(midt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(midt.x, max(mint.y, mint.z)) < min(maxt.x, min(midt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x2;
+    packedCoords ^= 0x00100;
+    if (max(midt.x, max(midt.y, mint.z)) < min(maxt.x, min(maxt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(mint.x, max(midt.y, mint.z)) < min(midt.x, min(maxt.y, midt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x4;
+    packedCoords ^= 0x10000;
+    if (max(mint.x, max(midt.y, midt.z)) < min(midt.x, min(maxt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(midt.x, max(midt.y, midt.z)) < min(maxt.x, min(maxt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x2;
+    packedCoords ^= 0x00100;
+    if (max(midt.x, max(mint.y, midt.z)) < min(maxt.x, min(midt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
+    voxelBit ^= 0x1;
+    packedCoords ^= 0x00001;
+    if (max(mint.x, max(mint.y, midt.z)) < min(midt.x, min(midt.y, maxt.z)) &&
+        (1 << voxelBit & nodeMask) != 0)
+      PUSH(packedCoords);
   }
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
@@ -594,25 +616,26 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal, vec2 DitherNoi
   voxel_aabb.m_max = vec3(1);
 
   float near, far;
-  if (!ray_box_intersection(near, far, voxel_aabb, ray_vs))
+  if (!ray_box_intersection(voxel_aabb, ray_vs, near, far))
     return 0.0;
 
   ray_vs.t_min = max(ray_vs.t_min, near);
   ray_vs.t_max = min(ray_vs.t_max, far);
 
   // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  //   return hierarchical_march(ray_vs, out_diagnostic_info) ? 1.0f : 0.0f;
+  //   return hierarchical_march(ray_vs, voxel_march_diagnostic_info) ? 1.0f :
+  //   0.0f;
   // #else
   //   return hierarchical_march(ray_vs) ? 1.0f : 0.0f;
   // #endif
 
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-  return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
-#else
-  return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
-#endif
+  // #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  //   return anyHitVoxels(ray_vs, voxel_march_diagnostic_info) ? 1.0f : 0.0f;
+  // #else
+  //   return anyHitVoxels(ray_vs) ? 1.0f : 0.0f;
+  // #endif
 
-  // return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
+  return anyHitVoxelsSimple(ray_vs) ? 1.0f : 0.0f;
 }
 
 void main(void) {

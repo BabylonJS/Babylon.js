@@ -1,21 +1,21 @@
-import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
-import { CustomProceduralTexture } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/customProceduralTexture";
-import { Matrix, Vector2, Vector4 } from "../Maths/math.vector";
+import { Constants } from "../../Engines/constants";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
+import type { Scene } from "../../scene";
+import { Texture } from "../../Materials/Textures/texture";
+import { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import type { ICustomProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
-import "../Shaders/iblShadowCompute.fragment";
-import "../Shaders/iblShadowDebug.fragment";
-import { PostProcess } from "../PostProcesses/postProcess";
+import "../../Shaders/iblShadowCompute.fragment";
+import "../../Shaders/iblShadowDebug.fragment";
+import { PostProcess } from "../../PostProcesses/postProcess";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
  * This should not be instanciated directly, as it is part of a scene component
  */
-export class IblShadowsComputePass {
+export class IblShadowsVoxelTracingPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;

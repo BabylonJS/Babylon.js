@@ -1,21 +1,21 @@
-import { Constants } from "../Engines/constants";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { Constants } from "../../Engines/constants";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
-import type { Scene } from "../scene";
-import { Texture } from "../Materials/Textures/texture";
-import type { TextureSize } from "../Materials/Textures/textureCreationOptions";
-import { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../Materials/Textures/Procedurals/proceduralTexture";
+import type { Scene } from "../../scene";
+import { Texture } from "../../Materials/Textures/texture";
+import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
+import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 // import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 // import { Logger } from "../Misc/logger";
-import "../Shaders/importanceSamplingDebug.fragment";
-import "../Shaders/iblShadowsCdfx.fragment";
-import "../Shaders/iblShadowsIcdfx.fragment";
-import "../Shaders/iblShadowsCdfy.fragment";
-import "../Shaders/iblShadowsIcdfy.fragment";
-import { PostProcess } from "../PostProcesses/postProcess";
-import { Vector4 } from "../Maths/math.vector";
-import { RawTexture } from "../Materials/Textures/rawTexture";
+import "../../Shaders/importanceSamplingDebug.fragment";
+import "../../Shaders/iblShadowsCdfx.fragment";
+import "../../Shaders/iblShadowsIcdfx.fragment";
+import "../../Shaders/iblShadowsCdfy.fragment";
+import "../../Shaders/iblShadowsIcdfy.fragment";
+import { PostProcess } from "../../PostProcesses/postProcess";
+import { Vector4 } from "../../Maths/math.vector";
+import { RawTexture } from "../../Materials/Textures/rawTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
