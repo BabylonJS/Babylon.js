@@ -12,7 +12,7 @@ import { Texture } from "../../../Textures/texture";
 import type { Scene } from "../../../../scene";
 import type { InputBlock } from "../Input/inputBlock";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
-import { Constants } from "core/Engines";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Base block used as input for post process
