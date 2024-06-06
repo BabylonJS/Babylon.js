@@ -191,8 +191,14 @@ export class CurrentScreenBlock extends NodeMaterialBlock {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
                 return;
             }
+            const textureReadFunc =
+                state.shaderLanguage === ShaderLanguage.GLSL
+                    ? `texture2D(${this._samplerName},`
+                    : `textureSampleLevel(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
 
-            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName});\n`;
+            const complement = state.shaderLanguage === ShaderLanguage.GLSL ? "" : ", 0";
+
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${uvInput.associatedVariableName}${complement});\n`;
             return;
         }
 
