@@ -2,8 +2,8 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowSpatialBlur.fragment";
@@ -18,10 +18,10 @@ export class IblShadowsSpatialBlurPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
-    private _outputPT: CustomProceduralTexture;
+    private _outputPT: ProceduralTexture;
     private _worldScale: number = 1.0;
 
-    public getTexture(): CustomProceduralTexture {
+    public getTexture(): ProceduralTexture {
         return this._outputPT;
     }
     public setWorldScale(scale: number) {
@@ -77,30 +77,23 @@ export class IblShadowsSpatialBlurPass {
     }
 
     private _createTextures() {
-        const outputOptions: ICustomProceduralTextureCreationOptions = {
+        const outputOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            skipJson: true,
         };
 
-        this._outputPT = new CustomProceduralTexture(
+        this._outputPT = new ProceduralTexture(
             "shadowPassTexture2",
-            "iblShadowSpatialBlur",
             { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
+            "iblShadowSpatialBlur",
             this._scene,
-            outputOptions,
-            false
+            outputOptions
         );
         this._outputPT.autoClear = false;
         this._outputPT.refreshRate = 0;
-        this._scene.onAfterRenderCameraObservable.add(() => {
-            if (this._outputPT.isReady()) {
-                // this._outputPT.render();
-            }
-        });
     }
 
     public update() {
@@ -131,6 +124,13 @@ export class IblShadowsSpatialBlurPass {
      */
     public isReady() {
         return this._outputPT.isReady();
+    }
+
+    /**
+     * Resizes the output texture to match the engine render size
+     */
+    public resize() {
+        this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }
 
     /**
