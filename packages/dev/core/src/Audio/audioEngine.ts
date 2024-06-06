@@ -175,6 +175,23 @@ export class AudioEngine implements IAudioEngine {
         }
     }
 
+    /** @internal */
+    public _resumeAudioContextOnStateChange(): void {
+        this._audioContext?.addEventListener(
+            "statechange",
+            () => {
+                if (this.unlocked && this._audioContext?.state !== "running") {
+                    this._resumeAudioContext();
+                }
+            },
+            {
+                once: true,
+                passive: true,
+                signal: AbortSignal.timeout(3000),
+            }
+        );
+    }
+
     private _resumeAudioContext(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
