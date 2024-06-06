@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "GPUPicker",
+            "playgroundId": "#1RWFMT#1",
+            "renderCount": 20,
+            "referenceImage": "gpuPicker.png"
+        },
+        {
             "title": "Trailmesh - tapered and untapered",
             "playgroundId": "#XGGSWJ#1",
             "renderCount": 100,
