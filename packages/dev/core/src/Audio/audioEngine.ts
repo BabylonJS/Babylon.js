@@ -175,6 +175,23 @@ export class AudioEngine implements IAudioEngine {
         }
     }
 
+    /** @internal */
+    public _resumeAudioContextOnStateChange(): void {
+        this._audioContext.addEventListener(
+            "statechange",
+            () => {
+                if (this.unlocked && this._audioContext?.state !== "running") {
+                    this._resumeAudioContext();
+                }
+            },
+            {
+                once: true,
+                passive: true,
+                signal: AbortSignal.timeout(3000),
+            }
+        );
+    }
+
     private _resumeAudioContext(): Promise<void> {
         if (this._audioContext?.resume) {
             return this._audioContext.resume();
@@ -200,13 +217,6 @@ export class AudioEngine implements IAudioEngine {
                     // Do not wait for the promise to unlock.
                     this._triggerRunningState();
                 }
-
-                // This keeps the audio context running when the user enters immersive mode on Apple's Vision Pro.
-                this._audioContext.addEventListener("statechange", () => {
-                    if (this.unlocked && this._audioContext?.state !== "running") {
-                        this._audioContext?.resume();
-                    }
-                });
             }
         } catch (e) {
             this.canUseWebAudio = false;
