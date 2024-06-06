@@ -156,16 +156,16 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
             if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                 state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
             } else {
-                state.compilationString += `${state._declareOutput(output)} = vec4(${color.associatedVariableName}, 1.0);\n`;
+                state.compilationString += `${state._declareOutput(output)} = vec4${state.fSuffix}(${color.associatedVariableName}, 1.0);\n`;
             }
             state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpaceVec3(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
             }
             state.compilationString += `#else\n`;
             state.compilationString += `#ifdef IMAGEPROCESSING\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName}.rgb = toLinearSpace(${color.associatedVariableName}.rgb);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpaceVec3(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
             }
             state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
             state.compilationString += `#endif\n`;

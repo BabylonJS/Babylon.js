@@ -42,6 +42,8 @@ import "../../ShadersWGSL/ShadersInclude/bumpFragment";
 import "../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions";
 import "../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions";
 import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
+import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
+import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
