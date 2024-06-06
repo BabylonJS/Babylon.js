@@ -451,10 +451,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             const name = match[1]; // name of the variable
             const samplerType = match[2]; // sampler or sampler_comparison
-            const textureName =
-                name.lastIndexOf(Constants.AUTOSAMPLERSUFFIX) === name.length - Constants.AUTOSAMPLERSUFFIX.length
-                    ? name.substring(0, name.length - Constants.AUTOSAMPLERSUFFIX.length)
-                    : null;
+            const suffixLessLength = name.length - Constants.AUTOSAMPLERSUFFIX.length;
+            const textureName = name.lastIndexOf(Constants.AUTOSAMPLERSUFFIX) === suffixLessLength ? name.substring(0, suffixLessLength) : null;
             const samplerBindingType = samplerType === "sampler_comparison" ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
             if (textureName) {
