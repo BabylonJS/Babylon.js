@@ -177,7 +177,7 @@ export class AudioEngine implements IAudioEngine {
 
     /** @internal */
     public _resumeAudioContextOnStateChange(): void {
-        this._audioContext.addEventListener(
+        this._audioContext?.addEventListener(
             "statechange",
             () => {
                 if (this.unlocked && this._audioContext?.state !== "running") {
