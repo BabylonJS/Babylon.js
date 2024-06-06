@@ -252,7 +252,7 @@
     // We need to disable uniformity analysis when using CSM, as there's no textureLod overload that takes a sampler2DArrayShadow.
     // And the workaround that uses textureGrad (which does work with sampler2DArrayShadow) is not supported by the SpirV to WGSL conversion (from Tint)
 
-    #define DIAGNOSTIC_OFF
+    #define DISABLE_UNIFORMITY_ANALYSIS
 
     // Shadow PCF kernel size 1 with a single tap (lowest quality)
     
