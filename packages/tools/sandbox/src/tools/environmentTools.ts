@@ -10,17 +10,33 @@ import { EngineStore } from "core/Engines/engineStore";
 
 export class EnvironmentTools {
     public static SkyboxPath = "";
-    public static Skyboxes = ["https://assets.babylonjs.com/environments/environmentSpecular.env", "https://assets.babylonjs.com/environments/studio.env"];
+    public static Skyboxes = [
+        "https://assets.babylonjs.com/environments/sanGiuseppeBridge.env",
+        "https://assets.babylonjs.com/environments/ulmerMuenster.env",
+        "https://assets.babylonjs.com/environments/studio.env",
+    ];
 
-    public static SkyboxesNames = ["Default", "Studio"];
+    public static SkyboxesNames = ["Default", "Plaza", "Studio"];
+
+    public static SkyboxesRotation = [5.54, 1.9, 0];
 
     public static LoadSkyboxPathTexture(scene: Scene) {
-        const defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
-        const path = this.SkyboxPath || this.Skyboxes[defaultSkyboxIndex];
+        let path = this.SkyboxPath;
+        let rotationY = 0;
+
+        if (path.length === 0) {
+            const defaultSkyboxIndex = Math.max(0, LocalStorageHelper.ReadLocalStorageValue("defaultSkyboxId", 0));
+            path = this.Skyboxes[defaultSkyboxIndex];
+            rotationY = this.SkyboxesRotation[defaultSkyboxIndex];
+        }
+
         if (path.indexOf(".hdr") === path.length - 4) {
             return new HDRCubeTexture(path, scene, 256, false, true, false, true);
         }
-        return CubeTexture.CreateFromPrefilteredData(path, scene);
+
+        const envTexture = CubeTexture.CreateFromPrefilteredData(path, scene);
+        envTexture.rotationY = rotationY;
+        return envTexture;
     }
 
     public static GetActiveSkyboxName() {
