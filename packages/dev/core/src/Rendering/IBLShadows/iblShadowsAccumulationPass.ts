@@ -2,8 +2,8 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
-import type { ICustomProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
+import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowAccumulation.fragment";
@@ -26,11 +26,11 @@ export class IblShadowsAccumulationPass {
     // We'll access the motion buffer from the prepass renderer
 
     // First, render the accumulation pass with both position buffers, motion buffer, shadow buffer, and the previous accumulation buffer
-    private _outputPT: CustomProceduralTexture;
+    private _outputPT: ProceduralTexture;
     private _oldAccumulationRT: RenderTargetTexture;
     private _oldLocalPositionRT: RenderTargetTexture;
 
-    public getTexture(): CustomProceduralTexture {
+    public getTexture(): ProceduralTexture {
         return this._outputPT;
     }
 
@@ -98,22 +98,20 @@ export class IblShadowsAccumulationPass {
     }
 
     private _createTextures() {
-        const outputOptions: ICustomProceduralTextureCreationOptions = {
+        const outputOptions: IProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-            skipJson: true,
         };
 
-        this._outputPT = new CustomProceduralTexture(
+        this._outputPT = new ProceduralTexture(
             "accumulationPassTexture",
-            "iblShadowAccumulation",
             { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
+            "iblShadowAccumulation",
             this._scene,
-            outputOptions,
-            false
+            outputOptions
         );
         this._outputPT.autoClear = false;
         this._outputPT.refreshRate = 0;
@@ -218,6 +216,13 @@ export class IblShadowsAccumulationPass {
         }
 
         this.reset = false;
+    }
+
+    /** Called by render pipeline when canvas resized. */
+    public resize() {
+        this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
+        this._oldAccumulationRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
+        this._oldLocalPositionRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
     }
 
     private _disposeTextures() {

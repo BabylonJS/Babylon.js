@@ -25,6 +25,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import { BaseTexture } from "../../Materials/Textures/baseTexture";
+import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
  * Voxel-based shadow rendering for IBL's.
@@ -33,7 +34,7 @@ import { BaseTexture } from "../../Materials/Textures/baseTexture";
 export class IblShadowsVoxelRenderer {
     private _scene: Scene;
     private _engine: Engine;
-
+    private _renderPipeline: IblShadowsRenderPipeline;
     private _voxelGridRT: ProceduralTexture;
     private _voxelGridXaxis: RenderTargetTexture;
     private _voxelGridYaxis: RenderTargetTexture;
@@ -43,15 +44,37 @@ export class IblShadowsVoxelRenderer {
     private _voxelMrtsZaxis: MultiRenderTarget[] = [];
     private _isVoxelGrid3D: boolean = true;
     public getVoxelGrid(): ProceduralTexture | RenderTargetTexture {
-        if (this._threeWayVoxelization) {
+        if (this._triPlanarVoxelization) {
             return this._voxelGridRT;
         } else {
             return this._voxelGridZaxis;
         }
     }
     private _maxDrawBuffers: number;
+    private _renderTargets: RenderTargetTexture[] = [];
 
-    private _threeWayVoxelization: boolean = true;
+    private _triPlanarVoxelization: boolean = true;
+
+    /**
+     * Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
+     */
+    public get triPlanarVoxelization(): boolean {
+        return this._triPlanarVoxelization;
+    }
+
+    /**
+     * Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
+     */
+    public set triPlanarVoxelization(enabled: boolean) {
+        if (this._triPlanarVoxelization === enabled) {
+            return;
+        }
+        this._triPlanarVoxelization = enabled;
+        this._disposeVoxelTextures();
+        this._createTextures();
+        this._renderPipeline.updateVoxelization();
+    }
+
     private _voxelizationInProgress: boolean = false;
     private _invWorldScaleMatrix: Matrix;
     public setWorldScaleMatrix(matrix: Matrix) {
@@ -79,9 +102,8 @@ export class IblShadowsVoxelRenderer {
         this._createTextures();
     }
 
-    private _mipRT: BaseTexture;
-    private _mipEffectRenderer: EffectRenderer;
-    private _mipEffectWrapper: EffectWrapper;
+    private _copyMipEffectRenderer: EffectRenderer;
+    private _copyMipEffectWrapper: EffectWrapper;
     private _mipArray: ProceduralTexture[] = [];
 
     private _voxelSlabDebugRT: RenderTargetTexture;
@@ -155,14 +177,17 @@ export class IblShadowsVoxelRenderer {
     /**
      * Instanciates the voxel renderer
      * @param scene Scene to attach to
+     * @param iblShadowsRenderPipeline The render pipeline this pass is associated with
      * @param resolution Number of depth layers to peel
+     * @param triPlanarVoxelization Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
      * @returns The voxel renderer
      */
-    constructor(scene: Scene, resolution: number = 256) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline, resolution: number = 256, triPlanarVoxelization: boolean = true) {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
         this._voxelResolution = resolution;
-
+        this._triPlanarVoxelization = triPlanarVoxelization;
+        this._renderPipeline = iblShadowsRenderPipeline;
         if (!this._engine.getCaps().drawBuffersExtension) {
             Logger.Error("Can't do voxel rendering without the draw buffers extension.");
         }
@@ -173,8 +198,8 @@ export class IblShadowsVoxelRenderer {
             this._maxDrawBuffers = (this._engine as Engine)._gl.getParameter((this._engine as Engine)._gl.MAX_DRAW_BUFFERS);
         }
 
-        this._mipEffectRenderer = new EffectRenderer(this._engine);
-        this._mipEffectWrapper = new EffectWrapper({
+        this._copyMipEffectRenderer = new EffectRenderer(this._engine);
+        this._copyMipEffectWrapper = new EffectWrapper({
             engine: this._engine,
             fragmentShader: "pass",
             useShaderStore: true,
@@ -204,16 +229,16 @@ export class IblShadowsVoxelRenderer {
         // TODO - this currently isn't working. "textureSampler" isn't being properly set to mipTarget.
         const rt = (this.getVoxelGrid() as any)._rtWrapper;
         if (rt) {
-            this._mipEffectRenderer.saveStates();
+            this._copyMipEffectRenderer.saveStates();
             const bindSize = mipTarget.getSize().width;
             // Render to each layer of the voxel grid.
             for (let layer = 0; layer < bindSize; layer++) {
-                this._mipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
+                this._copyMipEffectWrapper.effect.setTexture("textureSampler", mipTarget);
                 this._engine.bindFramebuffer(rt, 0, bindSize, bindSize, true, lodLevel, layer);
-                this._mipEffectRenderer.applyEffectWrapper(this._mipEffectWrapper);
-                this._mipEffectRenderer.draw();
+                this._copyMipEffectRenderer.applyEffectWrapper(this._copyMipEffectWrapper);
+                this._copyMipEffectRenderer.draw();
             }
-            this._mipEffectRenderer.restoreStates();
+            this._copyMipEffectRenderer.restoreStates();
             this._engine.unBindFramebuffer(rt, true);
         }
     }
@@ -247,7 +272,7 @@ export class IblShadowsVoxelRenderer {
             format: Constants.TEXTUREFORMAT_RGBA,
             samplingMode: Constants.TEXTURE_NEAREST_NEAREST_MIPNEAREST,
         };
-        if (this._threeWayVoxelization) {
+        if (this._triPlanarVoxelization) {
             this._voxelGridXaxis = new RenderTargetTexture("voxelGridXaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridYaxis = new RenderTargetTexture("voxelGridYaxis", size, this._scene, voxelAxisOptions);
             this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelAxisOptions);
@@ -265,14 +290,9 @@ export class IblShadowsVoxelRenderer {
             this._voxelGridRT.refreshRate = 0;
             this._voxelGridRT.wrapU = Texture.CLAMP_ADDRESSMODE;
             this._voxelGridRT.wrapV = Texture.CLAMP_ADDRESSMODE;
-
-            this._mipRT = new BaseTexture(this._scene, this._voxelGridRT.getInternalTexture());
-            this._mipRT.wrapU = Texture.CLAMP_ADDRESSMODE;
-            this._mipRT.wrapV = Texture.CLAMP_ADDRESSMODE;
         } else {
             this._voxelGridZaxis = new RenderTargetTexture("voxelGridZaxis", size, this._scene, voxelCombinedOptions);
             this._voxelMrtsZaxis = this._createVoxelMRTs("z_axis_", this._voxelGridZaxis, numSlabs);
-            this._mipRT = new BaseTexture(this._scene, this._voxelGridZaxis.getInternalTexture());
         }
 
         this._mipArray = new Array(Math.ceil(Math.log2(this._voxelResolution)));
@@ -340,13 +360,13 @@ export class IblShadowsVoxelRenderer {
     private _disposeVoxelTextures() {
         this._stopVoxelization();
         for (let i = 0; i < this._voxelMrtsZaxis.length; i++) {
-            if (this._threeWayVoxelization) {
+            if (this._triPlanarVoxelization) {
                 this._voxelMrtsXaxis[i].dispose(true);
                 this._voxelMrtsYaxis[i].dispose(true);
             }
             this._voxelMrtsZaxis[i].dispose(true);
         }
-        if (this._threeWayVoxelization) {
+        if (this._triPlanarVoxelization) {
             this._voxelGridXaxis.dispose();
             this._voxelGridYaxis.dispose();
             this._voxelGridRT.dispose();
@@ -392,13 +412,13 @@ export class IblShadowsVoxelRenderer {
     }
 
     private _removeVoxelRTs(rts: RenderTargetTexture[]) {
-        const currentRTs = this._scene.customRenderTargets;
-        const rtIdx = currentRTs.findIndex((rt) => {
+        // const currentRTs = this._scene.customRenderTargets;
+        const rtIdx = this._renderTargets.findIndex((rt) => {
             if (rt === rts[0]) return true;
             return false;
         });
         if (rtIdx >= 0) {
-            this._scene.customRenderTargets.splice(rtIdx, rts.length);
+            this._renderTargets.splice(rtIdx, rts.length);
         }
     }
 
@@ -411,7 +431,7 @@ export class IblShadowsVoxelRenderer {
 
         this._voxelizationInProgress = true;
 
-        if (this._threeWayVoxelization) {
+        if (this._triPlanarVoxelization) {
             this._addRTsForRender(this._voxelMrtsXaxis, excludedMeshes, 0);
             this._addRTsForRender(this._voxelMrtsYaxis, excludedMeshes, 1);
             this._addRTsForRender(this._voxelMrtsZaxis, excludedMeshes, 2);
@@ -424,21 +444,39 @@ export class IblShadowsVoxelRenderer {
             this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1);
         }
 
-        this._scene.onAfterRenderTargetsRenderObservable.addOnce(() => {
+        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
+            if (this._voxelizationInProgress) {
+                const allRTsReady = this._renderTargets.every((rt) => rt.isReadyForRendering());
+                if (allRTsReady) {
+                    this._renderTargets.forEach((rt) => {
+                        rt.render();
+                    });
+                    this._stopVoxelization();
+
+                    if (this._triPlanarVoxelization) {
+                        // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
+                        this._voxelGridRT._generateMipMaps = false;
+                        this._voxelGridRT.render();
+                    }
+                    this._generateMipMaps();
+
+                    this._voxelizationInProgress = false;
+                }
+            }
             // Remove the MRTs from the array so they don't get rendered again.
             // TODO - we seem to be removing the MRT's too early if we don't have a timeout here. Why?
-            setTimeout(() => {
-                this._stopVoxelization();
+            // setTimeout(() => {
+            //     this._stopVoxelization();
 
-                if (this._threeWayVoxelization) {
-                    // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
-                    this._voxelGridRT._generateMipMaps = false;
-                    this._voxelGridRT.render();
-                }
-                this._generateMipMaps();
+            //     if (this._threeWayVoxelization) {
+            //         // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
+            //         this._voxelGridRT._generateMipMaps = false;
+            //         this._voxelGridRT.render();
+            //     }
+            //     this._generateMipMaps();
 
-                this._voxelizationInProgress = false;
-            }, 1000);
+            //     this._voxelizationInProgress = false;
+            // }, 1000);
         });
     }
 
@@ -496,7 +534,14 @@ export class IblShadowsVoxelRenderer {
         });
 
         // Add the MRT's to render.
-        this._scene.customRenderTargets = this._scene.customRenderTargets.concat(mrts);
+        this._renderTargets = this._renderTargets.concat(mrts);
+    }
+
+    /**
+     * Called by the pipeline to resize resources.
+     */
+    public resize() {
+        this._voxelSlabDebugRT?.resize({ width: this._scene.getEngine().getRenderWidth(), height: this._scene.getEngine().getRenderHeight() }, false);
     }
 
     /**
