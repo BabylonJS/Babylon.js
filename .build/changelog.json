@@ -1,7 +1,6 @@
 {
-    "fromTag": "7.8.2",
+    "fromTag": "7.9.0",
     "changelog": {
-        "7.8.2": [],
         "7.9.0": [
             {
                 "pr": "15146",
@@ -148,6 +147,297 @@
                 "tags": []
             }
         ],
+        "7.10.0": [
+            {
+                "pr": "15166",
+                "title": "Create a new picking mechanism using GPU",
+                "description": "Playground: https://playground.babylonjs.com/#B5XGIP\r\n\r\nWith instances: #B5XGIP#10\r\n\r\nRelevant code:\r\n```\r\nvar picker = new BABYLON.GPUPicker();\r\npicker.pickAsync(scene.pointerX, scene.pointerY, scene, false).then(mesh => { ...\r\n```\r\n\r\nPlease note that:\r\n- WebGL and WebGPU were tested\r\n- Instances are now supported for now but you have to provide the list manually to avoid creating extra buffers every frame\r\n\r\nI will add a doc as soon as this is merged ;)",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Collisions/index.ts",
+                    "packages/dev/core/src/Helpers/environmentHelper.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gpuPicker.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "picking",
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15167",
+                "title": "Fix incorrect OBJ flip faces check",
+                "description": "See forum https://forum.babylonjs.com/t/babylon-objexport-obj-mesh-serialization-bug/50856.\r\n\r\nThis is the second issue from the forum post.\r\n\r\nThe gist of the issue is that we were checking the scene's handedness to determine whether we should flip faces but we should instead be checking for the material's winding order (a.k.a., side orientation in Babylon.js).",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/serializers/src/OBJ/objSerializer.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfToObjLH.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/gltfToObjRH.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15165",
+                "title": "Fix context lost event leak",
+                "description": "https://forum.babylonjs.com/t/unable-to-create-vao-on-context-lost-with-active-frustum-culling/48968/22?u=sebavan",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15162",
+                "title": "Fix VertexData.ExtractFrom functions to support 3-component colors",
+                "description": "See https://forum.babylonjs.com/t/babylon-objexport-obj-mesh-serialization-bug/50856.\r\n\r\nThis is a fix for the first problem indicated in the forum post. The issue is that the vertex alpha flag is inconsistently handled between mesh, geometry, and vertex data causing `mesh.flipFaces` to create new vertex data with the wrong stride for colors. This change makes the flag more consistent across the board.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.vertexData.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15151",
+                "title": "Remove disposed body from physicsViewer",
+                "description": "follow up\r\nhttps://forum.babylonjs.com/t/physicsviewer-crashes-the-application-when-disposing-of-a-physicsbody/50962\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Debug/physicsViewer.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15163",
+                "title": "ConeDirectedParticleEmitter",
+                "description": "add a ConeDirectedParticleEmitter ",
+                "author": {
+                    "name": "onekit-boss",
+                    "url": "https://github.com/onekit-boss"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/EmitterTypes/coneParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/baseParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/particleSystem.functions.ts",
+                    "packages/dev/core/src/Particles/particleSystem.ts",
+                    "packages/dev/core/src/Shaders/gpuUpdateParticles.vertex.fx",
+                    "packages/dev/core/src/ShadersWGSL/gpuUpdateParticles.compute.fx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15161",
+                "title": "Add support for null geometry",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/mergeGeometryBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nge"
+                ]
+            },
+            {
+                "pr": "15160",
+                "title": "Make AbstractMesh a real abstract class",
+                "description": "Note that some calls to `new AbstractMesh` were converted to `new Mesh` instead of `new TransformNode` because various helper functions still take an `AbstractMesh` when it could in theory take `TransformNode`.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Behaviors/Cameras/framingBehavior.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/baseSixDofDragBehavior.ts",
+                    "packages/dev/core/src/Gizmos/boundingBoxGizmo.ts",
+                    "packages/dev/core/src/Gizmos/lightGizmo.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/transformNode.ts",
+                    "packages/dev/core/src/XR/webXRInputSource.ts",
+                    "packages/tools/viewer/src/model/viewerModel.ts"
+                ],
+                "tags": [
+                    "breaking change"
+                ]
+            },
+            {
+                "pr": "15159",
+                "title": "Edge renderer: Add support in fast snapshot mode",
+                "description": "See https://forum.babylonjs.com/t/edgesrendering-with-snapshot-rendering/50970",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/material.ts",
+                    "packages/dev/core/src/Materials/pushMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lineUboDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lineVertexDeclaration.fx",
+                    "packages/dev/core/src/Shaders/line.vertex.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15154",
+                "title": "compat: Add redirect for moved file",
+                "description": "as per forum discussion: https://forum.babylonjs.com/t/breaking-change/50973/3\r\n\r\nno docs",
+                "author": {
+                    "name": "brianzinn",
+                    "url": "https://github.com/brianzinn"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/Extensions/engine.views.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15158",
+                "title": "Physics Velocity Limits",
+                "description": "fixes #14965 ",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsEngine.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15156",
+                "title": "When the obj file contains line data, use the line fill mode material.",
+                "description": "\r\nhttps://forum.babylonjs.com/t/import-obj-model-to-scene/50911/20",
+                "author": {
+                    "name": "2315137135",
+                    "url": "https://github.com/2315137135"
+                },
+                "files": [
+                    "packages/dev/loaders/src/OBJ/objFileLoader.ts",
+                    "packages/dev/loaders/src/OBJ/solidParser.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15152",
+                "title": "Experimental performance tests using playwright",
+                "description": "This moves experimental performance testing to playwright.\r\n\r\nIt will run the defined scene N frames, M times (N = 1000, M >=5). Threshold is currently at 5% but is fully configurable. At the moment only 3 scenes are defined (simple scene, particles, and the performance scene).\r\n\r\nIt allows testing against any previous version (after v5.71.0) and against current master.\r\n\r\nNext step it testing this procedure on browserstack.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/tests/playwright.config.ts",
+                    "packages/tools/tests/test/performance/config.json",
+                    "packages/tools/tests/test/playwright/performance.test.ts",
+                    "packages/tools/tests/test/playwright/visualizationPlaywright.utils.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15150",
+                "title": "Added visualization test for trailMesh",
+                "description": "As per @RaananW request, added visualization test for trail mesh. Only two trails are added, the default tapered trail and the new untapered variant. Tested via ```npm run test:visualization:ui```, seems good on my end.",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/trailMesh.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15147",
+                "title": "GS BBox Sync, Collision notification fix",
+                "description": "Follow up\r\n- https://forum.babylonjs.com/t/scaling-issue-with-gaussian-splatting/50924/4\r\n- https://forum.babylonjs.com/t/collision-observables-issue-with-multiple-physics-enabled-meshes/50943",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "physics",
+                    "gizmos"
+                ]
+            },
+            {
+                "pr": "15148",
+                "title": "Movement module - controller as direction",
+                "description": "Fixes #14152\r\n\r\nPlayground to test - #AZML8U#242",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRControllerMovement.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15149",
+                "title": "Move visualization testing to playwright",
+                "description": "Fixes #12977\n\nThe jest vis-tests will stay as we are still using them to test WebGL1 on the CI. However, the recommended way is to use playwright. Documentation PR will follow right after this one.\n\nNote, this is a small \"breakiing change\" to the repo, as now you will need to run `npm run test:visualization -- --project=\"webgl2\"` to run a specific engine instead of `-i webgl2`.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package.json",
+                    "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.8.2": [],
         "7.8.1": [
             {
                 "pr": "15138",

@@ -1,5 +1,34 @@
 # Changelog
 
+## 7.10.0
+
+### Core
+
+- Create a new picking mechanism using GPU - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15166](https://github.com/BabylonJS/Babylon.js/pull/15166))
+- Fix context lost event leak - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15165](https://github.com/BabylonJS/Babylon.js/pull/15165))
+- Fix VertexData.ExtractFrom functions to support 3-component colors - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#15162](https://github.com/BabylonJS/Babylon.js/pull/15162))
+- Remove disposed body from physicsViewer - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15151](https://github.com/BabylonJS/Babylon.js/pull/15151))
+- ConeDirectedParticleEmitter - by [onekit-boss](https://github.com/onekit-boss) ([#15163](https://github.com/BabylonJS/Babylon.js/pull/15163))
+- Add support for null geometry - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15161](https://github.com/BabylonJS/Babylon.js/pull/15161))
+- Make AbstractMesh a real abstract class - [_Breaking Change_] by [bghgary](https://github.com/bghgary) ([#15160](https://github.com/BabylonJS/Babylon.js/pull/15160))
+- Edge renderer: Add support in fast snapshot mode - by [Popov72](https://github.com/Popov72) ([#15159](https://github.com/BabylonJS/Babylon.js/pull/15159))
+- compat: Add redirect for moved file - by [brianzinn](https://github.com/brianzinn) ([#15154](https://github.com/BabylonJS/Babylon.js/pull/15154))
+- Physics Velocity Limits - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15158](https://github.com/BabylonJS/Babylon.js/pull/15158))
+- GS BBox Sync, Collision notification fix - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15147](https://github.com/BabylonJS/Babylon.js/pull/15147))
+- Movement module - controller as direction - by [RaananW](https://github.com/RaananW) ([#15148](https://github.com/BabylonJS/Babylon.js/pull/15148))
+
+### Loaders
+
+- When the obj file contains line data, use the line fill mode material. - by [2315137135](https://github.com/2315137135) ([#15156](https://github.com/BabylonJS/Babylon.js/pull/15156))
+
+### Serializers
+
+- Fix incorrect OBJ flip faces check - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#15167](https://github.com/BabylonJS/Babylon.js/pull/15167))
+
+### Viewer
+
+- Make AbstractMesh a real abstract class - [_Breaking Change_] by [bghgary](https://github.com/bghgary) ([#15160](https://github.com/BabylonJS/Babylon.js/pull/15160))
+
 ## 7.9.0
 
 ### Core
