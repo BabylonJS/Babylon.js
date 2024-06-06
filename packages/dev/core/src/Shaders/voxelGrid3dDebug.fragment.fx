@@ -49,9 +49,12 @@ void main(void) {
       if (outBounds) {
         voxel = vec3(0.15, 0.0, 0.0);
       } else {
+        if (voxel.r > 0.001) {
+          voxel.g = 1.0;
+        }
         voxel.r += mip_separator;
       }
-      glFragColor.rgb = mix(background.rgb, voxelSlab.rgb, 0.5) + voxel;
+      glFragColor.rgb = mix(background.rgb, voxelSlab.rgb, voxelSlab.a) + voxel;
 
       glFragColor.a = 1.0;
       // glFragColor.rgb += texture(textureSampler, vUV.xy).rgb;
