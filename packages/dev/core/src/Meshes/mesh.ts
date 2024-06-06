@@ -4212,7 +4212,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         if (parsedMesh.physicsImpostor) {
-            Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
+            mesh.physicsImpostor = Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
         // Levels
@@ -4294,7 +4294,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // Physics
                 if (parsedInstance.physicsImpostor) {
-                    Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
+                    instance.physicsImpostor = Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
                 }
 
                 // Actions
