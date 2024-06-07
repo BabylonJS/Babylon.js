@@ -9,7 +9,7 @@ import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Nullable } from "../../types";
 import type { Observable } from "../../Misc/observable";
-import type { GroundMesh } from "../../Meshes";
+import type { GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
 export enum PhysicsConstraintAxisLimitMode {
