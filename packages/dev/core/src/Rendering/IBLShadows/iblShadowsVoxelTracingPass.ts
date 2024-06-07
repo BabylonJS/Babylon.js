@@ -34,7 +34,7 @@ export class IblShadowsVoxelTracingPass {
     }
     private _sssSamples: number = 16;
     private _sssStride: number = 8;
-    private _sssMaxDist: number = 0.15;
+    private _sssMaxDist: number = 0.05;
     private _sssThickness: number = 0.01;
 
     private _ssShadowOpacity: number = 1.0;
@@ -190,7 +190,8 @@ export class IblShadowsVoxelTracingPass {
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
-        this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, this._envRotation));
+        const rotation = this._scene.useRightHandedSystem ? this._envRotation : (this._envRotation + Math.PI) % (2.0 * Math.PI);
+        this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
         const offset = new Vector2(0.0, 0.0);
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
