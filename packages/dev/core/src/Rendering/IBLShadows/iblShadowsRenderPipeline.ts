@@ -62,8 +62,8 @@ class IblShadowsSettings {
      */
     public ssShadowSampleCount: number = 16;
     public ssShadowStride: number = 8;
-    public ssShadowMaxDist: number = 0.5;
-    public ssShadowThickness: number = 0.1;
+    public ssShadowMaxDist: number = 0.05;
+    public ssShadowThickness: number = 0.01;
 }
 
 class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
@@ -447,10 +447,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass = new IblShadowsVoxelTracingPass(this._scene, this);
         this._voxelTracingPass.sampleDirections = options.sampleDirections || 1;
         this.ssShadowOpacity = options.ssShadowsEnabled ? 1.0 : 0.0;
-        this._voxelTracingPass.sssMaxDist = options.ssShadowMaxDist || 0.5;
+        this._voxelTracingPass.sssMaxDist = options.ssShadowMaxDist || 0.05;
         this._voxelTracingPass.sssSamples = options.ssShadowSampleCount || 16;
         this._voxelTracingPass.sssStride = options.ssShadowStride || 8;
-        this._voxelTracingPass.sssThickness = options.ssShadowThickness || 0.1;
+        this._voxelTracingPass.sssThickness = options.ssShadowThickness || 0.01;
         this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene, this);
         this._accumulationPass = new IblShadowsAccumulationPass(this._scene, this);
         this._accumulationPass.remenance = options.shadowRemenance || 0.9;

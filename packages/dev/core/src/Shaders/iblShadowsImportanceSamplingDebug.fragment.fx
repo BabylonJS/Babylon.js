@@ -12,7 +12,6 @@ uniform samplerCube iblSource;
 uniform sampler2D iblSource;
 #endif
 uniform sampler2D textureSampler;
-
 #define cdfyVSize 0.4
 #define cdfxVSize 0.1
 #define cdfyHSize 0.5
