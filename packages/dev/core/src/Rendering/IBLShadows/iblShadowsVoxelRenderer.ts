@@ -24,7 +24,6 @@ import "../../Shaders/generateVoxelMip.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
-import { BaseTexture } from "../../Materials/Textures/baseTexture";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 
 /**
@@ -541,7 +540,7 @@ export class IblShadowsVoxelRenderer {
      * Called by the pipeline to resize resources.
      */
     public resize() {
-        this._voxelSlabDebugRT?.resize({ width: this._scene.getEngine().getRenderWidth(), height: this._scene.getEngine().getRenderHeight() }, false);
+        this._voxelSlabDebugRT?.resize({ width: this._scene.getEngine().getRenderWidth(), height: this._scene.getEngine().getRenderHeight() });
     }
 
     /**
