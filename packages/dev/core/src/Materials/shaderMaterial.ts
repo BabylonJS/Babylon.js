@@ -1028,7 +1028,7 @@ export class ShaderMaterial extends PushMaterial {
             }
         }
 
-        const mustRebind = true; //mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
+        const mustRebind = mesh && storeEffectOnSubMeshes ? this._mustRebind(scene, effect, subMesh, mesh.visibility) : scene.getCachedMaterial() !== this;
 
         this.customBindingObservable.notifyObservers(mesh);
 
