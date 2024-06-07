@@ -6,6 +6,8 @@ attribute vec4 instanceMeshID;
 
 #include<bonesDeclaration>
 #include<bakedVertexAnimationDeclaration>
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
 
 // Uniforms
 
@@ -18,7 +20,9 @@ varying vec4 vMeshID;
 #endif
 
 void main(void) {
-
+    
+#include<morphTargetsVertexGlobal>
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
 #include<instancesVertex>
 #include<bonesVertex>
 #include<bakedVertexAnimation>
