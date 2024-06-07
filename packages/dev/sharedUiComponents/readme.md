@@ -19,8 +19,7 @@ There are a few goals for the library:
 For the last category, migration involves the following steps:
 
 1. Copy the component into the /components directory
-2. Create a story in the /stories directory for testing.
-3. Put any styling needed for the component in `[componentName.scss]`. We should default to the styles in the GUI editor, as that is the most up to date UI design. At this point, the component is ready to go and can be used anywhere you want. The following steps should be done on an as-needed basis.
-4. (Optional) refactor the component to be functional and use hooks rather than class-based
-5. Migrate over references from the old component to the new component.
+2. Put any styling needed for the component in `[componentName.scss]`. We should default to the styles in the GUI editor, as that is the most up to date UI design. At this point, the component is ready to go and can be used anywhere you want. The following steps should be done on an as-needed basis.
+3. (Optional) refactor the component to be functional and use hooks rather than class-based
+4. Migrate over references from the old component to the new component.
 6. When no references remain, delete the old component.
