@@ -231,6 +231,7 @@ export class PhysicsAggregate {
                 break;
             case PhysicsShapeType.MESH:
             case PhysicsShapeType.CONVEX_HULL:
+            case PhysicsShapeType.HEIGHTFIELD:
                 if (!this._options.mesh && this._hasVertices(this.transformNode)) {
                     this._options.mesh = this.transformNode as Mesh;
                 } else if (!this._options.mesh || !this._hasVertices(this._options.mesh)) {
