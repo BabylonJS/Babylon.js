@@ -10,6 +10,9 @@ import type { Mesh } from "core/Meshes/mesh";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
+import "../Shaders/picking.fragment";
+import "../Shaders/picking.vertex";
+
 /**
  * Class used to perform a picking operation using GPU
  * Please note that GPUPIcker cannot pick instances, only meshes
@@ -23,6 +26,7 @@ export class GPUPicker {
     private _pickableMeshes: Array<AbstractMesh>;
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
+    private _attributeName = "instanceMeshID";
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         this._pickingTexure = new RenderTargetTexture(
@@ -44,14 +48,14 @@ export class GPUPicker {
 
         const defines: string[] = [];
         const options = {
-            attributes: [VertexBuffer.PositionKind],
-            uniforms: ["world", "viewProjection", "color"],
+            attributes: [VertexBuffer.PositionKind, this._attributeName],
+            uniforms: ["world", "viewProjection", "meshID"],
             needAlphaBlending: false,
             defines: defines,
             useClipPlane: null,
         };
 
-        this._renderMaterial = new ShaderMaterial("colorShader", scene, "color", options, false);
+        this._renderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
         const callback = (mesh: AbstractMesh | undefined) => {
             if (!mesh) {
@@ -61,7 +65,7 @@ export class GPUPicker {
             const effect = this._renderMaterial!.getEffect();
 
             if (!mesh.hasInstances && !mesh.isAnInstance) {
-                effect.setColor4("color", this._idColors[mesh.uniqueId], 1);
+                effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
             }
 
             this._meshRenderingCount++;
@@ -72,6 +76,7 @@ export class GPUPicker {
 
     /**
      * Set the list of meshes to pick from
+     * Set that value to null to clear the list (and avoid leaks)
      * @param list defines the list of meshes to pick from
      */
     public setPickingList(list: Nullable<Array<AbstractMesh>>) {
@@ -80,7 +85,7 @@ export class GPUPicker {
             for (let index = 0; index < this._pickableMeshes.length; index++) {
                 const mesh = this._pickableMeshes[index];
                 if (mesh.hasInstances) {
-                    (mesh as Mesh).removeVerticesData(VertexBuffer.ColorKind);
+                    (mesh as Mesh).removeVerticesData(this._attributeName);
                 }
                 if (this._pickingTexure) {
                     this._pickingTexure!.setMaterialForRendering(mesh, undefined);
@@ -161,7 +166,7 @@ export class GPUPicker {
                     id++;
                 }
 
-                const buffer = new VertexBuffer(engine, colorData, VertexBuffer.ColorKind, false, false, 4, true);
+                const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
                 (mesh as Mesh).setVerticesBuffer(buffer, true);
             } else {
                 this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
