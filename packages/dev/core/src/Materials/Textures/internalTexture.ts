@@ -472,7 +472,8 @@ export class InternalTexture extends TextureSampler {
                     0,
                     null,
                     undefined,
-                    this._useSRGBBuffer
+                    this._useSRGBBuffer,
+                    ArrayBuffer.isView(this._buffer) ? this._buffer : null
                 );
                 return;
 
