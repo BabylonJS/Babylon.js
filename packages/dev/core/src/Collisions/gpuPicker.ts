@@ -14,6 +14,16 @@ import "../Shaders/picking.fragment";
 import "../Shaders/picking.vertex";
 
 /**
+ * Class used to store the result of a GPU picking operation
+ */
+export interface IGPUPickingInfo {
+    /**
+     * Picked mesh
+     */
+    mesh: AbstractMesh;
+}
+
+/**
  * Class used to perform a picking operation using GPU
  * Please note that GPUPIcker cannot pick instances, only meshes
  */
@@ -30,7 +40,7 @@ export class GPUPicker {
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         if (this._pickingTexure) {
-            this._pickingTexure!.dispose();
+            this._pickingTexure.dispose();
         }
         this._pickingTexure = new RenderTargetTexture(
             "pickingTexure",
@@ -183,7 +193,7 @@ export class GPUPicker {
      * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
      * @returns A promise with the picking results
      */
-    public pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<AbstractMesh>> {
+    public pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<IGPUPickingInfo>> {
         if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
             return Promise.resolve(null);
         }
@@ -272,7 +282,11 @@ export class GPUPicker {
                     if (disposeWhenDone) {
                         this.dispose();
                     }
-                    resolve(pickedMesh);
+                    if (pickedMesh) {
+                        resolve({ mesh: pickedMesh });
+                    } else {
+                        resolve(null);
+                    }
                 }
             };
         });
