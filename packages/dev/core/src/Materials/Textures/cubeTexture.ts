@@ -16,6 +16,53 @@ import "../../Engines/Extensions/engine.cubeTexture";
 import "../../Engines/Extensions/engine.prefilteredCubeTexture";
 
 /**
+ * Defines the available options when creating a cube texture
+ */
+export interface ICubeTextureCreationOptions {
+    /** Defines the suffixes add to the picture name in case six images are in use like _px.jpg */
+    extensions?: string[];
+
+    /** noMipmap defines if mipmaps should be created or not */
+    noMipmap?: boolean;
+
+    /** files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz */
+    files?: string[];
+
+    /** buffer to load instead of loading the data from the url */
+    buffer?: ArrayBufferView;
+
+    /** onLoad defines a callback triggered at the end of the file load if no errors occurred */
+    onLoad?: () => void;
+
+    /** onError defines a callback triggered in case of error during load */
+    onError?: (message?: string, exception?: any) => void;
+
+    /** format defines the internal format to use for the texture once loaded */
+    format?: number;
+
+    /** prefiltered defines whether or not the texture is created from prefiltered data */
+    prefiltered?: boolean;
+
+    /** forcedExtension defines the extensions to use (force a special type of file to load) in case it is different from the file name */
+    forcedExtension?: any;
+
+    /** createPolynomials defines whether or not to create polynomial harmonics from the texture data if necessary */
+    createPolynomials?: boolean;
+
+    /** lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness */
+    lodScale?: number;
+
+    /** lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness */
+    lodOffset?: number;
+
+    /** loaderOptions options to be passed to the loader */
+    loaderOptions?: any;
+
+    /** useSRGBBuffer Defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU) (default: false) */
+    useSRGBBuffer?: boolean;
+}
+
+/**
  * Class for creating a cube texture
  */
 export class CubeTexture extends BaseTexture {
@@ -123,6 +170,7 @@ export class CubeTexture extends BaseTexture {
     private _createPolynomials: boolean;
     private _loaderOptions: any;
     private _useSRGBBuffer?: boolean;
+    private _buffer: Nullable<ArrayBufferView> = null;
 
     /**
      * Creates a cube texture from an array of image urls
@@ -163,7 +211,7 @@ export class CubeTexture extends BaseTexture {
      * as prefiltered data.
      * @param rootUrl defines the url of the texture or the root name of the six images
      * @param sceneOrEngine defines the scene or engine the texture is attached to
-     * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
+     * @param extensionsOrOptions defines the suffixes add to the picture name in case six images are in use like _px.jpg or set of all options to create the cube texture
      * @param noMipmap defines if mipmaps should be created or not
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
      * @param onLoad defines a callback triggered at the end of the file load if no errors occurred
@@ -181,7 +229,7 @@ export class CubeTexture extends BaseTexture {
     constructor(
         rootUrl: string,
         sceneOrEngine: Scene | AbstractEngine,
-        extensions: Nullable<string[]> = null,
+        extensionsOrOptions: Nullable<string[] | ICubeTextureCreationOptions> = null,
         noMipmap: boolean = false,
         files: Nullable<string[]> = null,
         onLoad: Nullable<() => void> = null,
@@ -201,24 +249,44 @@ export class CubeTexture extends BaseTexture {
         this.url = rootUrl;
         this._noMipmap = noMipmap;
         this.hasAlpha = false;
-        this._format = format;
         this.isCube = true;
         this._textureMatrix = Matrix.Identity();
-        this._createPolynomials = createPolynomials;
         this.coordinatesMode = Texture.CUBIC_MODE;
-        this._extensions = extensions;
-        this._files = files;
-        this._forcedExtension = forcedExtension;
-        this._loaderOptions = loaderOptions;
-        this._useSRGBBuffer = useSRGBBuffer;
-        this._lodScale = lodScale;
-        this._lodOffset = lodOffset;
+
+        let extensions: Nullable<string[]> = null;
+        let buffer: Nullable<ArrayBufferView> = null;
+
+        if (extensionsOrOptions !== null && !Array.isArray(extensionsOrOptions)) {
+            extensions = extensionsOrOptions.extensions ?? null;
+            this._noMipmap = extensionsOrOptions.noMipmap ?? false;
+            files = extensionsOrOptions.files ?? null;
+            buffer = extensionsOrOptions.buffer ?? null;
+            this._format = extensionsOrOptions.format ?? Constants.TEXTUREFORMAT_RGBA;
+            prefiltered = extensionsOrOptions.prefiltered ?? false;
+            forcedExtension = extensionsOrOptions.forcedExtension ?? null;
+            this._createPolynomials = extensionsOrOptions.createPolynomials ?? false;
+            this._lodScale = extensionsOrOptions.lodScale ?? 0;
+            this._lodOffset = extensionsOrOptions.lodOffset ?? 0;
+            this._loaderOptions = extensionsOrOptions.loaderOptions;
+            this._useSRGBBuffer = extensionsOrOptions.useSRGBBuffer;
+            onLoad = extensionsOrOptions.onLoad ?? null;
+            onError = extensionsOrOptions.onError ?? null;
+        } else {
+            this._noMipmap = noMipmap;
+            this._format = format;
+            this._createPolynomials = createPolynomials;
+            extensions = extensionsOrOptions;
+            this._loaderOptions = loaderOptions;
+            this._useSRGBBuffer = useSRGBBuffer;
+            this._lodScale = lodScale;
+            this._lodOffset = lodOffset;
+        }
 
         if (!rootUrl && !files) {
             return;
         }
 
-        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading, files);
+        this.updateURL(rootUrl, forcedExtension, onLoad, prefiltered, onError, extensions, this.getScene()?.useDelayedTextureLoading, files, buffer);
     }
 
     /**
@@ -239,16 +307,18 @@ export class CubeTexture extends BaseTexture {
      * @param extensions defines the suffixes add to the picture name in case six images are in use like _px.jpg...
      * @param delayLoad defines if the texture should be loaded now (false by default)
      * @param files defines the six files to load for the different faces in that order: px, py, pz, nx, ny, nz
+     * @param buffer the buffer to use instead of loading from the url
      */
     public updateURL(
         url: string,
-        forcedExtension?: string,
+        forcedExtension: Nullable<string> = null,
         onLoad: Nullable<() => void> = null,
         prefiltered: boolean = false,
         onError: Nullable<(message?: string, exception?: any) => void> = null,
         extensions: Nullable<string[]> = null,
         delayLoad = false,
-        files: Nullable<string[]> = null
+        files: Nullable<string[]> = null,
+        buffer: Nullable<ArrayBufferView> = null
     ): void {
         if (!this.name || this.name.startsWith("data:")) {
             this.name = url;
@@ -295,6 +365,8 @@ export class CubeTexture extends BaseTexture {
                 this._extensions = extensions;
             }
         }
+
+        this._buffer = buffer;
 
         if (delayLoad) {
             this.delayLoadState = Constants.DELAYLOADSTATE_NOTLOADED;
@@ -422,7 +494,8 @@ export class CubeTexture extends BaseTexture {
                     this._lodOffset,
                     null,
                     this._loaderOptions,
-                    !!this._useSRGBBuffer
+                    !!this._useSRGBBuffer,
+                    this._buffer
                 );
             }
 

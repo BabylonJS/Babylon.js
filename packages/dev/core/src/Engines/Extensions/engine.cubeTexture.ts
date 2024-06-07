@@ -38,6 +38,7 @@ declare module "../../Engines/abstractEngine" {
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @param loaderOptions options to be passed to the loader
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+         * @param buffer defines the data buffer to load instead of loading the rootUrl
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(
@@ -54,7 +55,8 @@ declare module "../../Engines/abstractEngine" {
             lodOffset: number,
             fallback: Nullable<InternalTexture>,
             loaderOptions: any,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            buffer: Nullable<ArrayBufferView>
         ): InternalTexture;
 
         /**
@@ -125,7 +127,8 @@ declare module "../../Engines/abstractEngine" {
             fallback: Nullable<InternalTexture>,
             beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>,
             imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            buffer: ArrayBufferView
         ): InternalTexture;
 
         /**
@@ -204,7 +207,8 @@ ThinEngine.prototype.createCubeTexture = function (
     lodOffset: number = 0,
     fallback: Nullable<InternalTexture> = null,
     loaderOptions?: any,
-    useSRGBBuffer = false
+    useSRGBBuffer = false,
+    buffer: Nullable<ArrayBufferView> = null
 ): InternalTexture {
     const gl = this._gl;
 
@@ -283,7 +287,8 @@ ThinEngine.prototype.createCubeTexture = function (
                 onLoad();
             }
         },
-        !!useSRGBBuffer
+        !!useSRGBBuffer,
+        buffer
     );
 };
 
