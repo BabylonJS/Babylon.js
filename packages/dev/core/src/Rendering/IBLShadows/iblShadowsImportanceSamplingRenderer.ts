@@ -8,7 +8,7 @@ import { ProceduralTexture } from "../../Materials/Textures/Procedurals/procedur
 import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 // import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 // import { Logger } from "../Misc/logger";
-import "../../Shaders/importanceSamplingDebug.fragment";
+import "../../Shaders/iblShadowsImportanceSamplingDebug.fragment";
 import "../../Shaders/iblShadowsCdfx.fragment";
 import "../../Shaders/iblShadowsIcdfx.fragment";
 import "../../Shaders/iblShadowsCdfy.fragment";
