@@ -170,13 +170,11 @@ export class IblShadowsVoxelTracingPass {
         );
         this._outputPT.autoClear = false;
         this._outputPT.refreshRate = 0;
-        this._scene.onAfterRenderCameraObservable.add(() => {
-            if (this._outputPT.isReady()) {
-                // this._outputPT.render();
-            }
-        });
     }
 
+    /**
+     * Called by the pipeline. Update all the shader parameters for the pass.
+     */
     public update() {
         if (!this._scene.activeCamera) {
             return;
@@ -226,6 +224,9 @@ export class IblShadowsVoxelTracingPass {
         }
     }
 
+    /**
+     * Called by the pipeline. Resize the output texture to match the engine render size.
+     */
     public resize() {
         this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }

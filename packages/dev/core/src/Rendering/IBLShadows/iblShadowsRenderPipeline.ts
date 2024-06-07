@@ -18,7 +18,7 @@ import { PostProcess } from "../../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
-import type { CustomProceduralTexture } from "../../Materials/Textures/Procedurals/customProceduralTexture";
+import type { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
@@ -211,7 +211,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Returns the raw shadow texture computed by the voxel tracing pass
      * @returns The raw shadow texture computed by the voxel tracing pass
      */
-    public getRawShadowTexture(): CustomProceduralTexture {
+    public getRawShadowTexture(): ProceduralTexture {
         return this._voxelTracingPass?.getTexture();
     }
 
@@ -219,7 +219,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Returns the blurred shadow texture computed by the spatial blur pass
      * @returns The blurred shadow texture computed by the spatial blur pass
      */
-    public getBlurShadowTexture(): CustomProceduralTexture {
+    public getBlurShadowTexture(): ProceduralTexture {
         return this._spatialBlurPass?.getTexture();
     }
 
@@ -227,7 +227,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Returns the accumulated shadow texture
      * @returns The accumulated shadow texture
      */
-    public getAccumulatedShadowTexture(): CustomProceduralTexture {
+    public getAccumulatedShadowTexture(): ProceduralTexture {
         return this._accumulationPass?.getTexture();
     }
 
@@ -393,6 +393,14 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass.sampleDirections = value;
     }
 
+    public get shadowRemenance(): number {
+        return this._accumulationPass.remenance;
+    }
+
+    public set shadowRemenance(value: number) {
+        this._accumulationPass.remenance = value;
+    }
+
     /**
      * The global rotation of the IBL for shadows
      */
@@ -432,13 +440,13 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("IBL Shadows Render Pipeline could not enable PrePass, aborting.");
             return;
         }
-        this._shadowOpacity = options.shadowOpacity || 1.0;
+        this.shadowOpacity = options.shadowOpacity || 1.0;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
         this._voxelRenderer = new IblShadowsVoxelRenderer(this._scene, this, options ? options.resolution : 64, options.triplanarVoxelization || true);
         this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this._scene);
         this._voxelTracingPass = new IblShadowsVoxelTracingPass(this._scene, this);
         this._voxelTracingPass.sampleDirections = options.sampleDirections || 1;
-        this._voxelTracingPass.ssShadowOpacity = options.ssShadowsEnabled ? 1.0 : 0.0;
+        this.ssShadowOpacity = options.ssShadowsEnabled ? 1.0 : 0.0;
         this._voxelTracingPass.sssMaxDist = options.ssShadowMaxDist || 0.5;
         this._voxelTracingPass.sssSamples = options.ssShadowSampleCount || 16;
         this._voxelTracingPass.sssStride = options.ssShadowStride || 8;

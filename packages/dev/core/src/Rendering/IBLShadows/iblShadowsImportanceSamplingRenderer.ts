@@ -34,12 +34,16 @@ export class IblShadowsImportanceSamplingRenderer {
         return this._iblSource;
     }
     public set iblSource(source: Texture) {
+        if (this._iblSource === source) {
+            return;
+        }
+        this._disposeTextures();
         this._iblSource = source;
-        this._resizeTextures();
-        this._cdfyPT.render();
-        this._icdfyPT.render();
-        this._cdfxPT.render();
-        this._icdfxPT.render();
+        this._createTextures();
+
+        if (this._debugPass) {
+            this._createDebugPass();
+        }
     }
     public getIcdfyTexture(): ProceduralTexture {
         return this._icdfyPT;
@@ -64,24 +68,11 @@ export class IblShadowsImportanceSamplingRenderer {
         }
         this._debugEnabled = enabled;
         if (enabled) {
-            this._debugPass = new PostProcess(
-                "Importance Sample Debug",
-                "importanceSamplingDebug",
-                ["sizeParams"], // attributes
-                ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"], // textures
-                1.0, // options
-                this._scene.activeCamera, // camera
-                Texture.BILINEAR_SAMPLINGMODE, // sampling
-                this._engine // engine
-            );
-            this._debugPass.onApply = (effect) => {
-                effect.setTexture("cdfy", this._cdfyPT);
-                effect.setTexture("icdfy", this._icdfyPT);
-                effect.setTexture("cdfx", this._cdfxPT);
-                effect.setTexture("icdfx", this._icdfxPT);
-                effect.setTexture("iblSource", this._iblSource);
-                effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
-            };
+            this._createDebugPass();
+        } else {
+            if (this._debugPass) {
+                this._debugPass.dispose();
+            }
         }
     }
 
@@ -94,21 +85,6 @@ export class IblShadowsImportanceSamplingRenderer {
         this._scene = scene;
         this._engine = scene.getEngine();
         this._createTextures();
-    }
-
-    private _resizeTextures() {
-        if (!this._iblSource || !this._cdfyPT) {
-            this._createTextures();
-        }
-        const size = this._iblSource!.getSize();
-        this._cdfyPT.resize({ width: size.width, height: size.height + 1 }, false);
-        this._icdfyPT.resize({ width: size.width, height: size.height }, false);
-        this._cdfxPT.resize({ width: size.width + 1, height: 1 }, false);
-        this._icdfxPT.resize({ width: size.width, height: 1 }, false);
-        this._cdfyPT.setTexture("iblSource", this._iblSource);
-        this._icdfyPT.setTexture("cdfy", this._cdfyPT);
-        this._cdfxPT.setTexture("cdfy", this._cdfyPT);
-        this._icdfxPT.setTexture("cdfx", this._cdfxPT);
     }
 
     private _createTextures() {
@@ -125,6 +101,11 @@ export class IblShadowsImportanceSamplingRenderer {
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
             this._iblSource.isBlocking = true;
+        }
+
+        if (this._iblSource!.isCube) {
+            size.width *= 4;
+            size.height *= 2;
         }
 
         // Create CDF maps (Cumulative Distribution Function) to assist in importance sampling
@@ -144,8 +125,10 @@ export class IblShadowsImportanceSamplingRenderer {
         };
         this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblShadowsCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
-        if (this._iblSource) {
-            this._cdfyPT.setTexture("iblSource", this._iblSource);
+        this._cdfyPT.setTexture("iblSource", this._iblSource);
+        this._cdfyPT.setInt("iblHeight", size.height);
+        if (this._iblSource.isCube) {
+            this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
         }
         this._cdfyPT.refreshRate = 0;
         this._icdfyPT = new ProceduralTexture("icdfyTexture", { width: size.width, height: size.height }, "iblShadowsIcdfy", this._scene, icdfOptions, false, false);
@@ -169,6 +152,35 @@ export class IblShadowsImportanceSamplingRenderer {
         this._icdfxPT.dispose();
     }
 
+    private _createDebugPass() {
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
+        this._debugPass = new PostProcess(
+            "Importance Sample Debug",
+            "importanceSamplingDebug",
+            ["sizeParams"], // attributes
+            ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"], // textures
+            1.0, // options
+            this._scene.activeCamera, // camera
+            Texture.BILINEAR_SAMPLINGMODE, // sampling
+            this._engine,
+            true,
+            this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : ""
+        );
+        this._debugPass.onApply = (effect) => {
+            effect.setTexture("cdfy", this._cdfyPT);
+            effect.setTexture("icdfy", this._icdfyPT);
+            effect.setTexture("cdfx", this._cdfxPT);
+            effect.setTexture("icdfx", this._icdfxPT);
+            effect.setTexture("iblSource", this._iblSource);
+            effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
+            if (this._iblSource!.isCube) {
+                effect.defines = "#define IBL_USE_CUBE_MAP\n";
+            }
+        };
+    }
+
     /**
      * Checks if the importance sampling renderer is ready
      * @returns true if the importance sampling renderer is ready
@@ -182,5 +194,8 @@ export class IblShadowsImportanceSamplingRenderer {
      */
     public dispose() {
         this._disposeTextures();
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
     }
 }
