@@ -11,7 +11,6 @@ There are a few goals for the library:
 ## Structure of the library
 
 -   **/src/components/**: This is the new components directory. Ultimately, every component should end up here. Each component should have a .tsx file for the logic and a corresponding .scss file for styling.
--   **/src/stories/**: This holds the definitions for stories.
 -   **/src/imgs/**: Holds the .svg icons used across all Babylon tools.
 -   **/src/lines/, /src/tabs/, /src/colorPicker/**: old directories holding components which need to be migrated.
 
