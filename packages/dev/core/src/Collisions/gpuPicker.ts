@@ -91,9 +91,9 @@ export class GPUPicker {
                     this._pickingTexure!.setMaterialForRendering(mesh, undefined);
                 }
             }
-            this._pickableMeshes = [];
-            this._idMap = [];
-            this._idColors = [];
+            this._pickableMeshes.length = 0;
+            this._idMap.length = 0;
+            this._idColors.length = 0;
             if (this._pickingTexure) {
                 this._pickingTexure.renderList = [];
             }
