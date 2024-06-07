@@ -2,7 +2,6 @@ import { Constants } from "core/Engines/constants";
 import type { Engine } from "core/Engines/engine";
 import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import { RenderTargetTexture } from "core/Materials/Textures/renderTargetTexture";
-import type { Material } from "core/Materials/material";
 import { ShaderMaterial } from "core/Materials/shaderMaterial";
 import { Color3, Color4 } from "core/Maths/math.color";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
@@ -17,15 +16,13 @@ import type { Nullable } from "core/types";
  */
 export class GPUPicker {
     private _pickingTexure: Nullable<RenderTargetTexture> = null;
-    private _idMap: { [key: string]: number } = {};
+    private _idMap: Array<number> = [];
     private _idColors: Array<Color3> = [];
-    private _cachedMaterials: Array<Nullable<Material>> = [];
     private _cachedScene: Nullable<Scene>;
     private _renderMaterial: Nullable<ShaderMaterial>;
     private _pickableMeshes: Array<AbstractMesh>;
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
-    private _userDefinedList = false;
 
     private _createRenderTarget(scene: Scene, width: number, height: number) {
         this._pickingTexure = new RenderTargetTexture(
@@ -70,7 +67,7 @@ export class GPUPicker {
             this._meshRenderingCount++;
         };
 
-        this._renderMaterial.customBindingObservable.add(callback);
+        this._renderMaterial.onBindObservable.add(callback);
     }
 
     /**
@@ -78,29 +75,58 @@ export class GPUPicker {
      * @param list defines the list of meshes to pick from
      */
     public setPickingList(list: Nullable<Array<AbstractMesh>>) {
-        if (!list) {
-            if (this._userDefinedList) {
-                for (let index = 0; index < this._pickableMeshes.length; index++) {
-                    const mesh = this._pickableMeshes[index];
-                    if (mesh.hasInstances) {
-                        (mesh as Mesh).removeVerticesData(VertexBuffer.ColorKind);
-                    }
+        if (this._pickableMeshes) {
+            // Cleanup
+            for (let index = 0; index < this._pickableMeshes.length; index++) {
+                const mesh = this._pickableMeshes[index];
+                if (mesh.hasInstances) {
+                    (mesh as Mesh).removeVerticesData(VertexBuffer.ColorKind);
+                }
+                if (this._pickingTexure) {
+                    this._pickingTexure!.setMaterialForRendering(mesh, undefined);
                 }
             }
-            this._userDefinedList = false;
             this._pickableMeshes = [];
-            this._idMap = {};
+            this._idMap = [];
             this._idColors = [];
+            if (this._pickingTexure) {
+                this._pickingTexure.renderList = [];
+            }
+        }
+        if (!list || list.length === 0) {
             return;
         }
-        this._userDefinedList = true;
         this._pickableMeshes = list;
+
+        // Prepare target
+        const scene = list[0].getScene();
+        const engine = scene.getEngine();
+        const rttSizeW = engine.getRenderWidth();
+        const rttSizeH = engine.getRenderHeight();
+        if (!this._pickingTexure) {
+            this._createRenderTarget(scene, rttSizeW, rttSizeH);
+        } else {
+            const size = this._pickingTexure.getSize();
+
+            if (size.width !== rttSizeW || size.height !== rttSizeH || this._cachedScene !== scene) {
+                this._pickingTexure.dispose();
+                this._createRenderTarget(scene, rttSizeW, rttSizeH);
+            }
+        }
+
+        if (!this._cachedScene || this._cachedScene !== scene) {
+            this._createColorMaterial(scene);
+        }
+
+        this._cachedScene = scene;
+        this._pickingTexure!.renderList = [];
 
         // We will affect colors and create vertex color buffers
         let id = 1;
         for (let index = 0; index < this._pickableMeshes.length; index++) {
             const mesh = this._pickableMeshes[index];
-            mesh.useVertexColors = false;
+            this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
+            this._pickingTexure!.renderList.push(mesh);
 
             if (mesh.isAnInstance) {
                 continue; // This will be handled by the source mesh
@@ -109,7 +135,7 @@ export class GPUPicker {
             const r = (id & 0xff0000) >> 16;
             const g = (id & 0x00ff00) >> 8;
             const b = (id & 0x0000ff) >> 0;
-            this._idMap[`${r}_${g}_${b}`] = index;
+            this._idMap[id] = index;
             id++;
 
             if (mesh.hasInstances) {
@@ -126,7 +152,7 @@ export class GPUPicker {
                     const r = (id & 0xff0000) >> 16;
                     const g = (id & 0x00ff00) >> 8;
                     const b = (id & 0x0000ff) >> 0;
-                    this._idMap[`${r}_${g}_${b}`] = this._pickableMeshes.indexOf(instance);
+                    this._idMap[id] = this._pickableMeshes.indexOf(instance);
 
                     colorData[(i + 1) * 4] = r / 255.0;
                     colorData[(i + 1) * 4 + 1] = g / 255.0;
@@ -147,17 +173,36 @@ export class GPUPicker {
      * Execute a picking operation
      * @param x defines the X coordinates where to run the pick
      * @param y defines the Y coordinates where to run the pick
-     * @param scene defines the scene to pick from
-     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive
+     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
      * @returns A promise with the picking results
      */
-    public pickAsync(x: number, y: number, scene: Scene, disposeWhenDone = true): Promise<Nullable<AbstractMesh>> {
+    public pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<AbstractMesh>> {
+        if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
+            return Promise.resolve(null);
+        }
+
+        const scene = this._cachedScene!;
         const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
 
         if (!this._readbuffer) {
             this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4); // Because of block alignment in WebGPU
+        }
+
+        // Do we need to rebuild the RTT?
+        const size = this._pickingTexure!.getSize();
+
+        if (size.width !== rttSizeW || size.height !== rttSizeH) {
+            this._pickingTexure!.dispose();
+            this._createRenderTarget(scene, rttSizeW, rttSizeH);
+
+            this._pickingTexure!.renderList = [];
+            for (let index = 0; index < this._pickableMeshes.length; index++) {
+                const mesh = this._pickableMeshes[index];
+                this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
+                this._pickingTexure!.renderList.push(mesh);
+            }
         }
 
         this._meshRenderingCount = 0;
@@ -172,53 +217,10 @@ export class GPUPicker {
         // Invert Y
         y = rttSizeH - y;
 
-        if (!this._pickingTexure) {
-            this._createRenderTarget(scene, rttSizeW, rttSizeH);
-        } else {
-            const size = this._pickingTexure.getSize();
-
-            if (size.width !== rttSizeW || size.height !== rttSizeH || this._cachedScene !== scene) {
-                this._pickingTexure.dispose();
-                this._createRenderTarget(scene, rttSizeW, rttSizeH);
-            }
-        }
-
-        if (!this._cachedScene || this._cachedScene !== scene) {
-            this._createColorMaterial(scene);
-        }
-
-        this._cachedScene = scene;
-        scene.customRenderTargets.push(this._pickingTexure!);
-        this._pickingTexure!.renderList = [];
         this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
-        // We need to give every mesh an unique color (when there is no picking list)
+        scene.customRenderTargets.push(this._pickingTexure!);
         this._pickingTexure!.onBeforeRender = () => {
-            if (!this._userDefinedList) {
-                this._pickableMeshes = scene.meshes.filter((m) => (m as Mesh).geometry && m.isPickable) as Mesh[];
-            }
-
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                if (!mesh.isAnInstance) {
-                    this._cachedMaterials[index] = mesh.material;
-                    if (!this._userDefinedList) {
-                        // We need to define the color for each mesh as it was not previously defined
-                        const id = index + 1;
-                        const r = (id & 0xff0000) >> 16;
-                        const g = (id & 0x00ff00) >> 8;
-                        const b = (id & 0x0000ff) >> 0;
-                        this._idMap[`${r}_${g}_${b}`] = index;
-
-                        this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
-                    } else {
-                        mesh.useVertexColors = true; // In that case we will be using vertex colors and not an uniform to support instances
-                    }
-                    mesh.material = this._renderMaterial;
-                }
-                this._pickingTexure?.renderList?.push(mesh);
-            }
-
             // Enable scissor
             if ((engine as WebGPUEngine | Engine).enableScissor) {
                 (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
@@ -239,18 +241,6 @@ export class GPUPicker {
                 let pickedMesh: Nullable<AbstractMesh> = null;
                 const wasSuccessfull = this._meshRenderingCount > 0;
 
-                // Restore materials
-                for (let index = 0; index < this._pickableMeshes.length; index++) {
-                    const mesh = this._pickableMeshes[index];
-                    if (!mesh.isAnInstance) {
-                        mesh.material = this._cachedMaterials[index];
-
-                        if (this._userDefinedList) {
-                            mesh.useVertexColors = false;
-                        }
-                    }
-                }
-
                 if (wasSuccessfull) {
                     // Remove from the active RTTs
                     const index = scene.customRenderTargets.indexOf(this._pickingTexure!);
@@ -260,20 +250,15 @@ export class GPUPicker {
 
                     // Do the actual picking
                     if (await this._readTexturePixelsAsync(x, y)) {
-                        const colorId = `${this._readbuffer[0]}_${this._readbuffer[1]}_${this._readbuffer[2]}`;
+                        const r = this._readbuffer[0];
+                        const g = this._readbuffer[1];
+                        const b = this._readbuffer[2];
+                        const colorId = (r << 16) + (g << 8) + b;
                         pickedMesh = this._pickableMeshes[this._idMap[colorId]];
                     }
                 }
 
                 // Clean-up
-                if (!this._userDefinedList) {
-                    this._idMap = {};
-                    this._idColors = [];
-
-                    this._pickableMeshes = [];
-                }
-                this._pickingTexure!.renderList = [];
-
                 if (!wasSuccessfull) {
                     this._meshRenderingCount = 0;
                     return; // We need to wait for the shaders to be ready
@@ -299,10 +284,7 @@ export class GPUPicker {
 
     /** Release the resources */
     public dispose() {
-        if (this._userDefinedList) {
-            this.setPickingList(null);
-        }
-        this._pickableMeshes = [];
+        this.setPickingList(null);
         this._cachedScene = null;
 
         // Cleaning up
