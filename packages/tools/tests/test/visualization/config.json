@@ -3,10 +3,9 @@
     "tests": [
         {
             "title": "GPUPicker",
-            "playgroundId": "#1RWFMT#1",
+            "playgroundId": "#1RWFMT#2",
             "renderCount": 20,
-            "referenceImage": "gpuPicker.png",
-            "excludedEngines": ["webgl1"]
+            "referenceImage": "gpuPicker.png"
         },
         {
             "title": "Trailmesh - tapered and untapered",
