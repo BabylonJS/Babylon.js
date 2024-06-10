@@ -2099,6 +2099,11 @@
             "title": "Shadows in RHS mode",
             "playgroundId": "#RO51RT#14",
             "referenceImage": "shadows-rhs.png"
+        },
+        {
+            "title": "Load environment from data buffer",
+            "playgroundId": "#YLI4J1#",
+            "referenceImage": "environment-from-data-buffer.png"
         }
     ]
 }
