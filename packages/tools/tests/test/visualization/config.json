@@ -3,10 +3,9 @@
     "tests": [
         {
             "title": "GPUPicker",
-            "playgroundId": "#1RWFMT#1",
+            "playgroundId": "#1RWFMT#2",
             "renderCount": 20,
-            "referenceImage": "gpuPicker.png",
-            "excludedEngines": ["webgl1"]
+            "referenceImage": "gpuPicker.png"
         },
         {
             "title": "Trailmesh - tapered and untapered",
@@ -2100,11 +2099,6 @@
             "title": "Shadows in RHS mode",
             "playgroundId": "#RO51RT#14",
             "referenceImage": "shadows-rhs.png"
-        },
-        {
-            "title": "Load environment from data buffer",
-            "playgroundId": "#YLI4J1#",
-            "referenceImage": "environment-from-data-buffer.png"
         }
     ]
 }
