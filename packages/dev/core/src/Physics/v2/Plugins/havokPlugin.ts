@@ -1232,7 +1232,9 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         const transformedVertices: number[] = [];
         let index: number;
         for (index = 0; index < pos.length; index += 3) {
-            Vector3.TransformCoordinates(Vector3.FromArray(pos, index), transform).toArray(transformedVertices, index);
+            Vector3.FromArrayToRef(pos, index, TmpVectors.Vector3[0]);
+            Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[0], transform, TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[1].toArray(transformedVertices, index);
         }
         pos = transformedVertices;
 
