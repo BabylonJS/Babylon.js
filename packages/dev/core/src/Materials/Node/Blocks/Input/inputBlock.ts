@@ -580,7 +580,7 @@ export class InputBlock extends NodeMaterialBlock {
                 } else {
                     state._emitVaryingFromString(this.associatedVariableName, this.type, define);
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                        //   this._prefix = `fragmentInputs.`;
+                        this._prefix = `fragmentInputs.`;
                     }
                 }
             } else {
