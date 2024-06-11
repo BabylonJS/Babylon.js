@@ -530,7 +530,6 @@ export class Image extends Control {
             value.timesUsed -= 1;
 
             // Remove from DOM
-            const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
             const htmlElement = value.img as HTMLImageElement;
             if (htmlElement.parentNode) {
                 htmlElement.parentNode.removeChild(htmlElement);
