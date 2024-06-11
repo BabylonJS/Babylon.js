@@ -117,6 +117,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     case "hdr": {
                         FilesInput.FilesToLoad[name] = file;
                         EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
+                        EnvironmentTools.ResetEnvironmentTexture();
                         return false;
                     }
                     default: {
