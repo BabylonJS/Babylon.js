@@ -530,8 +530,10 @@ export class Image extends Control {
             value.timesUsed -= 1;
 
             // Remove from DOM
-            const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
-            engine?.getRenderingCanvas()?.parentNode?.removeChild(value.img as HTMLImageElement);
+            const htmlElement = value.img as HTMLImageElement;
+            if (htmlElement.parentNode) {
+                htmlElement.parentNode.removeChild(htmlElement);
+            }
 
             // Since the image isn't being used anymore, we can clean it from the cache
             if (value.timesUsed === 0) {
