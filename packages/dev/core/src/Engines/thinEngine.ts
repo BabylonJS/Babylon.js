@@ -3502,7 +3502,7 @@ export class ThinEngine extends AbstractEngine {
      * @internal
      */
     public _releaseTexture(texture: InternalTexture): void {
-        this._deleteTexture(texture._hardwareTexture as WebGLHardwareTexture);
+        this._deleteTexture(texture._hardwareTexture as Nullable<WebGLHardwareTexture>);
 
         // Unbind channels
         this.unbindAllTextures();
@@ -3529,8 +3529,8 @@ export class ThinEngine extends AbstractEngine {
         }
     }
 
-    protected _deleteTexture(texture: WebGLHardwareTexture): void {
-        texture.release()
+    protected _deleteTexture(texture: Nullable<WebGLHardwareTexture>): void {
+        texture?.release()
     }
 
     protected _setProgram(program: WebGLProgram): void {
