@@ -528,6 +528,11 @@ export class Image extends Control {
         const value = source && Image.SourceImgCache.get(source);
         if (value) {
             value.timesUsed -= 1;
+
+            // Remove from DOM
+            const engine = this._host?.getScene()?.getEngine() || EngineStore.LastCreatedEngine;
+            engine?.getRenderingCanvas()?.parentNode?.removeChild(value.img as HTMLImageElement);
+
             // Since the image isn't being used anymore, we can clean it from the cache
             if (value.timesUsed === 0) {
                 Image.SourceImgCache.delete(source);
@@ -574,6 +579,14 @@ export class Image extends Control {
             return;
         }
         this._domImage = engine.createCanvasImage();
+        // need to add to enforce rendering
+        const imgElement = this._domImage as HTMLImageElement;
+        if (imgElement.style) {
+            imgElement.style.visibility = "hidden";
+            imgElement.style.position = "absolute";
+            engine.getRenderingCanvas()?.parentNode?.appendChild(imgElement);
+        }
+
         if (value) {
             Image.SourceImgCache.set(value, { img: this._domImage, timesUsed: 1, loaded: false, waitingForLoadCallback: [this._onImageLoaded.bind(this)] });
         }
