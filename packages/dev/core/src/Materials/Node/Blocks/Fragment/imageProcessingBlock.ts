@@ -14,6 +14,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import "../../../../Shaders/ShadersInclude/helperFunctions";
 import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
 import "../../../../Shaders/ShadersInclude/imageProcessingFunctions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to add image processing support to fragment shader
@@ -147,6 +148,7 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         const color = this.color;
         const output = this._outputs[0];
         const comments = `//${this.name}`;
+        const overrideText = state.shaderLanguage === ShaderLanguage.WGSL ? "Vec3" : "";
 
         state._emitFunctionFromInclude("helperFunctions", comments);
         state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
@@ -160,12 +162,12 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
             }
             state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpaceVec3(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
             }
             state.compilationString += `#else\n`;
             state.compilationString += `#ifdef IMAGEPROCESSING\n`;
             if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpaceVec3(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
             }
             state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
             state.compilationString += `#endif\n`;
