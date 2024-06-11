@@ -5,7 +5,7 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 import { Material } from "core/Materials/material";
-import { Constants } from "core/Engines";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Class for generating OBJ data from a Babylon scene.
