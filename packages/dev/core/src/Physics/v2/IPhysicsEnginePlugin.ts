@@ -7,8 +7,9 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Mesh } from "../../Meshes/mesh";
-import type { Nullable } from "core/types";
-import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "../../types";
+import type { Observable } from "../../Misc/observable";
+import type { GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
 export enum PhysicsConstraintAxisLimitMode {
@@ -238,6 +239,10 @@ export interface PhysicsShapeParameters {
      * The data for the heightfield
      */
     heightFieldData?: Float32Array;
+    /**
+     * Ground mesh used for display
+     */
+    groundMesh?: GroundMesh;
 }
 
 /**
