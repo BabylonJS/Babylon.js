@@ -229,7 +229,7 @@ export class NodeMaterialBuildState {
             }
 
             if (define) {
-                this.sharedData.varyingDeclaration += `#endif\n`;
+                this._samplerDeclaration += `#endif\n`;
             }
 
             this.samplers.push(name);
