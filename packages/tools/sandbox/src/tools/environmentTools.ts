@@ -49,7 +49,6 @@ export class EnvironmentTools {
 
         if (currentScene.environmentTexture) {
             currentScene.environmentTexture.dispose();
-            currentScene.environmentTexture = null;
         }
 
         currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
@@ -60,7 +59,6 @@ export class EnvironmentTools {
                 if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
                     if (material.reflectionTexture) {
                         material.reflectionTexture.dispose();
-                        material.reflectionTexture = null;
                     }
                     material.reflectionTexture = currentScene.environmentTexture.clone();
                     if (material.reflectionTexture) {
