@@ -76,6 +76,7 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
+import { Constants } from "core/Engines";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;
@@ -1010,7 +1011,7 @@ export class GLTFLoader implements IGLTFLoader {
             const babylonMesh = new Mesh(name, this._babylonScene);
             babylonMesh._parentContainer = this._assetContainer;
             this._babylonScene._blockEntityCollection = false;
-            babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            babylonMesh.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(
@@ -2155,6 +2156,7 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
+        babylonMaterial.sideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
         return babylonMaterial;
     }
 

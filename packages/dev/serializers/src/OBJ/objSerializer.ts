@@ -5,6 +5,7 @@ import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
 import { Material } from "core/Materials/material";
+import { Constants } from "core/Engines";
 
 /**
  * Class for generating OBJ data from a Babylon scene.
@@ -94,7 +95,10 @@ export class OBJExport {
             }
 
             const blanks: string[] = ["", "", ""];
-            const sideOrientation = mesh.overrideMaterialSideOrientation ?? mesh.material?.sideOrientation ?? mesh.getScene().defaultMaterial.sideOrientation;
+            const material = mesh.material || mesh.getScene().defaultMaterial;
+
+            const sideOrientation =
+                mesh.sideOrientation !== null && material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation ? mesh.sideOrientation : material.sideOrientation;
             const [offset1, offset2] = sideOrientation === Material.ClockWiseSideOrientation ? [2, 1] : [1, 2];
 
             for (let i = 0; i < trunkFaces.length; i += 3) {

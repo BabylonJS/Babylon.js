@@ -41,6 +41,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         const orientationOptions = [
             { label: "Clockwise", value: Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
+            { label: "UseMesh", value: Material.UseMeshSideOrientation },
         ];
 
         const transparencyModeOptions = [

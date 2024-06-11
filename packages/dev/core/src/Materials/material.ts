@@ -131,6 +131,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static readonly CounterClockWiseSideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
     /**
+     * Use the side orientation defined on the mesh
+     */
+    public static readonly UseMeshSideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
+
+    /**
      * The dirty texture flag value
      */
     public static readonly TextureDirtyFlag = Constants.MATERIAL_TextureDirtyFlag;
@@ -934,9 +939,9 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._drawWrapper.materialContext = this._materialContext;
 
         if (this._scene.useRightHandedSystem) {
-            this.sideOrientation = Material.ClockWiseSideOrientation;
+            this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
         } else {
-            this.sideOrientation = Material.CounterClockWiseSideOrientation;
+            this.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
         }
 
         this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
