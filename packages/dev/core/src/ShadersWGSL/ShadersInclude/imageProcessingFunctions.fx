@@ -5,18 +5,21 @@
 
 	fn PBRNeutralToneMapping( color: vec3f ) -> vec3f {
 		var x: f32 = min(color.r, min(color.g, color.b));
-		var offset: f32 = x < 0.08 ? x - 6.25 * x * x : 0.04;
-		color -= offset;
+		var offset: f32 = select(0.04, x - 6.25 * x * x,x < 0.08);
+		var result = color;
+		result -= offset;
 
-		var peak: f32 = max(color.r, max(color.g, color.b));
-		if (peak < PBRNeutralStartCompression) return color;
+		var peak: f32 = max(result.r, max(result.g, result.b));
+		if (peak < PBRNeutralStartCompression) {
+			return result;
+		}
 
 		var d: f32 = 1. - PBRNeutralStartCompression;
 		var newPeak: f32 = 1. - d * d / (peak + d - PBRNeutralStartCompression);
-		color *= newPeak / peak;
+		result *= newPeak / peak;
 
 		var g: f32 = 1. - 1. / (PBRNeutralDesaturation * (peak - newPeak) + 1.);
-		return mix(color, newPeak *  vec3f(1, 1, 1), g);
+		return mix(result, newPeak *  vec3f(1, 1, 1), g);
 	}
 #endif
 
@@ -49,17 +52,17 @@
 
 	fn ACESFitted(color: vec3f) -> vec3f
 	{
-		color = ACESInputMat * color;
+		var output = ACESInputMat * color;
 
 		// Apply RRT and ODT
-		color = RRTAndODTFit(color);
+		output = RRTAndODTFit(output);
 
-		color = ACESOutputMat * color;
+		output = ACESOutputMat * output;
 
 		// Clamp to [0, 1]
-		color = saturate(color);
+		output = saturate(output);
 
-		return color;
+		return output;
 	}
 #endif
 
@@ -69,22 +72,22 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 
 	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATSTART
 
-	var rgb: vec3f;
+	var rgb = result.rgb;;
 
 #ifdef EXPOSURE
-	resu.rgb *= exposureLinear;
+	rgb *= uniforms.exposureLinear;
 #endif
 
 #ifdef VIGNETTE
 		//vignette
-		var viewportXY: vec2f = gl_FragCoord.xy * vInverseScreenSize;
+		var viewportXY: vec2f = fragmentInputs.position.xy * uniforms.vInverseScreenSize;
 		viewportXY = viewportXY * 2.0 - 1.0;
-		var vignetteXY1: vec3f =  vec3f(viewportXY * vignetteSettings1.xy + vignetteSettings1.zw, 1.0);
+		var vignetteXY1: vec3f =  vec3f(viewportXY * uniforms.vignetteSettings1.xy + uniforms.vignetteSettings1.zw, 1.0);
 		var vignetteTerm: f32 = dot(vignetteXY1, vignetteXY1);
-		var vignette: f32 = pow(vignetteTerm, vignetteSettings2.w);
+		var vignette: f32 = pow(vignetteTerm, uniforms.vignetteSettings2.w);
 
 		// Interpolate between the artist 'color' and white based on the physical transmission value 'vignette'.
-		var vignetteColor: vec3f = vignetteSettings2.rgb;
+		var vignetteColor: vec3f = uniforms.vignetteSettings2.rgb;
 
 	#ifdef VIGNETTEBLENDMODEMULTIPLY
 		var vignetteColorMultiplier: vec3f = mix(vignetteColor,  vec3f(1, 1, 1), vignette);
@@ -113,12 +116,12 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 	// Contrast EaseInOut
 	var resultHighContrast: vec3f = rgb * rgb * (3.0 - 2.0 * rgb);
 	
-	if (contrast < 1.0) {
+	if (uniforms.contrast < 1.0) {
 		// Decrease contrast: interpolate towards zero-contrast image (flat grey)
-		rgb = mix( vec3f(0.5, 0.5, 0.5), rgb, contrast);
+		rgb = mix( vec3f(0.5, 0.5, 0.5), rgb, uniforms.contrast);
 	} else {
 		// Increase contrast: apply simple shoulder-toe high contrast curve
-		rgb = mix(rgb, resultHighContrast, contrast - 1.0);
+		rgb = mix(rgb, resultHighContrast, uniforms.contrast - 1.0);
 	}
 #endif
 
@@ -138,15 +141,15 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 	// Apply Color Curves
 	var luma: f32 = getLuminance(rgb);
 	var curveMix: vec2f = clamp( vec2f(luma * 3.0 - 1.5, luma * -3.0 + 1.5),  vec2f(0.0),  vec2f(1.0));
-	var colorCurve: vec4f = vCameraColorCurveNeutral + curveMix.x * vCameraColorCurvePositive - curveMix.y * vCameraColorCurveNegative;
+	var colorCurve: vec4f = uniforms.vCameraColorCurveNeutral + curveMix.x * uniforms.vCameraColorCurvePositive - curveMix.y * uniforms.vCameraColorCurveNegative;
 
 	rgb *= colorCurve.rgb;
 	rgb = mix( vec3f(luma), rgb, colorCurve.a);
 #endif
 
 #ifdef DITHER
-	var rand: f32 = getRand(gl_FragCoord.xy * vInverseScreenSize);
-	var dither: f32 = mix(-ditherIntensity, ditherIntensity, rand);
+	var rand: f32 = getRand(fragmentInputs.position.xy * uniforms.vInverseScreenSize);
+	var dither: f32 = mix(-uniforms.ditherIntensity, uniforms.ditherIntensity, rand);
 	rgb = saturate(rgb +  vec3f(dither));
 #endif
 
