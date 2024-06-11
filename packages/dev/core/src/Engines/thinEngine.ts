@@ -3530,7 +3530,7 @@ export class ThinEngine extends AbstractEngine {
     }
 
     protected _deleteTexture(texture: Nullable<WebGLHardwareTexture>): void {
-        texture?.release()
+        texture?.release();
     }
 
     protected _setProgram(program: WebGLProgram): void {
