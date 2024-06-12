@@ -57,6 +57,8 @@ import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingCo
 import type { ShaderLanguage } from "../Materials/shaderLanguage";
 import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
+import "../Buffers/buffer.align";
+
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
