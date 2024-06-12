@@ -1313,7 +1313,8 @@ export class NodeMaterial extends PushMaterial {
                     result?.fallbacks,
                     onCompiled,
                     onError,
-                    particleSystem
+                    particleSystem,
+                    this.shaderLanguage
                 );
 
             particleSystem.setCustomEffect(effect, blendMode);

@@ -215,14 +215,23 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string) {
+    public _emit2DSampler(name: string, define = "") {
         if (this.samplers.indexOf(name) < 0) {
+            if (define) {
+                this._samplerDeclaration += `#if ${define}\n`;
+            }
+
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
                 this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
                 this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform sampler2D ${name};\n`;
             }
+
+            if (define) {
+                this._samplerDeclaration += `#endif\n`;
+            }
+
             this.samplers.push(name);
         }
     }
@@ -543,6 +552,26 @@ export class NodeMaterialBuildState {
         } else {
             return `${this._getShaderType(type)} ${name}`;
         }
+    }
+
+    /**
+     * @internal
+     */
+    public _samplerFunc() {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSample";
+        }
+        return "texture2D";
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTextureSample(uv: string, samplerName: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+        }
+        return `${this._samplerFunc()}(${samplerName}, ${uv})`;
     }
 
     private _convertVariableDeclarationToWGSL(type: string, dest: string, source: string): string {
