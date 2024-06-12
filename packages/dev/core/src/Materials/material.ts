@@ -131,11 +131,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
     public static readonly CounterClockWiseSideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
 
     /**
-     * Use the side orientation defined on the mesh
-     */
-    public static readonly UseMeshSideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
-
-    /**
      * The dirty texture flag value
      */
     public static readonly TextureDirtyFlag = Constants.MATERIAL_TextureDirtyFlag;
@@ -420,7 +415,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * Stores the value for side orientation
      */
     @serialize()
-    public sideOrientation: number;
+    public sideOrientation: Nullable<number> = null;
 
     /**
      * Callback triggered when the material is compiled
@@ -938,12 +933,6 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         this._drawWrapper = new DrawWrapper(this._scene.getEngine(), false);
         this._drawWrapper.materialContext = this._materialContext;
 
-        if (this._scene.useRightHandedSystem) {
-            this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
-        } else {
-            this.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
-        }
-
         this._uniformBuffer = new UniformBuffer(this._scene.getEngine(), undefined, undefined, name);
         this._useUBO = this.getScene().getEngine().supportsUniformBuffers;
 
@@ -1055,7 +1044,7 @@ export class Material implements IAnimatable, IClipPlanesHolder {
 
     /** @internal */
     public _getEffectiveOrientation(mesh: Mesh): number {
-        return mesh.sideOrientation !== null && this.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation ? mesh.sideOrientation : this.sideOrientation;
+        return this.sideOrientation !== null ? this.sideOrientation : mesh.sideOrientation;
     }
 
     /**

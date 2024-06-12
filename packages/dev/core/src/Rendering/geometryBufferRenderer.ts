@@ -898,17 +898,9 @@ export class GeometryBufferRenderer {
                 let sideOrientation: Nullable<number>;
                 const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                if (
-                    !instanceDataStorage.isFrozen &&
-                    (material.backFaceCulling || (renderingMesh.sideOrientation !== null && material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation))
-                ) {
+                if (!instanceDataStorage.isFrozen && material.backFaceCulling) {
                     const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-
-                    if (renderingMesh.sideOrientation === null || material.sideOrientation !== Constants.MATERIAL_UseMeshSideOrientation) {
-                        sideOrientation = material.sideOrientation;
-                    } else {
-                        sideOrientation = renderingMesh.sideOrientation;
-                    }
+                    sideOrientation = material._getEffectiveOrientation(renderingMesh);
 
                     if (mainDeterminant < 0) {
                         sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;

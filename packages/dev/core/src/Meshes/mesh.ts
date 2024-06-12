@@ -444,9 +444,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Use this property to change the original side orientation defined at construction time
-     * Will be used if the material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation
+     * Material.sideOrientation will override this value if set
      */
-    public sideOrientation: Nullable<number> = null;
+    public sideOrientation: number;
 
     /**
      * Use this property to override the Material's fillMode value
@@ -498,21 +498,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
-    /** Gets or sets current material */
-    public override get material(): Nullable<Material> {
-        return super.material;
-    }
-    public override set material(value: Nullable<Material>) {
-        if (value && this.sideOrientation !== null && this.material && this.material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation) {
-            // We need to make sure the new one is also on useMeshMaterialSideOrientation
-            // User can revert it if they really want to after setting the propperty
-            // This is mainly to protect backward compat
-            value.sideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
-        }
-
-        super.material = value;
-    }
-
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer() {
         return this._instanceDataStorage.instancesData;
@@ -551,7 +536,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @constructor
+     * Constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
      * @param scene The scene to add this mesh to.
      * @param parent The parent of this mesh, if it has one
@@ -572,6 +557,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         super(name, scene);
 
         scene = this.getScene();
+
+        if (this._scene.useRightHandedSystem) {
+            this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
+        } else {
+            this.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
+        }
 
         this._onBeforeDraw = (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => {
             if (isInstance && effectiveMaterial) {
@@ -2398,17 +2389,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if (
             !instanceDataStorage.isFrozen &&
-            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
-                (this.sideOrientation !== null && this._internalMeshDataInfo._effectiveMaterial.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation) ||
-                (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
+            (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling || (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
         ) {
             // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-            if (this.sideOrientation == null || this._internalMeshDataInfo._effectiveMaterial.sideOrientation !== Constants.MATERIAL_UseMeshSideOrientation) {
-                sideOrientation = this._internalMeshDataInfo._effectiveMaterial.sideOrientation;
-            } else {
-                sideOrientation = this.sideOrientation;
-            }
+            sideOrientation = this._internalMeshDataInfo._effectiveMaterial._getEffectiveOrientation(this);
 
             if (mainDeterminant < 0) {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;

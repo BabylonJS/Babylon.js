@@ -426,10 +426,6 @@ export class Constants {
      * Stores the counter clock-wise side orientation
      */
     public static readonly MATERIAL_CounterClockWiseSideOrientation = 1;
-    /**
-     * Use the side orientation defined on the mesh
-     */
-    public static readonly MATERIAL_UseMeshSideOrientation = 2;
 
     /**
      * Nothing
