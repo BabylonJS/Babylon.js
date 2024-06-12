@@ -898,7 +898,7 @@ export class GeometryBufferRenderer {
                 let sideOrientation: Nullable<number>;
                 const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                if (!instanceDataStorage.isFrozen && material.backFaceCulling) {
+                if (!instanceDataStorage.isFrozen && (material.backFaceCulling || material.sideOrientation !== null)) {
                     const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
                     sideOrientation = material._getEffectiveOrientation(renderingMesh);
 

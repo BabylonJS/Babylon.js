@@ -1703,7 +1703,7 @@ export class _Exporter {
                     }
 
                     if (Object.keys(meshPrimitive.attributes).length > 0) {
-                        const sideOrientation =
+                        const sideOrientation = babylonMaterial._getEffectiveOrientation(bufferMesh);
                             bufferMesh.sideOrientation !== null && babylonMaterial.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation
                                 ? bufferMesh.sideOrientation
                                 : babylonMaterial.sideOrientation;

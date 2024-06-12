@@ -2156,7 +2156,6 @@ export class GLTFLoader implements IGLTFLoader {
         babylonMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_OPAQUE;
         babylonMaterial.metallic = 1;
         babylonMaterial.roughness = 1;
-        babylonMaterial.sideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
         return babylonMaterial;
     }
 
