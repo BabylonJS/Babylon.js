@@ -76,7 +76,6 @@ import type { AssetContainer } from "core/assetContainer";
 import type { AnimationPropertyInfo } from "./glTFLoaderAnimation";
 import { nodeAnimationData } from "./glTFLoaderAnimation";
 import type { IObjectInfo } from "core/ObjectModel/objectModelInterfaces";
-import { Constants } from "core/Engines/constants";
 
 interface TypedArrayLike extends ArrayBufferView {
     readonly length: number;

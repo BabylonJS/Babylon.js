@@ -47,7 +47,6 @@ import { _GLTFAnimation } from "./glTFAnimation";
 import { Camera } from "core/Cameras/camera";
 import { EngineStore } from "core/Engines/engineStore";
 import { MultiMaterial } from "core/Materials/multiMaterial";
-import { Constants } from "core/Engines/constants";
 
 // Matrix that converts handedness on the X-axis.
 const convertHandednessMatrix = Matrix.Compose(new Vector3(-1, 1, 1), Quaternion.Identity(), Vector3.Zero());
@@ -1704,9 +1703,6 @@ export class _Exporter {
 
                     if (Object.keys(meshPrimitive.attributes).length > 0) {
                         const sideOrientation = babylonMaterial._getEffectiveOrientation(bufferMesh);
-                            bufferMesh.sideOrientation !== null && babylonMaterial.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation
-                                ? bufferMesh.sideOrientation
-                                : babylonMaterial.sideOrientation;
 
                         if (sideOrientation === (this._babylonScene.useRightHandedSystem ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation)) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;
