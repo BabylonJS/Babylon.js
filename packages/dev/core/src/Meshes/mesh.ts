@@ -4831,7 +4831,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public override _shouldConvertRHS() {
-        return this.sideOrientation === Material.CounterClockWiseSideOrientation;
+        return this._scene.useRightHandedSystem && this.sideOrientation === Material.CounterClockWiseSideOrientation;
     }
 
     /** @internal */
