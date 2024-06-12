@@ -11,7 +11,6 @@ import type { Material } from "core/Materials/material";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type {
     ISceneLoaderPluginFactory,
-    ISceneLoaderPlugin,
     ISceneLoaderPluginAsync,
     ISceneLoaderProgressEvent,
     ISceneLoaderPluginExtensions,
@@ -156,7 +155,7 @@ export enum GLTFLoaderState {
 /** @internal */
 export interface IGLTFLoader extends IDisposable {
     importMeshAsync: (
-        meshesNames: any,
+        meshesNames: string | readonly string[] | null | undefined,
         scene: Scene,
         container: Nullable<AssetContainer>,
         data: IGLTFLoaderData,
@@ -587,7 +586,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         scene: Scene,
         fileOrUrl: File | string | ArrayBufferView,
         rootUrl: string,
-        onSuccess: (data: any, responseURL?: string) => void,
+        onSuccess: (data: unknown, responseURL?: string) => void,
         onProgress?: (ev: ISceneLoaderProgressEvent) => void,
         useArrayBuffer?: boolean,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
@@ -690,7 +689,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         scene: Scene,
         data: ArrayBufferView,
         rootUrl: string,
-        onSuccess: (data: any, responseURL?: string) => void,
+        onSuccess: (data: unknown, responseURL?: string) => void,
         onError?: (request?: WebRequest, exception?: LoadFileError) => void,
         fileName?: string
     ): void {
@@ -712,9 +711,9 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * @internal
      */
     public importMeshAsync(
-        meshesNames: any,
+        meshesNames: string | readonly string[] | null | undefined,
         scene: Scene,
-        data: any,
+        data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
         fileName?: string
@@ -732,7 +731,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    public loadAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
@@ -746,7 +745,13 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    public loadAssetContainerAsync(scene: Scene, data: any, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer> {
+    public loadAssetContainerAsync(
+        scene: Scene,
+        data: IGLTFLoaderData,
+        rootUrl: string,
+        onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        fileName?: string
+    ): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
@@ -811,7 +816,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    public directLoad(scene: Scene, data: string): Promise<any> {
+    public directLoad(scene: Scene, data: string): Promise<Object> {
         if (
             data.startsWith("base64," + GLTFFileLoader._MagicBase64Encoded) || // this is technically incorrect, but will continue to support for backcompat.
             data.startsWith(";base64," + GLTFFileLoader._MagicBase64Encoded) ||
@@ -842,7 +847,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
     /** @internal */
-    public createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync {
+    public createPlugin(): ISceneLoaderPluginAsync {
         return new GLTFFileLoader();
     }
 
