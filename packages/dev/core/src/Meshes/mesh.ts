@@ -498,6 +498,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
     }
 
+    /** Gets or sets current material */
+    public override get material(): Nullable<Material> {
+        return super.material;
+    }
+    public override set material(value: Nullable<Material>) {
+        if (value && this.sideOrientation !== null && this.material && this.material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation) {
+            // We need to make sure the new one is also on useMeshMaterialSideOrientation
+            // User can revert it if they really want to after setting the propperty
+            // This is mainly to protect backward compat
+            value.sideOrientation = Constants.MATERIAL_UseMeshSideOrientation;
+        }
+
+        super.material = value;
+    }
+
     /** Gets the array buffer used to store the instanced buffer used for instances' world matrices */
     public get worldMatrixInstancedBuffer() {
         return this._instanceDataStorage.instancesData;
@@ -4664,7 +4679,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
-        const currentOverrideMaterialSideOrientation = meshes[0].sideOrientation;
+        const currentsideOrientation = meshes[0].sideOrientation;
 
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
@@ -4673,7 +4688,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (currentOverrideMaterialSideOrientation !== mesh.sideOrientation) {
+            if (currentsideOrientation !== mesh.sideOrientation) {
                 Logger.Warn("Cannot merge meshes with different sideOrientation values.");
                 return null;
             }

@@ -876,8 +876,7 @@ export abstract class EffectLayer {
         }
 
         // Culling
-        let sideOrientation =
-            renderingMesh.sideOrientation && material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation ? renderingMesh.sideOrientation : material.sideOrientation;
+        let sideOrientation = material._getEffectiveOrientation(renderingMesh);
         const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
         if (mainDeterminant < 0) {
             sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;

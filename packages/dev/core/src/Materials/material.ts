@@ -1053,6 +1053,11 @@ export class Material implements IAnimatable, IClipPlanesHolder {
         return this._scene;
     }
 
+    /** @internal */
+    public _getEffectiveOrientation(mesh: Mesh): number {
+        return mesh.sideOrientation !== null && this.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation ? mesh.sideOrientation : this.sideOrientation;
+    }
+
     /**
      * Enforces alpha test in opaque or blend mode in order to improve the performances of some situations.
      */

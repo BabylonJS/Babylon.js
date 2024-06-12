@@ -904,7 +904,7 @@ export class GeometryBufferRenderer {
                 ) {
                     const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
 
-                    if (renderingMesh.sideOrientation == null || material.sideOrientation !== Constants.MATERIAL_UseMeshSideOrientation) {
+                    if (renderingMesh.sideOrientation === null || material.sideOrientation !== Constants.MATERIAL_UseMeshSideOrientation) {
                         sideOrientation = material.sideOrientation;
                     } else {
                         sideOrientation = renderingMesh.sideOrientation;

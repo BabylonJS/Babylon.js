@@ -192,8 +192,7 @@ export class DepthRenderer {
 
             // Culling
             const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
-            let sideOrientation =
-                renderingMesh.sideOrientation && material.sideOrientation === Constants.MATERIAL_UseMeshSideOrientation ? renderingMesh.sideOrientation : material.sideOrientation;
+            let sideOrientation = material._getEffectiveOrientation(renderingMesh);
 
             if (detNeg) {
                 sideOrientation =
