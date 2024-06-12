@@ -1190,7 +1190,8 @@ export class ShadowGenerator implements IShadowGenerator {
         // We therefore need to "undo" the sideOrientation inversion that was previously performed when constructing the material.
         const useRHS = scene.useRightHandedSystem;
         const detNeg = effectiveMesh._getWorldMatrixDeterminant() < 0;
-        let sideOrientation = renderingMesh.overrideMaterialSideOrientation ?? material.sideOrientation;
+        let sideOrientation = material._getEffectiveOrientation(renderingMesh);
+
         if ((detNeg && !useRHS) || (!detNeg && useRHS)) {
             sideOrientation =
                 sideOrientation === Constants.MATERIAL_ClockWiseSideOrientation ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation;
