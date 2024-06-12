@@ -671,8 +671,14 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
                 scene,
                 fileOrUrl,
                 (data) => {
-                    this._validate(scene, data as string, rootUrl, fileName);
-                    onSuccess({ json: this._parseJson(data as string) });
+                    try {
+                        this._validate(scene, data as string, rootUrl, fileName);
+                        onSuccess({ json: this._parseJson(data as string) });
+                    } catch {
+                        if (onError) {
+                            onError();
+                        }
+                    }
                 },
                 false,
                 onError

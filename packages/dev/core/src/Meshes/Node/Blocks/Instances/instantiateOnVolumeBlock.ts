@@ -31,6 +31,12 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     public evaluateContext = true;
 
     /**
+     * Gets or sets a boolean indicating that a grid pattern should be used
+     */
+    @editableInPropertyPage("Grid mode", PropertyTypeForEdition.Boolean, "MODES", { notifiers: { rebuild: true } })
+    public gridMode = false;
+
+    /**
      * Create a new InstantiateOnVolumeBlock
      * @param name defines the block name
      */
@@ -43,6 +49,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         this.registerInput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix, true);
         this.registerInput("rotation", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.Zero());
         this.registerInput("scaling", NodeGeometryBlockConnectionPointTypes.Vector3, true, Vector3.One());
+        this.registerInput("gridSize", NodeGeometryBlockConnectionPointTypes.Int, true, 10);
 
         this.scaling.acceptedConnectionPointTypes.push(NodeGeometryBlockConnectionPointTypes.Float);
         this.registerOutput("output", NodeGeometryBlockConnectionPointTypes.Geometry);
@@ -139,10 +146,26 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     /**
+     * Gets the grid size input component
+     */
+    public get gridSize(): NodeGeometryConnectionPoint {
+        return this._inputs[6];
+    }
+
+    /**
      * Gets the geometry output component
      */
     public get output(): NodeGeometryConnectionPoint {
         return this._outputs[0];
+    }
+
+    private _getValueOnGrid(step: number, size: number, min: number, max: number): number {
+        const cellSize = (max - min) / size;
+        return min + cellSize / 2 + step * cellSize;
+    }
+
+    private _getIndexinGrid(x: number, y: number, z: number, size: number) {
+        return x + y * size + z * size * size;
     }
 
     protected override _buildBlock(state: NodeGeometryBuildState) {
@@ -168,12 +191,58 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
             const boundingInfo = extractMinAndMax(this._vertexData.positions!, 0, this._vertexData.positions!.length / 3);
             const min = boundingInfo.minimum;
             const max = boundingInfo.maximum;
-            const direction = new Vector3(1, 0, 0);
+            const direction = new Vector3(0.5, 0.8, 0.2);
             const faceCount = this._vertexData.indices.length / 3;
+            const gridSize = this.gridSize.getConnectedValue(state);
             this._currentLoopIndex = 0;
 
+            let candidatesCells: Array<boolean>;
+            if (this.gridMode) {
+                candidatesCells = [];
+                // Generates the list of candidates cells
+                for (let index = 0; index < gridSize * gridSize * gridSize; index++) {
+                    candidatesCells[index] = false;
+                }
+            }
+
             for (let index = 0; index < instanceCount; index++) {
-                this._currentPosition.set(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z);
+                if (this.gridMode) {
+                    // Get a random cell
+                    let cellX = Math.floor(Math.random() * gridSize);
+                    let cellY = Math.floor(Math.random() * gridSize);
+                    let cellZ = Math.floor(Math.random() * gridSize);
+                    let cellIndex = this._getIndexinGrid(cellX, cellY, cellZ, gridSize);
+
+                    if (candidatesCells![cellIndex]) {
+                        // Find the first one that is free
+                        let found = false;
+                        for (let candidateIndex = 0; candidateIndex < gridSize * gridSize * gridSize; candidateIndex++) {
+                            if (!candidatesCells![candidateIndex]) {
+                                cellZ = Math.floor(candidateIndex / (gridSize * gridSize));
+                                cellY = Math.floor((candidateIndex - cellZ * gridSize * gridSize) / gridSize);
+                                cellX = candidateIndex - cellZ * gridSize * gridSize - cellY * gridSize;
+                                cellIndex = this._getIndexinGrid(cellX, cellY, cellZ, gridSize);
+                                found = true;
+                                break;
+                            }
+                        }
+                        if (!found) {
+                            // No more free cells
+                            break;
+                        }
+                    }
+
+                    if (!candidatesCells![cellIndex]) {
+                        // Cell is free
+                        const x = this._getValueOnGrid(cellX, gridSize, min.x, max.x);
+                        const y = this._getValueOnGrid(cellY, gridSize, min.y, max.y);
+                        const z = this._getValueOnGrid(cellZ, gridSize, min.z, max.z);
+                        this._currentPosition.set(x, y, z);
+                        candidatesCells![cellIndex] = true;
+                    }
+                } else {
+                    this._currentPosition.set(Math.random() * (max.x - min.x) + min.x, Math.random() * (max.y - min.y) + min.y, Math.random() * (max.z - min.z) + min.z);
+                }
 
                 // Cast a ray from the random point in an arbitrary direction
                 const ray = new Ray(this._currentPosition, direction);
@@ -245,7 +314,8 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
     }
 
     protected override _dumpPropertiesCode() {
-        const codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.evaluateContext = ${this.evaluateContext ? "true" : "false"};\n`;
+        codeString += `${this._codeVariableName}.gridMode = ${this.gridMode ? "true" : "false"};\n`;
         return codeString;
     }
 
@@ -257,6 +327,7 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
         const serializationObject = super.serialize();
 
         serializationObject.evaluateContext = this.evaluateContext;
+        serializationObject.gridMode = this.gridMode;
 
         return serializationObject;
     }
@@ -266,6 +337,10 @@ export class InstantiateOnVolumeBlock extends NodeGeometryBlock implements INode
 
         if (serializationObject.evaluateContext !== undefined) {
             this.evaluateContext = serializationObject.evaluateContext;
+        }
+
+        if (serializationObject.gridMode !== undefined) {
+            this.gridMode = serializationObject.gridMode;
         }
     }
 }

@@ -44,6 +44,31 @@ export class EnvironmentTools {
         return this.SkyboxesNames[defaultSkyboxIndex];
     }
 
+    public static ResetEnvironmentTexture() {
+        const currentScene = EngineStore.LastCreatedScene!;
+
+        if (currentScene.environmentTexture) {
+            currentScene.environmentTexture.dispose();
+        }
+
+        currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
+        for (let i = 0; i < currentScene.materials.length; i++) {
+            const material = currentScene.materials[i] as StandardMaterial | PBRMaterial;
+            if (material.name === "skyBox") {
+                const reflectionTexture = material.reflectionTexture;
+                if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
+                    if (material.reflectionTexture) {
+                        material.reflectionTexture.dispose();
+                    }
+                    material.reflectionTexture = currentScene.environmentTexture.clone();
+                    if (material.reflectionTexture) {
+                        material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
+                    }
+                }
+            }
+        }
+    }
+
     public static HookWithEnvironmentChange(globalState: GlobalState) {
         globalState.onEnvironmentChanged.add((option) => {
             this.SkyboxPath = "";
@@ -53,20 +78,7 @@ export class EnvironmentTools {
                 localStorage.setItem("defaultSkyboxId", index.toString());
             }
 
-            const currentScene = EngineStore.LastCreatedScene!;
-            currentScene.environmentTexture = this.LoadSkyboxPathTexture(currentScene);
-            for (let i = 0; i < currentScene.materials.length; i++) {
-                const material = currentScene.materials[i] as StandardMaterial | PBRMaterial;
-                if (material.name === "skyBox") {
-                    const reflectionTexture = material.reflectionTexture;
-                    if (reflectionTexture && reflectionTexture.coordinatesMode === Texture.SKYBOX_MODE) {
-                        material.reflectionTexture = currentScene.environmentTexture.clone();
-                        if (material.reflectionTexture) {
-                            material.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-                        }
-                    }
-                }
-            }
+            this.ResetEnvironmentTexture();
         });
     }
 }

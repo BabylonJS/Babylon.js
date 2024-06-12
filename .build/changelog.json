@@ -1,150 +1,228 @@
 {
-    "fromTag": "7.9.0",
+    "fromTag": "7.10.1",
     "changelog": {
-        "7.9.0": [
+        "7.10.2": [
             {
-                "pr": "15146",
-                "title": "Fix duplicate ImageProcessing defines in NME particles",
+                "pr": "15179",
+                "title": "fix CI",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15176",
+                "title": "Address feedback",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Shaders/picking.vertex.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.10.1": [
+            {
+                "pr": "15178",
+                "title": "Support loading a cube texture from a data buffer",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.cubeTexture.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/environment-from-data-buffer.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15177",
+                "title": "Fix WebGPU none autoplay video",
+                "description": "[Fix WebGPU none autoplay video ](https://forum.babylonjs.com/t/webgpu-videotexture/51127/3)",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/Extensions/engine.videoTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            },
+            {
+                "pr": "15175",
+                "title": "Gpu pick2",
+                "description": "Improve the picker by not using the color channel",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts",
+                    "packages/dev/core/src/Shaders/picking.fragment.fx",
+                    "packages/dev/core/src/Shaders/picking.vertex.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15164",
+                "title": "Update dependencies and remove storybook",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/sharedUiComponents/.storybook/main.js",
+                    "packages/dev/sharedUiComponents/.storybook/preview.js",
+                    "packages/dev/sharedUiComponents/package.json",
+                    "packages/dev/sharedUiComponents/readme.md",
+                    "packages/dev/sharedUiComponents/src/stories/Button.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Icon.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Label.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/MessageDialog.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/Toggle.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/assets/code-brackets.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/colors.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/comments.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/direction.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/flow.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/plugin.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/repo.svg",
+                    "packages/dev/sharedUiComponents/src/stories/assets/stackalt.svg",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandBarComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/bars/CommandButtonComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/colorPicker/ColorPicker.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/layout/FlexibleGridLayout.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/ColorLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/ColorPickerLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/FileButtonLineComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/NumericInputComponent.stories.tsx",
+                    "packages/dev/sharedUiComponents/src/stories/lines/OptionsLineComponent.stories.tsx"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15171",
+                "title": "Change sandbox environments",
                 "description": null,
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
-                    "packages/dev/core/src/Particles/IParticleSystem.ts",
-                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
-                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                    "packages/tools/sandbox/src/tools/environmentTools.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15145",
-                "title": "Allow changing sampling mode when creating GUI for mesh",
-                "description": "Changing sampling mode (to nearest) will help in this situation:\n\nhttps://forum.babylonjs.com/t/how-to-remove-gui-image-border/22924?u=raananw",
+                "pr": "15172",
+                "title": "Fix CurrentScreen",
+                "description": "Added more node support",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15144",
-                "title": "Lens flare: Fix off-centered flare in cases where the viewport is not full sized",
-                "description": "See https://forum.babylonjs.com/t/weird-lens-flare-behavior-on-viewport/50878",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts"
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/currentScreenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/sceneDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "rendering engine"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "15125",
-                "title": "Improvements for trailMesh",
-                "description": "Added options to constructor, deprecated old constructor. Follows existing mesh creation practices for consistency and future use. \r\n\r\nUsers can now control the trailMesh's segments, sections and switch off trail tapering when not needed. Defaults apply to preserve back-compat.\r\n\r\nUpdated trail mesh creation and update function to account for trail segments and tapering. Updated clone and parse functions to use new contructor.\r\n\r\nPls see forum [thread](https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965) here, thanks!",
+                "pr": "15173",
+                "title": "Quick fixes for GPU Picker",
+                "description": null,
                 "author": {
-                    "name": "lockphase",
-                    "url": "https://github.com/lockphase"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/trailMesh.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15114",
-                "title": "Add support for 3D procedural textures",
-                "description": "This adds the ability to have a 3D ProceduralTexture. It renders all layers of the 3D texture, each time setting a uniform called \"layer\" to a value between 0-1.",
-                "author": {
-                    "name": "MiiBond",
-                    "url": "https://github.com/MiiBond"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
-                    "packages/tools/tests/test/visualization/ReferenceImages/procedural-textures-3d.png",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15141",
-                "title": "Fixing an issue with touch camera initialization",
-                "description": "The code section make an incorrect assumption - \r\n\r\nIf mouse exists, disable touch on the mouse, and the same on the touch input, However, it doesn't take into account whether or not touch (or mouse) input is enabled on the camera.\r\n\r\nThe change here will enable touch on the mouse input if touch is not enabled, and will enable mouse on the touch if mouse module is not available.\r\n\r\nNot sure if we should consider this as a bug or a breaking change. I think it is a bug, looking for feedback.\r\n\r\nSee issue here - https://forum.babylonjs.com/t/the-free-camera-serialization-cannot-save-the-touch-screen-swipe-perspective-information/50715?u=raananw . The serialized camer haas only mouse enabled, so touch is disabled.\r\n\r\nPlayground ID to test (using touch input or emulated touch device) - #D4DKWL#2",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Cameras/touchCamera.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15142",
-                "title": "Reset unneeded dump tools instead of just the dump-engine",
-                "description": "This solves the issue on two tests failing the first time (and working on the second run).\n\nFollow up of #15059",
-                "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/abstractEngine.ts",
-                    "packages/dev/core/src/Misc/dumpTools.ts"
-                ],
-                "tags": []
-            },
-            {
-                "pr": "15143",
-                "title": "NME FragmentOutputBlock: Fix deserialization",
-                "description": "See https://forum.babylonjs.com/t/nodematerial-materialdefines-keys-array-is-growing-over-time/50857/4",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Materials/shaderMaterial.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "nme"
+                    "skip changelog"
                 ]
             },
             {
-                "pr": "15140",
-                "title": "Update contribution link",
-                "description": null,
+                "pr": "15168",
+                "title": "Resume audio context when Vision Pro enters XR immersive mode",
+                "description": "The Apple Vision Pro suspends the audio context when entering XR immersive mode.\r\n\r\nThis change fixes the issue by listening to audio context state changes when XR immersive mode is entered, and resuming the audio context after it is suspended if the user has previously unlocked the audio engine with a user interaction.\r\n\r\nTested on playground https://playground.babylonjs.com/#KR5CRQ#17.",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "docEdub",
+                    "url": "https://github.com/docEdub"
                 },
                 "files": [
-                    "readme-es6.md",
-                    "readme.md"
+                    "packages/dev/core/src/Audio/Interfaces/IAudioEngine.ts",
+                    "packages/dev/core/src/Audio/audioEngine.ts",
+                    "packages/dev/core/src/XR/webXRExperienceHelper.ts",
+                    "packages/dev/core/test/unit/Audio/helpers/mockedAudioObjects.ts"
                 ],
                 "tags": []
             },
             {
-                "pr": "15139",
-                "title": "Avoid using --save-dev in readme.md",
-                "description": null,
+                "pr": "15170",
+                "title": "serialized physics fix",
+                "description": "follow up https://forum.babylonjs.com/t/when-serializing-a-scene-properties-like-the-meshs-physicsimpostor-and-mass-can-be-serialized-however-why-cant-the-meshs-physicsimpostor-and-related-properties-be-loaded-when-using-the-serialized-file-to-load-the-scene/50963",
                 "author": {
-                    "name": "RaananW",
-                    "url": "https://github.com/RaananW"
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
                 },
                 "files": [
-                    "packages/public/@babylonjs/inspector/readme.md",
-                    "packages/public/@babylonjs/loaders/readme.md"
+                    "packages/dev/core/src/Loading/Plugins/babylonFileLoader.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
                 ],
-                "tags": []
+                "tags": [
+                    "bug",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15169",
+                "title": "Fix colored layer",
+                "description": "https://forum.babylonjs.com/t/setting-layer-texture-null-prevents-gltf-export/51098",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/layer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "7.10.0": [
@@ -433,6 +511,152 @@
                 "files": [
                     "package.json",
                     "packages/tools/tests/test/visualization/visualization.utils.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.9.0": [
+            {
+                "pr": "15146",
+                "title": "Fix duplicate ImageProcessing defines in NME particles",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Particles/IParticleSystem.ts",
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts",
+                    "packages/dev/core/src/Particles/thinParticleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15145",
+                "title": "Allow changing sampling mode when creating GUI for mesh",
+                "description": "Changing sampling mode (to nearest) will help in this situation:\n\nhttps://forum.babylonjs.com/t/how-to-remove-gui-image-border/22924?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15144",
+                "title": "Lens flare: Fix off-centered flare in cases where the viewport is not full sized",
+                "description": "See https://forum.babylonjs.com/t/weird-lens-flare-behavior-on-viewport/50878",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/LensFlares/lensFlareSystem.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15125",
+                "title": "Improvements for trailMesh",
+                "description": "Added options to constructor, deprecated old constructor. Follows existing mesh creation practices for consistency and future use. \r\n\r\nUsers can now control the trailMesh's segments, sections and switch off trail tapering when not needed. Defaults apply to preserve back-compat.\r\n\r\nUpdated trail mesh creation and update function to account for trail segments and tapering. Updated clone and parse functions to use new contructor.\r\n\r\nPls see forum [thread](https://forum.babylonjs.com/t/trail-mesh-with-uvs/47965) here, thanks!",
+                "author": {
+                    "name": "lockphase",
+                    "url": "https://github.com/lockphase"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/trailMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15114",
+                "title": "Add support for 3D procedural textures",
+                "description": "This adds the ability to have a 3D ProceduralTexture. It renders all layers of the 3D texture, each time setting a uniform called \"layer\" to a value between 0-1.",
+                "author": {
+                    "name": "MiiBond",
+                    "url": "https://github.com/MiiBond"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Procedurals/proceduralTexture.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/procedural-textures-3d.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15141",
+                "title": "Fixing an issue with touch camera initialization",
+                "description": "The code section make an incorrect assumption - \r\n\r\nIf mouse exists, disable touch on the mouse, and the same on the touch input, However, it doesn't take into account whether or not touch (or mouse) input is enabled on the camera.\r\n\r\nThe change here will enable touch on the mouse input if touch is not enabled, and will enable mouse on the touch if mouse module is not available.\r\n\r\nNot sure if we should consider this as a bug or a breaking change. I think it is a bug, looking for feedback.\r\n\r\nSee issue here - https://forum.babylonjs.com/t/the-free-camera-serialization-cannot-save-the-touch-screen-swipe-perspective-information/50715?u=raananw . The serialized camer haas only mouse enabled, so touch is disabled.\r\n\r\nPlayground ID to test (using touch input or emulated touch device) - #D4DKWL#2",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/touchCamera.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15142",
+                "title": "Reset unneeded dump tools instead of just the dump-engine",
+                "description": "This solves the issue on two tests failing the first time (and working on the second run).\n\nFollow up of #15059",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Misc/dumpTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15143",
+                "title": "NME FragmentOutputBlock: Fix deserialization",
+                "description": "See https://forum.babylonjs.com/t/nodematerial-materialdefines-keys-array-is-growing-over-time/50857/4",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "nme"
+                ]
+            },
+            {
+                "pr": "15140",
+                "title": "Update contribution link",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "readme-es6.md",
+                    "readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15139",
+                "title": "Avoid using --save-dev in readme.md",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/public/@babylonjs/inspector/readme.md",
+                    "packages/public/@babylonjs/loaders/readme.md"
                 ],
                 "tags": []
             }

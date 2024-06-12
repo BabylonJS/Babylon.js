@@ -2030,6 +2030,7 @@ export class NativeEngine extends Engine {
      * @param fallback defines texture to use while falling back when (compressed) texture file not found.
      * @param loaderOptions options to be passed to the loader
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+     * @param buffer defines the data buffer to load instead of loading the rootUrl
      * @returns the cube texture as an InternalTexture
      */
     public override createCubeTexture(
@@ -2046,7 +2047,8 @@ export class NativeEngine extends Engine {
         lodOffset: number = 0,
         fallback: Nullable<InternalTexture> = null,
         loaderOptions?: any,
-        useSRGBBuffer = false
+        useSRGBBuffer = false,
+        buffer: Nullable<ArrayBufferView> = null
     ): InternalTexture {
         const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
         texture.isCube = true;
@@ -2059,6 +2061,7 @@ export class NativeEngine extends Engine {
         if (!this._doNotHandleContextLost) {
             texture._extension = forcedExtension;
             texture._files = files;
+            texture._buffer = buffer;
         }
 
         const lastDot = rootUrl.lastIndexOf(".");
@@ -2105,7 +2108,9 @@ export class NativeEngine extends Engine {
                 );
             };
 
-            if (files && files.length === 6) {
+            if (buffer) {
+                onloaddata(buffer);
+            } else if (files && files.length === 6) {
                 throw new Error(`Multi-file loading not allowed on env files.`);
             } else {
                 const onInternalError = (request?: IWebRequest, exception?: any) => {

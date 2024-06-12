@@ -32,7 +32,7 @@ import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
-import type { Nullable } from "../../../types";
+import type { Nullable, FloatArray } from "../../../types";
 import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
 import type { ProximityCastResult } from "../../proximityCastResult";
 import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
@@ -1221,6 +1221,52 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    private _createOptionsFromGroundMesh(options: PhysicsShapeParameters) {
+        const mesh = options.groundMesh;
+        if (!mesh) {
+            return;
+        }
+        let pos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+        const transform = mesh.computeWorldMatrix(true);
+        // convert rawVerts to object space
+        const transformedVertices: number[] = [];
+        let index: number;
+        for (index = 0; index < pos.length; index += 3) {
+            Vector3.FromArrayToRef(pos, index, TmpVectors.Vector3[0]);
+            Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[0], transform, TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[1].toArray(transformedVertices, index);
+        }
+        pos = transformedVertices;
+
+        const arraySize = ~~(Math.sqrt(pos.length / 3) - 1);
+        const boundingInfo = mesh.getBoundingInfo();
+        const dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
+        const minX = boundingInfo.boundingBox.minimumWorld.x;
+        const minY = boundingInfo.boundingBox.minimumWorld.y;
+        const minZ = boundingInfo.boundingBox.minimumWorld.z;
+
+        const matrix = new Float32Array((arraySize + 1) * (arraySize + 1));
+
+        const elementSize = (dim * 2) / arraySize;
+
+        for (let i = 0; i < matrix.length; i++) {
+            matrix[i] = minY;
+        }
+        for (let i = 0; i < pos.length; i = i + 3) {
+            const x = Math.round((pos[i + 0] - minX) / elementSize);
+            const z = arraySize - Math.round((pos[i + 2] - minZ) / elementSize);
+            const y = pos[i + 1] - minY;
+
+            matrix[z * (arraySize + 1) + x] = y;
+        }
+
+        options.numHeightFieldSamplesX = arraySize + 1;
+        options.numHeightFieldSamplesZ = arraySize + 1;
+        options.heightFieldSizeX = boundingInfo.boundingBox.extendSizeWorld.x * 2;
+        options.heightFieldSizeZ = boundingInfo.boundingBox.extendSizeWorld.z * 2;
+        options.heightFieldData = matrix;
+    }
+
     /**
      * Initializes a physics shape with the given type and parameters.
      * @param shape - The physics shape to initialize.
@@ -1299,6 +1345,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 break;
             case PhysicsShapeType.HEIGHTFIELD:
                 {
+                    if (options.groundMesh) {
+                        // update options with datas from groundMesh
+                        this._createOptionsFromGroundMesh(options);
+                    }
                     if (options.numHeightFieldSamplesX && options.numHeightFieldSamplesZ && options.heightFieldSizeX && options.heightFieldSizeZ && options.heightFieldData) {
                         const totalNumHeights = options.numHeightFieldSamplesX * options.numHeightFieldSamplesZ;
                         const numBytes = totalNumHeights * 4;

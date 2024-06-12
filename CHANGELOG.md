@@ -1,5 +1,20 @@
 # Changelog
 
+## 7.10.2
+
+### Core
+
+
+## 7.10.1
+
+### Core
+
+- Support loading a cube texture from a data buffer - by [bghgary](https://github.com/bghgary) ([#15178](https://github.com/BabylonJS/Babylon.js/pull/15178))
+- Fix WebGPU none autoplay video - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15177](https://github.com/BabylonJS/Babylon.js/pull/15177))
+- Resume audio context when Vision Pro enters XR immersive mode - by [docEdub](https://github.com/docEdub) ([#15168](https://github.com/BabylonJS/Babylon.js/pull/15168))
+- serialized physics fix - [_Bug Fix_] by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15170](https://github.com/BabylonJS/Babylon.js/pull/15170))
+- Fix colored layer - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15169](https://github.com/BabylonJS/Babylon.js/pull/15169))
+
 ## 7.10.0
 
 ### Core

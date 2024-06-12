@@ -8,9 +8,9 @@ import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import { RemoveComments } from "../../Misc/codeStringParsingTools";
+import { RemoveComments, InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
-import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
+
 import { Constants } from "../constants";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
@@ -44,6 +44,7 @@ import "../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions";
 import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
+import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
