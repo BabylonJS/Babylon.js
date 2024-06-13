@@ -39,7 +39,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         material.depthFunction = material.depthFunction ?? 0;
 
         const orientationOptions = [
-            { label: "<None>", value: -1 },
+            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
             { label: "Clockwise", value: Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
         ];
@@ -126,8 +126,8 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         options={orientationOptions}
                         target={material}
                         propertyName="sideOrientation"
-                        defaultIfNull={-1}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        allowNullValue={true}
                         onSelect={(value) => this.setState({ mode: value })}
                     />
                     <CheckBoxLineComponent
