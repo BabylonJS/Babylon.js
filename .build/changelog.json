@@ -1,40 +1,7 @@
 {
-    "fromTag": "7.10.2",
+    "fromTag": "7.10.3",
     "changelog": {
-        "7.10.2": [
-            {
-                "pr": "15179",
-                "title": "fix CI",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15176",
-                "title": "Address feedback",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Collisions/gpuPicker.ts",
-                    "packages/dev/core/src/Shaders/picking.vertex.fx",
-                    "packages/tools/tests/test/visualization/config.json"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            }
-        ],
+        "7.11.0": [],
         "7.10.3": [
             {
                 "pr": "15194",
@@ -258,6 +225,40 @@
                 ],
                 "tags": [
                     "bug"
+                ]
+            }
+        ],
+        "7.10.2": [
+            {
+                "pr": "15179",
+                "title": "fix CI",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15176",
+                "title": "Address feedback",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts",
+                    "packages/dev/core/src/Shaders/picking.vertex.fx",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
                 ]
             }
         ],
