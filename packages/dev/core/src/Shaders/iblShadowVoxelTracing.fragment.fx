@@ -50,35 +50,32 @@ uniform mat4 invVPMtx;
 #define PI 3.1415927
 #define GOLD 0.618034
 
-struct AABB3f
-{
-    vec3 m_min;
-    vec3 m_max;
+struct AABB3f {
+  vec3 m_min;
+  vec3 m_max;
 };
 
-struct Ray
-{
-    vec3 orig;
-    vec3 dir;
-    vec3 dir_rcp;
-    float t_min;
-    float t_max;
+struct Ray {
+  vec3 orig;
+  vec3 dir;
+  vec3 dir_rcp;
+  float t_min;
+  float t_max;
 };
 
-ivec3 compute_voxel_coords_offset(uint voxel_id)
-{
-    return ivec3(voxel_id & 1u, (voxel_id >> 1) & 1u, (voxel_id >> 2) & 1u);
+ivec3 compute_voxel_coords_offset(uint voxel_id) {
+  return ivec3(voxel_id & 1u, (voxel_id >> 1) & 1u, (voxel_id >> 2) & 1u);
 }
 
-Ray make_ray(const vec3 origin, const vec3 direction, const float tmin, const float tmax)
-{
-    Ray ray;
-    ray.orig = origin;
-    ray.dir = direction;
-    ray.dir_rcp = 1.0f / direction;
-    ray.t_min = tmin;
-    ray.t_max = tmax;
-    return ray;
+Ray make_ray(const vec3 origin, const vec3 direction, const float tmin,
+             const float tmax) {
+  Ray ray;
+  ray.orig = origin;
+  ray.dir = direction;
+  ray.dir_rcp = 1.0f / direction;
+  ray.t_min = tmin;
+  ray.t_max = tmax;
+  return ray;
 }
 
 bool ray_box_intersection(const in AABB3f aabb, const in Ray ray,
@@ -92,74 +89,71 @@ bool ray_box_intersection(const in AABB3f aabb, const in Ray ray,
   return distance_near <= distance_far;
 }
 
-float sign_force_non_zero(const float f)
-{
-    if (f != 0.0f)
-        return sign(f);
+float sign_force_non_zero(const float f) {
+  if (f != 0.0f)
+    return sign(f);
 
-    return 1.0f;
+  return 1.0f;
 }
 
-void compute_box_normal( out vec3 normal,  const in AABB3f box, const vec3 point_on_surface)
-{
-    vec3 box_center = 0.5f * (box.m_max + box.m_min);
-    vec3 box_diagonal = max(0.5f * abs(box.m_max - box.m_min), 1e-6f);
-    vec3 dir = (point_on_surface - box_center) / box_diagonal;
-    vec3 dir_abs = abs(dir);
-    float max_dir = max(max(dir_abs.x, dir_abs.y), dir_abs.z);
+void compute_box_normal(out vec3 normal, const in AABB3f box,
+                        const vec3 point_on_surface) {
+  vec3 box_center = 0.5f * (box.m_max + box.m_min);
+  vec3 box_diagonal = max(0.5f * abs(box.m_max - box.m_min), 1e-6f);
+  vec3 dir = (point_on_surface - box_center) / box_diagonal;
+  vec3 dir_abs = abs(dir);
+  float max_dir = max(max(dir_abs.x, dir_abs.y), dir_abs.z);
 
-    if (max_dir == dir_abs.x)
-    {
-        normal = vec3(sign_force_non_zero(dir.x), 0.0f, 0.0f);
-    }
-    else if (max_dir == dir_abs.y)
-    {
-        normal = vec3(0.0f, sign_force_non_zero(dir.y), 0.0f);
-    }
-    else
-    {
-        normal = vec3(0.0f, 0.0f, sign_force_non_zero(dir.z));
-    }
+  if (max_dir == dir_abs.x) {
+    normal = vec3(sign_force_non_zero(dir.x), 0.0f, 0.0f);
+  } else if (max_dir == dir_abs.y) {
+    normal = vec3(0.0f, sign_force_non_zero(dir.y), 0.0f);
+  } else {
+    normal = vec3(0.0f, 0.0f, sign_force_non_zero(dir.z));
+  }
 }
 
-bool ray_triangle_intersection( out vec2 barys, out float distance, const vec3 ray_orig, const vec3 ray_dir, const mat3 vertices)
-{
-    vec3 vAB = vertices[1] - vertices[0];
-    vec3 vAC = vertices[2] - vertices[0];
+bool ray_triangle_intersection(out vec2 barys, out float distance,
+                               const vec3 ray_orig, const vec3 ray_dir,
+                               const mat3 vertices) {
+  vec3 vAB = vertices[1] - vertices[0];
+  vec3 vAC = vertices[2] - vertices[0];
 
-    vec3 h = cross(ray_dir, vAC);
-    float det = dot(vAB, h);
-    float det_rcp = 1.0f / det;
+  vec3 h = cross(ray_dir, vAC);
+  float det = dot(vAB, h);
+  float det_rcp = 1.0f / det;
 
-    float eps = 0.0f;
-    float one_plus_eps = 1.0f + eps;
+  float eps = 0.0f;
+  float one_plus_eps = 1.0f + eps;
 
-    vec3 s = ray_orig - vertices[0];
-    float u = det_rcp * dot(s, h);
-    if (u < -eps || u > one_plus_eps)
-        return false;
+  vec3 s = ray_orig - vertices[0];
+  float u = det_rcp * dot(s, h);
+  if (u < -eps || u > one_plus_eps)
+    return false;
 
-    vec3 q = cross(s, vAB);
-    float v = det_rcp * dot(ray_dir, q);
-    if (v < -eps || (u + v) > one_plus_eps)
-        return false;
+  vec3 q = cross(s, vAB);
+  float v = det_rcp * dot(ray_dir, q);
+  if (v < -eps || (u + v) > one_plus_eps)
+    return false;
 
-    barys = vec2(u, v);
-    distance = det_rcp * dot(vAC, q);
-    return true;
+  barys = vec2(u, v);
+  distance = det_rcp * dot(vAC, q);
+  return true;
 }
 
-// NOTE: VOXEL_MARCHING_NUM_MIPS refers to physical (rather than logical) mips, since mip 0 contains a 2x2x2 block of voxels
+// NOTE: VOXEL_MARCHING_NUM_MIPS refers to physical (rather than logical) mips,
+// since mip 0 contains a 2x2x2 block of voxels
 #define VOXEL_MARCHING_NODE_BITS VOXEL_MARCHING_NUM_MIPS
 #define VOXEL_MARCHING_STACK_SIZE ((VOXEL_MARCHING_NUM_MIPS * 3u) + 1u)
 
 struct VoxelTraverseStack {
-    // 4 is the max number of octants a ray can intersect
-    // Each time we traverse a mip level in the graph, it pops 1 node, then pushes up to 4 nodes on the stack
-    // Thus the worst case stack size is 3 nodes for the first NUM_MIPS - 1 mips, and 4 for the last mip
-    // So, for a logical size of 128, we have 7 mip levels, which translates to a stack size of 22
-    uint stack[VOXEL_MARCHING_STACK_SIZE];
-    int stack_level;
+  // 4 is the max number of octants a ray can intersect
+  // Each time we traverse a mip level in the graph, it pops 1 node, then pushes
+  // up to 4 nodes on the stack Thus the worst case stack size is 3 nodes for
+  // the first NUM_MIPS - 1 mips, and 4 for the last mip So, for a logical size
+  // of 128, we have 7 mip levels, which translates to a stack size of 22
+  uint stack[VOXEL_MARCHING_STACK_SIZE];
+  int stack_level;
 };
 
 VoxelTraverseStack voxel_traverse_stack;
@@ -187,164 +181,173 @@ void voxel_stack_pop(out ivec3 coords, out uint lod) {
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
 struct VoxelMarchDiagnosticInfo {
-    float heat;
-    ivec3 voxel_intersect_coords;
+  float heat;
+  ivec3 voxel_intersect_coords;
 };
 #endif
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-bool hierarchical_march(Ray ray_vs, out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
+bool hierarchical_march(
+    Ray ray_vs, out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
 #else
 bool hierarchical_march(Ray ray_vs) {
 #endif
-    initialize_voxel_traverse_stack();
+  initialize_voxel_traverse_stack();
 
-    voxel_stack_push(ivec3(0), VOXEL_MARCHING_NUM_MIPS);
+  voxel_stack_push(ivec3(0), VOXEL_MARCHING_NUM_MIPS);
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    uint steps = 0u;
+  uint steps = 0u;
 #endif
-    while (stack_level > 0) {
-      ivec3 node_coords;
-      uint lod;
-      voxel_stack_pop(node_coords, lod);
+  while (stack_level > 0) {
+    ivec3 node_coords;
+    uint lod;
+    voxel_stack_pop(node_coords, lod);
 
-      if (lod == 0u) {
+    if (lod == 0u) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-        voxel_march_diagnostic_info.heat = 1.0;
-        voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
+      voxel_march_diagnostic_info.heat = 1.0;
+      voxel_march_diagnostic_info.voxel_intersect_coords = node_coords;
 #endif
-        return true;
-      }
+      return true;
+    }
 
-      // lod is logical lod. Physical lod is shifted down one
-      uint node_mask =
-          texelFetch(voxelGridSampler, node_coords, int(lod - 1u)).r > 0.0 ? 1u
-                                                                           : 0u;
+    // lod is logical lod. Physical lod is shifted down one
+    uint node_mask =
+        texelFetch(voxelGridSampler, node_coords, int(lod - 1u)).r > 0.0 ? 1u
+                                                                         : 0u;
 
-      --lod;
-      // Get node bounds in voxel space at highest resolution
-      float inv_res = 1.0 / float(1u << (VOXEL_MARCHING_NUM_MIPS - lod));
+    --lod;
+    // Get node bounds in voxel space at highest resolution
+    float inv_res = 1.0 / float(1u << (VOXEL_MARCHING_NUM_MIPS - lod));
 
-      ivec3 base_octant_coords = node_coords << 1u;
+    ivec3 base_octant_coords = node_coords << 1u;
 
-      ivec3 pos = ivec3(greaterThanEqual(ray_vs.dir, vec3(0.0)));
-      uint start_octant_id = uint(pos.x | pos.y << 1 | pos.z << 2);
+    ivec3 pos = ivec3(greaterThanEqual(ray_vs.dir, vec3(0.0)));
+    uint start_octant_id = uint(pos.x | pos.y << 1 | pos.z << 2);
 
-      for (uint i = 0u; i < 8u; i++) {
-        uint octant_id = start_octant_id ^ 0u;
-        if (bool(node_mask & (1u << octant_id))) {
+    for (uint i = 0u; i < 8u; i++) {
+      uint octant_id = start_octant_id ^ 0u;
+      if (bool(node_mask & (1u << octant_id))) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-          ++steps;
+        ++steps;
 #endif
-          ivec3 octant_coords =
-              base_octant_coords + compute_voxel_coords_offset(octant_id);
+        ivec3 octant_coords =
+            base_octant_coords + compute_voxel_coords_offset(octant_id);
 
-          AABB3f octant_aabb;
-          octant_aabb.m_min = vec3(octant_coords) * inv_res;
-          octant_aabb.m_max = vec3(octant_coords + 1) * inv_res;
+        AABB3f octant_aabb;
+        octant_aabb.m_min = vec3(octant_coords) * inv_res;
+        octant_aabb.m_max = vec3(octant_coords + 1) * inv_res;
 
-          float near, far = 0.0;
-          if (ray_box_intersection(octant_aabb, ray_vs, near, far)) {
-            voxel_stack_push(octant_coords, lod);
-          }
+        float near, far = 0.0;
+        if (ray_box_intersection(octant_aabb, ray_vs, near, far)) {
+          voxel_stack_push(octant_coords, lod);
         }
       }
     }
+  }
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    voxel_march_diagnostic_info.heat =
-        float(steps) / float(VOXEL_MARCHING_STACK_SIZE);
+  voxel_march_diagnostic_info.heat =
+      float(steps) / float(VOXEL_MARCHING_STACK_SIZE);
 #endif
 
-    return false;
+  return false;
 }
 
-bool voxel_pos_in_bounds(ivec3 voxel_pos)
-{
-    return all(greaterThanEqual(voxel_pos, ivec3(0))) && all(lessThan(voxel_pos, ivec3(VOXEL_GRID_RESOLUTION)));
+bool voxel_pos_in_bounds(ivec3 voxel_pos) {
+  return all(greaterThanEqual(voxel_pos, ivec3(0))) &&
+         all(lessThan(voxel_pos, ivec3(VOXEL_GRID_RESOLUTION)));
 }
 
-uint compute_packed_voxel_id(const ivec3 logical_voxel_coords)
-{
-    return uint((logical_voxel_coords.x & 1) | ((logical_voxel_coords.y & 1) << 1) | ((logical_voxel_coords.z & 1) << 2));
+uint compute_packed_voxel_id(const ivec3 logical_voxel_coords) {
+  return uint((logical_voxel_coords.x & 1) |
+              ((logical_voxel_coords.y & 1) << 1) |
+              ((logical_voxel_coords.z & 1) << 2));
 }
 
-// Convert from logical voxel coordinates to physical texel coordinate + access mask
-ivec3 compute_physical_voxel_texcoords(const ivec3 logical_voxel_coords, out uint mask)
-{
-    mask = 1u << compute_packed_voxel_id(logical_voxel_coords);
+// Convert from logical voxel coordinates to physical texel coordinate + access
+// mask
+ivec3 compute_physical_voxel_texcoords(const ivec3 logical_voxel_coords,
+                                       out uint mask) {
+  mask = 1u << compute_packed_voxel_id(logical_voxel_coords);
 
-    return logical_voxel_coords >> 1;
+  return logical_voxel_coords >> 1;
 }
 
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-bool dda_march(Ray ray_vs, out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
+bool dda_march(Ray ray_vs,
+               out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
 #else
 bool dda_march(Ray ray_vs) {
 #endif
-    // March voxels using DDA: "Fast Voxel Traversal Algorithm" (http://www.cse.yorku.ca/~amana/research/grid.pdf)
-    vec3 origin_vs = float(VOXEL_GRID_RESOLUTION) * (ray_vs.orig + ray_vs.dir * ray_vs.t_min);
+  // March voxels using DDA: "Fast Voxel Traversal Algorithm"
+  // (http://www.cse.yorku.ca/~amana/research/grid.pdf)
+  vec3 origin_vs =
+      float(VOXEL_GRID_RESOLUTION) * (ray_vs.orig + ray_vs.dir * ray_vs.t_min);
 
-    ivec3 voxel_pos = ivec3(origin_vs);
-    ivec3 voxel_step = ivec3(sign(ray_vs.dir));
+  ivec3 voxel_pos = ivec3(origin_vs);
+  ivec3 voxel_step = ivec3(sign(ray_vs.dir));
 
-    // Ray-lengths per voxel in each coordinate, ie the distances in t that you have to advance the ray to equal one voxel in each axis
-    vec3 t_delta = abs(ray_vs.dir_rcp);
+  // Ray-lengths per voxel in each coordinate, ie the distances in t that you
+  // have to advance the ray to equal one voxel in each axis
+  vec3 t_delta = abs(ray_vs.dir_rcp);
 
-    float t_min = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_min;
-    float t_max = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_max;
+  float t_min = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_min;
+  float t_max = float(VOXEL_GRID_RESOLUTION) * ray_vs.t_max;
 
-    // t_lengths is the ray length we have traversed by incrementing voxel_pos in each axis
-    // We use this to determine which axis we will advance voxel_pos next
-    // Initialize to t_min in all directions, plus enough such that the ray starts on a voxel boundary
-    vec3 t_lengths =
-        t_delta * abs(vec3(voxel_pos + max(voxel_step, 0)) - origin_vs) +
-        vec3(t_min);
+  // t_lengths is the ray length we have traversed by incrementing voxel_pos in
+  // each axis We use this to determine which axis we will advance voxel_pos
+  // next Initialize to t_min in all directions, plus enough such that the ray
+  // starts on a voxel boundary
+  vec3 t_lengths =
+      t_delta * abs(vec3(voxel_pos + max(voxel_step, 0)) - origin_vs) +
+      vec3(t_min);
 
-    ivec3 texel_coords = ivec3(-1);
-    uint texel_mask = 0u;
-    bool shouldExit = false;
-    uint steps = 0u;
-    // Stop marching once we've advanced enough voxels in all coordinates to extend the ray up to t_max
-    while (any(lessThanEqual(t_lengths, vec3(t_max))) && !shouldExit) {
+  ivec3 texel_coords = ivec3(-1);
+  uint texel_mask = 0u;
+  bool shouldExit = false;
+  uint steps = 0u;
+  // Stop marching once we've advanced enough voxels in all coordinates to
+  // extend the ray up to t_max
+  while (any(lessThanEqual(t_lengths, vec3(t_max))) && !shouldExit) {
 
-      if (voxel_pos_in_bounds(voxel_pos)) {
-        uint voxel_mask = 0u;
-        ivec3 new_texel_coords =
-            compute_physical_voxel_texcoords(voxel_pos, voxel_mask);
+    if (voxel_pos_in_bounds(voxel_pos)) {
+      uint voxel_mask = 0u;
+      ivec3 new_texel_coords =
+          compute_physical_voxel_texcoords(voxel_pos, voxel_mask);
 
-        if (texel_coords != new_texel_coords) {
-          texel_coords = new_texel_coords;
-          texel_mask = uint(
-              texelFetch(voxelGridSampler, texel_coords, 0).r > 0.0 ? 1u : 0u);
-        }
-
-        if (bool(texel_mask & voxel_mask)) {
-#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-          voxel_march_diagnostic_info.voxel_intersect_coords = voxel_pos;
-#endif
-
-          // return true;
-          shouldExit = true;
-        }
+      if (texel_coords != new_texel_coords) {
+        texel_coords = new_texel_coords;
+        texel_mask = uint(
+            texelFetch(voxelGridSampler, texel_coords, 0).r > 0.0 ? 1u : 0u);
       }
-      steps++;
-      // Only increment voxel_pos in the direction of the smallest distance to
-      // the next voxel boundary, which is the smallest t_lengths
 
-      // cmp holds a 1 for the axes in which to advance
-      ivec3 cmp = ivec3(step(t_lengths.xyz, t_lengths.zxy)) *
-                  ivec3(step(t_lengths.xyz, t_lengths.yzx));
-
-      // Once the axes are chosen, increment the ray-distance traveled via this
-      // axis (t_lengths)
-      t_lengths += vec3(cmp) * t_delta;
-      // And increment voxel_pos along that axis
-      voxel_pos += ivec3(cmp * voxel_step);
-    }
+      if (bool(texel_mask & voxel_mask)) {
 #if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
-    voxel_march_diagnostic_info.heat = float(steps);
+        voxel_march_diagnostic_info.voxel_intersect_coords = voxel_pos;
 #endif
-    return shouldExit;
+
+        // return true;
+        shouldExit = true;
+      }
+    }
+    steps++;
+    // Only increment voxel_pos in the direction of the smallest distance to
+    // the next voxel boundary, which is the smallest t_lengths
+
+    // cmp holds a 1 for the axes in which to advance
+    ivec3 cmp = ivec3(step(t_lengths.xyz, t_lengths.zxy)) *
+                ivec3(step(t_lengths.xyz, t_lengths.yzx));
+
+    // Once the axes are chosen, increment the ray-distance traveled via this
+    // axis (t_lengths)
+    t_lengths += vec3(cmp) * t_delta;
+    // And increment voxel_pos along that axis
+    voxel_pos += ivec3(cmp * voxel_step);
+  }
+#if VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION
+  voxel_march_diagnostic_info.heat = float(steps);
+#endif
+  return shouldExit;
 }
 
 uint hash(uint i) {
@@ -595,7 +598,8 @@ float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
                   vec2 DitherNoise,
                   out VoxelMarchDiagnosticInfo voxel_march_diagnostic_info) {
 #else
-float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal, vec2 DitherNoise) {
+float voxelShadow(vec3 wsOrigin, vec3 wsDirection, vec3 wsNormal,
+                  vec2 DitherNoise) {
 #endif
   float vxResolution = float(textureSize(voxelGridSampler, 0).x);
   vec3 T, B;

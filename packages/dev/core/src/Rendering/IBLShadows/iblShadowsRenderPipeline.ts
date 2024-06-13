@@ -15,13 +15,15 @@ import "../../Shaders/postprocess.vertex";
 import "../../Shaders/iblShadowGBufferDebug.fragment";
 import "../../Shaders/iblShadowsCombine.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
 import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
 import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
-import type { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
+import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
+import type { Camera } from "core/Cameras";
 
 class IblShadowsSettings {
     /**
@@ -211,25 +213,25 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * Returns the raw shadow texture computed by the voxel tracing pass
      * @returns The raw shadow texture computed by the voxel tracing pass
      */
-    public getRawShadowTexture(): ProceduralTexture {
-        return this._voxelTracingPass?.getTexture();
-    }
+    // public getRawShadowTexture(): ProceduralTexture {
+    //     return this._voxelTracingPass?.getTexture();
+    // }
 
-    /**
-     * Returns the blurred shadow texture computed by the spatial blur pass
-     * @returns The blurred shadow texture computed by the spatial blur pass
-     */
-    public getBlurShadowTexture(): ProceduralTexture {
-        return this._spatialBlurPass?.getTexture();
-    }
+    // /**
+    //  * Returns the blurred shadow texture computed by the spatial blur pass
+    //  * @returns The blurred shadow texture computed by the spatial blur pass
+    //  */
+    // public getBlurShadowTexture(): ProceduralTexture {
+    //     return this._spatialBlurPass?.getTexture();
+    // }
 
-    /**
-     * Returns the accumulated shadow texture
-     * @returns The accumulated shadow texture
-     */
-    public getAccumulatedShadowTexture(): ProceduralTexture {
-        return this._accumulationPass?.getTexture();
-    }
+    // /**
+    //  * Returns the accumulated shadow texture
+    //  * @returns The accumulated shadow texture
+    //  */
+    // public getAccumulatedShadowTexture(): ProceduralTexture {
+    //     return this._accumulationPass?.getTexture();
+    // }
 
     /**
      * Turn on or off the debug view of the CDF importance sampling data
@@ -430,8 +432,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      * @param name The rendering pipeline name
      * @param scene The scene linked to this pipeline
      * @param options Options to configure the pipeline
+     * @param cameras Cameras to apply the pipeline to.
      */
-    constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}) {
+    constructor(name: string, scene: Scene, options: Partial<IblShadowsSettings> = {}, cameras?: Camera[]) {
         super(scene.getEngine(), name);
         this._scene = scene;
 
@@ -451,18 +454,78 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._voxelTracingPass.sssSamples = options.ssShadowSampleCount || 16;
         this._voxelTracingPass.sssStride = options.ssShadowStride || 8;
         this._voxelTracingPass.sssThickness = options.ssShadowThickness || 0.01;
-        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene, this);
-        this._accumulationPass = new IblShadowsAccumulationPass(this._scene, this);
+        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this._scene);
+        this._accumulationPass = new IblShadowsAccumulationPass(this._scene);
         this._accumulationPass.remenance = options.shadowRemenance || 0.9;
         this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this._scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
-        const shadowPassPT = this.getRawShadowTexture();
-        if (shadowPassPT) {
-            shadowPassPT.setTexture("blueNoiseSampler", this._noiseTexture);
-            shadowPassPT.setTexture("voxelGridSampler", this._voxelRenderer.getVoxelGrid());
-        }
 
         // Create post process that applies the shadows to the scene
         this._createShadowCombinePostProcess();
+        // const originalColorPostProcess = new PassPostProcess(
+        //     "originalSceneColor",
+        //     1.0,
+        //     null,
+        //     Texture.BILINEAR_SAMPLINGMODE,
+        //     scene.getEngine(),
+        //     undefined,
+        //     Constants.TEXTURETYPE_UNSIGNED_BYTE
+        // );
+        // Set up pipeline
+        // this.addEffect(
+        //     new PostProcessRenderEffect(
+        //         scene.getEngine(),
+        //         "sceneColor",
+        //         () => {
+        //             return originalColorPostProcess;
+        //         },
+        //         true
+        //     )
+        // );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "IBLShadowVoxelTracingPass",
+                () => {
+                    return this._voxelTracingPass.getPassPP();
+                },
+                true
+            )
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "IBLShadowSpatialBlurPass",
+                () => {
+                    return this._spatialBlurPass.getPassPP();
+                },
+                true
+            )
+        );
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "IBLShadowAccumulationBlurPass",
+                () => {
+                    return this._accumulationPass.getPassPP();
+                },
+                true
+            )
+        );
+        // this._shadowCompositePP.inputTexture = originalColorPostProcess._outputTexture!;
+        this.addEffect(
+            new PostProcessRenderEffect(
+                scene.getEngine(),
+                "IBLShadowCompositePass",
+                () => {
+                    return this._shadowCompositePP;
+                },
+                true
+            )
+        );
+        scene.postProcessRenderPipelineManager.addPipeline(this);
+        if (cameras) {
+            scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);
+        }
 
         this._scene.onNewMeshAddedObservable.add(this.updateSceneBounds.bind(this));
         this._scene.onMeshRemovedObservable.add(this.updateSceneBounds.bind(this));
@@ -481,33 +544,37 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     private _createShadowCombinePostProcess() {
-        this._shadowCompositePP = new PostProcess(
-            "iblShadowsCombine",
-            "iblShadowsCombine",
-            ["shadowOpacity"],
-            ["shadowTexture"],
-            1.0,
-            this._scene.activeCamera,
-            Texture.BILINEAR_SAMPLINGMODE,
-            this._scene.getEngine()
-        );
+        const compositeOptions: PostProcessOptions = {
+            width: this._scene.getEngine().getRenderWidth(),
+            height: this._scene.getEngine().getRenderHeight(),
+            uniforms: ["shadowOpacity"],
+            samplers: ["sceneTexture"],
+            samplingMode: Constants.TEXTURE_BILINEAR_SAMPLINGMODE,
+            engine: this._scene.getEngine(),
+            textureType: Constants.TEXTURETYPE_FLOAT,
+            reusable: true,
+        };
+        this._shadowCompositePP = new PostProcess("iblShadowsCombine", "iblShadowsCombine", compositeOptions);
+        this._shadowCompositePP.autoClear = false;
         this._shadowCompositePP.onApply = (effect) => {
-            const shadowPassRT = this.getAccumulatedShadowTexture();
-            effect.setTexture("shadowTexture", shadowPassRT);
+            effect.setTextureFromPostProcess("sceneTexture", this._voxelTracingPass.getPassPP());
+            // const shadowPassRT = this.getAccumulatedShadowTexture();
+
+            // effect.setTexture("shadowTexture", shadowPassRT);
             effect.setFloat("shadowOpacity", this._shadowOpacity);
             this.update();
         };
         if (this._scene.postProcessManager) {
-            this._scene.postProcessManager.onBeforeRenderObservable.add(() => {
-                if (this.isReady()) {
-                    const shadowPT = this.getRawShadowTexture();
-                    shadowPT.render();
-                    const blurPT = this.getBlurShadowTexture();
-                    if (blurPT) blurPT.render();
-                    const accumPT = this.getAccumulatedShadowTexture();
-                    if (accumPT) accumPT.render();
-                }
-            });
+            // this._scene.postProcessManager.onBeforeRenderObservable.add(() => {
+            //     if (this.isReady()) {
+            //         const shadowPT = this.getRawShadowTexture();
+            //         shadowPT.render();
+            //         const blurPT = this.getBlurShadowTexture();
+            //         if (blurPT) blurPT.render();
+            //         const accumPT = this.getAccumulatedShadowTexture();
+            //         if (accumPT) accumPT.render();
+            //     }
+            // });
         }
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
     }
@@ -622,9 +689,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _updateBeforeRender() {
         this._updateDebugPasses();
-        this._voxelTracingPass?.update();
-        this._spatialBlurPass?.update();
-        this._accumulationPass?.update();
+        // this._voxelTracingPass?.update();
+        // this._spatialBlurPass?.update();
+        // this._accumulationPass?.update();
     }
 
     private _listenForCameraChanges() {

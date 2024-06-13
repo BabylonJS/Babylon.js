@@ -23,7 +23,7 @@ import { ParticleHelper } from "core/Particles/particleHelper";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { SSAO2RenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssao2RenderingPipeline";
 import { SSRRenderingPipeline } from "core/PostProcesses/RenderPipeline/Pipelines/ssrRenderingPipeline";
-import { IblShadowsRenderPipeline } from "core/Rendering/iblShadowsRenderPipeline";
+import { IblShadowsRenderPipeline } from "core/Rendering/IBLShadows/iblShadowsRenderPipeline";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
 import { SpriteManager } from "core/Sprites/spriteManager";

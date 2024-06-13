@@ -2,14 +2,15 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
-import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
-import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
-import "../../Shaders/iblShadowCompute.fragment";
+import "../../Shaders/iblShadowVoxelTracing.fragment";
 import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
+import type { Effect } from "../../Materials/effect";
+import type { Camera } from "../../Cameras/camera";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -75,7 +76,7 @@ export class IblShadowsVoxelTracingPass {
         this._sssThickness = value;
     }
 
-    private _outputPT: ProceduralTexture;
+    private _outputPP: PostProcess;
     private _cameraInvView: Matrix = Matrix.Identity();
     private _cameraInvProj: Matrix = Matrix.Identity();
     private _invWorldScaleMatrix: Matrix = Matrix.Identity();
@@ -93,13 +94,14 @@ export class IblShadowsVoxelTracingPass {
     public set envRotation(value: number) {
         this._envRotation = value;
     }
+    public getPassPP(): PostProcess {
+        return this._outputPP;
+    }
+
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */
     private _envRotation: number = -Math.PI / 2.0;
     private _downscale: number = 1.0;
 
-    public getTexture(): ProceduralTexture {
-        return this._outputPT;
-    }
     public setWorldScaleMatrix(matrix: Matrix) {
         this._invWorldScaleMatrix = matrix;
     }
@@ -122,7 +124,7 @@ export class IblShadowsVoxelTracingPass {
         this._debugEnabled = enabled;
         if (enabled) {
             this._debugPass = new PostProcess(
-                "Shadow Compute Pass Debug",
+                "Shadow Voxel Tracing Pass Debug",
                 "iblShadowDebug",
                 ["sizeParams"], // attributes
                 ["debugSampler"], // textures
@@ -131,19 +133,20 @@ export class IblShadowsVoxelTracingPass {
                 Texture.BILINEAR_SAMPLINGMODE, // sampling
                 this._engine // engine
             );
+            this._debugPass.autoClear = false;
             this._debugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
-                effect.setTexture("debugSampler", this._outputPT);
+                effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
             };
         }
     }
 
     /**
-     * Instantiates the shadow compute pass
+     * Instantiates the shadow voxel-tracing pass
      * @param scene Scene to attach to
      * @param iblShadowsRenderPipeline The IBL shadows render pipeline
-     * @returns The shadow compute pass
+     * @returns The shadow voxel-tracing pass
      */
     constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline) {
         this._scene = scene;
@@ -153,63 +156,79 @@ export class IblShadowsVoxelTracingPass {
     }
 
     private _createTextures() {
-        const outputOptions: IProceduralTextureCreationOptions = {
-            generateDepthBuffer: false,
-            generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        };
+        // const outputOptions: IProceduralTextureCreationOptions = {
+        //     generateDepthBuffer: false,
+        //     generateMipMaps: false,
+        //     format: Constants.TEXTUREFORMAT_RGBA,
+        //     type: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+        //     samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        // };
 
-        this._outputPT = new ProceduralTexture(
-            "shadowPassTexture1",
-            { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
-            "iblShadowCompute",
-            this._scene,
-            outputOptions
-        );
-        this._outputPT.autoClear = false;
-        this._outputPT.refreshRate = 0;
+        // this._outputPT = new ProceduralTexture(
+        //     "shadowVoxelTraceTexture",
+        //     { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
+        //     "iblShadowVoxelTracing",
+        //     this._scene,
+        //     outputOptions
+        // );
+        // this._outputPT.autoClear = false;
+        // this._outputPT.refreshRate = 0;
+
+        const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
+        let defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
+        defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
+        if (this._debugEnabled) {
+            defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+        }
+        const ppOptions: PostProcessOptions = {
+            width: this._engine.getRenderWidth(),
+            height: this._engine.getRenderHeight(),
+            uniforms: ["viewMtx", "projMtx", "invProjMtx", "invViewMtx", "wsNormalizationMtx", "shadowParameters", "offsetDataParameters", "sssParameters", "shadowOpacity"],
+            samplers: ["voxelGridSampler", "icdfySampler", "icdfxSampler", "blueNoiseSampler", "worldNormalSampler", "linearDepthSampler", "depthSampler", "worldPositionSampler"],
+            defines: defines,
+            engine: this._engine,
+            reusable: false,
+        };
+        this._outputPP = new PostProcess("voxelTracingPass", "iblShadowVoxelTracing", ppOptions);
+        this._outputPP.autoClear = false;
+        this._outputPP.onApply = (effect) => {
+            this._updatePostProcess(effect, this._scene.activeCamera!);
+        };
     }
 
-    /**
-     * Called by the pipeline. Update all the shader parameters for the pass.
-     */
-    public update() {
-        if (!this._scene.activeCamera) {
-            return;
-        }
-        this._outputPT.setMatrix("viewMtx", this._scene.activeCamera.getViewMatrix());
-        this._outputPT.setMatrix("projMtx", this._scene.activeCamera.getProjectionMatrix());
-        this._scene.activeCamera.getProjectionMatrix().invertToRef(this._cameraInvProj);
-        this._scene.activeCamera.getViewMatrix().invertToRef(this._cameraInvView);
-        this._outputPT.setMatrix("invProjMtx", this._cameraInvProj);
-        this._outputPT.setMatrix("invViewMtx", this._cameraInvView);
-        this._outputPT.setMatrix("wsNormalizationMtx", this._invWorldScaleMatrix);
+    private _updatePostProcess(effect: Effect, camera: Camera) {
+        effect.setMatrix("viewMtx", camera.getViewMatrix());
+        effect.setMatrix("projMtx", camera.getProjectionMatrix());
+        camera.getProjectionMatrix().invertToRef(this._cameraInvProj);
+        camera.getViewMatrix().invertToRef(this._cameraInvView);
+        effect.setMatrix("invProjMtx", this._cameraInvProj);
+        effect.setMatrix("invViewMtx", this._cameraInvView);
+        effect.setMatrix("wsNormalizationMtx", this._invWorldScaleMatrix);
 
         this._frameId++;
 
         const downscaleSquared = this._downscale * this._downscale;
         const rotation = this._scene.useRightHandedSystem ? this._envRotation : (this._envRotation + Math.PI) % (2.0 * Math.PI);
-        this._outputPT.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
+        effect.setVector4("shadowParameters", new Vector4(this._sampleDirections, this._frameId / downscaleSquared, this._downscale, rotation));
         const offset = new Vector2(0.0, 0.0);
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         const highestMip = Math.floor(Math.log2(voxelGrid!.getSize().width));
-        this._outputPT.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
+        effect.setVector4("offsetDataParameters", new Vector4(offset.x, offset.y, highestMip, 0.0));
 
         // SSS Options.
         const worldScale = (1.0 / this._invWorldScaleMatrix.m[0]) * 2.0;
         const maxDist = this._sssMaxDist * worldScale;
         const thickness = this._sssThickness * worldScale;
-        this._outputPT.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
-        this._outputPT.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
-        this._outputPT.setTexture("voxelGridSampler", voxelGrid);
-        this._outputPT.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
-        this._outputPT.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
-        this._outputPT.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
-        this._outputPT.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
+        effect.setVector4("sssParameters", new Vector4(this._sssSamples, this._sssStride, maxDist, thickness));
+        effect.setVector4("shadowOpacity", new Vector4(this._voxelShadowOpacity, this._ssShadowOpacity, 0.0, 0.0));
+        effect.setTexture("voxelGridSampler", voxelGrid);
+        effect.setTexture("blueNoiseSampler", (this._renderPipeline as any)._noiseTexture);
+        effect.setTexture("icdfySampler", this._renderPipeline!.getIcdfyTexture());
+        effect.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
+        effect.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
+        effect.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
         if (this._debugEnabled) {
-            this._outputPT.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
+            effect.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
 
         const prePassRenderer = this._scene.prePassRenderer;
@@ -218,10 +237,10 @@ export class IblShadowsVoxelTracingPass {
             const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
             const clipDepthIndex = prePassRenderer.getIndex(Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE);
             const wPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-            if (wnormalIndex >= 0) this._outputPT.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-            if (depthIndex >= 0) this._outputPT.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
-            if (clipDepthIndex >= 0) this._outputPT.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
-            if (wPositionIndex >= 0) this._outputPT.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
+            if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
+            if (depthIndex >= 0) effect.setTexture("linearDepthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
+            if (clipDepthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[clipDepthIndex]);
+            if (wPositionIndex >= 0) effect.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wPositionIndex]);
         }
     }
 
@@ -229,11 +248,7 @@ export class IblShadowsVoxelTracingPass {
      * Called by the pipeline. Resize the output texture to match the engine render size.
      */
     public resize() {
-        this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
-    }
-
-    private _disposeTextures() {
-        this._outputPT.dispose();
+        // this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
     }
 
     /**
@@ -241,13 +256,13 @@ export class IblShadowsVoxelTracingPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPT.isReady();
+        return this._outputPP.isReady();
     }
 
     /**
      * Disposes the associated resources
      */
     public dispose() {
-        this._disposeTextures();
+        this._outputPP.dispose();
     }
 }
