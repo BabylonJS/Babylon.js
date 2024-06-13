@@ -11,6 +11,7 @@ import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
+import { ProceduralTexture } from "core/Materials";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -29,8 +30,20 @@ export class IblShadowsAccumulationPass {
     private _oldAccumulationRT: RenderTargetTexture;
     private _oldLocalPositionRT: RenderTargetTexture;
 
+    /**
+     * Gets the pass post process
+     * @returns The post process
+     */
     public getPassPP(): PostProcess {
         return this._outputPP;
+    }
+
+    /**
+     * Gets the debug pass post process
+     * @returns The post process
+     */
+    public getDebugPassPP(): PostProcess {
+        return this._debugPass;
     }
 
     private _remenance: number = 0.9;
@@ -98,21 +111,8 @@ export class IblShadowsAccumulationPass {
     }
 
     private _createTextures() {
-        const accumulationOptions: RenderTargetCreationOptions = {
-            generateDepthBuffer: false,
-            generateMipMaps: false,
-            format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_FLOAT,
-            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
-        };
-
-        this._oldAccumulationRT = new RenderTargetTexture(
-            "oldAccumulationRT",
-            { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
-            this._scene,
-            accumulationOptions
-        );
-
+        // Create the local position texture for the previous frame.
+        // We'll copy the previous local position texture to this texture at the start of every frame.
         const localPositionOptions: RenderTargetCreationOptions = {
             generateDepthBuffer: false,
             generateMipMaps: false,
@@ -128,19 +128,18 @@ export class IblShadowsAccumulationPass {
             localPositionOptions
         );
 
-        const localPositionCopyPP = new PostProcess(
-            "Copy Local Position Texture",
-            "pass", // Use the "pass" shader which just outputs the input texture
-            null,
-            null,
-            1.0,
-            null,
-            Texture.NEAREST_SAMPLINGMODE,
-            this._engine,
-            false,
-            "#define PASS_SAMPLER sampler"
-        );
-
+        const localPositionCopyOptions: PostProcessOptions = {
+            width: this._engine.getRenderWidth(),
+            height: this._engine.getRenderHeight(),
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            engine: this._engine,
+            reusable: false,
+            defines: "#define PASS_SAMPLER sampler",
+        };
+        const localPositionCopyPP = new PostProcess("Copy Local Position Texture", "pass", localPositionCopyOptions);
+        localPositionCopyPP.autoClear = false;
         localPositionCopyPP.onApply = (effect) => {
             const prePassRenderer = this._scene!.prePassRenderer;
             const index = prePassRenderer!.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
@@ -149,8 +148,25 @@ export class IblShadowsAccumulationPass {
         this._oldLocalPositionRT.addPostProcess(localPositionCopyPP);
         this._oldLocalPositionRT.skipInitialClear = true;
         this._oldLocalPositionRT.noPrePassRenderer = true;
+
         this._scene.customRenderTargets.push(this._oldLocalPositionRT);
 
+        // Create the accumulation texture for the previous frame.
+        // We'll copy the output of the accumulation pass to this texture at the start of every frame.
+        const accumulationOptions: RenderTargetCreationOptions = {
+            generateDepthBuffer: false,
+            generateMipMaps: false,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            type: Constants.TEXTURETYPE_FLOAT,
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+        };
+
+        this._oldAccumulationRT = new RenderTargetTexture(
+            "oldAccumulationRT",
+            { width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() },
+            this._scene,
+            accumulationOptions
+        );
         const accumulationCopyOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -162,7 +178,7 @@ export class IblShadowsAccumulationPass {
             defines: "#define PASS_SAMPLER sampler",
         };
         const accumulationCopyPP = new PostProcess("Copy Accumulation Texture", "pass", accumulationCopyOptions);
-
+        accumulationCopyPP.autoClear = false;
         accumulationCopyPP.onApply = (effect) => {
             effect.setTextureFromPostProcessOutput("textureSampler", this._outputPP);
         };
@@ -171,6 +187,7 @@ export class IblShadowsAccumulationPass {
         this._oldAccumulationRT.noPrePassRenderer = true;
         this._scene.customRenderTargets.push(this._oldAccumulationRT);
 
+        // Now, create the accumulation pass
         const ppOptions: PostProcessOptions = {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
@@ -190,7 +207,7 @@ export class IblShadowsAccumulationPass {
     }
 
     public _updatePostProcess(effect: Effect) {
-        effect.setVector4("accumulationParameters", new Vector4(this.remenance, 1.0, 0.0, 0.0));
+        effect.setVector4("accumulationParameters", new Vector4(this.remenance, this.reset ? 1.0 : 0.0, 0.0, 0.0));
         effect.setTexture("oldAccumulationSampler", this._oldAccumulationRT);
         effect.setTexture("prevLocalPositionSampler", this._oldLocalPositionRT);
         // effect.setTexture("shadowSampler", this._renderPipeline.getBlurShadowTexture()!);

@@ -210,30 +210,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     }
 
     /**
-     * Returns the raw shadow texture computed by the voxel tracing pass
-     * @returns The raw shadow texture computed by the voxel tracing pass
-     */
-    // public getRawShadowTexture(): ProceduralTexture {
-    //     return this._voxelTracingPass?.getTexture();
-    // }
-
-    // /**
-    //  * Returns the blurred shadow texture computed by the spatial blur pass
-    //  * @returns The blurred shadow texture computed by the spatial blur pass
-    //  */
-    // public getBlurShadowTexture(): ProceduralTexture {
-    //     return this._spatialBlurPass?.getTexture();
-    // }
-
-    // /**
-    //  * Returns the accumulated shadow texture
-    //  * @returns The accumulated shadow texture
-    //  */
-    // public getAccumulatedShadowTexture(): ProceduralTexture {
-    //     return this._accumulationPass?.getTexture();
-    // }
-
-    /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
     public get importanceSamplingDebugEnabled(): boolean {
@@ -461,26 +437,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
         // Create post process that applies the shadows to the scene
         this._createShadowCombinePostProcess();
-        // const originalColorPostProcess = new PassPostProcess(
-        //     "originalSceneColor",
-        //     1.0,
-        //     null,
-        //     Texture.BILINEAR_SAMPLINGMODE,
-        //     scene.getEngine(),
-        //     undefined,
-        //     Constants.TEXTURETYPE_UNSIGNED_BYTE
-        // );
-        // Set up pipeline
-        // this.addEffect(
-        //     new PostProcessRenderEffect(
-        //         scene.getEngine(),
-        //         "sceneColor",
-        //         () => {
-        //             return originalColorPostProcess;
-        //         },
-        //         true
-        //     )
-        // );
+
         this.addEffect(
             new PostProcessRenderEffect(
                 scene.getEngine(),
@@ -511,7 +468,6 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 true
             )
         );
-        // this._shadowCompositePP.inputTexture = originalColorPostProcess._outputTexture!;
         this.addEffect(
             new PostProcessRenderEffect(
                 scene.getEngine(),
@@ -522,6 +478,19 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 true
             )
         );
+        const debugPPs = [this._voxelTracingPass.getDebugPassPP(), this._spatialBlurPass.getDebugPassPP(), this._accumulationPass.getDebugPassPP()];
+        if (debugPPs.find((pp) => pp !== undefined) !== undefined) {
+            this.addEffect(
+                new PostProcessRenderEffect(
+                    scene.getEngine(),
+                    "IBLShadowDebugPPs",
+                    () => {
+                        return debugPPs.filter((pp) => pp !== undefined);
+                    },
+                    true
+                )
+            );
+        }
         scene.postProcessRenderPipelineManager.addPipeline(this);
         if (cameras) {
             scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(name, cameras);

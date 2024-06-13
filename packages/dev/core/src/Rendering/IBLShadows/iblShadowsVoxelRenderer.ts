@@ -142,7 +142,7 @@ export class IblShadowsVoxelRenderer {
                 this._scene.activeCamera, // camera
                 Texture.NEAREST_SAMPLINGMODE, // sampling
                 this._engine, // engine,
-                true
+                false
             );
             this._voxelDebugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
@@ -418,6 +418,14 @@ export class IblShadowsVoxelRenderer {
         });
         if (rtIdx >= 0) {
             this._renderTargets.splice(rtIdx, rts.length);
+        } else {
+            const rtIdx = this._scene.customRenderTargets.findIndex((rt) => {
+                if (rt === rts[0]) return true;
+                return false;
+            });
+            if (rtIdx >= 0) {
+                this._scene.customRenderTargets.splice(rtIdx, rts.length);
+            }
         }
     }
 
@@ -440,7 +448,7 @@ export class IblShadowsVoxelRenderer {
 
         // Add the slab debug RT if needed.
         if (this._voxelDebugEnabled) {
-            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1);
+            this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
         }
 
         this._scene.onAfterRenderTargetsRenderObservable.add(() => {
@@ -479,7 +487,7 @@ export class IblShadowsVoxelRenderer {
         });
     }
 
-    private _addRTsForRender(mrts: RenderTargetTexture[], excludedMeshes: number[], axis: number, shaderType: number = 0) {
+    private _addRTsForRender(mrts: RenderTargetTexture[], excludedMeshes: number[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
         const slabSize = 1.0 / this._computeNumberOfSlabs();
         const meshes = this._scene.meshes;
 
@@ -533,7 +541,11 @@ export class IblShadowsVoxelRenderer {
         });
 
         // Add the MRT's to render.
-        this._renderTargets = this._renderTargets.concat(mrts);
+        if (continuousRender) {
+            this._scene.customRenderTargets = this._scene.customRenderTargets.concat(mrts);
+        } else {
+            this._renderTargets = this._renderTargets.concat(mrts);
+        }
     }
 
     /**
