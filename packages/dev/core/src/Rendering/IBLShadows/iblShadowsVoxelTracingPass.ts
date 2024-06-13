@@ -94,8 +94,21 @@ export class IblShadowsVoxelTracingPass {
     public set envRotation(value: number) {
         this._envRotation = value;
     }
+
+    /**
+     * Gets the pass post process
+     * @returns The post process
+     */
     public getPassPP(): PostProcess {
         return this._outputPP;
+    }
+
+    /**
+     * Gets the debug pass post process
+     * @returns The post process
+     */
+    public getDebugPassPP(): PostProcess {
+        return this._debugPass;
     }
 
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */

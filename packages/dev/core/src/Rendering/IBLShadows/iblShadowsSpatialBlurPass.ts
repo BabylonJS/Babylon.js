@@ -20,9 +20,22 @@ export class IblShadowsSpatialBlurPass {
     private _outputPP: PostProcess;
     private _worldScale: number = 1.0;
 
+    /**
+     * Gets the pass post process
+     * @returns The post process
+     */
     public getPassPP(): PostProcess {
         return this._outputPP;
     }
+
+    /**
+     * Gets the debug pass post process
+     * @returns The post process
+     */
+    public getDebugPassPP(): PostProcess {
+        return this._debugPass;
+    }
+
     public setWorldScale(scale: number) {
         this._worldScale = scale;
     }
