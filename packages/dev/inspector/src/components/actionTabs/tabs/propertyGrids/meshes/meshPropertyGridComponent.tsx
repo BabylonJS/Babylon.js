@@ -786,6 +786,13 @@ export class MeshPropertyGridComponent extends React.Component<
                             propertyName="outlineColor"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
+                        <FloatLineComponent
+                            lockObject={this.props.lockObject}
+                            label="Outline width"
+                            target={mesh}
+                            propertyName="outlineWidth"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
                     </LineContainerComponent>
                 )}
                 <LineContainerComponent title="DEBUG" closed={true} selection={this.props.globalState}>
