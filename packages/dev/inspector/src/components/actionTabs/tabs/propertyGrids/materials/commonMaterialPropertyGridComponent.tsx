@@ -126,7 +126,6 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         options={orientationOptions}
                         target={material}
                         propertyName="sideOrientation"
-                        defaultIfNull={-1}
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         allowNullValue={true}
                         onSelect={(value) => this.setState({ mode: value })}
