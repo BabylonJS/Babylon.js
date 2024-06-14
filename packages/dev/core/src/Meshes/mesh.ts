@@ -444,7 +444,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @internal */
     public _originalBuilderSideOrientation: number = Mesh.DEFAULTSIDE;
 
-    private _sideOrientation: number;
     /**
      * Use this property to change the original side orientation defined at construction time
      * Material.sideOrientation will override this value if set
