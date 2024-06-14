@@ -478,13 +478,14 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     private _sideOrientationHint = false;
 
     public override get material(): Nullable<Material> {
-        return super.material;
+        return this._internalAbstractMeshDataInfo._material;
     }
+
     public override set material(value: Nullable<Material>) {
         if (value && ((this.material && this.material.sideOrientation === null) || this._sideOrientationHint)) {
             value.sideOrientation = null;
         }
-        super.material = value;
+        this._setMaterial(value);
     }
 
     /**
