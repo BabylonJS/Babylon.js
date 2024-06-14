@@ -455,7 +455,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public set sideOrientation(value: number) {
         this._sideOrientation = value;
 
-        this._sideOrientationHint = value === Constants.MATERIAL_ClockWiseSideOrientation;
+        this._sideOrientationHint =
+            (this._scene.useRightHandedSystem && value === Constants.MATERIAL_CounterClockWiseSideOrientation) ||
+            (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
     }
 
     /**
@@ -470,7 +472,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * This value will indicate us that at some point, the mesh was specifically used with a CW winding order
+     * This value will indicate us that at some point, the mesh was specifically used with the opposite winding order
      * We use that as a clue to force the material to sideOrientation = null
      */
     private _sideOrientationHint = false;
