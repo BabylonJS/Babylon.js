@@ -449,6 +449,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public sideOrientation: number;
 
     /**
+     * @deprecated Please use sideOrientation instead.
+     * @see https://doc.babylonjs.com/breaking-changes#7110
+     */
+    public get overrideMaterialSideOrientation() {
+        return this.sideOrientation;
+    }
+
+    public set overrideMaterialSideOrientation(value: number) {
+        this.sideOrientation = value;
+        if (this.material) {
+            this.material.sideOrientation = null;
+        }
+    }
+
+    /**
      * Use this property to override the Material's fillMode value
      */
     public get overrideRenderingFillMode(): Nullable<number> {
