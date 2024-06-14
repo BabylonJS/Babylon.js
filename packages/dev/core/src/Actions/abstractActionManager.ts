@@ -25,6 +25,11 @@ export abstract class AbstractActionManager implements IDisposable {
     public isRecursive = false;
 
     /**
+     * Gets or sets a boolean indicating if the manager triggers should be cleared once the it's no longer owned
+     */
+    public disposeWhenUnowned = true;
+
+    /**
      * Releases all associated resources
      */
     public abstract dispose(): void;

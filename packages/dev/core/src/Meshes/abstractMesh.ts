@@ -2078,7 +2078,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         }
 
         // Action manager
-        if (this.actionManager !== undefined && this.actionManager !== null) {
+        if (this.actionManager !== undefined && this.actionManager !== null && this.actionManager.disposeWhenUnowned) {
             // If it's the only mesh using the action manager, dispose of it.
             if (!this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
                 this.actionManager.dispose();
