@@ -151,6 +151,8 @@ class _InternalMeshDataInfo {
     public _forcedInstanceCount: number = 0;
 
     public _overrideRenderingFillMode: Nullable<number> = null;
+
+    public _sideOrientation: number;
 }
 
 /**
@@ -449,15 +451,30 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
      * User will still be able to change the material sideOrientation afterwards if they really need it
      */
     public get sideOrientation(): number {
-        return this._sideOrientation;
+        return this._internalMeshDataInfo._sideOrientation;
     }
 
     public set sideOrientation(value: number) {
-        this._sideOrientation = value;
+        this._internalMeshDataInfo._sideOrientation = value;
 
-        this._sideOrientationHint =
+        this._internalAbstractMeshDataInfo._sideOrientationHint =
             (this._scene.useRightHandedSystem && value === Constants.MATERIAL_CounterClockWiseSideOrientation) ||
             (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
+    }
+
+    /**
+     * @deprecated Please use sideOrientation instead.
+     * @see https://doc.babylonjs.com/breaking-changes#7110
+     */
+    public get overrideMaterialSideOrientation() {
+        return this.sideOrientation;
+    }
+
+    public set overrideMaterialSideOrientation(value: number) {
+        this.sideOrientation = value;
+        if (this.material) {
+            this.material.sideOrientation = null;
+        }
     }
 
     /**
@@ -471,18 +488,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
     }
 
-    /**
-     * This value will indicate us that at some point, the mesh was specifically used with the opposite winding order
-     * We use that as a clue to force the material to sideOrientation = null
-     */
-    private _sideOrientationHint = false;
-
     public override get material(): Nullable<Material> {
         return this._internalAbstractMeshDataInfo._material;
     }
 
     public override set material(value: Nullable<Material>) {
-        if (value && ((this.material && this.material.sideOrientation === null) || this._sideOrientationHint)) {
+        if (value && ((this.material && this.material.sideOrientation === null) || this._internalAbstractMeshDataInfo._sideOrientationHint)) {
             value.sideOrientation = null;
         }
         this._setMaterial(value);

@@ -116,6 +116,11 @@ class _InternalAbstractMeshDataInfo {
      * Bounding info that is unnafected by the addition of thin instances
      */
     public _rawBoundingInfo: Nullable<BoundingInfo> = null;
+    /**
+     * This value will indicate us that at some point, the mesh was specifically used with the opposite winding order
+     * We use that as a clue to force the material to sideOrientation = null
+     */
+    public _sideOrientationHint = false;
 }
 
 /**
