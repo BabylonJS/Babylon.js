@@ -151,6 +151,8 @@ class _InternalMeshDataInfo {
     public _forcedInstanceCount: number = 0;
 
     public _overrideRenderingFillMode: Nullable<number> = null;
+
+    public _sideOrientation: number;
 }
 
 /**
@@ -445,8 +447,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * Use this property to change the original side orientation defined at construction time
      * Material.sideOrientation will override this value if set
+     * User will still be able to change the material sideOrientation afterwards if they really need it
      */
-    public sideOrientation: number;
+    public get sideOrientation(): number {
+        return this._internalMeshDataInfo._sideOrientation;
+    }
+
+    public set sideOrientation(value: number) {
+        this._internalMeshDataInfo._sideOrientation = value;
+
+        this._internalAbstractMeshDataInfo._sideOrientationHint =
+            (this._scene.useRightHandedSystem && value === Constants.MATERIAL_CounterClockWiseSideOrientation) ||
+            (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
+    }
 
     /**
      * @deprecated Please use sideOrientation instead.
@@ -472,6 +485,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set overrideRenderingFillMode(fillMode: Nullable<number>) {
         this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
+    }
+
+    public override get material(): Nullable<Material> {
+        return this._internalAbstractMeshDataInfo._material;
+    }
+
+    public override set material(value: Nullable<Material>) {
+        if (value && ((this.material && this.material.sideOrientation === null) || this._internalAbstractMeshDataInfo._sideOrientationHint)) {
+            value.sideOrientation = null;
+        }
+        this._setMaterial(value);
     }
 
     /**
