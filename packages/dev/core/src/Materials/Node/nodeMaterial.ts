@@ -2227,6 +2227,9 @@ export class NodeMaterial extends PushMaterial {
 
         const map: { [key: number]: NodeMaterialBlock } = {};
 
+        // We reset sideOrientation to default value
+        this.sideOrientation = null;
+
         // Create blocks
         for (const parsedBlock of source.blocks) {
             const blockType = GetClass(parsedBlock.customType);
