@@ -462,17 +462,19 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             onSelect={(value) => this.changeMode(value)}
                             propertyName={""}
                         />
-                        <OptionsLine
-                            label="Engine"
-                            target={this}
-                            extractValue={() => this.props.globalState.engine}
-                            options={engineList}
-                            onSelect={(value) => {
-                                this.props.globalState.engine = value as number;
-                                this.forceUpdate();
-                            }}
-                            propertyName={""}
-                        />
+                        {this.props.globalState.customSave && (
+                            <OptionsLine
+                                label="Engine"
+                                target={this}
+                                extractValue={() => this.props.globalState.engine}
+                                options={engineList}
+                                onSelect={(value) => {
+                                    this.props.globalState.engine = value as number;
+                                    this.forceUpdate();
+                                }}
+                                propertyName={""}
+                            />
+                        )}
                         <TextLineComponent label="Version" value={Engine.Version} />
                         <TextLineComponent
                             label="Help"
