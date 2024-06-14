@@ -442,11 +442,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @internal */
     public _originalBuilderSideOrientation: number = Mesh.DEFAULTSIDE;
 
+    private _sideOrientation: number;
     /**
      * Use this property to change the original side orientation defined at construction time
      * Material.sideOrientation will override this value if set
+     * User will still be able to change the material sideOrientation afterwards if they really need it
      */
-    public sideOrientation: number;
+    public get sideOrientation(): number {
+        return this._sideOrientation;
+    }
+
+    public set sideOrientation(value: number) {
+        this._sideOrientation = value;
+
+        this._sideOrientationHint = value === Constants.MATERIAL_ClockWiseSideOrientation;
+    }
 
     /**
      * Use this property to override the Material's fillMode value
@@ -457,6 +467,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set overrideRenderingFillMode(fillMode: Nullable<number>) {
         this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
+    }
+
+    /**
+     * This value will indicate us that at some point, the mesh was specifically used with a CW winding order
+     * We use that as a clue to force the material to sideOrientation = null
+     */
+    private _sideOrientationHint = false;
+
+    public override get material(): Nullable<Material> {
+        return super.material;
+    }
+    public override set material(value: Nullable<Material>) {
+        if (value && ((this.material && this.material.sideOrientation === null) || this._sideOrientationHint)) {
+            value.sideOrientation = null;
+        }
+        super.material = value;
     }
 
     /**
