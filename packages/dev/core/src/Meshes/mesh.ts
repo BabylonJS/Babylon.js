@@ -4109,6 +4109,11 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh.ellipsoidOffset = Vector3.FromArray(parsedMesh.ellipsoidOffset);
         }
 
+        // For Backward compatibility ("!=" to exclude null and undefined)
+        if (parsedMesh.overrideMaterialSideOrientation != null) {
+            mesh.sideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        }
+
         if (parsedMesh.sideOrientation !== undefined) {
             mesh.sideOrientation = parsedMesh.sideOrientation;
         }
