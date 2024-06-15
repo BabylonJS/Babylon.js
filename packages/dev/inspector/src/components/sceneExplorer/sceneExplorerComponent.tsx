@@ -313,7 +313,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                 defaultMenuItems.push({
                     label: "Add new IBL Shadows Rendering Pipeline",
                     action: () => {
-                        const newPipeline = new IblShadowsRenderPipeline("IBL Shadows rendering pipeline", scene);
+                        const newPipeline = new IblShadowsRenderPipeline("IBL Shadows rendering pipeline", scene, {}, scene.cameras);
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(newPipeline);
                     },
                 });

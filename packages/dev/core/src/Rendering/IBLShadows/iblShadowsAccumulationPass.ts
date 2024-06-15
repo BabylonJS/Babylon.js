@@ -1,7 +1,6 @@
 import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
-import { Texture } from "../../Materials/Textures/texture";
 import { Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowAccumulation.fragment";
@@ -11,7 +10,6 @@ import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import type { Effect } from "../../Materials/effect";
 import { RenderTargetTexture } from "../../Materials/Textures/renderTargetTexture";
 import type { RenderTargetCreationOptions } from "../../Materials/Textures/textureCreationOptions";
-import { ProceduralTexture } from "core/Materials";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
@@ -19,11 +17,6 @@ import { ProceduralTexture } from "core/Materials";
 export class IblShadowsAccumulationPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
-    // private _renderPipeline: IblShadowsRenderPipeline;
-
-    // We need two accumulation targets, each RG32F. One will be the procedural texture and the other will have this copied to it.
-    // We need one local position target and then another from the prepass renderer
-    // We'll access the motion buffer from the prepass renderer
 
     // First, render the accumulation pass with both position buffers, motion buffer, shadow buffer, and the previous accumulation buffer
     private _outputPP: PostProcess;
@@ -43,7 +36,15 @@ export class IblShadowsAccumulationPass {
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
+        if (!this._debugPass) {
+            this._createDebugPass();
+        }
         return this._debugPass;
+    }
+
+    private _debugPassName: string = "Shadow Accumulation Debug Pass";
+    public get debugPassName(): string {
+        return this._debugPassName;
     }
 
     private _remenance: number = 0.9;
@@ -66,28 +67,24 @@ export class IblShadowsAccumulationPass {
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
-    private _debugEnabled: boolean = false;
 
-    public get debugEnabled(): boolean {
-        return this._debugEnabled;
-    }
-
-    public set debugEnabled(enabled: boolean) {
-        if (this._debugEnabled === enabled) {
-            return;
-        }
-        this._debugEnabled = enabled;
-        if (enabled) {
-            this._debugPass = new PostProcess(
-                "Shadow Accumulation Pass Debug",
-                "iblShadowDebug",
-                ["sizeParams"], // attributes
-                ["debugSampler"], // textures
-                1.0, // options
-                this._scene.activeCamera, // camera
-                Texture.BILINEAR_SAMPLINGMODE, // sampling
-                this._engine // engine
-            );
+    /**
+     * Creates the debug post process effect for this pass
+     */
+    private _createDebugPass() {
+        if (!this._debugPass) {
+            const debugOptions: PostProcessOptions = {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                uniforms: ["sizeParams"],
+                samplers: ["debugSampler"],
+                engine: this._engine,
+                reusable: false,
+            };
+            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPass.autoClear = false;
             this._debugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
@@ -100,13 +97,11 @@ export class IblShadowsAccumulationPass {
     /**
      * Instantiates the accumulation pass
      * @param scene Scene to attach to
-     * @param iblShadowsRenderPipeline The render pipeline this pass is associated with
      * @returns The accumulation pass
      */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        // this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -226,7 +221,6 @@ export class IblShadowsAccumulationPass {
 
     /** Called by render pipeline when canvas resized. */
     public resize() {
-        // this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
         this._oldAccumulationRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
         this._oldLocalPositionRT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() });
     }
@@ -250,5 +244,8 @@ export class IblShadowsAccumulationPass {
     public dispose() {
         this._disposeTextures();
         this._outputPP.dispose();
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
     }
 }

@@ -1,7 +1,6 @@
 import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
-import { Texture } from "../../Materials/Textures/texture";
 import { Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowSpatialBlur.fragment";
@@ -33,7 +32,14 @@ export class IblShadowsSpatialBlurPass {
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
+        if (!this._debugPass) {
+            this._createDebugPass();
+        }
         return this._debugPass;
+    }
+    private _debugPassName: string = "Spatial Blur Debug Pass";
+    public get debugPassName(): string {
+        return this._debugPassName;
     }
 
     public setWorldScale(scale: number) {
@@ -45,28 +51,24 @@ export class IblShadowsSpatialBlurPass {
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
-    private _debugEnabled: boolean = false;
 
-    public get debugEnabled(): boolean {
-        return this._debugEnabled;
-    }
-
-    public set debugEnabled(enabled: boolean) {
-        if (this._debugEnabled === enabled) {
-            return;
-        }
-        this._debugEnabled = enabled;
-        if (enabled) {
-            this._debugPass = new PostProcess(
-                "Shadow Spatial Blur Pass Debug",
-                "iblShadowDebug",
-                ["sizeParams"], // attributes
-                ["debugSampler"], // textures
-                1.0, // options
-                this._scene.activeCamera, // camera
-                Texture.BILINEAR_SAMPLINGMODE, // sampling
-                this._engine // engine
-            );
+    /**
+     * Creates the debug post process effect for this pass
+     */
+    private _createDebugPass() {
+        if (!this._debugPass) {
+            const debugOptions: PostProcessOptions = {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                uniforms: ["sizeParams"],
+                samplers: ["debugSampler"],
+                engine: this._engine,
+                reusable: false,
+            };
+            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPass.autoClear = false;
             this._debugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
@@ -79,13 +81,11 @@ export class IblShadowsSpatialBlurPass {
     /**
      * Instanciates the importance sampling renderer
      * @param scene Scene to attach to
-     * @param iblShadowsRenderPipeline The IBL shadows render pipeline
      * @returns The importance sampling renderer
      */
     constructor(scene: Scene) {
         this._scene = scene;
         this._engine = scene.getEngine();
-        // this._renderPipeline = iblShadowsRenderPipeline;
         this._createTextures();
     }
 
@@ -129,16 +129,12 @@ export class IblShadowsSpatialBlurPass {
     }
 
     /**
-     * Resizes the output texture to match the engine render size
-     */
-    public resize() {
-        // this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
-    }
-
-    /**
      * Disposes the associated resources
      */
     public dispose() {
         this._outputPP.dispose();
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
     }
 }
