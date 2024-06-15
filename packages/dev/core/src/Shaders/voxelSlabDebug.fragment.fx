@@ -15,6 +15,6 @@ void main(void) {
       normPos.x > 1.0 || normPos.y > 1.0 || normPos.z > 1.0) {
     gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
   } else {
-    gl_FragColor = vec4(slab, 0.0, 0.0, 1.0);
+    gl_FragColor = vec4(slab, 0.0, 0.0, 0.75);
   }
 }

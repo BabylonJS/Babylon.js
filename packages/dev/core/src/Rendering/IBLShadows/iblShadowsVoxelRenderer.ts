@@ -105,7 +105,7 @@ export class IblShadowsVoxelRenderer {
         if (this._voxelResolutionExp === resolutionExp) {
             return;
         }
-        this._voxelResolutionExp = Math.min(Math.max(resolutionExp, 4), 9);
+        this._voxelResolutionExp = Math.round(Math.min(Math.max(resolutionExp, 4), 9));
         this._voxelResolution = Math.pow(2.0, this._voxelResolutionExp);
         this._disposeVoxelTextures();
         this._createTextures();
@@ -474,26 +474,30 @@ export class IblShadowsVoxelRenderer {
             this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
         }
 
-        this._scene.onAfterRenderTargetsRenderObservable.add(() => {
-            if (this._voxelizationInProgress) {
-                const allRTsReady = this._renderTargets.every((rt) => rt.isReadyForRendering());
-                if (allRTsReady) {
-                    this._renderTargets.forEach((rt) => {
-                        rt.render();
-                    });
-                    this._stopVoxelization();
+        (this as any).poop = this._renderVoxelGrid.bind(this);
+        this._scene.onAfterRenderTargetsRenderObservable.add((this as any).poop);
+    }
 
-                    if (this._triPlanarVoxelization) {
-                        // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
-                        this._voxelGridRT._generateMipMaps = false;
-                        this._voxelGridRT.render();
-                    }
-                    this._generateMipMaps();
+    private _renderVoxelGrid() {
+        if (this._voxelizationInProgress) {
+            const allRTsReady = this._renderTargets.every((rt) => rt.isReadyForRendering());
+            if (allRTsReady) {
+                this._renderTargets.forEach((rt) => {
+                    rt.render();
+                });
+                this._stopVoxelization();
 
-                    this._voxelizationInProgress = false;
+                if (this._triPlanarVoxelization) {
+                    // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
+                    this._voxelGridRT._generateMipMaps = false;
+                    this._voxelGridRT.render();
                 }
+                this._generateMipMaps();
+
+                this._voxelizationInProgress = false;
+                this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).poop);
             }
-        });
+        }
     }
 
     private _addRTsForRender(mrts: RenderTargetTexture[], excludedMeshes: number[], axis: number, shaderType: number = 0, continuousRender: boolean = false) {
