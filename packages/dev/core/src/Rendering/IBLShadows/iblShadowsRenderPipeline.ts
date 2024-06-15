@@ -224,9 +224,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Turn on or off the debug view of the CDF importance sampling data
      */
-    // public get importanceSamplingDebugEnabled(): boolean {
-    //     return this._importanceSamplingRenderer.debugEnabled;
-    // }
+    public get importanceSamplingDebugEnabled(): boolean {
+        return this._importanceSamplingRenderer.debugEnabled;
+    }
 
     /**
      * Turn on or off the debug view of the CDF importance sampling data
@@ -236,6 +236,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("Can't enable importance sampling debug view without setting allowDebugPasses to true.");
             return;
         }
+        if (enabled === this._importanceSamplingRenderer.debugEnabled) return;
+        this._importanceSamplingRenderer.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._importanceSamplingRenderer.debugPassName, this.cameras);
         } else {
@@ -292,9 +294,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Display the debug view for the voxel tracing pass
      */
-    // public get voxelTracingDebugEnabled(): boolean {
-    //     return this._voxelTracingPass?.debugEnabled;
-    // }
+    public get voxelTracingDebugEnabled(): boolean {
+        return this._voxelTracingPass?.debugEnabled;
+    }
 
     /**
      * Display the debug view for the voxel tracing pass
@@ -304,6 +306,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("Can't enable voxel tracing debug view without setting allowDebugPasses to true.");
             return;
         }
+        if (enabled === this._voxelTracingPass.debugEnabled) return;
+        this._voxelTracingPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._voxelTracingPass.debugPassName, this.cameras);
         } else {
@@ -314,9 +318,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Display the debug view for the spatial blur pass
      */
-    // public get spatialBlurPassDebugEnabled(): boolean {
-    //     return this._renderEffects[this._spatialBlurPass.getDebugPassPP().name]?._enable () ?? false;
-    // }
+    public get spatialBlurPassDebugEnabled(): boolean {
+        return this._spatialBlurPass.debugEnabled;
+    }
 
     /**
      * Display the debug view for the spatial blur pass
@@ -326,6 +330,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("Can't enable spatial blur debug view without setting allowDebugPasses to true.");
             return;
         }
+        if (enabled === this._spatialBlurPass.debugEnabled) return;
+        this._spatialBlurPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._spatialBlurPass.debugPassName, this.cameras);
         } else {
@@ -336,9 +342,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
     /**
      * Display the debug view for the accumulation pass
      */
-    // public get accumulationPassDebugEnabled(): boolean {
-    //     return (<any>this._renderEffects)[this._accumulationPass.getDebugPassPP().name]?.getEnabled() ?? false;
-    // }
+    public get accumulationPassDebugEnabled(): boolean {
+        return this._accumulationPass.debugEnabled;
+    }
 
     /**
      * Display the debug view for the accumulation pass
@@ -348,6 +354,8 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             Logger.Warn("Can't enable accumulation pass debug view without setting allowDebugPasses to true.");
             return;
         }
+        if (enabled === this._accumulationPass.debugEnabled) return;
+        this._accumulationPass.debugEnabled = enabled;
         if (enabled) {
             this._enableEffect(this._accumulationPass.debugPassName, this.cameras);
         } else {
@@ -392,8 +400,12 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public set resolutionExp(newResolution: number) {
         if (newResolution === this._voxelRenderer.voxelResolutionExp) return;
+        if (this._voxelRenderer.isVoxelizationInProgress()) {
+            Logger.Warn("Can't change the resolution of the voxel grid while voxelization is in progress.");
+            return;
+        }
         this._voxelRenderer.voxelResolutionExp = newResolution;
-        this._voxelizationDirty = true;
+        this.updateVoxelization();
     }
 
     /**
@@ -609,8 +621,9 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 )
             );
         }
+        const cameras = this.cameras.slice();
         this.scene.postProcessRenderPipelineManager.detachCamerasFromRenderPipeline(this.name, this.cameras);
-        this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, this.cameras);
+        this.scene.postProcessRenderPipelineManager.attachCamerasToRenderPipeline(this.name, cameras);
         for (let i = 0; i < this._debugPasses.length; i++) {
             this._disableEffect(this._debugPasses[i].name, this.cameras);
         }
@@ -758,11 +771,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
                 }
                 if (this._accumulationPass) {
                     if (isMoving) {
-                        this._accumulationPass.reset = true;
-                        this._accumulationPass.remenance = 1.0;
+                        // this._accumulationPass.reset = true;
+                        // this._accumulationPass.remenance = 1.0;
                     } else {
-                        this._accumulationPass.reset = false;
-                        this._accumulationPass.remenance = 0.9;
+                        // this._accumulationPass.reset = false;
+                        // this._accumulationPass.remenance = 0.9;
                     }
                 }
             });

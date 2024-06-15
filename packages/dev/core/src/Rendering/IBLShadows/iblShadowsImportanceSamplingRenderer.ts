@@ -55,6 +55,8 @@ export class IblShadowsImportanceSamplingRenderer {
         return this._icdfxPT;
     }
 
+    /** Enable the debug view for this pass */
+    public debugEnabled: boolean = false;
     private _debugPass: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
@@ -168,6 +170,10 @@ export class IblShadowsImportanceSamplingRenderer {
             defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
         };
         this._debugPass = new PostProcess(this._debugPassName, "iblShadowsImportanceSamplingDebug", debugOptions);
+        this._debugPass.getEffect().defines = this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "";
+        if (this._iblSource?.isCube) {
+            this._debugPass.updateEffect("#define IBL_USE_CUBE_MAP\n");
+        }
         this._debugPass.onApply = (effect) => {
             effect.setTexture("cdfy", this._cdfyPT);
             effect.setTexture("icdfy", this._icdfyPT);
@@ -175,9 +181,6 @@ export class IblShadowsImportanceSamplingRenderer {
             effect.setTexture("icdfx", this._icdfxPT);
             effect.setTexture("iblSource", this._iblSource);
             effect.setFloat4("sizeParams", this._debugSizeParams.x, this._debugSizeParams.y, this._debugSizeParams.z, this._debugSizeParams.w);
-            if (this._iblSource!.isCube) {
-                effect.defines = "#define IBL_USE_CUBE_MAP\n";
-            }
         };
     }
 

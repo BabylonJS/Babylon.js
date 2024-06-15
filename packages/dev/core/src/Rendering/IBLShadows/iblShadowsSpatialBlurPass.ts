@@ -46,6 +46,8 @@ export class IblShadowsSpatialBlurPass {
         this._worldScale = scale;
     }
 
+    /** Enable the debug view for this pass */
+    public debugEnabled: boolean = false;
     private _debugPass: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
