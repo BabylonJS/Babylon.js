@@ -1,7 +1,6 @@
 import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
-import { Texture } from "../../Materials/Textures/texture";
 import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
 // import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowVoxelTracing.fragment";
@@ -104,11 +103,20 @@ export class IblShadowsVoxelTracingPass {
     }
 
     /**
-     * Gets the debug pass post process
+     * Gets the debug pass post process. This will create the resources for the pass
+     * if they don't already exist.
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
+        if (!this._debugPass) {
+            this._createDebugPass();
+        }
         return this._debugPass;
+    }
+
+    private _debugPassName: string = "Voxel Tracing Debug Pass";
+    public get debugPassName(): string {
+        return this._debugPassName;
     }
 
     /** The default rotation of the environment map will align the shadows with the default lighting orientation */
@@ -119,33 +127,27 @@ export class IblShadowsVoxelTracingPass {
         this._invWorldScaleMatrix = matrix;
     }
 
+    private _debugVoxelMarchEnabled: boolean = false;
     private _debugPass: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
-    private _debugEnabled: boolean = false;
 
-    public get debugEnabled(): boolean {
-        return this._debugEnabled;
-    }
-
-    public set debugEnabled(enabled: boolean) {
-        if (this._debugEnabled === enabled) {
-            return;
-        }
-        this._debugEnabled = enabled;
-        if (enabled) {
-            this._debugPass = new PostProcess(
-                "Shadow Voxel Tracing Pass Debug",
-                "iblShadowDebug",
-                ["sizeParams"], // attributes
-                ["debugSampler"], // textures
-                1.0, // options
-                this._scene.activeCamera, // camera
-                Texture.BILINEAR_SAMPLINGMODE, // sampling
-                this._engine // engine
-            );
+    /**
+     * Creates the debug post process effect for this pass
+     */
+    private _createDebugPass() {
+        if (!this._debugPass) {
+            const debugOptions: PostProcessOptions = {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+                uniforms: ["sizeParams"],
+                samplers: ["debugSampler"],
+                engine: this._engine,
+                reusable: false,
+            };
+            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
             this._debugPass.autoClear = false;
             this._debugPass.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
@@ -190,7 +192,7 @@ export class IblShadowsVoxelTracingPass {
         const voxelGrid = this._renderPipeline!.getVoxelGridTexture();
         let defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
         defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
-        if (this._debugEnabled) {
+        if (this._debugVoxelMarchEnabled) {
             defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
         const ppOptions: PostProcessOptions = {
@@ -240,7 +242,7 @@ export class IblShadowsVoxelTracingPass {
         effect.setTexture("icdfxSampler", this._renderPipeline!.getIcdfxTexture());
         effect.defines = "#define VOXEL_MARCHING_NUM_MIPS " + Math.log2(voxelGrid!.getSize().width).toFixed(0) + "u\n";
         effect.defines += "#define VOXEL_GRID_RESOLUTION " + voxelGrid!.getSize().width.toFixed(0) + "u\n";
-        if (this._debugEnabled) {
+        if (this._debugVoxelMarchEnabled) {
             effect.defines += "#define VOXEL_MARCH_DIAGNOSTIC_INFO_OPTION 1u\n";
         }
 
@@ -258,13 +260,6 @@ export class IblShadowsVoxelTracingPass {
     }
 
     /**
-     * Called by the pipeline. Resize the output texture to match the engine render size.
-     */
-    public resize() {
-        // this._outputPT.resize({ width: this._engine.getRenderWidth(), height: this._engine.getRenderHeight() }, false);
-    }
-
-    /**
      * Checks if the pass is ready
      * @returns true if the pass is ready
      */
@@ -277,5 +272,8 @@ export class IblShadowsVoxelTracingPass {
      */
     public dispose() {
         this._outputPP.dispose();
+        if (this._debugPass) {
+            this._debugPass.dispose();
+        }
     }
 }

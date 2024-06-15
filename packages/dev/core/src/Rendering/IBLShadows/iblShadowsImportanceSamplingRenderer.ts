@@ -14,8 +14,10 @@ import "../../Shaders/iblShadowsIcdfx.fragment";
 import "../../Shaders/iblShadowsCdfy.fragment";
 import "../../Shaders/iblShadowsIcdfy.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { Vector4 } from "../../Maths/math.vector";
 import { RawTexture } from "../../Materials/Textures/rawTexture";
+import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
@@ -29,11 +31,11 @@ export class IblShadowsImportanceSamplingRenderer {
     private _icdfyPT: ProceduralTexture;
     private _cdfxPT: ProceduralTexture;
     private _icdfxPT: ProceduralTexture;
-    private _iblSource: Texture;
-    public get iblSource(): Texture {
+    private _iblSource: BaseTexture;
+    public get iblSource(): BaseTexture {
         return this._iblSource;
     }
-    public set iblSource(source: Texture) {
+    public set iblSource(source: BaseTexture) {
         if (this._iblSource === source) {
             return;
         }
@@ -42,6 +44,7 @@ export class IblShadowsImportanceSamplingRenderer {
         this._createTextures();
 
         if (this._debugPass) {
+            // Recreate the debug pass because of the new textures
             this._createDebugPass();
         }
     }
@@ -53,27 +56,25 @@ export class IblShadowsImportanceSamplingRenderer {
     }
 
     private _debugPass: PostProcess;
-    private _debugEnabled: boolean = false;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
     }
-    public get debugEnabled(): boolean {
-        return this._debugEnabled;
+
+    private _debugPassName: string = "Importance Sample Debug";
+    public get debugPassName(): string {
+        return this._debugPassName;
     }
 
-    public set debugEnabled(enabled: boolean) {
-        if (this._debugEnabled === enabled) {
-            return;
-        }
-        this._debugEnabled = enabled;
-        if (enabled) {
+    /**
+     * Gets the debug pass post process
+     * @returns The post process
+     */
+    public getDebugPassPP(): PostProcess {
+        if (!this._debugPass) {
             this._createDebugPass();
-        } else {
-            if (this._debugPass) {
-                this._debugPass.dispose();
-            }
         }
+        return this._debugPass;
     }
 
     /**
@@ -100,7 +101,7 @@ export class IblShadowsImportanceSamplingRenderer {
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
-            this._iblSource.isBlocking = true;
+            (this._iblSource as RawTexture).isBlocking = true;
         }
 
         if (this._iblSource!.isCube) {
@@ -125,7 +126,7 @@ export class IblShadowsImportanceSamplingRenderer {
         };
         this._cdfyPT = new ProceduralTexture("cdfyTexture", { width: size.width, height: size.height + 1 }, "iblShadowsCdfy", this._scene, cdfOptions, false, false);
         this._cdfyPT.autoClear = false;
-        this._cdfyPT.setTexture("iblSource", this._iblSource);
+        this._cdfyPT.setTexture("iblSource", this._iblSource as Texture);
         this._cdfyPT.setInt("iblHeight", size.height);
         if (this._iblSource.isCube) {
             this._cdfyPT.defines = "#define IBL_USE_CUBE_MAP\n";
@@ -156,18 +157,17 @@ export class IblShadowsImportanceSamplingRenderer {
         if (this._debugPass) {
             this._debugPass.dispose();
         }
-        this._debugPass = new PostProcess(
-            "Importance Sample Debug",
-            "importanceSamplingDebug",
-            ["sizeParams"], // attributes
-            ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"], // textures
-            1.0, // options
-            this._scene.activeCamera, // camera
-            Texture.BILINEAR_SAMPLINGMODE, // sampling
-            this._engine,
-            true,
-            this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : ""
-        );
+        const debugOptions: PostProcessOptions = {
+            width: this._scene.getEngine().getRenderWidth(),
+            height: this._scene.getEngine().getRenderHeight(),
+            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+            engine: this._engine,
+            textureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            uniforms: ["sizeParams"],
+            samplers: ["cdfy", "icdfy", "cdfx", "icdfx", "iblSource"],
+            defines: this._iblSource?.isCube ? "#define IBL_USE_CUBE_MAP\n" : "",
+        };
+        this._debugPass = new PostProcess(this._debugPassName, "iblShadowsImportanceSamplingDebug", debugOptions);
         this._debugPass.onApply = (effect) => {
             effect.setTexture("cdfy", this._cdfyPT);
             effect.setTexture("icdfy", this._icdfyPT);
