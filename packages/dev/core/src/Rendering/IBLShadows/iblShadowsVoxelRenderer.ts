@@ -22,6 +22,7 @@ import "../../Shaders/combineVoxelGrids.fragment";
 import "../../Shaders/generateVoxelMip.fragment";
 
 import { PostProcess } from "../../PostProcesses/postProcess";
+import type { PostProcessOptions } from "../../PostProcesses/postProcess";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import { EffectRenderer, EffectWrapper } from "../../Materials/effectRenderer";
 import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
@@ -49,6 +50,13 @@ export class IblShadowsVoxelRenderer {
             return this._voxelGridZaxis;
         }
     }
+    public getDebugPassPP(): PostProcess {
+        if (!this._voxelDebugPass) {
+            this._createDebugPass();
+        }
+        return this._voxelDebugPass;
+    }
+
     private _maxDrawBuffers: number;
     private _renderTargets: RenderTargetTexture[] = [];
 
@@ -87,16 +95,18 @@ export class IblShadowsVoxelRenderer {
     }
 
     private _voxelResolution: number = 64;
+    private _voxelResolutionExp: number = 6;
 
-    public get voxelResolution(): number {
-        return this._voxelResolution;
+    public get voxelResolutionExp(): number {
+        return this._voxelResolutionExp;
     }
 
-    public set voxelResolution(resolution: number) {
-        if (this._voxelResolution === resolution) {
+    public set voxelResolutionExp(resolutionExp: number) {
+        if (this._voxelResolutionExp === resolutionExp) {
             return;
         }
-        this._voxelResolution = resolution;
+        this._voxelResolutionExp = Math.min(Math.max(resolutionExp, 4), 9);
+        this._voxelResolution = Math.pow(2.0, this._voxelResolutionExp);
         this._disposeVoxelTextures();
         this._createTextures();
     }
@@ -123,6 +133,10 @@ export class IblShadowsVoxelRenderer {
     public setDebugMipNumber(mipNum: number) {
         this._debugMipNumber = mipNum;
     }
+    private _debugPassName: string = "Voxelization Debug Pass";
+    public get debugPassName(): string {
+        return this._debugPassName;
+    }
     public get voxelDebugEnabled(): boolean {
         return this._voxelDebugEnabled;
     }
@@ -133,32 +147,6 @@ export class IblShadowsVoxelRenderer {
         }
         this._voxelDebugEnabled = enabled;
         if (enabled) {
-            this._voxelDebugPass = new PostProcess(
-                "Final compose shader",
-                this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug",
-                ["sizeParams", "mipNumber"], // attributes
-                ["voxelTexture", "voxelSlabTexture"], // textures
-                1.0, // options
-                this._scene.activeCamera, // camera
-                Texture.NEAREST_SAMPLINGMODE, // sampling
-                this._engine, // engine,
-                false
-            );
-            this._voxelDebugPass.onApply = (effect) => {
-                // update the caustic texture with what we just rendered.
-                if (this._voxelDebugAxis === 0) {
-                    effect.setTexture("voxelTexture", this._voxelGridXaxis);
-                } else if (this._voxelDebugAxis === 1) {
-                    effect.setTexture("voxelTexture", this._voxelGridYaxis);
-                } else if (this._voxelDebugAxis === 2) {
-                    effect.setTexture("voxelTexture", this._voxelGridZaxis);
-                } else {
-                    effect.setTexture("voxelTexture", this.getVoxelGrid());
-                }
-                effect.setTexture("voxelSlabTexture", this._voxelSlabDebugRT);
-                effect.setVector4("sizeParams", this._debugSizeParams);
-                effect.setFloat("mipNumber", this._debugMipNumber);
-            };
             this._voxelSlabDebugRT = new RenderTargetTexture("voxelSlabDebug", { ratio: 1 }, this._scene, {
                 generateDepthBuffer: true,
                 generateMipMaps: false,
@@ -174,17 +162,52 @@ export class IblShadowsVoxelRenderer {
     }
 
     /**
+     * Creates the debug post process effect for this pass
+     */
+    private _createDebugPass() {
+        if (!this._voxelDebugPass) {
+            const debugOptions: PostProcessOptions = {
+                width: this._engine.getRenderWidth(),
+                height: this._engine.getRenderHeight(),
+                textureFormat: Constants.TEXTUREFORMAT_RGBA,
+                textureType: Constants.TEXTURETYPE_UNSIGNED_BYTE,
+                samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+                uniforms: ["sizeParams", "mipNumber"],
+                samplers: ["voxelTexture", "voxelSlabTexture"],
+                engine: this._engine,
+                reusable: false,
+            };
+            this._voxelDebugPass = new PostProcess(this.debugPassName, this._isVoxelGrid3D ? "voxelGrid3dDebug" : "voxelGrid2dArrayDebug", debugOptions);
+            this._voxelDebugPass.onApply = (effect) => {
+                // update the caustic texture with what we just rendered.
+                if (this._voxelDebugAxis === 0) {
+                    effect.setTexture("voxelTexture", this._voxelGridXaxis);
+                } else if (this._voxelDebugAxis === 1) {
+                    effect.setTexture("voxelTexture", this._voxelGridYaxis);
+                } else if (this._voxelDebugAxis === 2) {
+                    effect.setTexture("voxelTexture", this._voxelGridZaxis);
+                } else {
+                    effect.setTexture("voxelTexture", this.getVoxelGrid());
+                }
+                effect.setTexture("voxelSlabTexture", this._voxelSlabDebugRT);
+                effect.setVector4("sizeParams", this._debugSizeParams);
+                effect.setFloat("mipNumber", this._debugMipNumber);
+            };
+        }
+    }
+
+    /**
      * Instanciates the voxel renderer
      * @param scene Scene to attach to
      * @param iblShadowsRenderPipeline The render pipeline this pass is associated with
-     * @param resolution Number of depth layers to peel
+     * @param resolutionExp Resolution of the voxel grid. The final resolution will be 2^resolutionExp.
      * @param triPlanarVoxelization Whether to use tri-planar voxelization. More expensive, but can help with artifacts.
      * @returns The voxel renderer
      */
-    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline, resolution: number = 256, triPlanarVoxelization: boolean = true) {
+    constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline, resolutionExp: number = 6, triPlanarVoxelization: boolean = true) {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
-        this._voxelResolution = resolution;
+        this.voxelResolutionExp = resolutionExp;
         this._triPlanarVoxelization = triPlanarVoxelization;
         this._renderPipeline = iblShadowsRenderPipeline;
         if (!this._engine.getCaps().drawBuffersExtension) {
@@ -470,20 +493,6 @@ export class IblShadowsVoxelRenderer {
                     this._voxelizationInProgress = false;
                 }
             }
-            // Remove the MRTs from the array so they don't get rendered again.
-            // TODO - we seem to be removing the MRT's too early if we don't have a timeout here. Why?
-            // setTimeout(() => {
-            //     this._stopVoxelization();
-
-            //     if (this._threeWayVoxelization) {
-            //         // TODO - is this actually preventing WebGL from generating mipmaps? It doesn't seem to be.
-            //         this._voxelGridRT._generateMipMaps = false;
-            //         this._voxelGridRT.render();
-            //     }
-            //     this._generateMipMaps();
-
-            //     this._voxelizationInProgress = false;
-            // }, 1000);
         });
     }
 
@@ -563,6 +572,9 @@ export class IblShadowsVoxelRenderer {
         if (this._voxelSlabDebugRT) {
             this._removeVoxelRTs([this._voxelSlabDebugRT]);
             this._voxelSlabDebugRT.dispose();
+        }
+        if (this._voxelDebugPass) {
+            this._voxelDebugPass.dispose();
         }
         // TODO - dispose all created voxel materials.
     }
