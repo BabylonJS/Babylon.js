@@ -23,6 +23,9 @@ export class IblShadowsAccumulationPass {
     private _oldAccumulationRT: RenderTargetTexture;
     private _oldLocalPositionRT: RenderTargetTexture;
 
+    /** Enable the debug view for this pass */
+    public debugEnabled: boolean = false;
+
     /**
      * Gets the pass post process
      * @returns The post process

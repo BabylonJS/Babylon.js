@@ -1,4 +1,4 @@
-precision highp sampler3D;
+precision highp samplerCube;
 #define PI 3.1415927
 varying vec2 vUV;
 
