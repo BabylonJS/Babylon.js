@@ -4,7 +4,8 @@
         {
             "title": "NME Shadow Map",
             "playgroundId": "#M3QR7E#83",
-            "referenceImage": "nmeshadowmap.png"
+            "referenceImage": "nmeshadowmap.png",
+            "excludedEngines": ["webgl1"]
         },
         {
             "title": "NMEGLTF",
