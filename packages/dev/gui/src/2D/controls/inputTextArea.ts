@@ -216,6 +216,7 @@ export class InputTextArea extends InputText {
 
                 this._textHasChanged();
                 break;
+            case "NumpadEnter": // NUMPAD ENTER
             case "Enter": // RETURN
                 this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
@@ -656,7 +657,7 @@ export class InputTextArea extends InputText {
             this._scrollLeft = this._clipTextLeft;
         }
 
-        if (this._isFocused && !this._autoStretchHeight) {
+        if (this._isFocused) {
             const selectedHeight = (this._cursorInfo.currentLineIndex + 1) * this._fontOffset.height;
             const textTop = this._clipTextTop - selectedHeight;
 
