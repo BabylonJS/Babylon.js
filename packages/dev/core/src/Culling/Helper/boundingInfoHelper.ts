@@ -1,9 +1,10 @@
 import { WebGL2BoundingHelper } from "./webgl2BoundingHelper";
-import type { AbstractEngine, Engine } from "core/Engines";
 import type { Mesh } from "core/Meshes/mesh";
 import { VertexBuffer, Buffer } from "core/Buffers/buffer";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
 import type { Effect } from "core/Materials/effect";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { Engine } from "core/Engines/engine";
 
 /**
  * Utility class to help with bounding info management
