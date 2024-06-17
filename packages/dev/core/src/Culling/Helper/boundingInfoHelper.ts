@@ -169,7 +169,7 @@ export class BoundingInfoHelper {
         this._platform.updateBuffer(vertexCount, target);
 
         // Retrieve data
-        //  mesh._refreshBoundingInfo(target.getData()! as Float32Array, null);
+        mesh._refreshBoundingInfo(target.getData()! as Float32Array, null);
 
         resolve();
     }
