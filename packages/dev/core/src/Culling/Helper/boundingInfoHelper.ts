@@ -32,7 +32,7 @@ export class BoundingInfoHelper {
      * @returns a promise that resolves when the bounding info is computed
      */
     public computeAsync(mesh: Mesh): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             const source = mesh.getVertexBuffer(VertexBuffer.PositionKind);
 
             if (!source) {
