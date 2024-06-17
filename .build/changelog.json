@@ -1,7 +1,6 @@
 {
-    "fromTag": "7.11.0",
+    "fromTag": "7.11.1",
     "changelog": {
-        "7.11.0": [],
         "7.11.1": [
             {
                 "pr": "15201",
@@ -120,6 +119,190 @@
                 ]
             }
         ],
+        "7.11.2": [
+            {
+                "pr": "15214",
+                "title": "Move hideLoadingUI() call to Engine & WebGPEngine from AbstractEngine",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15213",
+                "title": "A few GUI fixes",
+                "description": "Reported here - https://forum.babylonjs.com/t/gui-inputtextarea-broken/50925?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15212",
+                "title": "Fix regex to ignore commented imports",
+                "description": "this a the post-build script. Fix is because of failed ES6 build in #15106",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15200",
+                "title": "add option to control actionManager dispose behavior",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-do-you-dispose-the-actions-of-an-actionmanager/9985/12",
+                "author": {
+                    "name": "SalmaBesbes",
+                    "url": "https://github.com/SalmaBesbes"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15211",
+                "title": "Fluid renderer: Don't dispose of effects when disposing of fluid objects",
+                "description": "See https://forum.babylonjs.com/t/fluid-renderer-not-working-with-particle-subemitters/51367/2.\r\n\r\nThat's because effects are cached by the engine.\r\n\r\nThis means that if the same effect is used in different places in the code (which is the case in the fluid renderer, if you add several particle systems, for example), disposing of the effect in one place will cause the code to crash in all other places.\r\n\r\nExample of PG that generates errors: https://playground.babylonjs.com/#9NHBCC#65\r\n\r\nIf you wait a few seconds, you will see these errors in the console log:\r\n\r\n```md\r\nWebGL: INVALID_OPERATION: useProgram: attempt to use a deleted object\r\n[.WebGL-0000223000726A00] GL_INVALID_OPERATION: Active draw buffers with missing fragment shader outputs.\r\n```",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15210",
+                "title": "Fix CCW 2D GUI Ellipse Arcing.",
+                "description": "Fix counter-clockwise arcing. (negative arc value)\r\n\r\nSee top right ellipse stack.\r\nBefore;\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#3\r\n\r\nAfter;\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#4",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15207",
+                "title": "2D GUI ellipse arcing",
+                "description": "Allow Arcing of the 2D GUI Ellipse control.\r\n\r\nLet's us create Semi-circles, and opens open a wide range of new GUI design options.\r\nIt's something i've felt have been lacking for a while, with the only option being doing it through images.\r\n\r\nUnfortunately the starting angle(0) of context.arc() function is on the far right end of the ellipse for some reason.. \r\nwould have been great to have to start/end at the top, i think leave it to the dev to control with rotation of the control.\r\n\r\nRef use-case; https://forum.babylonjs.com/t/loading-timer-circular-ui/51364\r\n\r\n**PG samples**\r\nNote that when a single ellipse is arced, and both filled (background) and stroked (thickness) the border/thickness is not connected/closed.\r\nas that would require an additional property to force closePath() on context even when arcing.\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#3",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/ellipse.ts",
+                    "packages/dev/gui/src/2D/controls/radioButton.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15206",
+                "title": "Mesh: Fix back compat for sideOrientation when parsing mesh",
+                "description": "See https://forum.babylonjs.com/t/new-versions-7-10-7-11-have-errors-with-model-normal-maps/51320/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15204",
+                "title": "fix fragdepthblock issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nmeshadowmap.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15205",
+                "title": "Add optional parameters notation to JSDoc",
+                "description": "Closure is failing with a message like:\r\n\r\n`ERROR in abc.js:48234 (originally at @babylonjs-core@7.10.0-e5902e94f7a1ba005e89/dev/core/src/Misc/observable.ts:99) from closure-compiler: Inline JSDoc on default parameters must be marked as optional\r\n     * Defines the current scope used to restore the JS context\r\n       ^^^^^^^`\r\n\r\nAdding these comments to the JSDoc fixes that ",
+                "author": {
+                    "name": "arista-ms",
+                    "url": "https://github.com/arista-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15203",
+                "title": "Stronger defense for Back compat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15202",
+                "title": "Nmegltf test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/nmegltf.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.11.0": [],
         "7.10.3": [
             {
                 "pr": "15194",
