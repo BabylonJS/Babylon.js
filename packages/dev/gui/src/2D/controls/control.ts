@@ -2720,7 +2720,7 @@ export class Control implements IAnimatable {
         context.scale(width, height);
 
         context.beginPath();
-        context.arc(0, 0, 1, 0, 2 * Math.PI * arc);
+        context.arc(0, 0, 1, 0, 2 * Math.PI * arc, arc < 0);
 
         if (arc >= 1) {
             context.closePath();
