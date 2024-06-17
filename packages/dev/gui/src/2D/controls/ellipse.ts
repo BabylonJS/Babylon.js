@@ -24,6 +24,23 @@ export class Ellipse extends Container {
         this._markAsDirty();
     }
 
+    private _arc = 1;
+
+    /** Gets or sets arcing of the ellipse (ratio of the circumference between 0 and 1) */
+    @serialize()
+    public get arc(): number {
+        return this._arc;
+    }
+
+    public set arc(value: number) {
+        if (this._arc === value) {
+            return;
+        }
+
+        this._arc = value;
+        this._markAsDirty();
+    }
+
     /**
      * Creates a new Ellipse
      * @param name defines the control name
@@ -51,6 +68,7 @@ export class Ellipse extends Container {
             this._currentMeasure.top + this._currentMeasure.height / 2,
             this._currentMeasure.width / 2 - this._thickness / 2,
             this._currentMeasure.height / 2 - this._thickness / 2,
+            this._arc,
             context
         );
 
@@ -93,6 +111,7 @@ export class Ellipse extends Container {
             this._currentMeasure.top + this._currentMeasure.height / 2,
             this._currentMeasure.width / 2,
             this._currentMeasure.height / 2,
+            this._arc,
             context
         );
 
@@ -105,6 +124,7 @@ export class Ellipse extends Container {
             this._currentMeasure.top + this._currentMeasure.height / 2,
             this._currentMeasure.width / 2 - this._highlightLineWidth / 2,
             this._currentMeasure.height / 2 - this._highlightLineWidth / 2,
+            this._arc,
             context
         );
         context.stroke();
