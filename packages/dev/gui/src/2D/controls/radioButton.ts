@@ -140,6 +140,7 @@ export class RadioButton extends Control {
             this._currentMeasure.top + this._currentMeasure.height / 2,
             this._currentMeasure.width / 2 - this._thickness / 2,
             this._currentMeasure.height / 2 - this._thickness / 2,
+            1,
             context
         );
 
@@ -168,6 +169,7 @@ export class RadioButton extends Control {
                 this._currentMeasure.top + this._currentMeasure.height / 2,
                 offsetWidth / 2 - this._thickness / 2,
                 offseHeight / 2 - this._thickness / 2,
+                1,
                 context
             );
 
