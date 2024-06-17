@@ -1804,11 +1804,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const engine = this.getScene().getEngine();
 
-        // Morph targets
-        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
-            this.morphTargetManager._bind(effect);
-        }
-
         // Wireframe
         let indexToBind;
         if (this._unIndexed) {
@@ -1826,6 +1821,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
+        }
+
+        return this._bindDirect(effect, indexToBind, allowInstancedRendering);
+    }
+
+    /**
+     * @internal
+     */
+    public _bindDirect(effect: Effect, indexToBind: Nullable<DataBuffer>, allowInstancedRendering = true): Mesh {
+        if (!this._geometry) {
+            return this;
+        }
+
+        // Morph targets
+        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
+            this.morphTargetManager._bind(effect);
         }
 
         // VBOs
