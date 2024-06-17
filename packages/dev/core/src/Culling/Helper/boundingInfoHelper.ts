@@ -200,6 +200,9 @@ export class BoundingInfoHelper {
         for (const key in this._buffers) {
             this._buffers[key].dispose();
         }
+        for (const key in this._effects) {
+            this._effects[key].dispose();
+        }
         this._platform.dispose();
     }
 }
