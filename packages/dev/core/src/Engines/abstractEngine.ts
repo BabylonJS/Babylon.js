@@ -2535,8 +2535,6 @@ export abstract class AbstractEngine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
-        this.hideLoadingUI();
-
         this.releaseEffects();
 
         this._isDisposed = true;
