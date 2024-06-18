@@ -1,10 +1,5 @@
-struct Buffer {
-  data : array<vec3f>,
-};
 
-struct WeightData {
-  data : array<vec4f>,
-};
+// We will need to use a min/max reduction algorithm at some point
 
 struct Results {
   minX : atomic<i32>,
@@ -55,17 +50,17 @@ fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) 
     }
 }
 
-fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
-{
-    let offset = i32(index)  * 4;	
+// fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
+// {
+//     let offset = i32(index)  * 4;	
 
-    let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
-    let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
-    let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
-    let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
+//     let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
+//     let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
+//     let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
+//     let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
 
-    return mat4x4<f32>(m0, m1, m2, m3);
-}
+//     return mat4x4<f32>(m0, m1, m2, m3);
+// }
 
 const identity = mat4x4f(
     vec4f(1.0, 0.0, 0.0, 0.0),
@@ -74,65 +69,65 @@ const identity = mat4x4f(
     vec4f(0.0, 0.0, 0.0, 1.0)
 );
 
-@group(0) @binding(0) var<storage, read> positionBuffer : Buffer;
+@group(0) @binding(0) var<storage, read> positionBuffer :  array<vec3f>;
 @group(0) @binding(1) var<storage, read_write> resultBuffer : Results;
-#if NUM_BONE_INFLUENCERS > 0
-  @group(0) @binding(2) var boneSampler : texture_2d<f32>;
-  @group(0) @binding(3) var<storage, read> indexBuffer : WeightData;
-  @group(0) @binding(4) var<storage, read> weightBuffer : WeightData;
+// #if NUM_BONE_INFLUENCERS > 0
+//   @group(0) @binding(2) var boneSampler : texture_2d<f32>;
+//   @group(0) @binding(3) var<storage, read> indexBuffer :  array<vec4f>;
+//   @group(0) @binding(4) var<storage, read> weightBuffer : array<vec4f>;
 
-  #if NUM_BONE_INFLUENCERS > 4
-    @group(0) @binding(5) var<storage, read> indexExtraBuffer : WeightData;
-    @group(0) @binding(6) var<storage, read> weightExtraBuffer : WeightData;
-  #endif
-#endif
+//   #if NUM_BONE_INFLUENCERS > 4
+//     @group(0) @binding(5) var<storage, read> indexExtraBuffer : array<vec4f>;
+//     @group(0) @binding(6) var<storage, read> weightExtraBuffer : array<vec4f>;
+//   #endif
+// #endif
 
 @compute @workgroup_size(64, 1, 1)
 
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;
-    if (index >= arrayLength(&positionBuffer.data)) {
+    if (index >= arrayLength(&positionBuffer)) {
         return;
     }
 
-    let position = positionBuffer.data[index];
+    let position = positionBuffer[index];
 
     var finalWorld = identity;
 
-#if NUM_BONE_INFLUENCERS > 0
-      var influence : mat4x4<f32>;
-      let matricesIndices = indexBuffer.data[index];
-      let matricesWeights = weightBuffer.data[index];
+// #if NUM_BONE_INFLUENCERS > 0
+//       var influence : mat4x4<f32>;
+//       let matricesIndices = indexBuffer[index];
+//       let matricesWeights = weightBuffer[index];
 
-      influence = readMatrixFromRawSampler(boneSampler, matricesIndices.x) * matricesWeights.x;
+//       influence = readMatrixFromRawSampler(boneSampler, matricesIndices[0]) * matricesWeights[0];
 
-      #if NUM_BONE_INFLUENCERS > 1
-          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.y) * matricesWeights.y;
-      #endif	
-      #if NUM_BONE_INFLUENCERS > 2
-          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.z) * matricesWeights.z;
-      #endif	
-      #if NUM_BONE_INFLUENCERS > 3
-          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.w) * matricesWeights.w;
-      #endif	
+//       #if NUM_BONE_INFLUENCERS > 1
+//           influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices[1]) * matricesWeights[1];
+//       #endif	
+//       #if NUM_BONE_INFLUENCERS > 2
+//           influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices[2]) * matricesWeights[2];
+//       #endif	
+//       #if NUM_BONE_INFLUENCERS > 3
+//           influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices[3]) * matricesWeights[3];
+//       #endif	
 
-      #if NUM_BONE_INFLUENCERS > 4
-          let matricesIndicesExtra = indexExtraBuffer.data[index];
-          let matricesWeightsExtra = weightExtraBuffer.data[index];
-          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.x) * matricesWeightsExtra.x;
-          #if NUM_BONE_INFLUENCERS > 5
-              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.y) * matricesWeightsExtra.y;
-          #endif	
-          #if NUM_BONE_INFLUENCERS > 6
-              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.z) * matricesWeightsExtra.z;
-          #endif	
-          #if NUM_BONE_INFLUENCERS > 7
-              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.w) * matricesWeightsExtra.w;
-          #endif	
-      #endif	
+//       #if NUM_BONE_INFLUENCERS > 4
+//           let matricesIndicesExtra = indexExtraBuffer[index];
+//           let matricesWeightsExtra = weightExtraBuffer[index];
+//           influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.x) * matricesWeightsExtra.x;
+//           #if NUM_BONE_INFLUENCERS > 5
+//               influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.y) * matricesWeightsExtra.y;
+//           #endif	
+//           #if NUM_BONE_INFLUENCERS > 6
+//               influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.z) * matricesWeightsExtra.z;
+//           #endif	
+//           #if NUM_BONE_INFLUENCERS > 7
+//               influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.w) * matricesWeightsExtra.w;
+//           #endif	
+//       #endif	
 
-      finalWorld = finalWorld * influence;
-#endif
+//       finalWorld = finalWorld;// * influence;
+// #endif
 
     var worldPos = finalWorld * vec4f(position.x, position.y, position.z, 1.0);
 
