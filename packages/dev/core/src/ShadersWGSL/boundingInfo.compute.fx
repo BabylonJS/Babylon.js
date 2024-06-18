@@ -26,33 +26,33 @@ fn bitsToFloat(value: i32) -> f32 {
 fn atomicMinFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
 
-    atomicMin(atomicVar, intValue);
-    // loop {
-    //     let oldIntValue = atomicLoad(atomicVar);
-    //     let oldValue = bitsToFloat(oldIntValue);
-    //     if (value >= oldValue) {
-    //         break;
-    //     }
-    //     if (atomicCompareExchangeWeak(atomicVar, oldIntValue, intValue).old_value == oldIntValue) {
-    //         break;
-    //     }
-    // }
+   // atomicMin(atomicVar, intValue);
+    loop {
+        let oldIntValue = atomicLoad(atomicVar);
+        let oldValue = bitsToFloat(oldIntValue);
+        if (value >= oldValue) {
+            break;
+        }
+        if (atomicCompareExchangeWeak(atomicVar, oldIntValue, intValue).old_value == oldIntValue) {
+            break;
+        }
+    }
 }
 
 fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
     
-    atomicMax(atomicVar, intValue);
-    // loop {
-    //     let oldIntValue = atomicLoad(atomicVar);
-    //     let oldValue = bitsToFloat(oldIntValue);
-    //     if (value <= oldValue) {
-    //         break;
-    //     }
-    //     if (atomicCompareExchangeWeak(atomicVar, oldIntValue, intValue).old_value == oldIntValue) {
-    //         break;
-    //     }
-    // }
+//    atomicMax(atomicVar, intValue);
+    loop {
+        let oldIntValue = atomicLoad(atomicVar);
+        let oldValue = bitsToFloat(oldIntValue);
+        if (value <= oldValue) {
+            break;
+        }
+        if (atomicCompareExchangeWeak(atomicVar, oldIntValue, intValue).old_value == oldIntValue) {
+            break;
+        }
+    }
 }
 
 fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
@@ -87,7 +87,7 @@ const identity = mat4x4f(
   #endif
 #endif
 
-@compute @workgroup_size(1, 1, 1)
+@compute @workgroup_size(64, 1, 1)
 
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;

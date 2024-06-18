@@ -132,7 +132,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
         // Dispatch
         return new Promise((resolve) => {
-            computeShader.dispatchWhenReady(vertexCount).then(() => {
+            computeShader.dispatchWhenReady(Math.ceil(vertexCount / 64)).then(() => {
                 resultBuffer.read(undefined, undefined, resultData, true).then(() => {
                     mesh._refreshBoundingInfoDirect({
                         minimum: Vector3.FromArray(resultData, 0),
