@@ -20,8 +20,6 @@ fn bitsToFloat(value: i32) -> f32 {
 
 fn atomicMinFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
-
-   // atomicMin(atomicVar, intValue);
     loop {
         let oldIntValue = atomicLoad(atomicVar);
         let oldValue = bitsToFloat(oldIntValue);
@@ -36,8 +34,6 @@ fn atomicMinFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) 
 
 fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
-    
-//    atomicMax(atomicVar, intValue);
     loop {
         let oldIntValue = atomicLoad(atomicVar);
         let oldValue = bitsToFloat(oldIntValue);
@@ -69,7 +65,7 @@ const identity = mat4x4f(
     vec4f(0.0, 0.0, 0.0, 1.0)
 );
 
-@group(0) @binding(0) var<storage, read> positionBuffer :  array<vec3f>;
+@group(0) @binding(0) var<storage, read> positionBuffer : array<vec3f>;
 @group(0) @binding(1) var<storage, read_write> resultBuffer : Results;
 // #if NUM_BONE_INFLUENCERS > 0
 //   @group(0) @binding(2) var boneSampler : texture_2d<f32>;

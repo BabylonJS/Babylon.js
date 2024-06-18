@@ -157,6 +157,10 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._indexBuffers = {};
         this._disposeCache(this._weightBuffers);
         this._weightBuffers = {};
+        this._disposeCache(this._indexExtraBuffers);
+        this._indexExtraBuffers = {};
+        this._disposeCache(this._weightExtraBuffers);
+        this._weightExtraBuffers = {};
         this._disposeCache(this._resultBuffers);
         this._resultBuffers = {};
         this._resultData = {};

@@ -9,6 +9,7 @@ import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform"
  * #BCNJD4#5
  * #BCNJD4#14
  * #BCNJD4#15
+ * #BCNJD4#33
  */
 export class BoundingInfoHelper {
     private _platform: IBoundingInfoHelperPlatform;
