@@ -161,19 +161,12 @@ export class InputTextArea extends InputText {
      */
     public alternativeProcessKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
-        if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) {
+        if (evt && (evt.ctrlKey || evt.metaKey) && (key === "c" || key === "v" || key === "x")) {
             return;
         }
 
         // Specific cases
         switch (code) {
-            case "KeyA": // A - select all
-                if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._selectAllText();
-                    evt.preventDefault();
-                    return;
-                }
-                break;
             case "Period": //SLASH
                 if (evt && evt.shiftKey) {
                     evt.preventDefault();
@@ -475,6 +468,13 @@ export class InputTextArea extends InputText {
 
                 this._markAsDirty();
                 return;
+        }
+
+        // special case - select all. Use key instead of code to support all keyboard layouts
+        if (key === "a" && evt && (evt.ctrlKey || evt.metaKey)) {
+            this._selectAllText();
+            evt.preventDefault();
+            return;
         }
 
         // Printable characters
