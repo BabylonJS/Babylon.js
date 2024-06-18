@@ -18,7 +18,7 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
         const sourceCode = fs.readFileSync(file, "utf-8");
         const processed = processSource(sourceCode, forceMJS);
 
-        const regex = /import .* from "(\..*)";/g;
+        const regex = /^import .* from "(\..*)";/g;
         let match;
         while ((match = regex.exec(processed)) !== null) {
             if (!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {

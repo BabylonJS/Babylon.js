@@ -116,6 +116,11 @@ class _InternalAbstractMeshDataInfo {
      * Bounding info that is unnafected by the addition of thin instances
      */
     public _rawBoundingInfo: Nullable<BoundingInfo> = null;
+    /** @internal
+     * This value will indicate us that at some point, the mesh was specifically used with the opposite winding order
+     * We use that as a clue to force the material to sideOrientation = null
+     */
+    public _sideOrientationHint = false;
 }
 
 /**
@@ -487,6 +492,11 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         return this._internalAbstractMeshDataInfo._material;
     }
     public set material(value: Nullable<Material>) {
+        this._setMaterial(value);
+    }
+
+    /** @internal */
+    protected _setMaterial(value: Nullable<Material>) {
         if (this._internalAbstractMeshDataInfo._material === value) {
             return;
         }
@@ -2080,7 +2090,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         // Action manager
         if (this.actionManager !== undefined && this.actionManager !== null) {
             // If it's the only mesh using the action manager, dispose of it.
-            if (!this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
+            if (!this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager) && this.actionManager.disposeWhenUnowned) {
                 this.actionManager.dispose();
             }
             this.actionManager = null;

@@ -94,7 +94,9 @@ export class OBJExport {
             }
 
             const blanks: string[] = ["", "", ""];
-            const sideOrientation = mesh.overrideMaterialSideOrientation ?? mesh.material?.sideOrientation ?? mesh.getScene().defaultMaterial.sideOrientation;
+            const material = mesh.material || mesh.getScene().defaultMaterial;
+
+            const sideOrientation = material._getEffectiveOrientation(mesh);
             const [offset1, offset2] = sideOrientation === Material.ClockWiseSideOrientation ? [2, 1] : [1, 2];
 
             for (let i = 0; i < trunkFaces.length; i += 3) {

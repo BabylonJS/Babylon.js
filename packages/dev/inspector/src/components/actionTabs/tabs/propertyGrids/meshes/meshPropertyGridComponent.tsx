@@ -44,6 +44,7 @@ import "core/Physics/v1/physicsEngineComponent";
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 import { Tools } from "core/Misc/tools";
 import { PhysicsBodyGridComponent } from "./physics/physicsBodyGridComponent";
+import { Constants } from "core/Engines/constants";
 
 interface IMeshPropertyGridComponentProps {
     globalState: GlobalState;
@@ -381,6 +382,11 @@ export class MeshPropertyGridComponent extends React.Component<
             { label: "Strict", value: AbstractMesh.OCCLUSION_TYPE_STRICT },
         ];
 
+        const orientationOptions = [
+            { label: "Clockwise", value: Constants.MATERIAL_ClockWiseSideOrientation },
+            { label: "Counterclockwise", value: Constants.MATERIAL_CounterClockWiseSideOrientation },
+        ];
+
         const sortedMaterials = scene.materials.slice(0).sort((a, b) => (a.name || "no name").localeCompare(b.name || "no name"));
 
         const materialOptions = sortedMaterials.map((m, i) => {
@@ -551,6 +557,13 @@ export class MeshPropertyGridComponent extends React.Component<
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
+                    <OptionsLine
+                        label="Orientation"
+                        options={orientationOptions}
+                        target={mesh}
+                        propertyName="sideOrientation"
+                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                    />
                     <FloatLineComponent
                         lockObject={this.props.lockObject}
                         label="Alpha index"
@@ -771,6 +784,13 @@ export class MeshPropertyGridComponent extends React.Component<
                             label="Outline color"
                             target={mesh}
                             propertyName="outlineColor"
+                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        />
+                        <FloatLineComponent
+                            lockObject={this.props.lockObject}
+                            label="Outline width"
+                            target={mesh}
+                            propertyName="outlineWidth"
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     </LineContainerComponent>

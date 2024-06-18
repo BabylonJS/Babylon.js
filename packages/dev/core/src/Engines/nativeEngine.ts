@@ -55,6 +55,9 @@ import { checkNonFloatVertexBuffers } from "../Buffers/buffer.nonFloatVertexBuff
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import { NativeShaderProcessingContext } from "./Native/nativeShaderProcessingContext";
 import type { ShaderLanguage } from "../Materials/shaderLanguage";
+import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
+
+import "../Buffers/buffer.align";
 
 declare const _native: INative;
 
@@ -1552,9 +1555,9 @@ export class NativeEngine extends Engine {
         return this._engine.createTexture();
     }
 
-    protected override _deleteTexture(texture: Nullable<WebGLTexture>): void {
+    protected override _deleteTexture(texture: Nullable<WebGLHardwareTexture>): void {
         if (texture) {
-            this._engine.deleteTexture(texture as NativeTexture);
+            this._engine.deleteTexture(texture.underlyingResource as NativeTexture);
         }
     }
 

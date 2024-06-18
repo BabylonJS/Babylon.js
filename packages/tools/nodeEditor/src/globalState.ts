@@ -59,6 +59,7 @@ export class GlobalState {
     backgroundHDR: boolean;
     controlCamera: boolean;
     _mode: NodeMaterialModes;
+    _engine: number;
     pointerOverCanvas: boolean = false;
     filesInput: FilesInput;
     onRefreshPreviewMeshControlComponentRequiredObservable = new Observable<void>();
@@ -75,6 +76,21 @@ export class GlobalState {
         this.onPreviewCommandActivated.notifyObservers(true);
     }
 
+    /** Gets the engine */
+    public get engine(): number {
+        return this._engine;
+    }
+
+    /** Sets the engine */
+    public set engine(e: number) {
+        if (e === this._engine) {
+            return;
+        }
+        DataStorage.WriteNumber("Engine", e);
+        this._engine = e;
+        location.reload();
+    }
+
     customSave?: { label: string; action: (data: string) => Promise<void> };
 
     public constructor() {
@@ -88,6 +104,8 @@ export class GlobalState {
         this.backgroundHDR = DataStorage.ReadBoolean("backgroundHDR", false);
         this.controlCamera = DataStorage.ReadBoolean("ControlCamera", true);
         this._mode = DataStorage.ReadNumber("Mode", NodeMaterialModes.Material);
+        this._engine = DataStorage.ReadNumber("Engine", 0);
+
         this.stateManager = new StateManager();
         this.stateManager.data = this;
         this.stateManager.lockObject = this.lockObject;

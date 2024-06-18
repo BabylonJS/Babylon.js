@@ -1024,7 +1024,7 @@ export class GLTFLoader implements IGLTFLoader {
             const babylonMesh = new Mesh(name, this._babylonScene);
             babylonMesh._parentContainer = this._assetContainer;
             this._babylonScene._blockEntityCollection = false;
-            babylonMesh.overrideMaterialSideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
+            babylonMesh.sideOrientation = this._babylonScene.useRightHandedSystem ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
 
             this._createMorphTargets(context, node, mesh, primitive, babylonMesh);
             promises.push(

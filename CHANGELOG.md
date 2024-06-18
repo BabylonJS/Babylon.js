@@ -1,5 +1,67 @@
 # Changelog
 
+## 7.11.2
+
+### Core
+
+- Move hideLoadingUI() call to Engine & WebGPEngine from AbstractEngine - by [AmoebaChant](https://github.com/AmoebaChant) ([#15214](https://github.com/BabylonJS/Babylon.js/pull/15214))
+- add option to control actionManager dispose behavior - by [SalmaBesbes](https://github.com/SalmaBesbes) ([#15200](https://github.com/BabylonJS/Babylon.js/pull/15200))
+- Fluid renderer: Don't dispose of effects when disposing of fluid objects - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15211](https://github.com/BabylonJS/Babylon.js/pull/15211))
+- Mesh: Fix back compat for sideOrientation when parsing mesh - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15206](https://github.com/BabylonJS/Babylon.js/pull/15206))
+- Add optional parameters notation to JSDoc - by [arista-ms](https://github.com/arista-ms) ([#15205](https://github.com/BabylonJS/Babylon.js/pull/15205))
+
+### GUI
+
+- A few GUI fixes - by [RaananW](https://github.com/RaananW) ([#15213](https://github.com/BabylonJS/Babylon.js/pull/15213))
+- Fix CCW 2D GUI Ellipse Arcing. - by [aWeirdo](https://github.com/aWeirdo) ([#15210](https://github.com/BabylonJS/Babylon.js/pull/15210))
+- 2D GUI ellipse arcing - by [aWeirdo](https://github.com/aWeirdo) ([#15207](https://github.com/BabylonJS/Babylon.js/pull/15207))
+
+## 7.11.1
+
+### Core
+
+- Improve GS quality with XR Camera - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15193](https://github.com/BabylonJS/Babylon.js/pull/15193))
+
+### Inspector
+
+- Inspector: allows to change outline width - by [Popov72](https://github.com/Popov72) ([#15195](https://github.com/BabylonJS/Babylon.js/pull/15195))
+
+### Node Editor
+
+
+## 7.11.0
+
+## 7.10.3
+
+### Core
+
+- Add missing side-effects import to nativeEngine.ts - [_Bug Fix_] by [bghgary](https://github.com/bghgary) ([#15194](https://github.com/BabylonJS/Babylon.js/pull/15194))
+- Fix for native (internal API change) - by [RaananW](https://github.com/RaananW) ([#15192](https://github.com/BabylonJS/Babylon.js/pull/15192))
+- Improve clarity about how mesh.sideOrientation works - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15189](https://github.com/BabylonJS/Babylon.js/pull/15189))
+- SceneLoader related types cleanup - by [ryantrem](https://github.com/ryantrem) ([#15190](https://github.com/BabylonJS/Babylon.js/pull/15190))
+- Fix WebGLRenderbuffer memory leak from MSAA RenderTargetTextures - by [rapid-images-tore-levenstam](https://github.com/rapid-images-tore-levenstam) ([#15184](https://github.com/BabylonJS/Babylon.js/pull/15184))
+- Sandbox fixes - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15186](https://github.com/BabylonJS/Babylon.js/pull/15186))
+- Add new Grid mode for NGE Instantiate on Volume - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15180](https://github.com/BabylonJS/Babylon.js/pull/15180))
+- Heightfield physics shape - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15174](https://github.com/BabylonJS/Babylon.js/pull/15174))
+
+### GUI
+
+- Fix SVG loader for GUI - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15181](https://github.com/BabylonJS/Babylon.js/pull/15181))
+
+### Inspector
+
+- Improve clarity about how mesh.sideOrientation works - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15189](https://github.com/BabylonJS/Babylon.js/pull/15189))
+
+### Loaders
+
+- Improve clarity about how mesh.sideOrientation works - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15189](https://github.com/BabylonJS/Babylon.js/pull/15189))
+- SceneLoader related types cleanup - by [ryantrem](https://github.com/ryantrem) ([#15190](https://github.com/BabylonJS/Babylon.js/pull/15190))
+- Add a try catch to protect from invalid data - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15187](https://github.com/BabylonJS/Babylon.js/pull/15187))
+
+### Serializers
+
+- Improve clarity about how mesh.sideOrientation works - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15189](https://github.com/BabylonJS/Babylon.js/pull/15189))
+
 ## 7.10.2
 
 ### Core

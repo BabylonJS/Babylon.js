@@ -2,6 +2,17 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "NME Shadow Map",
+            "playgroundId": "#M3QR7E#83",
+            "referenceImage": "nmeshadowmap.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "NMEGLTF",
+            "playgroundId": "#WGZLGJ#10320",
+            "referenceImage": "nmegltf.png"
+        },
+        {
             "title": "GPUPicker",
             "playgroundId": "#1RWFMT#2",
             "renderCount": 20,

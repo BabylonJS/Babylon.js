@@ -2469,6 +2469,9 @@ export class NodeMaterial extends PushMaterial {
                         nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);
                         nodeMaterial.snippetId = snippetId;
 
+                        // We reset sideOrientation to default value
+                        nodeMaterial.sideOrientation = null;
+
                         try {
                             if (!skipBuild) {
                                 nodeMaterial.build();

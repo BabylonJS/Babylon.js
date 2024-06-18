@@ -66,16 +66,16 @@ export class ObservablesManager {
     public onExitingVRObservable: Observable<any>;
 
     constructor() {
-        this.onSceneInitObservable = new Observable();
-        this.onEngineInitObservable = new Observable();
+        this.onSceneInitObservable = new Observable(undefined, true);
+        this.onEngineInitObservable = new Observable(undefined, true);
         this.onModelLoadedObservable = new Observable();
         this.onModelLoadProgressObservable = new Observable();
         this.onModelLoadErrorObservable = new Observable();
         this.onModelAddedObservable = new Observable();
         this.onModelRemovedObservable = new Observable();
-        this.onViewerInitDoneObservable = new Observable();
-        this.onViewerInitStartedObservable = new Observable();
-        this.onLoaderInitObservable = new Observable();
+        this.onViewerInitDoneObservable = new Observable(undefined, true);
+        this.onViewerInitStartedObservable = new Observable(undefined, true);
+        this.onLoaderInitObservable = new Observable(undefined, true);
         this.onFrameRenderedObservable = new Observable();
         this.onEnteringVRObservable = new Observable();
         this.onExitingVRObservable = new Observable();

@@ -393,11 +393,11 @@ export class SkeletonViewer {
         public mesh: Nullable<AbstractMesh>,
         /** The Scene scope*/
         scene: Scene,
-        /** defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
+        /** [true] defines a boolean indicating if bones matrices must be forced to update before rendering (true by default)  */
         public autoUpdateBonesMatrices: boolean = true,
-        /** defines the rendering group id to use with the viewer */
+        /** [3] defines the rendering group id to use with the viewer */
         public renderingGroupId: number = 3,
-        /** is the options for the viewer */
+        /** [Object] is the options for the viewer */
         public options: Partial<ISkeletonViewerOptions> = {}
     ) {
         this._scene = scene;

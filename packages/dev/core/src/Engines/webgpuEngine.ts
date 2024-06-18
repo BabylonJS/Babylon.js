@@ -3828,6 +3828,7 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
+        this.hideLoadingUI();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();
