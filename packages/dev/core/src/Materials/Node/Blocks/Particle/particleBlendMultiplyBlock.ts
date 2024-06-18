@@ -79,9 +79,8 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
         state.compilationString += `
             #ifdef BLENDMULTIPLYMODE
                 ${state._declareOutput(this.blendColor)};
-                float sourceAlpha = ${this.alphaColor.associatedVariableName} * ${this.alphaTexture.associatedVariableName};
-                ${this.blendColor.associatedVariableName}.rgb = ${this.color.associatedVariableName}.rgb * sourceAlpha + vec3(1.0) * (1.0 - sourceAlpha);
-                ${this.blendColor.associatedVariableName}.a = ${this.color.associatedVariableName}.a;
+                ${state._declareLocalVar("sourceAlpha", NodeMaterialBlockConnectionPointTypes.Float)}  = ${this.alphaColor.associatedVariableName} * ${this.alphaTexture.associatedVariableName};
+                ${this.blendColor.associatedVariableName} = vec4${state.fSuffix}(${this.color.associatedVariableName}.rgb * sourceAlpha + vec3(1.0) * (1.0 - sourceAlpha), ${this.color.associatedVariableName}.a);
             #else
                 ${state._declareOutput(this.blendColor)} = ${this.color.associatedVariableName};
             #endif
