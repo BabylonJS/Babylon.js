@@ -77,13 +77,14 @@ const identity = mat4x4f(
 @group(0) @binding(0) var<storage, read> positionBuffer : Buffer;
 @group(0) @binding(1) var<storage, read_write> resultBuffer : Results;
 #if NUM_BONE_INFLUENCERS > 0
-@group(0) @binding(2) var boneSampler : texture_2d<f32>;
-@group(0) @binding(3) var<storage, read> indexBuffer : WeightData;
-@group(0) @binding(4) var<storage, read> weightBuffer : WeightData;
+  @group(0) @binding(2) var boneSampler : texture_2d<f32>;
+  @group(0) @binding(3) var<storage, read> indexBuffer : WeightData;
+  @group(0) @binding(4) var<storage, read> weightBuffer : WeightData;
 
-  // #if NUM_BONE_INFLUENCERS > 4
-  //   @group(0) @binding(3) var<storage, read> matricesExtraBuffer : Buffer;
-  // #endif
+  #if NUM_BONE_INFLUENCERS > 4
+    @group(0) @binding(5) var<storage, read> indexExtraBuffer : WeightData;
+    @group(0) @binding(6) var<storage, read> weightExtraBuffer : WeightData;
+  #endif
 #endif
 
 @compute @workgroup_size(1, 1, 1)
@@ -113,6 +114,21 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
       #endif	
       #if NUM_BONE_INFLUENCERS > 3
           influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.w) * matricesWeights.w;
+      #endif	
+
+      #if NUM_BONE_INFLUENCERS > 4
+          let matricesIndicesExtra = indexExtraBuffer.data[index];
+          let matricesWeightsExtra = weightExtraBuffer.data[index];
+          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.x) * matricesWeightsExtra.x;
+          #if NUM_BONE_INFLUENCERS > 5
+              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.y) * matricesWeightsExtra.y;
+          #endif	
+          #if NUM_BONE_INFLUENCERS > 6
+              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.z) * matricesWeightsExtra.z;
+          #endif	
+          #if NUM_BONE_INFLUENCERS > 7
+              influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndicesExtra.w) * matricesWeightsExtra.w;
+          #endif	
       #endif	
 
       finalWorld = finalWorld * influence;

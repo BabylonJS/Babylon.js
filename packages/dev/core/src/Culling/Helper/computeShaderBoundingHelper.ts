@@ -19,6 +19,8 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     private _positionBuffers: { [key: number]: StorageBuffer } = {};
     private _indexBuffers: { [key: number]: StorageBuffer } = {};
     private _weightBuffers: { [key: number]: StorageBuffer } = {};
+    private _indexExtraBuffers: { [key: number]: StorageBuffer } = {};
+    private _weightExtraBuffers: { [key: number]: StorageBuffer } = {};
     private _resultData: { [key: number]: Float32Array } = {};
     private _resultBuffers: { [key: number]: StorageBuffer } = {};
 
@@ -42,6 +44,8 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                     boneSampler: { group: 0, binding: 2 },
                     indexBuffer: { group: 0, binding: 3 },
                     weightBuffer: { group: 0, binding: 4 },
+                    indexExtraBuffer: { group: 0, binding: 5 },
+                    weightExtraBuffer: { group: 0, binding: 6 },
                 },
                 defines: defines,
             });
@@ -89,10 +93,10 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
             const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
             computeShader.setTexture("boneSampler", boneSampler!, false);
-            // if (mesh.numBoneInfluencers > 4) {
-            //     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-            //     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            // }
+            if (mesh.numBoneInfluencers > 4) {
+                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesExtraKind, 4, "indexExtraBuffer", this._indexExtraBuffers);
+                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsExtraKind, 4, "weightExtraBuffer", this._weightExtraBuffers);
+            }
         }
 
         // Results
@@ -104,12 +108,14 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         } else {
             resultData = this._resultData[mesh.uniqueId];
         }
-        resultData[0] = Number.MAX_SAFE_INTEGER;
-        resultData[1] = Number.MAX_SAFE_INTEGER;
-        resultData[2] = Number.MAX_SAFE_INTEGER;
-        resultData[3] = Number.MIN_SAFE_INTEGER;
-        resultData[4] = Number.MIN_SAFE_INTEGER;
-        resultData[5] = Number.MIN_SAFE_INTEGER;
+
+        resultData[0] = Number.POSITIVE_INFINITY;
+        resultData[1] = Number.POSITIVE_INFINITY;
+        resultData[2] = Number.POSITIVE_INFINITY;
+
+        resultData[3] = Number.NEGATIVE_INFINITY;
+        resultData[4] = Number.NEGATIVE_INFINITY;
+        resultData[5] = Number.NEGATIVE_INFINITY;
 
         let resultBuffer: StorageBuffer;
         if (!this._resultBuffers[mesh.uniqueId]) {
@@ -125,15 +131,17 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         computeShader.setStorageBuffer("resultBuffer", resultBuffer);
 
         // Dispatch
-        computeShader.dispatchWhenReady(vertexCount).then(() => {
-            resultBuffer.read(undefined, undefined, resultData).then(() => {
-                mesh._refreshBoundingInfoDirect({
-                    minimum: Vector3.FromArray(resultData, 0),
-                    maximum: Vector3.FromArray(resultData, 3),
+        return new Promise((resolve) => {
+            computeShader.dispatchWhenReady(vertexCount).then(() => {
+                resultBuffer.read(undefined, undefined, resultData, true).then(() => {
+                    mesh._refreshBoundingInfoDirect({
+                        minimum: Vector3.FromArray(resultData, 0),
+                        maximum: Vector3.FromArray(resultData, 3),
+                    });
+                    resolve();
                 });
             });
         });
-        return Promise.resolve();
     }
 
     private _disposeCache(storageUnit: { [key: number]: StorageBuffer }) {
