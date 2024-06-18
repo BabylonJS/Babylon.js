@@ -8,6 +8,7 @@ import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform"
  * Utility class to help with bounding info management
  * #BCNJD4#5
  * #BCNJD4#14
+ * #BCNJD4#15
  */
 export class BoundingInfoHelper {
     private _platform: IBoundingInfoHelperPlatform;
@@ -18,10 +19,10 @@ export class BoundingInfoHelper {
      */
     public constructor(engine: AbstractEngine) {
         if (engine.getCaps().supportComputeShaders) {
-            // if (!GetClass("BABYLON.ComputeShaderParticleSystem")) {
-            //     throw new Error("The ComputeShaderParticleSystem class is not available! Make sure you have imported it.");
-            // }
-            // this._platform = new (GetClass("BABYLON.ComputeShaderParticleSystem") as any)(engine);
+            if (!GetClass("BABYLON.ComputeShaderBoundingHelper")) {
+                throw new Error("The ComputeShaderBoundingHelper class is not available! Make sure you have imported it.");
+            }
+            this._platform = new (GetClass("BABYLON.ComputeShaderBoundingHelper") as any)(engine);
         } else {
             if (!GetClass("BABYLON.TransformFeedbackBoundingHelper")) {
                 throw new Error("The TransformFeedbackBoundingHelper class is not available! Make sure you have imported it.");

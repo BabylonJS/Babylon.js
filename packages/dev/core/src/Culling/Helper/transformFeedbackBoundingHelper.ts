@@ -213,9 +213,8 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         for (const key in this._buffers) {
             this._buffers[key].dispose();
         }
-        for (const key in this._effects) {
-            this._effects[key].dispose();
-        }
+        this._buffers = {};
+        this._effects = {};
         this._engine = null;
     }
 }
