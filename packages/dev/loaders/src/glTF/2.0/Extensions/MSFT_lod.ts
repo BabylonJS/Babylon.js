@@ -18,11 +18,30 @@ interface IBufferInfo {
     loaded: Deferred<ArrayBufferView>;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+class OptionsBase {
+    constructor(options?: Options) {
+        if (options) {
+            for (const key in this) {
+                const typedKey = key as keyof OptionsBase;
+                this[typedKey] = options[typedKey] ?? this[typedKey];
+            }
+        }
+    }
+
+    /**
+     * Maximum number of LODs to load, starting from the lowest LOD.
+     */
+    public maxLODsToLoad = 10;
+}
+
+type Options = Partial<Readonly<OptionsBase>>;
+
 /**
  * [Specification](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/MSFT_lod/README.md)
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export class MSFT_lod implements IGLTFLoaderExtension {
+export class MSFT_lod extends OptionsBase implements IGLTFLoaderExtension {
     /**
      * The name of this extension.
      */
@@ -37,11 +56,6 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      * Defines a number that determines the order the extensions are applied.
      */
     public order = 100;
-
-    /**
-     * Maximum number of LODs to load, starting from the lowest LOD.
-     */
-    public maxLODsToLoad = 10;
 
     /**
      * Observable raised when all node LODs of one level are loaded.
@@ -74,9 +88,16 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
-    constructor(loader: GLTFLoader) {
+    constructor(loader: GLTFLoader, options?: Options) {
+        super(options);
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
+    }
+
+    public static Configure(options: Options) {
+        return {
+            [NAME]: (loader: GLTFLoader) => new MSFT_lod(loader, options),
+        } as const;
     }
 
     /** @internal */

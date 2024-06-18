@@ -166,59 +166,17 @@ export interface IGLTFLoader extends IDisposable {
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
-/**
- * File loader for loading glTF files into a scene.
- */
-export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-    /** @internal */
-    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
-
-    /** @internal */
-    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
-
-    // --------------
-    // Common options
-    // --------------
-
-    /**
-     * Raised when the asset has been parsed
-     */
-    public onParsedObservable = new Observable<IGLTFLoaderData>();
-
-    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
-
-    /**
-     * Raised when the asset has been parsed
-     */
-    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
-        if (this._onParsedObserver) {
-            this.onParsedObservable.remove(this._onParsedObserver);
+// All of these basic options existed directly on the GLTFFileLoader class in the original code,
+// so they are included in a base class for backward compatibility.
+class OptionsBase {
+    constructor(options?: Partial<Readonly<OptionsBase>>) {
+        if (options) {
+            for (const key in this) {
+                const typedKey = key as keyof OptionsBase;
+                (this satisfies Record<keyof OptionsBase, unknown> as Record<keyof OptionsBase, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
+            }
         }
-        this._onParsedObserver = this.onParsedObservable.add(callback);
     }
-
-    // ----------
-    // V1 options
-    // ----------
-
-    /**
-     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
-     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
-     * Defaults to true.
-     * @internal
-     */
-    public static IncrementalLoading = true;
-
-    /**
-     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
-     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
-     * @internal
-     */
-    public static HomogeneousCoordinates = false;
-
-    // ----------
-    // V2 options
-    // ----------
 
     /**
      * The coordinate system mode. Defaults to AUTO.
@@ -311,7 +269,113 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * Defines the node to use as the root of the hierarchy when loading the scene (default: undefined). If not defined, a root node will be automatically created.
      * You can also pass null if you don't want a root node to be created.
      */
-    public customRootNode?: Nullable<TransformNode>;
+    public customRootNode: Nullable<TransformNode> | undefined;
+}
+
+/**
+ * Options for loading glTF files.
+ */
+type Options = Readonly<
+    Partial<
+        OptionsBase & {
+            // These options don't map 1:1 to the option members of the GLTFFileLoader class and require special handling.
+
+            /**
+             * Raised when the asset has been parsed
+             */
+            onParsed: (loaderData: IGLTFLoaderData) => void;
+        }
+    > & {
+        // These options are required.
+        loaders: { [glTFVersion: number]: (parent: GLTFFileLoader) => IGLTFLoader };
+    }
+>;
+
+/**
+ * File loader for loading glTF files into a scene.
+ */
+export class GLTFFileLoader extends OptionsBase implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+    /** @internal */
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+
+    /** @internal */
+    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+
+    /**
+     * Creates an instance of the glTF file loader, optionally with loader options.
+     * @param options Options for loading a glTF file.
+     */
+    public constructor(
+        // Default options for back compat (e.g. use the static properties defined by side-effects of the individual loaders)
+        options: Options = {
+            loaders: {
+                get 1() {
+                    return GLTFFileLoader._CreateGLTF1Loader;
+                },
+                get 2() {
+                    return GLTFFileLoader._CreateGLTF2Loader;
+                },
+            },
+        }
+    ) {
+        super(options);
+
+        if (options) {
+            if (options.onParsed) {
+                this.onParsedObservable.add(options.onParsed);
+            }
+
+            this.loaders = options.loaders;
+        }
+    }
+
+    public static Configure(options: Options) {
+        // Right now, GLTFFileLoader is also a factory, so Configure currently only needs to return an instance of the GLTFFileLoader.
+        return new GLTFFileLoader(options);
+    }
+
+    /** @internal */
+    public readonly loaders: Readonly<{ [glTFVersion: number]: (parent: GLTFFileLoader) => IGLTFLoader }>;
+
+    // --------------
+    // Common options
+    // --------------
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public onParsedObservable = new Observable<IGLTFLoaderData>();
+
+    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
+        if (this._onParsedObserver) {
+            this.onParsedObservable.remove(this._onParsedObserver);
+        }
+        this._onParsedObserver = this.onParsedObservable.add(callback);
+    }
+
+    // ----------
+    // V1 options
+    // ----------
+
+    /**
+     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
+     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
+     * Defaults to true.
+     * @internal
+     */
+    public static IncrementalLoading = true;
+
+    /**
+     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
+     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+     * @internal
+     */
+    public static HomogeneousCoordinates = false;
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -842,7 +906,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /** @internal */
     public createPlugin(): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader();
+        return new GLTFFileLoader(this);
     }
 
     /**
@@ -994,12 +1058,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
         }
 
-        const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
-            1: GLTFFileLoader._CreateGLTF1Loader,
-            2: GLTFFileLoader._CreateGLTF2Loader,
-        };
-
-        const createLoader = createLoaders[version.major];
+        const createLoader = this.loaders[version.major];
         if (!createLoader) {
             throw new Error("Unsupported version: " + asset.version);
         }

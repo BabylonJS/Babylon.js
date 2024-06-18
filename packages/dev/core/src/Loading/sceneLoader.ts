@@ -2,6 +2,7 @@ import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import { Scene } from "../scene";
+import type { IDisposable } from "../scene";
 import { EngineStore } from "../Engines/engineStore";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import type { AnimationGroup } from "../Animations/animationGroup";
@@ -328,6 +329,8 @@ interface ISceneLoaderPluginInternal {
     readonly onDisposeObservable: Observable<void>;
 }
 
+type SceneLoaderPlugin = (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginFactory>;
+
 /**
  * Defines a plugin registered by the SceneLoader
  */
@@ -335,7 +338,7 @@ interface IRegisteredPlugin {
     /**
      * Defines the plugin to use
      */
-    plugin: (ISceneLoaderPlugin | ISceneLoaderPluginAsync) & Partial<ISceneLoaderPluginFactory> & Partial<ISceneLoaderPluginInternal>;
+    plugin: SceneLoaderPlugin & Partial<ISceneLoaderPluginInternal>;
     /**
      * Defines if the plugin supports binary data
      */
@@ -369,11 +372,34 @@ interface IFileInfo {
     rawData: Nullable<ArrayBufferView>;
 }
 
+type Options = Partial<
+    Readonly<{
+        plugins: SceneLoaderPlugin[];
+    }>
+>;
+
 /**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
-export class SceneLoader {
+export class SceneLoader implements IDisposable {
+    /**
+     * Creates a new SceneLoader
+     * @remarks Construct an instance of a SceneLoader if you want to choose which
+     * plugins to use, and also if you want to configure any plugin.
+     * @param options the options for the SceneLoader
+     */
+    public constructor(options?: Options) {
+        options?.plugins?.forEach((plugin) => this._registerPlugin(plugin));
+    }
+
+    public dispose(): void {
+        this.onPluginActivatedObservable.clear();
+        this._registeredPlugins.clear();
+    }
+
+    private static readonly _DefaultSceneLoader = new SceneLoader();
+
     /**
      * No logging while loading
      */
@@ -444,11 +470,16 @@ export class SceneLoader {
     // Members
 
     /**
+     * Event raised when a plugin is used to load a scene statically or through a specific SceneLoader instance
+     */
+    public static readonly OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
+
+    /**
      * Event raised when a plugin is used to load a scene
      */
-    public static OnPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
+    public readonly onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
 
-    private static _RegisteredPlugins: { [extension: string]: IRegisteredPlugin } = {};
+    private readonly _registeredPlugins = new Map<string, IRegisteredPlugin>();
 
     private static _ShowingLoadingScreen = false;
 
@@ -457,11 +488,15 @@ export class SceneLoader {
      * @returns the .babylon plugin
      */
     public static GetDefaultPlugin(): IRegisteredPlugin {
-        return SceneLoader._RegisteredPlugins[".babylon"];
+        return SceneLoader._DefaultSceneLoader._defaultPlugin;
     }
 
-    private static _GetPluginForExtension(extension: string): IRegisteredPlugin {
-        const registeredPlugin = SceneLoader._RegisteredPlugins[extension];
+    private get _defaultPlugin() {
+        return this._registeredPlugins.get(".babylon")!;
+    }
+
+    private _getPluginForExtension(extension: string): IRegisteredPlugin {
+        const registeredPlugin = this._registeredPlugins.get(extension);
         if (registeredPlugin) {
             return registeredPlugin;
         }
@@ -470,22 +505,22 @@ export class SceneLoader {
                 extension +
                 " files. Trying to use .babylon default plugin. To load from a specific filetype (eg. gltf) see: https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes"
         );
-        return SceneLoader.GetDefaultPlugin();
+        return this._defaultPlugin;
     }
 
-    private static _GetPluginForDirectLoad(data: string): IRegisteredPlugin {
-        for (const extension in SceneLoader._RegisteredPlugins) {
-            const plugin = SceneLoader._RegisteredPlugins[extension].plugin;
+    private _getPluginForDirectLoad(data: string): IRegisteredPlugin {
+        for (const registeredPlugin of this._registeredPlugins.values()) {
+            const plugin = registeredPlugin.plugin;
 
             if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
-                return SceneLoader._RegisteredPlugins[extension];
+                return registeredPlugin;
             }
         }
 
-        return SceneLoader.GetDefaultPlugin();
+        return this._defaultPlugin;
     }
 
-    private static _GetPluginForFilename(sceneFilename: string): IRegisteredPlugin {
+    private _getPluginForFilename(sceneFilename: string): IRegisteredPlugin {
         const queryStringPosition = sceneFilename.indexOf("?");
 
         if (queryStringPosition !== -1) {
@@ -495,7 +530,7 @@ export class SceneLoader {
         const dotPosition = sceneFilename.lastIndexOf(".");
 
         const extension = sceneFilename.substring(dotPosition, sceneFilename.length).toLowerCase();
-        return SceneLoader._GetPluginForExtension(extension);
+        return this._getPluginForExtension(extension);
     }
 
     private static _GetDirectLoad(sceneFilename: string): Nullable<string> {
@@ -519,7 +554,7 @@ export class SceneLoader {
         return errorMessage;
     }
 
-    private static _LoadData(
+    private _loadData(
         fileInfo: IFileInfo,
         scene: Scene,
         onSuccess: (plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync, data: unknown, responseURL?: string) => void,
@@ -537,10 +572,10 @@ export class SceneLoader {
         }
 
         const registeredPlugin = pluginExtension
-            ? SceneLoader._GetPluginForExtension(pluginExtension)
+            ? this._getPluginForExtension(pluginExtension)
             : directLoad
-              ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
-              : SceneLoader._GetPluginForFilename(fileInfo.url);
+              ? this._getPluginForDirectLoad(fileInfo.url)
+              : this._getPluginForFilename(fileInfo.url);
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             // eslint-disable-next-line no-throw-literal
@@ -553,6 +588,7 @@ export class SceneLoader {
             throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
         }
 
+        this.onPluginActivatedObservable.notifyObservers(plugin);
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
 
         // Check if we have a direct load url. If the plugin is registered to handle
@@ -694,8 +730,8 @@ export class SceneLoader {
      * @param extension defines the extension to load
      * @returns a plugin or null if none works
      */
-    public static GetPluginForExtension(extension: string): ISceneLoaderPlugin | ISceneLoaderPluginAsync | ISceneLoaderPluginFactory {
-        return SceneLoader._GetPluginForExtension(extension).plugin;
+    public static GetPluginForExtension(extension: string): SceneLoaderPlugin {
+        return this._DefaultSceneLoader._getPluginForExtension(extension).plugin;
     }
 
     /**
@@ -704,7 +740,34 @@ export class SceneLoader {
      * @returns true if the extension is supported
      */
     public static IsPluginForExtensionAvailable(extension: string): boolean {
-        return !!SceneLoader._RegisteredPlugins[extension];
+        return SceneLoader._DefaultSceneLoader.isPluginForExtensionAvailable(extension);
+    }
+
+    /**
+     * Gets a boolean indicating that the given extension can be loaded
+     * @param extension defines the extension to load
+     * @returns true if the extension is supported
+     */
+    public isPluginForExtensionAvailable(extension: string): boolean {
+        return this._registeredPlugins.has(extension);
+    }
+
+    private _registerPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
+        if (typeof plugin.extensions === "string") {
+            const extension = <string>plugin.extensions;
+            this._registeredPlugins.set(extension.toLowerCase(), {
+                plugin: plugin,
+                isBinary: false,
+            });
+        } else {
+            const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
+            Object.keys(extensions).forEach((extension) => {
+                this._registeredPlugins.set(extension.toLowerCase(), {
+                    plugin: plugin,
+                    isBinary: extensions[extension].isBinary,
+                });
+            });
+        }
     }
 
     /**
@@ -712,21 +775,7 @@ export class SceneLoader {
      * @param plugin defines the plugin to add
      */
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
-        if (typeof plugin.extensions === "string") {
-            const extension = <string>plugin.extensions;
-            SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
-                plugin: plugin,
-                isBinary: false,
-            };
-        } else {
-            const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
-            Object.keys(extensions).forEach((extension) => {
-                SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
-                    plugin: plugin,
-                    isBinary: extensions[extension].isBinary,
-                };
-            });
-        }
+        SceneLoader._DefaultSceneLoader._registerPlugin(plugin);
     }
 
     /**
@@ -743,6 +792,20 @@ export class SceneLoader {
      * @returns The loaded plugin
      */
     public static ImportMesh(
+        meshNames: string | readonly string[] | null | undefined,
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._DefaultSceneLoader._importMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    private _importMesh(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
         sceneFilename: string | File | ArrayBufferView = "",
@@ -807,7 +870,7 @@ export class SceneLoader {
             scene.removePendingData(loadingToken);
         };
 
-        return SceneLoader._LoadData(
+        return this._loadData(
             fileInfo,
             scene,
             (plugin, data, responseURL) => {
@@ -877,8 +940,31 @@ export class SceneLoader {
         pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Promise<ISceneLoaderAsyncResult> {
+        return SceneLoader._DefaultSceneLoader.importMeshAsync(meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+    }
+
+    /**
+     * Import meshes into a scene
+     * @param meshNames an array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene the instance of BABYLON.Scene to append to
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file
+     * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
+     */
+    public importMeshAsync(
+        meshNames: string | readonly string[] | null | undefined,
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Promise<ISceneLoaderAsyncResult> {
         return new Promise((resolve, reject) => {
-            SceneLoader.ImportMesh(
+            this._importMesh(
                 meshNames,
                 rootUrl,
                 sceneFilename,
@@ -927,12 +1013,37 @@ export class SceneLoader {
         pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._DefaultSceneLoader._load(rootUrl, sceneFilename, engine, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    /**
+     * Load a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param engine is the instance of BABYLON.Engine to use to create the scene
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
+     * @returns The loaded plugin
+     */
+    private _load(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
+        onSuccess: Nullable<(scene: Scene) => void> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!engine) {
             Tools.Error("No engine available");
             return null;
         }
 
-        return SceneLoader.Append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name);
+        return this._append(rootUrl, sceneFilename, new Scene(engine), onSuccess, onProgress, onError, pluginExtension, name);
     }
 
     /**
@@ -953,8 +1064,29 @@ export class SceneLoader {
         pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Promise<Scene> {
+        return SceneLoader._DefaultSceneLoader.loadAsync(rootUrl, sceneFilename, engine, onProgress, pluginExtension, name);
+    }
+
+    /**
+     * Load a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param engine is the instance of BABYLON.Engine to use to create the scene
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
+     * @returns The loaded scene
+     */
+    public loadAsync(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Promise<Scene> {
         return new Promise((resolve, reject) => {
-            SceneLoader.Load(
+            this._load(
                 rootUrl,
                 sceneFilename,
                 engine,
@@ -993,6 +1125,31 @@ export class SceneLoader {
         pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._DefaultSceneLoader._append(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    /**
+     * Append a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file, if the data is binary
+     * @returns The loaded plugin
+     */
+    private _append(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onSuccess: Nullable<(scene: Scene) => void> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to append to");
             return null;
@@ -1010,12 +1167,12 @@ export class SceneLoader {
             scene.removePendingData(loadingToken);
         };
 
-        if (SceneLoader.ShowLoadingScreen && !this._ShowingLoadingScreen) {
-            this._ShowingLoadingScreen = true;
+        if (SceneLoader.ShowLoadingScreen && !SceneLoader._ShowingLoadingScreen) {
+            SceneLoader._ShowingLoadingScreen = true;
             scene.getEngine().displayLoadingUI();
             scene.executeWhenReady(() => {
                 scene.getEngine().hideLoadingUI();
-                this._ShowingLoadingScreen = false;
+                SceneLoader._ShowingLoadingScreen = false;
             });
         }
 
@@ -1054,7 +1211,7 @@ export class SceneLoader {
             scene.removePendingData(loadingToken);
         };
 
-        return SceneLoader._LoadData(
+        return this._loadData(
             fileInfo,
             scene,
             (plugin, data) => {
@@ -1105,8 +1262,29 @@ export class SceneLoader {
         pluginExtension: Nullable<string> = null,
         name: string = ""
     ): Promise<Scene> {
+        return SceneLoader._DefaultSceneLoader.appendAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension, name);
+    }
+
+    /**
+     * Append a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the name of the file, if the data is binary
+     * @returns The given scene
+     */
+    public appendAsync(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Promise<Scene> {
         return new Promise((resolve, reject) => {
-            SceneLoader.Append(
+            this._append(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1136,6 +1314,31 @@ export class SceneLoader {
      * @returns The loaded plugin
      */
     public static LoadAssetContainer(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onSuccess: Nullable<(assets: AssetContainer) => void> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null,
+        name: string = ""
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._DefaultSceneLoader._loadAssetContainer(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
+    }
+
+    /**
+     * Load a scene into an asset container
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
+     * @returns The loaded plugin
+     */
+    private _loadAssetContainer(
         rootUrl: string,
         sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1197,7 +1400,7 @@ export class SceneLoader {
             scene.removePendingData(loadingToken);
         };
 
-        return SceneLoader._LoadData(
+        return this._loadData(
             fileInfo,
             scene,
             (plugin, data) => {
@@ -1250,8 +1453,27 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         pluginExtension: Nullable<string> = null
     ): Promise<AssetContainer> {
+        return SceneLoader._DefaultSceneLoader.loadAssetContainerAsync(rootUrl, sceneFilename, scene, onProgress, pluginExtension);
+    }
+
+    /**
+     * Load a scene into an asset container
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
+     * @param scene is the instance of Scene to append to
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param pluginExtension the extension used to determine the plugin
+     * @returns The loaded asset container
+     */
+    public loadAssetContainerAsync(
+        rootUrl: string,
+        sceneFilename: string | File = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        pluginExtension: Nullable<string> = null
+    ): Promise<AssetContainer> {
         return new Promise((resolve, reject) => {
-            SceneLoader.LoadAssetContainer(
+            this._loadAssetContainer(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1281,6 +1503,45 @@ export class SceneLoader {
      * @param pluginExtension the extension used to determine the plugin
      */
     public static ImportAnimations(
+        rootUrl: string,
+        sceneFilename: string | File = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        overwriteAnimations = true,
+        animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
+        targetConverter: Nullable<(target: any) => any> = null,
+        onSuccess: Nullable<(scene: Scene) => void> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
+        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null
+    ): void {
+        SceneLoader._DefaultSceneLoader._importAnimations(
+            rootUrl,
+            sceneFilename,
+            scene,
+            overwriteAnimations,
+            animationGroupLoadingMode,
+            targetConverter,
+            onSuccess,
+            onProgress,
+            onError,
+            pluginExtension
+        );
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+     * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onSuccess a callback with the scene when import succeeds
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param onError a callback with the scene, a message, and possibly an exception when import fails
+     * @param pluginExtension the extension used to determine the plugin
+     */
+    private _importAnimations(
         rootUrl: string,
         sceneFilename: string | File = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
@@ -1353,7 +1614,7 @@ export class SceneLoader {
             }
         };
 
-        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension);
+        this._loadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension);
     }
 
     /**
@@ -1382,6 +1643,40 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
+        pluginExtension: Nullable<string> = null
+    ): Promise<Scene> {
+        return SceneLoader._DefaultSceneLoader.importAnimationsAsync(
+            rootUrl,
+            sceneFilename,
+            scene,
+            overwriteAnimations,
+            animationGroupLoadingMode,
+            targetConverter,
+            onProgress,
+            pluginExtension
+        );
+    }
+
+    /**
+     * Import animations from a file into a scene
+     * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
+     * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene or a File object (default: empty string)
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
+     * @param overwriteAnimations when true, animations are cleaned before importing new ones. Animations are appended otherwise
+     * @param animationGroupLoadingMode defines how to handle old animations groups before importing new ones
+     * @param targetConverter defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     * @param onProgress a callback with a progress event for each file being loaded
+     * @param pluginExtension the extension used to determine the plugin
+     * @returns the updated scene with imported animations
+     */
+    public importAnimationsAsync(
+        rootUrl: string,
+        sceneFilename: string | File = "",
+        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
+        overwriteAnimations = true,
+        animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
+        targetConverter: Nullable<(target: any) => any> = null,
+        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         pluginExtension: Nullable<string> = null
     ): Promise<Scene> {
         return new Promise((resolve, reject) => {
