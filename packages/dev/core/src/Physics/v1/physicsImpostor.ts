@@ -443,7 +443,7 @@ export class PhysicsImpostor {
          */
         public object: IPhysicsEnabledObject,
         /**
-         * The type of the physics imposter
+         * [Object] The type of the physics imposter
          */
         public type: number,
         private _options: PhysicsImpostorParameters = { mass: 0 },

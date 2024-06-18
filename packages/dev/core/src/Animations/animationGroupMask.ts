@@ -36,7 +36,7 @@ export class AnimationGroupMask {
     constructor(
         names?: string[],
         /**
-         * Defines the mode for the mask
+         * [0] Defines the mode for the mask
          */
         public mode: AnimationGroupMaskMode = AnimationGroupMaskMode.Include
     ) {
