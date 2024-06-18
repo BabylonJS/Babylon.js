@@ -122,9 +122,9 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @param y defines the second coordinate
      */
     constructor(
-        /** defines the first coordinate */
+        /** [0] defines the first coordinate */
         public x: number = 0,
-        /** defines the second coordinate */
+        /** [0] defines the second coordinate */
         public y: number = 0
     ) {}
 
@@ -3364,13 +3364,13 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @param w w value of the vector
      */
     constructor(
-        /** x value of the vector */
+        /** [0] x value of the vector */
         public x: number = 0,
-        /** y value of the vector */
+        /** [0] y value of the vector */
         public y: number = 0,
-        /** z value of the vector */
+        /** [0] z value of the vector */
         public z: number = 0,
-        /** w value of the vector */
+        /** [0] w value of the vector */
         public w: number = 0
     ) {}
 

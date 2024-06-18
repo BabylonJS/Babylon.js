@@ -10,9 +10,9 @@ export class PositionNormalVertex {
      * @param normal the normal of the vertex (defaut: 0,1,0)
      */
     constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
+        /** [Vector3.Zero()] the position of the vertex (defaut: 0,0,0) */
         public position: Vector3 = Vector3.Zero(),
-        /** the normal of the vertex (defaut: 0,1,0) */
+        /** [Vector3.Up()] the normal of the vertex (defaut: 0,1,0) */
         public normal: Vector3 = Vector3.Up()
     ) {}
 
@@ -36,11 +36,11 @@ export class PositionNormalTextureVertex {
      * @param uv the uv of the vertex (default: 0,0)
      */
     constructor(
-        /** the position of the vertex (defaut: 0,0,0) */
+        /** [Vector3.Zero()] the position of the vertex (defaut: 0,0,0) */
         public position: Vector3 = Vector3.Zero(),
-        /** the normal of the vertex (defaut: 0,1,0) */
+        /** [Vector3.Up()] the normal of the vertex (defaut: 0,1,0) */
         public normal: Vector3 = Vector3.Up(),
-        /** the uv of the vertex (default: 0,0) */
+        /** [Vector3.Zero()] the uv of the vertex (default: 0,0) */
         public uv: Vector2 = Vector2.Zero()
     ) {}
     /**

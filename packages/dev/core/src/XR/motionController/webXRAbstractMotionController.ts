@@ -296,6 +296,7 @@ export abstract class WebXRAbstractMotionController implements IDisposable {
         public handedness: MotionControllerHandedness,
         /**
          * @internal
+         * [false]
          */
         public _doNotLoadControllerMesh: boolean = false,
         private _controllerCache?: Array<{
