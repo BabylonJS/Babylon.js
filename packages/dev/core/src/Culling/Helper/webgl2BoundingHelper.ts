@@ -54,7 +54,6 @@ export class WebGL2BoundingHelper {
     /** @internal */
     public updateBuffer(count: number, targetBuffer: Buffer): void {
         const engine = this._engine as Engine;
-        engine.enableEffect(this._computeEffect);
 
         // Update
         engine.bindTransformFeedbackBuffer(targetBuffer.getBuffer());

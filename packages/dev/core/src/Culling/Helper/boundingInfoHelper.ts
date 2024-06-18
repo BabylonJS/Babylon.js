@@ -9,7 +9,7 @@ import type { Engine } from "core/Engines/engine";
 /**
  * Utility class to help with bounding info management
  * #BCNJD4#5
- * #BCNJD4#9
+ * #BCNJD4#14
  */
 export class BoundingInfoHelper {
     private _platform: WebGL2BoundingHelper;
@@ -159,13 +159,14 @@ export class BoundingInfoHelper {
                 return;
             }
 
-            computeEffect.onCompileObservable.add(() => {
+            computeEffect.onCompileObservable.addOnce(() => {
                 this._updateBuffer(mesh, computeEffect, targetBuffer, resolve);
             });
         });
     }
 
     private _updateBuffer(mesh: Mesh, effect: Effect, target: Buffer, resolve: () => void): void {
+        effect.getEngine().enableEffect(effect);
         const vertexCount = mesh.getTotalVertices();
         mesh._bindDirect(effect, null, true);
 

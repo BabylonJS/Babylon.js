@@ -18,11 +18,12 @@ const mat4 identity = mat4(
 );
 
 void main(void) {
+    vec3 positionUpdated = position;
 #include<morphTargetsVertexGlobal>
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
     mat4 finalWorld = identity;
 #include<bonesVertex>
 #include<bakedVertexAnimation>
-    vec4 worldPos = finalWorld * vec4(position, 1.0);
+    vec4 worldPos = finalWorld * vec4(positionUpdated, 1.0);
 	outPosition = worldPos.xyz;
 }
