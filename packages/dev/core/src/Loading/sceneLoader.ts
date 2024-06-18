@@ -395,7 +395,6 @@ export class SceneLoader implements IDisposable {
 
     public dispose(): void {
         this.onPluginActivatedObservable.clear();
-        this._registeredPlugins.clear();
     }
 
     private static readonly _DefaultSceneLoader = new SceneLoader();
@@ -479,7 +478,7 @@ export class SceneLoader implements IDisposable {
      */
     public readonly onPluginActivatedObservable = new Observable<ISceneLoaderPlugin | ISceneLoaderPluginAsync>();
 
-    private readonly _registeredPlugins = new Map<string, IRegisteredPlugin>();
+    private readonly _registeredPlugins: { [extension: string]: IRegisteredPlugin } = {};
 
     private static _ShowingLoadingScreen = false;
 
@@ -492,11 +491,11 @@ export class SceneLoader implements IDisposable {
     }
 
     private get _defaultPlugin() {
-        return this._registeredPlugins.get(".babylon")!;
+        return this._registeredPlugins[".babylon"];
     }
 
     private _getPluginForExtension(extension: string): IRegisteredPlugin {
-        const registeredPlugin = this._registeredPlugins.get(extension);
+        const registeredPlugin = this._registeredPlugins[extension];
         if (registeredPlugin) {
             return registeredPlugin;
         }
@@ -509,10 +508,10 @@ export class SceneLoader implements IDisposable {
     }
 
     private _getPluginForDirectLoad(data: string): IRegisteredPlugin {
-        for (const registeredPlugin of this._registeredPlugins.values()) {
-            const plugin = registeredPlugin.plugin;
+        for (const extension in this._registeredPlugins) {
+            const registeredPlugin = this._registeredPlugins[extension];
 
-            if (plugin.canDirectLoad && plugin.canDirectLoad(data)) {
+            if (registeredPlugin.plugin.canDirectLoad && registeredPlugin.plugin.canDirectLoad(data)) {
                 return registeredPlugin;
             }
         }
@@ -749,23 +748,23 @@ export class SceneLoader implements IDisposable {
      * @returns true if the extension is supported
      */
     public isPluginForExtensionAvailable(extension: string): boolean {
-        return this._registeredPlugins.has(extension);
+        return !!this._registeredPlugins[extension];
     }
 
     private _registerPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
         if (typeof plugin.extensions === "string") {
             const extension = <string>plugin.extensions;
-            this._registeredPlugins.set(extension.toLowerCase(), {
+            this._registeredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: false,
-            });
+            };
         } else {
             const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
             Object.keys(extensions).forEach((extension) => {
-                this._registeredPlugins.set(extension.toLowerCase(), {
+                this._registeredPlugins[extension.toLowerCase()] = {
                     plugin: plugin,
                     isBinary: extensions[extension].isBinary,
-                });
+                };
             });
         }
     }
