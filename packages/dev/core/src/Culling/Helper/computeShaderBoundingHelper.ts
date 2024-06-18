@@ -15,7 +15,7 @@ import "../../ShadersWGSL/boundingInfo.compute";
 /** @internal */
 export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform {
     private _engine: Nullable<AbstractEngine>;
-    private _computeShader: ComputeShader;
+    private _computeShaders: { [key: string]: ComputeShader } = {};
     private _positionBuffers: { [key: number]: StorageBuffer } = {};
     private _indexBuffers: { [key: number]: StorageBuffer } = {};
     private _weightBuffers: { [key: number]: StorageBuffer } = {};
@@ -28,17 +28,32 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
      */
     constructor(engine: AbstractEngine) {
         this._engine = engine;
-        this._computeShader = new ComputeShader("boundingInfoCompute", this._engine!, "boundingInfo", {
-            bindingsMapping: {
-                positionBuffer: { group: 0, binding: 0 },
-                resultBuffer: { group: 0, binding: 1 },
-                indexBuffer: { group: 0, binding: 2 },
-                weightBuffer: { group: 0, binding: 3 },
-            },
-        });
     }
 
-    private _extractDataAndLink(mesh: Mesh, kind: string, stride: number, name: string, storageUnit: { [key: number]: StorageBuffer }) {
+    private _getComputeShader(defines: string[]) {
+        let computeShader: ComputeShader;
+        const join = defines.join("\n");
+
+        if (!this._computeShaders[join]) {
+            computeShader = new ComputeShader("boundingInfoCompute", this._engine!, "boundingInfo", {
+                bindingsMapping: {
+                    positionBuffer: { group: 0, binding: 0 },
+                    resultBuffer: { group: 0, binding: 1 },
+                    boneSampler: { group: 0, binding: 2 },
+                    indexBuffer: { group: 0, binding: 3 },
+                    weightBuffer: { group: 0, binding: 4 },
+                },
+                defines: defines,
+            });
+            this._computeShaders[join] = computeShader;
+        } else {
+            computeShader = this._computeShaders[join];
+        }
+
+        return computeShader;
+    }
+
+    private _extractDataAndLink(computeShader: ComputeShader, mesh: Mesh, kind: string, stride: number, name: string, storageUnit: { [key: number]: StorageBuffer }) {
         let buffer: StorageBuffer;
         const vertexCount = mesh.getTotalVertices();
         if (!storageUnit[mesh.uniqueId]) {
@@ -51,38 +66,32 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             buffer = storageUnit[mesh.uniqueId];
         }
 
-        this._computeShader.setStorageBuffer(name, buffer);
+        computeShader.setStorageBuffer(name, buffer);
     }
 
     /** @internal */
     public processAsync(mesh: AbstractMesh): Promise<void> {
         const vertexCount = mesh.getTotalVertices();
+        const defines = [];
 
-        this._extractDataAndLink(mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
+        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+        }
+
+        const computeShader = this._getComputeShader(defines);
+
+        this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
 
         // Bones
-        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            // this._extractDataAndLink(mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
-            //this._extractDataAndLink(mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
+        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
+            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
+            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
+
+            const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
+            computeShader.setTexture("boneSampler", boneSampler!, false);
             // if (mesh.numBoneInfluencers > 4) {
             //     attribs.push(VertexBuffer.MatricesIndicesExtraKind);
             //     attribs.push(VertexBuffer.MatricesWeightsExtraKind);
-            // }
-            // const skeleton = mesh.skeleton;
-            // defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            // if (skeleton.isUsingTextureForMatrices) {
-            //     defines.push("#define BONETEXTURE");
-            //     if (uniforms.indexOf("boneTextureWidth") === -1) {
-            //         uniforms.push("boneTextureWidth");
-            //     }
-            //     if (samplers.indexOf("boneSampler") === -1) {
-            //         samplers.push("boneSampler");
-            //     }
-            // } else {
-            //     defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
-            //     if (uniforms.indexOf("mBones") === -1) {
-            //         uniforms.push("mBones");
-            //     }
             // }
         }
 
@@ -113,10 +122,10 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
         resultBuffer.update(resultData);
 
-        this._computeShader.setStorageBuffer("resultBuffer", resultBuffer);
+        computeShader.setStorageBuffer("resultBuffer", resultBuffer);
 
         // Dispatch
-        this._computeShader.dispatchWhenReady(vertexCount).then(() => {
+        computeShader.dispatchWhenReady(vertexCount).then(() => {
             resultBuffer.read(undefined, undefined, resultData).then(() => {
                 mesh._refreshBoundingInfoDirect({
                     minimum: Vector3.FromArray(resultData, 0),
@@ -144,6 +153,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._disposeCache(this._resultBuffers);
         this._resultBuffers = {};
         this._resultData = {};
+        this._computeShaders = {};
         this._engine = null;
     }
 }

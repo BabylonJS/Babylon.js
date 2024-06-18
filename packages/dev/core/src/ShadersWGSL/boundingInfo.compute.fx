@@ -1,11 +1,9 @@
-struct Vector3 {
-  x : f32,
-  y : f32,
-  z : f32,
+struct Buffer {
+  data : array<vec3f>,
 };
 
-struct Buffer {
-  data : array<Vector3>,
+struct WeightData {
+  data : array<vec4f>,
 };
 
 struct Results {
@@ -57,33 +55,17 @@ fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) 
     // }
 }
 
-// #if NUM_BONE_INFLUENCERS > 0
-//     #ifndef BAKED_VERTEX_ANIMATION_TEXTURE
-//         #ifdef BONETEXTURE
-//             var boneSampler : texture_2d<f32>;
-//             uniform boneTextureWidth : f32;
-//         #else
-//             uniform mBones : array<mat4x4, BonesPerMesh>;
-//             #ifdef BONES_VELOCITY_ENABLED
-//                 uniform mPreviousBones : array<mat4x4, BonesPerMesh>;
-//             #endif
-//         #endif
+fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
+{
+    let offset = i32(index)  * 4;	
 
-//         #ifdef BONETEXTURE
-//             fn readMatrixFromRawSampler(smp : texture_2d<f32>, index : f32) -> mat4x4<f32>
-//             {
-//                 let offset = i32(index)  * 4;	
+    let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
+    let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
+    let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
+    let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
 
-//                 let m0 = textureLoad(smp, vec2<i32>(offset + 0, 0), 0);
-//                 let m1 = textureLoad(smp, vec2<i32>(offset + 1, 0), 0);
-//                 let m2 = textureLoad(smp, vec2<i32>(offset + 2, 0), 0);
-//                 let m3 = textureLoad(smp, vec2<i32>(offset + 3, 0), 0);
-
-//                 return mat4x4<f32>(m0, m1, m2, m3);
-//             }
-//         #endif
-//     #endif
-// #endif
+    return mat4x4<f32>(m0, m1, m2, m3);
+}
 
 const identity = mat4x4f(
     vec4f(1.0, 0.0, 0.0, 0.0),
@@ -94,11 +76,15 @@ const identity = mat4x4f(
 
 @group(0) @binding(0) var<storage, read> positionBuffer : Buffer;
 @group(0) @binding(1) var<storage, read_write> resultBuffer : Results;
-// @group(0) @binding(2) var<storage, read> indexBuffer : Buffer;
-// @group(0) @binding(3) var<storage, read> weightBuffer : Buffer;
+#if NUM_BONE_INFLUENCERS > 0
+@group(0) @binding(2) var boneSampler : texture_2d<f32>;
+@group(0) @binding(3) var<storage, read> indexBuffer : WeightData;
+@group(0) @binding(4) var<storage, read> weightBuffer : WeightData;
+
   // #if NUM_BONE_INFLUENCERS > 4
   //   @group(0) @binding(3) var<storage, read> matricesExtraBuffer : Buffer;
   // #endif
+#endif
 
 @compute @workgroup_size(1, 1, 1)
 
@@ -108,12 +94,31 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
         return;
     }
 
-    let positionUpdated = positionBuffer.data[index];
+    let position = positionBuffer.data[index];
 
-    let finalWorld = identity;
-#include<bonesVertex>    
+    var finalWorld = identity;
 
-    var worldPos = finalWorld * vec4f(positionUpdated.x, positionUpdated.y, positionUpdated.z, 1.0);
+#if NUM_BONE_INFLUENCERS > 0
+      var influence : mat4x4<f32>;
+      let matricesIndices = indexBuffer.data[index];
+      let matricesWeights = weightBuffer.data[index];
+
+      influence = readMatrixFromRawSampler(boneSampler, matricesIndices.x) * matricesWeights.x;
+
+      #if NUM_BONE_INFLUENCERS > 1
+          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.y) * matricesWeights.y;
+      #endif	
+      #if NUM_BONE_INFLUENCERS > 2
+          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.z) * matricesWeights.z;
+      #endif	
+      #if NUM_BONE_INFLUENCERS > 3
+          influence = influence + readMatrixFromRawSampler(boneSampler, matricesIndices.w) * matricesWeights.w;
+      #endif	
+
+      finalWorld = finalWorld * influence;
+#endif
+
+    var worldPos = finalWorld * vec4f(position.x, position.y, position.z, 1.0);
 
     atomicMinFloat(&resultBuffer.minX, worldPos.x);
     atomicMinFloat(&resultBuffer.minY, worldPos.y);
