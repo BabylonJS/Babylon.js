@@ -1,6 +1,37 @@
 {
-    "fromTag": "7.11.2",
+    "fromTag": "7.11.3",
     "changelog": {
+        "7.11.4": [
+            {
+                "pr": "15221",
+                "title": "Bbhelper 2 - compute shaders",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Culling/Helper/IBoundingInfoHelperPlatform.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/webgl2BoundingHelper.ts",
+                    "packages/dev/core/src/Culling/index.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessingOptions.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/ShadersWGSL/boundingInfo.compute.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bbhelper.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
         "7.11.3": [
             {
                 "pr": "15223",
