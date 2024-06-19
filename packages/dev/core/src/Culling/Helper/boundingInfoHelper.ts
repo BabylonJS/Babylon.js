@@ -1,14 +1,13 @@
-import type { Mesh } from "core/Meshes/mesh";
-import { VertexBuffer } from "core/Buffers/buffer";
+import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import { GetClass } from "core/Misc/typeStore";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
 
 /**
  * Utility class to help with bounding info management
- * #BCNJD4#5
- * #BCNJD4#14
- * #BCNJD4#15
+ * #BCNJD4#41 =\> does not use the BoundingInfoHelper class, performs calculations on the CPU
+ * #BCNJD4#37 =\> same as #41 but use the BoundingInfoHelper class
+ * #BCNJD4#40 =\> example with bones and morphs
  */
 export class BoundingInfoHelper {
     private _platform: IBoundingInfoHelperPlatform;
@@ -32,17 +31,11 @@ export class BoundingInfoHelper {
     }
 
     /**
-     * Compute the bounding info of a mesh using shaders
-     * @param mesh defines the mesh to update
-     * @returns a promise that resolves when the bounding info is computed
+     * Compute the bounding info of a mesh / array of meshes using shaders
+     * @param mesh defines the mesh(es) to update
+     * @returns a promise that resolves when the bounding info is/are computed
      */
-    public computeAsync(mesh: Mesh): Promise<void> {
-        const source = mesh.getVertexBuffer(VertexBuffer.PositionKind);
-
-        if (!source) {
-            return Promise.resolve();
-        }
-
+    public computeAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void> {
         return this._platform.processAsync(mesh);
     }
 
