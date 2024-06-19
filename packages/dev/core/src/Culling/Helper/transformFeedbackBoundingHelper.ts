@@ -3,7 +3,6 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import { VertexBuffer, Buffer } from "core/Buffers/buffer";
 import type { Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
-import { RegisterClass } from "core/Misc/typeStore";
 import type { Nullable } from "core/types";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
@@ -237,5 +236,3 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         this._engine = null;
     }
 }
-
-RegisterClass("BABYLON.TransformFeedbackBoundingHelper", TransformFeedbackBoundingHelper);

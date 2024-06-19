@@ -1,7 +1,6 @@
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Nullable } from "core/types";
-import { RegisterClass } from "core/Misc/typeStore";
 import { ComputeShader } from "core/Compute/computeShader";
 import { StorageBuffer } from "core/Buffers/storageBuffer";
 import type { WebGPUEngine } from "core/Engines";
@@ -212,5 +211,3 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._engine = null;
     }
 }
-
-RegisterClass("BABYLON.ComputeShaderBoundingHelper", ComputeShaderBoundingHelper);

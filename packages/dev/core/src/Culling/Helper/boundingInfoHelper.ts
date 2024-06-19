@@ -1,7 +1,7 @@
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
-import { GetClass } from "core/Misc/typeStore";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
+import type { ThinEngine } from "core/Engines";
 
 /**
  * Utility class to help with bounding info management
@@ -11,23 +11,14 @@ import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform"
  */
 export class BoundingInfoHelper {
     private _platform: IBoundingInfoHelperPlatform;
+    private _engine: AbstractEngine;
 
     /**
      * Creates a new BoundingInfoHelper
      * @param engine defines the engine to use
      */
     public constructor(engine: AbstractEngine) {
-        if (engine.getCaps().supportComputeShaders) {
-            if (!GetClass("BABYLON.ComputeShaderBoundingHelper")) {
-                throw new Error("The ComputeShaderBoundingHelper class is not available! Make sure you have imported it.");
-            }
-            this._platform = new (GetClass("BABYLON.ComputeShaderBoundingHelper") as any)(engine);
-        } else {
-            if (!GetClass("BABYLON.TransformFeedbackBoundingHelper")) {
-                throw new Error("The TransformFeedbackBoundingHelper class is not available! Make sure you have imported it.");
-            }
-            this._platform = new (GetClass("BABYLON.TransformFeedbackBoundingHelper") as any)(engine);
-        }
+        this._engine = engine;
     }
 
     /**
@@ -35,7 +26,15 @@ export class BoundingInfoHelper {
      * @param target defines the mesh(es) to update
      * @returns a promise that resolves when the bounding info is/are computed
      */
-    public computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
+    public async computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
+        if (this._engine.getCaps().supportComputeShaders) {
+            const module = await import("./computeShaderBoundingHelper");
+            this._platform = new module.ComputeShaderBoundingHelper(this._engine);
+        } else {
+            const module = await import("./transformFeedbackBoundingHelper");
+            this._platform = new module.TransformFeedbackBoundingHelper(this._engine as ThinEngine);
+        }
+
         return this._platform.processAsync(target);
     }
 
