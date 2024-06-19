@@ -3,12 +3,12 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Nullable } from "core/types";
 import { ComputeShader } from "core/Compute/computeShader";
 import { StorageBuffer } from "core/Buffers/storageBuffer";
-import type { WebGPUEngine } from "core/Engines";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Mesh } from "core/Meshes/mesh";
-import { VertexBuffer } from "core/Buffers";
-import { Vector3 } from "core/Maths";
-import { UniformBuffer } from "core/Materials";
+import { VertexBuffer } from "core/Buffers/buffer";
+import { Vector3 } from "core/Maths/math.vector";
+import { UniformBuffer } from "core/Materials/uniformBuffer";
 
 import "../../ShadersWGSL/boundingInfo.compute";
 
