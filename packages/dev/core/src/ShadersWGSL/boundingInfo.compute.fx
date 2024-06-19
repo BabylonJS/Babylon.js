@@ -72,7 +72,7 @@ const identity = mat4x4f(
 struct Settings {
     indexResult : u32,
     #ifdef MORPHTARGETS
-        morphTargetTextureInfo: vec2f,
+        morphTargetTextureInfo: vec3f,
     #endif
 };
 
@@ -99,8 +99,9 @@ struct Settings {
 #ifdef MORPHTARGETS
 fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
 {			
-    let y = floor(f32(vertexIndex) / settings.morphTargetTextureInfo.x);
-    let x = f32(vertexIndex) - y * settings.morphTargetTextureInfo.x;
+    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
+    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
+    let x = vertexID - y * settings.morphTargetTextureInfo.y;
     let textureUV = vec2<i32>(i32(x), i32(y));
     return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0).xyz;
 }

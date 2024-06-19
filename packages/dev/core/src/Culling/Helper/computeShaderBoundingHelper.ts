@@ -69,7 +69,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         if (this._uboIndex >= this._ubos.length) {
             const ubo = new UniformBuffer(this._engine!);
             ubo.addUniform("indexResult", 4);
-            ubo.addFloat2("morphTargetTextureInfo", 0, 0);
+            ubo.addFloat3("morphTargetTextureInfo", 0, 0, 0);
             this._ubos.push(ubo);
         }
 
@@ -201,7 +201,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                     manager.numInfluencers,
                     manager._morphTargetTextureIndices
                 );
-                ubo.updateFloat2("morphTargetTextureInfo", manager._textureWidth, manager._textureHeight);
+                ubo.updateFloat3("morphTargetTextureInfo", manager._textureVertexStride, manager._textureWidth, manager._textureHeight);
             }
 
             ubo.update();

@@ -31,11 +31,13 @@ export class MorphTargetManager implements IDisposable {
     private _supportsTangents = false;
     private _supportsUVs = false;
     private _vertexCount = 0;
-    private _textureVertexStride = 0;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
     private _canUseTextureForTargets = false;
     private _blockCounter = 0;
+
+    /** @internal */
+    public _textureVertexStride = 0;
 
     /** @internal */
     public _textureWidth = 0;
