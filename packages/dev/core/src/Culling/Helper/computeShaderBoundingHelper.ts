@@ -124,8 +124,9 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
         resultBuffer.update(resultData);
 
-        const promises: Promise<void>[] = [];
         const processedMeshes: AbstractMesh[] = [];
+        const computeShaders: ComputeShader[] = [];
+        const uniqueComputeShaders: Set<ComputeShader> = new Set();
 
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
@@ -144,46 +145,68 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
             const computeShader = this._getComputeShader(defines);
 
-            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
-
-            // Bones
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
-                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
-                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
-                const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
-                computeShader.setTexture("boneSampler", boneSampler!, false);
-                if (mesh.numBoneInfluencers > 4) {
-                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesExtraKind, 4, "indexExtraBuffer", this._indexExtraBuffers);
-                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsExtraKind, 4, "weightExtraBuffer", this._weightExtraBuffers);
-                }
-            }
-
-            computeShader.setStorageBuffer("resultBuffer", resultBuffer);
-
-            const ubo = this._getUBO();
-            ubo.updateUInt("indexResult", processedMeshes.length - 1);
-            ubo.update();
-
-            computeShader.setUniformBuffer("settings", ubo);
-
-            // Dispatch
-            promises.push(computeShader.dispatchWhenReady(Math.ceil(vertexCount / 64)));
+            computeShaders.push(computeShader);
+            uniqueComputeShaders.add(computeShader);
         }
 
-        if (promises.length === 0) {
+        if (processedMeshes.length === 0) {
             return Promise.resolve();
         }
 
-        return Promise.all(promises).then(() => {
-            resultBuffer.read(undefined, undefined, resultData, true).then(() => {
+        return new Promise((resolve) => {
+            const check = () => {
+                for (const computeShader of uniqueComputeShaders) {
+                    if (!computeShader.isReady()) {
+                        setTimeout(check, 10);
+                        return;
+                    }
+                }
+
                 for (let i = 0; i < processedMeshes.length; i++) {
                     const mesh = processedMeshes[i];
-                    mesh._refreshBoundingInfoDirect({
-                        minimum: Vector3.FromArray(resultData, i * 8),
-                        maximum: Vector3.FromArray(resultData, i * 8 + 3),
-                    });
+                    const vertexCount = mesh.getTotalVertices();
+
+                    const computeShader = computeShaders[i];
+
+                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
+
+                    // Bones
+                    if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
+                        this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
+                        this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
+                        const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
+                        computeShader.setTexture("boneSampler", boneSampler!, false);
+                        if (mesh.numBoneInfluencers > 4) {
+                            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesExtraKind, 4, "indexExtraBuffer", this._indexExtraBuffers);
+                            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsExtraKind, 4, "weightExtraBuffer", this._weightExtraBuffers);
+                        }
+                    }
+
+                    computeShader.setStorageBuffer("resultBuffer", resultBuffer);
+
+                    const ubo = this._getUBO();
+                    ubo.updateUInt("indexResult", i);
+                    ubo.update();
+
+                    computeShader.setUniformBuffer("settings", ubo);
+
+                    // Dispatch
+                    computeShader.dispatch(Math.ceil(vertexCount / 64));
                 }
-            });
+
+                resultBuffer.read(undefined, undefined, resultData, true).then(() => {
+                    for (let i = 0; i < processedMeshes.length; i++) {
+                        const mesh = processedMeshes[i];
+                        mesh._refreshBoundingInfoDirect({
+                            minimum: Vector3.FromArray(resultData, i * 8),
+                            maximum: Vector3.FromArray(resultData, i * 8 + 3),
+                        });
+                    }
+                    resolve();
+                });
+            };
+
+            check();
         });
     }
 
