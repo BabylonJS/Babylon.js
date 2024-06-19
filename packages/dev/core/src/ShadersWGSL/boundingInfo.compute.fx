@@ -70,7 +70,12 @@ const identity = mat4x4f(
 );
 
 struct Settings {
-    indexResult : u32
+    indexResult : u32,
+    #ifdef MORPHTARGETS
+        morphTargetInfluences: array<f32, NUM_MORPH_INFLUENCERS>,
+        morphTargetTextureIndices : array<f32, NUM_MORPH_INFLUENCERS>,
+        morphTargetTextureInfo: vec2f,
+    #endif
 };
 
 @group(0) @binding(0) var<storage, read> positionBuffer : array<f32>;
@@ -86,8 +91,21 @@ struct Settings {
     @group(0) @binding(6) var<storage, read> weightExtraBuffer : array<vec4f>;
   #endif
 #endif
+#ifdef MORPHTARGETS
+@group(0) @binding(8) var morphTargets : texture_2d_array<f32>;
+#endif
 
 @compute @workgroup_size(64, 1, 1)
+
+#ifdef MORPHTARGETS
+fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : f32) -> vec3<f32>
+{			
+    let y = floor(vertexIndex / settings.morphTargetTextureInfo.x);
+    let x = vertexIndex - y * settings.morphTargetTextureInfo.x;
+    let textureUV = vec2<i32>(x, y);
+    return textureLoad(morphTargets, morphTargetsSampler, textureUV, i32(settings.morphTargetTextureIndices[targetIndex]), 0.0).xyz;
+}
+#endif
 
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;
@@ -98,6 +116,7 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let position = vec3f(positionBuffer[index * 3], positionBuffer[index * 3 + 1], positionBuffer[index * 3 + 2]);
 
     var finalWorld = identity;
+    var positionUpdated = position;
 
 #if NUM_BONE_INFLUENCERS > 0
       var influence : mat4x4<f32>;
@@ -134,7 +153,13 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
       finalWorld = finalWorld * influence;
 #endif
 
-    var worldPos = finalWorld * vec4f(position.x, position.y, position.z, 1.0);
+#ifdef MORPHTARGETS
+    for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
+        positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * settings.morphTargetInfluences[i];
+    }
+#endif
+
+    var worldPos = finalWorld * vec4f(positionUpdated.x, positionUpdated.y, positionUpdated.z, 1.0);
 
     atomicMinFloat(&resultBuffer[settings.indexResult].minX, worldPos.x);
     atomicMinFloat(&resultBuffer[settings.indexResult].minY, worldPos.y);

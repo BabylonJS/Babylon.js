@@ -24,6 +24,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     private _resultData: Float32Array;
     private _resultBuffer: StorageBuffer;
     private _ubos: UniformBuffer[] = [];
+    private _uboInfluences: number[] = [];
     private _uboIndex: number = 0;
 
     /**
@@ -49,6 +50,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                     indexExtraBuffer: { group: 0, binding: 5 },
                     weightExtraBuffer: { group: 0, binding: 6 },
                     settings: { group: 0, binding: 7 },
+                    morphTargets: { group: 0, binding: 8 },
                 },
                 defines: defines,
             });
@@ -60,11 +62,29 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         return computeShader;
     }
 
-    private _getUBO() {
+    private _buildUBO(numInfluencers: number) {
+        const ubo = new UniformBuffer(this._engine!);
+        ubo.addUniform("indexResult", 4);
+        if (numInfluencers) {
+            ubo.addUniform("morphTargetInfluences", 4, numInfluencers);
+            ubo.addUniform("morphTargetTextureIndices", 4, numInfluencers);
+            ubo.addFloat2("morphTargetTextureInfo", 0, 0);
+        }
+        return ubo;
+    }
+
+    private _getUBO(numInfluencers: number) {
         if (this._uboIndex >= this._ubos.length) {
-            const ubo = new UniformBuffer(this._engine!);
-            ubo.addUniform("indexResult", 4);
+            const ubo = this._buildUBO(numInfluencers);
             this._ubos.push(ubo);
+            this._uboInfluences.push(numInfluencers);
+        }
+
+        if (this._uboInfluences[this._uboIndex] !== numInfluencers) {
+            this._ubos[this._uboIndex].dispose();
+            const ubo = this._buildUBO(numInfluencers);
+            this._ubos[this._uboIndex] = ubo;
+            this._uboInfluences[this._uboIndex] = numInfluencers;
         }
 
         return this._ubos[this._uboIndex++];
@@ -141,6 +161,14 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                 defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
             }
 
+            const manager = (<Mesh>mesh).morphTargetManager;
+            let numInfluencers = 0;
+            if (manager && manager.numInfluencers > 0) {
+                numInfluencers = manager.numInfluencers;
+                defines.push("MORPHTARGETS");
+                defines.push("#define NUM_MORPH_INFLUENCERS " + manager.numInfluencers);
+            }
+
             const computeShader = this._getComputeShader(defines);
 
             this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
@@ -157,12 +185,22 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                 }
             }
 
-            computeShader.setStorageBuffer("resultBuffer", resultBuffer);
-
-            const ubo = this._getUBO();
+            // UBO
+            const ubo = this._getUBO(numInfluencers);
             ubo.updateUInt("indexResult", processedMeshes.length - 1);
+
+            // Morphs
+            if (manager && manager.numInfluencers > 0) {
+                const morphTargets = manager._targetStoreTexture;
+                computeShader.setTexture("morphTargets", morphTargets!, false);
+                ubo.updateFloatArray("morphTargetInfluences", manager.influences);
+                ubo.updateFloatArray("morphTargetTextureIndices", manager._morphTargetTextureIndices);
+                ubo.updateFloat2("morphTargetTextureInfo", manager._textureWidth, manager._textureHeight);
+            }
+
             ubo.update();
 
+            computeShader.setStorageBuffer("resultBuffer", resultBuffer);
             computeShader.setUniformBuffer("settings", ubo);
 
             // Dispatch
@@ -207,6 +245,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             ubo.dispose();
         }
         this._ubos = [];
+        this._uboInfluences = [];
         this._computeShaders = {};
         this._engine = null;
     }
