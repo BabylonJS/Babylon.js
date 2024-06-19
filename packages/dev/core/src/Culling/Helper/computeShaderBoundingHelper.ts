@@ -21,10 +21,11 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     private _weightBuffers: { [key: number]: StorageBuffer } = {};
     private _indexExtraBuffers: { [key: number]: StorageBuffer } = {};
     private _weightExtraBuffers: { [key: number]: StorageBuffer } = {};
+    private _morphTargetInfluenceBuffers: { [key: number]: StorageBuffer } = {};
+    private _morphTargetTextureIndexBuffers: { [key: number]: StorageBuffer } = {};
     private _resultData: Float32Array;
     private _resultBuffer: StorageBuffer;
     private _ubos: UniformBuffer[] = [];
-    private _uboInfluences: number[] = [];
     private _uboIndex: number = 0;
 
     /**
@@ -51,6 +52,8 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                     weightExtraBuffer: { group: 0, binding: 6 },
                     settings: { group: 0, binding: 7 },
                     morphTargets: { group: 0, binding: 8 },
+                    morphTargetInfluences: { group: 0, binding: 9 },
+                    morphTargetTextureIndices: { group: 0, binding: 10 },
                 },
                 defines: defines,
             });
@@ -62,29 +65,12 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         return computeShader;
     }
 
-    private _buildUBO(numInfluencers: number) {
-        const ubo = new UniformBuffer(this._engine!);
-        ubo.addUniform("indexResult", 4);
-        if (numInfluencers) {
-            ubo.addUniform("morphTargetInfluences", 4, numInfluencers);
-            ubo.addUniform("morphTargetTextureIndices", 4, numInfluencers);
-            ubo.addFloat2("morphTargetTextureInfo", 0, 0);
-        }
-        return ubo;
-    }
-
-    private _getUBO(numInfluencers: number) {
+    private _getUBO() {
         if (this._uboIndex >= this._ubos.length) {
-            const ubo = this._buildUBO(numInfluencers);
+            const ubo = new UniformBuffer(this._engine!);
+            ubo.addUniform("indexResult", 4);
+            ubo.addFloat2("morphTargetTextureInfo", 0, 0);
             this._ubos.push(ubo);
-            this._uboInfluences.push(numInfluencers);
-        }
-
-        if (this._uboInfluences[this._uboIndex] !== numInfluencers) {
-            this._ubos[this._uboIndex].dispose();
-            const ubo = this._buildUBO(numInfluencers);
-            this._ubos[this._uboIndex] = ubo;
-            this._uboInfluences[this._uboIndex] = numInfluencers;
         }
 
         return this._ubos[this._uboIndex++];
@@ -102,6 +88,20 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         } else {
             buffer = storageUnit[mesh.uniqueId];
         }
+
+        computeShader.setStorageBuffer(name, buffer);
+    }
+
+    private _prepareStorage(computeShader: ComputeShader, name: string, id: number, storageUnit: { [key: number]: StorageBuffer }, numInfluencers: number, data: Float32Array) {
+        let buffer: StorageBuffer;
+        if (!storageUnit[id]) {
+            buffer = new StorageBuffer(this._engine as WebGPUEngine, Float32Array.BYTES_PER_ELEMENT * numInfluencers);
+
+            storageUnit[id] = buffer;
+        } else {
+            buffer = storageUnit[id];
+        }
+        buffer.update(data);
 
         computeShader.setStorageBuffer(name, buffer);
     }
@@ -162,9 +162,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             }
 
             const manager = (<Mesh>mesh).morphTargetManager;
-            let numInfluencers = 0;
             if (manager && manager.numInfluencers > 0) {
-                numInfluencers = manager.numInfluencers;
                 defines.push("MORPHTARGETS");
                 defines.push("#define NUM_MORPH_INFLUENCERS " + manager.numInfluencers);
             }
@@ -172,6 +170,10 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             const computeShader = this._getComputeShader(defines);
 
             this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
+
+            // UBO
+            const ubo = this._getUBO();
+            ubo.updateUInt("indexResult", processedMeshes.length - 1);
 
             // Bones
             if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
@@ -185,16 +187,20 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                 }
             }
 
-            // UBO
-            const ubo = this._getUBO(numInfluencers);
-            ubo.updateUInt("indexResult", processedMeshes.length - 1);
-
             // Morphs
             if (manager && manager.numInfluencers > 0) {
                 const morphTargets = manager._targetStoreTexture;
                 computeShader.setTexture("morphTargets", morphTargets!, false);
-                ubo.updateFloatArray("morphTargetInfluences", manager.influences);
-                ubo.updateFloatArray("morphTargetTextureIndices", manager._morphTargetTextureIndices);
+
+                this._prepareStorage(computeShader, "morphTargetInfluences", mesh.uniqueId, this._morphTargetInfluenceBuffers, manager.numInfluencers, manager.influences);
+                this._prepareStorage(
+                    computeShader,
+                    "morphTargetTextureIndices",
+                    mesh.uniqueId,
+                    this._morphTargetTextureIndexBuffers,
+                    manager.numInfluencers,
+                    manager._morphTargetTextureIndices
+                );
                 ubo.updateFloat2("morphTargetTextureInfo", manager._textureWidth, manager._textureHeight);
             }
 
@@ -212,7 +218,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         }
 
         return Promise.all(promises).then(() => {
-            resultBuffer.read(undefined, undefined, resultData, true).then(() => {
+            return resultBuffer.read(undefined, undefined, resultData, true).then(() => {
                 for (let i = 0; i < processedMeshes.length; i++) {
                     const mesh = processedMeshes[i];
                     mesh._refreshBoundingInfoDirect({
@@ -238,6 +244,10 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._indexBuffers = {};
         this._disposeCache(this._weightBuffers);
         this._weightBuffers = {};
+        this._disposeCache(this._morphTargetInfluenceBuffers);
+        this._morphTargetInfluenceBuffers = {};
+        this._disposeCache(this._morphTargetTextureIndexBuffers);
+        this._morphTargetTextureIndexBuffers = {};
         this._resultBuffer.dispose();
         this._resultBuffer = undefined!;
         this._resultData = undefined!;
@@ -245,7 +255,6 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             ubo.dispose();
         }
         this._ubos = [];
-        this._uboInfluences = [];
         this._computeShaders = {};
         this._engine = null;
     }

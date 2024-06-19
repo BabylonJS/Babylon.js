@@ -72,8 +72,6 @@ const identity = mat4x4f(
 struct Settings {
     indexResult : u32,
     #ifdef MORPHTARGETS
-        morphTargetInfluences: array<f32, NUM_MORPH_INFLUENCERS>,
-        morphTargetTextureIndices : array<f32, NUM_MORPH_INFLUENCERS>,
         morphTargetTextureInfo: vec2f,
     #endif
 };
@@ -93,20 +91,23 @@ struct Settings {
 #endif
 #ifdef MORPHTARGETS
 @group(0) @binding(8) var morphTargets : texture_2d_array<f32>;
+@group(0) @binding(9) var<storage, read> morphTargetInfluences : array<f32>;
+@group(0) @binding(10) var<storage, read> morphTargetTextureIndices : array<f32>;
+
 #endif
 
-@compute @workgroup_size(64, 1, 1)
-
 #ifdef MORPHTARGETS
-fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : f32) -> vec3<f32>
+fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
 {			
-    let y = floor(vertexIndex / settings.morphTargetTextureInfo.x);
-    let x = vertexIndex - y * settings.morphTargetTextureInfo.x;
-    let textureUV = vec2<i32>(x, y);
-    return textureLoad(morphTargets, morphTargetsSampler, textureUV, i32(settings.morphTargetTextureIndices[targetIndex]), 0.0).xyz;
+    let y = floor(f32(vertexIndex) / settings.morphTargetTextureInfo.x);
+    let x = f32(vertexIndex) - y * settings.morphTargetTextureInfo.x;
+    let textureUV = vec2<i32>(i32(x), i32(y));
+    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0).xyz;
 }
 #endif
 
+
+@compute @workgroup_size(64, 1, 1)
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;
     if (index >= arrayLength(&positionBuffer) / 3) {
@@ -155,7 +156,7 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
 
 #ifdef MORPHTARGETS
     for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
-        positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * settings.morphTargetInfluences[i];
+        positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * morphTargetInfluences[i];
     }
 #endif
 
