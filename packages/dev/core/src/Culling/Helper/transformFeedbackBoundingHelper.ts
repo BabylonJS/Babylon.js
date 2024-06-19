@@ -28,134 +28,153 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     }
 
     /** @internal */
-    public processAsync(mesh: AbstractMesh): Promise<void> {
-        // Get correct effect
-        let computeEffect: Effect;
-        let numInfluencers = 0;
-        const defines: string[] = [];
-        let uniforms: string[] = [];
-        const attribs = [VertexBuffer.PositionKind];
-        const samplers: string[] = [];
+    public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
 
-        // Bones
-        if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-            attribs.push(VertexBuffer.MatricesIndicesKind);
-            attribs.push(VertexBuffer.MatricesWeightsKind);
-            if (mesh.numBoneInfluencers > 4) {
-                attribs.push(VertexBuffer.MatricesIndicesExtraKind);
-                attribs.push(VertexBuffer.MatricesWeightsExtraKind);
+        const promises: Promise<void>[] = [];
+
+        for (let i = 0; i < meshes.length; ++i) {
+            const mesh = meshes[i];
+            const vertexCount = mesh.getTotalVertices();
+
+            if (vertexCount === 0 || !(mesh as Mesh).getVertexBuffer || !(mesh as Mesh).getVertexBuffer(VertexBuffer.PositionKind)) {
+                continue;
             }
 
-            const skeleton = mesh.skeleton;
+            // Get correct effect
+            let computeEffect: Effect;
+            let numInfluencers = 0;
+            const defines: string[] = [];
+            let uniforms: string[] = [];
+            const attribs = [VertexBuffer.PositionKind];
+            const samplers: string[] = [];
 
-            defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-
-            if (skeleton.isUsingTextureForMatrices) {
-                defines.push("#define BONETEXTURE");
-
-                if (uniforms.indexOf("boneTextureWidth") === -1) {
-                    uniforms.push("boneTextureWidth");
+            // Bones
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                attribs.push(VertexBuffer.MatricesIndicesKind);
+                attribs.push(VertexBuffer.MatricesWeightsKind);
+                if (mesh.numBoneInfluencers > 4) {
+                    attribs.push(VertexBuffer.MatricesIndicesExtraKind);
+                    attribs.push(VertexBuffer.MatricesWeightsExtraKind);
                 }
 
-                if (samplers.indexOf("boneSampler") === -1) {
-                    samplers.push("boneSampler");
+                const skeleton = mesh.skeleton;
+
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+
+                if (skeleton.isUsingTextureForMatrices) {
+                    defines.push("#define BONETEXTURE");
+
+                    if (uniforms.indexOf("boneTextureWidth") === -1) {
+                        uniforms.push("boneTextureWidth");
+                    }
+
+                    if (samplers.indexOf("boneSampler") === -1) {
+                        samplers.push("boneSampler");
+                    }
+                } else {
+                    defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+
+                    if (uniforms.indexOf("mBones") === -1) {
+                        uniforms.push("mBones");
+                    }
                 }
             } else {
-                defines.push("#define BonesPerMesh " + (skeleton.bones.length + 1));
+                defines.push("#define NUM_BONE_INFLUENCERS 0");
+            }
 
-                if (uniforms.indexOf("mBones") === -1) {
-                    uniforms.push("mBones");
+            // Morph
+            const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
+            if (manager) {
+                numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
+                if (numInfluencers > 0) {
+                    defines.push("#define MORPHTARGETS");
                 }
-            }
-        } else {
-            defines.push("#define NUM_BONE_INFLUENCERS 0");
-        }
+                if (manager.isUsingTextureForTargets) {
+                    defines.push("#define MORPHTARGETS_TEXTURE");
 
-        // Morph
-        const manager = mesh ? (<Mesh>mesh).morphTargetManager : null;
-        if (manager) {
-            numInfluencers = manager.numMaxInfluencers || manager.numInfluencers;
-            if (numInfluencers > 0) {
-                defines.push("#define MORPHTARGETS");
-            }
-            if (manager.isUsingTextureForTargets) {
-                defines.push("#define MORPHTARGETS_TEXTURE");
+                    if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                        uniforms.push("morphTargetTextureIndices");
+                    }
 
-                if (uniforms.indexOf("morphTargetTextureIndices") === -1) {
+                    if (samplers.indexOf("morphTargets") === -1) {
+                        samplers.push("morphTargets");
+                    }
+                }
+                defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
+                for (let index = 0; index < numInfluencers; index++) {
+                    attribs.push(VertexBuffer.PositionKind + index);
+                }
+                if (numInfluencers > 0) {
+                    uniforms = uniforms.slice();
+                    uniforms.push("morphTargetInfluences");
+                    uniforms.push("morphTargetCount");
+                    uniforms.push("morphTargetTextureInfo");
                     uniforms.push("morphTargetTextureIndices");
                 }
+            }
 
-                if (samplers.indexOf("morphTargets") === -1) {
-                    samplers.push("morphTargets");
+            // Baked Vertex Animation
+            const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
+
+            if (bvaManager && bvaManager.isEnabled) {
+                defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
+                if (uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
+                    uniforms.push("bakedVertexAnimationSettings");
                 }
+                if (uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
+                    uniforms.push("bakedVertexAnimationTextureSizeInverted");
+                }
+                if (uniforms.indexOf("bakedVertexAnimationTime") === -1) {
+                    uniforms.push("bakedVertexAnimationTime");
+                }
+
+                if (samplers.indexOf("bakedVertexAnimationTexture") === -1) {
+                    samplers.push("bakedVertexAnimationTexture");
+                }
+                PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
             }
-            defines.push("#define NUM_MORPH_INFLUENCERS " + numInfluencers);
-            for (let index = 0; index < numInfluencers; index++) {
-                attribs.push(VertexBuffer.PositionKind + index);
+
+            const join = defines.join("\n");
+            if (!this._effects[join]) {
+                const computeEffectOptions = {
+                    attributes: attribs,
+                    uniformsNames: uniforms,
+                    uniformBuffersNames: [],
+                    samplers: samplers,
+                    defines: join,
+                    fallbacks: null,
+                    onCompiled: null,
+                    onError: null,
+                    indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
+                    maxSimultaneousLights: 0,
+                    transformFeedbackVaryings: ["outPosition"],
+                };
+                computeEffect = this._engine!.createEffect("gpuTransform", computeEffectOptions, this._engine!);
+                this._effects[join] = computeEffect;
+            } else {
+                computeEffect = this._effects[join];
             }
-            if (numInfluencers > 0) {
-                uniforms = uniforms.slice();
-                uniforms.push("morphTargetInfluences");
-                uniforms.push("morphTargetCount");
-                uniforms.push("morphTargetTextureInfo");
-                uniforms.push("morphTargetTextureIndices");
-            }
+
+            promises.push(
+                new Promise((resolve) => {
+                    if (computeEffect.isReady()) {
+                        this._compute(mesh, computeEffect);
+                        resolve();
+                        return;
+                    }
+
+                    computeEffect.onCompileObservable.addOnce(() => {
+                        this._compute(mesh, computeEffect);
+                        resolve();
+                    });
+                })
+            );
         }
 
-        // Baked Vertex Animation
-        const bvaManager = (<Mesh>mesh).bakedVertexAnimationManager;
-
-        if (bvaManager && bvaManager.isEnabled) {
-            defines.push("#define BAKED_VERTEX_ANIMATION_TEXTURE");
-            if (uniforms.indexOf("bakedVertexAnimationSettings") === -1) {
-                uniforms.push("bakedVertexAnimationSettings");
-            }
-            if (uniforms.indexOf("bakedVertexAnimationTextureSizeInverted") === -1) {
-                uniforms.push("bakedVertexAnimationTextureSizeInverted");
-            }
-            if (uniforms.indexOf("bakedVertexAnimationTime") === -1) {
-                uniforms.push("bakedVertexAnimationTime");
-            }
-
-            if (samplers.indexOf("bakedVertexAnimationTexture") === -1) {
-                samplers.push("bakedVertexAnimationTexture");
-            }
-            PrepareAttributesForBakedVertexAnimation(attribs, mesh, defines);
-        }
-
-        const join = defines.join("\n");
-        if (!this._effects[join]) {
-            const computeEffectOptions = {
-                attributes: attribs,
-                uniformsNames: uniforms,
-                uniformBuffersNames: [],
-                samplers: samplers,
-                defines: join,
-                fallbacks: null,
-                onCompiled: null,
-                onError: null,
-                indexParameters: { maxSimultaneousMorphTargets: numInfluencers },
-                maxSimultaneousLights: 0,
-                transformFeedbackVaryings: ["outPosition"],
-            };
-            computeEffect = this._engine!.createEffect("gpuTransform", computeEffectOptions, this._engine!);
-            this._effects[join] = computeEffect;
-        } else {
-            computeEffect = this._effects[join];
-        }
-
-        return new Promise((resolve) => {
-            if (computeEffect.isReady()) {
-                this._compute(mesh, computeEffect);
-                resolve();
-                return;
-            }
-
-            computeEffect.onCompileObservable.addOnce(() => {
-                this._compute(mesh, computeEffect);
-                resolve();
-            });
-        });
+        return Promise.all(promises).then(() => {});
     }
 
     private _compute(mesh: AbstractMesh, effect: Effect): void {
