@@ -1502,6 +1502,25 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
+     * @internal
+     */
+    public _refreshBoundingInfoDirect(extend: { minimum: Vector3; maximum: Vector3 }): void {
+        if (this._boundingInfo) {
+            this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
+        } else {
+            this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+        }
+
+        if (this.subMeshes) {
+            for (let index = 0; index < this.subMeshes.length; index++) {
+                this.subMeshes[index].refreshBoundingInfo(null);
+            }
+        }
+
+        this._updateBoundingInfo();
+    }
+
+    /**
      * Internal function to get buffer data and possibly apply morphs and normals
      * @param applySkeleton
      * @param applyMorph

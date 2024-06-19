@@ -178,6 +178,24 @@ export class ComputeEffect {
             processingContext: null,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
+            processCodeAfterIncludes: (shaderType: string, code: string, defines?: string[]) => {
+                if (!defines) {
+                    return code;
+                }
+                // We need to convert #define key value to a const
+                for (const define of defines) {
+                    const keyValue = define.replace("#define", "").replace(";", "").trim();
+                    const split = keyValue.split(" ");
+                    if (split.length === 2) {
+                        const key = split[0];
+                        const value = split[1];
+                        if (!isNaN(parseInt(value)) || !isNaN(parseFloat(value))) {
+                            code = `const ${key} = ${value};\n` + code;
+                        }
+                    }
+                }
+                return code;
+            },
         };
 
         this._loadShader(computeSource, "Compute", "", (computeCode) => {
@@ -185,12 +203,12 @@ export class ComputeEffect {
             PreProcess(
                 computeCode,
                 processorOptions,
-                (migratedCommputeCode) => {
+                (migratedComputeCode) => {
                     this._rawComputeSourceCode = computeCode;
                     if (options.processFinalCode) {
-                        migratedCommputeCode = options.processFinalCode(migratedCommputeCode);
+                        migratedComputeCode = options.processFinalCode(migratedComputeCode);
                     }
-                    const finalShaders = Finalize(migratedCommputeCode, "", processorOptions);
+                    const finalShaders = Finalize(migratedComputeCode, "", processorOptions);
                     this._useFinalCode(finalShaders.vertexCode, baseName);
                 },
                 this._engine

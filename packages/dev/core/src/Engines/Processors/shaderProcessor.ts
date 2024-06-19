@@ -42,7 +42,7 @@ export function Process(sourceCode: string, options: ProcessingOptions, callback
     }
     _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
-            codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
         const migratedCode = _ProcessShaderConversion(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
@@ -56,7 +56,7 @@ export function PreProcess(sourceCode: string, options: ProcessingOptions, callb
     }
     _ProcessIncludes(sourceCode, options, (codeWithIncludes) => {
         if (options.processCodeAfterIncludes) {
-            codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes);
+            codeWithIncludes = options.processCodeAfterIncludes(options.isFragment ? "fragment" : "vertex", codeWithIncludes, options.defines);
         }
         const migratedCode = _ApplyPreProcessing(codeWithIncludes, options, engine);
         callback(migratedCode, codeWithIncludes);
