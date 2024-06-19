@@ -178,7 +178,10 @@ export class ComputeEffect {
             processingContext: null,
             isNDCHalfZRange: this._engine.isNDCHalfZRange,
             useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
-            processCodeAfterIncludes: (shaderType: string, code: string, defines: string[]) => {
+            processCodeAfterIncludes: (shaderType: string, code: string, defines?: string[]) => {
+                if (!defines) {
+                    return code;
+                }
                 // We need to convert #define key value to a const
                 for (const define of defines) {
                     const keyValue = define.replace("#define", "").replace(";", "").trim();
