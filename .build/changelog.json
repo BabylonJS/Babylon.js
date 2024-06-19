@@ -1,121 +1,134 @@
 {
-    "fromTag": "7.11.1",
+    "fromTag": "7.11.2",
     "changelog": {
-        "7.11.1": [
+        "7.11.3": [
             {
-                "pr": "15201",
-                "title": "Fix backcompat",
+                "pr": "15223",
+                "title": "raw camera access texture is not a cube",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15217",
+                "title": "Fix shader compile issue with non-float vertex buffers for native",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15218",
+                "title": "Add default value to documented constructor parameters",
+                "description": "When compiling babylon using closure compiler it complains that default parameters don't have the default value, in accordance to JSDoc specifications. as we are using tsdoc and not jsdoc, this introduces a bit of an issue if we document the constructor with default values (tsdoc doesn't have a definition for default value of a paremeter).\n\nThe solution is to add the default value to the actual documentation of the paremeter, if provided. This is needed if a constructor has a public member that is documented and has a default value. These are the ones I found, I guess there might be more and I will try adding a step to check for missing values in the future.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/easing.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/attachToBoxBehavior.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Culling/Octrees/octree.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSource.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.isovector.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/math.vertexFormat.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/coneParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/hemisphericParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/sphereParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/XR/features/WebXRBackgroundRemover.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTestLegacy.ts",
+                    "packages/dev/core/src/XR/motionController/webXRAbstractMotionController.ts",
+                    "packages/public/@babylonjs/core/core.zip"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15220",
+                "title": "Use key instead of code to support other keyboard layouts",
+                "description": "On keyboard with a different layout (for example french) KeyA might be a different character (i.e. q on french keyboards). This PR switches to use the actual key code instead of the .code property for copy, paste, cut and select all",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15219",
+                "title": "Add notifyIfTriggered to all Init observables",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/src/managers/observablesManager.ts",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15215",
+                "title": "Bump ws from 8.17.0 to 8.17.1",
+                "description": "Bumps [ws](https://github.com/websockets/ws) from 8.17.0 to 8.17.1.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/websockets/ws/releases\">ws's releases</a>.</em></p>\n<blockquote>\n<h2>8.17.1</h2>\n<h1>Bug fixes</h1>\n<ul>\n<li>Fixed a DoS vulnerability (<a href=\"https://redirect.github.com/websockets/ws/issues/2231\">#2231</a>).</li>\n</ul>\n<p>A request with a number of headers exceeding the[<code>server.maxHeadersCount</code>][]\nthreshold could be used to crash a ws server.</p>\n<pre lang=\"js\"><code>const http = require('http');\nconst WebSocket = require('ws');\n<p>const wss = new WebSocket.Server({ port: 0 }, function () {\nconst chars = &quot;!#$%&amp;'*+-.0123456789abcdefghijklmnopqrstuvwxyz^_`|~&quot;.split('');\nconst headers = {};\nlet count = 0;</p>\n<p>for (let i = 0; i &lt; chars.length; i++) {\nif (count === 2000) break;</p>\n<pre><code>for (let j = 0; j &amp;lt; chars.length; j++) {\n  const key = chars[i] + chars[j];\n  headers[key] = 'x';\n\n  if (++count === 2000) break;\n}\n</code></pre>\n<p>}</p>\n<p>headers.Connection = 'Upgrade';\nheaders.Upgrade = 'websocket';\nheaders['Sec-WebSocket-Key'] = 'dGhlIHNhbXBsZSBub25jZQ==';\nheaders['Sec-WebSocket-Version'] = '13';</p>\n<p>const request = http.request({\nheaders: headers,\nhost: '127.0.0.1',\nport: wss.address().port\n});</p>\n<p>request.end();\n});\n</code></pre></p>\n<p>The vulnerability was reported by <a href=\"https://github.com/rrlapointe\">Ryan LaPointe</a> in <a href=\"https://redirect.github.com/websockets/ws/issues/2230\">websockets/ws#2230</a>.</p>\n<p>In vulnerable versions of ws, the issue can be mitigated in the following ways:</p>\n<ol>\n<li>Reduce the maximum allowed length of the request headers using the\n[<code>--max-http-header-size=size</code>][] and/or the [<code>maxHeaderSize</code>][] options so\nthat no more headers than the <code>server.maxHeadersCount</code> limit can be sent.</li>\n</ol>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/websockets/ws/commit/3c56601092872f7d7566989f0e379271afd0e4a1\"><code>3c56601</code></a> [dist] 8.17.1</li>\n<li><a href=\"https://github.com/websockets/ws/commit/e55e5106f10fcbaac37cfa89759e4cc0d073a52c\"><code>e55e510</code></a> [security] Fix crash when the Upgrade header cannot be read (<a href=\"https://redirect.github.com/websockets/ws/issues/2231\">#2231</a>)</li>\n<li><a href=\"https://github.com/websockets/ws/commit/6a00029edd924499f892aed8003cef1fa724cfe5\"><code>6a00029</code></a> [test] Increase code coverage</li>\n<li><a href=\"https://github.com/websockets/ws/commit/ddfe4a804d79e7788ab136290e609f91cf68423f\"><code>ddfe4a8</code></a> [perf] Reduce the amount of <code>crypto.randomFillSync()</code> calls</li>\n<li>See full diff in <a href=\"https://github.com/websockets/ws/compare/8.17.0...8.17.1\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=ws&package-manager=npm_and_yarn&previous-version=8.17.0&new-version=8.17.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15216",
+                "title": "New BoundingBoxHelper class used to compute Bounding Box info with GPU",
                 "description": null,
                 "author": {
                     "name": "deltakosh",
                     "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Meshes/abstractMesh.ts",
-                    "packages/dev/core/src/Meshes/mesh.ts"
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/webgl2BoundingHelper.ts",
+                    "packages/dev/core/src/Culling/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.transformFeedback.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Shaders/gpuTransform.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuTransform.vertex.fx"
                 ],
                 "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15199",
-                "title": "Restore back compat",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Meshes/mesh.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15198",
-                "title": "ReflectionTextureBlock",
-                "description": "Associated with #14929 ",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
-                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
-                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
-                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/reflectionFunction.fx",
-                    "packages/tools/nodeEditor/src/main.scss"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15196",
-                "title": "Finishing particles for nme Webgpu",
-                "description": "plus UI to change engine",
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
-                    "packages/tools/nodeEditor/public/index.js",
-                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
-                    "packages/tools/nodeEditor/src/globalState.ts"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15197",
-                "title": "Fix UI in property manager for sideOrientation",
-                "description": null,
-                "author": {
-                    "name": "deltakosh",
-                    "url": "https://github.com/deltakosh"
-                },
-                "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx"
-                ],
-                "tags": [
-                    "skip changelog"
-                ]
-            },
-            {
-                "pr": "15195",
-                "title": "Inspector: allows to change outline width",
-                "description": "See https://forum.babylonjs.com/t/render-outline-fails-for-certain-models/51291",
-                "author": {
-                    "name": "Popov72",
-                    "url": "https://github.com/Popov72"
-                },
-                "files": [
-                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
-                ],
-                "tags": [
-                    "enhancement",
-                    "inspector"
-                ]
-            },
-            {
-                "pr": "15193",
-                "title": "Improve GS quality with XR Camera",
-                "description": "fixes #15109 \r\n\r\nExtract needed value from projection matrix to compute focal shader uniform",
-                "author": {
-                    "name": "CedricGuillemet",
-                    "url": "https://github.com/CedricGuillemet"
-                },
-                "files": [
-                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts"
-                ],
-                "tags": [
-                    "enhancement"
+                    "new feature"
                 ]
             }
         ],
@@ -299,6 +312,124 @@
                 ],
                 "tags": [
                     "skip changelog"
+                ]
+            }
+        ],
+        "7.11.1": [
+            {
+                "pr": "15201",
+                "title": "Fix backcompat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15199",
+                "title": "Restore back compat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15198",
+                "title": "ReflectionTextureBlock",
+                "description": "Associated with #14929 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/reflectionFunction.fx",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15196",
+                "title": "Finishing particles for nme Webgpu",
+                "description": "plus UI to change engine",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15197",
+                "title": "Fix UI in property manager for sideOrientation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15195",
+                "title": "Inspector: allows to change outline width",
+                "description": "See https://forum.babylonjs.com/t/render-outline-fails-for-certain-models/51291",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15193",
+                "title": "Improve GS quality with XR Camera",
+                "description": "fixes #15109 \r\n\r\nExtract needed value from projection matrix to compute focal shader uniform",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement"
                 ]
             }
         ],
