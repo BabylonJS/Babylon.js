@@ -25,7 +25,7 @@ export abstract class AbstractActionManager implements IDisposable {
     public isRecursive = false;
 
     /**
-     * Gets or sets a boolean indicating if the manager triggers should be cleared once the it's no longer owned
+     * Gets or sets a boolean indicating if this ActionManager should be disposed once the last Mesh using it is disposed
      */
     public disposeWhenUnowned = true;
 
