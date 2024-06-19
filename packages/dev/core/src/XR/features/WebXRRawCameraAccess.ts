@@ -165,9 +165,7 @@ export class WebXRRawCameraAccess extends WebXRAbstractFeature {
 
         if (!this._cachedInternalTextures[index]) {
             const internalTexture = new InternalTexture(this._xrSessionManager.scene.getEngine(), InternalTextureSource.Unknown, true);
-            internalTexture.isCube = true;
             internalTexture.invertY = false;
-            // internalTexture._useSRGBBuffer = this.options.reflectionFormat === "srgba8";
             internalTexture.format = Constants.TEXTUREFORMAT_RGBA;
             internalTexture.generateMipMaps = true;
             internalTexture.type = Constants.TEXTURETYPE_FLOAT;
