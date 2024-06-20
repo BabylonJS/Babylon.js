@@ -1,6 +1,22 @@
 {
-    "fromTag": "7.11.3",
+    "fromTag": "7.11.4",
     "changelog": {
+        "7.12.0": [
+            {
+                "pr": "15224",
+                "title": "Improve comments around disposeWhenUnowned, make check slightly more efficient",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.11.4": [
             {
                 "pr": "15221",

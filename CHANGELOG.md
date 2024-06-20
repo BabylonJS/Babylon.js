@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.12.0
+
+### Core
+
+- Improve comments around disposeWhenUnowned, make check slightly more efficient - by [AmoebaChant](https://github.com/AmoebaChant) ([#15224](https://github.com/BabylonJS/Babylon.js/pull/15224))
+
 ## 7.11.4
 
 ### Core
