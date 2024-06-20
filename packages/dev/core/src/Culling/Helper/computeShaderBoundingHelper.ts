@@ -61,6 +61,11 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
             this._computeShaders.push(computeShader);
             this._uniqueComputeShaders.add(computeShader);
+
+            // Pre-build the ubos, as they won't change
+            const ubo = this._getUBO();
+            ubo.updateUInt("indexResult", this._processedMeshes.length - 1);
+            ubo.update();
         }
     }
 
@@ -136,6 +141,8 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             return;
         }
 
+        this._uboIndex = 0;
+
         const resultDataSize = 8 * this._processedMeshes.length;
         const resultData = new Float32Array(resultDataSize);
 
@@ -176,11 +183,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
             computeShader.setStorageBuffer("resultBuffer", resultBuffer);
 
-            const ubo = this._getUBO();
-            ubo.updateUInt("indexResult", i);
-            ubo.update();
-
-            computeShader.setUniformBuffer("settings", ubo);
+            computeShader.setUniformBuffer("settings", this._getUBO());
 
             // Dispatch
             computeShader.dispatch(Math.ceil(vertexCount / 64));
