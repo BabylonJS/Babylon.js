@@ -151,6 +151,8 @@ class _InternalMeshDataInfo {
     public _forcedInstanceCount: number = 0;
 
     public _overrideRenderingFillMode: Nullable<number> = null;
+
+    public _sideOrientation: number;
 }
 
 /**
@@ -444,8 +446,35 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /**
      * Use this property to change the original side orientation defined at construction time
+     * Material.sideOrientation will override this value if set
+     * User will still be able to change the material sideOrientation afterwards if they really need it
      */
-    public overrideMaterialSideOrientation: Nullable<number> = null;
+    public get sideOrientation(): number {
+        return this._internalMeshDataInfo._sideOrientation;
+    }
+
+    public set sideOrientation(value: number) {
+        this._internalMeshDataInfo._sideOrientation = value;
+
+        this._internalAbstractMeshDataInfo._sideOrientationHint =
+            (this._scene.useRightHandedSystem && value === Constants.MATERIAL_CounterClockWiseSideOrientation) ||
+            (!this._scene.useRightHandedSystem && value === Constants.MATERIAL_ClockWiseSideOrientation);
+    }
+
+    /**
+     * @deprecated Please use sideOrientation instead.
+     * @see https://doc.babylonjs.com/breaking-changes#7110
+     */
+    public get overrideMaterialSideOrientation() {
+        return this.sideOrientation;
+    }
+
+    public set overrideMaterialSideOrientation(value: number) {
+        this.sideOrientation = value;
+        if (this.material) {
+            this.material.sideOrientation = null;
+        }
+    }
 
     /**
      * Use this property to override the Material's fillMode value
@@ -456,6 +485,17 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     public set overrideRenderingFillMode(fillMode: Nullable<number>) {
         this._internalMeshDataInfo._overrideRenderingFillMode = fillMode;
+    }
+
+    public override get material(): Nullable<Material> {
+        return this._internalAbstractMeshDataInfo._material;
+    }
+
+    public override set material(value: Nullable<Material>) {
+        if (value && ((this.material && this.material.sideOrientation === null) || this._internalAbstractMeshDataInfo._sideOrientationHint)) {
+            value.sideOrientation = null;
+        }
+        this._setMaterial(value);
     }
 
     /**
@@ -535,7 +575,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     }
 
     /**
-     * @constructor
+     * Constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
      * @param scene The scene to add this mesh to.
      * @param parent The parent of this mesh, if it has one
@@ -556,6 +596,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         super(name, scene);
 
         scene = this.getScene();
+
+        if (this._scene.useRightHandedSystem) {
+            this.sideOrientation = Constants.MATERIAL_ClockWiseSideOrientation;
+        } else {
+            this.sideOrientation = Constants.MATERIAL_CounterClockWiseSideOrientation;
+        }
 
         this._onBeforeDraw = (isInstance: boolean, world: Matrix, effectiveMaterial?: Material) => {
             if (isInstance && effectiveMaterial) {
@@ -1758,11 +1804,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         const engine = this.getScene().getEngine();
 
-        // Morph targets
-        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
-            this.morphTargetManager._bind(effect);
-        }
-
         // Wireframe
         let indexToBind;
         if (this._unIndexed) {
@@ -1780,6 +1821,22 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     indexToBind = this._geometry.getIndexBuffer();
                     break;
             }
+        }
+
+        return this._bindDirect(effect, indexToBind, allowInstancedRendering);
+    }
+
+    /**
+     * @internal
+     */
+    public _bindDirect(effect: Effect, indexToBind: Nullable<DataBuffer>, allowInstancedRendering = true): Mesh {
+        if (!this._geometry) {
+            return this;
+        }
+
+        // Morph targets
+        if (this.morphTargetManager && this.morphTargetManager.isUsingTextureForTargets) {
+            this.morphTargetManager._bind(effect);
         }
 
         // VBOs
@@ -2383,15 +2440,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         if (
             !instanceDataStorage.isFrozen &&
             (this._internalMeshDataInfo._effectiveMaterial.backFaceCulling ||
-                this.overrideMaterialSideOrientation !== null ||
+                this._internalMeshDataInfo._effectiveMaterial.sideOrientation !== null ||
                 (this._internalMeshDataInfo._effectiveMaterial as any).twoSidedLighting)
         ) {
             // Note: if two sided lighting is enabled, we need to ensure that the normal will point in the right direction even if the determinant of the world matrix is negative
             const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-            sideOrientation = this.overrideMaterialSideOrientation;
-            if (sideOrientation == null) {
-                sideOrientation = this._internalMeshDataInfo._effectiveMaterial.sideOrientation;
-            }
+            sideOrientation = this._internalMeshDataInfo._effectiveMaterial._getEffectiveOrientation(this);
+
             if (mainDeterminant < 0) {
                 sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
             }
@@ -3087,8 +3142,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Decide if normals should be flipped
         const flipNormalGeneration =
-            this.overrideMaterialSideOrientation ===
-            (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
+            this.sideOrientation === (this._scene.useRightHandedSystem ? Constants.MATERIAL_CounterClockWiseSideOrientation : Constants.MATERIAL_ClockWiseSideOrientation);
 
         // Generate new normals
         for (let index = 0; index < indices.length; index += 3) {
@@ -3120,16 +3174,19 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const indices = this.getIndices()!;
         const data: { [kind: string]: FloatArray } = {};
 
-        const separateVertices = (data: FloatArray, stride: number): Float32Array => {
-            const newData = new Float32Array(indices.length * stride);
+        const separateVertices = (data: FloatArray, size: number): Float32Array => {
+            const newData = new Float32Array(indices.length * size);
             let count = 0;
             for (let index = 0; index < indices.length; index++) {
-                for (let offset = 0; offset < stride; offset++) {
-                    newData[count++] = data[indices[index] * stride + offset];
+                for (let offset = 0; offset < size; offset++) {
+                    newData[count++] = data[indices[index] * size + offset];
                 }
             }
             return newData;
         };
+
+        // Save mesh bounding info
+        const meshBoundingInfo = this.getBoundingInfo();
 
         // Save previous submeshes
         const previousSubmeshes = this.geometry ? this.subMeshes.slice(0) : [];
@@ -3142,13 +3199,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Update vertex data
         for (const kind of kinds) {
             const vertexBuffer = this.getVertexBuffer(kind)!;
-            const stride = vertexBuffer.getStrideSize();
+            const size = vertexBuffer.getSize();
 
             if (flattenNormals && kind === VertexBuffer.NormalKind) {
                 const normals = this._getFlattenedNormals(indices, data[VertexBuffer.PositionKind]);
-                this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), stride);
+                this.setVerticesData(VertexBuffer.NormalKind, normals, vertexBuffer.isUpdatable(), size);
             } else {
-                this.setVerticesData(kind, separateVertices(data[kind], stride), vertexBuffer.isUpdatable(), stride);
+                this.setVerticesData(kind, separateVertices(data[kind], size), vertexBuffer.isUpdatable(), size);
             }
         }
 
@@ -3189,8 +3246,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         // Update submeshes
         this.releaseSubMeshes();
         for (const previousOne of previousSubmeshes) {
-            SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            const boundingInfo = previousOne.getBoundingInfo();
+            const subMesh = SubMesh.AddToMesh(previousOne.materialIndex, previousOne.indexStart, previousOne.indexCount, previousOne.indexStart, previousOne.indexCount, this);
+            subMesh.setBoundingInfo(boundingInfo);
         }
+
+        this.setBoundingInfo(meshBoundingInfo);
 
         this.synchronizeInstances();
 
@@ -3672,7 +3733,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         serializationObject.ellipsoidOffset = this.ellipsoidOffset.asArray();
         serializationObject.doNotSyncBoundingInfo = this.doNotSyncBoundingInfo;
         serializationObject.isBlocker = this.isBlocker;
-        serializationObject.overrideMaterialSideOrientation = this.overrideMaterialSideOrientation;
+        serializationObject.sideOrientation = this.sideOrientation;
 
         // Parent
         if (this.parent) {
@@ -4059,8 +4120,13 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             mesh.ellipsoidOffset = Vector3.FromArray(parsedMesh.ellipsoidOffset);
         }
 
-        if (parsedMesh.overrideMaterialSideOrientation !== undefined) {
-            mesh.overrideMaterialSideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        // For Backward compatibility ("!=" to exclude null and undefined)
+        if (parsedMesh.overrideMaterialSideOrientation != null) {
+            mesh.sideOrientation = parsedMesh.overrideMaterialSideOrientation;
+        }
+
+        if (parsedMesh.sideOrientation !== undefined) {
+            mesh.sideOrientation = parsedMesh.sideOrientation;
         }
 
         if (parsedMesh.isBlocker !== undefined) {
@@ -4205,7 +4271,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Physics
         if (parsedMesh.physicsImpostor) {
-            Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
+            mesh.physicsImpostor = Mesh._PhysicsImpostorParser(scene, mesh, parsedMesh);
         }
 
         // Levels
@@ -4287,7 +4353,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // Physics
                 if (parsedInstance.physicsImpostor) {
-                    Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
+                    instance.physicsImpostor = Mesh._PhysicsImpostorParser(scene, instance, parsedInstance);
                 }
 
                 // Actions
@@ -4655,7 +4721,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         const materialIndexArray: Array<number> = new Array<number>();
         // Merge
         const indiceArray: Array<number> = new Array<number>();
-        const currentOverrideMaterialSideOrientation = meshes[0].overrideMaterialSideOrientation;
+        const currentsideOrientation = meshes[0].sideOrientation;
 
         for (index = 0; index < meshes.length; index++) {
             const mesh = meshes[index];
@@ -4664,8 +4730,8 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 return null;
             }
 
-            if (currentOverrideMaterialSideOrientation !== mesh.overrideMaterialSideOrientation) {
-                Logger.Warn("Cannot merge meshes with different overrideMaterialSideOrientation values.");
+            if (currentsideOrientation !== mesh.sideOrientation) {
+                Logger.Warn("Cannot merge meshes with different sideOrientation values.");
                 return null;
             }
 
@@ -4750,7 +4816,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         // Setting properties
         meshSubclass.checkCollisions = source.checkCollisions;
-        meshSubclass.overrideMaterialSideOrientation = source.overrideMaterialSideOrientation;
+        meshSubclass.sideOrientation = source.sideOrientation;
 
         // Cleaning
         if (disposeSource) {
@@ -4822,7 +4888,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public override _shouldConvertRHS() {
-        return this.overrideMaterialSideOrientation === Material.CounterClockWiseSideOrientation;
+        return this._scene.useRightHandedSystem && this.sideOrientation === Material.CounterClockWiseSideOrientation;
     }
 
     /** @internal */

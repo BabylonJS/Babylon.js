@@ -13,6 +13,7 @@ import type { Node } from "../../node";
 import type { Mesh } from "core/Meshes/mesh";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import type { TransformNode } from "../../Meshes/transformNode";
+import type { BoundingBox } from "core/Culling/boundingBox";
 
 /**
  * PhysicsBody is useful for creating a physics body that can be used in a physics engine. It allows
@@ -207,6 +208,14 @@ export class PhysicsBody {
      */
     public get shape(): Nullable<PhysicsShape> {
         return this._shape;
+    }
+
+    /**
+     * Returns the bounding box of the physics body.
+     * @returns The bounding box of the physics body.
+     */
+    public getBoundingBox(): BoundingBox {
+        return this._physicsPlugin.getBodyBoundingBox(this);
     }
 
     /**

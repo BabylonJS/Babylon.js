@@ -1702,7 +1702,7 @@ export class _Exporter {
                     }
 
                     if (Object.keys(meshPrimitive.attributes).length > 0) {
-                        const sideOrientation = bufferMesh.overrideMaterialSideOrientation !== null ? bufferMesh.overrideMaterialSideOrientation : babylonMaterial.sideOrientation;
+                        const sideOrientation = babylonMaterial._getEffectiveOrientation(bufferMesh);
 
                         if (sideOrientation === (this._babylonScene.useRightHandedSystem ? Material.ClockWiseSideOrientation : Material.CounterClockWiseSideOrientation)) {
                             let byteOffset = indexBufferViewIndex != null ? this._bufferViews[indexBufferViewIndex].byteOffset : null;

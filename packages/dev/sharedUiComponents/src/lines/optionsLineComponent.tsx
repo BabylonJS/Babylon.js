@@ -1,12 +1,14 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IInspectableOptions } from "core/Misc/iInspectable";
+import copyIcon from "./copy.svg";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Null_Value = Number.MAX_SAFE_INTEGER;
 
-export interface IOptionsLineComponentProps {
+export interface IOptionsLineProps {
     label: string;
     target: any;
     propertyName: string;
@@ -23,7 +25,7 @@ export interface IOptionsLineComponentProps {
     defaultIfNull?: number;
 }
 
-export class OptionsLineComponent extends React.Component<IOptionsLineComponentProps, { value: number | string }> {
+export class OptionsLine extends React.Component<IOptionsLineProps, { value: number | string }> {
     private _localChange = false;
 
     private _remapValueIn(value: number | null): number {
@@ -34,20 +36,20 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         return this.props.allowNullValue && value === Null_Value ? null : value;
     }
 
-    private _getValue(props: IOptionsLineComponentProps) {
+    private _getValue(props: IOptionsLineProps) {
         if (props.extractValue) {
             return props.extractValue(props.target);
         }
         return props.target && props.propertyName ? props.target[props.propertyName] : props.options[props.defaultIfNull || 0];
     }
 
-    constructor(props: IOptionsLineComponentProps) {
+    constructor(props: IOptionsLineProps) {
         super(props);
 
         this.state = { value: this._remapValueIn(this._getValue(props)) };
     }
 
-    override shouldComponentUpdate(nextProps: IOptionsLineComponentProps, nextState: { value: number }) {
+    override shouldComponentUpdate(nextProps: IOptionsLineProps, nextState: { value: number }) {
         if (this._localChange) {
             this._localChange = false;
             return true;
@@ -99,6 +101,21 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
         this.raiseOnPropertyChanged(newValue, store);
     }
 
+    // Copy to clipboard the code this option actually does
+    // Example : material.sideOrientation = 1;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         return (
             <div className={"listLine" + (this.props.className ? " " + this.props.className : "")}>
@@ -116,6 +133,9 @@ export class OptionsLineComponent extends React.Component<IOptionsLineComponentP
                             );
                         })}
                     </select>
+                </div>
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
                 </div>
             </div>
         );

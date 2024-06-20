@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to compute value of one parameter modulo another
  */
@@ -59,7 +60,11 @@ export class ModBlock extends NodeMaterialBlock {
 
         const output = this._outputs[0];
 
-        state.compilationString += state._declareOutput(output) + ` = (${this.left.associatedVariableName} % ${this.right.associatedVariableName});\n`;
+        if (state.shaderLanguage === ShaderLanguage.GLSL) {
+            state.compilationString += state._declareOutput(output) + ` = mod(${this.left.associatedVariableName}, ${this.right.associatedVariableName});\n`;
+        } else {
+            state.compilationString += state._declareOutput(output) + ` = (${this.left.associatedVariableName} % ${this.right.associatedVariableName});\n`;
+        }
 
         return this;
     }

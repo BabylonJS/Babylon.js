@@ -4,6 +4,7 @@ import { Tools } from "core/Misc/tools";
 import type { StandardMaterial } from "core/Materials/standardMaterial";
 import type { Geometry } from "core/Meshes/geometry";
 import type { Mesh } from "core/Meshes/mesh";
+import { Material } from "core/Materials/material";
 
 /**
  * Class for generating OBJ data from a Babylon scene.
@@ -30,29 +31,30 @@ export class OBJExport {
             output.push("mtllib " + matlibname + ".mtl");
         }
         for (let j = 0; j < meshes.length; j++) {
-            const objectName = meshes[j].name || `mesh${j}}`;
+            const mesh = meshes[j];
+            const objectName = mesh.name || `mesh${j}}`;
             output.push(`o ${objectName}`);
 
             //Uses the position of the item in the scene, to the file (this back to normal in the end)
             let inverseTransform: Nullable<Matrix> = null;
             if (globalposition) {
-                const transform = meshes[j].computeWorldMatrix(true);
+                const transform = mesh.computeWorldMatrix(true);
                 inverseTransform = new Matrix();
                 transform.invertToRef(inverseTransform);
 
-                meshes[j].bakeTransformIntoVertices(transform);
+                mesh.bakeTransformIntoVertices(transform);
             }
 
             //TODO: submeshes (groups)
             //TODO: smoothing groups (s 1, s off);
             if (materials) {
-                const mat = meshes[j].material;
+                const mat = mesh.material;
 
                 if (mat) {
                     output.push("usemtl " + mat.id);
                 }
             }
-            const g: Nullable<Geometry> = meshes[j].geometry;
+            const g: Nullable<Geometry> = mesh.geometry;
 
             if (!g) {
                 Tools.Warn("No geometry is present on the mesh");
@@ -92,7 +94,10 @@ export class OBJExport {
             }
 
             const blanks: string[] = ["", "", ""];
-            const [offset1, offset2] = useRightHandedSystem ? [2, 1] : [1, 2];
+            const material = mesh.material || mesh.getScene().defaultMaterial;
+
+            const sideOrientation = material._getEffectiveOrientation(mesh);
+            const [offset1, offset2] = sideOrientation === Material.ClockWiseSideOrientation ? [2, 1] : [1, 2];
 
             for (let i = 0; i < trunkFaces.length; i += 3) {
                 const indices = [String(trunkFaces[i] + v), String(trunkFaces[i + offset1] + v), String(trunkFaces[i + offset2] + v)];
@@ -125,7 +130,7 @@ export class OBJExport {
             }
             //back de previous matrix, to not change the original mesh in the scene
             if (globalposition && inverseTransform) {
-                meshes[j].bakeTransformIntoVertices(inverseTransform);
+                mesh.bakeTransformIntoVertices(inverseTransform);
             }
             v += currentV;
             textureV += currentTextureV;

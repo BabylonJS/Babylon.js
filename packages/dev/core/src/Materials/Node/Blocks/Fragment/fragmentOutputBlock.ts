@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -188,8 +188,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
     public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
-        this.convertToGammaSpace = serializationObject.convertToGammaSpace;
-        this.convertToLinearSpace = serializationObject.convertToLinearSpace;
+        this.convertToGammaSpace = !!serializationObject.convertToGammaSpace;
+        this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
         this.useLogarithmicDepth = serializationObject.useLogarithmicDepth ?? false;
     }
 }

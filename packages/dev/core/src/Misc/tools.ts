@@ -47,6 +47,17 @@ export class Tools {
     }
 
     /**
+     * Gets or sets the clean URL function to use to load assets
+     */
+    public static get CleanUrl() {
+        return FileToolsOptions.CleanUrl;
+    }
+
+    public static set CleanUrl(value: (url: string) => string) {
+        FileToolsOptions.CleanUrl = value;
+    }
+
+    /**
      * This function checks whether a URL is absolute or not.
      * It will also detect data and blob URLs
      * @param url the url to check
@@ -393,16 +404,6 @@ export class Tools {
     }
 
     // External files
-
-    /**
-     * Removes unwanted characters from an url
-     * @param url defines the url to clean
-     * @returns the cleaned url
-     */
-    public static CleanUrl(url: string): string {
-        url = url.replace(/#/gm, "%23");
-        return url;
-    }
 
     /**
      * Gets or sets a function used to pre-process url before using them to load assets

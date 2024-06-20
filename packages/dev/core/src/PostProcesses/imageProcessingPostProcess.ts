@@ -400,8 +400,7 @@ export class ImageProcessingPostProcess extends PostProcess {
         VIGNETTE: false,
         VIGNETTEBLENDMODEMULTIPLY: false,
         VIGNETTEBLENDMODEOPAQUE: false,
-        TONEMAPPING: false,
-        TONEMAPPING_ACES: false,
+        TONEMAPPING: 0,
         CONTRAST: false,
         COLORCURVES: false,
         COLORGRADING: false,
@@ -460,9 +459,20 @@ export class ImageProcessingPostProcess extends PostProcess {
         this._defines.FROMLINEARSPACE = this._fromLinearSpace;
         this.imageProcessingConfiguration.prepareDefines(this._defines, true);
         let defines = "";
-        for (const define in this._defines) {
-            if ((<any>this._defines)[define]) {
-                defines += `#define ${define};\n`;
+        for (const prop in this._defines) {
+            const value = (<any>this._defines)[prop];
+            const type = typeof value;
+
+            switch (type) {
+                case "number":
+                case "string":
+                    defines += `#define ${prop} ${value};\n`;
+                    break;
+                default:
+                    if (value) {
+                        defines += `#define ${prop};\n`;
+                    }
+                    break;
             }
         }
 

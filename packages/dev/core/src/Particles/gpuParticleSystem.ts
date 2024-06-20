@@ -41,12 +41,13 @@ import type { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import type { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import type { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import type { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import type { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import type { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 import {
     CreateConeEmitter,
     CreateCylinderEmitter,
     CreateDirectedCylinderEmitter,
     CreateDirectedSphereEmitter,
+    CreateDirectedConeEmitter,
     CreateHemisphericEmitter,
     CreatePointEmitter,
     CreateSphereEmitter,
@@ -275,6 +276,17 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      */
     public override createConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
         const particleEmitter = CreateConeEmitter(radius, angle);
+        this.particleEmitterType = particleEmitter;
+        return particleEmitter;
+    }
+
+    public override createDirectedConeEmitter(
+        radius = 1,
+        angle = Math.PI / 4,
+        direction1 = new Vector3(0, 1.0, 0),
+        direction2 = new Vector3(0, 1.0, 0)
+    ): ConeDirectedParticleEmitter {
+        const particleEmitter = CreateDirectedConeEmitter(radius, angle, direction1, direction2);
         this.particleEmitterType = particleEmitter;
         return particleEmitter;
     }
@@ -1466,8 +1478,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
      * Fill the defines array according to the current settings of the particle system
      * @param defines Array to be updated
      * @param blendMode blend mode to take into account when updating the array
+     * @param fillImageProcessing fills the image processing defines
      */
-    public fillDefines(defines: Array<string>, blendMode: number = 0) {
+    public fillDefines(defines: Array<string>, blendMode: number = 0, fillImageProcessing: boolean = true): void {
         if (this._scene) {
             prepareStringDefinesForClipPlanes(this, this._scene, defines);
             if (this.applyFog && this._scene.fogEnabled && this._scene.fogMode !== Scene.FOGMODE_NONE) {
@@ -1513,7 +1526,7 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
             defines.push("#define ANIMATESHEET");
         }
 
-        if (this._imageProcessingConfiguration) {
+        if (fillImageProcessing && this._imageProcessingConfiguration) {
             this._imageProcessingConfiguration.prepareDefines(this._imageProcessingConfigurationDefines);
             defines.push("" + this._imageProcessingConfigurationDefines.toString());
         }

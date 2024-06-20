@@ -3,8 +3,8 @@ import type { Nullable } from "../../../types";
 import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /** @internal */
         _readTexturePixels(
             texture: InternalTexture,

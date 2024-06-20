@@ -52,8 +52,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
 
     async initEngine() {
         const useWebGPU = location.href.indexOf("webgpu") !== -1 && !!(navigator as any).gpu;
-        // TODO - remove this once not needed anymore. Spoofing Safari 15.4.X
-        const antialias = this.props.globalState.commerceMode ? false : undefined;
+        const antialias = !this.props.globalState.commerceMode;
 
         this._canvas = document.getElementById("renderCanvas") as HTMLCanvasElement;
         if (useWebGPU) {
@@ -118,6 +117,7 @@ export class RenderingZone extends React.Component<IRenderingZoneProps> {
                     case "hdr": {
                         FilesInput.FilesToLoad[name] = file;
                         EnvironmentTools.SkyboxPath = "file:" + (file as any).correctName;
+                        EnvironmentTools.ResetEnvironmentTexture();
                         return false;
                     }
                     default: {

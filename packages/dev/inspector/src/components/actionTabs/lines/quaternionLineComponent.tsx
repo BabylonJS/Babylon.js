@@ -1,13 +1,15 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { Quaternion, Vector3 } from "core/Maths/math.vector";
-import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
+import { NumericInput } from "shared-ui-components/lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../../propertyChangedEvent";
 import { Tools } from "core/Misc/tools";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "shared-ui-components/copyCommandToClipboard";
+import copyIcon from "shared-ui-components/lines/copy.svg";
 
 interface IQuaternionLineComponentProps {
     label: string;
@@ -141,6 +143,22 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
         this.updateQuaternionFromEuler();
     }
 
+    // Copy to clipboard the code this Quaternion actually does
+    // Example : cube.rotationQuaternion = new BABYLON.Quaternion(0,0,0,1)// cube as BABYLON.Mesh;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strVector = "new " + babylonNamespace + "Quaternion(" + value.x + ", " + value.y + ", " + value.z + ", " + value.w + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
@@ -158,16 +176,19 @@ export class QuaternionLineComponent extends React.Component<IQuaternionLineComp
                         {!this.props.useEuler && `X: ${quat.x.toFixed(1)}, Y: ${quat.y.toFixed(1)}, Z: ${quat.z.toFixed(1)}, W: ${quat.w.toFixed(1)}`}
                         {this.props.useEuler && `X: ${eulerDegrees.x.toFixed(2)}, Y: ${eulerDegrees.y.toFixed(2)}, Z: ${eulerDegrees.z.toFixed(2)}`}
                     </div>
-                    <div className="expand" onClick={() => this.switchExpandState()}>
+                    <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
+                    </div>
+                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                        <img src={copyIcon} alt="Copy" />
                     </div>
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent lockObject={this.props.lockObject} label="x" value={quat.x} onChange={(value) => this.updateStateX(value)} />
-                        <NumericInputComponent lockObject={this.props.lockObject} label="y" value={quat.y} onChange={(value) => this.updateStateY(value)} />
-                        <NumericInputComponent lockObject={this.props.lockObject} label="z" value={quat.z} onChange={(value) => this.updateStateZ(value)} />
-                        <NumericInputComponent lockObject={this.props.lockObject} label="w" value={quat.w} onChange={(value) => this.updateStateW(value)} />
+                        <NumericInput lockObject={this.props.lockObject} label="x" value={quat.x} onChange={(value) => this.updateStateX(value)} />
+                        <NumericInput lockObject={this.props.lockObject} label="y" value={quat.y} onChange={(value) => this.updateStateY(value)} />
+                        <NumericInput lockObject={this.props.lockObject} label="z" value={quat.z} onChange={(value) => this.updateStateZ(value)} />
+                        <NumericInput lockObject={this.props.lockObject} label="w" value={quat.w} onChange={(value) => this.updateStateW(value)} />
                     </div>
                 )}
                 {this.state.isExpanded && this.props.useEuler && (

@@ -7,6 +7,8 @@ import type { IInternalTextureLoader } from "../../../Materials/Textures/interna
 import { Logger } from "../../../Misc/logger";
 import { Constants } from "../../../Engines/constants";
 
+import "../../../Engines/Extensions/engine.cubeTexture";
+
 function mapSRGBToLinear(format: number): Nullable<number> {
     switch (format) {
         case Constants.TEXTUREFORMAT_COMPRESSED_SRGB_S3TC_DXT1_EXT:
@@ -144,4 +146,4 @@ export class _KTXTextureLoader implements IInternalTextureLoader {
 }
 
 // Register the loader.
-Engine._TextureLoaders.unshift(new _KTXTextureLoader());
+Engine._TextureLoaders.push(new _KTXTextureLoader());

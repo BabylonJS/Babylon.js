@@ -7,8 +7,9 @@ import type { BoundingBox } from "../../Culling/boundingBox";
 import type { TransformNode } from "../../Meshes/transformNode";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import type { Mesh } from "../../Meshes/mesh";
-import type { Nullable } from "core/types";
-import type { Observable } from "core/Misc/observable";
+import type { Nullable } from "../../types";
+import type { Observable } from "../../Misc/observable";
+import type { GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
 export enum PhysicsConstraintAxisLimitMode {
@@ -238,6 +239,10 @@ export interface PhysicsShapeParameters {
      * The data for the heightfield
      */
     heightFieldData?: Float32Array;
+    /**
+     * Ground mesh used for display
+     */
+    groundMesh?: GroundMesh;
 }
 
 /**
@@ -389,6 +394,9 @@ export interface IPhysicsEnginePluginV2 {
     getTimeStep(): number;
     executeStep(delta: number, bodies: Array<PhysicsBody>): void; //not forgetting pre and post events
     getPluginVersion(): number;
+    setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void;
+    getMaxLinearVelocity(): number;
+    getMaxAngularVelocity(): number;
 
     // body
     initBody(body: PhysicsBody, motionType: PhysicsMotionType, position: Vector3, orientation: Quaternion): void;
@@ -443,6 +451,7 @@ export interface IPhysicsEnginePluginV2 {
     removeChild(shape: PhysicsShape, childIndex: number): void;
     getNumChildren(shape: PhysicsShape): number;
     getBoundingBox(shape: PhysicsShape): BoundingBox;
+    getBodyBoundingBox(body: PhysicsBody): BoundingBox;
     disposeShape(shape: PhysicsShape): void;
     setTrigger(shape: PhysicsShape, isTrigger: boolean): void;
 

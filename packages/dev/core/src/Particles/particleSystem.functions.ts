@@ -3,7 +3,7 @@ import { PointParticleEmitter } from "./EmitterTypes/pointParticleEmitter";
 import { HemisphericParticleEmitter } from "./EmitterTypes/hemisphericParticleEmitter";
 import { SphereDirectedParticleEmitter, SphereParticleEmitter } from "./EmitterTypes/sphereParticleEmitter";
 import { CylinderDirectedParticleEmitter, CylinderParticleEmitter } from "./EmitterTypes/cylinderParticleEmitter";
-import { ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
+import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes/coneParticleEmitter";
 
 /**
  * Creates a Point Emitter for the particle system (emits directly from the emitter position)
@@ -88,4 +88,8 @@ export function CreateDirectedCylinderEmitter(
  */
 export function CreateConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
     return new ConeParticleEmitter(radius, angle);
+}
+
+export function CreateDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
+    return new ConeDirectedParticleEmitter(radius, angle, direction1, direction2);
 }

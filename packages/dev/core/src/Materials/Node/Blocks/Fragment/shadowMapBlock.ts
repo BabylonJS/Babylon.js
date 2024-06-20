@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
@@ -83,7 +83,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString("biasAndScaleSM", NodeMaterialBlockConnectionPointTypes.Vector3);
         state._emitUniformFromString("lightDataSM", NodeMaterialBlockConnectionPointTypes.Vector3);
-        state._emitUniformFromString("depthValuesSM", NodeMaterialBlockConnectionPointTypes.Vector3);
+        state._emitUniformFromString("depthValuesSM", NodeMaterialBlockConnectionPointTypes.Vector2);
 
         state._emitFunctionFromInclude("packingFunctions", comments);
 

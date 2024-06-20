@@ -11,7 +11,7 @@ import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineCo
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import { LineContainerComponent } from "shared-ui-components/lines/lineContainerComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { OptionsLineComponent, Null_Value } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine, Null_Value } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import type { GlobalState } from "../../../../globalState";
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
@@ -39,6 +39,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
         material.depthFunction = material.depthFunction ?? 0;
 
         const orientationOptions = [
+            { label: "<None>", value: Number.MAX_SAFE_INTEGER },
             { label: "Clockwise", value: Material.ClockWiseSideOrientation },
             { label: "Counterclockwise", value: Material.CounterClockWiseSideOrientation },
         ];
@@ -120,12 +121,13 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         propertyName="backFaceCulling"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Orientation"
                         options={orientationOptions}
                         target={material}
                         propertyName="sideOrientation"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+                        allowNullValue={true}
                         onSelect={(value) => this.setState({ mode: value })}
                     />
                     <CheckBoxLineComponent
@@ -146,7 +148,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         propertyName="disableDepthWrite"
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Depth function"
                         options={depthfunctionOptions}
                         target={material}
@@ -212,7 +214,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                         onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                     />
                     {(material as any).transparencyMode !== undefined && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             allowNullValue={true}
                             label="Transparency mode"
                             options={transparencyModeOptions}
@@ -222,7 +224,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                             onSelect={(value) => this.setState({ transparencyMode: value })}
                         />
                     )}
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Alpha mode"
                         options={alphaModeOptions}
                         target={material}
@@ -286,7 +288,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                                 propertyName="mask"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Function"
                                 options={stencilFunctionOptions}
                                 target={material.stencil}
@@ -310,7 +312,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                                 propertyName="funcMask"
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Op stencil fail"
                                 options={stencilOperationOptions}
                                 target={material.stencil}
@@ -318,7 +320,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onSelect={(value) => this.setState({ opStencilFail: value })}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Op depth fail"
                                 options={stencilOperationOptions}
                                 target={material.stencil}
@@ -326,7 +328,7 @@ export class CommonMaterialPropertyGridComponent extends React.Component<ICommon
                                 onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                                 onSelect={(value) => this.setState({ opDepthFail: value })}
                             />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Op stencil+depth pass"
                                 options={stencilOperationOptions}
                                 target={material.stencil}

@@ -4,7 +4,7 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import type { Observer } from "core/Misc/observable";
 import type { Nullable } from "core/types";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 import type { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport/teleportInBlock";
 import type { GlobalState } from "../../globalState";
@@ -50,7 +50,7 @@ export class TeleportOutPropertyTabComponent extends React.Component<IPropertyCo
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Entry point"
                         options={options}
                         target={block}

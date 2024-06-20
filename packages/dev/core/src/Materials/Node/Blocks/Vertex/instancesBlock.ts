@@ -9,6 +9,7 @@ import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { SubMesh } from "../../../../Meshes/subMesh";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to add support for instances
@@ -172,15 +173,24 @@ export class InstancesBlock extends NodeMaterialBlock {
         const world2 = this.world2;
         const world3 = this.world3;
 
+        let mat4 = "mat4";
+        let instance = "gl_InstanceID";
+        let floatCast = "float";
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            mat4 = "mat4x4f";
+            instance = "vertexInputs.instanceIndex";
+            floatCast = "f32";
+        }
+
         state.compilationString += `#ifdef INSTANCES\n`;
         state.compilationString +=
             state._declareOutput(output) +
-            ` = mat4(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\n`;
+            ` = ${mat4}(${world0.associatedVariableName}, ${world1.associatedVariableName}, ${world2.associatedVariableName}, ${world3.associatedVariableName});\n`;
         state.compilationString += `#ifdef THIN_INSTANCES\n`;
         state.compilationString += `${output.associatedVariableName} = ${this.world.associatedVariableName} * ${output.associatedVariableName};\n`;
         state.compilationString += `#endif\n`;
         if (engine._caps.canUseGLInstanceID) {
-            state.compilationString += state._declareOutput(instanceID) + ` = float(gl_InstanceID);\n`;
+            state.compilationString += state._declareOutput(instanceID) + ` = ${floatCast}(${instance});\n`;
         } else {
             state.compilationString += state._declareOutput(instanceID) + ` = 0.0;\n`;
         }

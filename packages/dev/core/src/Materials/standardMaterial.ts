@@ -192,8 +192,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public COLORCURVES = false;
     public COLORGRADING = false;

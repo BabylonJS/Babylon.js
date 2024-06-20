@@ -7,6 +7,8 @@ import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Light } from "./light";
 import { ShadowLight } from "./shadowLight";
 import type { Effect } from "../Materials/effect";
+import { RegisterClass } from "../Misc/typeStore";
+
 Node.AddNodeConstructor("Light_Type_1", (name, scene) => {
     return () => new DirectionalLight(name, Vector3.Zero(), scene);
 });
@@ -352,3 +354,6 @@ export class DirectionalLight extends ShadowLight {
         defines["DIRLIGHT" + lightIndex] = true;
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.DirectionalLight", DirectionalLight);

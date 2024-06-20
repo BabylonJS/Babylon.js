@@ -1,14 +1,15 @@
 import * as React from "react";
 import { Vector3 } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
-
-import { NumericInputComponent } from "../lines/numericInputComponent";
+import { NumericInput } from "../lines/numericInputComponent";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import { SliderLineComponent } from "../lines/sliderLineComponent";
 import { Tools } from "core/Misc/tools";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
+import copyIcon from "./copy.svg";
 
 interface IVector3LineComponentProps {
     label: string;
@@ -105,6 +106,22 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
         this.updateVector3();
     }
 
+    // Copy to clipboard the code this Vector3 actually does
+    // Example : Mesh.position = new BABYLON.Vector3(0, 1, 0);
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strVector = "new " + babylonNamespace + "Vector3(" + value.x + ", " + value.y + ", " + value.z + ")";
+            const strCommand = targetName + "." + targetProperty + " = " + strVector + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const chevron = this.state.isExpanded ? <FontAwesomeIcon icon={faMinus} /> : <FontAwesomeIcon icon={faPlus} />;
 
@@ -125,24 +142,27 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                     <div className="expand hoverIcon" onClick={() => this.switchExpandState()} title="Expand">
                         {chevron}
                     </div>
+                    <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                        <img src={copyIcon} alt="Copy" />
+                    </div>
                 </div>
                 {this.state.isExpanded && !this.props.useEuler && (
                     <div className="secondLine">
-                        <NumericInputComponent
+                        <NumericInput
                             label="x"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
                             value={this.state.value.x}
                             onChange={(value) => this.updateStateX(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             label="y"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
                             value={this.state.value.y}
                             onChange={(value) => this.updateStateY(value)}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             label="z"
                             lockObject={this.props.lockObject}
                             step={this.props.step}
@@ -187,21 +207,21 @@ export class Vector3LineComponent extends React.Component<IVector3LineComponentP
                 )}
                 {this.state.isExpanded && this.props.useEuler && this.props.noSlider && (
                     <div className="secondLine">
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="x"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.x)}
                             onChange={(value) => this.updateStateX(Tools.ToRadians(value))}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="y"
                             step={this.props.step}
                             value={Tools.ToDegrees(this.state.value.y)}
                             onChange={(value) => this.updateStateY(Tools.ToRadians(value))}
                         />
-                        <NumericInputComponent
+                        <NumericInput
                             lockObject={this.props.lockObject}
                             label="z"
                             step={this.props.step}

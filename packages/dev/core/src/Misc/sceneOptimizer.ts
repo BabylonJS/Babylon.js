@@ -36,7 +36,7 @@ export class SceneOptimization {
      */
     constructor(
         /**
-         * Defines the priority of this optimization (0 by default which means first in the list)
+         * [0] Defines the priority of this optimization (0 by default which means first in the list)
          */
         public priority: number = 0
     ) {}
@@ -44,7 +44,7 @@ export class SceneOptimization {
 
 /**
  * Defines an optimization used to reduce the size of render target textures
- * @description More details at https://doc.babylonjs.com/features/featuresDeepDive/scene/sceneOptimizer
+ * @see https://doc.babylonjs.com/features/featuresDeepDive/scene/sceneOptimizer
  */
 export class TextureOptimization extends SceneOptimization {
     /**

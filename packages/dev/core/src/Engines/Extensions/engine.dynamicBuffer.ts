@@ -2,8 +2,8 @@ import { ThinEngine } from "../../Engines/thinEngine";
 import type { DataBuffer } from "../../Buffers/dataBuffer";
 import type { IndicesArray, DataArray } from "../../types";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Update a dynamic index buffer
          * @param indexBuffer defines the target index buffer

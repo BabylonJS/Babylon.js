@@ -60,7 +60,7 @@ export class WebXRBackgroundRemover extends WebXRAbstractFeature {
     constructor(
         _xrSessionManager: WebXRSessionManager,
         /**
-         * read-only options to be used in this module
+         * [Empty Object] read-only options to be used in this module
          */
         public readonly options: IWebXRBackgroundRemoverOptions = {}
     ) {

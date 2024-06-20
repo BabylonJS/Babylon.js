@@ -45,6 +45,8 @@ import {
     PrepareUniformsAndSamplersList,
 } from "core/Materials/materialHelper.functions";
 
+import "core/Rendering/boundingBoxRenderer";
+
 class WaterMaterialDefines extends MaterialDefines implements IImageProcessingConfigurationDefines {
     public BUMP = false;
     public REFLECTION = false;
@@ -79,8 +81,7 @@ class WaterMaterialDefines extends MaterialDefines implements IImageProcessingCo
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public EXPOSURE = false;
     public COLORCURVES = false;
@@ -671,6 +672,15 @@ export class WaterMaterial extends PushMaterial {
         this._refractionRTT.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._refractionRTT.wrapV = Constants.TEXTURE_MIRROR_ADDRESSMODE;
         this._refractionRTT.ignoreCameraViewport = true;
+
+        let boundingBoxRendererEnabled = false;
+        this._refractionRTT.onBeforeRenderObservable.add(() => {
+            boundingBoxRendererEnabled = scene.getBoundingBoxRenderer().enabled;
+            scene.getBoundingBoxRenderer().enabled = false;
+        });
+        this._refractionRTT.onAfterRenderObservable.add(() => {
+            scene.getBoundingBoxRenderer().enabled = boundingBoxRendererEnabled;
+        });
 
         this._reflectionRTT = new RenderTargetTexture(name + "_reflection", { width: renderTargetSize.x, height: renderTargetSize.y }, scene, false, true);
         this._reflectionRTT.wrapU = Constants.TEXTURE_MIRROR_ADDRESSMODE;

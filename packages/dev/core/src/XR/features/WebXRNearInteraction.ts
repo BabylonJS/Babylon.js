@@ -25,6 +25,7 @@ import { Animation } from "../../Animations/animation";
 import { QuadraticEase, EasingFunction } from "../../Animations/easing";
 // side effects
 import "../../Meshes/subMesh.project";
+import { Logger } from "core/Misc/logger";
 
 type ControllerData = {
     xrController?: WebXRInputSource;
@@ -132,6 +133,13 @@ export interface IWebXRNearInteractionOptions {
      * Optional material for the motion controller orb, if enabled
      */
     motionControllerOrbMaterial?: Material;
+
+    /**
+     * If provided, this URL will be used by Node Material to generate the material for the motion controller orb
+     * If not provided, a snippet will be downloaded from the Babylon.js snippet server CDN.
+     * The NME JSON file can be found here - https://github.com/BabylonJS/Assets/blob/master/nme/nearInteractionTouchMaterial.json
+     */
+    motionControllerTouchMaterialSnippetUrl?: string;
 }
 
 /**
@@ -842,9 +850,19 @@ export class WebXRNearInteraction extends WebXRAbstractFeature {
         if (this._options.motionControllerOrbMaterial) {
             touchCollisionMesh.material = this._options.motionControllerOrbMaterial;
         } else {
-            NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene).then((nodeMaterial) => {
-                touchCollisionMesh.material = nodeMaterial;
-            });
+            let parsePromise: Promise<NodeMaterial>;
+            if (this._options.motionControllerTouchMaterialSnippetUrl) {
+                parsePromise = NodeMaterial.ParseFromFileAsync("motionControllerTouchMaterial", this._options.motionControllerTouchMaterialSnippetUrl, meshCreationScene);
+            } else {
+                parsePromise = NodeMaterial.ParseFromSnippetAsync("8RUNKL#3", meshCreationScene);
+            }
+            parsePromise
+                .then((mat) => {
+                    touchCollisionMesh.material = mat;
+                })
+                .catch((err) => {
+                    Logger.Warn(`Error creating touch material in WebXRNearInteraction: ${err}`);
+                });
         }
 
         const easingFunction = new QuadraticEase();

@@ -93,4 +93,7 @@ export interface IAudioEngine extends IDisposable {
      * @param analyser The analyser to connect to the engine
      */
     connectToAnalyser(analyser: Analyser): void;
+
+    /** @internal */
+    _resumeAudioContextOnStateChange(): void;
 }

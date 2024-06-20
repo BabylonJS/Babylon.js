@@ -116,12 +116,17 @@ class _InternalAbstractMeshDataInfo {
      * Bounding info that is unnafected by the addition of thin instances
      */
     public _rawBoundingInfo: Nullable<BoundingInfo> = null;
+    /** @internal
+     * This value will indicate us that at some point, the mesh was specifically used with the opposite winding order
+     * We use that as a clue to force the material to sideOrientation = null
+     */
+    public _sideOrientationHint = false;
 }
 
 /**
  * Class used to store all common mesh properties
  */
-export class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
+export abstract class AbstractMesh extends TransformNode implements IDisposable, ICullable, IGetSetVerticesData {
     /** No occlusion */
     public static OCCLUSION_TYPE_NONE = 0;
     /** Occlusion set to optimistic */
@@ -487,6 +492,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         return this._internalAbstractMeshDataInfo._material;
     }
     public set material(value: Nullable<Material>) {
+        this._setMaterial(value);
+    }
+
+    /** @internal */
+    protected _setMaterial(value: Nullable<Material>) {
         if (this._internalAbstractMeshDataInfo._material === value) {
             return;
         }
@@ -562,7 +572,11 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Defines alpha to use when rendering overlay */
     public overlayAlpha = 0.5;
 
-    /** Gets or sets a boolean indicating that this mesh contains vertex color data with alpha values */
+    /**
+     * Gets or sets a boolean indicating that this mesh needs to use vertex alpha data to render.
+     * This property is misnamed and should be `useVertexAlpha`. Note that the mesh will be rendered
+     * with alpha blending when this flag is set even if vertex alpha data is missing from the geometry.
+     */
     public get hasVertexAlpha(): boolean {
         return this._internalAbstractMeshDataInfo._hasVertexAlpha;
     }
@@ -1488,6 +1502,25 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     }
 
     /**
+     * @internal
+     */
+    public _refreshBoundingInfoDirect(extend: { minimum: Vector3; maximum: Vector3 }): void {
+        if (this._boundingInfo) {
+            this._boundingInfo.reConstruct(extend.minimum, extend.maximum);
+        } else {
+            this._boundingInfo = new BoundingInfo(extend.minimum, extend.maximum);
+        }
+
+        if (this.subMeshes) {
+            for (let index = 0; index < this.subMeshes.length; index++) {
+                this.subMeshes[index].refreshBoundingInfo(null);
+            }
+        }
+
+        this._updateBoundingInfo();
+    }
+
+    /**
      * Internal function to get buffer data and possibly apply morphs and normals
      * @param applySkeleton
      * @param applyMorph
@@ -2075,8 +2108,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
 
         // Action manager
         if (this.actionManager !== undefined && this.actionManager !== null) {
-            // If it's the only mesh using the action manager, dispose of it.
-            if (!this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
+            // If we are the only mesh using the action manager, dispose of the action manager too unless it has opted out from that behavior
+            if (this.actionManager.disposeWhenUnowned && !this._scene.meshes.some((m) => m !== this && m.actionManager === this.actionManager)) {
                 this.actionManager.dispose();
             }
             this.actionManager = null;
@@ -2195,28 +2228,6 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
         this.onRebuildObservable.clear();
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
-    }
-
-    /**
-     * Adds the passed mesh as a child to the current mesh
-     * @param mesh defines the child mesh
-     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
-     * @returns the current mesh
-     */
-    public addChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
-        mesh.setParent(this, preserveScalingSign);
-        return this;
-    }
-
-    /**
-     * Removes the passed mesh from the current mesh children list
-     * @param mesh defines the child mesh
-     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
-     * @returns the current mesh
-     */
-    public removeChild(mesh: AbstractMesh, preserveScalingSign: boolean = false): AbstractMesh {
-        mesh.setParent(null, preserveScalingSign);
-        return this;
     }
 
     // Facet data

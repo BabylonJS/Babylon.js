@@ -959,25 +959,36 @@ SceneLoader.RegisterPlugin({
             }
 
             // Fog
-            if (parsedData.fogMode && parsedData.fogMode !== 0) {
+            if (parsedData.fogMode !== undefined && parsedData.fogMode !== null) {
                 scene.fogMode = parsedData.fogMode;
+            }
+            if (parsedData.fogColor !== undefined && parsedData.fogColor !== null) {
                 scene.fogColor = Color3.FromArray(parsedData.fogColor);
+            }
+            if (parsedData.fogStart !== undefined && parsedData.fogStart !== null) {
                 scene.fogStart = parsedData.fogStart;
+            }
+            if (parsedData.fogEnd !== undefined && parsedData.fogEnd !== null) {
                 scene.fogEnd = parsedData.fogEnd;
+            }
+            if (parsedData.fogDensity !== undefined && parsedData.fogDensity !== null) {
                 scene.fogDensity = parsedData.fogDensity;
-                log += "\tFog mode for scene:  ";
-                switch (scene.fogMode) {
-                    // getters not compiling, so using hardcoded
-                    case 1:
-                        log += "exp\n";
-                        break;
-                    case 2:
-                        log += "exp2\n";
-                        break;
-                    case 3:
-                        log += "linear\n";
-                        break;
-                }
+            }
+            log += "\tFog mode for scene:  ";
+            switch (scene.fogMode) {
+                case 0:
+                    log += "none\n";
+                    break;
+                // getters not compiling, so using hardcoded
+                case 1:
+                    log += "exp\n";
+                    break;
+                case 2:
+                    log += "exp2\n";
+                    break;
+                case 3:
+                    log += "linear\n";
+                    break;
             }
 
             //Physics
@@ -992,7 +1003,7 @@ SceneLoader.RegisterPlugin({
                 }
                 log = "\tPhysics engine " + (parsedData.physicsEngine ? parsedData.physicsEngine : "oimo") + " enabled\n";
                 //else - default engine, which is currently oimo
-                const physicsGravity = parsedData.physicsGravity ? Vector3.FromArray(parsedData.physicsGravity) : null;
+                const physicsGravity = parsedData.gravity ? Vector3.FromArray(parsedData.gravity) : parsedData.physicsGravity ? Vector3.FromArray(parsedData.physicsGravity) : null;
                 scene.enablePhysics(physicsGravity, physicsPlugin);
             }
 

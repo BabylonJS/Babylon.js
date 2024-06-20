@@ -6,6 +6,7 @@ import type { Scene } from "../../scene";
 import { Texture } from "../../Materials/Textures/texture";
 import { Constants } from "../../Engines/constants";
 import type { ExternalTexture } from "./externalTexture";
+import type { WebGPUEngine } from "core/Engines";
 
 import "../../Engines/Extensions/engine.videoTexture";
 import "../../Engines/Extensions/engine.dynamicTexture";
@@ -192,8 +193,10 @@ export class VideoTexture extends Texture {
         this._currentSrc = src;
         this.name = name || this._getName(src);
         this.video = this._getVideo(src);
-        if (this._engine?.createExternalTexture) {
-            this._externalTexture = this._engine.createExternalTexture(this.video);
+        const engineWebGPU = this._engine as Nullable<WebGPUEngine>;
+        const createExternalTexture = engineWebGPU?.createExternalTexture;
+        if (createExternalTexture) {
+            this._externalTexture = createExternalTexture.call(engineWebGPU, this.video);
         }
 
         if (!this._settings.independentVideoSource) {

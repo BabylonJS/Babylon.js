@@ -4,7 +4,7 @@ import type { TrigonometryBlock } from "core/Materials/Node/Blocks/trigonometryB
 import { TrigonometryBlockOperations } from "core/Materials/Node/Blocks/trigonometryBlock";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class TrigonometryPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -33,6 +33,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
             { label: "Sign", value: TrigonometryBlockOperations.Sign },
             { label: "Radians to degrees", value: TrigonometryBlockOperations.Degrees },
             { label: "Degrees to radians", value: TrigonometryBlockOperations.Radians },
+            { label: "Set", value: TrigonometryBlockOperations.Set },
         ];
 
         operationOptions.sort((a, b) => {
@@ -43,7 +44,7 @@ export class TrigonometryPropertyTabComponent extends React.Component<IPropertyC
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Operation"
                         options={operationOptions}
                         target={trigonometryBlock}

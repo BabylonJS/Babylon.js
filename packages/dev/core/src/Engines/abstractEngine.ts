@@ -1,5 +1,5 @@
 import type { Observer } from "../Misc/observable";
-import type { DataArray, FloatArray, ImageSource, IndicesArray, Nullable } from "../types";
+import type { DataArray, FloatArray, IndicesArray, Nullable } from "../types";
 import type { PerfCounter } from "../Misc/perfCounter";
 import type { PostProcess } from "../PostProcesses/postProcess";
 import type { Scene } from "../scene";
@@ -24,12 +24,8 @@ import type { LoadFileError } from "../Misc/fileTools";
 import type { ShaderProcessingContext } from "./Processors/shaderProcessingOptions";
 import type { IPipelineContext } from "./IPipelineContext";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
-import type { RenderTargetTexture } from "../Materials/Textures/renderTargetTexture";
 import type { IInternalTextureLoader } from "../Materials/Textures/internalTextureLoader";
-import type { ExternalTexture } from "../Materials/Textures/externalTexture";
-import type { TextureSampler } from "../Materials/Textures/textureSampler";
-import type { DepthTextureCreationOptions, InternalTextureCreationOptions, RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
-import type { IMultiRenderTargetOptions } from "../Materials/Textures/multiRenderTarget";
+import type { InternalTextureCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
 import type { EffectFallbacks } from "../Materials/effectFallbacks";
 import type { IMaterialContext } from "./IMaterialContext";
 import type { IStencilState } from "../States/IStencilState";
@@ -173,6 +169,27 @@ export interface HostInformation {
      */
     isMobile: boolean;
 }
+
+export type PrepareTextureProcessFunction = (
+    width: number,
+    height: number,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    extension: string,
+    texture: InternalTexture,
+    continuationCallback: () => void
+) => boolean;
+
+export type PrepareTextureFunction = (
+    texture: InternalTexture,
+    extension: string,
+    scene: Nullable<ISceneLike>,
+    img: HTMLImageElement | ImageBitmap | { width: number; height: number },
+    invertY: boolean,
+    noMipmap: boolean,
+    isCompressed: boolean,
+    processFunction: PrepareTextureProcessFunction,
+    samplingMode: number
+) => void;
 
 /**
  * The parent class for specialized engines (WebGL, WebGPU)
@@ -331,6 +348,11 @@ export abstract class AbstractEngine {
     public abstract _executeWhenRenderingStateIsCompiled(pipelineContext: IPipelineContext, action: () => void): void;
 
     /**
+     * @internal
+     */
+    public abstract _setTexture(channel: number, texture: Nullable<ThinTexture>, isPartOfTextureArray?: boolean, depthStencilTexture?: boolean, name?: string): boolean;
+
+    /**
      * Sets a texture to the according uniform.
      * @param channel The texture channel
      * @param unused unused parameter
@@ -344,20 +366,6 @@ export abstract class AbstractEngine {
      * @param effect defines the effect to bind
      */
     public abstract bindSamplers(effect: Effect): void;
-
-    /**
-     * Creates an external texture
-     * @param video video element
-     * @returns the external texture, or null if external textures are not supported by the engine
-     */
-    public abstract createExternalTexture(video: HTMLVideoElement): Nullable<ExternalTexture>;
-
-    /**
-     * Sets an internal texture to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param texture The texture to apply
-     */
-    public abstract setExternalTexture(name: string, texture: Nullable<ExternalTexture>): void;
 
     /**
      * @internal
@@ -881,6 +889,7 @@ export abstract class AbstractEngine {
 
     /** @internal */
     public _renderLoop(): void {
+        // Reset the frame handler before rendering a frame to determine if a new frame has been queued.
         this._frameHandler = 0;
 
         if (!this._contextWasLost) {
@@ -893,10 +902,10 @@ export abstract class AbstractEngine {
                 // Start new frame
                 this.beginFrame();
 
-                for (let index = 0; index < this._activeRenderLoops.length; index++) {
-                    const renderFunction = this._activeRenderLoops[index];
-
-                    renderFunction();
+                // Child canvases
+                if (!this._renderViews()) {
+                    // Main frame
+                    this._renderFrame();
                 }
 
                 // Present
@@ -904,9 +913,26 @@ export abstract class AbstractEngine {
             }
         }
 
-        if (this._frameHandler === 0) {
+        // The first condition prevents queuing another frame if we no longer have active render loops (e.g., if
+        // `stopRenderLoop` is called mid frame). The second condition prevents queuing another frame if one has
+        // already been queued (e.g., if `stopRenderLoop` and `runRenderLoop` is called mid frame).
+        if (this._activeRenderLoops.length > 0 && this._frameHandler === 0) {
             this._frameHandler = this._queueNewFrame(this._boundRenderFunction, this.getHostWindow());
         }
+    }
+
+    /** @internal */
+    public _renderFrame() {
+        for (let index = 0; index < this._activeRenderLoops.length; index++) {
+            const renderFunction = this._activeRenderLoops[index];
+
+            renderFunction();
+        }
+    }
+
+    /** @internal */
+    public _renderViews() {
+        return false;
     }
 
     /**
@@ -1047,11 +1073,6 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
-
-    /**
-     * @internal
-     */
     public abstract _getRGBABufferInternalSizedFormat(type: number, format?: number, useSRGBBuffer?: boolean): number;
 
     /** @internal */
@@ -1086,34 +1107,6 @@ export abstract class AbstractEngine {
         babylonInternalFormat?: number,
         useTextureWidthAndHeight?: boolean
     ): void;
-
-    /** @internal */
-    public abstract _readTexturePixels(
-        texture: InternalTexture,
-        width: number,
-        height: number,
-        faceIndex?: number,
-        level?: number,
-        buffer?: Nullable<ArrayBufferView>,
-        flushRenderer?: boolean,
-        noDataConversion?: boolean,
-        x?: number,
-        y?: number
-    ): Promise<ArrayBufferView>;
-
-    /** @internal */
-    public abstract _readTexturePixelsSync(
-        texture: InternalTexture,
-        width: number,
-        height: number,
-        faceIndex?: number,
-        level?: number,
-        buffer?: Nullable<ArrayBufferView>,
-        flushRenderer?: boolean,
-        noDataConversion?: boolean,
-        x?: number,
-        y?: number
-    ): ArrayBufferView;
 
     /**
      * Reads pixels from the current frame buffer. Please note that this function can be slow
@@ -1185,66 +1178,9 @@ export abstract class AbstractEngine {
     public abstract updateTextureWrappingMode(texture: InternalTexture, wrapU: Nullable<number>, wrapV?: Nullable<number>, wrapR?: Nullable<number>): void;
 
     /**
-     * Update a video texture
-     * @param texture defines the texture to update
-     * @param video defines the video element to use
-     * @param invertY defines if data must be stored with Y axis inverted
-     */
-    public abstract updateVideoTexture(texture: Nullable<InternalTexture>, video: HTMLVideoElement | Nullable<ExternalTexture>, invertY: boolean): void;
-
-    /**
      * Unbind the current render target and bind the default framebuffer
      */
     public abstract restoreDefaultFramebuffer(): void;
-
-    /**
-     * Update a raw texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store in the texture
-     * @param format defines the format of the data
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param compression defines the compression used (null by default)
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-     */
-    public abstract updateRawTexture(
-        texture: Nullable<InternalTexture>,
-        data: Nullable<ArrayBufferView>,
-        format: number,
-        invertY: boolean,
-        compression?: Nullable<string>,
-        type?: number,
-        useSRGBBuffer?: boolean
-    ): void;
-
-    /**
-     * Creates a storage buffer
-     * @param data the data for the storage buffer or the size of the buffer
-     * @param creationFlags flags to use when creating the buffer (see Constants.BUFFER_CREATIONFLAG_XXX). The BUFFER_CREATIONFLAG_STORAGE flag will be automatically added
-     * @param label defines the label of the buffer (for debug purpose)
-     * @returns the new buffer
-     */
-    public abstract createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer;
-
-    /**
-     * Updates a storage buffer
-     * @param buffer the storage buffer to update
-     * @param data the data used to update the storage buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public abstract updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-
-    /**
-     * Read data from a storage buffer
-     * @param storageBuffer The storage buffer to read from
-     * @param offset The offset in the storage buffer to start reading from (default: 0)
-     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
-     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
-     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
-     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
-     */
-    public abstract readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView>;
 
     /**
      * Draw a list of indexed primitives
@@ -1265,25 +1201,6 @@ export abstract class AbstractEngine {
 
     /**Gets driver info if available */
     public abstract extractDriverInfo(): string;
-
-    /**
-     * Creates a layout object to draw/clear on specific textures in a MRT
-     * @param textureStatus textureStatus[i] indicates if the i-th is active
-     * @returns A layout to be fed to the engine, calling `bindAttachments`.
-     */
-    public abstract buildTextureLayout(textureStatus: boolean[]): number[];
-
-    /**
-     * Restores the webgl state to only draw on the main color attachment
-     * when the frame buffer associated is the canvas frame buffer
-     */
-    public abstract restoreSingleAttachment(): void;
-
-    /**
-     * Select a subsets of attachments to draw to.
-     * @param attachments gl attachments
-     */
-    public abstract bindAttachments(attachments: number[]): void;
 
     /**
      * Bind a list of vertex buffers to the webGL context
@@ -1384,14 +1301,6 @@ export abstract class AbstractEngine {
     public abstract clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void;
 
     /**
-     * Sets the current alpha mode
-     * @param mode defines the mode to use (one of the Engine.ALPHA_XXX)
-     * @param noDepthWriteChange defines if depth writing state should remains unchanged (false by default)
-     * @see https://doc.babylonjs.com/features/featuresDeepDive/materials/advanced/transparent_rendering
-     */
-    public abstract setAlphaMode(mode: number, noDepthWriteChange?: boolean): void;
-
-    /**
      * Gets a boolean indicating that only power of 2 textures are supported
      * Please note that you can still use non power of 2 textures but in this case the engine will forcefully convert them
      */
@@ -1405,63 +1314,6 @@ export abstract class AbstractEngine {
      * @returns a new buffer
      */
     public abstract createIndexBuffer(indices: IndicesArray, _updatable?: boolean, label?: string): DataBuffer;
-
-    /**
-     * Creates a new render target texture
-     * @param size defines the size of the texture
-     * @param options defines the options used to create the texture
-     * @returns a new render target wrapper ready to render texture
-     */
-    public abstract createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
-
-    /**
-     * Creates a new render target cube wrapper
-     * @param size defines the size of the texture
-     * @param options defines the options used to create the texture
-     * @returns a new render target cube wrapper
-     */
-    public abstract createRenderTargetCubeTexture(size: number, options?: RenderTargetCreationOptions): RenderTargetWrapper;
-
-    /**
-     * Create a multi render target texture
-     * @see https://doc.babylonjs.com/setup/support/webGL2#multiple-render-target
-     * @param size defines the size of the texture
-     * @param options defines the creation options
-     * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
-     * @returns a new render target wrapper ready to render textures
-     */
-    public abstract createMultipleRenderTarget(size: TextureSize, options: IMultiRenderTargetOptions, initializeBuffers?: boolean): RenderTargetWrapper;
-
-    /** @internal */
-    public abstract _createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
-
-    /**
-     * Creates a depth stencil cube texture.
-     * This is only available in WebGL 2.
-     * @param size The size of face edge in the cube texture.
-     * @param options The options defining the cube texture.
-     * @returns The cube texture
-     */
-    public abstract _createDepthStencilCubeTexture(size: number, options: DepthTextureCreationOptions): InternalTexture;
-
-    /**
-     * Update the sample count for a given multiple render target texture
-     * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
-     * @param rtWrapper defines the render target wrapper to update
-     * @param samples defines the sample count to set
-     * @param initializeBuffers if set to true, the engine will make an initializing call of drawBuffers
-     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-     */
-    public abstract updateMultipleRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number, initializeBuffers?: boolean): number;
-
-    /**
-     * Updates the sample count of a render target texture
-     * @see https://doc.babylonjs.com/setup/support/webGL2#multisample-render-targets
-     * @param rtWrapper defines the render target wrapper to update
-     * @param samples defines the sample count to set
-     * @returns the effective sample count (could be 0 if multisample render targets are not supported)
-     */
-    public abstract updateRenderTargetTextureSampleCount(rtWrapper: Nullable<RenderTargetWrapper>, samples: number): number;
 
     /**
      * Draw a list of unindexed primitives
@@ -1508,42 +1360,12 @@ export abstract class AbstractEngine {
     }
 
     /**
-     * Sets a storage buffer in the shader
-     * @param name Defines the name of the storage buffer as defined in the shader
-     * @param buffer Defines the value to give to the uniform
-     */
-    public abstract setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void;
-
-    /**
-     * Sets a texture sampler to the according uniform.
-     * @param name The name of the uniform in the effect
-     * @param sampler The sampler to apply
-     */
-    public abstract setTextureSampler(name: string, sampler: Nullable<TextureSampler>): void;
-
-    /**
      * Update the sampling mode of a given texture
      * @param samplingMode defines the required sampling mode
      * @param texture defines the texture to update
      * @param generateMipMaps defines whether to generate mipmaps for the texture
      */
     public abstract updateTextureSamplingMode(samplingMode: number, texture: InternalTexture, generateMipMaps?: boolean): void;
-
-    /**
-     * Sets a texture to the context from a postprocess
-     * @param channel defines the channel to use
-     * @param postProcess defines the source postprocess
-     * @param name name of the channel
-     */
-    public abstract setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
-
-    /**
-     * Binds the output of the passed in post process to the texture channel specified
-     * @param channel The channel the texture should be bound to
-     * @param postProcess The post process which's output should be bound
-     * @param name name of the channel
-     */
-    public abstract setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void;
 
     /**
      * Sets an array of texture to the webGL context
@@ -1596,32 +1418,8 @@ export abstract class AbstractEngine {
         samplingMode: number = Constants.TEXTURE_TRILINEAR_SAMPLINGMODE,
         onLoad: Nullable<(texture: InternalTexture) => void> = null,
         onError: Nullable<(message: string, exception: any) => void> = null,
-        prepareTexture: (
-            texture: InternalTexture,
-            extension: string,
-            scene: Nullable<ISceneLike>,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            invertY: boolean,
-            noMipmap: boolean,
-            isCompressed: boolean,
-            processFunction: (
-                width: number,
-                height: number,
-                img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-                extension: string,
-                texture: InternalTexture,
-                continuationCallback: () => void
-            ) => boolean,
-            samplingMode: number
-        ) => void,
-        prepareTextureProcessFunction: (
-            width: number,
-            height: number,
-            img: HTMLImageElement | ImageBitmap | { width: number; height: number },
-            extension: string,
-            texture: InternalTexture,
-            continuationCallback: () => void
-        ) => boolean,
+        prepareTexture: PrepareTextureFunction,
+        prepareTextureProcess: PrepareTextureProcessFunction,
         buffer: Nullable<string | ArrayBuffer | ArrayBufferView | HTMLImageElement | Blob | ImageBitmap> = null,
         fallback: Nullable<InternalTexture> = null,
         format: Nullable<number> = null,
@@ -1712,7 +1510,7 @@ export abstract class AbstractEngine {
                         null,
                         onError,
                         prepareTexture,
-                        prepareTextureProcessFunction,
+                        prepareTextureProcess,
                         buffer,
                         texture
                     );
@@ -1735,7 +1533,7 @@ export abstract class AbstractEngine {
                     onLoad,
                     onError,
                     prepareTexture,
-                    prepareTextureProcessFunction,
+                    prepareTextureProcess,
                     buffer,
                     texture,
                     format,
@@ -1807,7 +1605,7 @@ export abstract class AbstractEngine {
                     texture._buffer = img;
                 }
 
-                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcessFunction, samplingMode);
+                prepareTexture(texture, extension, scene, img, texture.invertY, noMipmap, false, prepareTextureProcess, samplingMode);
             };
             // According to the WebGL spec section 6.10, ImageBitmaps must be inverted on creation.
             // So, we pass imageOrientation to _FileToolsLoadImage() as it may create an ImageBitmap.
@@ -1886,15 +1684,6 @@ export abstract class AbstractEngine {
      * @param index defines the index where to bind the block
      */
     public abstract bindUniformBlock(pipelineContext: IPipelineContext, blockName: string, index: number): void;
-
-    /**
-     * Sets a depth stencil texture from a render target to the according uniform.
-     * @param channel The texture channel
-     * @param uniform The uniform to set
-     * @param texture The render target texture containing the depth stencil texture to apply
-     * @param name The texture name
-     */
-    public abstract setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void;
 
     /** @internal */
     public _uniformBuffers = new Array<UniformBuffer>();
@@ -2001,14 +1790,14 @@ export abstract class AbstractEngine {
      */
     // Not mixed with Version for tooling purpose.
     public static get NpmPackage(): string {
-        return "babylonjs@7.3.2";
+        return "babylonjs@7.12.0";
     }
 
     /**
      * Returns the current version of the framework
      */
     public static get Version(): string {
-        return "7.3.2";
+        return "7.12.0";
     }
 
     /**
@@ -2119,11 +1908,11 @@ export abstract class AbstractEngine {
 
     /**
      * Creates a new engine
-     * @param antialias defines enable antialiasing (default: false)
+     * @param antialias defines whether anti-aliasing should be enabled. If undefined, it means that the underlying engine is free to enable it or not
      * @param options defines further options to be sent to the creation context
      * @param adaptToDeviceRatio defines whether to adapt to the device's viewport characteristics (default: false)
      */
-    constructor(antialias: boolean, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
+    constructor(antialias: boolean | undefined, options: AbstractEngineOptions, adaptToDeviceRatio?: boolean) {
         EngineStore.Instances.push(this);
         this.startTime = PrecisionDate.Now;
 
@@ -2282,23 +2071,6 @@ export abstract class AbstractEngine {
     public abstract updateUniformBuffer(uniformBuffer: DataBuffer, elements: FloatArray, offset?: number, count?: number): void;
 
     /**
-     * Update a dynamic index buffer
-     * @param indexBuffer defines the target index buffer
-     * @param indices defines the data to update
-     * @param offset defines the offset in the target index buffer where update should start
-     */
-    public abstract updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset?: number): void;
-
-    /**
-     * Updates a dynamic vertex buffer.
-     * @param vertexBuffer the vertex buffer to update
-     * @param data the data used to update the vertex buffer
-     * @param byteOffset the byte offset of the data
-     * @param byteLength the byte length of the data
-     */
-    public abstract updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void;
-
-    /**
      * Creates a dynamic vertex buffer
      * @param data the data for the dynamic vertex buffer
      * @param _label defines the label of the buffer (for debug purpose)
@@ -2365,18 +2137,7 @@ export abstract class AbstractEngine {
         useSRGBBuffer?: boolean
     ): InternalTexture;
 
-    /**
-     * @internal
-     */
-    public abstract _setupDepthStencilTexture(
-        internalTexture: InternalTexture,
-        size: number | { width: number; height: number; layers?: number },
-        generateStencil: boolean,
-        bilinearFiltering: boolean,
-        comparisonFunction: number,
-        samples?: number
-    ): void;
-
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a raw texture
      * @param data defines the data to store in the texture
@@ -2392,7 +2153,7 @@ export abstract class AbstractEngine {
      * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
      * @returns the raw texture inside an InternalTexture
      */
-    public abstract createRawTexture(
+    public createRawTexture(
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
@@ -2404,150 +2165,11 @@ export abstract class AbstractEngine {
         type?: number,
         creationFlags?: number,
         useSRGBBuffer?: boolean
-    ): InternalTexture;
+    ): InternalTexture {
+        throw _WarnImport("engine.rawTexture");
+    }
 
-    /**
-     * Create a cube texture from prefiltered data (ie. the mipmaps contain ready to use data for PBR reflection)
-     * @param rootUrl defines the url where the file to load is located
-     * @param scene defines the current scene
-     * @param lodScale defines scale to apply to the mip map selection
-     * @param lodOffset defines offset to apply to the mip map selection
-     * @param onLoad defines an optional callback raised when the texture is loaded
-     * @param onError defines an optional callback raised if there is an issue to load the texture
-     * @param format defines the format of the data
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createPrefilteredCubeTexture(
-        rootUrl: string,
-        scene: Nullable<Scene>,
-        lodScale: number,
-        lodOffset: number,
-        onLoad?: Nullable<(internalTexture: Nullable<InternalTexture>) => void>,
-        onError?: Nullable<(message?: string, exception?: any) => void>,
-        format?: number,
-        forcedExtension?: any,
-        createPolynomials?: boolean
-    ): InternalTexture;
-
-    /**
-     * Creates a dynamic texture
-     * @param width defines the width of the texture
-     * @param height defines the height of the texture
-     * @param generateMipMaps defines if the engine should generate the mip levels
-     * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-     * @returns the dynamic texture inside an InternalTexture
-     */
-    public abstract createDynamicTexture(width: number, height: number, generateMipMaps: boolean, samplingMode: number): InternalTexture;
-
-    /**
-     * Update the content of a dynamic texture
-     * @param texture defines the texture to update
-     * @param source defines the source containing the data
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param premulAlpha defines if alpha is stored as premultiplied
-     * @param format defines the format of the data
-     * @param forceBindTexture if the texture should be forced to be bound eg. after a graphics context loss (Default: false)
-     * @param allowGPUOptimization true to allow some specific GPU optimizations (subject to engine feature "allowGPUOptimizationsForGUI" being true)
-     */
-    public abstract updateDynamicTexture(
-        texture: Nullable<InternalTexture>,
-        source: ImageSource | ICanvas,
-        invertY?: boolean,
-        premulAlpha?: boolean,
-        format?: number,
-        forceBindTexture?: boolean,
-        allowGPUOptimization?: boolean
-    ): void;
-
-    /**
-     * Creates a cube texture
-     * @param rootUrl defines the url where the files to load is located
-     * @param scene defines the current scene
-     * @param files defines the list of files to load (1 per face)
-     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-     * @param onLoad defines an optional callback raised when the texture is loaded
-     * @param onError defines an optional callback raised if there is an issue to load the texture
-     * @param format defines the format of the data
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param createPolynomials if a polynomial sphere should be created for the cube texture
-     * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-     * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-     * @param fallback defines texture to use while falling back when (compressed) texture file not found.
-     * @param loaderOptions options to be passed to the loader
-     * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createCubeTexture(
-        rootUrl: string,
-        scene: Nullable<Scene>,
-        files: Nullable<string[]>,
-        noMipmap: boolean | undefined,
-        onLoad: Nullable<(data?: any) => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>,
-        format: number | undefined,
-        forcedExtension: any,
-        createPolynomials: boolean,
-        lodScale: number,
-        lodOffset: number,
-        fallback: Nullable<InternalTexture>,
-        loaderOptions: any,
-        useSRGBBuffer: boolean
-    ): InternalTexture;
-
-    /**
-     * Creates a cube texture
-     * @param rootUrl defines the url where the files to load is located
-     * @param scene defines the current scene
-     * @param files defines the list of files to load (1 per face)
-     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-     * @param onLoad defines an optional callback raised when the texture is loaded
-     * @param onError defines an optional callback raised if there is an issue to load the texture
-     * @param format defines the format of the data
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createCubeTexture(
-        rootUrl: string,
-        scene: Nullable<Scene>,
-        files: Nullable<string[]>,
-        noMipmap: boolean,
-        onLoad: Nullable<(data?: any) => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>,
-        format: number | undefined,
-        forcedExtension: any
-    ): InternalTexture;
-
-    /**
-     * Creates a cube texture
-     * @param rootUrl defines the url where the files to load is located
-     * @param scene defines the current scene
-     * @param files defines the list of files to load (1 per face)
-     * @param noMipmap defines a boolean indicating that no mipmaps shall be generated (false by default)
-     * @param onLoad defines an optional callback raised when the texture is loaded
-     * @param onError defines an optional callback raised if there is an issue to load the texture
-     * @param format defines the format of the data
-     * @param forcedExtension defines the extension to use to pick the right loader
-     * @param createPolynomials if a polynomial sphere should be created for the cube texture
-     * @param lodScale defines the scale applied to environment texture. This manages the range of LOD level used for IBL according to the roughness
-     * @param lodOffset defines the offset applied to environment texture. This manages first LOD level used for IBL according to the roughness
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createCubeTexture(
-        rootUrl: string,
-        scene: Nullable<Scene>,
-        files: Nullable<string[]>,
-        noMipmap: boolean,
-        onLoad: Nullable<(data?: any) => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>,
-        format: number | undefined,
-        forcedExtension: any,
-        createPolynomials: boolean,
-        lodScale: number,
-        lodOffset: number
-    ): InternalTexture;
-
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw cube texture
      * @param data defines the array of data to use to create each face
@@ -2560,7 +2182,7 @@ export abstract class AbstractEngine {
      * @param compression defines the compression used (null by default)
      * @returns the cube texture as an InternalTexture
      */
-    public abstract createRawCubeTexture(
+    public createRawCubeTexture(
         data: Nullable<ArrayBufferView[]>,
         size: number,
         format: number,
@@ -2569,107 +2191,10 @@ export abstract class AbstractEngine {
         invertY: boolean,
         samplingMode: number,
         compression?: Nullable<string>
-    ): InternalTexture;
-
-    /**
-     * Update a raw cube texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-     * @param invertY defines if data must be stored with Y axis inverted
-     */
-    public abstract updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean): void;
-
-    /**
-     * Update a raw cube texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param compression defines the compression used (null by default)
-     */
-    public abstract updateRawCubeTexture(texture: InternalTexture, data: ArrayBufferView[], format: number, type: number, invertY: boolean, compression: Nullable<string>): void;
-
-    /**
-     * Update a raw cube texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param compression defines the compression used (null by default)
-     * @param level defines which level of the texture to update
-     */
-    public abstract updateRawCubeTexture(
-        texture: InternalTexture,
-        data: ArrayBufferView[],
-        format: number,
-        type: number,
-        invertY: boolean,
-        compression: Nullable<string>,
-        level: number
-    ): void;
-
-    /**
-     * Creates a new raw cube texture from a specified url
-     * @param url defines the url where the data is located
-     * @param scene defines the current scene
-     * @param size defines the size of the textures
-     * @param format defines the format of the data
-     * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-     * @param noMipmap defines if the engine should avoid generating the mip levels
-     * @param callback defines a callback used to extract texture data from loaded data
-     * @param mipmapGenerator defines to provide an optional tool to generate mip levels
-     * @param onLoad defines a callback called when texture is loaded
-     * @param onError defines a callback called if there is an error
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createRawCubeTextureFromUrl(
-        url: string,
-        scene: Nullable<Scene>,
-        size: number,
-        format: number,
-        type: number,
-        noMipmap: boolean,
-        callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
-        mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
-        onLoad: Nullable<() => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>
-    ): InternalTexture;
-
-    /**
-     * Creates a new raw cube texture from a specified url
-     * @param url defines the url where the data is located
-     * @param scene defines the current scene
-     * @param size defines the size of the textures
-     * @param format defines the format of the data
-     * @param type defines the type fo the data (like Engine.TEXTURETYPE_UNSIGNED_INT)
-     * @param noMipmap defines if the engine should avoid generating the mip levels
-     * @param callback defines a callback used to extract texture data from loaded data
-     * @param mipmapGenerator defines to provide an optional tool to generate mip levels
-     * @param onLoad defines a callback called when texture is loaded
-     * @param onError defines a callback called if there is an error
-     * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @returns the cube texture as an InternalTexture
-     */
-    public abstract createRawCubeTextureFromUrl(
-        url: string,
-        scene: Nullable<Scene>,
-        size: number,
-        format: number,
-        type: number,
-        noMipmap: boolean,
-        callback: (ArrayBuffer: ArrayBuffer) => Nullable<ArrayBufferView[]>,
-        mipmapGenerator: Nullable<(faces: ArrayBufferView[]) => ArrayBufferView[][]>,
-        onLoad: Nullable<() => void>,
-        onError: Nullable<(message?: string, exception?: any) => void>,
-        samplingMode: number,
-        invertY: boolean
-    ): InternalTexture;
-
+    ): InternalTexture {
+        throw _WarnImport("engine.rawTexture");
+    }
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 3D texture
      * @param data defines the data used to create the texture
@@ -2685,7 +2210,7 @@ export abstract class AbstractEngine {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a new raw 3D texture (stored in an InternalTexture)
      */
-    public abstract createRawTexture3D(
+    public createRawTexture3D(
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
@@ -2697,35 +2222,11 @@ export abstract class AbstractEngine {
         compression?: Nullable<string>,
         textureType?: number,
         creationFlags?: number
-    ): InternalTexture;
+    ): InternalTexture {
+        throw _WarnImport("engine.rawTexture");
+    }
 
-    /**
-     * Update a raw 3D texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param invertY defines if data must be stored with Y axis inverted
-     */
-    public abstract updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
-
-    /**
-     * Update a raw 3D texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param compression defines the used compression (can be null)
-     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-     */
-    public abstract updateRawTexture3D(
-        texture: InternalTexture,
-        data: Nullable<ArrayBufferView>,
-        format: number,
-        invertY: boolean,
-        compression: Nullable<string>,
-        textureType: number
-    ): void;
-
+    // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * Creates a new raw 2D array texture
      * @param data defines the data used to create the texture
@@ -2741,7 +2242,7 @@ export abstract class AbstractEngine {
      * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
      * @returns a new raw 2D array texture (stored in an InternalTexture)
      */
-    public abstract createRawTexture2DArray(
+    public createRawTexture2DArray(
         data: Nullable<ArrayBufferView>,
         width: number,
         height: number,
@@ -2753,34 +2254,9 @@ export abstract class AbstractEngine {
         compression?: Nullable<string>,
         textureType?: number,
         creationFlags?: number
-    ): InternalTexture;
-
-    /**
-     * Update a raw 2D array texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param invertY defines if data must be stored with Y axis inverted
-     */
-    public abstract updateRawTexture2DArray(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean): void;
-
-    /**
-     * Update a raw 2D array texture
-     * @param texture defines the texture to update
-     * @param data defines the data to store
-     * @param format defines the data format
-     * @param invertY defines if data must be stored with Y axis inverted
-     * @param compression defines the used compression (can be null)
-     * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
-     */
-    public abstract updateRawTexture2DArray(
-        texture: InternalTexture,
-        data: Nullable<ArrayBufferView>,
-        format: number,
-        invertY: boolean,
-        compression: Nullable<string>,
-        textureType: number
-    ): void;
+    ): InternalTexture {
+        throw _WarnImport("engine.rawTexture");
+    }
 
     /**
      * Gets or sets a boolean indicating if back faces must be culled. If false, front faces are culled instead (true by default)
@@ -2917,13 +2393,6 @@ export abstract class AbstractEngine {
     public getTimeStep(): number {
         return this._timeStep * 1000;
     }
-
-    /**
-     * Force the mipmap generation for the given render target texture
-     * @param texture defines the render target texture to use
-     * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
-     */
-    public abstract generateMipMapsForCubemap(texture: InternalTexture, unbind: boolean): void;
 
     /**
      * Engine abstraction for loading and creating an image bitmap from a given source string.
@@ -3066,8 +2535,6 @@ export abstract class AbstractEngine {
      * Dispose and release all associated resources
      */
     public dispose(): void {
-        this.hideLoadingUI();
-
         this.releaseEffects();
 
         this._isDisposed = true;
@@ -3139,6 +2606,7 @@ export abstract class AbstractEngine {
         // no more engines left in the engine store? Notify!
         if (!EngineStore.Instances.length) {
             EngineStore.OnEnginesDisposedObservable.notifyObservers(this);
+            EngineStore.OnEnginesDisposedObservable.clear();
         }
 
         // Observables

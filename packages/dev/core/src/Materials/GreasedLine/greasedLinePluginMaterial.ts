@@ -220,6 +220,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
     override getUniforms() {
         const ubo = [
             { name: "grl_singleColor", size: 3, type: "vec3" },
+            { name: "grl_textureSize", size: 2, type: "vec2" },
             { name: "grl_dashOptions", size: 4, type: "vec4" },
             { name: "grl_colorMode_visibility_colorsWidth_useColors", size: 4, type: "vec4" },
         ];
@@ -237,6 +238,7 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 : "",
             fragment: `
                 uniform vec4 grl_dashOptions;
+                uniform vec2 grl_textureSize;
                 uniform vec4 grl_colorMode_visibility_colorsWidth_useColors;
                 uniform vec3 grl_singleColor;
                 `,
@@ -289,8 +291,9 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
         if (this._color) {
             uniformBuffer.updateColor3("grl_singleColor", this._color);
         }
-
-        uniformBuffer.setTexture("grl_colors", this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture);
+        const texture = this.colorsTexture ?? GreasedLineMaterialDefaults.EmptyColorsTexture;
+        uniformBuffer.setTexture("grl_colors", texture);
+        uniformBuffer.updateFloat2("grl_textureSize", texture?.getSize().width ?? 1, texture?.getSize().height ?? 1);
     }
 
     /**
@@ -328,7 +331,6 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                 attribute float grl_widths;
                 attribute vec3 grl_offsets;
                 attribute float grl_colorPointers;
-
                 varying float grlCounters;
                 varying float grlColorPointer;
 
@@ -458,7 +460,8 @@ export class GreasedLinePluginMaterial extends MaterialPluginBase implements IGr
                             #ifdef GREASED_LINE_COLOR_DISTRIBUTION_TYPE_LINE
                                 vec4 grlColor = texture2D(grl_colors, vec2(grlCounters, 0.), 0.);
                             #else
-                                vec4 grlColor = texture2D(grl_colors, vec2(grlColorPointer/grlColorsWidth, 0.), 0.);
+                                vec2 lookup = vec2(fract(grlColorPointer / grl_textureSize.x), 1.0 - floor(grlColorPointer / grl_textureSize.x) / max(grl_textureSize.y - 1.0, 1.0));
+                                vec4 grlColor = texture2D(grl_colors, lookup, 0.0);
                             #endif
                             if (grlColorMode == ${GreasedLineMeshColorMode.COLOR_MODE_SET}.) {
                                 gl_FragColor = grlColor;

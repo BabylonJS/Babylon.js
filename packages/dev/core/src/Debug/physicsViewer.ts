@@ -149,22 +149,30 @@ export class PhysicsViewer {
      */
     protected _updateDebugMeshesV2(): void {
         const plugin = this._physicsEnginePlugin as IPhysicsEnginePluginV2;
-        for (let i = 0; i < this._numBodies; i++) {
+        for (let i = 0; i < this._numBodies; ) {
             const body = this._bodies[i];
+            if (body && body.isDisposed && this.hideBody(body)) {
+                continue;
+            }
             const transform = this._bodyMeshes[i];
             if (body && transform) {
                 plugin.syncTransform(body, transform);
             }
+            i++;
         }
     }
 
     protected _updateInertiaMeshes(): void {
-        for (let i = 0; i < this._numInertiaBodies; i++) {
+        for (let i = 0; i < this._numInertiaBodies; ) {
             const body = this._inertiaBodies[i];
+            if (body && body.isDisposed && this.hideInertia(body)) {
+                continue;
+            }
             const mesh = this._inertiaMeshes[i];
             if (body && mesh) {
                 this._updateDebugInertia(body, mesh);
             }
+            i++;
         }
     }
 
@@ -464,15 +472,16 @@ export class PhysicsViewer {
     /**
      * Hides a body from the physics engine.
      * @param body - The body to hide.
+     * @returns true if body actually removed
      *
      * This function is useful for hiding a body from the physics engine.
      * It removes the body from the utility layer scene and disposes the mesh associated with it.
      * It also unregisters the render function if the number of bodies is 0.
      * This is useful for hiding a body from the physics engine without deleting it.
      */
-    public hideBody(body: Nullable<PhysicsBody>) {
+    public hideBody(body: Nullable<PhysicsBody>): boolean {
         if (!body || !this._scene || !this._utilityLayer) {
-            return;
+            return false;
         }
 
         let removed = false;
@@ -507,15 +516,17 @@ export class PhysicsViewer {
         if (removed && this._numBodies === 0) {
             this._scene.unregisterBeforeRender(this._renderFunction);
         }
+        return removed;
     }
 
     /**
      * Hides a body's inertia from the viewer utility layer
      * @param body the body to hide
+     * @returns true if inertia actually removed
      */
-    public hideInertia(body: Nullable<PhysicsBody>) {
+    public hideInertia(body: Nullable<PhysicsBody>): boolean {
         if (!body || !this._scene || !this._utilityLayer) {
-            return;
+            return false;
         }
         let removed = false;
         const utilityLayerScene = this._utilityLayer.utilityLayerScene;
@@ -544,6 +555,7 @@ export class PhysicsViewer {
         if (removed && this._numInertiaBodies === 0) {
             this._scene.unregisterBeforeRender(this._inertiaRenderFunction);
         }
+        return removed;
     }
 
     /**

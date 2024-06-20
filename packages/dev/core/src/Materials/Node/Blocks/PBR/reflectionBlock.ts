@@ -1,5 +1,5 @@
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
@@ -375,7 +375,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         const computeReflectionCoordsFunc = `
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
-                ${this.handleFragmentSideCodeReflectionCoords("worldNormal", "worldPos", true, true)}
+                ${this.handleFragmentSideCodeReflectionCoords(state, "worldNormal", "worldPos", true, true)}
                 return ${this._reflectionVectorName};
             }\n`;
 

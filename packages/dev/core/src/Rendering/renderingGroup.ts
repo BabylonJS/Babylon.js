@@ -428,7 +428,7 @@ export class RenderingGroup {
 
         mesh._renderingGroup = this;
 
-        if (mesh._edgesRenderer && mesh._edgesRenderer.isEnabled) {
+        if (mesh._edgesRenderer && mesh.isEnabled() && mesh.isVisible && mesh._edgesRenderer.isEnabled) {
             this._edgesRenderers.pushNoDuplicate(mesh._edgesRenderer);
         }
 

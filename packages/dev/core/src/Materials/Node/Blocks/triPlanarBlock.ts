@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../nodeMaterialBlockConnectionPoint";
@@ -18,6 +18,7 @@ import { ImageSourceBlock } from "./Dual/imageSourceBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../nodeMaterialConnectionPointCustomObject";
 import { EngineStore } from "../../../Engines/engineStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to read a texture with triplanar mapping (see "boxmap" in https://iquilezles.org/articles/biplanar/)
@@ -356,6 +357,20 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         }
     }
 
+    private _samplerFunc(state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSample";
+        }
+        return "texture2D";
+    }
+
+    private _generateTextureSample(textureName: string, uv: string, state: NodeMaterialBuildState) {
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerFunc(state)}(${textureName},${textureName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+        }
+        return `${this._samplerFunc(state)}(${textureName}, ${uv})`;
+    }
+
     protected _generateTextureLookup(state: NodeMaterialBuildState): void {
         const samplerName = this.samplerName;
         const samplerYName = this.samplerYName ?? samplerName;
@@ -373,11 +388,11 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         const uvz = state._getFreeVariableName("uvz");
 
         state.compilationString += `
-            vec3 ${n} = ${this.normal.associatedVariableName}.xyz;
+            ${state._declareLocalVar(n, NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this.normal.associatedVariableName}.xyz;
 
-            vec2 ${uvx} = ${this.position.associatedVariableName}.yz;
-            vec2 ${uvy} = ${this.position.associatedVariableName}.zx;
-            vec2 ${uvz} = ${this.position.associatedVariableName}.xy;
+            ${state._declareLocalVar(uvx, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.position.associatedVariableName}.yz;
+            ${state._declareLocalVar(uvy, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.position.associatedVariableName}.zx;
+            ${state._declareLocalVar(uvz, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.position.associatedVariableName}.xy;
         `;
 
         if (this.projectAsCube) {
@@ -396,31 +411,42 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             `;
         }
 
+        const suffix = state.fSuffix;
+
         state.compilationString += `
-            vec4 ${x} = texture2D(${samplerName}, ${uvx});
-            vec4 ${y} = texture2D(${samplerYName}, ${uvy});
-            vec4 ${z} = texture2D(${samplerZName}, ${uvz});
+            ${state._declareLocalVar(x, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerName, uvx, state)};
+            ${state._declareLocalVar(y, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerYName, uvy, state)};
+            ${state._declareLocalVar(z, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerZName, uvz, state)};
            
             // blend weights
-            vec3 ${w} = pow(abs(${n}), vec3(${sharpness}));
+            ${state._declareLocalVar(w, NodeMaterialBlockConnectionPointTypes.Vector3)} = pow(abs(${n}), vec3${suffix}(${sharpness}));
 
             // blend and return
-            vec4 ${this._tempTextureRead} = (${x}*${w}.x + ${y}*${w}.y + ${z}*${w}.z) / (${w}.x + ${w}.y + ${w}.z);        
+            ${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = (${x}*${w}.x + ${y}*${w}.y + ${z}*${w}.z) / (${w}.x + ${w}.y + ${w}.z);        
         `;
     }
 
     private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
+        let vecSpecifier = "";
+
+        if (
+            state.shaderLanguage === ShaderLanguage.WGSL &&
+            (output.type === NodeMaterialBlockConnectionPointTypes.Vector3 || output.type === NodeMaterialBlockConnectionPointTypes.Color3)
+        ) {
+            vecSpecifier = "Vec3";
+        }
+
         if (swizzle !== "a") {
             // no conversion if the output is "a" (alpha)
             if (!this.texture || !this.texture.gammaSpace) {
                 state.compilationString += `#ifdef ${this._linearDefineName}
-                    ${output.associatedVariableName} = toGammaSpace(${output.associatedVariableName});
+                    ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
                     #endif
                 `;
             }
 
             state.compilationString += `#ifdef ${this._gammaDefineName}
-                ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
+                ${output.associatedVariableName} = toLinearSpace${vecSpecifier}(${output.associatedVariableName});
                 #endif
             `;
         }
@@ -430,7 +456,7 @@ export class TriPlanarBlock extends NodeMaterialBlock {
         let complement = "";
 
         if (!this.disableLevelMultiplication) {
-            complement = ` * ${this._textureInfoName}`;
+            complement = ` * ${state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : ""}${this._textureInfoName}`;
         }
 
         state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
@@ -448,14 +474,14 @@ export class TriPlanarBlock extends NodeMaterialBlock {
 
         this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
-        this.level.associatedVariableName = this._textureInfoName;
+        this.level.associatedVariableName = (state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "") + this._textureInfoName;
 
         this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
         this._linearDefineName = state._getFreeDefineName("ISLINEAR");
         this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
         if (!this._imageSource) {
-            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+            this._samplerName = state._getFreeVariableName(this.name + "Texture");
 
             state._emit2DSampler(this._samplerName);
         }

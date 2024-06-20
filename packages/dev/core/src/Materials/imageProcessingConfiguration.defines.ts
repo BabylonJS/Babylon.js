@@ -9,8 +9,7 @@ export interface IImageProcessingConfigurationDefines {
     VIGNETTE: boolean;
     VIGNETTEBLENDMODEMULTIPLY: boolean;
     VIGNETTEBLENDMODEOPAQUE: boolean;
-    TONEMAPPING: boolean;
-    TONEMAPPING_ACES: boolean;
+    TONEMAPPING: number;
     CONTRAST: boolean;
     EXPOSURE: boolean;
     COLORCURVES: boolean;
@@ -31,8 +30,7 @@ export class ImageProcessingConfigurationDefines extends MaterialDefines impleme
     public VIGNETTE = false;
     public VIGNETTEBLENDMODEMULTIPLY = false;
     public VIGNETTEBLENDMODEOPAQUE = false;
-    public TONEMAPPING = false;
-    public TONEMAPPING_ACES = false;
+    public TONEMAPPING = 0;
     public CONTRAST = false;
     public COLORCURVES = false;
     public COLORGRADING = false;

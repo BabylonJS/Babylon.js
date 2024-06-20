@@ -58,6 +58,10 @@
         }
     }
 
+    .copy {
+        display: none;
+    }
+
     .range {
         -webkit-appearance: none;
         width: 100%;
@@ -241,6 +245,14 @@
                     appearance: textfield;
                 }
             }
+
+            .copy {
+                display: none;
+            }
+        }
+
+        .copy {
+            display: none;
         }
     }
 
@@ -407,6 +419,10 @@
                     filter: brightness(10);
                 }
             }
+        }
+
+        .copy {
+            display: none;
         }
     }
 
@@ -803,6 +819,10 @@
                 -moz-appearance: textfield;
             }
         }
+
+        .copy {
+            display: none;
+        }
     }
 
     .vector3Line {
@@ -834,6 +854,10 @@
                 align-items: center;
                 justify-items: center;
                 cursor: pointer;
+            }
+
+            .copy {
+                display: none;
             }
         }
 
@@ -983,6 +1007,10 @@
         .hidden {
             display: none;
         }
+
+        .copy {
+            display: none;
+        }
     }
 
     .listLine {
@@ -1026,6 +1054,10 @@
                 height: 24px;
                 color: #333333;
             }
+        }
+
+        .copy {
+            display: none;
         }
     }
 
@@ -1075,6 +1107,19 @@
                 }
             }
 
+            .expand {
+                grid-column: 3;
+                display: none;
+                align-items: center;
+                justify-items: center;
+                cursor: pointer;
+
+                img {
+                    height: 100%;
+                    width: 20px;
+                }
+            }
+
             .copy {
                 grid-column: 4;
                 display: none;
@@ -1082,19 +1127,6 @@
                 justify-items: center;
                 cursor: pointer;
                 color: black;
-                img {
-                    height: 100%;
-                    width: 20px;
-                }
-            }
-
-            .expand {
-                grid-column: 4;
-                display: none;
-                align-items: center;
-                justify-items: center;
-                cursor: pointer;
-
                 img {
                     height: 100%;
                     width: 20px;

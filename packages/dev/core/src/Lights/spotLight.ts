@@ -11,6 +11,7 @@ import { ShadowLight } from "./shadowLight";
 import { Texture } from "../Materials/Textures/texture";
 import type { ProceduralTexture } from "../Materials/Textures/Procedurals/proceduralTexture";
 import type { Camera } from "../Cameras/camera";
+import { RegisterClass } from "../Misc/typeStore";
 
 Node.AddNodeConstructor("Light_Type_2", (name, scene) => {
     return () => new SpotLight(name, Vector3.Zero(), Vector3.Zero(), 0, 0, scene);
@@ -382,7 +383,7 @@ export class SpotLight extends ShadowLight {
                 this._computeProjectionTextureMatrix();
             }
             effect.setMatrix("textureProjectionMatrix" + lightIndex, this._projectionTextureMatrix);
-            effect.setTexture("projectionLightSampler" + lightIndex, this.projectionTexture);
+            effect.setTexture("projectionLightTexture" + lightIndex, this.projectionTexture);
         }
         return this;
     }
@@ -474,3 +475,6 @@ export class SpotLight extends ShadowLight {
         defines["PROJECTEDLIGHTTEXTURE" + lightIndex] = this.projectionTexture && this.projectionTexture.isReady() ? true : false;
     }
 }
+
+// Register Class Name
+RegisterClass("BABYLON.SpotLight", SpotLight);

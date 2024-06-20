@@ -9,8 +9,8 @@ import type { WebGLRenderTargetWrapper } from "../WebGL/webGLRenderTargetWrapper
 import type { WebGLHardwareTexture } from "../WebGL/webGLHardwareTexture";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Unbind a list of render target textures from the webGL context
          * This is used only when drawBuffer extension or webGL2 are active

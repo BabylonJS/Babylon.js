@@ -56,6 +56,11 @@ export class NullEngineOptions {
      * Make the matrix computations to be performed in 64 bits instead of 32 bits. False by default
      */
     useHighPrecisionMatrix?: boolean;
+
+    /**
+     * If supplied, the HTMLCanvasElement to use (e.g. as the inputElement)
+     */
+    renderingCanvas?: HTMLCanvasElement;
 }
 
 /**
@@ -190,8 +195,13 @@ export class NullEngine extends Engine {
             supportRenderPasses: true,
             supportSpriteInstancing: false,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: false,
+            _checkNonFloatVertexBuffersDontRecreatePipelineContext: false,
             _collectUbosUpdatedInFrame: false,
         };
+
+        if (options.renderingCanvas) {
+            this._renderingCanvas = options.renderingCanvas;
+        }
 
         Logger.Log(`Babylon.js v${Engine.Version} - Null engine`);
 

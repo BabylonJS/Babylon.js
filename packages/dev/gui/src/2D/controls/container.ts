@@ -714,8 +714,8 @@ export class Container extends Control {
     /**
      * @internal
      */
-    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture) {
-        super._parseFromContent(serializedObject, host);
+    public override _parseFromContent(serializedObject: any, host: AdvancedDynamicTexture, urlRewriter?: (url: string) => string) {
+        super._parseFromContent(serializedObject, host, urlRewriter);
         this._link(host);
 
         // Gradient
@@ -730,7 +730,7 @@ export class Container extends Control {
         }
 
         for (const childData of serializedObject.children) {
-            this.addControl(Control.Parse(childData, host));
+            this.addControl(Control.Parse(childData, host, urlRewriter));
         }
     }
 

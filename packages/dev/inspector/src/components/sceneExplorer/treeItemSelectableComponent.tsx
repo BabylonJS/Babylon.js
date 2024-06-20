@@ -10,6 +10,8 @@ import * as ReactDOM from "react-dom";
 import * as React from "react";
 import type { GlobalState } from "../globalState";
 
+import { setDebugNode } from "./treeNodeDebugger";
+
 export interface ITreeItemSelectableComponentProps {
     entity: any;
     selectedEntity?: any;
@@ -86,6 +88,8 @@ export class TreeItemSelectableComponent extends React.Component<ITreeItemSelect
         }
         this._wasSelected = true;
         const entity = this.props.entity;
+        // Put selected node into window.debugNode
+        setDebugNode(entity);
         this.props.globalState.onSelectionChangedObservable.notifyObservers(entity);
     }
 

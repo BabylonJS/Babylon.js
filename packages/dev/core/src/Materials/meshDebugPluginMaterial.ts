@@ -114,9 +114,9 @@ vec3 dbg_color = vec3(1.);
     #if DBG_MODE == 3
         dbg_color *= mix(dbg_wireframeVerticesColor, vec3(1.), dbg_edgeFactor());
     #endif
-#elif DBG_MODE == 4 && defined(UV1)
+#elif DBG_MODE == 4 && defined(MAINUV1)
     dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV1));
-#elif DBG_MODE == 5 && defined(UV2)
+#elif DBG_MODE == 5 && defined(MAINUV2)
     dbg_color = mix(dbg_uvPrimaryColor, dbg_uvSecondaryColor, dbg_checkerboardFactor(vMainUV2));
 #elif DBG_MODE == 6 && defined(VERTEXCOLOR)
     dbg_color = vColor.rgb;

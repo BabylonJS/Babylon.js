@@ -23,6 +23,8 @@ import { MaterialFlags } from "../Materials/materialFlags";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "../Materials/clipPlaneMaterialHelper";
 import { BindMorphTargetParameters, BindSceneUniformBuffer, PrepareAttributesForMorphTargetsInfluencers, PushAttributesForInstances } from "../Materials/materialHelper.functions";
 
+import "../Engines/Extensions/engine.multiRender";
+
 /** @internal */
 interface ISavedTransformationMatrix {
     world: Matrix;
@@ -896,12 +898,10 @@ export class GeometryBufferRenderer {
                 let sideOrientation: Nullable<number>;
                 const instanceDataStorage = (renderingMesh as Mesh)._instanceDataStorage;
 
-                if (!instanceDataStorage.isFrozen && (material.backFaceCulling || renderingMesh.overrideMaterialSideOrientation !== null)) {
+                if (!instanceDataStorage.isFrozen && (material.backFaceCulling || material.sideOrientation !== null)) {
                     const mainDeterminant = effectiveMesh._getWorldMatrixDeterminant();
-                    sideOrientation = renderingMesh.overrideMaterialSideOrientation;
-                    if (sideOrientation === null) {
-                        sideOrientation = material.sideOrientation;
-                    }
+                    sideOrientation = material._getEffectiveOrientation(renderingMesh);
+
                     if (mainDeterminant < 0) {
                         sideOrientation = sideOrientation === Material.ClockWiseSideOrientation ? Material.CounterClockWiseSideOrientation : Material.ClockWiseSideOrientation;
                     }

@@ -384,7 +384,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     public override set width(value: string | number) {
-        if (this._width.toString(this._host) === value) {
+        if (this._width.toString(this._host) === value && !this._autoStretchWidth) {
             return;
         }
 
@@ -927,7 +927,7 @@ export class InputText extends Control implements IFocusableControl {
         }
 
         if (!this._fontOffset || this._wasDirty) {
-            this._fontOffset = Control._GetFontOffset(context.font);
+            this._fontOffset = Control._GetFontOffset(context.font, this._host.getScene()?.getEngine());
         }
 
         // Text

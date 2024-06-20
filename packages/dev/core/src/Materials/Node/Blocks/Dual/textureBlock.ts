@@ -1,6 +1,6 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialConnectionPointDirection } from "../../nodeMaterialBlockConnectionPoint";
@@ -31,7 +31,6 @@ export class TextureBlock extends NodeMaterialBlock {
     private _gammaDefineName: string;
     private _tempTextureRead: string;
     private _samplerName: string;
-    private _textureName: string;
     private _transformedUVName: string;
     private _textureTransformName: string;
     private _textureInfoName: string;
@@ -412,12 +411,7 @@ export class TextureBlock extends NodeMaterialBlock {
         }
 
         if (!this._imageSource) {
-            if (this._textureName) {
-                effect.setTexture(this._textureName, this.texture);
-                effect.setTextureSampler(this._samplerName, this.texture._texture);
-            } else {
-                effect.setTexture(this._samplerName, this.texture);
-            }
+            effect.setTexture(this._samplerName, this.texture);
         }
     }
 
@@ -497,7 +491,7 @@ export class TextureBlock extends NodeMaterialBlock {
     private _generateTextureSample(uv: string, state: NodeMaterialBuildState) {
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             const isVertex = state.target === NodeMaterialBlockTargets.Vertex;
-            return `${this._samplerFunc(state)}(${this._textureName},${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
+            return `${this._samplerFunc(state)}(${this.samplerName},${this.samplerName + Constants.AUTOSAMPLERSUFFIX}, ${this._getUVW(uv)}${this._samplerLodSuffix}${isVertex ? ", 0" : ""})`;
         }
         return `${this._samplerFunc(state)}(${this.samplerName}, ${this._getUVW(uv)}${this._samplerLodSuffix})`;
     }
@@ -591,15 +585,12 @@ export class TextureBlock extends NodeMaterialBlock {
         if ((!this._isMixed && state.target === NodeMaterialBlockTargets.Fragment) || (this._isMixed && state.target === NodeMaterialBlockTargets.Vertex)) {
             if (!this._imageSource) {
                 const varName = state._getFreeVariableName(this.name);
-                this._samplerName = varName + "Sampler";
-                if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    this._textureName = varName + "Texture";
-                }
+                this._samplerName = varName + "Texture";
 
                 if (this._texture?._texture?.is2DArray) {
                     state._emit2DArraySampler(this._samplerName);
                 } else {
-                    state._emit2DSampler(this._samplerName, this._textureName);
+                    state._emit2DSampler(this._samplerName);
                 }
             }
 
@@ -626,7 +617,7 @@ export class TextureBlock extends NodeMaterialBlock {
             if (this._texture?._texture?.is2DArray) {
                 state._emit2DArraySampler(this._samplerName);
             } else {
-                state._emit2DSampler(this._samplerName, this._textureName);
+                state._emit2DSampler(this._samplerName);
             }
         }
 
@@ -688,7 +679,7 @@ export class TextureBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
         super._deserialize(serializationObject, scene, rootUrl);
 
         this.convertToGammaSpace = serializationObject.convertToGammaSpace;
@@ -697,7 +688,12 @@ export class TextureBlock extends NodeMaterialBlock {
         this.disableLevelMultiplication = !!serializationObject.disableLevelMultiplication;
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
+            if (serializationObject.texture.url.indexOf("data:") === 0) {
+                rootUrl = "";
+            } else if (urlRewriter) {
+                serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
+                serializationObject.texture.name = serializationObject.texture.url;
+            }
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }

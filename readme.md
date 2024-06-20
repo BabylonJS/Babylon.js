@@ -106,15 +106,12 @@ window.addEventListener('resize', function(){
 
 ## Contributing
 
-If you want to contribute, please read our [contribution guidelines](https://github.com/BabylonJS/Babylon.js/blob/master/contributing.md) first.
+If you want to contribute, please read our [contribution guidelines](https://doc.babylonjs.com/contribute/toBabylon) first.
 
 ## Documentation
 
 - [Documentation](https://doc.babylonjs.com)
 - [Demos](https://www.babylonjs.com/community/)
-
-## Contributing
-Please see the [Contributing Guidelines](./contributing.md).
 
 ## Useful links
 

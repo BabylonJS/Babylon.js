@@ -388,6 +388,14 @@ export class Inspector {
             ...userOptions,
         };
 
+        // load the font, unless asked to skip it
+        if (!options.skipDefaultFontLoading && !(globalThis as any)?.BABYLON_SKIP_FONT_LOADING) {
+            const font = document.createElement("link");
+            font.rel = "stylesheet";
+            font.href = "https://use.typekit.net/cta4xsb.css";
+            document.head.appendChild(font);
+        }
+
         // Prepare state
         if (!this._GlobalState.onPropertyChangedObservable) {
             this._GlobalState.init(this.OnPropertyChangedObservable);

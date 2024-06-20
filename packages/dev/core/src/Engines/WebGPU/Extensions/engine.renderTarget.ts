@@ -8,8 +8,10 @@ import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import { WebGPURenderTargetWrapper } from "../webgpuRenderTargetWrapper";
 import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+import "../../AbstractEngine/abstractEngine.texture";
+
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Creates a new render target texture
          * @param size defines the size of the texture
@@ -17,16 +19,6 @@ declare module "../../webgpuEngine" {
          * @returns a new render target wrapper ready to render texture
          */
         createRenderTargetTexture(size: TextureSize, options: boolean | RenderTargetCreationOptions): RenderTargetWrapper;
-
-        /**
-         * Creates a depth stencil texture.
-         * This is only available in WebGL 2 or with the depth texture extension available.
-         * @param size The size of face edge in the texture.
-         * @param options The options defining the texture.
-         * @param rtWrapper The render target wrapper for which the depth/stencil texture must be created
-         * @returns The texture
-         */
-        createDepthStencilTexture(size: TextureSize, options: DepthTextureCreationOptions, rtWrapper: RenderTargetWrapper): InternalTexture;
 
         /**
          * Updates the sample count of a render target texture

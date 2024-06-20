@@ -24,7 +24,7 @@ import type { PhysicsConstraint, Physics6DoFConstraint } from "../physicsConstra
 import type { PhysicsMaterial } from "../physicsMaterial";
 import { PhysicsMaterialCombineMode } from "../physicsMaterial";
 import { PhysicsShape } from "../physicsShape";
-import type { BoundingBox } from "../../../Culling/boundingBox";
+import { BoundingBox } from "../../../Culling/boundingBox";
 import type { TransformNode } from "../../../Meshes/transformNode";
 import { Mesh } from "../../../Meshes/mesh";
 import { InstancedMesh } from "../../../Meshes/instancedMesh";
@@ -32,7 +32,7 @@ import type { Scene } from "../../../scene";
 import { VertexBuffer } from "../../../Buffers/buffer";
 import { ArrayTools } from "../../../Misc/arrayTools";
 import { Observable } from "../../../Misc/observable";
-import type { Nullable } from "../../../types";
+import type { Nullable, FloatArray } from "../../../types";
 import type { IPhysicsPointProximityQuery } from "../../physicsPointProximityQuery";
 import type { ProximityCastResult } from "../../proximityCastResult";
 import type { IPhysicsShapeProximityCastQuery } from "../../physicsShapeProximityCastQuery";
@@ -288,7 +288,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
     /**
      * We only have a single raycast in-flight right now
      */
-    private _queryCollector: bigint;
+    private _queryCollector;
     private _fixedTimeStep: number = 1 / 60;
     private _tmpVec3 = ArrayTools.BuildArray(3, Vector3.Zero);
     private _bodies = new Map<bigint, { body: PhysicsBody; index: number }>();
@@ -409,6 +409,31 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      */
     public getPluginVersion(): number {
         return 2;
+    }
+
+    /**
+     * Set the maximum allowed linear and angular velocities
+     * @param maxLinearVelocity maximum allowed linear velocity
+     * @param maxAngularVelocity maximum allowed angular velocity
+     */
+    setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void {
+        this._hknp.HP_World_SetSpeedLimit(this.world, maxLinearVelocity, maxAngularVelocity);
+    }
+
+    /**
+     * @returns maximum allowed linear velocity
+     */
+    getMaxLinearVelocity(): number {
+        const limits = this._hknp.HP_World_GetSpeedLimit(this.world);
+        return limits[1];
+    }
+
+    /**
+     * @returns maximum allowed angular velocity
+     */
+    getMaxAngularVelocity(): number {
+        const limits = this._hknp.HP_World_GetSpeedLimit(this.world);
+        return limits[2];
     }
 
     /**
@@ -610,6 +635,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 // transform position/orientation in parent space
                 if (parent && !parent.getWorldMatrix().isIdentity()) {
                     parent.computeWorldMatrix(true);
+                    // Save scaling for future use
+                    TmpVectors.Vector3[1].copyFrom(transformNode.scaling);
 
                     quat.normalize();
                     const finalTransform = TmpVectors.Matrix[0];
@@ -624,6 +651,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                     finalTransform.multiplyToRef(parentInverseTransform, localTransform);
                     localTransform.decomposeToTransformNode(transformNode);
                     transformNode.rotationQuaternion?.normalize();
+                    // Keep original scaling. Re-injecting scaling can introduce discontinuity between frames. Basically, it grows or shrinks.
+                    transformNode.scaling.copyFrom(TmpVectors.Vector3[1]);
                 } else {
                     transformNode.position.set(bodyTranslation[0], bodyTranslation[1], bodyTranslation[2]);
                     if (transformNode.rotationQuaternion) {
@@ -1192,6 +1221,52 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
         }
     }
 
+    private _createOptionsFromGroundMesh(options: PhysicsShapeParameters) {
+        const mesh = options.groundMesh;
+        if (!mesh) {
+            return;
+        }
+        let pos = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind);
+        const transform = mesh.computeWorldMatrix(true);
+        // convert rawVerts to object space
+        const transformedVertices: number[] = [];
+        let index: number;
+        for (index = 0; index < pos.length; index += 3) {
+            Vector3.FromArrayToRef(pos, index, TmpVectors.Vector3[0]);
+            Vector3.TransformCoordinatesToRef(TmpVectors.Vector3[0], transform, TmpVectors.Vector3[1]);
+            TmpVectors.Vector3[1].toArray(transformedVertices, index);
+        }
+        pos = transformedVertices;
+
+        const arraySize = ~~(Math.sqrt(pos.length / 3) - 1);
+        const boundingInfo = mesh.getBoundingInfo();
+        const dim = Math.min(boundingInfo.boundingBox.extendSizeWorld.x, boundingInfo.boundingBox.extendSizeWorld.z);
+        const minX = boundingInfo.boundingBox.minimumWorld.x;
+        const minY = boundingInfo.boundingBox.minimumWorld.y;
+        const minZ = boundingInfo.boundingBox.minimumWorld.z;
+
+        const matrix = new Float32Array((arraySize + 1) * (arraySize + 1));
+
+        const elementSize = (dim * 2) / arraySize;
+
+        for (let i = 0; i < matrix.length; i++) {
+            matrix[i] = minY;
+        }
+        for (let i = 0; i < pos.length; i = i + 3) {
+            const x = Math.round((pos[i + 0] - minX) / elementSize);
+            const z = arraySize - Math.round((pos[i + 2] - minZ) / elementSize);
+            const y = pos[i + 1] - minY;
+
+            matrix[z * (arraySize + 1) + x] = y;
+        }
+
+        options.numHeightFieldSamplesX = arraySize + 1;
+        options.numHeightFieldSamplesZ = arraySize + 1;
+        options.heightFieldSizeX = boundingInfo.boundingBox.extendSizeWorld.x * 2;
+        options.heightFieldSizeZ = boundingInfo.boundingBox.extendSizeWorld.z * 2;
+        options.heightFieldData = matrix;
+    }
+
     /**
      * Initializes a physics shape with the given type and parameters.
      * @param shape - The physics shape to initialize.
@@ -1270,6 +1345,10 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 break;
             case PhysicsShapeType.HEIGHTFIELD:
                 {
+                    if (options.groundMesh) {
+                        // update options with datas from groundMesh
+                        this._createOptionsFromGroundMesh(options);
+                    }
                     if (options.numHeightFieldSamplesX && options.numHeightFieldSamplesZ && options.heightFieldSizeX && options.heightFieldSizeZ && options.heightFieldData) {
                         const totalNumHeights = options.numHeightFieldSamplesX * options.numHeightFieldSamplesZ;
                         const numBytes = totalNumHeights * 4;
@@ -1483,7 +1562,31 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * for collision detection and other physics calculations.
      */
     public getBoundingBox(_shape: PhysicsShape): BoundingBox {
-        return {} as BoundingBox;
+        // get local AABB
+        const aabb = this._hknp.HP_Shape_GetBoundingBox(_shape._pluginData, [
+            [0, 0, 0],
+            [0, 0, 0, 1],
+        ])[1];
+        TmpVectors.Vector3[0].set(aabb[0][0], aabb[0][1], aabb[0][2]); // min
+        TmpVectors.Vector3[1].set(aabb[1][0], aabb[1][1], aabb[1][2]); // max
+        const boundingbox = new BoundingBox(TmpVectors.Vector3[0], TmpVectors.Vector3[1], Matrix.IdentityReadOnly);
+        return boundingbox;
+    }
+
+    /**
+     * Calculates the world bounding box of a given physics body.
+     *
+     * @param body - The physics body to calculate the bounding box for.
+     * @returns The calculated bounding box.
+     *
+     * This method is useful for physics engines as it allows to calculate the
+     * boundaries of a given body.
+     */
+    public getBodyBoundingBox(body: PhysicsBody): BoundingBox {
+        // get local AABB
+        const aabb = this.getBoundingBox(body.shape!);
+        const boundingbox = new BoundingBox(aabb.minimum, aabb.maximum, body.transformNode.getWorldMatrix());
+        return boundingbox;
     }
 
     /**
@@ -2223,15 +2326,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
-                    } else if (observableB) {
-                        //<todo This seems like it would give unexpected results when both bodies have observers?
-                        // Flip collision info:
-                        collisionInfo.collider = bodyInfoB.body;
-                        collisionInfo.colliderIndex = bodyInfoB.index;
-                        collisionInfo.collidedAgainst = bodyInfoA.body;
-                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                        collisionInfo.normal = event.contactOnB.normal;
-                        observableB.notifyObservers(collisionInfo);
+                    }
+                    if (observableB) {
+                        const collisionInfoB: any = {
+                            collider: bodyInfoB.body,
+                            colliderIndex: bodyInfoB.index,
+                            collidedAgainst: bodyInfoA.body,
+                            collidedAgainstIndex: bodyInfoA.index,
+                            normal: event.contactOnB.normal,
+                            type: this._nativeCollisionValueToCollisionType(event.type),
+                        };
+                        observableB.notifyObservers(collisionInfoB);
                     }
                 } else if (this._bodyCollisionEndedObservable.size) {
                     const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
@@ -2239,15 +2344,17 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
 
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
-                    } else if (observableB) {
-                        //<todo This seems like it would give unexpected results when both bodies have observers?
-                        // Flip collision info:
-                        collisionInfo.collider = bodyInfoB.body;
-                        collisionInfo.colliderIndex = bodyInfoB.index;
-                        collisionInfo.collidedAgainst = bodyInfoA.body;
-                        collisionInfo.collidedAgainstIndex = bodyInfoA.index;
-                        collisionInfo.normal = event.contactOnB.normal;
-                        observableB.notifyObservers(collisionInfo);
+                    }
+                    if (observableB) {
+                        const collisionInfoB: any = {
+                            collider: bodyInfoB.body,
+                            colliderIndex: bodyInfoB.index,
+                            collidedAgainst: bodyInfoA.body,
+                            collidedAgainstIndex: bodyInfoA.index,
+                            normal: event.contactOnB.normal,
+                            type: this._nativeCollisionValueToCollisionType(event.type),
+                        };
+                        observableB.notifyObservers(collisionInfoB);
                     }
                 }
             }
@@ -2267,10 +2374,14 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * Dispose the world and free resources
      */
     public dispose(): void {
-        this._hknp.HP_QueryCollector_Release(this._queryCollector);
-        this._queryCollector = BigInt(0);
-        this._hknp.HP_World_Release(this.world);
-        this.world = undefined;
+        if (this._queryCollector) {
+            this._hknp.HP_QueryCollector_Release(this._queryCollector);
+            this._queryCollector = undefined;
+        }
+        if (this.world) {
+            this._hknp.HP_World_Release(this.world);
+            this.world = undefined;
+        }
     }
 
     private _v3ToBvecRef(v: any, vec3: Vector3): void {

@@ -346,6 +346,19 @@ export class FilesInput {
                     }
                 });
         } else {
+            if (this._filesToLoad.length === 1) {
+                const name = this._filesToLoad[0].name.toLowerCase();
+                const extension = name.split(".").pop();
+                if (extension) {
+                    switch (extension.toLowerCase()) {
+                        case "dds":
+                        case "env":
+                        case "hdr": {
+                            return; // Ignore error in that case
+                        }
+                    }
+                }
+            }
             Logger.Error("Please provide a valid .babylon file.");
         }
     }

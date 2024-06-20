@@ -7,10 +7,11 @@ import { Constants } from "../../../Engines/constants";
 import { EffectWrapper, EffectRenderer } from "../../../Materials/effectRenderer";
 import type { Nullable } from "../../../types";
 import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
+import { Logger } from "../../../Misc/logger";
 
+import "../../../Engines/Extensions/engine.renderTargetCube";
 import "../../../Shaders/hdrFiltering.vertex";
 import "../../../Shaders/hdrFiltering.fragment";
-import { Logger } from "../../../Misc/logger";
 
 /**
  * Options for texture filtering

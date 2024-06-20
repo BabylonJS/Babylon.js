@@ -355,6 +355,11 @@ export class BlockTools {
                 triangleWaveBlock.kind = WaveBlockKind.Triangle;
                 return triangleWaveBlock;
             }
+            case "SetBlock": {
+                const cosBlock = new TrigonometryBlock("Set");
+                cosBlock.operation = TrigonometryBlockOperations.Set;
+                return cosBlock;
+            }
             case "WorldMatrixBlock": {
                 const worldMatrixBlock = new InputBlock("World");
                 worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
@@ -457,6 +462,12 @@ export class BlockTools {
                 const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
                 meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
                 return meshMatrixWeights;
+            }
+
+            case "MouseInfoBlock": {
+                const mouseInfoBlock = new InputBlock("MouseInfo", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+                mouseInfoBlock.animationType = AnimatedInputBlockTypes.MouseInfo;
+                return mouseInfoBlock;
             }
             case "TimeBlock": {
                 const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);

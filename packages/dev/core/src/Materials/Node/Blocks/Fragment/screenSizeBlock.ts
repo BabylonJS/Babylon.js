@@ -1,11 +1,12 @@
 import { NodeMaterialBlock } from "../../nodeMaterialBlock";
 import { NodeMaterialBlockConnectionPointTypes } from "../../Enums/nodeMaterialBlockConnectionPointTypes";
-import { type NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Effect } from "../../../effect";
 import type { Scene } from "../../../../scene";
+import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 
 /**
  * Block used to get the screen sizes
@@ -89,7 +90,8 @@ export class ScreenSizeBlock extends NodeMaterialBlock {
         this._varName = state._getFreeVariableName("screenSize");
         state._emitUniformFromString(this._varName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
-        state.compilationString += this.writeOutputs(state, this._varName);
+        const prefix = state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "";
+        state.compilationString += this.writeOutputs(state, prefix + this._varName);
 
         return this;
     }

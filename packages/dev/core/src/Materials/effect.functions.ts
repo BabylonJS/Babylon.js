@@ -3,14 +3,14 @@ import { GetDOMTextContent, IsWindowObjectExist } from "core/Misc/domManagement"
 import type { Nullable } from "core/types";
 import { ShaderLanguage } from "./shaderLanguage";
 import type { WebGLContext } from "core/Engines/thinEngine.functions";
-import { _executeWhenRenderingStateIsCompiled, getStateObject } from "core/Engines/thinEngine.functions";
+import { getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderStore } from "core/Engines/shaderStore";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Effect, IShaderPath } from "./effect";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
 import { Logger } from "core/Misc/logger";
 import { Finalize, Initialize, Process } from "core/Engines/Processors/shaderProcessor";
-import type { _loadFile } from "core/Engines/abstractEngine.functions";
+import { _loadFile } from "core/Engines/abstractEngine.functions";
 import type { WebGLPipelineContext } from "core/Engines/WebGL/webGLPipelineContext";
 
 /**
@@ -246,6 +246,7 @@ function _loadShader(shader: any, key: string, optionalKey: string, callback: (d
     } else {
         shaderUrl = ShaderStore.GetShadersRepository(shaderLanguage) + shader;
     }
+    _loadFileInjection = _loadFileInjection || _loadFile;
     if (!_loadFileInjection) {
         // we got to this point and loadFile was not injected - throw an error
         throw new Error("loadFileInjection is not defined");
@@ -278,7 +279,8 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
 export const createAndPreparePipelineContext = (
     options: ICreateAndPreparePipelineContextOptions,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
-    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
+    _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
 ) => {
     try {
         const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
@@ -301,8 +303,8 @@ export const createAndPreparePipelineContext = (
             ""
         );
 
-        _executeWhenRenderingStateIsCompiled(pipelineContext, (context) => {
-            options.onRenderingStateCompiled?.(context);
+        _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
+            options.onRenderingStateCompiled?.(pipelineContext);
         });
 
         return pipelineContext;

@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import type { Scene } from "../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 
 /**
  * block used to Generate a Worley Noise 3D Noise Pattern
@@ -95,7 +96,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `}\n\n`;
 
         functionString += `vec3 dist(vec3 x, vec3 y, vec3 z,  bool manhattanDistance){\n`;
-        functionString += `    return manhattanDistance ?  abs(x) + abs(y) + abs(z) :  (x * x + y * y + z * z);\n`;
+        functionString += `    return [manhattanDistance ?  abs(x) + abs(y) + abs(z) :  (x * x + y * y + z * z)];\n`;
         functionString += `}\n\n`;
 
         functionString += `vec2 worley(vec3 P, float jitter, bool manhattanDistance){\n`;
@@ -202,7 +203,7 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `    vec3 dz33 = Pfz.z + jitter*oz33;\n`;
         functionString += `\n`;
         functionString += `    vec3 d11 = dist(dx11, dy11, dz11, manhattanDistance);\n`;
-        functionString += `    vec3 d12 =dist(dx12, dy12, dz12, manhattanDistance);\n`;
+        functionString += `    vec3 d12 = dist(dx12, dy12, dz12, manhattanDistance);\n`;
         functionString += `    vec3 d13 = dist(dx13, dy13, dz13, manhattanDistance);\n`;
         functionString += `    vec3 d21 = dist(dx21, dy21, dz21, manhattanDistance);\n`;
         functionString += `    vec3 d22 = dist(dx22, dy22, dz22, manhattanDistance);\n`;
@@ -230,23 +231,31 @@ export class WorleyNoise3DBlock extends NodeMaterialBlock {
         functionString += `    d21 = max(d11, d21);\n`;
         functionString += `    d11 = min(da, d31); // Smallest now in d11\n`;
         functionString += `    d31 = max(da, d31); // 2nd smallest now not in d31\n`;
-        functionString += `    d11.xy = (d11.x < d11.y) ? d11.xy : d11.yx;\n`;
-        functionString += `    d11.xz = (d11.x < d11.z) ? d11.xz : d11.zx; // d11.x now smallest\n`;
+        functionString += `    if (d11.x >= d11.y) { vec2 temp = d11.yx; d11.x = temp.x; d11.y = temp.y; }\n`;
+        functionString += `    if (d11.x >= d11.z) { vec2 temp = d11.zx; d11.x = temp.x; d11.z = temp.y; }\n`;
         functionString += `    d12 = min(d12, d21); // 2nd smallest now not in d21\n`;
         functionString += `    d12 = min(d12, d22); // nor in d22\n`;
         functionString += `    d12 = min(d12, d31); // nor in d31\n`;
         functionString += `    d12 = min(d12, d32); // nor in d32\n`;
-        functionString += `    d11.yz = min(d11.yz,d12.xy); // nor in d12.yz\n`;
-        functionString += `    d11.y = min(d11.y,d12.z); // Only two more to go\n`;
-        functionString += `    d11.y = min(d11.y,d11.z); // Done! (Phew!)\n`;
+        functionString += `    vec2 temp2 = min(d11.yz, d12.xy); // nor in d12.yz\n`;
+        functionString += `    d11.y = temp2.x;\n`;
+        functionString += `    d11.z = temp2.y;\n`;
+        functionString += `    d11.y = min(d11.y, d12.z); // Only two more to go\n`;
+        functionString += `    d11.y = min(d11.y, d11.z); // Done! (Phew!)\n`;
         functionString += `    return sqrt(d11.xy); // F1, F2\n`;
         functionString += `}\n\n`;
+
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            functionString = state._babylonSLtoWGSL(functionString);
+        } else {
+            functionString = state._babylonSLtoGLSL(functionString);
+        }
 
         state._emitFunction("worley3D", functionString, "// Worley3D");
 
         const tempVariable = state._getFreeVariableName("worleyTemp");
 
-        state.compilationString += `vec2 ${tempVariable} = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\n`;
+        state.compilationString += `${state._declareLocalVar(tempVariable, NodeMaterialBlockConnectionPointTypes.Vector2)} = worley(${this.seed.associatedVariableName}, ${this.jitter.associatedVariableName}, ${this.manhattanDistance});\n`;
 
         if (this.output.hasEndpoints) {
             state.compilationString += state._declareOutput(this.output) + ` = ${tempVariable};\n`;

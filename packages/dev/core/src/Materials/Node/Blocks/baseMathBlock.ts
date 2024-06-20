@@ -8,7 +8,7 @@ import { NodeMaterialBlockConnectionPointTypes } from "../Enums/nodeMaterialBloc
  * Block used to perform a mathematical operation on 2 values
  */
 export class BaseMathBlock extends NodeMaterialBlock {
-    private readonly _connectionObservers: Observer<NodeMaterialConnectionPoint>[];
+    private readonly _connectionObservers: Observer<NodeMaterialBlockConnectionPointTypes>[];
 
     protected constructor(name: string) {
         super(name, NodeMaterialBlockTargets.Neutral);
@@ -24,10 +24,8 @@ export class BaseMathBlock extends NodeMaterialBlock {
         this.right.acceptedConnectionPointTypes.push(NodeMaterialBlockConnectionPointTypes.Float);
 
         this._connectionObservers = [
-            this.left.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.left.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.right.onConnectionObservable.add(() => this._updateInputOutputTypes()),
-            this.right.onDisconnectionObservable.add(() => this._updateInputOutputTypes()),
+            this.left.onTypeChangedObservable.add(() => this._updateInputOutputTypes()),
+            this.right.onTypeChangedObservable.add(() => this._updateInputOutputTypes()),
         ];
     }
 

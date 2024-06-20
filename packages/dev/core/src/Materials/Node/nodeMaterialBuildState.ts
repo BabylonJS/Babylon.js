@@ -1,10 +1,10 @@
 import { NodeMaterialBlockConnectionPointTypes } from "./Enums/nodeMaterialBlockConnectionPointTypes";
 import { NodeMaterialBlockTargets } from "./Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialBuildStateSharedData } from "./nodeMaterialBuildStateSharedData";
-import { Effect } from "../effect";
 import { ShaderLanguage } from "../shaderLanguage";
-import { type NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
+import type { NodeMaterialConnectionPoint } from "./nodeMaterialBlockConnectionPoint";
 import { ShaderStore as EngineShaderStore } from "../../Engines/shaderStore";
+import { Constants } from "../../Engines/constants";
 
 /**
  * Class used to store node based material build state
@@ -85,6 +85,11 @@ export class NodeMaterialBuildState {
      */
     public get shaderLanguage() {
         return this.sharedData.nodeMaterial.shaderLanguage;
+    }
+
+    /** Gets suffix to add behind type casting */
+    public get fSuffix() {
+        return this.shaderLanguage === ShaderLanguage.WGSL ? "f" : "";
     }
 
     /**
@@ -210,15 +215,52 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _emit2DSampler(name: string, textureName = "") {
-        if (this.samplers.indexOf(name) < 0) {
+    public _emit2DSampler(name: string, define = "", force = false) {
+        if (this.samplers.indexOf(name) < 0 || force) {
+            if (define) {
+                this._samplerDeclaration += `#if ${define}\n`;
+            }
+
             if (this.shaderLanguage === ShaderLanguage.WGSL) {
-                this._samplerDeclaration += `var ${name}: sampler;\n`;
-                this._samplerDeclaration += `var ${textureName}: texture_2d<f32>;\n`;
+                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name}: texture_2d<f32>;\n`;
             } else {
                 this._samplerDeclaration += `uniform sampler2D ${name};\n`;
             }
-            this.samplers.push(name);
+
+            if (define) {
+                this._samplerDeclaration += `#endif\n`;
+            }
+
+            if (!force) {
+                this.samplers.push(name);
+            }
+        }
+    }
+
+    /**
+     * @internal
+     */
+    public _emitCubeSampler(name: string, define = "", force = false) {
+        if (this.samplers.indexOf(name) < 0 || force) {
+            if (define) {
+                this._samplerDeclaration += `#if ${define}\n`;
+            }
+
+            if (this.shaderLanguage === ShaderLanguage.WGSL) {
+                this._samplerDeclaration += `var ${name + Constants.AUTOSAMPLERSUFFIX}: sampler;\n`;
+                this._samplerDeclaration += `var ${name}: texture_cube<f32>;\n`;
+            } else {
+                this._samplerDeclaration += `uniform samplerCube ${name};\n`;
+            }
+
+            if (define) {
+                this._samplerDeclaration += `#endif\n`;
+            }
+
+            if (!force) {
+                this.samplers.push(name);
+            }
         }
     }
 
@@ -268,15 +310,15 @@ export class NodeMaterialBuildState {
             case NodeMaterialBlockConnectionPointTypes.Int:
                 return isWGSL ? "i32" : "int";
             case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return isWGSL ? "vec2<f32>" : "vec2";
+                return isWGSL ? "vec2f" : "vec2";
             case NodeMaterialBlockConnectionPointTypes.Color3:
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return isWGSL ? "vec3<f32>" : "vec3";
+                return isWGSL ? "vec3f" : "vec3";
             case NodeMaterialBlockConnectionPointTypes.Color4:
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return isWGSL ? "vec4<f32>" : "vec4";
+                return isWGSL ? "vec4f" : "vec4";
             case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return isWGSL ? "mat4x4<f32>" : "mat4";
+                return isWGSL ? "mat4x4f" : "mat4";
         }
 
         return "";
@@ -327,7 +369,8 @@ export class NodeMaterialBuildState {
             return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
         }
 
-        let code = Effect.IncludesShadersStore[includeName] + "\n";
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
+        let code = store[includeName] + "\n";
 
         if (this.sharedData.emitComments) {
             code = comments + `\n` + code;
@@ -502,7 +545,7 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _generateTertiary(trueStatement: string, falseStatement: string, condition: string) {
+    public _generateTernary(trueStatement: string, falseStatement: string, condition: string) {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
             return `select(${falseStatement}, ${trueStatement}, ${condition})`;
         }
@@ -524,19 +567,89 @@ export class NodeMaterialBuildState {
     /**
      * @internal
      */
-    public _declareOutput(output: NodeMaterialConnectionPoint): string {
-        return this._declareLocalVar(output.associatedVariableName, output.type);
+    public _declareOutput(output: NodeMaterialConnectionPoint, isConst?: boolean): string {
+        return this._declareLocalVar(output.associatedVariableName, output.type, isConst);
     }
 
     /**
      * @internal
      */
-    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes): string {
+    public _declareLocalVar(name: string, type: NodeMaterialBlockConnectionPointTypes, isConst?: boolean): string {
         if (this.shaderLanguage === ShaderLanguage.WGSL) {
-            return `var ${name}: ${this._getShaderType(type)}`;
+            return `${isConst ? "const" : "var"} ${name}: ${this._getShaderType(type)}`;
         } else {
             return `${this._getShaderType(type)} ${name}`;
         }
+    }
+
+    /**
+     * @internal
+     */
+    public _samplerCubeFunc() {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSample";
+        }
+        return "textureCube";
+    }
+
+    /**
+     * @internal
+     */
+    public _samplerFunc() {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSample";
+        }
+        return "texture2D";
+    }
+
+    /**
+     * @internal
+     */
+    public _samplerLODFunc() {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return "textureSampleLevel";
+        }
+        return "texture2DLodEXT";
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTextureSample(uv: string, samplerName: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+        }
+        return `${this._samplerFunc()}(${samplerName}, ${uv})`;
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTextureSampleLOD(uv: string, samplerName: string, lod: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerLODFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
+        }
+        return `${this._samplerLODFunc()}(${samplerName}, ${uv}, ${lod})`;
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTextureSampleCube(uv: string, samplerName: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+        }
+        return `${this._samplerCubeFunc()}(${samplerName}, ${uv})`;
+    }
+
+    /**
+     * @internal
+     */
+    public _generateTextureSampleCubeLOD(uv: string, samplerName: string, lod: string) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            return `${this._samplerCubeFunc()}(${samplerName},${samplerName + Constants.AUTOSAMPLERSUFFIX}, ${uv}, ${lod})`;
+        }
+        return `${this._samplerCubeFunc()}(${samplerName}, ${uv}, ${lod})`;
     }
 
     private _convertVariableDeclarationToWGSL(type: string, dest: string, source: string): string {
@@ -551,11 +664,27 @@ export class NodeMaterialBuildState {
         return source.replace(new RegExp(`out\\s+var\\s+(\\w+)\\s*:\\s*(\\w+)`, "g"), `$1: ptr<function, $2>`);
     }
 
-    private _convertFunctionsToWGSL(source: string): string {
-        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/;
-        const match = source.match(regex);
+    private _convertTernaryOperandsToWGSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.*?)\\?(.*?):(.*)\\]`, "g"), (match, condition, trueCase, falseCase) => `select(${falseCase}, ${trueCase}, ${condition})`);
+    }
 
-        if (match) {
+    private _convertModOperatorsToWGSL(source: string): string {
+        return source.replace(new RegExp(`mod\\((.+?),\\s*(.+?)\\)`, "g"), (match, left, right) => `((${left})%(${right}))`);
+    }
+
+    private _convertConstToWGSL(source: string): string {
+        return source.replace(new RegExp(`const var`, "g"), `const`);
+    }
+
+    private _convertInnerFunctionsToWGSL(source: string): string {
+        return source.replace(new RegExp(`inversesqrt`, "g"), `inverseSqrt`);
+    }
+
+    private _convertFunctionsToWGSL(source: string): string {
+        const regex = /var\s+(\w+)\s*:\s*(\w+)\((.*)\)/g;
+
+        let match: RegExpMatchArray | null;
+        while ((match = regex.exec(source)) !== null) {
             const funcName = match[1];
             const funcType = match[2];
             const params = match[3]; // All parameters as a single string
@@ -564,7 +693,7 @@ export class NodeMaterialBuildState {
             const formattedParams = params.replace(/var\s/g, "");
 
             // Constructing the final output string
-            return source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
+            source = source.replace(match[0], `fn ${funcName}(${formattedParams}) -> ${funcType}`);
         }
         return source;
     }
@@ -572,6 +701,7 @@ export class NodeMaterialBuildState {
     public _babylonSLtoWGSL(code: string) {
         // variable declarations
         code = this._convertVariableDeclarationToWGSL("void", "voidnull", code);
+        code = this._convertVariableDeclarationToWGSL("bool", "bool", code);
         code = this._convertVariableDeclarationToWGSL("int", "i32", code);
         code = this._convertVariableDeclarationToWGSL("uint", "u32", code);
         code = this._convertVariableDeclarationToWGSL("float", "f32", code);
@@ -591,6 +721,18 @@ export class NodeMaterialBuildState {
         code = this._convertVariableConstructorsToWGSL("mat3", "mat3x3f", code);
         code = this._convertVariableConstructorsToWGSL("mat4", "mat4x4f", code);
 
+        // Ternary operands
+        code = this._convertTernaryOperandsToWGSL(code);
+
+        // Mod operators
+        code = this._convertModOperatorsToWGSL(code);
+
+        // Const
+        code = this._convertConstToWGSL(code);
+
+        // Inner functions
+        code = this._convertInnerFunctionsToWGSL(code);
+
         // Out paramters
         code = this._convertOutParametersToWGSL(code);
         code = code.replace(/\[\*\]/g, "*");
@@ -601,11 +743,21 @@ export class NodeMaterialBuildState {
         // Remove voidnull
         code = code.replace(/\s->\svoidnull/g, "");
 
+        // Derivatives
+        code = code.replace(/dFdx/g, "dpdx");
+        code = code.replace(/dFdy/g, "dpdy");
+
         return code;
     }
 
+    private _convertTernaryOperandsToGLSL(source: string): string {
+        return source.replace(new RegExp(`\\[(.+?)\\?(.+?):(.+)\\]`, "g"), (match, condition, trueCase, falseCase) => `${condition} ? ${trueCase} : ${falseCase}`);
+    }
+
     public _babylonSLtoGLSL(code: string) {
+        /** Remove BSL specifics */
         code = code.replace(/\[\*\]/g, "");
+        code = this._convertTernaryOperandsToGLSL(code);
 
         return code;
     }

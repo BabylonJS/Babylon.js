@@ -21,6 +21,7 @@ import { PushMaterial } from "./pushMaterial";
 import { EngineStore } from "../Engines/engineStore";
 import { Constants } from "../Engines/constants";
 import { addClipPlaneUniforms, bindClipPlane, prepareStringDefinesForClipPlanes } from "./clipPlaneMaterialHelper";
+import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 
 import type { ExternalTexture } from "./Textures/externalTexture";
 import {
@@ -983,7 +984,7 @@ export class ShaderMaterial extends PushMaterial {
      * @param effectOverride - If provided, use this effect instead of internal effect
      * @param subMesh defines the submesh to bind the material to
      */
-    public override bind(world: Matrix, mesh?: Mesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
+    public override bind(world: Matrix, mesh?: AbstractMesh, effectOverride?: Nullable<Effect>, subMesh?: SubMesh): void {
         // Std values
         const storeEffectOnSubMeshes = subMesh && this._storeEffectOnSubMeshes;
         const effect = effectOverride ?? (storeEffectOnSubMeshes ? subMesh.effect : this.getEffect());
@@ -1068,11 +1069,6 @@ export class ShaderMaterial extends PushMaterial {
             // Texture arrays
             for (name in this._textureArrays) {
                 effect.setTextureArray(name, this._textureArrays[name]);
-            }
-
-            // External texture
-            for (name in this._externalTextures) {
-                effect.setExternalTexture(name, this._externalTextures[name]);
             }
 
             // Int
@@ -1184,14 +1180,30 @@ export class ShaderMaterial extends PushMaterial {
                 }
             }
 
+            const engineWebGPU = scene.getEngine() as WebGPUEngine;
+
+            // External texture
+            const setExternalTexture = engineWebGPU.setExternalTexture;
+            if (setExternalTexture) {
+                for (name in this._externalTextures) {
+                    setExternalTexture.call(engineWebGPU, name, this._externalTextures[name]);
+                }
+            }
+
             // Samplers
-            for (name in this._textureSamplers) {
-                effect.setTextureSampler(name, this._textureSamplers[name]);
+            const setTextureSampler = engineWebGPU.setTextureSampler;
+            if (setTextureSampler) {
+                for (name in this._textureSamplers) {
+                    setTextureSampler.call(engineWebGPU, name, this._textureSamplers[name]);
+                }
             }
 
             // Storage buffers
-            for (name in this._storageBuffers) {
-                effect.setStorageBuffer(name, this._storageBuffers[name]);
+            const setStorageBuffer = engineWebGPU.setStorageBuffer;
+            if (setStorageBuffer) {
+                for (name in this._storageBuffers) {
+                    setStorageBuffer.call(engineWebGPU, name, this._storageBuffers[name]);
+                }
             }
         }
 
@@ -1446,7 +1458,6 @@ export class ShaderMaterial extends PushMaterial {
         }
 
         this._textures = {};
-
         super.dispose(forceDisposeEffect, forceDisposeTextures, notBoundToMesh);
     }
 

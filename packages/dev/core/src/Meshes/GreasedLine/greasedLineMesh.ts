@@ -360,7 +360,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
         return this.getBoundingInfo().boundingSphere;
     }
 
-    private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: number[] | Float32Array) {
+    private static _CompareV3(positionIdx1: number, positionIdx2: number, positions: FloatArray) {
         const arrayIdx1 = positionIdx1 * 6;
         const arrayIdx2 = positionIdx2 * 6;
         return positions[arrayIdx1] === positions[arrayIdx2] && positions[arrayIdx1 + 1] === positions[arrayIdx2 + 1] && positions[arrayIdx1 + 2] === positions[arrayIdx2 + 2];

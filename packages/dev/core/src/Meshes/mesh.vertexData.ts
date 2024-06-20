@@ -1416,7 +1416,23 @@ export class VertexData {
         }
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.ColorKind)) {
-            result.colors = meshOrGeometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared, forceCopy);
+            const geometry = (meshOrGeometry as Mesh).geometry || (meshOrGeometry as Geometry);
+            const vertexBuffer = geometry.getVertexBuffer(VertexBuffer.ColorKind)!;
+            const colors = geometry.getVerticesData(VertexBuffer.ColorKind, copyWhenShared, forceCopy)!;
+            if (vertexBuffer.getSize() === 3) {
+                const newColors = new Float32Array((colors.length * 4) / 3);
+                for (let i = 0, j = 0; i < colors.length; i += 3, j += 4) {
+                    newColors[j] = colors[i];
+                    newColors[j + 1] = colors[i + 1];
+                    newColors[j + 2] = colors[i + 2];
+                    newColors[j + 3] = 1;
+                }
+                result.colors = newColors;
+            } else if (vertexBuffer.getSize() === 4) {
+                result.colors = colors;
+            } else {
+                throw new Error(`Unexpected number of color components: ${vertexBuffer.getSize()}`);
+            }
         }
 
         if (meshOrGeometry.isVerticesDataPresent(VertexBuffer.MatricesIndicesKind)) {

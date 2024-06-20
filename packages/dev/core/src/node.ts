@@ -349,13 +349,18 @@ export class Node implements IBehaviorAware<Node> {
      * Creates a new Node
      * @param name the name and id to be given to this node
      * @param scene the scene this node will be added to
+     * @param isPure indicates this Node is just a Node, and not a derived class like Mesh or Camera
      */
-    constructor(name: string, scene: Nullable<Scene> = null) {
+    public constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
         this.name = name;
         this.id = name;
         this._scene = <Scene>(scene || EngineStore.LastCreatedScene);
         this.uniqueId = this._scene.getUniqueId();
         this._initCache();
+
+        if (isPure) {
+            this._addToSceneRootNodes();
+        }
     }
 
     /**

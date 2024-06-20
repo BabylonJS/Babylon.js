@@ -1,9 +1,11 @@
 import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "./../propertyChangedEvent";
+import { copyCommandToClipboard, getClassNameWithNamespace } from "../copyCommandToClipboard";
 import type { IconDefinition } from "@fortawesome/fontawesome-common-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { conflictingValuesPlaceholder } from "./targetsProxy";
+import copyIcon from "./copy.svg";
 
 export interface ICheckBoxLineComponentProps {
     label?: string;
@@ -109,6 +111,21 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
         this.setState({ isSelected: !this.state.isSelected, isConflict: false });
     }
 
+    // Copy to clipboard the code this checkbox actually does
+    // Example : mesh.checkCollisions = true;
+    onCopyClick() {
+        if (this.props && this.props.target) {
+            const { className, babylonNamespace } = getClassNameWithNamespace(this.props.target);
+            const targetName = "globalThis.debugNode";
+            const targetProperty = this.props.propertyName;
+            const value = this.props.target[this.props.propertyName!];
+            const strCommand = targetName + "." + targetProperty + " = " + value + ";// (debugNode as " + babylonNamespace + className + ")";
+            copyCommandToClipboard(strCommand);
+        } else {
+            copyCommandToClipboard("undefined");
+        }
+    }
+
     override render() {
         const icons = this.props.large ? Icons.size40 : Icons.size30;
         const icon = this.state.isConflict ? icons.mixed : this.state.isSelected ? icons.on : icons.off;
@@ -141,6 +158,9 @@ export class CheckBoxLineComponent extends React.Component<ICheckBoxLineComponen
                         </label>
                     </div>
                 )}
+                <div className="copy hoverIcon" onClick={() => this.onCopyClick()} title="Copy to clipboard">
+                    <img src={copyIcon} alt="Copy" />
+                </div>
             </div>
         );
     }

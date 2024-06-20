@@ -185,7 +185,7 @@ export class TransformNode extends Node {
     public onAfterWorldMatrixUpdateObservable = new Observable<TransformNode>();
 
     constructor(name: string, scene: Nullable<Scene> = null, isPure = true) {
-        super(name, scene);
+        super(name, scene, false);
 
         if (isPure) {
             this.getScene().addTransformNode(this);
@@ -825,6 +825,28 @@ export class TransformNode extends Node {
             this.setPivotMatrix(Matrix.Identity());
         }
 
+        return this;
+    }
+
+    /**
+     * Adds the passed mesh as a child to the current mesh
+     * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @returns the current mesh
+     */
+    public addChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
+        mesh.setParent(this, preserveScalingSign);
+        return this;
+    }
+
+    /**
+     * Removes the passed mesh from the current mesh children list
+     * @param mesh defines the child mesh
+     * @param preserveScalingSign if true, keep scaling sign of child. Otherwise, scaling sign might change.
+     * @returns the current mesh
+     */
+    public removeChild(mesh: TransformNode, preserveScalingSign: boolean = false): this {
+        mesh.setParent(null, preserveScalingSign);
         return this;
     }
 

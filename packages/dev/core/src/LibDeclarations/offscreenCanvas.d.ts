@@ -9,6 +9,16 @@ interface OffscreenCanvasEventMap {
     contextrestored: Event;
 }
 
+interface ImageEncodeOptions {
+    quality?: number;
+    type?: string;
+}
+
+// These types are only needed for older versions of typescript.
+// The BJS addition is only needed because otherwise it is a type duplicate definition
+type OffscreenRenderingContextIdBJS = "2d" | "bitmaprenderer" | "webgl" | "webgl2" | "webgpu";
+type OffscreenRenderingContextBJS = OffscreenCanvasRenderingContext2D | ImageBitmapRenderingContext | WebGLRenderingContext | WebGL2RenderingContext;
+
 interface OffscreenCanvas extends EventTarget {
     /**
      * These attributes return the dimensions of the OffscreenCanvas object's bitmap.
@@ -41,7 +51,7 @@ interface OffscreenCanvas extends EventTarget {
     getContext(contextId: "bitmaprenderer", options?: any): ImageBitmapRenderingContext | null;
     getContext(contextId: "webgl", options?: any): WebGLRenderingContext | null;
     getContext(contextId: "webgl2", options?: any): WebGL2RenderingContext | null;
-    getContext(contextId: OffscreenRenderingContextId, options?: any): OffscreenRenderingContext | null;
+    getContext(contextId: OffscreenRenderingContextIdBJS, options?: any): OffscreenRenderingContextBJS | null;
     /** Returns a newly created ImageBitmap object with the image in the OffscreenCanvas object. The image in the OffscreenCanvas object is replaced with a new blank image. */
     transferToImageBitmap(): ImageBitmap;
     addEventListener<K extends keyof OffscreenCanvasEventMap>(

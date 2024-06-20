@@ -11,6 +11,7 @@ import { MTLFileLoader } from "./mtlFileLoader";
 import type { OBJLoadingOptions } from "./objLoadingOptions";
 import { SolidParser } from "./solidParser";
 import type { Mesh } from "core/Meshes/mesh";
+import { StandardMaterial } from "core/Materials/standardMaterial";
 
 /**
  * OBJ file type loader.
@@ -321,6 +322,25 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         }
         //Return an array with all Mesh
         return Promise.all(mtlPromises).then(() => {
+            const isLine = (mesh: AbstractMesh) => Boolean(mesh._internalMetadata?.["_isLine"] ?? false);
+
+            // Iterate over the mesh, determine if it is a line mesh, clone or modify the material to line rendering.
+            babylonMeshesArray.forEach((mesh) => {
+                if (isLine(mesh)) {
+                    let mat = mesh.material ?? new StandardMaterial(mesh.name + "_line", scene);
+                    // If another mesh is using this material and it is not a line then we need to clone it.
+                    const needClone = mat.getBindedMeshes().filter((e) => !isLine(e)).length > 0;
+                    if (needClone) {
+                        mat = mat.clone(mat.name + "_line") ?? mat;
+                    }
+                    mat.wireframe = true;
+                    mesh.material = mat;
+                    if (mesh._internalMetadata) {
+                        mesh._internalMetadata["_isLine"] = undefined;
+                    }
+                }
+            });
+
             return babylonMeshesArray;
         });
     }

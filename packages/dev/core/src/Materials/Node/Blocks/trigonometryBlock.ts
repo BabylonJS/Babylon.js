@@ -46,6 +46,8 @@ export enum TrigonometryBlockOperations {
     Radians,
     /** To degrees (from radians) */
     Degrees,
+    /** To Set a = b */
+    Set,
 }
 
 /**
@@ -169,6 +171,10 @@ export class TrigonometryBlock extends NodeMaterialBlock {
             }
             case TrigonometryBlockOperations.Degrees: {
                 operation = "degrees";
+                break;
+            }
+            case TrigonometryBlockOperations.Set: {
+                operation = "";
                 break;
             }
         }

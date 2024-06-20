@@ -1263,9 +1263,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      */
-    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean) {
-        this._rootContainer = Control.Parse(serializedObject.root, this) as Container;
+    public parseSerializedObject(serializedObject: any, scaleToSize?: boolean, urlRewriter?: (url: string) => string) {
+        this._rootContainer = Control.Parse(serializedObject.root, this, urlRewriter) as Container;
         if (scaleToSize) {
             const width = serializedObject.width;
             const height = serializedObject.height;
@@ -1311,6 +1312,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a JSON object
      * @param serializedObject define the JSON serialized object to restore from
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @deprecated Please use parseSerializedObject instead
      */
     public parseContent = this.parseSerializedObject;
@@ -1320,16 +1322,22 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public static async ParseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+    public static async ParseFromSnippetAsync(
+        snippetId: string,
+        scaleToSize?: boolean,
+        appendToAdt?: AdvancedDynamicTexture,
+        urlRewriter?: (url: string) => string
+    ): Promise<AdvancedDynamicTexture> {
         const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from snippet");
         if (snippetId === "_BLANK") {
             return adt;
         }
 
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(AdvancedDynamicTexture.SnippetUrl + "/" + snippetId.replace(/#/g, "/"), true);
-        adt.parseSerializedObject(serialized, scaleToSize);
+        adt.parseSerializedObject(serialized, scaleToSize, urlRewriter);
         return adt;
     }
 
@@ -1337,10 +1345,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a snippet saved by the GUI editor
      * @param snippetId defines the snippet to load
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this);
+    public parseFromSnippetAsync(snippetId: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromSnippetAsync(snippetId, scaleToSize, this, urlRewriter);
     }
 
     /**
@@ -1348,12 +1357,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param url defines the url to load
      * @param scaleToSize defines whether to scale to texture to the saved size
      * @param appendToAdt if provided the snippet will be appended to the adt. Otherwise a fullscreen ADT will be created.
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public static async ParseFromFileAsync(url: string, scaleToSize?: boolean, appendToAdt?: AdvancedDynamicTexture): Promise<AdvancedDynamicTexture> {
+    public static async ParseFromFileAsync(
+        url: string,
+        scaleToSize?: boolean,
+        appendToAdt?: AdvancedDynamicTexture,
+        urlRewriter?: (url: string) => string
+    ): Promise<AdvancedDynamicTexture> {
         const adt = appendToAdt ?? AdvancedDynamicTexture.CreateFullscreenUI("ADT from URL");
         const serialized = await AdvancedDynamicTexture._LoadURLContentAsync(url);
-        adt.parseSerializedObject(serialized, scaleToSize);
+        adt.parseSerializedObject(serialized, scaleToSize, urlRewriter);
         return adt;
     }
 
@@ -1361,10 +1376,11 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Recreate the content of the ADT from a url json
      * @param url defines the url to load
      * @param scaleToSize defines whether to scale to texture to the saved size
+     * @param urlRewriter defines an url rewriter to update urls before sending them to the controls
      * @returns a promise that will resolve on success
      */
-    public parseFromURLAsync(url: string, scaleToSize?: boolean): Promise<AdvancedDynamicTexture> {
-        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this);
+    public parseFromURLAsync(url: string, scaleToSize?: boolean, urlRewriter?: (url: string) => string): Promise<AdvancedDynamicTexture> {
+        return AdvancedDynamicTexture.ParseFromFileAsync(url, scaleToSize, this, urlRewriter);
     }
 
     private static _LoadURLContentAsync(url: string, snippet: boolean = false): Promise<any> {
@@ -1421,6 +1437,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @param materialSetupCallback defines a custom way of creating and setting up the material on the mesh
+     * @param sampling defines the texture sampling mode (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(
@@ -1430,19 +1447,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         supportPointerMove = true,
         onlyAlphaTesting = false,
         invertY?: boolean,
-        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial
+        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial,
+        sampling = Texture.TRILINEAR_SAMPLINGMODE
     ): AdvancedDynamicTexture {
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         const uniqueId = RandomGUID();
-        const result = new AdvancedDynamicTexture(
-            `AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`,
-            width,
-            height,
-            mesh.getScene(),
-            true,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            invertY
-        );
+        const result = new AdvancedDynamicTexture(`AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`, width, height, mesh.getScene(), true, sampling, invertY);
 
         materialSetupCallback(mesh, uniqueId, result, onlyAlphaTesting);
 
@@ -1479,10 +1489,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param sampling defines the texture sampling mode (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
-        const result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+    public static CreateForMeshTexture(
+        mesh: AbstractMesh,
+        width = 1024,
+        height = 1024,
+        supportPointerMove = true,
+        invertY?: boolean,
+        sampling = Texture.TRILINEAR_SAMPLINGMODE
+    ): AdvancedDynamicTexture {
+        const result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, sampling, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }

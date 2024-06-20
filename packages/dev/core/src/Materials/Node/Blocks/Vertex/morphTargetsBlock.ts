@@ -14,6 +14,7 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to add morph targets support to vertex shader
@@ -199,35 +200,37 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         let injectionCode = "";
 
         if (manager?.isUsingTextureForTargets && repeatCount > 0) {
-            injectionCode += `float vertexID;\n`;
+            injectionCode += `${state._declareLocalVar("vertexID", NodeMaterialBlockConnectionPointTypes.Float)};\n`;
         }
 
         injectionCode += `#ifdef MORPHTARGETS\n`;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        const uniformsPrefix = isWebGPU ? "uniforms." : "";
         if (manager?.isUsingTextureForTargets) {
-            injectionCode += "for (int i = 0; i < NUM_MORPH_INFLUENCERS; i++) {\n";
-            injectionCode += "if (i >= morphTargetCount) break;\n";
+            injectionCode += `for (${isWebGPU ? "var" : "int"} i = 0; i < NUM_MORPH_INFLUENCERS; i++) {\n`;
+            injectionCode += `if (i >= ${uniformsPrefix}morphTargetCount) { break; }\n`;
 
-            injectionCode += `vertexID = float(gl_VertexID) * morphTargetTextureInfo.x;\n`;
-            injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * morphTargetInfluences[i];\n`;
+            injectionCode += `vertexID = ${isWebGPU ? "f32(vertexInputs.vertexIndex" : "float(gl_VertexID"}) * ${uniformsPrefix}morphTargetTextureInfo.x;\n`;
+            injectionCode += `${positionOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
             injectionCode += `vertexID += 1.0;\n`;
 
             if (hasNormals) {
                 injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
-                injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * morphTargetInfluences[i];\n`;
+                injectionCode += `${normalOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID) - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `vertexID += 1.0;\n`;
                 injectionCode += `#endif\n`;
             }
 
             if (hasUVs) {
                 injectionCode += `#ifdef MORPHTARGETS_UV\n`;
-                injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * morphTargetInfluences[i];\n`;
+                injectionCode += `${uvOutput.associatedVariableName} += (readVector3FromRawSampler(i, vertexID).xy - ${uv.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
                 injectionCode += `vertexID += 1.0;\n`;
                 injectionCode += `#endif\n`;
             }
 
             if (hasTangents) {
                 injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
-                injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(i, vertexID) - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[i];\n`;
+                injectionCode += `${tangentOutput.associatedVariableName}.xyz += (readVector3FromRawSampler(i, vertexID) - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[i];\n`;
 
                 if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                     injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\n`;
@@ -240,23 +243,23 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
             injectionCode += "}\n";
         } else {
             for (let index = 0; index < repeatCount; index++) {
-                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
+                injectionCode += `${positionOutput.associatedVariableName} += (position${index} - ${position.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
 
                 if (hasNormals) {
                     injectionCode += `#ifdef MORPHTARGETS_NORMAL\n`;
-                    injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `${normalOutput.associatedVariableName} += (normal${index} - ${normal.associatedVariableName}) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
                 }
 
                 if (hasUVs) {
                     injectionCode += `#ifdef MORPHTARGETS_UV\n`;
-                    injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `${uvOutput.associatedVariableName}.xy += (uv_${index} - ${uv.associatedVariableName}.xy) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
                     injectionCode += `#endif\n`;
                 }
 
                 if (hasTangents) {
                     injectionCode += `#ifdef MORPHTARGETS_TANGENT\n`;
-                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * morphTargetInfluences[${index}];\n`;
+                    injectionCode += `${tangentOutput.associatedVariableName}.xyz += (tangent${index} - ${tangent.associatedVariableName}.xyz) * ${uniformsPrefix}morphTargetInfluences[${index}];\n`;
 
                     if (tangent.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
                         injectionCode += `${tangentOutput.associatedVariableName}.w = ${tangent.associatedVariableName}.w;\n`;
