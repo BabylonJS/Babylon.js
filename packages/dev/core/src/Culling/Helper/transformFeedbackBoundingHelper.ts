@@ -18,20 +18,34 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     private _engine: Nullable<ThinEngine>;
     private _buffers: { [key: number]: Buffer } = {};
     private _effects: { [key: string]: Effect } = {};
+    private _promises: Promise<void>[] = [];
+    private _meshes: AbstractMesh[];
 
     /**
      * Creates a new TransformFeedbackBoundingHelper
      * @param engine defines the engine to use
+     * @param meshes defines the meshes to work with
      */
-    constructor(engine: ThinEngine) {
-        this._engine = engine;
-    }
-
-    /** @internal */
-    public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+    constructor(engine: ThinEngine, meshes: AbstractMesh | AbstractMesh[]) {
         if (!Array.isArray(meshes)) {
             meshes = [meshes];
         }
+
+        this._engine = engine;
+        this._meshes = meshes;
+    }
+
+    public finalizeAsync(): Promise<void> {
+        return Promise.all(this._promises).then(() => {});
+    }
+
+    public initializeAsync(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    /** @internal */
+    public compute(): void {
+        const meshes = this._meshes;
 
         const promises: Promise<void>[] = [];
 
@@ -174,7 +188,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             );
         }
 
-        return Promise.all(promises).then(() => {});
+        this._promises.push(Promise.all(promises).then(() => {}));
     }
 
     private _compute(mesh: AbstractMesh, effect: Effect): void {

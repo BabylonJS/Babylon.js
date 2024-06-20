@@ -1,9 +1,9 @@
-import type { AbstractMesh } from "core/Meshes/abstractMesh";
-
 /**
  * Interface used to define a platform support for BoundingInfoHelper class
  */
 export interface IBoundingInfoHelperPlatform {
-    processAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void>;
+    initializeAsync(): Promise<void>;
+    compute(): void;
+    finalizeAsync(): Promise<void>;
     dispose(): void;
 }

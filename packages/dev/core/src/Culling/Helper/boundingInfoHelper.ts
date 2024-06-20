@@ -15,28 +15,36 @@ export class BoundingInfoHelper {
     /**
      * Creates a new BoundingInfoHelper
      * @param engine defines the engine to use
+     * @param meshes defines the meshes to work with
      */
-    public constructor(engine: AbstractEngine) {
+    public constructor(engine: AbstractEngine, meshes: AbstractMesh | AbstractMesh[]) {
         if (engine.getCaps().supportComputeShaders) {
             if (!GetClass("BABYLON.ComputeShaderBoundingHelper")) {
                 throw new Error("The ComputeShaderBoundingHelper class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.ComputeShaderBoundingHelper") as any)(engine);
+            this._platform = new (GetClass("BABYLON.ComputeShaderBoundingHelper") as any)(engine, meshes);
         } else {
             if (!GetClass("BABYLON.TransformFeedbackBoundingHelper")) {
                 throw new Error("The TransformFeedbackBoundingHelper class is not available! Make sure you have imported it.");
             }
-            this._platform = new (GetClass("BABYLON.TransformFeedbackBoundingHelper") as any)(engine);
+            this._platform = new (GetClass("BABYLON.TransformFeedbackBoundingHelper") as any)(engine, meshes);
         }
+    }
+
+    public initializeAsync(): Promise<void> {
+        return this._platform.initializeAsync();
+    }
+
+    public compute(): void {
+        this._platform.compute();
     }
 
     /**
      * Compute the bounding info of a mesh / array of meshes using shaders
-     * @param mesh defines the mesh(es) to update
      * @returns a promise that resolves when the bounding info is/are computed
      */
-    public computeAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void> {
-        return this._platform.processAsync(mesh);
+    public finalizeAsync(): Promise<void> {
+        return this._platform.finalizeAsync();
     }
 
     /**

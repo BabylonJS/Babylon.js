@@ -7,6 +7,7 @@ import { StorageBuffer } from "core/Buffers/storageBuffer";
 import type { WebGPUEngine } from "core/Engines";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { Mesh } from "core/Meshes/mesh";
+import type { DataBuffer } from "core/Buffers";
 import { VertexBuffer } from "core/Buffers";
 import { Vector3 } from "core/Maths";
 import { UniformBuffer } from "core/Materials";
@@ -16,30 +17,73 @@ import "../../ShadersWGSL/boundingInfo.compute";
 /** @internal */
 export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform {
     private _engine: Nullable<AbstractEngine>;
-    private _computeShaders: { [key: string]: ComputeShader } = {};
+    private _computeShadersCache: { [key: string]: ComputeShader } = {};
     private _positionBuffers: { [key: number]: StorageBuffer } = {};
     private _indexBuffers: { [key: number]: StorageBuffer } = {};
     private _weightBuffers: { [key: number]: StorageBuffer } = {};
     private _indexExtraBuffers: { [key: number]: StorageBuffer } = {};
     private _weightExtraBuffers: { [key: number]: StorageBuffer } = {};
-    private _resultData: Float32Array;
-    private _resultBuffer: StorageBuffer;
+    private _resultBuffers: StorageBuffer[] = [];
     private _ubos: UniformBuffer[] = [];
     private _uboIndex: number = 0;
+    private _processedMeshes: AbstractMesh[] = [];
+    private _computeShaders: ComputeShader[] = [];
+    private _uniqueComputeShaders: Set<ComputeShader> = new Set();
 
     /**
      * Creates a new ComputeShaderBoundingHelper
      * @param engine defines the engine to use
+     * @param meshes defines the meshes to work with
      */
-    constructor(engine: AbstractEngine) {
+    constructor(engine: AbstractEngine, meshes: AbstractMesh | AbstractMesh[]) {
         this._engine = engine;
+
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
+
+        for (let i = 0; i < meshes.length; i++) {
+            const mesh = meshes[i];
+            const vertexCount = mesh.getTotalVertices();
+            const defines = [""];
+
+            if (vertexCount === 0 || !(mesh as Mesh).getVertexBuffer || !(mesh as Mesh).getVertexBuffer(VertexBuffer.PositionKind)) {
+                continue;
+            }
+
+            this._processedMeshes.push(mesh);
+
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
+            }
+
+            const computeShader = this._getComputeShader(defines);
+
+            this._computeShaders.push(computeShader);
+            this._uniqueComputeShaders.add(computeShader);
+        }
+    }
+
+    public initializeAsync(): Promise<void> {
+        return new Promise((resolve) => {
+            const check = () => {
+                for (const computeShader of this._uniqueComputeShaders) {
+                    if (!computeShader.isReady()) {
+                        setTimeout(check, 10);
+                        return;
+                    }
+                }
+                resolve();
+            };
+            check();
+        });
     }
 
     private _getComputeShader(defines: string[]) {
         let computeShader: ComputeShader;
         const join = defines.join("\n");
 
-        if (!this._computeShaders[join]) {
+        if (!this._computeShadersCache[join]) {
             computeShader = new ComputeShader("boundingInfoCompute", this._engine!, "boundingInfo", {
                 bindingsMapping: {
                     positionBuffer: { group: 0, binding: 0 },
@@ -53,9 +97,9 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
                 },
                 defines: defines,
             });
-            this._computeShaders[join] = computeShader;
+            this._computeShadersCache[join] = computeShader;
         } else {
-            computeShader = this._computeShaders[join];
+            computeShader = this._computeShadersCache[join];
         }
 
         return computeShader;
@@ -87,32 +131,18 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         computeShader.setStorageBuffer(name, buffer);
     }
 
-    /** @internal */
-    public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
-        if (!Array.isArray(meshes)) {
-            meshes = [meshes];
+    public compute(): void {
+        if (this._processedMeshes.length === 0) {
+            return;
         }
 
-        this._uboIndex = 0;
+        const resultDataSize = 8 * this._processedMeshes.length;
+        const resultData = new Float32Array(resultDataSize);
 
-        // Results
-        const resultDataSize = 8 * meshes.length;
-        let resultData: Float32Array;
-        let resultBuffer: StorageBuffer;
-        if (!this._resultData || this._resultData.length !== resultDataSize) {
-            this._resultBuffer?.dispose();
+        const resultBuffer = new StorageBuffer(this._engine as WebGPUEngine, Float32Array.BYTES_PER_ELEMENT * resultDataSize);
+        this._resultBuffers.push(resultBuffer);
 
-            resultData = new Float32Array(resultDataSize);
-            resultBuffer = new StorageBuffer(this._engine as WebGPUEngine, Float32Array.BYTES_PER_ELEMENT * resultDataSize);
-
-            this._resultData = resultData;
-            this._resultBuffer = resultBuffer;
-        } else {
-            resultData = this._resultData;
-            resultBuffer = this._resultBuffer;
-        }
-
-        for (let i = 0; i < meshes.length; i++) {
+        for (let i = 0; i < this._processedMeshes.length; i++) {
             resultData[i * 8 + 0] = Number.POSITIVE_INFINITY;
             resultData[i * 8 + 1] = Number.POSITIVE_INFINITY;
             resultData[i * 8 + 2] = Number.POSITIVE_INFINITY;
@@ -124,89 +154,92 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
         resultBuffer.update(resultData);
 
-        const processedMeshes: AbstractMesh[] = [];
-        const computeShaders: ComputeShader[] = [];
-        const uniqueComputeShaders: Set<ComputeShader> = new Set();
-
-        for (let i = 0; i < meshes.length; i++) {
-            const mesh = meshes[i];
+        for (let i = 0; i < this._processedMeshes.length; i++) {
+            const mesh = this._processedMeshes[i];
             const vertexCount = mesh.getTotalVertices();
-            const defines = [""];
 
-            if (vertexCount === 0 || !(mesh as Mesh).getVertexBuffer || !(mesh as Mesh).getVertexBuffer(VertexBuffer.PositionKind)) {
-                continue;
-            }
+            const computeShader = this._computeShaders[i];
 
-            processedMeshes.push(mesh);
+            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
 
-            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-                defines.push("#define NUM_BONE_INFLUENCERS " + mesh.numBoneInfluencers);
-            }
-
-            const computeShader = this._getComputeShader(defines);
-
-            computeShaders.push(computeShader);
-            uniqueComputeShaders.add(computeShader);
-        }
-
-        if (processedMeshes.length === 0) {
-            return Promise.resolve();
-        }
-
-        return new Promise((resolve) => {
-            const check = () => {
-                for (const computeShader of uniqueComputeShaders) {
-                    if (!computeShader.isReady()) {
-                        setTimeout(check, 10);
-                        return;
-                    }
+            // Bones
+            if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
+                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
+                this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
+                const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
+                computeShader.setTexture("boneSampler", boneSampler!, false);
+                if (mesh.numBoneInfluencers > 4) {
+                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesExtraKind, 4, "indexExtraBuffer", this._indexExtraBuffers);
+                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsExtraKind, 4, "weightExtraBuffer", this._weightExtraBuffers);
                 }
+            }
 
-                for (let i = 0; i < processedMeshes.length; i++) {
-                    const mesh = processedMeshes[i];
-                    const vertexCount = mesh.getTotalVertices();
+            computeShader.setStorageBuffer("resultBuffer", resultBuffer);
 
-                    const computeShader = computeShaders[i];
+            const ubo = this._getUBO();
+            ubo.updateUInt("indexResult", i);
+            ubo.update();
 
-                    this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.PositionKind, 3, "positionBuffer", this._positionBuffers);
+            computeShader.setUniformBuffer("settings", ubo);
 
-                    // Bones
-                    if (mesh && mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton && mesh.skeleton.useTextureToStoreBoneMatrices) {
-                        this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesKind, 4, "indexBuffer", this._indexBuffers);
-                        this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsKind, 4, "weightBuffer", this._weightBuffers);
-                        const boneSampler = mesh.skeleton.getTransformMatrixTexture(mesh);
-                        computeShader.setTexture("boneSampler", boneSampler!, false);
-                        if (mesh.numBoneInfluencers > 4) {
-                            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesIndicesExtraKind, 4, "indexExtraBuffer", this._indexExtraBuffers);
-                            this._extractDataAndLink(computeShader, mesh as Mesh, VertexBuffer.MatricesWeightsExtraKind, 4, "weightExtraBuffer", this._weightExtraBuffers);
+            // Dispatch
+            computeShader.dispatch(Math.ceil(vertexCount / 64));
+
+            this._engine!.flushFramebuffer();
+        }
+    }
+
+    /** @internal */
+    public finalizeAsync(): Promise<void> {
+        return new Promise((resolve) => {
+            const buffers: DataBuffer[] = [];
+            let size = 0;
+            for (let i = 0; i < this._resultBuffers.length; i++) {
+                const buffer = this._resultBuffers[i].getBuffer();
+                buffers.push(buffer);
+                size += buffer.capacity;
+            }
+
+            const resultData = new Float32Array(size / Float32Array.BYTES_PER_ELEMENT);
+
+            const minimum = Vector3.Zero();
+            const maximum = Vector3.Zero();
+
+            const minmax = { minimum, maximum };
+
+            (this._engine as WebGPUEngine).readFromStorageBuffer(buffers, 0, undefined, resultData, true).then(() => {
+                let resultDataOffset = 0;
+                for (let j = 0; j < this._resultBuffers.length; j++) {
+                    for (let i = 0; i < this._processedMeshes.length; i++) {
+                        const mesh = this._processedMeshes[i];
+
+                        Vector3.FromArrayToRef(resultData, resultDataOffset + i * 8, minimum);
+                        Vector3.FromArrayToRef(resultData, resultDataOffset + i * 8 + 3, maximum);
+
+                        if (j > 0) {
+                            minimum.minimizeInPlace(mesh.getBoundingInfo().minimum);
+                            maximum.maximizeInPlace(mesh.getBoundingInfo().maximum);
+                        }
+
+                        mesh._refreshBoundingInfoDirect(minmax);
+
+                        if (i === 0) {
+                            //console.log("Q", j, minimum + "", maximum + "");
                         }
                     }
 
-                    computeShader.setStorageBuffer("resultBuffer", resultBuffer);
-
-                    const ubo = this._getUBO();
-                    ubo.updateUInt("indexResult", i);
-                    ubo.update();
-
-                    computeShader.setUniformBuffer("settings", ubo);
-
-                    // Dispatch
-                    computeShader.dispatch(Math.ceil(vertexCount / 64));
+                    resultDataOffset += 8 * this._processedMeshes.length;
                 }
 
-                resultBuffer.read(undefined, undefined, resultData, true).then(() => {
-                    for (let i = 0; i < processedMeshes.length; i++) {
-                        const mesh = processedMeshes[i];
-                        mesh._refreshBoundingInfoDirect({
-                            minimum: Vector3.FromArray(resultData, i * 8),
-                            maximum: Vector3.FromArray(resultData, i * 8 + 3),
-                        });
-                    }
-                    resolve();
-                });
-            };
+                for (const resultBuffer of this._resultBuffers) {
+                    resultBuffer.dispose();
+                }
 
-            check();
+                this._resultBuffers = [];
+                this._uboIndex = 0;
+
+                resolve();
+            });
         });
     }
 
@@ -224,14 +257,15 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._indexBuffers = {};
         this._disposeCache(this._weightBuffers);
         this._weightBuffers = {};
-        this._resultBuffer.dispose();
-        this._resultBuffer = undefined!;
-        this._resultData = undefined!;
+        for (const resultBuffer of this._resultBuffers) {
+            resultBuffer.dispose();
+        }
+        this._resultBuffers = [];
         for (const ubo of this._ubos) {
             ubo.dispose();
         }
         this._ubos = [];
-        this._computeShaders = {};
+        this._computeShadersCache = {};
         this._engine = null;
     }
 }

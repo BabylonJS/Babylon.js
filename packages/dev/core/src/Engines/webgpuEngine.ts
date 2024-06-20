@@ -3984,26 +3984,32 @@ export class WebGPUEngine extends AbstractEngine {
      * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
      * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
      */
-    readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
-        size = size || storageBuffer.capacity;
+    public readFromStorageBuffer(storageBuffer: DataBuffer | DataBuffer[], offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+        if (!Array.isArray(storageBuffer)) {
+            storageBuffer = [storageBuffer];
+        }
+
+        size = size || storageBuffer[0].capacity;
 
         const gpuBuffer = this._bufferManager.createRawBuffer(
-            size,
+            size * storageBuffer.length,
             WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
             undefined,
             "TempReadFromStorageBuffer"
         );
 
-        this._renderEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
+        for (let i = 0; i < storageBuffer.length; i++) {
+            this._renderEncoder.copyBufferToBuffer(storageBuffer[i].underlyingResource, offset ?? 0, gpuBuffer, i * size, size);
+        }
 
         return new Promise((resolve, reject) => {
             const readFromBuffer = () => {
-                gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(
+                gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size * storageBuffer.length).then(
                     () => {
-                        const copyArrayBuffer = gpuBuffer.getMappedRange(0, size);
+                        const copyArrayBuffer = gpuBuffer.getMappedRange(0, size * storageBuffer.length);
                         let data: ArrayBufferView | undefined = buffer;
                         if (data === undefined) {
-                            data = new Uint8Array(size!);
+                            data = new Uint8Array(size * storageBuffer.length);
                             (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
                         } else {
                             const ctor = data.constructor as any; // we want to create result data with the same type as buffer (Uint8Array, Float32Array, ...)
