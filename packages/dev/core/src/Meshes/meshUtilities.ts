@@ -1,4 +1,5 @@
-import { AnimationGroup } from "../Animations/animationGroup";
+import type { AnimationGroup } from "../Animations/animationGroup";
+import { BoundingInfoHelper } from "../Culling/Helper/boundingInfoHelper";
 import { BoundingBox } from "../Culling/boundingBox";
 import { Vector3 } from "../Maths/math.vector";
 import type { AbstractMesh } from "./abstractMesh";
@@ -10,14 +11,15 @@ import type { AbstractMesh } from "./abstractMesh";
  * @param animationStep An optional animation step value indicating the amount to iterate while computing bounding boxes
  * @returns An array of bounding boxes corresponding to the input meshes, animation group, and animation step values
  */
-export function computeMaxBoundingBoxes(meshes: Array<AbstractMesh>, animationGroup?: AnimationGroup, animationStep = 1 / 6): Array<BoundingBox> {
-    const minimums = new Array<Vector3>(meshes.length);
-    const maximums = new Array<Vector3>(meshes.length);
-
-    for (let i = 0; i < meshes.length; i++) {
-        minimums[i] = new Vector3(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
-        maximums[i] = new Vector3(Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY, Number.NEGATIVE_INFINITY);
+export async function computeMaxBoundingBoxesAsync(meshes: Array<AbstractMesh>, animationGroup?: AnimationGroup, animationStep = 1 / 6): Promise<Array<BoundingBox>> {
+    if (meshes.length === 0) {
+        return [];
     }
+
+    const minimums = Array.from({ length: meshes.length }, () => new Vector3().setAll(Number.POSITIVE_INFINITY));
+    const maximums = Array.from({ length: meshes.length }, () => new Vector3().setAll(Number.POSITIVE_INFINITY));
+
+    const boundingInfoHelper = new BoundingInfoHelper(meshes[0].getEngine());
 
     if (animationGroup) {
         const step = animationGroup.getLength() * animationStep;
@@ -28,25 +30,28 @@ export function computeMaxBoundingBoxes(meshes: Array<AbstractMesh>, animationGr
 
             animationGroup.goToFrame(frame);
 
-            for (let i = 0; i < meshes.length; i++) {
-                const mesh = meshes[i];
-
+            for (const mesh of meshes) {
                 mesh.computeWorldMatrix();
 
                 if (mesh.skeleton) {
                     mesh.skeleton.prepare(true);
                 }
+            }
 
-                mesh.refreshBoundingInfo(true, true);
+            await boundingInfoHelper.computeAsync(meshes);
+
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
                 const boundingBox = mesh.getBoundingInfo().boundingBox;
                 minimums[i].minimizeInPlace(boundingBox.minimumWorld);
                 maximums[i].maximizeInPlace(boundingBox.maximumWorld);
             }
         }
     } else {
+        await boundingInfoHelper.computeAsync(meshes);
+
         for (let i = 0; i < meshes.length; i++) {
             const mesh = meshes[i];
-            mesh.refreshBoundingInfo(true, true);
             const boundingBox = mesh.getBoundingInfo().boundingBox;
             minimums[i].minimizeInPlace(boundingBox.minimumWorld);
             maximums[i].maximizeInPlace(boundingBox.maximumWorld);
