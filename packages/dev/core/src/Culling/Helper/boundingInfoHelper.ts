@@ -31,20 +31,20 @@ export class BoundingInfoHelper {
         }
     }
 
-    public initializeAsync(): Promise<void> {
-        return this._platform.initializeAsync();
+    public registerMeshListAsync(): Promise<void> {
+        return this._platform.registerMeshListAsync();
     }
 
-    public compute(): void {
-        this._platform.compute();
+    public processMeshList(): void {
+        this._platform.processMeshList();
     }
 
     /**
      * Compute the bounding info of a mesh / array of meshes using shaders
      * @returns a promise that resolves when the bounding info is/are computed
      */
-    public finalizeAsync(): Promise<void> {
-        return this._platform.finalizeAsync();
+    public fetchResultsForMeshListAsync(): Promise<void> {
+        return this._platform.fetchResultsForMeshListAsync();
     }
 
     /**

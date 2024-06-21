@@ -69,7 +69,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         }
     }
 
-    public initializeAsync(): Promise<void> {
+    public registerMeshListAsync(): Promise<void> {
         return new Promise((resolve) => {
             const check = () => {
                 for (const computeShader of this._uniqueComputeShaders) {
@@ -136,7 +136,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         computeShader.setStorageBuffer(name, buffer);
     }
 
-    public compute(): void {
+    public processMeshList(): void {
         if (this._processedMeshes.length === 0) {
             return;
         }
@@ -193,7 +193,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     }
 
     /** @internal */
-    public finalizeAsync(): Promise<void> {
+    public fetchResultsForMeshListAsync(): Promise<void> {
         return new Promise((resolve) => {
             const buffers: DataBuffer[] = [];
             let size = 0;

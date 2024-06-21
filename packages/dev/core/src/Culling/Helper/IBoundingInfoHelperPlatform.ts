@@ -2,8 +2,8 @@
  * Interface used to define a platform support for BoundingInfoHelper class
  */
 export interface IBoundingInfoHelperPlatform {
-    initializeAsync(): Promise<void>;
-    compute(): void;
-    finalizeAsync(): Promise<void>;
+    registerMeshListAsync(): Promise<void>;
+    processMeshList(): void;
+    fetchResultsForMeshListAsync(): Promise<void>;
     dispose(): void;
 }

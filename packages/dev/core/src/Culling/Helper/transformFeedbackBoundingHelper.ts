@@ -35,16 +35,16 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         this._meshes = meshes;
     }
 
-    public finalizeAsync(): Promise<void> {
+    public fetchResultsForMeshListAsync(): Promise<void> {
         return Promise.all(this._promises).then(() => {});
     }
 
-    public initializeAsync(): Promise<void> {
+    public registerMeshListAsync(): Promise<void> {
         return Promise.resolve();
     }
 
     /** @internal */
-    public compute(): void {
+    public processMeshList(): void {
         const meshes = this._meshes;
 
         const promises: Promise<void>[] = [];
