@@ -112,7 +112,7 @@ export class BackEase extends EasingFunction implements IEasingFunction {
      * @param amplitude Defines the amplitude of the function
      */
     constructor(
-        /** Defines the amplitude of the function */
+        /** [1] Defines the amplitude of the function */
         public amplitude: number = 1
     ) {
         super();

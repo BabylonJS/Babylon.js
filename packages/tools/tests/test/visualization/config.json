@@ -2,6 +2,12 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "BoundingInfo Helper",
+            "playgroundId": "#BCNJD4#42",
+            "referenceImage": "bbhelper.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
             "title": "NME Shadow Map",
             "playgroundId": "#M3QR7E#83",
             "referenceImage": "nmeshadowmap.png",

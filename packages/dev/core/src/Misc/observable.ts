@@ -85,7 +85,7 @@ export class Observer<T> {
      * Creates a new observer
      * @param callback defines the callback to call when the observer is notified
      * @param mask defines the mask of the observer (used to filter notifications)
-     * @param [scope] defines the current scope used to restore the JS context
+     * @param scope defines the current scope used to restore the JS context
      */
     constructor(
         /**
@@ -97,7 +97,7 @@ export class Observer<T> {
          */
         public mask: number,
         /**
-         * [scope] Defines the current scope used to restore the JS context
+         * [null] Defines the current scope used to restore the JS context
          */
         public scope: any = null
     ) {}
@@ -169,12 +169,12 @@ export class Observable<T> {
     /**
      * Creates a new observable
      * @param onObserverAdded defines a callback to call when a new observer is added
-     * @param [notifyIfTriggered] If set to true the observable will notify when an observer was added if the observable was already triggered.
+     * @param notifyIfTriggered If set to true the observable will notify when an observer was added if the observable was already triggered.
      */
     constructor(
         onObserverAdded?: (observer: Observer<T>) => void,
         /**
-         * [notifyIfTriggered] If set to true the observable will notify when an observer was added if the observable was already triggered.
+         * [false] If set to true the observable will notify when an observer was added if the observable was already triggered.
          * This is helpful to single-state observables like the scene onReady or the dispose observable.
          */
         public notifyIfTriggered = false

@@ -3,7 +3,6 @@ import type { ThinEngine } from "core/Engines/thinEngine";
 import { VertexBuffer, Buffer } from "core/Buffers/buffer";
 import type { Engine } from "core/Engines/engine";
 import { Constants } from "core/Engines/constants";
-import { RegisterClass } from "core/Misc/typeStore";
 import type { Nullable } from "core/types";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
@@ -20,32 +19,21 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
     private _effects: { [key: string]: Effect } = {};
     private _promises: Promise<void>[] = [];
     private _meshes: AbstractMesh[];
+    private _meshListMode = false;
 
     /**
      * Creates a new TransformFeedbackBoundingHelper
      * @param engine defines the engine to use
-     * @param meshes defines the meshes to work with
      */
-    constructor(engine: ThinEngine, meshes: AbstractMesh | AbstractMesh[]) {
-        if (!Array.isArray(meshes)) {
-            meshes = [meshes];
-        }
-
+    constructor(engine: ThinEngine) {
         this._engine = engine;
-        this._meshes = meshes;
-    }
-
-    public fetchResultsForMeshListAsync(): Promise<void> {
-        return Promise.all(this._promises).then(() => {});
-    }
-
-    public registerMeshListAsync(): Promise<void> {
-        return Promise.resolve();
     }
 
     /** @internal */
-    public processMeshList(): void {
-        const meshes = this._meshes;
+    public processAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
 
         const promises: Promise<void>[] = [];
 
@@ -188,7 +176,12 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             );
         }
 
-        this._promises.push(Promise.all(promises).then(() => {}));
+        if (this._meshListMode) {
+            this._promises.push(Promise.all(promises).then(() => {}));
+            return Promise.resolve();
+        }
+
+        return Promise.all(promises).then(() => {});
     }
 
     private _compute(mesh: AbstractMesh, effect: Effect): void {
@@ -241,6 +234,30 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         mesh._refreshBoundingInfo(arrayBuffer, null);
     }
 
+    public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
+        if (!Array.isArray(meshes)) {
+            meshes = [meshes];
+        }
+
+        this._meshes = meshes;
+
+        return Promise.resolve();
+    }
+
+    public processMeshList(): void {
+        if (this._meshes.length === 0) {
+            return;
+        }
+
+        this._meshListMode = true;
+        this.processAsync(this._meshes);
+        this._meshListMode = false;
+    }
+
+    public fetchResultsForMeshListAsync(): Promise<void> {
+        return Promise.all(this._promises).then(() => {});
+    }
+
     /** @internal */
     public dispose(): void {
         for (const key in this._buffers) {
@@ -251,5 +268,3 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         this._engine = null;
     }
 }
-
-RegisterClass("BABYLON.TransformFeedbackBoundingHelper", TransformFeedbackBoundingHelper);

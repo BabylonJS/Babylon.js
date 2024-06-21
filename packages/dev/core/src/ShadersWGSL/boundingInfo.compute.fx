@@ -23,7 +23,6 @@ fn bitsToFloat(value: i32) -> f32 {
 fn atomicMinFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
 
-   // atomicMin(atomicVar, intValue);
     loop {
         let oldIntValue = atomicLoad(atomicVar);
         let oldValue = bitsToFloat(oldIntValue);
@@ -39,7 +38,6 @@ fn atomicMinFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) 
 fn atomicMaxFloat(atomicVar: ptr<storage, atomic<i32>, read_write>, value: f32) {
     let intValue = floatToBits(value);
     
-//    atomicMax(atomicVar, intValue);
     loop {
         let oldIntValue = atomicLoad(atomicVar);
         let oldValue = bitsToFloat(oldIntValue);
@@ -72,7 +70,10 @@ const identity = mat4x4f(
 );
 
 struct Settings {
-    indexResult : u32
+    indexResult : u32,
+    #ifdef MORPHTARGETS
+        morphTargetTextureInfo: vec3f,
+    #endif
 };
 
 @group(0) @binding(0) var<storage, read> positionBuffer : array<f32>;
@@ -88,9 +89,26 @@ struct Settings {
     @group(0) @binding(6) var<storage, read> weightExtraBuffer : array<vec4f>;
   #endif
 #endif
+#ifdef MORPHTARGETS
+@group(0) @binding(8) var morphTargets : texture_2d_array<f32>;
+@group(0) @binding(9) var<storage, read> morphTargetInfluences : array<f32>;
+@group(0) @binding(10) var<storage, read> morphTargetTextureIndices : array<f32>;
+
+#endif
+
+#ifdef MORPHTARGETS
+fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
+{			
+    let vertexID = f32(vertexIndex) * settings.morphTargetTextureInfo.x;
+    let y = floor(vertexID / settings.morphTargetTextureInfo.y);
+    let x = vertexID - y * settings.morphTargetTextureInfo.y;
+    let textureUV = vec2<i32>(i32(x), i32(y));
+    return textureLoad(morphTargets, textureUV, i32(morphTargetTextureIndices[targetIndex]), 0).xyz;
+}
+#endif
+
 
 @compute @workgroup_size(64, 1, 1)
-
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;
     if (index >= arrayLength(&positionBuffer) / 3) {
@@ -100,6 +118,7 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let position = vec3f(positionBuffer[index * 3], positionBuffer[index * 3 + 1], positionBuffer[index * 3 + 2]);
 
     var finalWorld = identity;
+    var positionUpdated = position;
 
 #if NUM_BONE_INFLUENCERS > 0
       var influence : mat4x4<f32>;
@@ -136,7 +155,13 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
       finalWorld = finalWorld * influence;
 #endif
 
-    var worldPos = finalWorld * vec4f(position.x, position.y, position.z, 1.0);
+#ifdef MORPHTARGETS
+    for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
+        positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * morphTargetInfluences[i];
+    }
+#endif
+
+    var worldPos = finalWorld * vec4f(positionUpdated.x, positionUpdated.y, positionUpdated.z, 1.0);
 
     atomicMinFloat(&resultBuffer[settings.indexResult].minX, worldPos.x);
     atomicMinFloat(&resultBuffer[settings.indexResult].minY, worldPos.y);

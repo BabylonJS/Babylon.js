@@ -51,15 +51,15 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      */
     constructor(
         /**
-         * Defines the red component (between 0 and 1, default is 0)
+         * [0] Defines the red component (between 0 and 1, default is 0)
          */
         public r: number = 0,
         /**
-         * Defines the green component (between 0 and 1, default is 0)
+         * [0] Defines the green component (between 0 and 1, default is 0)
          */
         public g: number = 0,
         /**
-         * Defines the blue component (between 0 and 1, default is 0)
+         * [0] Defines the blue component (between 0 and 1, default is 0)
          */
         public b: number = 0
     ) {}
@@ -1020,19 +1020,19 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     constructor(
         /**
-         * Defines the red component (between 0 and 1, default is 0)
+         * [0] Defines the red component (between 0 and 1, default is 0)
          */
         public r: number = 0,
         /**
-         * Defines the green component (between 0 and 1, default is 0)
+         * [0] Defines the green component (between 0 and 1, default is 0)
          */
         public g: number = 0,
         /**
-         * Defines the blue component (between 0 and 1, default is 0)
+         * [0] Defines the blue component (between 0 and 1, default is 0)
          */
         public b: number = 0,
         /**
-         * Defines the alpha component (between 0 and 1, default is 1)
+         * [1] Defines the alpha component (between 0 and 1, default is 1)
          */
         public a: number = 1
     ) {}

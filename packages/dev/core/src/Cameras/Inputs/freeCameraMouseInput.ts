@@ -57,7 +57,7 @@ export class FreeCameraMouseInput implements ICameraInput<FreeCamera> {
      */
     constructor(
         /**
-         * Define if touch is enabled in the mouse input
+         * [true] Define if touch is enabled in the mouse input
          */
         public touchEnabled = true
     ) {}
