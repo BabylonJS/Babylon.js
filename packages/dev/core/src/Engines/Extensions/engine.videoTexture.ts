@@ -4,8 +4,8 @@ import type { Nullable } from "../../types";
 import { Constants } from "../constants";
 import type { ExternalTexture } from "../../Materials/Textures/externalTexture";
 
-declare module "../../Engines/thinEngine" {
-    export interface ThinEngine {
+declare module "../../Engines/abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Update a video texture
          * @param texture defines the texture to update

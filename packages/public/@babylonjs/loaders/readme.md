@@ -1,5 +1,4 @@
-Babylon.js Loaders module
-=====================
+# Babylon.js Loaders module
 
 For usage documentation please visit https://doc.babylonjs.com/extensions and choose "loaders".
 
@@ -7,15 +6,15 @@ For usage documentation please visit https://doc.babylonjs.com/extensions and ch
 
 To install using npm :
 
-```
-npm install --save-dev @babylonjs/core @babylonjs/loaders
+```shell
+npm install @babylonjs/core @babylonjs/loaders
 ```
 
 # How to use
 
 Afterwards it can be imported to your project using:
 
-```
+```javascript
 import "@babylonjs/loaders/glTF";
 ```
 

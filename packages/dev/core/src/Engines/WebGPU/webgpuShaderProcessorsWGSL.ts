@@ -8,7 +8,10 @@ import { WebGPUShaderProcessingContext } from "./webgpuShaderProcessingContext";
 import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
-import { RemoveComments } from "../../Misc/codeStringParsingTools";
+import { RemoveComments, InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
+import { ShaderLanguage } from "../../Materials/shaderLanguage";
+
+import { Constants } from "../constants";
 
 import "../../ShadersWGSL/ShadersInclude/bonesDeclaration";
 import "../../ShadersWGSL/ShadersInclude/bonesVertex";
@@ -28,7 +31,21 @@ import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal";
 import "../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import "../../ShadersWGSL/ShadersInclude/sceneUboDeclaration";
-import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import "../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/lightFragment";
+import "../../ShadersWGSL/ShadersInclude/lightUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration";
+import "../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/shadowsVertex";
+import "../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration";
+import "../../ShadersWGSL/ShadersInclude/bumpFragment";
+import "../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions";
+import "../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions";
+import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
+import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
+import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
+import "../../ShadersWGSL/ShadersInclude/reflectionFunction";
+import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
 
@@ -69,6 +86,21 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
     public uniformRegexp = /uniform\s+(\w+)\s*:\s*(.+)\s*;/;
     public textureRegexp = /var\s+(\w+)\s*:\s*((array<\s*)?(texture_\w+)\s*(<\s*(.+)\s*>)?\s*(,\s*\w+\s*>\s*)?);/;
     public noPrecision = true;
+
+    public preProcessor(code: string, defines: string[], preProcessors: { [key: string]: string }, isFragment: boolean, processingContext: Nullable<ShaderProcessingContext>) {
+        // Convert defines into const
+        for (const key in preProcessors) {
+            if (key === "__VERSION__") {
+                continue;
+            }
+            const value = preProcessors[key];
+            if (!isNaN(parseInt(value)) || !isNaN(parseFloat(value))) {
+                code = `const ${key} = ${value};\n` + code;
+            }
+        }
+
+        return code;
+    }
 
     protected _getArraySize(name: string, uniformType: string, preProcessors: { [key: string]: string }): [string, string, number] {
         let length = 0;
@@ -156,7 +188,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            const numComponents = this.vertexBufferKindToNumberOfComponents[name];
+            const numComponents = this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents[name];
             if (numComponents !== undefined) {
                 // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
                 const newType =
@@ -251,16 +283,17 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    public postProcessor(code: string, defines: string[]) {
-        const defineToValue: { [key: string]: string } = {};
-        for (const define of defines) {
-            const parts = define.split(/ +/);
-            defineToValue[parts[1]] = parts.length > 2 ? parts[2] : "";
-        }
-        return code.replace(/\$(\w+)\$/g, (_, p1) => {
-            return defineToValue[p1] ?? p1;
-        });
-    }
+    // Ignore for now as we inject const for numeric defines
+    // public postProcessor(code: string, defines: string[]) {
+    //     const defineToValue: { [key: string]: string } = {};
+    //     for (const define of defines) {
+    //         const parts = define.split(/ +/);
+    //         defineToValue[parts[1]] = parts.length > 2 ? parts[2] : "";
+    //     }
+    //     return code.replace(/\$(\w+)\$/g, (_, p1) => {
+    //         return defineToValue[p1] ?? p1;
+    //     });
+    // }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const fragCoordCode =
@@ -287,6 +320,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         fragmentCode = leftOverUBO + fragmentCode;
 
         // Vertex code
+        vertexCode = vertexCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
         vertexCode = vertexCode.replace(/#define /g, "//#define ");
         vertexCode = this._processStridedUniformArrays(vertexCode);
 
@@ -316,10 +350,14 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             vertexMainStartingCode += "\n";
         }
         const vertexMainEndingCode = `  vertexOutputs.position.y = vertexOutputs.position.y * internals.yFactor_;\n  return vertexOutputs;`;
+        let needDiagnosticOff = vertexCode.indexOf(Constants.DISABLEUA) !== -1;
 
-        vertexCode = this._injectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
+        vertexCode =
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") +
+            InjectStartingAndEndingCode(vertexCode, "fn main", vertexMainStartingCode, vertexMainEndingCode);
 
         // fragment code
+        fragmentCode = fragmentCode.replace(/#define (\w+)\s+(\d+\.?\d*)/g, "const $1 = $2;");
         fragmentCode = fragmentCode.replace(/#define /g, "//#define ");
         fragmentCode = this._processStridedUniformArrays(fragmentCode);
         fragmentCode = fragmentCode.replace(/dpdy/g, "(-internals.yFactor_)*dpdy"); // will also handle dpdyCoarse and dpdyFine
@@ -361,13 +399,15 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         const fragmentStartingCode = "  fragmentInputs = input;\n  " + fragCoordCode;
         const fragmentEndingCode = "  return fragmentOutputs;";
+        needDiagnosticOff = fragmentCode.indexOf(Constants.DISABLEUA) !== -1;
 
-        fragmentCode = this._injectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
+        fragmentCode =
+            (needDiagnosticOff ? "diagnostic(off, derivative_uniformity);\n" : "") + InjectStartingAndEndingCode(fragmentCode, "fn main", fragmentStartingCode, fragmentEndingCode);
 
         this._collectBindingNames();
         this._preCreateBindGroupEntries();
 
-        this.vertexBufferKindToNumberOfComponents = {};
+        this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents = {};
 
         return { vertexCode, fragmentCode };
     }
@@ -415,10 +455,8 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
             const name = match[1]; // name of the variable
             const samplerType = match[2]; // sampler or sampler_comparison
-            const textureName =
-                name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix) === name.length - WebGPUShaderProcessor.AutoSamplerSuffix.length
-                    ? name.substring(0, name.indexOf(WebGPUShaderProcessor.AutoSamplerSuffix))
-                    : null;
+            const suffixLessLength = name.length - Constants.AUTOSAMPLERSUFFIX.length;
+            const textureName = name.lastIndexOf(Constants.AUTOSAMPLERSUFFIX) === suffixLessLength ? name.substring(0, suffixLessLength) : null;
             const samplerBindingType = samplerType === "sampler_comparison" ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
 
             if (textureName) {
@@ -516,7 +554,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
     private _processStridedUniformArrays(code: string): string {
         for (const uniformArrayName of this._stridedUniformArrays) {
-            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*)\\]`, "g"), `${uniformArrayName}[$1].el`);
+            code = code.replace(new RegExp(`${uniformArrayName}\\s*\\[(.*?)\\]`, "g"), `${uniformArrayName}[$1].el`);
         }
         return code;
     }

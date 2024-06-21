@@ -972,7 +972,7 @@ export class CascadedShadowGenerator extends ShadowGenerator {
 
         // Only PCF uses depth stencil texture.
         if (this._filter === ShadowGenerator.FILTER_PCF) {
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         } else if (this._filter === ShadowGenerator.FILTER_PCSS) {
             for (let cascadeIndex = 0; cascadeIndex < this._numCascades; ++cascadeIndex) {
@@ -989,14 +989,15 @@ export class CascadedShadowGenerator extends ShadowGenerator {
                         ? 1
                         : (this._cascadeMaxExtents[cascadeIndex].z - this._cascadeMinExtents[cascadeIndex].z) / (this._cascadeMaxExtents[0].z - this._cascadeMinExtents[0].z);
             }
-            effect.setDepthStencilTexture("shadowSampler" + lightIndex, shadowMap);
-            effect.setTexture("depthSampler" + lightIndex, shadowMap);
+            effect.setDepthStencilTexture("shadowTexture" + lightIndex, shadowMap);
+            effect.setTexture("depthTexture" + lightIndex, shadowMap);
+
             effect.setArray2("lightSizeUVCorrection" + lightIndex, this._lightSizeUVCorrection);
             effect.setArray("depthCorrection" + lightIndex, this._depthCorrection);
             effect.setFloat("penumbraDarkness" + lightIndex, this.penumbraDarkness);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), 1 / width, this._contactHardeningLightSizeUVRatio * width, this.frustumEdgeFalloff, lightIndex);
         } else {
-            effect.setTexture("shadowSampler" + lightIndex, shadowMap);
+            effect.setTexture("shadowTexture" + lightIndex, shadowMap);
             light._uniformBuffer.updateFloat4("shadowsInfo", this.getDarkness(), width, 1 / width, this.frustumEdgeFalloff, lightIndex);
         }
 

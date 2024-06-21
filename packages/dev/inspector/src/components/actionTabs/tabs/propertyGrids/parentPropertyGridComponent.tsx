@@ -7,7 +7,7 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../globalState";
 import type { Node } from "core/node";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { TransformNode } from "core/Meshes/transformNode";
 
 interface IParentPropertyGridComponentProps {
@@ -55,7 +55,7 @@ export class ParentPropertyGridComponent extends React.Component<IParentProperty
                         onLink={() => this.props.globalState.onSelectionChangedObservable.notifyObservers(node.parent)}
                     />
                 )}
-                <OptionsLineComponent
+                <OptionsLine
                     label="Parent"
                     options={nodeOptions}
                     target={node}

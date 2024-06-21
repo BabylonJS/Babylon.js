@@ -11,6 +11,8 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Effect } from "../../../effect";
 
 import type { NodeMaterial } from "../../nodeMaterial";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
+import { Constants } from "core/Engines/constants";
 
 /**
  * Block used to retrieve the depth (zbuffer) of the scene
@@ -191,17 +193,28 @@ export class SceneDepthBlock extends NodeMaterialBlock {
             if (state.target === NodeMaterialBlockTargets.Fragment) {
                 return;
             }
+            const textureReadFunc =
+                state.shaderLanguage === ShaderLanguage.GLSL
+                    ? `texture2D(${this._samplerName},`
+                    : `textureSampleLevel(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
 
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\n`;
+            const complement = state.shaderLanguage === ShaderLanguage.GLSL ? "" : ", 0";
+
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)}=  ${textureReadFunc} ${uvInput.associatedVariableName}.xy${complement});\n`;
             return;
         }
+
+        const textureReadFunc =
+            state.shaderLanguage === ShaderLanguage.GLSL
+                ? `texture2D(${this._samplerName},`
+                : `textureSample(${this._samplerName}, ${this._samplerName + Constants.AUTOSAMPLERSUFFIX},`;
 
         if (this.uv.ownerBlock.target === NodeMaterialBlockTargets.Fragment) {
-            state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${uvInput.associatedVariableName}.xy);\n`;
+            state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${uvInput.associatedVariableName}.xy);\n`;
             return;
         }
 
-        state.compilationString += `vec4 ${this._tempTextureRead} = texture2D(${this._samplerName}, ${this._mainUVName});\n`;
+        state.compilationString += `${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${textureReadFunc} ${this._mainUVName});\n`;
     }
 
     private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string, vertexMode = false) {

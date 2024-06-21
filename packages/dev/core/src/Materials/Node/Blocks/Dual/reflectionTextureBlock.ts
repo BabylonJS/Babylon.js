@@ -175,7 +175,7 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
         super._buildBlock(state);
 
         if (!this.texture) {
-            state.compilationString += this.writeOutputs(state, "vec4(0.)");
+            state.compilationString += this.writeOutputs(state, `vec4${state.fSuffix}(0.)`);
             return this;
         }
 
@@ -192,11 +192,11 @@ export class ReflectionTextureBlock extends ReflectionTextureBaseBlock {
 
         const normalWUnit = state._getFreeVariableName("normalWUnit");
 
-        state.compilationString += `vec4 ${normalWUnit} = normalize(${this.worldNormal.associatedVariableName});\n`;
+        state.compilationString += `${state._declareLocalVar(normalWUnit, NodeMaterialBlockConnectionPointTypes.Vector4)} = normalize(${this.worldNormal.associatedVariableName});\n`;
 
-        state.compilationString += this.handleFragmentSideCodeReflectionCoords(normalWUnit);
+        state.compilationString += this.handleFragmentSideCodeReflectionCoords(state, normalWUnit);
 
-        state.compilationString += this.handleFragmentSideCodeReflectionColor(undefined, "");
+        state.compilationString += this.handleFragmentSideCodeReflectionColor(state, undefined, "");
 
         state.compilationString += this.writeOutputs(state, this._reflectionColorName);
 

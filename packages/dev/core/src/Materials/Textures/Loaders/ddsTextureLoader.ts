@@ -6,6 +6,8 @@ import type { IInternalTextureLoader } from "../../../Materials/Textures/interna
 import type { DDSInfo } from "../../../Misc/dds";
 import { DDSTools } from "../../../Misc/dds";
 
+import "../../../Engines/Extensions/engine.cubeTexture";
+
 /**
  * Implementation of the DDS Texture Loader.
  * @internal

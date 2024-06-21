@@ -27,18 +27,26 @@ export class MorphTargetManager implements IDisposable {
     private _activeTargets = new SmartArray<MorphTarget>(16);
     private _scene: Nullable<Scene>;
     private _influences: Float32Array;
-    private _morphTargetTextureIndices: Float32Array;
     private _supportsNormals = false;
     private _supportsTangents = false;
     private _supportsUVs = false;
     private _vertexCount = 0;
-    private _textureVertexStride = 0;
-    private _textureWidth = 0;
-    private _textureHeight = 1;
     private _uniqueId = 0;
     private _tempInfluences = new Array<number>();
     private _canUseTextureForTargets = false;
     private _blockCounter = 0;
+
+    /** @internal */
+    public _textureVertexStride = 0;
+
+    /** @internal */
+    public _textureWidth = 0;
+
+    /** @internal */
+    public _textureHeight = 1;
+
+    /** @internal */
+    public _morphTargetTextureIndices: Float32Array;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -228,6 +236,21 @@ export class MorphTargetManager implements IDisposable {
      */
     public getTarget(index: number): MorphTarget {
         return this._targets[index];
+    }
+
+    /**
+     * Gets the first target with the specified name
+     * @param name defines the name to check
+     * @returns the requested target
+     */
+    public getTargetByName(name: string): Nullable<MorphTarget> {
+        for (const target of this._targets) {
+            if (target.name === name) {
+                return target;
+            }
+        }
+
+        return null;
     }
 
     /**

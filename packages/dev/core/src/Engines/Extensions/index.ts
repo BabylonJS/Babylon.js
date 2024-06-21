@@ -9,11 +9,12 @@ export * from "./engine.dynamicTexture";
 export * from "./engine.videoTexture";
 export * from "./engine.multiRender";
 export * from "./engine.cubeTexture";
+export * from "./engine.prefilteredCubeTexture";
 export * from "./engine.renderTarget";
 export * from "./engine.renderTargetCube";
+export * from "./engine.renderTargetTexture";
 export * from "./engine.uniformBuffer";
 export * from "./engine.dynamicBuffer";
-export * from "./engine.views";
 export * from "./engine.readTexture";
 export * from "./engine.computeShader";
 

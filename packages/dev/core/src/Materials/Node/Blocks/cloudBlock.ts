@@ -6,6 +6,7 @@ import { NodeMaterialBlockTargets } from "../Enums/nodeMaterialBlockTargets";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "../../../scene";
+import { ShaderLanguage } from "../../../Materials/shaderLanguage";
 /**
  * block used to Generate Fractal Brownian Motion Clouds
  */
@@ -93,13 +94,18 @@ export class CloudBlock extends NodeMaterialBlock {
             return;
         }
 
-        const functionString = `
+        let functionString = `
 
-        float cloudRandom(in float p) { p = fract(p * 0.011); p *= p + 7.5; p *= p + p; return fract(p); }
+        float cloudRandom(float p) { 
+            float temp = fract(p * 0.011); 
+            temp *= temp + 7.5; 
+            temp *= temp + temp; 
+            return fract(temp); 
+        }
 
         // Based on Morgan McGuire @morgan3d
         // https://www.shadertoy.com/view/4dS3Wd
-        float cloudNoise(in vec2 x, in vec2 chaos) {
+        float cloudNoise2(vec2 x, vec2 chaos) {
             vec2 step = chaos * vec2(75., 120.) + vec2(75., 120.);
 
             vec2 i = floor(x);
@@ -115,7 +121,7 @@ export class CloudBlock extends NodeMaterialBlock {
                 );
         }
 
-        float cloudNoise(in vec3 x, in vec3 chaos) {
+        float cloudNoise3(vec3 x, vec3 chaos) {
             vec3 step = chaos * vec3(60., 120., 75.) + vec3(60., 120., 75.);
 
             vec3 i = floor(x);
@@ -130,33 +136,40 @@ export class CloudBlock extends NodeMaterialBlock {
                            mix( cloudRandom(n + dot(step, vec3(0, 1, 1))), cloudRandom(n + dot(step, vec3(1, 1, 1))), u.x), u.y), u.z);
         }`;
 
-        const fractalBrownianString = `
-        float fbm(in vec2 st, in vec2 chaos) {
+        let fractalBrownianString = `
+        float fbm2(vec2 st, vec2 chaos) {
             // Initial values
             float value = 0.0;
             float amplitude = .5;
             float frequency = 0.;
 
             // Loop of octaves
+            vec2 tempST = st;
             for (int i = 0; i < OCTAVES; i++) {
-                value += amplitude * cloudNoise(st, chaos);
-                st *= 2.0;
+                value += amplitude * cloudNoise2(tempST, chaos);
+                tempST *= 2.0;
                 amplitude *= 0.5;
             }
             return value;
         }
 
-        float fbm(in vec3 x, in vec3 chaos) {
+        float fbm3(vec3 x, vec3 chaos) {
             // Initial values
             float value = 0.0;
             float amplitude = 0.5;
-            for (int i = 0; i < OCTAVES; ++i) {
-                value += amplitude * cloudNoise(x, chaos);
-                x = x * 2.0;
+            vec3 tempX = x;
+            for (int i = 0; i < OCTAVES; i++) {
+                value += amplitude * cloudNoise3(tempX, chaos);
+                tempX = tempX * 2.0;
                 amplitude *= 0.5;
             }
             return value;
         }`;
+
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            functionString = state._babylonSLtoWGSL(functionString);
+            fractalBrownianString = state._babylonSLtoWGSL(fractalBrownianString);
+        }
 
         const fbmNewName = `fbm${this.octaves}`;
         state._emitFunction("CloudBlockCode", functionString, "// CloudBlockCode");
@@ -167,16 +180,16 @@ export class CloudBlock extends NodeMaterialBlock {
         );
 
         const localVariable = state._getFreeVariableName("st");
-        const seedType = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2" : "vec3";
+        const seedType = this.seed.connectedPoint?.type || NodeMaterialBlockConnectionPointTypes.Vector3;
 
-        state.compilationString += `${seedType} ${localVariable} = ${this.seed.associatedVariableName};\n`;
+        state.compilationString += `${state._declareLocalVar(localVariable, seedType)} = ${this.seed.associatedVariableName};\n`;
         if (this.offsetX.isConnected) {
             state.compilationString += `${localVariable}.x += 0.1 * ${this.offsetX.associatedVariableName};\n`;
         }
         if (this.offsetY.isConnected) {
             state.compilationString += `${localVariable}.y += 0.1 * ${this.offsetY.associatedVariableName};\n`;
         }
-        if (this.offsetZ.isConnected && seedType === "vec3") {
+        if (this.offsetZ.isConnected && seedType === NodeMaterialBlockConnectionPointTypes.Vector3) {
             state.compilationString += `${localVariable}.z += 0.1 * ${this.offsetZ.associatedVariableName};\n`;
         }
 
@@ -184,10 +197,13 @@ export class CloudBlock extends NodeMaterialBlock {
         if (this.chaos.isConnected) {
             chaosValue = this.chaos.associatedVariableName;
         } else {
-            chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "vec2(0., 0.)" : "vec3(0., 0., 0.)";
+            const addF = state.fSuffix;
+            chaosValue = this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? `vec2${addF}(0., 0.)` : `vec3${addF}(0., 0., 0.)`;
         }
 
-        state.compilationString += state._declareOutput(this._outputs[0]) + ` = ${fbmNewName}(${localVariable}, ${chaosValue});\n`;
+        state.compilationString +=
+            state._declareOutput(this._outputs[0]) +
+            ` = ${fbmNewName}${this.seed.connectedPoint?.type === NodeMaterialBlockConnectionPointTypes.Vector2 ? "2" : "3"}(${localVariable}, ${chaosValue});\n`;
 
         return this;
     }

@@ -5,6 +5,7 @@ import type { IPipelineContext } from "../IPipelineContext";
 import type { NativeEngine } from "../nativeEngine";
 import type { NativeProgram } from "./nativeInterfaces";
 import type { AbstractEngine } from "../abstractEngine";
+import type { NativeShaderProcessingContext } from "./nativeShaderProcessingContext";
 
 export class NativePipelineContext implements IPipelineContext {
     public isCompiled: boolean = false;
@@ -13,6 +14,9 @@ export class NativePipelineContext implements IPipelineContext {
     public readonly isAsync: boolean;
 
     public program: NativeProgram;
+
+    public vertexBufferKindToType: { [kind: string]: number } = {};
+    public shaderProcessingContext: Nullable<NativeShaderProcessingContext>;
 
     public get isReady(): boolean {
         if (this.compilationError) {
@@ -36,9 +40,10 @@ export class NativePipelineContext implements IPipelineContext {
     private _valueCache: { [key: string]: any } = {};
     private _uniforms: { [key: string]: Nullable<WebGLUniformLocation> };
 
-    constructor(engine: NativeEngine, isAsync: boolean) {
+    constructor(engine: NativeEngine, isAsync: boolean, shaderProcessingContext: Nullable<NativeShaderProcessingContext>) {
         this._engine = engine;
         this.isAsync = isAsync;
+        this.shaderProcessingContext = shaderProcessingContext;
     }
 
     public _fillEffectInformation(

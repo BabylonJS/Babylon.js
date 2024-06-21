@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { VectorMergerBlock } from "core/Materials/Node/Blocks/vectorMergerBlock";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class VectorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -24,7 +24,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SWIZZLES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="X"
                         options={targetOptions}
                         target={vectorMergerBlock}
@@ -36,7 +36,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Y"
                         options={targetOptions}
                         target={vectorMergerBlock}
@@ -48,7 +48,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Z"
                         options={targetOptions}
                         target={vectorMergerBlock}
@@ -60,7 +60,7 @@ export class VectorMergerPropertyTabComponent extends React.Component<IPropertyC
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="W"
                         options={targetOptions}
                         target={vectorMergerBlock}

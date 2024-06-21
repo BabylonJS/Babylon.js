@@ -8,37 +8,8 @@ import { Logger } from "../../../Misc/logger";
 
 import type { Scene } from "../../../scene";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
-        /**
-         * Creates a raw texture
-         * @param data defines the data to store in the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param format defines the format of the data
-         * @param generateMipMaps defines if the engine should generate the mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (Texture.NEAREST_SAMPLINGMODE by default)
-         * @param compression defines the compression used (null by default)
-         * @param type defines the type fo the data (Engine.TEXTURETYPE_UNSIGNED_INT by default)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
-         * @returns the raw texture inside an InternalTexture
-         */
-        createRawTexture(
-            data: Nullable<ArrayBufferView>,
-            width: number,
-            height: number,
-            format: number,
-            generateMipMaps: boolean,
-            invertY: boolean,
-            samplingMode: number,
-            compression: Nullable<string>,
-            type: number,
-            creationFlags?: number,
-            useSRGBBuffer?: boolean
-        ): InternalTexture;
-
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Update a raw texture
          * @param texture defines the texture to update
@@ -183,35 +154,6 @@ declare module "../../webgpuEngine" {
         ): InternalTexture;
 
         /**
-         * Creates a new raw 3D texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the depth of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @returns a new raw 3D texture (stored in an InternalTexture)
-         */
-        createRawTexture3D(
-            data: Nullable<ArrayBufferView>,
-            width: number,
-            height: number,
-            depth: number,
-            format: number,
-            generateMipMaps: boolean,
-            invertY: boolean,
-            samplingMode: number,
-            compression: Nullable<string>,
-            textureType: number,
-            creationFlags?: number
-        ): InternalTexture;
-
-        /**
          * Update a raw 3D texture
          * @param texture defines the texture to update
          * @param data defines the data to store
@@ -230,35 +172,6 @@ declare module "../../webgpuEngine" {
          * @param textureType defines the texture Type (Engine.TEXTURETYPE_UNSIGNED_INT, Engine.TEXTURETYPE_FLOAT...)
          */
         updateRawTexture3D(texture: InternalTexture, data: Nullable<ArrayBufferView>, format: number, invertY: boolean, compression: Nullable<string>, textureType: number): void;
-
-        /**
-         * Creates a new raw 2D array texture
-         * @param data defines the data used to create the texture
-         * @param width defines the width of the texture
-         * @param height defines the height of the texture
-         * @param depth defines the number of layers of the texture
-         * @param format defines the format of the texture
-         * @param generateMipMaps defines if the engine must generate mip levels
-         * @param invertY defines if data must be stored with Y axis inverted
-         * @param samplingMode defines the required sampling mode (like Texture.NEAREST_SAMPLINGMODE)
-         * @param compression defines the compressed used (can be null)
-         * @param textureType defines the compressed used (can be null)
-         * @param creationFlags specific flags to use when creating the texture (Constants.TEXTURE_CREATIONFLAG_STORAGE for storage textures, for eg)
-         * @returns a new raw 2D array texture (stored in an InternalTexture)
-         */
-        createRawTexture2DArray(
-            data: Nullable<ArrayBufferView>,
-            width: number,
-            height: number,
-            depth: number,
-            format: number,
-            generateMipMaps: boolean,
-            invertY: boolean,
-            samplingMode: number,
-            compression: Nullable<string>,
-            textureType: number,
-            creationFlags?: number
-        ): InternalTexture;
 
         /**
          * Update a raw 2D array texture

@@ -8,6 +8,8 @@ import * as WebGPUConstants from "./webgpuConstants";
 import { Logger } from "../../Misc/logger";
 import { WebGPUShaderProcessor } from "./webgpuShaderProcessor";
 import { ShaderLanguage } from "../../Materials/shaderLanguage";
+import { InjectStartingAndEndingCode } from "../../Misc/codeStringParsingTools";
+import { Constants } from "../constants";
 
 /** @internal */
 export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
@@ -128,7 +130,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             this._webgpuProcessingContext.availableAttributes[name] = location;
             this._webgpuProcessingContext.orderedAttributes[location] = name;
 
-            const numComponents = this.vertexBufferKindToNumberOfComponents[name];
+            const numComponents = this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents[name];
             if (numComponents !== undefined) {
                 // Special case for an int/ivecX vertex buffer that is used as a float/vecX attribute in the shader.
                 const newType = numComponents < 0 ? (numComponents === -1 ? "int" : "ivec" + -numComponents) : numComponents === 1 ? "uint" : "uvec" + numComponents;
@@ -174,7 +176,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
                 const samplerType = WebGPUShaderProcessor._SamplerTypeByWebGLSamplerType[uniformType] ?? "sampler";
                 const isComparisonSampler = !!WebGPUShaderProcessor._IsComparisonSamplerByWebGPUSamplerType[samplerType];
                 const samplerBindingType = isComparisonSampler ? WebGPUConstants.SamplerBindingType.Comparison : WebGPUConstants.SamplerBindingType.Filtering;
-                const samplerName = name + WebGPUShaderProcessor.AutoSamplerSuffix;
+                const samplerName = name + Constants.AUTOSAMPLERSUFFIX;
 
                 let samplerInfo = this._webgpuProcessingContext.availableSamplers[samplerName];
                 if (!samplerInfo) {
@@ -320,7 +322,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
             code = code.replace("##INJECTCODE##", injectCode);
 
             if (hasFragCoord) {
-                code = this._injectStartingAndEndingCode(code, "void main", fragCoordCode);
+                code = InjectStartingAndEndingCode(code, "void main", fragCoordCode);
             }
         } else {
             code = code.replace(/gl_InstanceID/g, "gl_InstanceIndex");
@@ -401,7 +403,7 @@ export class WebGPUShaderProcessorGLSL extends WebGPUShaderProcessor {
         this._preCreateBindGroupEntries();
 
         this._preProcessors = null as any;
-        this.vertexBufferKindToNumberOfComponents = {};
+        this._webgpuProcessingContext.vertexBufferKindToNumberOfComponents = {};
 
         return { vertexCode, fragmentCode };
     }

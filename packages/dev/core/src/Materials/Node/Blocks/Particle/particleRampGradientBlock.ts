@@ -56,7 +56,6 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
         state._excludeVariableName("alpha");
         state._excludeVariableName("remappedColorIndex");
         state._excludeVariableName("rampColor");
-        state._excludeVariableName("finalAlpha");
     }
 
     protected override _buildBlock(state: NodeMaterialBuildState) {
@@ -66,24 +65,20 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
             return;
         }
 
-        state._emit2DSampler("rampSampler");
+        state._emit2DSampler("rampSampler", "RAMPGRADIENT");
         state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
         state.compilationString += `
             #ifdef RAMPGRADIENT
-                vec4 baseColor = ${this.color.associatedVariableName};
-                float alpha = ${this.color.associatedVariableName}.a;
+                ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
+                ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
 
-                float remappedColorIndex = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
+                ${state._declareLocalVar("remappedColorIndex", NodeMaterialBlockConnectionPointTypes.Float)} = clamp((alpha - remapRanges.x) / remapRanges.y, 0.0, 1.0);
 
-                vec4 rampColor = texture2D(rampSampler, vec2(1.0 - remappedColorIndex, 0.));
-                baseColor.rgb *= rampColor.rgb;
+                ${state._declareLocalVar("rampColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${state._generateTextureSample("vec2(1.0 - remappedColorIndex, 0.)", "rampSampler")};
 
                 // Remapped alpha
-                float finalAlpha = baseColor.a;
-                baseColor.a = clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0);
-
-                ${state._declareOutput(this.rampColor)} = baseColor;
+                ${state._declareOutput(this.rampColor)} = vec4${state.fSuffix}(baseColor.rgb * rampColor.rgb, clamp((alpha * rampColor.a - remapRanges.z) / remapRanges.w, 0.0, 1.0));
             #else
                 ${state._declareOutput(this.rampColor)} = ${this.color.associatedVariableName};
             #endif

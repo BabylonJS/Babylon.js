@@ -23,15 +23,15 @@ class FaceDirectionInfo {
  */
 export class AttachToBoxBehavior implements Behavior<Mesh> {
     /**
-     *  The name of the behavior
+     *  ["AttachToBoxBehavior"] The name of the behavior
      */
     public name = "AttachToBoxBehavior";
     /**
-     * The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
+     * [0.15] The distance away from the face of the mesh that the UI should be attached to (default: 0.15)
      */
     public distanceAwayFromFace = 0.15;
     /**
-     * The distance from the bottom of the face that the UI should be attached to (default: 0.15)
+     * [0.15] The distance from the bottom of the face that the UI should be attached to (default: 0.15)
      */
     public distanceAwayFromBottomOfFace = 0.15;
     private _faceVectors = [

@@ -8,8 +8,13 @@ import { WebGPUTextureHelper } from "../webgpuTextureHelper";
 
 import type { Scene } from "../../../scene";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
+        /**
+         * @internal
+         */
+        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+
         /**
          * Creates a depth stencil cube texture.
          * This is only available in WebGL 2.
@@ -35,6 +40,7 @@ declare module "../../webgpuEngine" {
          * @param fallback defines texture to use while falling back when (compressed) texture file not found.
          * @param loaderOptions options to be passed to the loader
          * @param useSRGBBuffer defines if the texture must be loaded in a sRGB GPU buffer (if supported by the GPU).
+         * @param buffer defines the data buffer to load instead of loading the rootUrl
          * @returns the cube texture as an InternalTexture
          */
         createCubeTexture(
@@ -51,7 +57,8 @@ declare module "../../webgpuEngine" {
             lodOffset: number,
             fallback: Nullable<InternalTexture>,
             loaderOptions: any,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            buffer: Nullable<ArrayBufferView>
         ): InternalTexture;
 
         /**
@@ -122,7 +129,8 @@ declare module "../../webgpuEngine" {
             fallback: Nullable<InternalTexture>,
             beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>,
             imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            buffer: Nullable<ArrayBufferView>
         ): InternalTexture;
 
         /** @internal */
@@ -160,9 +168,11 @@ declare module "../../webgpuEngine" {
         ): void;
 
         /**
-         * @internal
+         * Force the mipmap generation for the given render target texture
+         * @param texture defines the render target texture to use
+         * @param unbind defines whether or not to unbind the texture after generation. Defaults to true.
          */
-        _setCubeMapTextureParams(texture: InternalTexture, loadMipmap: boolean, maxLevel?: number): void;
+        generateMipMapsForCubemap(texture: InternalTexture, unbind?: boolean): void;
     }
 }
 
@@ -217,7 +227,9 @@ WebGPUEngine.prototype.createCubeTexture = function (
     lodScale: number = 0,
     lodOffset: number = 0,
     fallback: Nullable<InternalTexture> = null,
-    useSRGBBuffer = false
+    loaderOptions?: any,
+    useSRGBBuffer = false,
+    buffer: Nullable<ArrayBufferView> = null
 ): InternalTexture {
     return this.createCubeTextureBase(
         rootUrl,
@@ -258,7 +270,8 @@ WebGPUEngine.prototype.createCubeTexture = function (
                 onLoad();
             }
         },
-        !!useSRGBBuffer
+        !!useSRGBBuffer,
+        buffer
     );
 };
 
@@ -268,5 +281,17 @@ WebGPUEngine.prototype._setCubeMapTextureParams = function (texture: InternalTex
     texture._cachedWrapV = Constants.TEXTURE_CLAMP_ADDRESSMODE;
     if (maxLevel) {
         texture._maxLodLevel = maxLevel;
+    }
+};
+
+WebGPUEngine.prototype.generateMipMapsForCubemap = function (texture: InternalTexture) {
+    if (texture.generateMipMaps) {
+        const gpuTexture = texture._hardwareTexture?.underlyingResource;
+
+        if (!gpuTexture) {
+            this._textureHelper.createGPUTextureForInternalTexture(texture);
+        }
+
+        this._generateMipmaps(texture);
     }
 };

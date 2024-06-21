@@ -38,7 +38,7 @@ export class DeviceSource<T extends DeviceType> {
         deviceInputSystem: IDeviceInputSystem,
         /** Type of device */
         public readonly deviceType: T,
-        /** "Slot" or index that device is referenced in */
+        /** [0] "Slot" or index that device is referenced in */
         public readonly deviceSlot: number = 0
     ) {
         this._deviceInputSystem = deviceInputSystem;

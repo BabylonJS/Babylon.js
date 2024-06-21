@@ -11,7 +11,7 @@ import type { IParticleSystem } from "core/Particles/IParticleSystem";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
 import { TextureLinkLineComponent } from "../../../lines/textureLinkLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { ParticleSystem } from "core/Particles/particleSystem";
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
@@ -36,7 +36,7 @@ import { ValueGradientGridComponent, GradientGridMode } from "./valueGradientGri
 import { Color3, Color4 } from "core/Maths/math.color";
 import { GPUParticleSystem } from "core/Particles/gpuParticleSystem";
 import { Tools } from "core/Misc/tools";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { ParticleHelper } from "core/Particles/particleHelper";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
@@ -369,10 +369,10 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     {system.particleTexture && (
                         <>
                             <TextureLinkLineComponent label="Texture" texture={system.particleTexture} onSelectionChangedObservable={this.props.onSelectionChangedObservable} />
-                            <FileButtonLineComponent label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
+                            <FileButtonLine label="Load texture from file" onClick={(file) => this.updateTexture(file)} accept=".jpg, .png, .tga, .dds, .env" />
                         </>
                     )}
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Blend mode"
                         options={blendModeOptions}
                         target={system}
@@ -429,7 +429,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     />
                 </LineContainerComponent>
                 <LineContainerComponent title="FILE" selection={this.props.globalState}>
-                    <FileButtonLineComponent label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
+                    <FileButtonLine label="Load" onClick={(file) => this.loadFromFile(file)} accept=".json" />
                     <ButtonLineComponent label="Save" onClick={() => this.saveToFile()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="SNIPPET" selection={this.props.globalState}>
@@ -438,7 +438,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                     <ButtonLineComponent label="Save to snippet server" onClick={() => this.saveToSnippet()} />
                 </LineContainerComponent>
                 <LineContainerComponent title="EMITTER" closed={true} selection={this.props.globalState}>
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Emitter"
                         options={emitterOptions}
                         target={system}
@@ -495,7 +495,7 @@ export class ParticleSystemPropertyGridComponent extends React.Component<IPartic
                             onPropertyChangedObservable={this.props.onPropertyChangedObservable}
                         />
                     )}
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Type"
                         options={particleEmitterTypeOptions}
                         target={system}

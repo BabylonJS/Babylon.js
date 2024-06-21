@@ -161,19 +161,12 @@ export class InputTextArea extends InputText {
      */
     public alternativeProcessKey(code: string, key?: string, evt?: IKeyboardEvent) {
         //return if clipboard event keys (i.e -ctr/cmd + c,v,x)
-        if (evt && (evt.ctrlKey || evt.metaKey) && (code === "KeyC" || code === "KeyV" || code === "KeyX")) {
+        if (evt && (evt.ctrlKey || evt.metaKey) && (key === "c" || key === "v" || key === "x")) {
             return;
         }
 
         // Specific cases
         switch (code) {
-            case "KeyA": // A - select all
-                if (evt && (evt.ctrlKey || evt.metaKey)) {
-                    this._selectAllText();
-                    evt.preventDefault();
-                    return;
-                }
-                break;
             case "Period": //SLASH
                 if (evt && evt.shiftKey) {
                     evt.preventDefault();
@@ -216,6 +209,7 @@ export class InputTextArea extends InputText {
 
                 this._textHasChanged();
                 break;
+            case "NumpadEnter": // NUMPAD ENTER
             case "Enter": // RETURN
                 this._prevText = this._textWrapper.text;
                 this._textWrapper.removePart(this._cursorInfo.globalStartIndex, this._cursorInfo.globalEndIndex, "\n");
@@ -476,6 +470,13 @@ export class InputTextArea extends InputText {
                 return;
         }
 
+        // special case - select all. Use key instead of code to support all keyboard layouts
+        if (key === "a" && evt && (evt.ctrlKey || evt.metaKey)) {
+            this._selectAllText();
+            evt.preventDefault();
+            return;
+        }
+
         // Printable characters
         if (key?.length === 1) {
             evt?.preventDefault();
@@ -656,7 +657,7 @@ export class InputTextArea extends InputText {
             this._scrollLeft = this._clipTextLeft;
         }
 
-        if (this._isFocused && !this._autoStretchHeight) {
+        if (this._isFocused) {
             const selectedHeight = (this._cursorInfo.currentLineIndex + 1) * this._fontOffset.height;
             const textTop = this._clipTextTop - selectedHeight;
 

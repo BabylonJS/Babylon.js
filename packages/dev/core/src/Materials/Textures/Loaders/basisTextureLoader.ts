@@ -5,6 +5,8 @@ import { LoadTextureFromTranscodeResult, TranscodeAsync } from "../../../Misc/ba
 import { Tools } from "../../../Misc/tools";
 import { AbstractEngine } from "../../../Engines/abstractEngine";
 
+import "../../../Engines/Extensions/engine.cubeTexture";
+
 /**
  * Loader for .basis file format
  */

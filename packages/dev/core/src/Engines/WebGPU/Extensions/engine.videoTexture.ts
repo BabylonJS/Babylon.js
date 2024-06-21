@@ -4,8 +4,8 @@ import { WebGPUEngine } from "../../webgpuEngine";
 import type { WebGPUHardwareTexture } from "../webgpuHardwareTexture";
 import type { ExternalTexture } from "../../../Materials/Textures/externalTexture";
 
-declare module "../../webgpuEngine" {
-    export interface WebGPUEngine {
+declare module "../../abstractEngine" {
+    export interface AbstractEngine {
         /**
          * Update a video texture
          * @param texture defines the texture to update
@@ -36,11 +36,18 @@ WebGPUEngine.prototype.updateVideoTexture = function (texture: Nullable<Internal
     }
 
     if (IsExternalTexture(video)) {
-        this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
-        if (texture.generateMipMaps) {
-            this._generateMipmaps(texture);
+        if (video.isReady()) {
+            try {
+                this._textureHelper.copyVideoToTexture(video, texture, gpuTextureWrapper.format, !invertY);
+                if (texture.generateMipMaps) {
+                    this._generateMipmaps(texture);
+                }
+            } catch (e) {
+                // WebGPU doesn't support video element who are not playing so far
+                // Ignore this error ensures we can start a video texture in a paused state
+            }
+            texture.isReady = true;
         }
-        texture.isReady = true;
     } else if (video) {
         this.createImageBitmap(video)
             .then((bitmap) => {

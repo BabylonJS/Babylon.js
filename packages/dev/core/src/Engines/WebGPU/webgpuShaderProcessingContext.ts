@@ -169,6 +169,8 @@ export class WebGPUShaderProcessingContext implements ShaderProcessingContext {
     public attributeNamesFromEffect: string[];
     public attributeLocationsFromEffect: number[];
 
+    public vertexBufferKindToNumberOfComponents: { [kind: string]: number } = {};
+
     private _attributeNextLocation: number;
     private _varyingNextLocation: number;
 

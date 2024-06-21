@@ -3,7 +3,7 @@ import { LineContainerComponent } from "../../sharedComponents/lineContainerComp
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { ColorMergerBlock } from "core/Materials/Node/Blocks/colorMergerBlock";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class ColorMergerPropertyTabComponent extends React.Component<IPropertyComponentProps> {
     constructor(props: IPropertyComponentProps) {
@@ -24,7 +24,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="SWIZZLES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="R"
                         options={targetOptions}
                         target={colorMergerBlock}
@@ -36,7 +36,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="G"
                         options={targetOptions}
                         target={colorMergerBlock}
@@ -48,7 +48,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="B"
                         options={targetOptions}
                         target={colorMergerBlock}
@@ -60,7 +60,7 @@ export class ColorMergerPropertyTabComponent extends React.Component<IPropertyCo
                             this.forceUpdate();
                         }}
                     />
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="A"
                         options={targetOptions}
                         target={colorMergerBlock}

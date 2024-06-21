@@ -6,6 +6,7 @@ import type { NodeMaterialConnectionPoint } from "../nodeMaterialBlockConnection
 import { RegisterClass } from "../../../Misc/typeStore";
 import { InputBlock } from "./Input/inputBlock";
 import { Vector4 } from "../../../Maths/math.vector";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to build a matrix from 4 Vector4
@@ -103,9 +104,11 @@ export class MatrixBuilderBlock extends NodeMaterialBlock {
         const row2 = this.row2;
         const row3 = this.row3;
 
+        const mat4 = state.shaderLanguage === ShaderLanguage.WGSL ? "mat4x4f" : "mat4";
+
         state.compilationString +=
             state._declareOutput(output) +
-            ` = mat4(${row0.associatedVariableName}, ${row1.associatedVariableName}, ${row2.associatedVariableName}, ${row3.associatedVariableName});\n`;
+            ` = ${mat4}(${row0.associatedVariableName}, ${row1.associatedVariableName}, ${row2.associatedVariableName}, ${row3.associatedVariableName});\n`;
 
         return this;
     }

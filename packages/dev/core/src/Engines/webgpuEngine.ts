@@ -67,7 +67,6 @@ import type { RenderTargetWrapper } from "./renderTargetWrapper";
 import { WebGPUPerfCounter } from "./WebGPU/webgpuPerfCounter";
 import type { Scene } from "../scene";
 
-import type { PostProcess } from "../PostProcesses/postProcess";
 import { SphericalPolynomial } from "../Maths/sphericalPolynomial";
 import { PerformanceMonitor } from "../Misc/performanceMonitor";
 import {
@@ -93,6 +92,7 @@ import { resetCachedPipeline } from "../Materials/effect.functions";
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
+import { _WarnImport } from "core/Misc/devTools";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -109,9 +109,6 @@ const viewDescriptorSwapChain: GPUTextureViewDescriptor = {
     mipLevelCount: 1,
     arrayLayerCount: 1,
 };
-
-const disableUniformityAnalysisMarker = "/* disable_uniformity_analysis */";
-
 const tempColor4 = new Color4();
 
 /** @internal */
@@ -948,6 +945,7 @@ export class WebGPUEngine extends AbstractEngine {
             supportRenderPasses: true,
             supportSpriteInstancing: true,
             forceVertexBufferStrideAndOffsetMultiple4Bytes: true,
+            _checkNonFloatVertexBuffersDontRecreatePipelineContext: true,
             _collectUbosUpdatedInFrame: false,
         };
     }
@@ -1206,54 +1204,6 @@ export class WebGPUEngine extends AbstractEngine {
         this._uniformBuffers = uboList;
 
         super._restoreEngineAfterContextLost(initEngine);
-    }
-
-    /**
-     * Sets a depth stencil texture from a render target to the according uniform.
-     * @param channel The texture channel
-     * @param uniform The uniform to set
-     * @param texture The render target texture containing the depth stencil texture to apply
-     * @param name The texture name
-     */
-    public setDepthStencilTexture(channel: number, uniform: Nullable<WebGLUniformLocation>, texture: Nullable<RenderTargetTexture>, name?: string): void {
-        if (channel === undefined) {
-            return;
-        }
-
-        if (!texture || !texture.depthStencilTexture) {
-            this._setTexture(channel, null, undefined, undefined, name);
-        } else {
-            this._setTexture(channel, texture, false, true, name);
-        }
-    }
-
-    /**
-     * Sets a texture to the context from a postprocess
-     * @param channel defines the channel to use
-     * @param postProcess defines the source postprocess
-     * @param name name of the channel
-     */
-    public setTextureFromPostProcess(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        let postProcessInput = null;
-        if (postProcess) {
-            if (postProcess._forcedOutputTexture) {
-                postProcessInput = postProcess._forcedOutputTexture;
-            } else if (postProcess._textures.data[postProcess._currentRenderTextureInd]) {
-                postProcessInput = postProcess._textures.data[postProcess._currentRenderTextureInd];
-            }
-        }
-
-        this._bindTexture(channel, postProcessInput?.texture ?? null, name);
-    }
-
-    /**
-     * Binds the output of the passed in post process to the texture channel specified
-     * @param channel The channel the texture should be bound to
-     * @param postProcess The post process which's output should be bound
-     * @param name name of the channel
-     */
-    public setTextureFromPostProcessOutput(channel: number, postProcess: Nullable<PostProcess>, name: string): void {
-        this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
     }
 
     /**
@@ -1725,7 +1675,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param indices defines the data to update
      * @param offset defines the offset in the target index buffer where update should start
      */
-    public updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
+    public override updateDynamicIndexBuffer(indexBuffer: DataBuffer, indices: IndicesArray, offset: number = 0): void {
         const gpuBuffer = indexBuffer as WebGPUDataBuffer;
 
         let view: ArrayBufferView;
@@ -1745,7 +1695,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param byteOffset the byte offset of the data
      * @param byteLength the byte length of the data
      */
-    public updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public override updateDynamicVertexBuffer(vertexBuffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
         const dataBuffer = vertexBuffer as WebGPUDataBuffer;
         if (byteOffset === undefined) {
             byteOffset = 0;
@@ -2058,8 +2008,8 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     private _compileRawPipelineStageDescriptor(vertexCode: string, fragmentCode: string, shaderLanguage: ShaderLanguage): IWebGPURenderPipelineStageDescriptor {
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
 
         const vertexShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(vertexCode, "vertex") : vertexCode;
         const fragmentShader = shaderLanguage === ShaderLanguage.GLSL ? this._compileRawShaderToSpirV(fragmentCode, "fragment") : fragmentCode;
@@ -2075,8 +2025,8 @@ export class WebGPUEngine extends AbstractEngine {
     ): IWebGPURenderPipelineStageDescriptor {
         this.onBeforeShaderCompilationObservable.notifyObservers(this);
 
-        const disableUniformityAnalysisInVertex = vertexCode.indexOf(disableUniformityAnalysisMarker) >= 0;
-        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(disableUniformityAnalysisMarker) >= 0;
+        const disableUniformityAnalysisInVertex = vertexCode.indexOf(Constants.DISABLEUA) >= 0;
+        const disableUniformityAnalysisInFragment = fragmentCode.indexOf(Constants.DISABLEUA) >= 0;
 
         const shaderVersion = "#version 450\n";
         const vertexShader =
@@ -2559,18 +2509,6 @@ export class WebGPUEngine extends AbstractEngine {
         throw new Error("wrapWebGLTexture is not supported, use wrapWebGPUTexture instead.");
     }
 
-    public generateMipMapsForCubemap(texture: InternalTexture) {
-        if (texture.generateMipMaps) {
-            const gpuTexture = texture._hardwareTexture?.underlyingResource;
-
-            if (!gpuTexture) {
-                this._textureHelper.createGPUTextureForInternalTexture(texture);
-            }
-
-            this._generateMipmaps(texture);
-        }
-    }
-
     /**
      * @internal
      */
@@ -2653,7 +2591,7 @@ export class WebGPUEngine extends AbstractEngine {
             this._currentMaterialContext.setTexture(name, texture);
 
             if (availableTexture && availableTexture.autoBindSampler) {
-                const samplerName = baseName + WebGPUShaderProcessor.AutoSamplerSuffix;
+                const samplerName = baseName + Constants.AUTOSAMPLERSUFFIX;
                 this._currentMaterialContext.setSampler(samplerName, texture as InternalTexture); // we can safely cast to InternalTexture because ExternalTexture always has autoBindSampler = false
             }
         }
@@ -2672,7 +2610,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param createPolynomials defines wheter or not to create polynomails harmonics for the texture
      * @returns the cube texture as an InternalTexture
      */
-    createPrefilteredCubeTexture(
+    public override createPrefilteredCubeTexture(
         rootUrl: string,
         scene: Nullable<Scene>,
         lodScale: number,
@@ -2731,7 +2669,10 @@ export class WebGPUEngine extends AbstractEngine {
         }
     }
 
-    protected _setTexture(
+    /**
+     * @internal
+     */
+    public override _setTexture(
         channel: number,
         texture: Nullable<BaseTexture>,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -3887,6 +3828,7 @@ export class WebGPUEngine extends AbstractEngine {
      */
     public override dispose(): void {
         this._isDisposed = true;
+        this.hideLoadingUI();
         this._timestampQuery.dispose();
         this._mainTexture?.destroy();
         this._depthTexture?.destroy();

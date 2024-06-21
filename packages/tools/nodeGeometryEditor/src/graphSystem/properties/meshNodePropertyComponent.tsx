@@ -8,7 +8,7 @@ import { EngineStore } from "core/Engines/engineStore";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import type { Scene } from "core/scene";
 import type { Nullable } from "core/types";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { MeshBlock } from "core/Meshes/Node/Blocks/Sources/meshBlock";
 import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import type { Mesh } from "core/Meshes/mesh";
@@ -84,7 +84,7 @@ export class MeshPropertyTabComponent extends React.Component<IPropertyComponent
                     {this.state.isLoading && <TextLineComponent ignoreValue={true} label="Loading..." />}
                     {!this.state.isLoading && <FileButtonLineComponent label="Load" uploadName={"load-mesh"} onClick={(file) => this.loadMesh(file)} accept=".glb, .babylon" />}
                     {scene && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Mesh"
                             options={meshOptions}
                             target={block}

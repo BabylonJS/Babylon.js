@@ -939,8 +939,8 @@ export function PrepareUniformsAndSamplersForLight(
         "depthValues" + lightIndex
     );
 
-    samplersList.push("shadowSampler" + lightIndex);
-    samplersList.push("depthSampler" + lightIndex);
+    samplersList.push("shadowTexture" + lightIndex);
+    samplersList.push("depthTexture" + lightIndex);
 
     uniformsList.push(
         "viewFrustumZ" + lightIndex,
@@ -952,7 +952,7 @@ export function PrepareUniformsAndSamplersForLight(
     );
 
     if (projectedLightTexture) {
-        samplersList.push("projectionLightSampler" + lightIndex);
+        samplersList.push("projectionLightTexture" + lightIndex);
         uniformsList.push("textureProjectionMatrix" + lightIndex);
     }
 }

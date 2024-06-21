@@ -6,7 +6,11 @@ let nodeMaterial;
 
 const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
 
-const useWebGPU = window.location.search.indexOf("webgpu") !== -1;
+if (window.location.search.indexOf("webgpu") !== -1) {
+    localStorage.setItem("Engine", 1);
+}
+
+const useWebGPU = localStorage.getItem("Engine") === "1";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
@@ -211,7 +215,7 @@ checkBabylonVersionAsync().then(() => {
                                     if (xmlHttp.status == 200) {
                                         let baseUrl = location.href.replace(location.hash, "").replace(location.search, "");
                                         let snippet = JSON.parse(xmlHttp.responseText);
-                                        let newUrl = baseUrl + "#" + snippet.id;
+                                        let newUrl = baseUrl + (useWebGPU ? "?webgpu" : "") + "#" + snippet.id;
                                         currentSnippetToken = snippet.id;
                                         if (snippet.version && snippet.version != "0") {
                                             newUrl += "#" + snippet.version;

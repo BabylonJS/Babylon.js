@@ -2,7 +2,7 @@ import * as React from "react";
 import { LineContainerComponent } from "../../sharedComponents/lineContainerComponent";
 import { GeneralPropertyTabComponent } from "./genericNodePropertyComponent";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { CurveBlock } from "core/Materials/Node/Blocks/curveBlock";
 import { CurveBlockTypes } from "core/Materials/Node/Blocks/curveBlock";
 
@@ -31,7 +31,7 @@ export class CurvePropertyTabComponent extends React.Component<IPropertyComponen
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Type"
                         options={typeOptions}
                         target={curveBlock}

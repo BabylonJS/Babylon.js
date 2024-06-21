@@ -12,6 +12,7 @@ import type {
     CylinderParticleEmitter,
     CylinderDirectedParticleEmitter,
     ConeParticleEmitter,
+    ConeDirectedParticleEmitter,
     // eslint-disable-next-line import/no-internal-modules
 } from "../Particles/EmitterTypes/index";
 import type { Scene } from "../scene";
@@ -399,8 +400,9 @@ export interface IParticleSystem {
      * Fill the defines array according to the current settings of the particle system
      * @param defines Array to be updated
      * @param blendMode blend mode to take into account when updating the array
+     * @param fillImageProcessing fills the image processing defines
      */
-    fillDefines(defines: Array<string>, blendMode: number): void;
+    fillDefines(defines: Array<string>, blendMode: number, fillImageProcessing?: boolean): void;
     /**
      * Fill the uniforms, attributes and samplers arrays according to the current settings of the particle system
      * @param uniforms Uniforms array to fill
@@ -726,6 +728,8 @@ export interface IParticleSystem {
      * @returns the emitter
      */
     createConeEmitter(radius: number, angle: number): ConeParticleEmitter;
+
+    createDirectedConeEmitter(radius: number, angle: number, direction1: Vector3, direction2: Vector3): ConeDirectedParticleEmitter;
 
     /**
      * Creates a Box Emitter for the particle system. (emits between direction1 and direction2 from withing the box defined by minEmitBox and maxEmitBox)

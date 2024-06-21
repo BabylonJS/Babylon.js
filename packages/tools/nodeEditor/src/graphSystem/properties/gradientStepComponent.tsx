@@ -5,7 +5,7 @@ import deleteButton from "../../imgs/delete.svg";
 import copyIcon from "../../sharedComponents/copy.svg";
 import type { StateManager } from "shared-ui-components/nodeGraphSystem/stateManager";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
-import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
+import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent";
 
 interface IGradientStepComponentProps {
     stateManager: StateManager;
@@ -50,7 +50,7 @@ export class GradientStepComponent extends React.Component<IGradientStepComponen
             <div className="gradient-step">
                 <div className="step">{`#${this.props.lineIndex}`}</div>
                 <div className="color">
-                    <ColorPickerLineComponent
+                    <ColorPickerLine
                         lockObject={this.props.stateManager.lockObject}
                         value={step.color}
                         onColorChanged={(color) => {

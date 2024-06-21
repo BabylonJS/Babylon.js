@@ -114,6 +114,29 @@ export class PhysicsEngine implements IPhysicsEngine {
     }
 
     /**
+     * Set the maximum allowed linear and angular velocities
+     * @param maxLinearVelocity maximum allowed linear velocity
+     * @param maxAngularVelocity maximum allowed angular velocity
+     */
+    setVelocityLimits(maxLinearVelocity: number, maxAngularVelocity: number): void {
+        this._physicsPlugin.setVelocityLimits(maxLinearVelocity, maxAngularVelocity);
+    }
+
+    /**
+     * @returns maximum allowed linear velocity
+     */
+    getMaxLinearVelocity(): number {
+        return this._physicsPlugin.getMaxLinearVelocity();
+    }
+
+    /**
+     * @returns maximum allowed angular velocity
+     */
+    getMaxAngularVelocity(): number {
+        return this._physicsPlugin.getMaxAngularVelocity();
+    }
+
+    /**
      * Adding a new impostor for the impostor tracking.
      * This will be done by the impostor itself.
      * @param impostor the impostor to add

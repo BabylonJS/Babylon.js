@@ -26,7 +26,8 @@ declare module "../../Engines/abstractEngine" {
             fallback: Nullable<InternalTexture>,
             beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void>,
             imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void>,
-            useSRGBBuffer: boolean
+            useSRGBBuffer: boolean,
+            buffer: Nullable<ArrayBufferView>
         ): InternalTexture;
 
         /** @internal */
@@ -176,7 +177,8 @@ AbstractEngine.prototype.createCubeTextureBase = function (
     fallback: Nullable<InternalTexture> = null,
     beforeLoadCubeDataCallback: Nullable<(texture: InternalTexture, data: ArrayBufferView | ArrayBufferView[]) => void> = null,
     imageHandler: Nullable<(texture: InternalTexture, imgs: HTMLImageElement[] | ImageBitmap[]) => void> = null,
-    useSRGBBuffer = false
+    useSRGBBuffer = false,
+    buffer: Nullable<ArrayBufferView> = null
 ): InternalTexture {
     const texture = fallback ? fallback : new InternalTexture(this, InternalTextureSource.Cube);
     texture.isCube = true;
@@ -192,6 +194,7 @@ AbstractEngine.prototype.createCubeTextureBase = function (
     if (!this._doNotHandleContextLost) {
         texture._extension = forcedExtension;
         texture._files = files;
+        texture._buffer = buffer;
     }
 
     const originalRootUrl = rootUrl;
@@ -234,7 +237,8 @@ AbstractEngine.prototype.createCubeTextureBase = function (
                 texture,
                 beforeLoadCubeDataCallback,
                 imageHandler,
-                useSRGBBuffer
+                useSRGBBuffer,
+                buffer
             );
         }
     };
@@ -246,7 +250,9 @@ AbstractEngine.prototype.createCubeTextureBase = function (
             }
             loader!.loadCubeData(data, texture, createPolynomials, onLoad, onError);
         };
-        if (files && files.length === 6) {
+        if (buffer) {
+            onloaddata(buffer);
+        } else if (files && files.length === 6) {
             if (loader.supportCascades) {
                 this._cascadeLoadFiles(scene, (images) => onloaddata(images.map((image) => new Uint8Array(image))), files, onError);
             } else {

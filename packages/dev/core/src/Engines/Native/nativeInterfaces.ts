@@ -100,9 +100,15 @@ export interface INativeEngine {
 }
 
 /** @internal */
+interface INativeEngineInfo {
+    version: string;
+    nonFloatVertexBuffers: true;
+}
+
+/** @internal */
 interface INativeEngineConstructor {
     prototype: INativeEngine;
-    new (): INativeEngine;
+    new (info: INativeEngineInfo): INativeEngine;
 
     readonly PROTOCOL_VERSION: number;
 
@@ -309,6 +315,8 @@ interface INativeEngineConstructor {
     readonly COMMAND_SETTEXTUREWRAPMODE: NativeData;
     readonly COMMAND_SETTEXTUREANISOTROPICLEVEL: NativeData;
     readonly COMMAND_SETTEXTURE: NativeData;
+    readonly COMMAND_UNSETTEXTURE?: NativeData;
+    readonly COMMAND_DISCARDALLTEXTURES?: NativeData;
     readonly COMMAND_BINDVERTEXARRAY: NativeData;
     readonly COMMAND_SETSTATE: NativeData;
     readonly COMMAND_DELETEPROGRAM: NativeData;

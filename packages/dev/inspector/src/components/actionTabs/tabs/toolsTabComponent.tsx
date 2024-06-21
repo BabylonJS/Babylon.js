@@ -26,13 +26,13 @@ import type { GLTFData } from "serializers/glTF/2.0/index";
 import { GLTF2Export } from "serializers/glTF/2.0/index";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import type { IScreenshotSize } from "core/Misc/interfaces/screenshotSize";
-import { NumericInputComponent } from "shared-ui-components/lines/numericInputComponent";
+import { NumericInput } from "shared-ui-components/lines/numericInputComponent";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FileMultipleButtonLineComponent } from "shared-ui-components/lines/fileMultipleButtonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { MessageLineComponent } from "shared-ui-components/lines/messageLineComponent";
-import { FileButtonLineComponent } from "shared-ui-components/lines/fileButtonLineComponent";
+import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineComponent";
 import { IndentedTextLineComponent } from "shared-ui-components/lines/indentedTextLineComponent";
 import { TextInputLineComponent } from "shared-ui-components/lines/textInputLineComponent";
 import { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
@@ -390,7 +390,7 @@ export class ToolsTabComponent extends PaneComponent {
                         />
                         {this._useWidthHeight && (
                             <div className="secondLine">
-                                <NumericInputComponent
+                                <NumericInput
                                     lockObject={this._lockObject}
                                     label="Width"
                                     precision={0}
@@ -398,7 +398,7 @@ export class ToolsTabComponent extends PaneComponent {
                                     value={this._screenShotSize.width ? this._screenShotSize.width : 512}
                                     onChange={(value) => (this._screenShotSize.width = value)}
                                 />
-                                <NumericInputComponent
+                                <NumericInput
                                     lockObject={this._lockObject}
                                     label="Height"
                                     precision={0}
@@ -424,7 +424,7 @@ export class ToolsTabComponent extends PaneComponent {
                     {!this.props.globalState.recorder.isRecording && <ButtonLineComponent label="Start recording" onClick={() => this.startRecording()} />}
                     {this.props.globalState.recorder.isRecording && <IndentedTextLineComponent value={"Record in progress"} />}
                     {this.props.globalState.recorder.isRecording && <ButtonLineComponent label="Generate delta file" onClick={() => this.exportReplay()} />}
-                    <FileButtonLineComponent label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
+                    <FileButtonLine label={`Apply delta file`} onClick={(file) => this.applyDelta(file)} accept=".json" />
                 </LineContainerComponent>
                 <LineContainerComponent title="SCENE IMPORT" selection={this.props.globalState}>
                     <FileMultipleButtonLineComponent label="Import animations" accept="gltf" onClick={(evt: any) => this.importAnimations(evt)} />
@@ -438,12 +438,7 @@ export class ToolsTabComponent extends PaneComponent {
                         }}
                     />
                     {sceneImportDefaults["overwriteAnimations"] === false && (
-                        <OptionsLineComponent
-                            label="Animation merge mode"
-                            options={animationGroupLoadingModes}
-                            target={sceneImportDefaults}
-                            propertyName="animationGroupLoadingMode"
-                        />
+                        <OptionsLine label="Animation merge mode" options={animationGroupLoadingModes} target={sceneImportDefaults} propertyName="animationGroupLoadingMode" />
                     )}
                 </LineContainerComponent>
                 <LineContainerComponent title="SCENE EXPORT" selection={this.props.globalState}>
@@ -451,7 +446,7 @@ export class ToolsTabComponent extends PaneComponent {
                     {!scene.getEngine().premultipliedAlpha && scene.environmentTexture && scene.environmentTexture._prefiltered && scene.activeCamera && (
                         <>
                             <ButtonLineComponent label="Generate .env texture" onClick={() => this.createEnvTexture()} />
-                            <OptionsLineComponent
+                            <OptionsLine
                                 label="Image type"
                                 options={envExportImageTypes}
                                 target={this._envOptions}

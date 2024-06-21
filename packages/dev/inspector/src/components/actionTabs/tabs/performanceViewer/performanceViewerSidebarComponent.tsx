@@ -2,7 +2,7 @@ import { Color3 } from "core/Maths/math.color";
 import type { IPerfMetadata } from "core/Misc/interfaces/iPerfViewer";
 import type { PerformanceViewerCollector } from "core/Misc/PerformanceViewer/performanceViewerCollector";
 import { useEffect, useState } from "react";
-import { ColorPickerLineComponent } from "shared-ui-components/lines/colorPickerComponent";
+import { ColorPickerLine } from "shared-ui-components/lines/colorPickerComponent";
 import { faSquare, faCheckSquare } from "@fortawesome/free-solid-svg-icons";
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 import type { Observable } from "core/Misc/observable";
@@ -121,7 +121,7 @@ export const PerformanceViewerSidebarComponent = (props: IPerformanceViewerSideb
                                                 onSelect={onCheckChange(id)}
                                                 faIcons={{ enabled: faCheckSquare, disabled: faSquare }}
                                             />
-                                            <ColorPickerLineComponent value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
+                                            <ColorPickerLine value={Color3.FromHexString(metadata.color ?? "#000")} onColorChanged={onColorChange(id)} shouldPopRight />
                                             <span className="sidebar-item-label">{id}</span>
                                         </div>
                                         {/* div with category value */}

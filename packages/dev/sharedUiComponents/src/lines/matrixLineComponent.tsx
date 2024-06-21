@@ -4,7 +4,7 @@ import { Matrix, Quaternion } from "core/Maths/math.vector";
 import type { Observable } from "core/Misc/observable";
 import { Vector4LineComponent } from "./vector4LineComponent";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
-import { OptionsLineComponent } from "./optionsLineComponent";
+import { OptionsLine } from "./optionsLineComponent";
 import { SliderLineComponent } from "./sliderLineComponent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
 
@@ -131,7 +131,7 @@ export class MatrixLineComponent extends React.Component<IMatrixLineComponentPro
                     </div>
                 </div>
                 <div className="secondLine">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Mode"
                         className="no-right-margin"
                         options={modeOptions}

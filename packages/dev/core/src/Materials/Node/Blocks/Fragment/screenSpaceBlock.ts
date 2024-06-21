@@ -101,15 +101,15 @@ export class ScreenSpaceBlock extends NodeMaterialBlock {
 
         switch (vector.connectedPoint.type) {
             case NodeMaterialBlockConnectionPointTypes.Vector3:
-                state.compilationString += `vec4 ${tempVariableName} = ${worldViewProjectionName} * vec4(${vector.associatedVariableName}, 1.0);\n`;
+                state.compilationString += `${state._declareLocalVar(tempVariableName, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldViewProjectionName} * vec4${state.fSuffix}(${vector.associatedVariableName}, 1.0);\n`;
                 break;
             case NodeMaterialBlockConnectionPointTypes.Vector4:
-                state.compilationString += `vec4 ${tempVariableName} = ${worldViewProjectionName} * ${vector.associatedVariableName};\n`;
+                state.compilationString += `${state._declareLocalVar(tempVariableName, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldViewProjectionName} * ${vector.associatedVariableName};\n`;
                 break;
         }
 
-        state.compilationString += `${tempVariableName}.xy /= ${tempVariableName}.w;`;
-        state.compilationString += `${tempVariableName}.xy = ${tempVariableName}.xy * 0.5 + vec2(0.5, 0.5);`;
+        state.compilationString += `${tempVariableName} = vec4${state.fSuffix}(${tempVariableName}.xy / ${tempVariableName}.w, ${tempVariableName}.zw);`;
+        state.compilationString += `${tempVariableName} = vec4${state.fSuffix}(${tempVariableName}.xy * 0.5 + vec2${state.fSuffix}(0.5, 0.5), ${tempVariableName}.zw);`;
 
         if (this.output.hasEndpoints) {
             state.compilationString += state._declareOutput(this.output) + ` = ${tempVariableName}.xy;\n`;

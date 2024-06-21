@@ -2,10 +2,10 @@
 import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 import { PushMaterial } from "../pushMaterial";
 import type { Scene } from "../../scene";
-import { AbstractMesh } from "../../Meshes/abstractMesh";
+import type { AbstractMesh } from "../../Meshes/abstractMesh";
 import { Matrix, Vector2 } from "../../Maths/math.vector";
 import { Color3, Color4 } from "../../Maths/math.color";
-import type { Mesh } from "../../Meshes/mesh";
+import { Mesh } from "../../Meshes/mesh";
 import { NodeMaterialBuildState } from "./nodeMaterialBuildState";
 import type { IEffectCreationOptions } from "../effect";
 import { Effect } from "../effect";
@@ -262,6 +262,9 @@ export class NodeMaterial extends PushMaterial {
     /** Gets or sets a boolean indicating that node materials should not deserialize textures from json / snippet content */
     public static IgnoreTexturesAtLoadTime = false;
 
+    /** Defines default shader language when no option is defined */
+    public static DefaultShaderLanguage = ShaderLanguage.GLSL;
+
     /**
      * Checks if a block is a texture block
      * @param block The block to check
@@ -425,9 +428,13 @@ export class NodeMaterial extends PushMaterial {
     constructor(name: string, scene?: Scene, options: Partial<INodeMaterialOptions> = {}) {
         super(name, scene || EngineStore.LastCreatedScene!);
 
+        if (options && options.shaderLanguage === ShaderLanguage.WGSL && !this.getScene().getEngine().isWebGPU) {
+            throw new Error("WebGPU shader language is only supported with WebGPU engine");
+        }
+
         this._options = {
             emitComments: false,
-            shaderLanguage: ShaderLanguage.GLSL,
+            shaderLanguage: NodeMaterial.DefaultShaderLanguage,
             ...options,
         };
 
@@ -1091,13 +1098,13 @@ export class NodeMaterial extends PushMaterial {
 
         const defines = new NodeMaterialDefines();
 
-        const dummyMesh = new AbstractMesh(tempName + "PostProcess", this.getScene());
+        const dummyMesh = new Mesh(tempName + "PostProcess", this.getScene());
 
         let buildId = this._buildId;
 
         this._processDefines(dummyMesh, defines);
 
-        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
 
         if (!postProcess) {
             postProcess = new PostProcess(
@@ -1115,7 +1122,8 @@ export class NodeMaterial extends PushMaterial {
                 tempName,
                 { maxSimultaneousLights: this.maxSimultaneousLights },
                 false,
-                textureFormat
+                textureFormat,
+                this.shaderLanguage
             );
         } else {
             postProcess.updateEffect(
@@ -1185,14 +1193,14 @@ export class NodeMaterial extends PushMaterial {
 
         const proceduralTexture = new ProceduralTexture(tempName, size, null, scene);
 
-        const dummyMesh = new AbstractMesh(tempName + "Procedural", this.getScene());
+        const dummyMesh = new Mesh(tempName + "Procedural", this.getScene());
         dummyMesh.reservedDataStore = {
             hidden: true,
         };
 
         const defines = new NodeMaterialDefines();
         const result = this._processDefines(dummyMesh, defines);
-        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+        Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
 
         let effect = this.getScene().getEngine().createEffect(
             {
@@ -1204,7 +1212,10 @@ export class NodeMaterial extends PushMaterial {
             this._fragmentCompilationState.samplers,
             defines.toString(),
             result?.fallbacks,
-            undefined
+            undefined,
+            undefined,
+            undefined,
+            this.shaderLanguage
         );
 
         proceduralTexture.nodeMaterialSource = this;
@@ -1226,7 +1237,7 @@ export class NodeMaterial extends PushMaterial {
             const result = this._processDefines(dummyMesh, defines);
 
             if (result) {
-                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString);
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, this._vertexCompilationState._builtCompilationString, this.shaderLanguage);
 
                 TimingTools.SetImmediate(() => {
                     effect = this.getScene().getEngine().createEffect(
@@ -1271,7 +1282,7 @@ export class NodeMaterial extends PushMaterial {
         if (!dummyMesh) {
             dummyMesh = this.getScene().getMeshByName(this.name + "Particle");
             if (!dummyMesh) {
-                dummyMesh = new AbstractMesh(this.name + "Particle", this.getScene());
+                dummyMesh = new Mesh(this.name + "Particle", this.getScene());
                 dummyMesh.reservedDataStore = {
                     hidden: true,
                 };
@@ -1286,9 +1297,9 @@ export class NodeMaterial extends PushMaterial {
         if (!effect) {
             const result = this._processDefines(dummyMesh, defines);
 
-            Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
+            Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, undefined, this.shaderLanguage);
 
-            particleSystem.fillDefines(particleSystemDefines, blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode, false);
 
             join = particleSystemDefines.join("\n");
 
@@ -1302,7 +1313,8 @@ export class NodeMaterial extends PushMaterial {
                     result?.fallbacks,
                     onCompiled,
                     onError,
-                    particleSystem
+                    particleSystem,
+                    this.shaderLanguage
                 );
 
             particleSystem.setCustomEffect(effect, blendMode);
@@ -1321,7 +1333,7 @@ export class NodeMaterial extends PushMaterial {
 
             particleSystemDefines.length = 0;
 
-            particleSystem.fillDefines(particleSystemDefines, blendMode);
+            particleSystem.fillDefines(particleSystemDefines, blendMode, false);
 
             const particleSystemDefinesJoinedCurrent = particleSystemDefines.join("\n");
 
@@ -1333,7 +1345,7 @@ export class NodeMaterial extends PushMaterial {
             const result = this._processDefines(dummyMesh!, defines!);
 
             if (result) {
-                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString);
+                Effect.RegisterShader(tempName, this._fragmentCompilationState._builtCompilationString, undefined, this.shaderLanguage);
 
                 effect = this.getScene()
                     .getEngine()
@@ -1552,27 +1564,6 @@ export class NodeMaterial extends PushMaterial {
         }
 
         const result = this._processDefines(mesh, defines, useInstances, subMesh);
-
-        // //*********************** */
-        // const tempA = `
-        // uniform u_World : mat4x4<f32>;
-        // uniform u_ViewProjection : mat4x4<f32>;
-        // attribute position : vec3<f32>;
-
-        // @vertex
-        // fn main(input : VertexInputs) -> FragmentInputs {
-        //     vertexOutputs.position = uniforms.u_ViewProjection * uniforms.u_World * vec4<f32>(vertexInputs.position, 1.0);
-        // }
-        // `;
-
-        // const tempB = `
-        // uniform u_color : vec4<f32>;
-
-        // @fragment
-        // fn main(input : FragmentInputs) -> FragmentOutputs {
-        //     fragmentOutputs.color = uniforms.u_color;
-        // }`;
-        // /*********************** */
 
         if (result) {
             const previousEffect = subMesh.effect;
@@ -2227,8 +2218,9 @@ export class NodeMaterial extends PushMaterial {
      * @param source defines the JSON representation of the material
      * @param rootUrl defines the root URL to use to load textures and relative dependencies
      * @param merge defines whether or not the source must be merged or replace the current content
+     * @param urlRewriter defines a function used to rewrite urls
      */
-    public parseSerializedObject(source: any, rootUrl: string = "", merge = false) {
+    public parseSerializedObject(source: any, rootUrl: string = "", merge = false, urlRewriter?: (url: string) => string) {
         if (!merge) {
             this.clear();
         }
@@ -2240,7 +2232,7 @@ export class NodeMaterial extends PushMaterial {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 const block: NodeMaterialBlock = new blockType();
-                block._deserialize(parsedBlock, this.getScene(), rootUrl);
+                block._deserialize(parsedBlock, this.getScene(), rootUrl, urlRewriter);
                 map[parsedBlock.id] = block;
 
                 this.attachedBlocks.push(block);
@@ -2414,6 +2406,7 @@ export class NodeMaterial extends PushMaterial {
      * @param rootUrl defines the root URL for nested url in the node material
      * @param skipBuild defines whether to build the node material
      * @param targetMaterial defines a material to use instead of creating a new one
+     * @param urlRewriter defines a function used to rewrite urls
      * @returns a promise that will resolve to the new node material
      */
     public static async ParseFromFileAsync(
@@ -2422,13 +2415,14 @@ export class NodeMaterial extends PushMaterial {
         scene: Scene,
         rootUrl: string = "",
         skipBuild: boolean = false,
-        targetMaterial?: NodeMaterial
+        targetMaterial?: NodeMaterial,
+        urlRewriter?: (url: string) => string
     ): Promise<NodeMaterial> {
         const material = targetMaterial ?? new NodeMaterial(name, scene);
 
         const data = await scene._loadFileAsync(url);
         const serializationObject = JSON.parse(data);
-        material.parseSerializedObject(serializationObject, rootUrl);
+        material.parseSerializedObject(serializationObject, rootUrl, undefined, urlRewriter);
         if (!skipBuild) {
             material.build();
         }
@@ -2443,6 +2437,7 @@ export class NodeMaterial extends PushMaterial {
      * @param nodeMaterial defines a node material to update (instead of creating a new one)
      * @param skipBuild defines whether to build the node material
      * @param waitForTextureReadyness defines whether to wait for texture readiness resolving the promise (default: false)
+     * @param urlRewriter defines a function used to rewrite urls
      * @returns a promise that will resolve to the new node material
      */
     public static ParseFromSnippetAsync(
@@ -2451,7 +2446,8 @@ export class NodeMaterial extends PushMaterial {
         rootUrl: string = "",
         nodeMaterial?: NodeMaterial,
         skipBuild: boolean = false,
-        waitForTextureReadyness: boolean = false
+        waitForTextureReadyness: boolean = false,
+        urlRewriter?: (url: string) => string
     ): Promise<NodeMaterial> {
         if (snippetId === "_BLANK") {
             return Promise.resolve(NodeMaterial.CreateDefault("blank", scene));
@@ -2470,8 +2466,11 @@ export class NodeMaterial extends PushMaterial {
                             nodeMaterial.uniqueId = scene.getUniqueId();
                         }
 
-                        nodeMaterial.parseSerializedObject(serializationObject);
+                        nodeMaterial.parseSerializedObject(serializationObject, undefined, undefined, urlRewriter);
                         nodeMaterial.snippetId = snippetId;
+
+                        // We reset sideOrientation to default value
+                        nodeMaterial.sideOrientation = null;
 
                         try {
                             if (!skipBuild) {

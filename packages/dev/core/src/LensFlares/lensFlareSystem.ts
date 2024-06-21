@@ -328,8 +328,8 @@ export class LensFlareSystem {
 
             const cw = flare.size;
             const ch = flare.size * engine.getAspectRatio(this._scene.activeCamera, true);
-            const cx = 2 * (x / (globalViewport.width + globalViewport.x * 2)) - 1.0;
-            const cy = 1.0 - 2 * (y / (globalViewport.height + globalViewport.y * 2));
+            const cx = 2 * ((x - globalViewport.x) / globalViewport.width) - 1.0;
+            const cy = 1.0 - 2 * ((y - globalViewport.y) / globalViewport.height);
 
             const viewportMatrix = Matrix.FromValues(cw / 2, 0, 0, 0, 0, ch / 2, 0, 0, 0, 0, 1, 0, cx, cy, 0, 1);
 

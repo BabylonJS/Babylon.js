@@ -7,3 +7,4 @@ export * from "./abstractEngine.query";
 export * from "./abstractEngine.renderPass";
 export * from "./abstractEngine.texture";
 export * from "./abstractEngine.alpha";
+export * from "./abstractEngine.views";

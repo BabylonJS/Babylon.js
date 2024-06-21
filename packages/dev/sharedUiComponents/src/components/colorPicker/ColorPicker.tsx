@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Color3, Color4 } from "core/Maths/math.color";
-import { ColorComponentEntry } from "./ColorComponentEntry";
-import { HexColor } from "./HexColor";
+import { ColorComponentComponentEntry } from "./ColorComponentEntry";
+import { HexColorComponent } from "./HexColor";
 import type { LockObject } from "../../tabs/propertyGrids/lockObject";
 
 import style from "./ColorPicker.modules.scss";
@@ -11,7 +11,7 @@ import { Logger } from "core/Misc/logger";
 /**
  * Interface used to specify creation options for color picker
  */
-export interface IColorPickerProps {
+export interface IColorPickerComponentProps {
     color: Color3 | Color4;
     linearhint?: boolean;
     debugMode?: boolean;
@@ -31,13 +31,13 @@ export interface IColorPickerState {
 /**
  * Class used to create a color picker
  */
-export class ColorPicker extends React.Component<IColorPickerProps, IColorPickerState> {
+export class ColorPickerComponent extends React.Component<IColorPickerComponentProps, IColorPickerState> {
     private _saturationRef: React.RefObject<HTMLDivElement>;
     private _hueRef: React.RefObject<HTMLDivElement>;
     private _isSaturationPointerDown: boolean;
     private _isHuePointerDown: boolean;
 
-    constructor(props: IColorPickerProps) {
+    constructor(props: IColorPickerComponentProps) {
         super(props);
         if (this.props.color instanceof Color4) {
             this.state = { color: new Color3(this.props.color.r, this.props.color.g, this.props.color.b), alpha: this.props.color.a };
@@ -48,7 +48,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
         this._hueRef = React.createRef();
     }
 
-    override shouldComponentUpdate(nextProps: IColorPickerProps, nextState: IColorPickerState) {
+    override shouldComponentUpdate(nextProps: IColorPickerComponentProps, nextState: IColorPickerState) {
         return nextProps.color.toHexString() !== this.props.color.toHexString() || nextState.color.toHexString() !== this.props.color.toHexString();
     }
 
@@ -205,7 +205,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                 {/* <div className="color-picker-alpha"></div> */}
                 <div className={style.colorPickerRgb}>
                     <div className={style.red}>
-                        <ColorComponentEntry
+                        <ColorComponentComponentEntry
                             lockObject={this.props.lockObject}
                             label="R"
                             min={0}
@@ -218,7 +218,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                     <div className={style.green}>
-                        <ColorComponentEntry
+                        <ColorComponentComponentEntry
                             lockObject={this.props.lockObject}
                             label="G"
                             min={0}
@@ -231,7 +231,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                     <div className={style.blue}>
-                        <ColorComponentEntry
+                        <ColorComponentComponentEntry
                             lockObject={this.props.lockObject}
                             label="B"
                             min={0}
@@ -244,7 +244,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                     <div className={ClassNames({ alpha: true, grayed: hasAlpha }, style)}>
-                        <ColorComponentEntry
+                        <ColorComponentComponentEntry
                             lockObject={this.props.lockObject}
                             label="A"
                             min={0}
@@ -257,7 +257,7 @@ export class ColorPicker extends React.Component<IColorPickerProps, IColorPicker
                         />
                     </div>
                 </div>
-                <HexColor
+                <HexColorComponent
                     lockObject={this.props.lockObject}
                     expectedLength={hasAlpha ? 8 : 6}
                     value={colorHex}

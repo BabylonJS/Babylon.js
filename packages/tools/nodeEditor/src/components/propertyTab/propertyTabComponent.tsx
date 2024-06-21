@@ -34,7 +34,7 @@ import { Vector4LineComponent } from "shared-ui-components/lines/vector4LineComp
 import { Color3LineComponent } from "shared-ui-components/lines/color3LineComponent";
 import { Color4LineComponent } from "shared-ui-components/lines/color4LineComponent";
 import { ButtonLineComponent } from "shared-ui-components/lines/buttonLineComponent";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 import { TextLineComponent } from "shared-ui-components/lines/textLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
@@ -55,7 +55,7 @@ interface IPropertyTabComponentState {
 
 export class PropertyTabComponent extends React.Component<IPropertyTabComponentProps, IPropertyTabComponentState> {
     private _onBuiltObserver: Nullable<Observer<void>>;
-    private _modeSelect: React.RefObject<OptionsLineComponent>;
+    private _modeSelect: React.RefObject<OptionsLine>;
 
     constructor(props: IPropertyTabComponentProps) {
         super(props);
@@ -430,6 +430,11 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
             { label: "Procedural", value: NodeMaterialModes.ProceduralTexture },
         ];
 
+        const engineList = [
+            { label: "WebGL", value: 0 },
+            { label: "WebGPU", value: 1 },
+        ];
+
         const alphaModeOptions = [
             { label: "Combine", value: Constants.ALPHA_COMBINE },
             { label: "One one", value: Constants.ALPHA_ONEONE },
@@ -448,13 +453,24 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                 </div>
                 <div>
                     <LineContainerComponent title="GENERAL">
-                        <OptionsLineComponent
+                        <OptionsLine
                             ref={this._modeSelect}
                             label="Mode"
                             target={this}
                             extractValue={() => this.props.globalState.mode}
                             options={modeList}
                             onSelect={(value) => this.changeMode(value)}
+                            propertyName={""}
+                        />
+                        <OptionsLine
+                            label="Engine"
+                            target={this}
+                            extractValue={() => this.props.globalState.engine}
+                            options={engineList}
+                            onSelect={(value) => {
+                                this.props.globalState.engine = value as number;
+                                this.forceUpdate();
+                            }}
                             propertyName={""}
                         />
                         <TextLineComponent label="Version" value={Engine.Version} />
@@ -589,7 +605,7 @@ export class PropertyTabComponent extends React.Component<IPropertyTabComponentP
                             propertyName="forceAlphaBlending"
                             onValueChanged={() => this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(null)}
                         />
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Alpha mode"
                             options={alphaModeOptions}
                             target={this.props.globalState.nodeMaterial}

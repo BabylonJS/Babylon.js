@@ -10,7 +10,7 @@ import { CheckBoxLineComponent } from "../../sharedComponents/checkBoxLineCompon
 import type { Nullable } from "core/types";
 import type { Observer } from "core/Misc/observable";
 import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSystem/interfaces/propertyComponentProps";
-import { OptionsLineComponent } from "shared-ui-components/lines/optionsLineComponent";
+import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponent";
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
@@ -164,7 +164,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
             <div>
                 <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
                 <LineContainerComponent title="PROPERTIES">
-                    <OptionsLineComponent
+                    <OptionsLine
                         label="Mode"
                         options={modeOptions}
                         target={inputBlock}
@@ -206,7 +206,7 @@ export class InputPropertyTabComponent extends React.Component<IPropertyComponen
                     />
                     {!inputBlock.isContextual && this.renderValue(this.props.stateManager.data as GlobalState)}
                     {inputBlock.isContextual && (
-                        <OptionsLineComponent
+                        <OptionsLine
                             label="Contextual value"
                             options={contextualSourcesOptions}
                             target={inputBlock}

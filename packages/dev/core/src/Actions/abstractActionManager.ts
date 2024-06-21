@@ -25,6 +25,11 @@ export abstract class AbstractActionManager implements IDisposable {
     public isRecursive = false;
 
     /**
+     * Gets or sets a boolean indicating if this ActionManager should be disposed once the last Mesh using it is disposed
+     */
+    public disposeWhenUnowned = true;
+
+    /**
      * Releases all associated resources
      */
     public abstract dispose(): void;

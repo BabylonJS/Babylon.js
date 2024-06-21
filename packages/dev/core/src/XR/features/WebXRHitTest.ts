@@ -143,7 +143,7 @@ export class WebXRHitTest extends WebXRAbstractFeature implements IWebXRHitTestF
     constructor(
         _xrSessionManager: WebXRSessionManager,
         /**
-         * options to use when constructing this feature
+         * [Empty Object] options to use when constructing this feature
          */
         public readonly options: IWebXRHitTestOptions = {}
     ) {

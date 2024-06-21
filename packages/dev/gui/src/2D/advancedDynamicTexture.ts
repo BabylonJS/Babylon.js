@@ -1437,6 +1437,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param onlyAlphaTesting defines a boolean indicating that alpha blending will not be used (only alpha testing) (false by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
      * @param materialSetupCallback defines a custom way of creating and setting up the material on the mesh
+     * @param sampling defines the texture sampling mode (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new AdvancedDynamicTexture
      */
     public static CreateForMesh(
@@ -1446,19 +1447,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         supportPointerMove = true,
         onlyAlphaTesting = false,
         invertY?: boolean,
-        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial
+        materialSetupCallback: (mesh: AbstractMesh, uniqueId: string, texture: AdvancedDynamicTexture, onlyAlphaTesting: boolean) => void = this._CreateMaterial,
+        sampling = Texture.TRILINEAR_SAMPLINGMODE
     ): AdvancedDynamicTexture {
         // use a unique ID in name so serialization will work even if you create two ADTs for a single mesh
         const uniqueId = RandomGUID();
-        const result = new AdvancedDynamicTexture(
-            `AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`,
-            width,
-            height,
-            mesh.getScene(),
-            true,
-            Texture.TRILINEAR_SAMPLINGMODE,
-            invertY
-        );
+        const result = new AdvancedDynamicTexture(`AdvancedDynamicTexture for ${mesh.name} [${uniqueId}]`, width, height, mesh.getScene(), true, sampling, invertY);
 
         materialSetupCallback(mesh, uniqueId, result, onlyAlphaTesting);
 
@@ -1495,10 +1489,18 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * @param height defines the texture height (1024 by default)
      * @param supportPointerMove defines a boolean indicating if the texture must capture move events (true by default)
      * @param invertY defines if the texture needs to be inverted on the y axis during loading (true by default)
+     * @param sampling defines the texture sampling mode (Texture.TRILINEAR_SAMPLINGMODE by default)
      * @returns a new AdvancedDynamicTexture
      */
-    public static CreateForMeshTexture(mesh: AbstractMesh, width = 1024, height = 1024, supportPointerMove = true, invertY?: boolean): AdvancedDynamicTexture {
-        const result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, Texture.TRILINEAR_SAMPLINGMODE, invertY);
+    public static CreateForMeshTexture(
+        mesh: AbstractMesh,
+        width = 1024,
+        height = 1024,
+        supportPointerMove = true,
+        invertY?: boolean,
+        sampling = Texture.TRILINEAR_SAMPLINGMODE
+    ): AdvancedDynamicTexture {
+        const result = new AdvancedDynamicTexture(mesh.name + " AdvancedDynamicTexture", width, height, mesh.getScene(), true, sampling, invertY);
         result.attachToMesh(mesh, supportPointerMove);
         return result;
     }

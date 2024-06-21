@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Observable } from "core/Misc/observable";
 import type { PropertyChangedEvent } from "../propertyChangedEvent";
 import type { LockObject } from "../tabs/propertyGrids/lockObject";
-import { ColorLineComponent } from "./colorLineComponent";
+import { ColorLine } from "./colorLineComponent";
 
 export interface IColor3LineComponentProps {
     label: string;
@@ -19,6 +19,6 @@ export interface IColor3LineComponentProps {
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps> {
     override render() {
         const props = this.props;
-        return <ColorLineComponent disableAlpha={true} {...props} />;
+        return <ColorLine disableAlpha={true} {...props} />;
     }
 }

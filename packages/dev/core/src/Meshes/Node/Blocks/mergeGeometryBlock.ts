@@ -85,39 +85,45 @@ export class MergeGeometryBlock extends NodeGeometryBlock {
 
     protected override _buildBlock(state: NodeGeometryBuildState) {
         const func = (state: NodeGeometryBuildState) => {
-            let vertexData = this.geometry0.getConnectedValue(state) as VertexData;
-            const additionalVertexData: VertexData[] = [];
+            const vertexDataSource: VertexData[] = [];
 
-            if (vertexData) {
-                vertexData = vertexData.clone(); // Preserve source data
-            } else {
-                return null;
+            if (this.geometry0.isConnected) {
+                const data = this.geometry0.getConnectedValue(state);
+                if (data) {
+                    vertexDataSource.push(data);
+                }
             }
-
             if (this.geometry1.isConnected) {
                 const data = this.geometry1.getConnectedValue(state);
                 if (data) {
-                    additionalVertexData.push(data);
+                    vertexDataSource.push(data);
                 }
             }
             if (this.geometry2.isConnected) {
                 const data = this.geometry2.getConnectedValue(state);
                 if (data) {
-                    additionalVertexData.push(data);
+                    vertexDataSource.push(data);
                 }
             }
             if (this.geometry3.isConnected) {
                 const data = this.geometry3.getConnectedValue(state);
                 if (data) {
-                    additionalVertexData.push(data);
+                    vertexDataSource.push(data);
                 }
             }
             if (this.geometry4.isConnected) {
                 const data = this.geometry4.getConnectedValue(state);
                 if (data) {
-                    additionalVertexData.push(data);
+                    vertexDataSource.push(data);
                 }
             }
+
+            if (vertexDataSource.length === 0) {
+                return null;
+            }
+
+            let vertexData = vertexDataSource[0].clone(); // Preserve source data
+            const additionalVertexData: VertexData[] = vertexDataSource.slice(1);
 
             if (additionalVertexData.length && vertexData) {
                 vertexData = vertexData.merge(additionalVertexData, true, false, true, true);

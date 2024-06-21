@@ -504,7 +504,7 @@ export class InputBlock extends NodeMaterialBlock {
                     return;
                 }
                 state.constants.push(this.associatedVariableName);
-                state._constantDeclaration += state._declareOutput(this.output) + ` = ${this._emitConstant(state)};\n`;
+                state._constantDeclaration += state._declareOutput(this.output, true) + ` = ${this._emitConstant(state)};\n`;
                 return;
             }
 
@@ -576,15 +576,24 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
+                    this._prefix = ``;
                     state._emitUniformFromString(this.associatedVariableName, this.type, define);
+                    if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                        this._prefix = `uniforms.`;
+                    }
                 } else {
+                    this._prefix = ``;
                     state._emitVaryingFromString(this.associatedVariableName, this.type, define);
+                    if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                        this._prefix = `fragmentInputs.`;
+                    }
                 }
             } else {
                 if (define) {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
+                    this._prefix = ``;
                     state._attributeDeclaration += `attribute ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
                     this._prefix = `vertexInputs.`;
                 } else {

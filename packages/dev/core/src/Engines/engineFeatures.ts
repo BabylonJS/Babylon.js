@@ -73,5 +73,8 @@ export interface EngineFeatures {
     forceVertexBufferStrideAndOffsetMultiple4Bytes: boolean;
 
     /** @internal */
+    _checkNonFloatVertexBuffersDontRecreatePipelineContext: boolean;
+
+    /** @internal */
     _collectUbosUpdatedInFrame: boolean;
 }

@@ -15,9 +15,9 @@ export class _IsoVector {
      * @param y defines the second coordinate, must be an integer
      */
     constructor(
-        /** defines the first coordinate */
+        /** [0] defines the first coordinate */
         public x: number = 0,
-        /** defines the second coordinate */
+        /** [0] defines the second coordinate */
         public y: number = 0
     ) {
         if (x !== Math.floor(x)) {

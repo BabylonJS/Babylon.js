@@ -105,7 +105,7 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         if (state.target === NodeMaterialBlockTargets.Vertex) {
-            this._samplerName = state._getFreeVariableName(this.name + "Sampler");
+            this._samplerName = state._getFreeVariableName(this.name + "Texture");
 
             // Declarations
             state.sharedData.blockingBlocks.push(this);
@@ -150,11 +150,16 @@ export class ImageSourceBlock extends NodeMaterialBlock {
         return serializationObject;
     }
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        super._deserialize(serializationObject, scene, rootUrl);
+    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string, urlRewriter?: (url: string) => string) {
+        super._deserialize(serializationObject, scene, rootUrl, urlRewriter);
 
         if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
+            if (serializationObject.texture.url.indexOf("data:") === 0) {
+                rootUrl = "";
+            } else if (urlRewriter) {
+                serializationObject.texture.url = urlRewriter(serializationObject.texture.url);
+                serializationObject.texture.name = serializationObject.texture.url;
+            }
             this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
         }
     }

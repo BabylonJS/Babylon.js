@@ -24,6 +24,7 @@ type MeshObject = {
     directMaterial?: Nullable<Material>;
     isObject: boolean; // If the entity is defined as an object ("o"), or group ("g")
     _babylonMesh?: AbstractMesh; // The corresponding Babylon mesh
+    hasLines?: boolean; // If the mesh has lines
 };
 
 /**
@@ -95,6 +96,7 @@ export class SolidParser {
     private _babylonMeshesArray: Array<Mesh>;
     private _pushTriangle: (faces: Array<string>, faceIndex: number) => void;
     private _handednessSign: number;
+    private _hasLineData: boolean = false; //If this mesh has line segment(l) data
 
     /**
      * Creates a new SolidParser
@@ -453,6 +455,7 @@ export class SolidParser {
             this._handledMesh.positions = this._unwrappedPositionsForBabylon.slice();
             this._handledMesh.normals = this._unwrappedNormalsForBabylon.slice();
             this._handledMesh.uvs = this._unwrappedUVForBabylon.slice();
+            this._handledMesh.hasLines = this._hasLineData;
 
             if (this._loadingOptions.importVertexColors) {
                 this._handledMesh.colors = this._unwrappedColorsForBabylon.slice();
@@ -464,6 +467,7 @@ export class SolidParser {
             this._unwrappedColorsForBabylon.length = 0;
             this._unwrappedNormalsForBabylon.length = 0;
             this._unwrappedUVForBabylon.length = 0;
+            this._hasLineData = false;
         }
     }
 
@@ -644,6 +648,7 @@ export class SolidParser {
                     result[1].trim().split(" "), // ["1", "2"]
                     0
                 );
+                this._hasLineData = true;
 
                 // Define a mesh or an object
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
@@ -656,6 +661,7 @@ export class SolidParser {
                     result[1].trim().split(" "), // ["1/1", "2/2"]
                     0
                 );
+                this._hasLineData = true;
 
                 // Define a mesh or an object
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
@@ -668,6 +674,7 @@ export class SolidParser {
                     result[1].trim().split(" "), // ["1/1/1", "2/2/2"]
                     0
                 );
+                this._hasLineData = true;
 
                 // Define a mesh or an object
                 // Each time this keyword is analyzed, create a new Object with all data for creating a babylonMesh
@@ -761,6 +768,7 @@ export class SolidParser {
             this._handledMesh.positions = this._unwrappedPositionsForBabylon;
             this._handledMesh.normals = this._unwrappedNormalsForBabylon;
             this._handledMesh.uvs = this._unwrappedUVForBabylon;
+            this._handledMesh.hasLines = this._hasLineData;
 
             if (this._loadingOptions.importVertexColors) {
                 this._handledMesh.colors = this._unwrappedColorsForBabylon;
@@ -869,6 +877,11 @@ export class SolidParser {
             //Push the name of the material to an array
             //This is indispensable for the importMesh function
             this._materialToUse.push(this._meshesFromObj[j].materialName);
+            //If the mesh is a line mesh
+            if (this._handledMesh.hasLines) {
+                babylonMesh._internalMetadata ??= {};
+                babylonMesh._internalMetadata["_isLine"] = true; //this is a line mesh
+            }
 
             if (this._handledMesh.positions?.length === 0) {
                 //Push the mesh into an array

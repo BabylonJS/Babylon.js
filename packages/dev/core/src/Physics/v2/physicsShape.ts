@@ -5,7 +5,7 @@ import { PhysicsShapeType } from "./IPhysicsEnginePlugin";
 import type { IPhysicsEnginePluginV2, PhysicsShapeParameters } from "./IPhysicsEnginePlugin";
 import type { PhysicsMaterial } from "./physicsMaterial";
 import { Matrix, Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
-
+import type { GroundMesh } from "../../Meshes/groundMesh";
 import type { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 
@@ -424,5 +424,49 @@ export class PhysicsShapeContainer extends PhysicsShape {
      */
     constructor(scene: Scene) {
         super({ type: PhysicsShapeType.CONTAINER, parameters: {} }, scene);
+    }
+}
+
+/**
+ * Helper object to create a heightfield Shape
+ */
+export class PhysicsShapeHeightField extends PhysicsShape {
+    /**
+     * Constructor of the Shape heightfield
+     * @param heightFieldSizeX The size of the heightfield in the X axis
+     * @param heightFieldSizeZ The size of the heightfield in the Z axis
+     * @param numHeightFieldSamplesX The number of samples along the X axis
+     * @param numHeightFieldSamplesZ The number of samples along the Z axis
+     * @param heightFieldData The data for the heightfield
+     * @param scene scene to attach to
+     */
+    constructor(heightFieldSizeX: number, heightFieldSizeZ: number, numHeightFieldSamplesX: number, numHeightFieldSamplesZ: number, heightFieldData: Float32Array, scene: Scene) {
+        super(
+            {
+                type: PhysicsShapeType.HEIGHTFIELD,
+                parameters: {
+                    heightFieldSizeX: heightFieldSizeX,
+                    heightFieldSizeZ: heightFieldSizeZ,
+                    numHeightFieldSamplesX: numHeightFieldSamplesX,
+                    numHeightFieldSamplesZ: numHeightFieldSamplesZ,
+                    heightFieldData: heightFieldData,
+                },
+            },
+            scene
+        );
+    }
+}
+
+/**
+ * Helper object to create a ground mesh Shape
+ */
+export class PhysicsShapeGroundMesh extends PhysicsShape {
+    /**
+     * Constructor of the Shape heightfield
+     * @param groundMesh ground mesh used for display
+     * @param scene scene to attach to
+     */
+    constructor(groundMesh: GroundMesh, scene: Scene) {
+        super({ type: PhysicsShapeType.HEIGHTFIELD, parameters: { groundMesh: groundMesh } }, scene);
     }
 }

@@ -49,6 +49,7 @@ export function SetGUIEditorURL(guiEditorURL: string) {
  * If you are in a UMD environment, it will load the package from a URL
  * @param adt
  * @param embed defines whether editor is being opened from the Playground
+ * @returns a promise that resolves when the editor is opened
  */
 export async function EditAdvancedDynamicTexture(adt: AdvancedDynamicTexture, embed?: boolean) {
     guiEditorContainer = guiEditorContainer || _getGlobalGUIEditor();

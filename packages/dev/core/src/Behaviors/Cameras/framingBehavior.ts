@@ -274,7 +274,7 @@ export class FramingBehavior implements Behavior<ArcRotateCamera> {
 
     /**
      * Targets the given mesh with its children and updates zoom level accordingly.
-     * @param mesh  The mesh to target.
+     * @param mesh The mesh to target.
      * @param focusOnOriginXZ Determines if the camera should focus on 0 in the X and Z axis instead of the mesh
      * @param onAnimationEnd Callback triggered at the end of the framing animation
      */

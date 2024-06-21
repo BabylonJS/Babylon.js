@@ -9,7 +9,7 @@ export interface IHexColorProps {
     lockObject: LockObject;
 }
 
-export class HexColor extends React.Component<IHexColorProps, { hex: string }> {
+export class HexColorComponent extends React.Component<IHexColorProps, { hex: string }> {
     constructor(props: IHexColorProps) {
         super(props);
 
