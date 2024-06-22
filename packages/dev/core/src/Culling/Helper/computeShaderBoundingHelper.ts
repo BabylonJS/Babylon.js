@@ -275,7 +275,7 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
             computeShader.setUniformBuffer("settings", ubo);
 
             // Dispatch
-            computeShader.dispatch(Math.ceil(vertexCount / 64));
+            computeShader.dispatch(Math.ceil(vertexCount / 256));
 
             this._engine.flushFramebuffer();
         }
