@@ -24,7 +24,6 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     private _weightExtraBuffers: { [key: number]: StorageBuffer } = {};
     private _morphTargetInfluenceBuffers: { [key: number]: StorageBuffer } = {};
     private _morphTargetTextureIndexBuffers: { [key: number]: StorageBuffer } = {};
-    private _resultBuffer: StorageBuffer;
     private _ubos: UniformBuffer[] = [];
     private _uboIndex: number = 0;
     private _processedMeshes: AbstractMesh[] = [];
@@ -364,9 +363,6 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
         this._morphTargetInfluenceBuffers = {};
         this._disposeCache(this._morphTargetTextureIndexBuffers);
         this._morphTargetTextureIndexBuffers = {};
-        this._resultBuffer?.dispose();
-        this._resultBuffer = undefined!;
-        this._resultData = undefined!;
         for (const ubo of this._ubos) {
             ubo.dispose();
         }
