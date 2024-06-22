@@ -186,7 +186,9 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
 
         return new Promise((resolve) => {
             const check = () => {
-                for (const computeShader of this._uniqueComputeShaders) {
+                const iterator = this._uniqueComputeShaders.keys();
+                for (let key = iterator.next(); key.done !== true; key = iterator.next()) {
+                    const computeShader = key.value;
                     if (!computeShader.isReady()) {
                         setTimeout(check, 10);
                         return;
