@@ -24,12 +24,9 @@ export class ComputeShaderBoundingHelper implements IBoundingInfoHelperPlatform 
     private _weightExtraBuffers: { [key: number]: StorageBuffer } = {};
     private _morphTargetInfluenceBuffers: { [key: number]: StorageBuffer } = {};
     private _morphTargetTextureIndexBuffers: { [key: number]: StorageBuffer } = {};
-    private _resultData: Float32Array;
     private _resultBuffer: StorageBuffer;
     private _ubos: UniformBuffer[] = [];
     private _uboIndex: number = 0;
-
-    // Only used for the processMeshList method
     private _processedMeshes: AbstractMesh[] = [];
     private _computeShaders: ComputeShader[][] = [];
     private _uniqueComputeShaders: Set<ComputeShader> = new Set();
