@@ -26,28 +26,7 @@ export class BoundingInfoHelper {
         this._engine = engine;
     }
 
-    public registerMeshListAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void> {
-        return this._platform.registerMeshListAsync(mesh);
-    }
-
-    public processMeshList(): void {
-        this._platform.processMeshList();
-    }
-
-    /**
-     * Compute the bounding info of a mesh / array of meshes using shaders
-     * @returns a promise that resolves when the bounding info is/are computed
-     */
-    public fetchResultsForMeshListAsync(): Promise<void> {
-        return this._platform.fetchResultsForMeshListAsync();
-    }
-
-    /**
-     * Compute the bounding info of a mesh / array of meshes using shaders
-     * @param target defines the mesh(es) to update
-     * @returns a promise that resolves when the bounding info is/are computed
-     */
-    public async computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
+    private async _initializePlatform() {
         if (!this._platform) {
             if (this._engine.getCaps().supportComputeShaders) {
                 const module = await import("./computeShaderBoundingHelper");
@@ -59,8 +38,43 @@ export class BoundingInfoHelper {
                 throw new Error("Your engine does not support Compute Shaders or Transform Feedbacks");
             }
         }
+    }
 
+    /**
+     * Compute the bounding info of a mesh / array of meshes using shaders
+     * @param target defines the mesh(es) to update
+     * @returns a promise that resolves when the bounding info is/are computed
+     */
+    public async computeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
+        await this._initializePlatform();
         return this._platform.processAsync(target);
+    }
+
+    /**
+     * Register a mesh / array of meshes to be processed per batch
+     * This method must be called before calling batchProcess (which can be called several times) and batchFetchResultsAsync
+     * @param target defines the mesh(es) to be processed per batch
+     * @returns a promise that resolves when the initialization is done
+     */
+    public async batchInitializeAsync(target: AbstractMesh | AbstractMesh[]): Promise<void> {
+        await this._initializePlatform();
+        return this._platform.registerMeshListAsync(target);
+    }
+
+    /**
+     * Processes meshes registered with batchRegisterAsync
+     * If called multiple times, the second, third, etc calls will perform a union of the bounding boxes calculated in the previous calls
+     */
+    public batchProcess(): void {
+        this._platform.processMeshList();
+    }
+
+    /**
+     * Update the bounding info of the meshes registered with batchRegisterAsync, after batchProcess has been called once or several times
+     * @returns a promise that resolves when the bounding info is/are computed
+     */
+    public async batchFetchResultsAsync(): Promise<void> {
+        return this._platform.fetchResultsForMeshListAsync();
     }
 
     /**

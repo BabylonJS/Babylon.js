@@ -3935,7 +3935,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param label defines the label of the buffer (for debug purpose)
      * @returns the new buffer
      */
-    createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
+    public createStorageBuffer(data: DataArray | number, creationFlags: number, label?: string): DataBuffer {
         return this._createBuffer(data, creationFlags | Constants.BUFFER_CREATIONFLAG_STORAGE, label);
     }
 
@@ -3946,7 +3946,7 @@ export class WebGPUEngine extends AbstractEngine {
      * @param byteOffset the byte offset of the data
      * @param byteLength the byte length of the data
      */
-    updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
+    public updateStorageBuffer(buffer: DataBuffer, data: DataArray, byteOffset?: number, byteLength?: number): void {
         const dataBuffer = buffer as WebGPUDataBuffer;
         if (byteOffset === undefined) {
             byteOffset = 0;
@@ -3975,41 +3975,15 @@ export class WebGPUEngine extends AbstractEngine {
         this._bufferManager.setSubData(dataBuffer, byteOffset, view, 0, byteLength);
     }
 
-    /**
-     * Read data from a storage buffer
-     * @param storageBuffer The storage buffer to read from
-     * @param offset The offset in the storage buffer to start reading from (default: 0)
-     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
-     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
-     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
-     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
-     */
-    public readFromStorageBuffer(storageBuffer: DataBuffer | DataBuffer[], offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
-        if (!Array.isArray(storageBuffer)) {
-            storageBuffer = [storageBuffer];
-        }
-
-        size = size || storageBuffer[0].capacity;
-
-        const gpuBuffer = this._bufferManager.createRawBuffer(
-            size * storageBuffer.length,
-            WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
-            undefined,
-            "TempReadFromStorageBuffer"
-        );
-
-        for (let i = 0; i < storageBuffer.length; i++) {
-            this._renderEncoder.copyBufferToBuffer(storageBuffer[i].underlyingResource, offset ?? 0, gpuBuffer, i * size, size);
-        }
-
+    private _readFromGPUBuffer(gpuBuffer: GPUBuffer, size: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
         return new Promise((resolve, reject) => {
             const readFromBuffer = () => {
-                gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size * storageBuffer.length).then(
+                gpuBuffer.mapAsync(WebGPUConstants.MapMode.Read, 0, size).then(
                     () => {
-                        const copyArrayBuffer = gpuBuffer.getMappedRange(0, size * storageBuffer.length);
+                        const copyArrayBuffer = gpuBuffer.getMappedRange(0, size);
                         let data: ArrayBufferView | undefined = buffer;
                         if (data === undefined) {
-                            data = new Uint8Array(size * storageBuffer.length);
+                            data = new Uint8Array(size);
                             (data as Uint8Array).set(new Uint8Array(copyArrayBuffer));
                         } else {
                             const ctor = data.constructor as any; // we want to create result data with the same type as buffer (Uint8Array, Float32Array, ...)
@@ -4044,11 +4018,61 @@ export class WebGPUEngine extends AbstractEngine {
     }
 
     /**
+     * Read data from a storage buffer
+     * @param storageBuffer The storage buffer to read from
+     * @param offset The offset in the storage buffer to start reading from (default: 0)
+     * @param size  The number of bytes to read from the storage buffer (default: capacity of the buffer)
+     * @param buffer The buffer to write the data we have read from the storage buffer to (optional)
+     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
+     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
+     */
+    public readFromStorageBuffer(storageBuffer: DataBuffer, offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+        size = size || storageBuffer.capacity;
+
+        const gpuBuffer = this._bufferManager.createRawBuffer(
+            size,
+            WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+            undefined,
+            "TempReadFromStorageBuffer"
+        );
+
+        this._renderEncoder.copyBufferToBuffer(storageBuffer.underlyingResource, offset ?? 0, gpuBuffer, 0, size);
+
+        return this._readFromGPUBuffer(gpuBuffer, size, buffer, noDelay);
+    }
+
+    /**
+     * Read data from multiple storage buffers
+     * @param storageBuffers The list of storage buffers to read from
+     * @param offset The offset in the storage buffer to start reading from (default: 0). This is the same offset for all storage buffers!
+     * @param size  The number of bytes to read from each storage buffer (default: capacity of the first buffer)
+     * @param buffer The buffer to write the data we have read from the storage buffers to (optional). If provided, the buffer should be large enough to hold the data from all storage buffers!
+     * @param noDelay If true, a call to flushFramebuffer will be issued so that the data can be read back immediately and not in engine.onEndFrameObservable. This can speed up data retrieval, at the cost of a small perf penalty (default: false).
+     * @returns If not undefined, returns the (promise) buffer (as provided by the 4th parameter) filled with the data, else it returns a (promise) Uint8Array with the data read from the storage buffer
+     */
+    public readFromMultipleStorageBuffers(storageBuffers: DataBuffer[], offset?: number, size?: number, buffer?: ArrayBufferView, noDelay?: boolean): Promise<ArrayBufferView> {
+        size = size || storageBuffers[0].capacity;
+
+        const gpuBuffer = this._bufferManager.createRawBuffer(
+            size * storageBuffers.length,
+            WebGPUConstants.BufferUsage.MapRead | WebGPUConstants.BufferUsage.CopyDst,
+            undefined,
+            "TempReadFromMultipleStorageBuffers"
+        );
+
+        for (let i = 0; i < storageBuffers.length; i++) {
+            this._renderEncoder.copyBufferToBuffer(storageBuffers[i].underlyingResource, offset ?? 0, gpuBuffer, i * size, size);
+        }
+
+        return this._readFromGPUBuffer(gpuBuffer, size * storageBuffers.length, buffer, noDelay);
+    }
+
+    /**
      * Sets a storage buffer in the shader
      * @param name Defines the name of the storage buffer as defined in the shader
      * @param buffer Defines the value to give to the uniform
      */
-    setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void {
+    public setStorageBuffer(name: string, buffer: Nullable<StorageBuffer>): void {
         this._currentDrawContext?.setBuffer(name, (buffer?.getBuffer() as WebGPUDataBuffer) ?? null);
     }
 }
