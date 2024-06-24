@@ -2330,7 +2330,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 if (this._bodyCollisionObservable.size && collisionInfo.type !== PhysicsEventType.COLLISION_FINISHED) {
                     const observableA = this._bodyCollisionObservable.get(event.contactOnA.bodyId);
                     const observableB = this._bodyCollisionObservable.get(event.contactOnB.bodyId);
-                    event.contactOnB.position.subtractToRef(event.contactOnB.position, this._tmpVec3[0]);
+                    event.contactOnA.position.subtractToRef(event.contactOnB.position, this._tmpVec3[0]);
                     const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnB.normal);
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
@@ -2352,7 +2352,7 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
                 } else if (this._bodyCollisionEndedObservable.size) {
                     const observableA = this._bodyCollisionEndedObservable.get(event.contactOnA.bodyId);
                     const observableB = this._bodyCollisionEndedObservable.get(event.contactOnB.bodyId);
-                    event.contactOnB.position.subtractToRef(event.contactOnB.position, this._tmpVec3[0]);
+                    event.contactOnA.position.subtractToRef(event.contactOnB.position, this._tmpVec3[0]);
                     const distance = Vector3.Dot(this._tmpVec3[0], event.contactOnB.normal);
                     if (observableA) {
                         observableA.notifyObservers(collisionInfo);
