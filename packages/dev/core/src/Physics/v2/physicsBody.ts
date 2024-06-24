@@ -1,5 +1,5 @@
 import type { IBasePhysicsCollisionEvent, IPhysicsCollisionEvent, IPhysicsEnginePluginV2, PhysicsMassProperties } from "./IPhysicsEnginePlugin";
-import { PhysicsMotionType } from "./IPhysicsEnginePlugin";
+import { PhysicsMotionType, PhysicsPrestepType } from "./IPhysicsEnginePlugin";
 import type { PhysicsShape } from "./physicsShape";
 import { Vector3, Quaternion, TmpVectors } from "../../Maths/math.vector";
 import type { Scene } from "../../scene";
@@ -49,11 +49,18 @@ export class PhysicsBody {
      * The transform node associated with this Physics Body
      */
     transformNode: TransformNode;
+
     /**
      * Disable pre-step that consists in updating Physics Body from Transform Node Translation/Orientation.
      * True by default for maximum performance.
      */
-    disablePreStep: boolean = true;
+    public get disablePreStep(): boolean {
+        return this._prestepType == PhysicsPrestepType.DISABLED;
+    }
+
+    public set disablePreStep(value: boolean) {
+        this._prestepType = value ? PhysicsPrestepType.DISABLED : PhysicsPrestepType.TELEPORT;
+    }
 
     /**
      * Disable sync from physics to transformNode. This value is set to true at body creation or at motionType setting when the body is not dynamic.
@@ -73,6 +80,7 @@ export class PhysicsBody {
 
     private _motionType: PhysicsMotionType;
 
+    private _prestepType: PhysicsPrestepType = PhysicsPrestepType.DISABLED;
     /**
      * Constructs a new physics body for the given node.
      * @param transformNode - The Transform Node to construct the physics body for. For better performance, it is advised that this node does not have a parent.
@@ -262,6 +270,22 @@ export class PhysicsBody {
      */
     public getMotionType(instanceIndex?: number): PhysicsMotionType {
         return this._physicsPlugin.getMotionType(this, instanceIndex);
+    }
+
+    /**
+     * Set the prestep type of the body
+     * @param prestepType prestep type provided by PhysicsPrestepType
+     */
+    public setPrestepType(prestepType: PhysicsPrestepType): void {
+        this._prestepType = prestepType;
+    }
+
+    /**
+     * Get the current prestep type of the body
+     * @returns the type of prestep associated with the body and its instance index
+     */
+    public getPrestepType(): PhysicsPrestepType {
+        return this._prestepType;
     }
 
     /**

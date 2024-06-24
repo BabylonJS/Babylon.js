@@ -352,6 +352,15 @@ export const enum PhysicsMotionType {
 }
 
 /**
+ * Indicates how to handle position/rotation change of transform node attached to a physics body
+ */
+export enum PhysicsPrestepType {
+    DISABLED,
+    TELEPORT,
+    ACTION,
+}
+
+/**
  * Controls the body sleep mode.
  */
 export const enum PhysicsActivationControl {
