@@ -4,7 +4,7 @@ import { Gamepad } from "./gamepad";
 /**
  * Defines supported buttons for DualShock compatible gamepads
  */
-export enum DualShockButton {
+export const enum DualShockButton {
     /** Cross */
     Cross = 0,
     /** Circle */
@@ -28,7 +28,7 @@ export enum DualShockButton {
 }
 
 /** Defines values for DualShock DPad  */
-export enum DualShockDpad {
+export const enum DualShockDpad {
     /** Up */
     Up = 12,
     /** Down */

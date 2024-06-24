@@ -1,7 +1,7 @@
 /**
  * Enum that determines the text-wrapping mode to use.
  */
-export enum InspectableType {
+export const enum InspectableType {
     /**
      * Checkbox for booleans
      */

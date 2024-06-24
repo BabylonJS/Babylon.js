@@ -73,7 +73,7 @@ export interface ITimerData<T> {
 /**
  * The current state of the timer
  */
-export enum TimerState {
+export const enum TimerState {
     /**
      * Timer initialized, not yet started
      */

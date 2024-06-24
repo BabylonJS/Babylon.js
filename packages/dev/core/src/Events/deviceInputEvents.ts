@@ -3,7 +3,7 @@ import type { PointerInput } from "../DeviceInput/InputDevices/deviceEnums";
 /**
  * Event Types
  */
-export enum DeviceInputEventType {
+export const enum DeviceInputEventType {
     // Pointers
     /** PointerMove */
     PointerMove,

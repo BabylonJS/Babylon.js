@@ -10,7 +10,7 @@ import "../Shaders/copyTextureToTexture.fragment";
 /**
  * Conversion modes available when copying a texture into another one
  */
-export enum ConversionMode {
+export const enum ConversionMode {
     None = 0,
     ToLinearSpace = 1,
     ToGammaSpace = 2,

@@ -10,7 +10,7 @@ import type { ParticleSystem } from "../Particles/particleSystem";
 /**
  * Type of sub emitter
  */
-export enum SubEmitterType {
+export const enum SubEmitterType {
     /**
      * Attached to the particle over it's lifetime
      */

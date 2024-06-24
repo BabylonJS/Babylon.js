@@ -1142,7 +1142,7 @@ export class PhysicsVortexEventOptions {
  * The strength of the force in correspondence to the distance of the affected object
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
-export enum PhysicsRadialImpulseFalloff {
+export const enum PhysicsRadialImpulseFalloff {
     /** Defines that impulse is constant in strength across it's whole radius */
     Constant,
     /** Defines that impulse gets weaker if it's further from the origin */
@@ -1153,7 +1153,7 @@ export enum PhysicsRadialImpulseFalloff {
  * The strength of the force in correspondence to the distance of the affected object
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine#further-functionality-of-the-impostor-class
  */
-export enum PhysicsUpdraftMode {
+export const enum PhysicsUpdraftMode {
     /** Defines that the upstream forces will pull towards the top center of the cylinder */
     Center,
     /** Defines that once a impostor is inside the cylinder, it will shoot out perpendicular from the ground of the cylinder */

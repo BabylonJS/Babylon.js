@@ -47,7 +47,7 @@ export interface ComputeCompilationMessages {
 }
 
 /** @internal */
-export enum ComputeBindingType {
+export const enum ComputeBindingType {
     Texture = 0,
     StorageTexture = 1,
     UniformBuffer = 2,

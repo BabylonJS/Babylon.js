@@ -66,7 +66,13 @@ export class MSCTranscoder extends Transcoder {
                         script.setAttribute("src", Transcoder.GetWasmUrl(MSCTranscoder.JSModuleURL));
 
                         script.onload = () => {
-                            MSC_TRANSCODER({ wasmBinary }).then((basisModule: any) => {
+                            // defensive
+                            if (typeof MSC_TRANSCODER === "undefined") {
+                                reject("MSC_TRANSCODER script loaded but MSC_TRANSCODER is not defined.");
+                                return;
+                            }
+
+                            (MSC_TRANSCODER as any)({ wasmBinary }).then((basisModule: any) => {
                                 basisModule.initTranscoders();
                                 this._mscBasisModule = basisModule;
                                 resolve();

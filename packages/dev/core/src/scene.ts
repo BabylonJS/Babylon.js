@@ -129,7 +129,7 @@ export interface SceneOptions {
 /**
  * Define how the scene should favor performance over ease of use
  */
-export enum ScenePerformancePriority {
+export const enum ScenePerformancePriority {
     /** Default mode. No change. Performance will be treated as less important than backward compatibility */
     BackwardCompatible,
     /** Some performance options will be turned on trying to strike a balance between perf and ease of use */

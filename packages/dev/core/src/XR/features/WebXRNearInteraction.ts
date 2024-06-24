@@ -73,7 +73,7 @@ enum ControllerOrbAnimationState {
 /**
  * Where should the near interaction mesh be attached to when using a motion controller for near interaction
  */
-export enum WebXRNearControllerMode {
+export const enum WebXRNearControllerMode {
     /**
      * Motion controllers will not support near interaction
      */

@@ -12,7 +12,7 @@ import type { Observable } from "../../Misc/observable";
 import type { GroundMesh } from "../../Meshes/groundMesh";
 
 /** How a specific axis can be constrained */
-export enum PhysicsConstraintAxisLimitMode {
+export const enum PhysicsConstraintAxisLimitMode {
     /*
      * The axis is not restricted at all
      */
@@ -28,7 +28,7 @@ export enum PhysicsConstraintAxisLimitMode {
 }
 
 /** The constraint specific axis to use when setting Friction, `ConstraintAxisLimitMode`, max force, ... */
-export enum PhysicsConstraintAxis {
+export const enum PhysicsConstraintAxis {
     /*
      * Translation along the primary axis of the constraint (i.e. the
      * direction specified by PhysicsConstraintParameters.axisA/axisB)
@@ -68,7 +68,7 @@ export enum PhysicsConstraintAxis {
 }
 
 /** Type of Constraint */
-export enum PhysicsConstraintType {
+export const enum PhysicsConstraintType {
     /**
      * A ball and socket constraint will attempt to line up the pivot
      * positions in each body, and have no restrictions on rotation
@@ -109,7 +109,7 @@ export enum PhysicsConstraintType {
 }
 
 /** Type of Shape */
-export enum PhysicsShapeType {
+export const enum PhysicsShapeType {
     SPHERE,
     CAPSULE,
     CYLINDER,
@@ -121,13 +121,13 @@ export enum PhysicsShapeType {
 }
 
 /** Optional motor which attempts to move a body at a specific velocity, or at a specific position */
-export enum PhysicsConstraintMotorType {
+export const enum PhysicsConstraintMotorType {
     NONE,
     VELOCITY,
     POSITION,
 }
 
-export enum PhysicsEventType {
+export const enum PhysicsEventType {
     COLLISION_STARTED = "COLLISION_STARTED",
     COLLISION_CONTINUED = "COLLISION_CONTINUED",
     COLLISION_FINISHED = "COLLISION_FINISHED",
@@ -345,7 +345,7 @@ export interface PhysicsMassProperties {
 /**
  * Indicates how the body will behave.
  */
-export enum PhysicsMotionType {
+export const enum PhysicsMotionType {
     STATIC,
     ANIMATED,
     DYNAMIC,
@@ -354,7 +354,7 @@ export enum PhysicsMotionType {
 /**
  * Controls the body sleep mode.
  */
-export enum PhysicsActivationControl {
+export const enum PhysicsActivationControl {
     SIMULATION_CONTROLLED,
     ALWAYS_ACTIVE,
     ALWAYS_INACTIVE,
