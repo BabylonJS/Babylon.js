@@ -7,6 +7,7 @@ import {
     PhysicsConstraintAxis,
     PhysicsConstraintAxisLimitMode,
     PhysicsEventType,
+    PhysicsPrestepType,
     PhysicsActivationControl,
 } from "../IPhysicsEnginePlugin";
 import type {
@@ -1140,19 +1141,25 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
      * same transformation.
      */
     public setPhysicsBodyTransformation(body: PhysicsBody, node: TransformNode) {
-        const transformNode = body.transformNode;
-        if (body.numInstances > 0) {
-            // instances
-            const m = transformNode as Mesh;
-            const matrixData = m._thinInstanceDataStorage.matrixData;
-            if (!matrixData) {
-                return; // TODO: error handling
+        if (body.getPrestepType() == PhysicsPrestepType.TELEPORT) {
+            const transformNode = body.transformNode;
+            if (body.numInstances > 0) {
+                // instances
+                const m = transformNode as Mesh;
+                const matrixData = m._thinInstanceDataStorage.matrixData;
+                if (!matrixData) {
+                    return; // TODO: error handling
+                }
+                const instancesCount = body.numInstances;
+                this._createOrUpdateBodyInstances(body, body.getMotionType(), matrixData, 0, instancesCount, true);
+            } else {
+                // regular
+                this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, this._getTransformInfos(node));
             }
-            const instancesCount = body.numInstances;
-            this._createOrUpdateBodyInstances(body, body.getMotionType(), matrixData, 0, instancesCount, true);
+        } else if (body.getPrestepType() == PhysicsPrestepType.ACTION) {
+            this.setTargetTransform(body, node.absolutePosition, node.absoluteRotationQuaternion);
         } else {
-            // regular
-            this._hknp.HP_Body_SetQTransform(body._pluginData.hpBodyId, this._getTransformInfos(node));
+            Logger.Warn("Invalid prestep type set to physics body.");
         }
     }
 
