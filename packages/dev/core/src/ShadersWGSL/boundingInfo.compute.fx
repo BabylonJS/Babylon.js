@@ -70,10 +70,9 @@ const identity = mat4x4f(
 );
 
 struct Settings {
+    morphTargetTextureInfo: vec3f,
+    morphTargetCount: i32,
     indexResult : u32,
-    #ifdef MORPHTARGETS
-        morphTargetTextureInfo: vec3f,
-    #endif
 };
 
 @group(0) @binding(0) var<storage, read> positionBuffer : array<f32>;
@@ -108,7 +107,7 @@ fn readVector3FromRawSampler(targetIndex : i32, vertexIndex : u32) -> vec3f
 #endif
 
 
-@compute @workgroup_size(64, 1, 1)
+@compute @workgroup_size(256, 1, 1)
 fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let index = global_id.x;
     if (index >= arrayLength(&positionBuffer) / 3) {
@@ -157,6 +156,9 @@ fn main(@builtin(global_invocation_id) global_id : vec3<u32>) {
 
 #ifdef MORPHTARGETS
     for (var i = 0; i < NUM_MORPH_INFLUENCERS; i = i + 1) {
+        if (i >= settings.morphTargetCount) {
+            break;
+        }
         positionUpdated = positionUpdated + (readVector3FromRawSampler(i, index) - position) * morphTargetInfluences[i];
     }
 #endif
