@@ -8,22 +8,15 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
 import { BindBonesParameters, BindMorphTargetParameters, PrepareAttributesForBakedVertexAnimation } from "core/Materials/materialHelper.functions";
 import type { Mesh } from "core/Meshes/mesh";
 import type { IBoundingInfoHelperPlatform } from "./IBoundingInfoHelperPlatform";
-import { extractMinAndMax } from "core/Maths/math.functions";
-import { Vector3 } from "core/Maths/math.vector";
 
 import "../../Shaders/gpuTransform.vertex";
 import "../../Shaders/gpuTransform.fragment";
 
 /** @internal */
 export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatform {
-    private static _Min = new Vector3();
-    private static _Max = new Vector3();
-
     private _engine: Nullable<ThinEngine>;
     private _buffers: { [key: number]: Buffer } = {};
     private _effects: { [key: string]: Effect } = {};
-    private _meshList: AbstractMesh[];
-    private _meshListCounter = 0;
 
     /**
      * Creates a new TransformFeedbackBoundingHelper
@@ -39,17 +32,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
             meshes = [meshes];
         }
 
-        this._meshListCounter = 0;
-
-        this._processMeshList(meshes);
-
-        return Promise.resolve();
-    }
-
-    private _processMeshList(meshes: AbstractMesh[]) {
-        const parallelShaderCompile = this._engine!.getCaps().parallelShaderCompile;
-
-        this._engine!.getCaps().parallelShaderCompile = undefined;
+        const promises: Promise<void>[] = [];
 
         for (let i = 0; i < meshes.length; ++i) {
             const mesh = meshes[i];
@@ -174,10 +157,23 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
                 computeEffect = this._effects[join];
             }
 
-            this._compute(mesh, computeEffect);
+            promises.push(
+                new Promise((resolve) => {
+                    if (computeEffect.isReady()) {
+                        this._compute(mesh, computeEffect);
+                        resolve();
+                        return;
+                    }
+
+                    computeEffect.onCompileObservable.addOnce(() => {
+                        this._compute(mesh, computeEffect);
+                        resolve();
+                    });
+                })
+            );
         }
 
-        this._engine!.getCaps().parallelShaderCompile = parallelShaderCompile;
+        return Promise.all(promises).then(() => {});
     }
 
     private _compute(mesh: AbstractMesh, effect: Effect): void {
@@ -227,46 +223,7 @@ export class TransformFeedbackBoundingHelper implements IBoundingInfoHelperPlatf
         engine.bindTransformFeedbackBuffer(null);
 
         // Update mesh
-        if (this._meshListCounter === 0) {
-            mesh._refreshBoundingInfo(arrayBuffer, null);
-        } else {
-            const bb = mesh.getBoundingInfo().boundingBox;
-            const extend = extractMinAndMax(arrayBuffer, 0, vertexCount);
-
-            TransformFeedbackBoundingHelper._Min.copyFrom(bb.minimum).minimizeInPlace(extend.minimum);
-            TransformFeedbackBoundingHelper._Max.copyFrom(bb.maximum).maximizeInPlace(extend.maximum);
-
-            mesh._refreshBoundingInfoDirect({ minimum: TransformFeedbackBoundingHelper._Min, maximum: TransformFeedbackBoundingHelper._Max });
-        }
-    }
-
-    /** @internal */
-    public registerMeshListAsync(meshes: AbstractMesh | AbstractMesh[]): Promise<void> {
-        if (!Array.isArray(meshes)) {
-            meshes = [meshes];
-        }
-
-        this._meshList = meshes;
-        this._meshListCounter = 0;
-
-        return Promise.resolve();
-    }
-
-    /** @internal */
-    public processMeshList(): void {
-        if (this._meshList.length === 0) {
-            return;
-        }
-
-        this._processMeshList(this._meshList);
-        this._meshListCounter++;
-    }
-
-    /** @internal */
-    public fetchResultsForMeshListAsync(): Promise<void> {
-        this._meshListCounter = 0;
-
-        return Promise.resolve();
+        mesh._refreshBoundingInfo(arrayBuffer, null);
     }
 
     /** @internal */
