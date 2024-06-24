@@ -107,6 +107,27 @@ function convertNodeHandedness(node: INode): void {
     }
 }
 
+function getBinaryWriterFunc(binaryWriter: _BinaryWriter, attributeComponentKind: AccessorComponentType): Nullable<(entry: number, byteOffset?: number) => void> {
+    switch (attributeComponentKind) {
+        case AccessorComponentType.UNSIGNED_BYTE: {
+            return binaryWriter.setUInt8.bind(binaryWriter);
+        }
+        case AccessorComponentType.UNSIGNED_SHORT: {
+            return binaryWriter.setUInt16.bind(binaryWriter);
+        }
+        case AccessorComponentType.UNSIGNED_INT: {
+            return binaryWriter.setUInt32.bind(binaryWriter);
+        }
+        case AccessorComponentType.FLOAT: {
+            return binaryWriter.setFloat32.bind(binaryWriter);
+        }
+        default: {
+            Tools.Warn("Unsupported Attribute Component kind: " + attributeComponentKind);
+            return null;
+        }
+    }
+}
+
 /**
  * Utility interface for storing vertex attribute data
  * @internal
@@ -133,8 +154,17 @@ interface _IVertexAttributeData {
      */
     bufferViewIndex?: number;
 
+    /**
+     * Specifies the number of bytes per attribute element (e.g. position would be 3 floats (x/y/z) where each float is 4 bytes, so a 12 byte stride)
+     */
     byteStride?: number;
+
+    /**
+     * Specifies information about each morph target associated with this attribute
+     */
+    morphTargetInfo?: Readonly<{ bufferViewIndex: number; vertexCount: number; minMax?: { min: Vector3; max: Vector3 } }>[];
 }
+
 /**
  * Converts Babylon Scene into glTF 2.0.
  * @internal
@@ -835,136 +865,148 @@ export class _Exporter {
             }
         }
 
-        let writeBinaryFunc;
-        switch (attributeComponentKind) {
-            case AccessorComponentType.UNSIGNED_BYTE: {
-                writeBinaryFunc = binaryWriter.setUInt8.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.UNSIGNED_SHORT: {
-                writeBinaryFunc = binaryWriter.setUInt16.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.UNSIGNED_INT: {
-                writeBinaryFunc = binaryWriter.setUInt32.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.FLOAT: {
-                writeBinaryFunc = binaryWriter.setFloat32.bind(binaryWriter);
-                break;
-            }
-            default: {
-                Tools.Warn("Unsupported Attribute Component kind: " + attributeComponentKind);
-                return;
-            }
-        }
+        const writeBinaryFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
 
-        for (const vertexAttribute of vertexAttributes) {
-            for (const component of vertexAttribute) {
-                writeBinaryFunc(component);
+        if (writeBinaryFunc) {
+            for (const vertexAttribute of vertexAttributes) {
+                for (const component of vertexAttribute) {
+                    writeBinaryFunc(component);
+                }
             }
         }
     }
 
-    /**
-     * Writes mesh attribute data to a data buffer
-     * Returns the bytelength of the data
-     * @param vertexBufferKind Indicates what kind of vertex data is being passed in
-     * @param attributeComponentKind attribute component type
-     * @param meshPrimitive the mesh primitive
-     * @param meshAttributeArray Array containing the attribute data
-     * @param morphTargetAttributeArray
-     * @param stride Specifies the space between data
-     * @param binaryWriter The buffer to write the binary data to
-     * @param minMax
-     */
-    public writeMorphTargetAttributeData(
+    private _createMorphTargetBufferViewKind(
         vertexBufferKind: string,
         attributeComponentKind: AccessorComponentType,
-        meshPrimitive: SubMesh,
-        meshAttributeArray: FloatArray,
-        morphTargetAttributeArray: FloatArray,
-        stride: number,
+        mesh: Mesh,
+        morphTarget: MorphTarget,
         binaryWriter: _BinaryWriter,
-        minMax?: any
-    ) {
-        let vertexAttributes: number[][] = [];
-        let index: number;
-        let difference: Vector3 = new Vector3();
-        let difference4: Vector4 = new Vector4(0, 0, 0, 0);
+        byteStride: number
+    ): Nullable<{ bufferViewIndex: number; vertexCount: number; minMax?: { min: Vector3; max: Vector3 } }> {
+        // Helper to create a buffer view (only used if we have morph target data for the attribute)
+        const createBufferView = (elementCount: number): number => {
+            const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
+            const byteLength = elementCount * typeByteLength;
+            const bufferView = _GLTFUtilities._CreateBufferView(
+                0,
+                binaryWriter.getByteOffset(),
+                byteLength,
+                byteStride,
+                `${vertexBufferKind} - ${morphTarget.name} (Morph Target)`
+            );
+            this._bufferViews.push(bufferView);
+            const bufferViewIndex = this._bufferViews.length - 1;
+            return bufferViewIndex;
+        };
+
+        let writeBinary: (entry: number, byteOffset?: number) => void;
+        let bufferViewIndex: number;
+        let vertexCount: number;
+        let minMax: { min: Vector3; max: Vector3 } | undefined;
+        const vertexAttributes: number[][] = [];
+        const difference: Vector3 = new Vector3();
+        const difference4: Vector4 = new Vector4();
 
         switch (vertexBufferKind) {
             case VertexBuffer.PositionKind: {
-                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
-                    index = meshPrimitive.indexStart + k * stride;
-                    const vertexData = Vector3.FromArray(meshAttributeArray, index);
-                    const morphData = Vector3.FromArray(morphTargetAttributeArray, index);
-                    difference = morphData.subtractToRef(vertexData, difference);
-                    if (minMax) {
-                        minMax.min.copyFromFloats(Math.min(difference.x, minMax.min.x), Math.min(difference.y, minMax.min.y), Math.min(difference.z, minMax.min.z));
-                        minMax.max.copyFromFloats(Math.max(difference.x, minMax.max.x), Math.max(difference.y, minMax.max.y), Math.max(difference.z, minMax.max.z));
-                    }
+                const morphPositions = morphTarget.getPositions();
+                if (!morphPositions) {
+                    return null;
+                }
+
+                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
+                if (!binaryWriterFunc) {
+                    return null;
+                }
+                writeBinary = binaryWriterFunc;
+
+                bufferViewIndex = createBufferView(morphPositions.length);
+
+                const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
+                const vertexStart = 0;
+                const min = new Vector3(Infinity, Infinity, Infinity);
+                const max = new Vector3(-Infinity, -Infinity, -Infinity);
+                vertexCount = originalPositions.length / 3;
+                for (let i = vertexStart; i < vertexCount; ++i) {
+                    const originalPosition = Vector3.FromArray(originalPositions, i * 3);
+                    const morphPosition = Vector3.FromArray(morphPositions, i * 3);
+                    morphPosition.subtractToRef(originalPosition, difference);
+                    min.copyFromFloats(Math.min(difference.x, min.x), Math.min(difference.y, min.y), Math.min(difference.z, min.z));
+                    max.copyFromFloats(Math.max(difference.x, max.x), Math.max(difference.y, max.y), Math.max(difference.z, max.z));
                     vertexAttributes.push(difference.asArray());
                 }
+
+                minMax = { min, max };
+
                 break;
             }
             case VertexBuffer.NormalKind: {
-                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
-                    index = meshPrimitive.indexStart + k * stride;
-                    const vertexData = Vector3.FromArray(meshAttributeArray, index).normalize();
-                    const morphData = Vector3.FromArray(morphTargetAttributeArray, index).normalize();
-                    difference = morphData.subtractToRef(vertexData, difference);
+                const morphNormals = morphTarget.getNormals();
+                if (!morphNormals) {
+                    return null;
+                }
+
+                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
+                if (!binaryWriterFunc) {
+                    return null;
+                }
+                writeBinary = binaryWriterFunc;
+
+                bufferViewIndex = createBufferView(morphNormals.length);
+
+                const originalNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
+                const vertexStart = 0;
+                vertexCount = originalNormals.length / 3;
+                for (let i = vertexStart; i < vertexCount; ++i) {
+                    const originalNormal = Vector3.FromArray(originalNormals, i * 3).normalize();
+                    const morphNormal = Vector3.FromArray(morphNormals, i * 3).normalize();
+                    morphNormal.subtractToRef(originalNormal, difference);
                     vertexAttributes.push(difference.asArray());
                 }
+
                 break;
             }
             case VertexBuffer.TangentKind: {
-                for (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {
-                    index = meshPrimitive.indexStart + k * (stride + 1);
-                    const vertexData = Vector4.FromArray(meshAttributeArray, index);
-                    _GLTFUtilities._NormalizeTangentFromRef(vertexData);
-                    const morphData = Vector4.FromArray(morphTargetAttributeArray, index);
-                    _GLTFUtilities._NormalizeTangentFromRef(morphData);
-                    difference4 = morphData.subtractToRef(vertexData, difference4);
+                const morphTangents = morphTarget.getTangents();
+                if (!morphTangents) {
+                    return null;
+                }
+
+                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
+                if (!binaryWriterFunc) {
+                    return null;
+                }
+                writeBinary = binaryWriterFunc;
+
+                bufferViewIndex = createBufferView(morphTangents.length);
+
+                const originalTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
+                const vertexStart = 0;
+                vertexCount = originalTangents.length / 4;
+                for (let i = vertexStart; i < vertexCount; ++i) {
+                    const originalTangent = Vector4.FromArray(originalTangents, i * 4);
+                    _GLTFUtilities._NormalizeTangentFromRef(originalTangent);
+                    const morphTangent = Vector4.FromArray(morphTangents, i * 4);
+                    _GLTFUtilities._NormalizeTangentFromRef(morphTangent);
+                    morphTangent.subtractToRef(originalTangent, difference4);
                     vertexAttributes.push([difference4.x, difference4.y, difference4.z]);
                 }
-                break;
-            }
-            default: {
-                Tools.Warn("Unsupported Vertex Buffer Type: " + vertexBufferKind);
-                vertexAttributes = [];
-            }
-        }
 
-        let writeBinaryFunc;
-        switch (attributeComponentKind) {
-            case AccessorComponentType.UNSIGNED_BYTE: {
-                writeBinaryFunc = binaryWriter.setUInt8.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.UNSIGNED_SHORT: {
-                writeBinaryFunc = binaryWriter.setUInt16.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.UNSIGNED_INT: {
-                writeBinaryFunc = binaryWriter.setUInt32.bind(binaryWriter);
-                break;
-            }
-            case AccessorComponentType.FLOAT: {
-                writeBinaryFunc = binaryWriter.setFloat32.bind(binaryWriter);
                 break;
             }
             default: {
-                Tools.Warn("Unsupported Attribute Component kind: " + attributeComponentKind);
-                return;
+                return null;
             }
         }
 
         for (const vertexAttribute of vertexAttributes) {
             for (const component of vertexAttribute) {
-                writeBinaryFunc(component);
+                writeBinary(component);
             }
         }
+
+        return { bufferViewIndex, vertexCount, minMax };
     }
 
     /**
@@ -1319,119 +1361,6 @@ export class _Exporter {
     }
 
     /**
-     * Creates a bufferview based on the vertices type for the Babylon mesh
-     * @param babylonSubMesh The Babylon submesh that the morph target is applied to
-     * @param meshPrimitive
-     * @param babylonMorphTarget the morph target to be exported
-     * @param binaryWriter The buffer to write the bufferview data to
-     */
-    private _setMorphTargetAttributes(babylonSubMesh: SubMesh, meshPrimitive: IMeshPrimitive, babylonMorphTarget: MorphTarget, binaryWriter: _BinaryWriter) {
-        if (babylonMorphTarget) {
-            if (!meshPrimitive.targets) {
-                meshPrimitive.targets = [];
-            }
-            const target: { [attribute: string]: number } = {};
-            const mesh = babylonSubMesh.getMesh() as Mesh;
-            if (babylonMorphTarget.hasNormals) {
-                const vertexNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
-                const morphNormals = babylonMorphTarget.getNormals()!;
-                const count = babylonSubMesh.verticesCount;
-                const byteStride = 12; // 3 x 4 byte floats
-                const byteLength = count * byteStride;
-                const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, babylonMorphTarget.name + "_NORMAL");
-                this._bufferViews.push(bufferView);
-
-                const bufferViewIndex = this._bufferViews.length - 1;
-                const accessor = _GLTFUtilities._CreateAccessor(
-                    bufferViewIndex,
-                    babylonMorphTarget.name + " - " + "NORMAL",
-                    AccessorType.VEC3,
-                    AccessorComponentType.FLOAT,
-                    count,
-                    0,
-                    null,
-                    null
-                );
-                this._accessors.push(accessor);
-                target.NORMAL = this._accessors.length - 1;
-
-                this.writeMorphTargetAttributeData(VertexBuffer.NormalKind, AccessorComponentType.FLOAT, babylonSubMesh, vertexNormals, morphNormals, byteStride / 4, binaryWriter);
-            }
-            if (babylonMorphTarget.hasPositions) {
-                const vertexPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
-                const morphPositions = babylonMorphTarget.getPositions()!;
-                const count = babylonSubMesh.verticesCount;
-                const byteStride = 12; // 3 x 4 byte floats
-                const byteLength = count * byteStride;
-                const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, babylonMorphTarget.name + "_POSITION");
-                this._bufferViews.push(bufferView);
-
-                const bufferViewIndex = this._bufferViews.length - 1;
-                const minMax = { min: new Vector3(Infinity, Infinity, Infinity), max: new Vector3(-Infinity, -Infinity, -Infinity) };
-                const accessor = _GLTFUtilities._CreateAccessor(
-                    bufferViewIndex,
-                    babylonMorphTarget.name + " - " + "POSITION",
-                    AccessorType.VEC3,
-                    AccessorComponentType.FLOAT,
-                    count,
-                    0,
-                    null,
-                    null
-                );
-                this._accessors.push(accessor);
-                target.POSITION = this._accessors.length - 1;
-
-                this.writeMorphTargetAttributeData(
-                    VertexBuffer.PositionKind,
-                    AccessorComponentType.FLOAT,
-                    babylonSubMesh,
-                    vertexPositions,
-                    morphPositions,
-                    byteStride / 4,
-                    binaryWriter,
-                    minMax
-                );
-                accessor.min = minMax.min!.asArray();
-                accessor.max = minMax.max!.asArray();
-            }
-            if (babylonMorphTarget.hasTangents) {
-                const vertexTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
-                const morphTangents = babylonMorphTarget.getTangents()!;
-                const count = babylonSubMesh.verticesCount;
-                const byteStride = 12; // 3 x 4 byte floats
-                const byteLength = count * byteStride;
-                const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, babylonMorphTarget.name + "_NORMAL");
-                this._bufferViews.push(bufferView);
-
-                const bufferViewIndex = this._bufferViews.length - 1;
-                const accessor = _GLTFUtilities._CreateAccessor(
-                    bufferViewIndex,
-                    babylonMorphTarget.name + " - " + "TANGENT",
-                    AccessorType.VEC3,
-                    AccessorComponentType.FLOAT,
-                    count,
-                    0,
-                    null,
-                    null
-                );
-                this._accessors.push(accessor);
-                target.TANGENT = this._accessors.length - 1;
-
-                this.writeMorphTargetAttributeData(
-                    VertexBuffer.TangentKind,
-                    AccessorComponentType.FLOAT,
-                    babylonSubMesh,
-                    vertexTangents,
-                    morphTangents,
-                    byteStride / 4,
-                    binaryWriter
-                );
-            }
-            meshPrimitive.targets.push(target);
-        }
-    }
-
-    /**
      * The primitive mode of the Babylon mesh
      * @param babylonMesh The BabylonJS mesh
      * @returns Unsigned integer of the primitive mode or null
@@ -1496,46 +1425,46 @@ export class _Exporter {
      * @param meshPrimitive glTF mesh primitive
      * @param attributeKind vertex attribute
      */
-    private _setAttributeKind(meshPrimitive: IMeshPrimitive, attributeKind: string): void {
+    private _setAttributeKind(attributes: { [name: string]: number }, attributeKind: string): void {
         switch (attributeKind) {
             case VertexBuffer.PositionKind: {
-                meshPrimitive.attributes.POSITION = this._accessors.length - 1;
+                attributes.POSITION = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.NormalKind: {
-                meshPrimitive.attributes.NORMAL = this._accessors.length - 1;
+                attributes.NORMAL = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.ColorKind: {
-                meshPrimitive.attributes.COLOR_0 = this._accessors.length - 1;
+                attributes.COLOR_0 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.TangentKind: {
-                meshPrimitive.attributes.TANGENT = this._accessors.length - 1;
+                attributes.TANGENT = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.UVKind: {
-                meshPrimitive.attributes.TEXCOORD_0 = this._accessors.length - 1;
+                attributes.TEXCOORD_0 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.UV2Kind: {
-                meshPrimitive.attributes.TEXCOORD_1 = this._accessors.length - 1;
+                attributes.TEXCOORD_1 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.MatricesIndicesKind: {
-                meshPrimitive.attributes.JOINTS_0 = this._accessors.length - 1;
+                attributes.JOINTS_0 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.MatricesIndicesExtraKind: {
-                meshPrimitive.attributes.JOINTS_1 = this._accessors.length - 1;
+                attributes.JOINTS_1 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.MatricesWeightsKind: {
-                meshPrimitive.attributes.WEIGHTS_0 = this._accessors.length - 1;
+                attributes.WEIGHTS_0 = this._accessors.length - 1;
                 break;
             }
             case VertexBuffer.MatricesWeightsExtraKind: {
-                meshPrimitive.attributes.WEIGHTS_1 = this._accessors.length - 1;
+                attributes.WEIGHTS_1 = this._accessors.length - 1;
                 break;
             }
             default: {
@@ -1597,6 +1526,29 @@ export class _Exporter {
                     this._createBufferViewKind(attributeKind, attributeComponentKind, babylonTransformNode, binaryWriter, attribute.byteStride);
                     attribute.bufferViewIndex = this._bufferViews.length - 1;
                     vertexAttributeBufferViews[attributeKind] = attribute.bufferViewIndex;
+
+                    // Write any morph target data to the buffer and create an associated buffer view
+                    if (morphTargetManager) {
+                        for (let i = 0; i < morphTargetManager.numTargets; ++i) {
+                            const morphTarget = morphTargetManager.getTarget(i);
+                            const morphTargetInfo = this._createMorphTargetBufferViewKind(
+                                attributeKind,
+                                attributeComponentKind,
+                                bufferMesh,
+                                morphTarget,
+                                binaryWriter,
+                                attribute.byteStride
+                            );
+
+                            // Store info about the morph target that will be needed later when creating per-submesh accessors
+                            if (morphTargetInfo) {
+                                if (!attribute.morphTargetInfo) {
+                                    attribute.morphTargetInfo = [];
+                                }
+                                attribute.morphTargetInfo[i] = morphTargetInfo;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -1679,7 +1631,7 @@ export class _Exporter {
                                         minMax.max
                                     );
                                     this._accessors.push(accessor);
-                                    this._setAttributeKind(meshPrimitive, attributeKind);
+                                    this._setAttributeKind(meshPrimitive.attributes, attributeKind);
                                 }
                             }
                         }
@@ -1730,6 +1682,8 @@ export class _Exporter {
                             meshPrimitive.material = materialIndex;
                         }
                     }
+
+                    // If there are morph targets, write out targets and associated accessors
                     if (morphTargetManager) {
                         // By convention, morph target names are stored in the mesh extras.
                         if (!mesh.extras) {
@@ -1738,9 +1692,38 @@ export class _Exporter {
                         mesh.extras.targetNames = [];
 
                         for (let i = 0; i < morphTargetManager.numTargets; ++i) {
-                            const target = morphTargetManager.getTarget(i);
-                            this._setMorphTargetAttributes(submesh, meshPrimitive, target, binaryWriter);
-                            mesh.extras.targetNames.push(target.name);
+                            const morphTarget = morphTargetManager.getTarget(i);
+                            mesh.extras.targetNames.push(morphTarget.name);
+
+                            for (const attribute of attributeData) {
+                                const morphTargetInfo = attribute.morphTargetInfo?.[i];
+                                if (morphTargetInfo) {
+                                    // Write the accessor
+                                    const byteOffset = 0;
+                                    const accessor = _GLTFUtilities._CreateAccessor(
+                                        morphTargetInfo.bufferViewIndex,
+                                        `${attribute.kind} - ${morphTarget.name} (Morph Target)`,
+                                        attribute.accessorType,
+                                        attribute.accessorComponentType,
+                                        morphTargetInfo.vertexCount,
+                                        byteOffset,
+                                        morphTargetInfo.minMax?.min?.asArray() ?? null,
+                                        morphTargetInfo.minMax?.max?.asArray() ?? null
+                                    );
+                                    this._accessors.push(accessor);
+
+                                    // Create a target that references the new accessor
+                                    if (!meshPrimitive.targets) {
+                                        meshPrimitive.targets = [];
+                                    }
+
+                                    if (!meshPrimitive.targets[i]) {
+                                        meshPrimitive.targets[i] = {};
+                                    }
+
+                                    this._setAttributeKind(meshPrimitive.targets[i], attribute.kind);
+                                }
+                            }
                         }
                     }
 
