@@ -14,7 +14,7 @@ import { Constants } from "../Engines/constants";
 /**
  * Specifies the level of max blur that should be applied when using the depth of field effect
  */
-export enum DepthOfFieldEffectBlurLevel {
+export const enum DepthOfFieldEffectBlurLevel {
     /**
      * Subtle blur
      */

@@ -14,7 +14,7 @@ import type { FloatArray, IndicesArray } from "../../types";
  * In POINTS_MODE_POINTS every array of points will become the center (backbone) of the ribbon. The ribbon will be expanded by `width / 2` to `+direction` and `-direction` as well.
  * In POINTS_MODE_PATHS every array of points specifies an edge. These will be used to build one ribbon.
  */
-export enum GreasedLineRibbonPointsMode {
+export const enum GreasedLineRibbonPointsMode {
     POINTS_MODE_POINTS = 0,
     POINTS_MODE_PATHS = 1,
 }
@@ -24,7 +24,7 @@ export enum GreasedLineRibbonPointsMode {
  * FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING single sided without back face culling. Sets backFaceCulling = false on the material so it affects all line ribbons added to the line ribbon instance.
  * FACES_MODE_DOUBLE_SIDED extra back faces are created. This doubles the amount of faces of the mesh.
  */
-export enum GreasedLineRibbonFacesMode {
+export const enum GreasedLineRibbonFacesMode {
     FACES_MODE_SINGLE_SIDED = 0,
     FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING = 1,
     FACES_MODE_DOUBLE_SIDED = 2,
@@ -38,7 +38,7 @@ export enum GreasedLineRibbonFacesMode {
  * AUTO_DIRECTIONS_FACE_TO in this mode the direction (slope) will be calculated for each line segment according to the direction vector between each point of the line segments and a direction (face-to) vector specified in direction. The resulting line will face to the direction of this face-to vector.
  * AUTO_DIRECTIONS_NONE you have to set the direction (slope) manually. Recommended.
  */
-export enum GreasedLineRibbonAutoDirectionMode {
+export const enum GreasedLineRibbonAutoDirectionMode {
     AUTO_DIRECTIONS_FROM_FIRST_SEGMENT = 0,
     AUTO_DIRECTIONS_FROM_ALL_SEGMENTS = 1,
     AUTO_DIRECTIONS_ENHANCED = 2,

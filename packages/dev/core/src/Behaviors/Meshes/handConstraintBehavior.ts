@@ -16,7 +16,7 @@ import { Tools } from "core/Misc/tools";
 /**
  * Zones around the hand
  */
-export enum HandConstraintZone {
+export const enum HandConstraintZone {
     /**
      * Above finger tips
      */
@@ -38,7 +38,7 @@ export enum HandConstraintZone {
 /**
  * Orientations for the hand zones and for the attached node
  */
-export enum HandConstraintOrientation {
+export const enum HandConstraintOrientation {
     /**
      * Orientation is towards the camera
      */
@@ -52,7 +52,7 @@ export enum HandConstraintOrientation {
 /**
  * Orientations for the hand zones and for the attached node
  */
-export enum HandConstraintVisibility {
+export const enum HandConstraintVisibility {
     /**
      * Constraint is always visible
      */

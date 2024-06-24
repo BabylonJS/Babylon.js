@@ -1,7 +1,7 @@
 /**
  * Enum defining the mode of a NodeMaterialBlockConnectionPoint
  */
-export enum NodeMaterialBlockConnectionPointMode {
+export const enum NodeMaterialBlockConnectionPointMode {
     /** Value is an uniform */
     Uniform,
     /** Value is a mesh attribute */

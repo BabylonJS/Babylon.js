@@ -193,7 +193,7 @@ Object.defineProperty(Scene.prototype, "debugLayer", {
 /**
  * Enum of inspector action tab
  */
-export enum DebugLayerTab {
+export const enum DebugLayerTab {
     /**
      * Properties tag (default)
      */

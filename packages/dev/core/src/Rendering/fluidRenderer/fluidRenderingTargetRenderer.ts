@@ -18,7 +18,7 @@ import type { WebGPUEngine } from "core/Engines/webgpuEngine";
 /**
  * Textures that can be displayed as a debugging tool
  */
-export enum FluidRenderingDebug {
+export const enum FluidRenderingDebug {
     DepthTexture,
     DepthBlurredTexture,
     ThicknessTexture,

@@ -3,7 +3,7 @@ import { Gamepad } from "../Gamepads/gamepad";
 /**
  * Defines supported buttons for XBox360 compatible gamepads
  */
-export enum Xbox360Button {
+export const enum Xbox360Button {
     /** A */
     A = 0,
     /** B */
@@ -27,7 +27,7 @@ export enum Xbox360Button {
 }
 
 /** Defines values for XBox360 DPad  */
-export enum Xbox360Dpad {
+export const enum Xbox360Dpad {
     /** Up */
     Up = 12,
     /** Down */

@@ -9,7 +9,7 @@ import type { Scene } from "../../../scene";
 /**
  * Operations supported by the Wave block
  */
-export enum WaveBlockKind {
+export const enum WaveBlockKind {
     /** SawTooth */
     SawTooth,
     /** Square */

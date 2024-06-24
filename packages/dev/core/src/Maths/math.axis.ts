@@ -1,7 +1,7 @@
 import { Vector3 } from "./math.vector";
 
 /** Defines supported spaces */
-export enum Space {
+export const enum Space {
     /** Local (object) space */
     LOCAL = 0,
     /** World space */
@@ -23,7 +23,7 @@ export class Axis {
 /**
  * Defines cartesian components.
  */
-export enum Coordinate {
+export const enum Coordinate {
     /** X axis */
     X,
     /** Y axis */

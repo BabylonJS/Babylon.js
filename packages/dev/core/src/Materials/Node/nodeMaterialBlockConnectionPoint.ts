@@ -9,7 +9,7 @@ import type { NodeMaterialBlock } from "./nodeMaterialBlock";
 /**
  * Enum used to define the compatibility state between two connection points
  */
-export enum NodeMaterialConnectionPointCompatibilityStates {
+export const enum NodeMaterialConnectionPointCompatibilityStates {
     /** Points are compatibles */
     Compatible,
     /** Points are incompatible because of their types */
@@ -23,7 +23,7 @@ export enum NodeMaterialConnectionPointCompatibilityStates {
 /**
  * Defines the direction of a connection point
  */
-export enum NodeMaterialConnectionPointDirection {
+export const enum NodeMaterialConnectionPointDirection {
     /** Input */
     Input,
     /** Output */

@@ -1,7 +1,7 @@
 /**
  * Enum used to define the mode for an animation group mask
  */
-export enum AnimationGroupMaskMode {
+export const enum AnimationGroupMaskMode {
     /**
      * The mask defines the animatable target names that should be included
      */

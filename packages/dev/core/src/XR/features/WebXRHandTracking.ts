@@ -126,7 +126,7 @@ export interface IWebXRHandTrackingOptions {
 /**
  * Parts of the hands divided to writs and finger names
  */
-export enum HandPart {
+export const enum HandPart {
     /**
      * HandPart - Wrist
      */
@@ -157,7 +157,7 @@ export enum HandPart {
  * Joints of the hand as defined by the WebXR specification.
  * https://immersive-web.github.io/webxr-hand-input/#skeleton-joints-section
  */
-export enum WebXRHandJoint {
+export const enum WebXRHandJoint {
     /** Wrist */
     WRIST = "wrist",
 
