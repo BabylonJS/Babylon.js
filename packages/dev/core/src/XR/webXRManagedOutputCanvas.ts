@@ -139,10 +139,6 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
         });
     }
 
-    public async initRenderTarget(): Promise<void> {
-        await this._canvasCompatiblePromise;
-    }
-
     /**
      * Initializes a XRWebGLLayer to be used as the session's baseLayer.
      * @param xrSession xr session
