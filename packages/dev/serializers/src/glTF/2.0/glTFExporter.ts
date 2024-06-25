@@ -162,7 +162,7 @@ interface _IVertexAttributeData {
     /**
      * Specifies information about each morph target associated with this attribute
      */
-    morphTargetInfo?: Readonly<{ bufferViewIndex: number; vertexCount: number; minMax?: { min: Vector3; max: Vector3 } }>[];
+    morphTargetInfo?: Readonly<{ bufferViewIndex: number; vertexCount: number; accessorType: AccessorType; minMax?: { min: Vector3; max: Vector3 } }>[];
 }
 
 /**
@@ -878,35 +878,17 @@ export class _Exporter {
 
     private _createMorphTargetBufferViewKind(
         vertexBufferKind: string,
+        accessorType: AccessorType,
         attributeComponentKind: AccessorComponentType,
         mesh: Mesh,
         morphTarget: MorphTarget,
         binaryWriter: _BinaryWriter,
         byteStride: number
-    ): Nullable<{ bufferViewIndex: number; vertexCount: number; minMax?: { min: Vector3; max: Vector3 } }> {
-        // Helper to create a buffer view (only used if we have morph target data for the attribute)
-        const createBufferView = (elementCount: number): number => {
-            const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
-            const byteLength = elementCount * typeByteLength;
-            const bufferView = _GLTFUtilities._CreateBufferView(
-                0,
-                binaryWriter.getByteOffset(),
-                byteLength,
-                byteStride,
-                `${vertexBufferKind} - ${morphTarget.name} (Morph Target)`
-            );
-            this._bufferViews.push(bufferView);
-            const bufferViewIndex = this._bufferViews.length - 1;
-            return bufferViewIndex;
-        };
-
-        let writeBinary: (entry: number, byteOffset?: number) => void;
-        let bufferViewIndex: number;
+    ): Nullable<{ bufferViewIndex: number; vertexCount: number; accessorType: AccessorType; minMax?: { min: Vector3; max: Vector3 } }> {
         let vertexCount: number;
         let minMax: { min: Vector3; max: Vector3 } | undefined;
-        const vertexAttributes: number[][] = [];
-        const difference: Vector3 = new Vector3();
-        const difference4: Vector4 = new Vector4();
+        const morphData: number[] = [];
+        const difference: Vector3 = TmpVectors.Vector3[0];
 
         switch (vertexBufferKind) {
             case VertexBuffer.PositionKind: {
@@ -914,14 +896,6 @@ export class _Exporter {
                 if (!morphPositions) {
                     return null;
                 }
-
-                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
-                if (!binaryWriterFunc) {
-                    return null;
-                }
-                writeBinary = binaryWriterFunc;
-
-                bufferViewIndex = createBufferView(morphPositions.length);
 
                 const originalPositions = mesh.getVerticesData(VertexBuffer.PositionKind, undefined, undefined, true)!;
                 const vertexStart = 0;
@@ -934,7 +908,7 @@ export class _Exporter {
                     morphPosition.subtractToRef(originalPosition, difference);
                     min.copyFromFloats(Math.min(difference.x, min.x), Math.min(difference.y, min.y), Math.min(difference.z, min.z));
                     max.copyFromFloats(Math.max(difference.x, max.x), Math.max(difference.y, max.y), Math.max(difference.z, max.z));
-                    vertexAttributes.push(difference.asArray());
+                    morphData.push(difference.x, difference.y, difference.z);
                 }
 
                 minMax = { min, max };
@@ -947,14 +921,6 @@ export class _Exporter {
                     return null;
                 }
 
-                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
-                if (!binaryWriterFunc) {
-                    return null;
-                }
-                writeBinary = binaryWriterFunc;
-
-                bufferViewIndex = createBufferView(morphNormals.length);
-
                 const originalNormals = mesh.getVerticesData(VertexBuffer.NormalKind, undefined, undefined, true)!;
                 const vertexStart = 0;
                 vertexCount = originalNormals.length / 3;
@@ -962,7 +928,7 @@ export class _Exporter {
                     const originalNormal = Vector3.FromArray(originalNormals, i * 3).normalize();
                     const morphNormal = Vector3.FromArray(morphNormals, i * 3).normalize();
                     morphNormal.subtractToRef(originalNormal, difference);
-                    vertexAttributes.push(difference.asArray());
+                    morphData.push(difference.x, difference.y, difference.z);
                 }
 
                 break;
@@ -973,24 +939,24 @@ export class _Exporter {
                     return null;
                 }
 
-                const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
-                if (!binaryWriterFunc) {
-                    return null;
-                }
-                writeBinary = binaryWriterFunc;
-
-                bufferViewIndex = createBufferView(morphTangents.length);
+                // Handedness cannot be displaced, so morph target tangents omit the w component
+                accessorType = AccessorType.VEC3;
+                byteStride = 12; // 3 components (x/y/z) * 4 bytes (float32)
 
                 const originalTangents = mesh.getVerticesData(VertexBuffer.TangentKind, undefined, undefined, true)!;
                 const vertexStart = 0;
                 vertexCount = originalTangents.length / 4;
                 for (let i = vertexStart; i < vertexCount; ++i) {
-                    const originalTangent = Vector4.FromArray(originalTangents, i * 4);
+                    // Only read the x, y, z components and ignore w
+                    const originalTangent = Vector3.FromArray(originalTangents, i * 4);
                     _GLTFUtilities._NormalizeTangentFromRef(originalTangent);
-                    const morphTangent = Vector4.FromArray(morphTangents, i * 4);
+
+                    // Morph target tangents omit the w component so it won't be present in the data
+                    const morphTangent = Vector3.FromArray(morphTangents, i * 3);
                     _GLTFUtilities._NormalizeTangentFromRef(morphTangent);
-                    morphTangent.subtractToRef(originalTangent, difference4);
-                    vertexAttributes.push([difference4.x, difference4.y, difference4.z]);
+
+                    morphTangent.subtractToRef(originalTangent, difference);
+                    morphData.push(difference.x, difference.y, difference.z);
                 }
 
                 break;
@@ -1000,13 +966,22 @@ export class _Exporter {
             }
         }
 
-        for (const vertexAttribute of vertexAttributes) {
-            for (const component of vertexAttribute) {
-                writeBinary(component);
-            }
+        const binaryWriterFunc = getBinaryWriterFunc(binaryWriter, attributeComponentKind);
+        if (!binaryWriterFunc) {
+            return null;
         }
 
-        return { bufferViewIndex, vertexCount, minMax };
+        const typeByteLength = VertexBuffer.GetTypeByteLength(attributeComponentKind);
+        const byteLength = morphData.length * typeByteLength;
+        const bufferView = _GLTFUtilities._CreateBufferView(0, binaryWriter.getByteOffset(), byteLength, byteStride, `${vertexBufferKind} - ${morphTarget.name} (Morph Target)`);
+        this._bufferViews.push(bufferView);
+        const bufferViewIndex = this._bufferViews.length - 1;
+
+        for (const value of morphData) {
+            binaryWriterFunc(value);
+        }
+
+        return { bufferViewIndex, vertexCount, accessorType, minMax };
     }
 
     /**
@@ -1533,6 +1508,7 @@ export class _Exporter {
                             const morphTarget = morphTargetManager.getTarget(i);
                             const morphTargetInfo = this._createMorphTargetBufferViewKind(
                                 attributeKind,
+                                attribute.accessorType,
                                 attributeComponentKind,
                                 bufferMesh,
                                 morphTarget,
@@ -1703,7 +1679,7 @@ export class _Exporter {
                                     const accessor = _GLTFUtilities._CreateAccessor(
                                         morphTargetInfo.bufferViewIndex,
                                         `${attribute.kind} - ${morphTarget.name} (Morph Target)`,
-                                        attribute.accessorType,
+                                        morphTargetInfo.accessorType,
                                         attribute.accessorComponentType,
                                         morphTargetInfo.vertexCount,
                                         byteOffset,
