@@ -24,6 +24,7 @@ import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
+import { CopyFloatData } from "../Buffers/bufferUtils";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -469,7 +470,19 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         vertexData[kind] ||= new Float32Array(this._totalVertices * vertexBuffer.getSize());
-        vertexBuffer.copyFloatData(this._totalVertices, vertexData[kind]);
+        const data = vertexBuffer.getData();
+        if (data) {
+            CopyFloatData(
+                data,
+                vertexBuffer.getSize(),
+                vertexBuffer.type,
+                vertexBuffer.byteOffset,
+                vertexBuffer.byteStride,
+                vertexBuffer.normalized,
+                this._totalVertices,
+                vertexData[kind]
+            );
+        }
     }
 
     /**
