@@ -97,6 +97,7 @@ export class PhysicsBody {
      */
     constructor(transformNode: TransformNode, motionType: PhysicsMotionType, startsAsleep: boolean, scene: Scene) {
         if (!scene) {
+            throw new Error("No scene found for new PhysicsBody.");
             return;
         }
         const physicsEngine = scene.getPhysicsEngine() as PhysicsEngine;
