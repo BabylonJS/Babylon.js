@@ -6226,9 +6226,22 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     public addToSelf(other: DeepImmutable<Matrix>): this {
         const m = this._m;
         const otherM = other.m;
-        for (let index = 0; index < 16; index++) {
-            m[index] += otherM[index];
-        }
+        m[0] += otherM[0];
+        m[1] += otherM[1];
+        m[2] += otherM[2];
+        m[3] += otherM[3];
+        m[4] += otherM[4];
+        m[5] += otherM[5];
+        m[6] += otherM[6];
+        m[7] += otherM[7];
+        m[8] += otherM[8];
+        m[9] += otherM[9];
+        m[10] += otherM[10];
+        m[11] += otherM[11];
+        m[12] += otherM[12];
+        m[13] += otherM[13];
+        m[14] += otherM[14];
+        m[15] += otherM[15];
         this.markAsUpdated();
         return this;
     }
@@ -7245,9 +7258,22 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static FromFloat32ArrayToRefScaled<T extends Matrix>(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: T): T {
-        for (let index = 0; index < 16; index++) {
-            result._m[index] = array[index + offset] * scale;
-        }
+        result._m[0] = array[0 + offset] * scale;
+        result._m[1] = array[1 + offset] * scale;
+        result._m[2] = array[2 + offset] * scale;
+        result._m[3] = array[3 + offset] * scale;
+        result._m[4] = array[4 + offset] * scale;
+        result._m[5] = array[5 + offset] * scale;
+        result._m[6] = array[6 + offset] * scale;
+        result._m[7] = array[7 + offset] * scale;
+        result._m[8] = array[8 + offset] * scale;
+        result._m[9] = array[9 + offset] * scale;
+        result._m[10] = array[10 + offset] * scale;
+        result._m[11] = array[11 + offset] * scale;
+        result._m[12] = array[12 + offset] * scale;
+        result._m[13] = array[13 + offset] * scale;
+        result._m[14] = array[14 + offset] * scale;
+        result._m[15] = array[15 + offset] * scale;
         result.markAsUpdated();
         return result;
     }

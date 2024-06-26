@@ -44,6 +44,37 @@ import type { TrianglePickingPredicate } from "../Culling/ray";
 import type { RenderingGroup } from "../Rendering/renderingGroup";
 import type { IEdgesRendererOptions } from "../Rendering/edgesRenderer";
 
+/**
+ * Opaque cache when computing data about a mesh
+ */
+export interface IMeshDataCache {
+    /** @internal */
+    _outputData?: Float32Array;
+
+    /** @internal */
+    _vertexData?: { [kind: string]: Float32Array };
+}
+
+/**
+ * Options when computing data about a mesh
+ */
+export interface IMeshDataOptions {
+    /** Apply skeleton when computing the bounding info. Defaults to false. */
+    applySkeleton?: boolean;
+
+    /** Apply morph when computing the bounding info. Defaults to false. */
+    applyMorph?: boolean;
+
+    /** Update the cached positions stored as a Vector3 array. Defaults to true. */
+    updatePositionsArray?: boolean;
+
+    /**
+     * Cache to avoid redundant allocations and computations when computing the bounding info multiple times. Pass in
+     * an initial empty object and continue with subsequent calls using the same object. Caching is disabled by default.
+     */
+    cache?: IMeshDataCache;
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 class _FacetDataStorage {
@@ -1172,6 +1203,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /**
+     * Copies the requested vertex data kind into the given vertex data map. Float data is constructed if the map doesn't have the data.
+     * @param kind defines the vertex data kind to use
+     * @param vertexData defines the map that stores the resulting data
+     */
+    public abstract copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void;
+
+    /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
      * Note that a new underlying VertexBuffer object is created each call.
@@ -1466,18 +1504,19 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
-     * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
-     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
+     * @param options defines a set of options for computing the bounding info
      * @returns the current mesh
      */
-    public refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): AbstractMesh {
-        if (this._boundingInfo && this._boundingInfo.isLocked) {
-            return this;
-        }
+    public abstract refreshBoundingInfo(options: IMeshDataOptions): AbstractMesh;
 
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), null);
-        return this;
-    }
+    /**
+     * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
+     * This means the mesh underlying bounding box and sphere are recomputed.
+     * @param applySkeletonOrOptions defines whether to apply the skeleton before computing the bounding info or a set of options
+     * @param applyMorph defines whether to apply the morph target before computing the bounding info
+     * @returns the current mesh
+     */
+    public abstract refreshBoundingInfo(applySkeletonOrOptions: boolean | IMeshDataOptions, applyMorph: boolean): AbstractMesh;
 
     /**
      * @internal
@@ -1520,18 +1559,40 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         this._updateBoundingInfo();
     }
 
-    /**
-     * Internal function to get buffer data and possibly apply morphs and normals
-     * @param applySkeleton
-     * @param applyMorph
-     * @param data
-     * @param kind the kind of data you want. Can be Normal or Position
-     * @returns a FloatArray of the vertex data
-     */
-    private _getData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
-        data = data ?? this.getVerticesData(kind)!.slice();
+    /** @internal */
+    private _getData(options: IMeshDataOptions, data: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
+        const cache = options.cache;
 
-        if (data && applyMorph && this.morphTargetManager) {
+        const getVertexData = (kind: string): Nullable<FloatArray> => {
+            if (cache) {
+                const vertexData = (cache._vertexData ||= {});
+                if (!vertexData[kind]) {
+                    this.copyVerticesData(kind, vertexData);
+                }
+                return vertexData[kind];
+            }
+
+            return this.getVerticesData(kind);
+        };
+
+        data ||= getVertexData(kind);
+        if (!data) {
+            return null;
+        }
+
+        if (cache) {
+            if (cache._outputData) {
+                cache._outputData.set(data);
+            } else {
+                cache._outputData = new Float32Array(data);
+            }
+
+            data = cache._outputData;
+        } else if ((options.applyMorph && this.morphTargetManager) || (options.applySkeleton && this.skeleton)) {
+            data = data.slice();
+        }
+
+        if (options.applyMorph && this.morphTargetManager) {
             let faceIndexCount = 0;
             let positionIndex = 0;
             for (let vertexCount = 0; vertexCount < data.length; vertexCount++) {
@@ -1574,13 +1635,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             }
         }
 
-        if (data && applySkeleton && this.skeleton) {
-            const matricesIndicesData = this.getVerticesData(VertexBuffer.MatricesIndicesKind);
-            const matricesWeightsData = this.getVerticesData(VertexBuffer.MatricesWeightsKind);
+        if (options.applySkeleton && this.skeleton) {
+            const matricesIndicesData = getVertexData(VertexBuffer.MatricesIndicesKind);
+            const matricesWeightsData = getVertexData(VertexBuffer.MatricesWeightsKind);
             if (matricesWeightsData && matricesIndicesData) {
                 const needExtras = this.numBoneInfluencers > 4;
-                const matricesIndicesExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesIndicesExtraKind) : null;
-                const matricesWeightsExtraData = needExtras ? this.getVerticesData(VertexBuffer.MatricesWeightsExtraKind) : null;
+                const matricesIndicesExtraData = needExtras ? getVertexData(VertexBuffer.MatricesIndicesExtraKind) : null;
+                const matricesWeightsExtraData = needExtras ? getVertexData(VertexBuffer.MatricesWeightsExtraKind) : null;
 
                 const skeletonMatrices = this.skeleton.getTransformMatrices(this);
 
@@ -1635,7 +1696,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @returns the normals data
      */
     public getNormalsData(applySkeleton = false, applyMorph = false): Nullable<FloatArray> {
-        return this._getData(applySkeleton, applyMorph, null, VertexBuffer.NormalKind);
+        return this._getData({ applySkeleton, applyMorph }, null, VertexBuffer.NormalKind);
     }
 
     /**
@@ -1645,34 +1706,34 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * @param data defines the position data to apply the skeleton and morph to
      * @returns the position data
      */
-    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data?: Nullable<FloatArray>): Nullable<FloatArray> {
-        return this._getData(applySkeleton, applyMorph, data, VertexBuffer.PositionKind);
+    public getPositionData(applySkeleton: boolean = false, applyMorph: boolean = false, data: Nullable<FloatArray> = null): Nullable<FloatArray> {
+        return this._getData({ applySkeleton, applyMorph }, data, VertexBuffer.PositionKind);
     }
 
     /**
      * @internal
      */
-    public _getPositionData(applySkeleton: boolean, applyMorph: boolean): Nullable<FloatArray> {
-        let data = this.getVerticesData(VertexBuffer.PositionKind);
-
+    public _getPositionData(options: IMeshDataOptions): Nullable<FloatArray> {
         if (this._internalAbstractMeshDataInfo._positions) {
             this._internalAbstractMeshDataInfo._positions = null;
         }
 
-        if (data && ((applySkeleton && this.skeleton) || (applyMorph && this.morphTargetManager))) {
-            data = data.slice();
-            this._generatePointsArray();
-            if (this._positions) {
-                const pos = this._positions;
-                this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
-                for (let i = 0; i < pos.length; i++) {
-                    this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+        if ((options.applyMorph && this.morphTargetManager) || (options.applySkeleton && this.skeleton)) {
+            if (options.updatePositionsArray !== false) {
+                this._generatePointsArray();
+                if (this._positions) {
+                    const pos = this._positions;
+                    this._internalAbstractMeshDataInfo._positions = new Array<Vector3>(pos.length);
+                    for (let i = 0; i < pos.length; i++) {
+                        this._internalAbstractMeshDataInfo._positions[i] = pos[i]?.clone() || new Vector3();
+                    }
                 }
             }
-            return this.getPositionData(applySkeleton, applyMorph, data);
+
+            return this._getData(options, null, VertexBuffer.PositionKind);
         }
 
-        return data;
+        return this.getVerticesData(VertexBuffer.PositionKind);
     }
 
     /** @internal */

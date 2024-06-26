@@ -458,6 +458,21 @@ export class Geometry implements IGetSetVerticesData {
     }
 
     /**
+     * Copies the requested vertex data kind into the given vertex data map. Float data is constructed if the map doesn't have the data.
+     * @param kind defines the data kind (Position, normal, etc...)
+     * @param vertexData defines the map that stores the resulting data
+     */
+    public copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
+        const vertexBuffer = this.getVertexBuffer(kind);
+        if (!vertexBuffer) {
+            return;
+        }
+
+        vertexData[kind] ||= new Float32Array(this._totalVertices * vertexBuffer.getSize());
+        vertexBuffer.copyFloatData(this._totalVertices, vertexData[kind]);
+    }
+
+    /**
      * Returns a boolean defining if the vertex data for the requested `kind` is updatable
      * @param kind defines the data kind (Position, normal, etc...)
      * @returns true if the vertex buffer with the specified kind is updatable
