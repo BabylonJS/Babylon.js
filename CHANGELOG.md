@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.13.0
+
+### Core
+
+- makeXRCompatible might fail - catch and reject correctly - by [RaananW](https://github.com/RaananW) ([#15231](https://github.com/BabylonJS/Babylon.js/pull/15231))
+- Physics Prestep Types - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15227](https://github.com/BabylonJS/Babylon.js/pull/15227))
+- Move to const enum where possible - by [RaananW](https://github.com/RaananW) ([#15228](https://github.com/BabylonJS/Babylon.js/pull/15228))
+- BoundingBox helper: add batch methods - by [Popov72](https://github.com/Popov72) ([#15225](https://github.com/BabylonJS/Babylon.js/pull/15225))
+- SpriteMap: Fix WebGPU compilation - [_Bug Fix_] by [Popov72](https://github.com/Popov72) ([#15226](https://github.com/BabylonJS/Babylon.js/pull/15226))
+
+### GUI
+
+- Move to const enum where possible - by [RaananW](https://github.com/RaananW) ([#15228](https://github.com/BabylonJS/Babylon.js/pull/15228))
+
+### Serializers
+
+- Rewrite morph target gltf export - by [ryantrem](https://github.com/ryantrem) ([#15229](https://github.com/BabylonJS/Babylon.js/pull/15229))
+
 ## 7.12.0
 
 ### Core

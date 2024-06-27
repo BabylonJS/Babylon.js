@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.11.4",
+    "fromTag": "7.12.0",
     "changelog": {
         "7.12.0": [
             {
@@ -15,6 +15,155 @@
                     "packages/dev/core/src/Meshes/abstractMesh.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.13.0": [
+            {
+                "pr": "15231",
+                "title": "makeXRCompatible might fail - catch and reject correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15229",
+                "title": "Rewrite morph target gltf export",
+                "description": "`glTFExporter` had logic to export morph targets, but it did not work correctly with submeshes (see this forum thread: https://forum.babylonjs.com/t/gltfexporter-not-working-with-morph-targets/51337). There were a couple significant problems with the code that basically required a rewrite of this logic:\r\n1. It was writing separate segments of data to the buffer (and separate buffer views) for each submesh. This is always wrong for indexed geometry, and is broken if there are multiple submeshes.\r\n2. The logic for determining the range of vertex data to write per submesh was just wrong, and could only work for indexed geometry with one submesh.\r\n\r\nFor 2, I couldn't even tell what the logic was trying to do:\r\n```ts\r\nfor (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {\r\n  index = meshPrimitive.indexStart + k * stride;\r\n    const vertexData = Vector3.FromArray(meshAttributeArray, index);\r\n```\r\n`verticesStart` is only meaningful for non-indexed geometry, so combining `indexStart` and `verticesStart` in any way doesn't make sense. I think this code only worked because it was only ever tested in cases where both `indexStart` and `verticesStart` were zero.\r\n\r\nOverall, the approach now is to write all the morph target vertex data for the entire mesh and create an associated buffer view for each attribute (where morph data is present), then create one accessor per submesh per morph target that potentially has an offset into the buffer view (for submeshes beyond the first).\r\n\r\nThis does not fix the pre-existing issues with non-indexed geometry in general, but that should be handled in a separate PR. This approach does not prevent us from making non-indexed geometry work, there are just additional changes needed that can be done in isolation from these changes.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15227",
+                "title": "Physics Prestep Types",
+                "description": "After questions on forum like https://forum.babylonjs.com/t/physicsbody-with-animated-motion-type-does-not-have-any-friction/51554/2\r\nI'm expanding the prestep. \r\n\r\ntest https://playground.babylonjs.com/#E9R16H\r\n\r\nDocumentation will follow",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15228",
+                "title": "Move to const enum where possible",
+                "description": "This change has no direct influence on any of our users, but will improve performance slightly.\n\nSince we are exporting the const-enums (a change in this PR), js developers can still use it, and they will still be included in the types. We are maintainin back-compat. The only difference is that modules using the const enums in this repository will get the value injected directly, thus avoiding one object lookup.\n\nThe only way this could be considered breaking change is for people who are creating a framework that embeds babylon and exporing it - in this case, they will need to preserve const enums as well, otherwise their js (and only js) consumers won't find them. The compiled application will still work correctly.\n\nCC @ryantrem who suggested using const enums (for a slightly different use-case). This step will allow us to start using const enums more often in more performance-heavy sections of the framework.\n\nnote (probably slightly repeating myself) - the string lookup that typescript enums do is still present and has not been changed. It improves perf only for compiled js files that are a part of the framework.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/animationKey.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceEnums.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Events/deviceInputEvents.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/Gamepads/dualShockGamepad.ts",
+                    "packages/dev/core/src/Gamepads/xboxGamepad.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/waveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Enums/nodeMaterialBlockConnectionPointMode.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Materials/materialPluginEvent.ts",
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderLanguage.ts",
+                    "packages/dev/core/src/Maths/math.axis.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/meshSimplification.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/Misc/iInspectable.ts",
+                    "packages/dev/core/src/Misc/timer.ts",
+                    "packages/dev/core/src/Misc/virtualJoystick.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/Particles/subEmitter.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldEffect.ts",
+                    "packages/dev/core/src/PostProcesses/tonemapPostProcess.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRTypes.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/controls/textBlock.ts",
+                    "packages/dev/gui/src/3D/gizmos/gizmoHandle.ts",
+                    "packages/public/@babylonjs/core/core.zip",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15225",
+                "title": "BoundingBox helper: add batch methods",
+                "description": "You can now do:\r\n```typescript\r\nawait BBHelper.batchInitializeAsync(meshList);\r\nBBHelper.batchProcess();\r\n<...update animation...>\r\nBBHelper.batchProcess();\r\n<...update animation...>\r\nBBHelper.batchProcess();\r\n...\r\nawait BBHelper.batchFetchResultsAsync();\r\n```\r\nThis will calculate bounding boxes that are the union of all the bounding boxes computed by each call to `batchProcess`.\r\n\r\nThe existing API (`computeAsync`) still exists, this PR is not a breaking change.\r\n\r\nNote: I'm not sure if the new methods have the right name...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/IBoundingInfoHelperPlatform.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/ShadersWGSL/boundingInfo.compute.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15226",
+                "title": "SpriteMap: Fix WebGPU compilation",
+                "description": "See https://forum.babylonjs.com/t/webgpu-spritemap-not-working/51538",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
             }
         ],
         "7.11.4": [
