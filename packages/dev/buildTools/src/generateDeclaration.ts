@@ -168,7 +168,8 @@ function getModuleDeclaration(
             return;
         }
     });
-    processedLines = processedLines.replace(/export declare /g, "export ");
+    processedLines = processedLines.replace(/export declare /g, "export ").replace(/export const enum/g, "export enum");
+
     return `declare module "${moduleName}" {
 ${processedLines}
 }
@@ -398,6 +399,8 @@ function getPackageDeclaration(
             }
         }
     );
+
+    processedSource = processedSource.replace(/export const enum/g, "export enum");
 
     processedSource = processedSource.replace(
         / global {([^}]*)}/gm,
