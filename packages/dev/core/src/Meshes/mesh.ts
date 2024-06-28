@@ -1483,7 +1483,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         }
 
         const bias = this.geometry ? this.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._getPositionData(options), bias);
+        this._refreshBoundingInfo(this._getData(options, null, VertexBuffer.PositionKind), bias);
         return this;
     }
 
@@ -2899,14 +2899,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public override get _positions(): Nullable<Vector3[]> {
-        if (this._internalAbstractMeshDataInfo._positions) {
-            return this._internalAbstractMeshDataInfo._positions;
-        }
-
-        if (this._geometry) {
-            return this._geometry._positions;
-        }
-        return null;
+        return this._internalAbstractMeshDataInfo._positions || (this._geometry && this._geometry._positions) || null;
     }
 
     /** @internal */
