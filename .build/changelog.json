@@ -1,18 +1,54 @@
 {
-    "fromTag": "7.12.0",
+    "fromTag": "7.13.0",
     "changelog": {
-        "7.12.0": [
+        "7.13.1": [
             {
-                "pr": "15224",
-                "title": "Improve comments around disposeWhenUnowned, make check slightly more efficient",
-                "description": null,
+                "pr": "15234",
+                "title": "Add options to refreshBoundingBox to improve performance",
+                "description": "Before:\r\n``` js\r\nrefreshBoundingInfo(applySkeleton: boolean, applyMorph: boolean)\r\n```\r\n\r\nAfter:\r\n``` js\r\nexport interface IMeshDataOptions {\r\n    applySkeleton?: boolean;\r\n    applyMorph?: boolean;\r\n    updatePositionsArray?: boolean;\r\n    cache?: IMeshDataCache;\r\n}\r\n\r\nrefreshBoundingInfo(options: IMeshDataOptions)\r\n```\r\n\r\nThe `updatePositionsArray` flag will allow users to disable computing this array which isn't used in all situations.\r\nThe `cache` object will cache the allocations, reduce `slice` calls, etc.\r\n\r\nOn my machine:\r\n[Before](https://playground.babylonjs.com/#B8B8Z2#5): 2.81s\r\n[After](http://localhost:1338/#B8B8Z2#61): 1.67s",
                 "author": {
-                    "name": "AmoebaChant",
-                    "url": "https://github.com/AmoebaChant"
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
                 },
                 "files": [
-                    "packages/dev/core/src/Actions/abstractActionManager.ts",
-                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Buffers/index.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15235",
+                "title": "Declarations - const enum to enums",
+                "description": "When preserving const enums (to be available in js) the exported code is identical to a standard export ofr an enum. However, typescript still fails compilation when trying to iterate over it though it will work correctly when used directly in js.\n\nThis reverts const enums to enums in our UMD declarations, which will allow any playground using enum iteration in typescript to work. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15232",
+                "title": "allow any element to be focused",
+                "description": "This PR adds a few parameters to control (the base class of all GUI elements):\n\n1. tabIndex - works similar to tabIndex in HTML. Defaults to -1, meaning - not focusable\n2. focusedColor - the (border) color of the element if it is focussed using tab\n3. onEnterPressedObservable - works similat to onPointerClicked - what happens when enter is pressed on a focused element.\n\nAny control has onBlur and onFocus callbacks, and observables to catch these events.\n\nThe ADT has a flag that can turn off the entire behavior (`disableTabNavigation`). It is on per default, but since tabIndex is -1 per default, it shouldn't change anything.\n\nThere is a slight typing change, but it shouldn't be a breaking change, as we moved from an interface to a class that holds the entire interface (and actually implements it).\nThe only real breaking change is the onFocusObservable in virtual keyboard, which is not often used.\n\nTest with this playground - #KKA6L4#16",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/focusableButton.ts",
+                    "packages/dev/gui/src/2D/controls/focusableControl.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/virtualKeyboard.ts"
                 ],
                 "tags": []
             }
@@ -164,6 +200,22 @@
                     "bug",
                     "WebGPU"
                 ]
+            }
+        ],
+        "7.12.0": [
+            {
+                "pr": "15224",
+                "title": "Improve comments around disposeWhenUnowned, make check slightly more efficient",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
             }
         ],
         "7.11.4": [

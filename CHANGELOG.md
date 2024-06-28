@@ -1,5 +1,15 @@
 # Changelog
 
+## 7.13.1
+
+### Core
+
+- Add options to refreshBoundingBox to improve performance - by [bghgary](https://github.com/bghgary) ([#15234](https://github.com/BabylonJS/Babylon.js/pull/15234))
+
+### GUI
+
+- allow any element to be focused - by [RaananW](https://github.com/RaananW) ([#15232](https://github.com/BabylonJS/Babylon.js/pull/15232))
+
 ## 7.13.0
 
 ### Core
