@@ -24,6 +24,7 @@ import type { Mesh } from "../Meshes/mesh";
 import type { Buffer } from "../Buffers/buffer";
 import type { AbstractEngine } from "../Engines/abstractEngine";
 import type { ThinEngine } from "../Engines/thinEngine";
+import { CopyFloatData } from "../Buffers/bufferUtils";
 
 /**
  * Class used to store geometry data (vertex buffers + index buffer)
@@ -455,6 +456,33 @@ export class Geometry implements IGetSetVerticesData {
         }
 
         return vertexBuffer.getFloatData(this._totalVertices, forceCopy || (copyWhenShared && this._meshes.length !== 1));
+    }
+
+    /**
+     * Copies the requested vertex data kind into the given vertex data map. Float data is constructed if the map doesn't have the data.
+     * @param kind defines the data kind (Position, normal, etc...)
+     * @param vertexData defines the map that stores the resulting data
+     */
+    public copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
+        const vertexBuffer = this.getVertexBuffer(kind);
+        if (!vertexBuffer) {
+            return;
+        }
+
+        vertexData[kind] ||= new Float32Array(this._totalVertices * vertexBuffer.getSize());
+        const data = vertexBuffer.getData();
+        if (data) {
+            CopyFloatData(
+                data,
+                vertexBuffer.getSize(),
+                vertexBuffer.type,
+                vertexBuffer.byteOffset,
+                vertexBuffer.byteStride,
+                vertexBuffer.normalized,
+                this._totalVertices,
+                vertexData[kind]
+            );
+        }
     }
 
     /**
