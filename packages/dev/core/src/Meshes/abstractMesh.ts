@@ -46,7 +46,6 @@ import type { IEdgesRendererOptions } from "../Rendering/edgesRenderer";
 import type { MorphTarget } from "../Morph/morphTarget";
 import { nativeOverride } from "../Misc/decorators";
 
-/** @internal */
 function applyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTargetManager): void {
     let getTargetData: Nullable<(target: MorphTarget) => Nullable<FloatArray>> = null;
     switch (kind) {
@@ -82,7 +81,6 @@ function applyMorph(data: FloatArray, kind: string, morphTargetManager: MorphTar
     }
 }
 
-/** @internal */
 function applySkeleton(
     data: FloatArray,
     kind: string,
@@ -1638,10 +1636,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
         this._updateBoundingInfo();
     }
 
-    /**
-     * This function is only here so we can apply the nativeOverride decorator.
-     * @internal
-     */
+    // This function is only here so we can apply the nativeOverride decorator.
     @nativeOverride.filter(
         (...[data, matricesIndicesData, matricesWeightsData, matricesIndicesExtraData, matricesWeightsExtraData]: Parameters<typeof AbstractMesh._ApplySkeleton>) =>
             !Array.isArray(data) &&
