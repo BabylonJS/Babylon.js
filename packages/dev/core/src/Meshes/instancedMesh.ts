@@ -355,7 +355,22 @@ export class InstancedMesh extends AbstractMesh {
     }
 
     public override refreshBoundingInfo(applySkeletonOrOptions: boolean | IMeshDataOptions = false, applyMorph: boolean = false): InstancedMesh {
-        this._sourceMesh.refreshBoundingInfo(applySkeletonOrOptions, applyMorph);
+        if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
+            return this;
+        }
+
+        let options: IMeshDataOptions;
+        if (typeof applySkeletonOrOptions === "object") {
+            options = applySkeletonOrOptions;
+        } else {
+            options = {
+                applySkeleton: applySkeletonOrOptions,
+                applyMorph: applyMorph,
+            };
+        }
+
+        const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
+        this._refreshBoundingInfo(this._getData(options, null, VertexBuffer.PositionKind), bias);
         return this;
     }
 
