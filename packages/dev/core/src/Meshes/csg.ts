@@ -547,11 +547,21 @@ export class CSG {
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
-        const indices = <IndicesArray>mesh.getIndices(),
-            positions = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind),
-            normals = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind),
-            uvs = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind),
-            vertColors = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        const indices = mesh.getIndices(),
+            positions = mesh.getVerticesData(VertexBuffer.PositionKind),
+            normals = mesh.getVerticesData(VertexBuffer.NormalKind),
+            uvs = mesh.getVerticesData(VertexBuffer.UVKind),
+            vertColors = mesh.getVerticesData(VertexBuffer.ColorKind);
+
+        if (indices === null) {
+            throw "BABYLON.CSG: Mesh has no indices";
+        }
+        if (positions === null) {
+            throw "BABYLON.CSG: Mesh has no positions";
+        }
+        if (normals === null) {
+            throw "BABYLON.CSG: Mesh has no normals";
+        }
 
         const subMeshes = mesh.subMeshes;
 
