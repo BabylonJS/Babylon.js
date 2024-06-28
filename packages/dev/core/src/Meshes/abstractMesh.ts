@@ -910,9 +910,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /** @internal */
-    public get _positions(): Nullable<Vector3[]> {
-        return this._internalAbstractMeshDataInfo._positions;
-    }
+    public abstract get _positions(): Nullable<Vector3[]>;
 
     // Loading properties
     /** @internal */
