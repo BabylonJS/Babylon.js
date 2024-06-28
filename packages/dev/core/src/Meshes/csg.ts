@@ -1,4 +1,4 @@
-import type { Nullable, FloatArray, IndicesArray } from "../types";
+import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { Quaternion, Matrix, Vector3, Vector2 } from "../Maths/math.vector";
 import { VertexBuffer } from "../Buffers/buffer";
@@ -547,11 +547,24 @@ export class CSG {
             throw "BABYLON.CSG: Wrong Mesh type, must be BABYLON.Mesh";
         }
 
-        const indices = <IndicesArray>mesh.getIndices(),
-            positions = <FloatArray>mesh.getVerticesData(VertexBuffer.PositionKind),
-            normals = <FloatArray>mesh.getVerticesData(VertexBuffer.NormalKind),
-            uvs = <FloatArray>mesh.getVerticesData(VertexBuffer.UVKind),
-            vertColors = <FloatArray>mesh.getVerticesData(VertexBuffer.ColorKind);
+        const indices = mesh.getIndices(),
+            positions = mesh.getVerticesData(VertexBuffer.PositionKind),
+            normals = mesh.getVerticesData(VertexBuffer.NormalKind),
+            uvs = mesh.getVerticesData(VertexBuffer.UVKind),
+            vertColors = mesh.getVerticesData(VertexBuffer.ColorKind);
+
+        if (indices === null) {
+            // eslint-disable-next-line no-throw-literal
+            throw "BABYLON.CSG: Mesh has no indices";
+        }
+        if (positions === null) {
+            // eslint-disable-next-line no-throw-literal
+            throw "BABYLON.CSG: Mesh has no positions";
+        }
+        if (normals === null) {
+            // eslint-disable-next-line no-throw-literal
+            throw "BABYLON.CSG: Mesh has no normals";
+        }
 
         const subMeshes = mesh.subMeshes;
 
