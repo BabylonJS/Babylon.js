@@ -71,3 +71,6 @@ export class HTML3DElement extends HTMLElement {
 export function registerCustomElements() {
     globalThis.customElements.define("babylon-viewer", HTML3DElement);
 }
+
+// TEMP TEMP REMOVE
+registerCustomElements();
