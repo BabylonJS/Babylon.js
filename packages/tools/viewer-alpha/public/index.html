@@ -26,14 +26,17 @@
         <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb" env="https://assets.babylonjs.com/environments/ulmerMuenster.env"> </babylon-viewer>
         <script src="webtest.js"></script>
         <script>
-            // "BabylonViewer" is defined as the "library" in webpack.config.js
-            BabylonViewer.registerCustomElements();
-            const viewer = document.querySelector("babylon-viewer");
-            setTimeout(() => {
+            (async () => {
+                // "BabylonViewer" is defined as the "library" in webpack.config.js
+                BabylonViewer.registerCustomElements();
+                const viewer = document.querySelector("babylon-viewer");
+                await new Promise((resolve) => setTimeout(resolve, 2000));
                 viewer.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
                 //viewer.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';
-            }, 2000);
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                viewer.src = "https://playground.babylonjs.com/scenes/BoomBox.glb";
+            })();
         </script>
     </body>
 </html>
