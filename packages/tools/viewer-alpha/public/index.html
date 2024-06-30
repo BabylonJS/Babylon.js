@@ -26,11 +26,10 @@
         <babylon-viewer src="https://playground.babylonjs.com/scenes/BoomBox.glb" env="https://assets.babylonjs.com/environments/ulmerMuenster.env"> </babylon-viewer>
         <script src="webtest.js"></script>
         <script>
-            // TODO: Figure out how to call this function from here.
-            // registerCustomElements();
+            // "BabylonViewer" is defined as the "library" in webpack.config.js
+            BabylonViewer.registerCustomElements();
             const viewer = document.querySelector("babylon-viewer");
             setTimeout(() => {
-                //console.log('Changing model');
                 viewer.src = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem.glb";
                 // error case
                 //viewer.src = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/BrainStem/glTF-Binary/BrainStem2.glb';

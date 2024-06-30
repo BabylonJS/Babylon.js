@@ -25,6 +25,7 @@ module.exports = (env) => {
         output: {
             filename: "webtest.js",
             path: path.resolve(__dirname, "dist"),
+            library: "BabylonViewer",
         },
 
         resolve: {
