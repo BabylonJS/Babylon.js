@@ -15,6 +15,9 @@ import type { IDisposable } from "core/scene";
 import { Scene } from "core/scene";
 import type { Nullable } from "core/types";
 
+// TODO: Dynamic imports?
+import "core/Animations/animatable";
+import "core/Materials/Textures/Loaders/envTextureLoader";
 import "loaders/glTF/2.0";
 
 import { AsyncLock } from "./asyncLock";
