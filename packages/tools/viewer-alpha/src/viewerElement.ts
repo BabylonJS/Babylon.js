@@ -22,29 +22,30 @@ export class HTML3DElement extends HTMLElement {
 
         const shadowRoot = this.attachShadow({ mode: "open" });
         shadowRoot.innerHTML = `
-        <style>
-          :host {
-            display: block;
-            width: 300px;
-            height: 150px;
-          }
+          <style>
+            :host {
+              display: block;
+              width: 300px;
+              height: 150px;
+            }
 
-          #container {
-            display: block;
-            width: 100%;
-            height: 100%;
-          }
+            #container {
+              display: block;
+              width: 100%;
+              height: 100%;
+            }
 
-          #renderCanvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-            font-size: 0;
-          }
-        </style>
-        <div id="container">
-          <canvas id="renderCanvas" touch-action="none"></canvas>
-        </div>`;
+            #renderCanvas {
+              width: 100%;
+              height: 100%;
+              display: block;
+              font-size: 0;
+            }
+          </style>
+          <div id="container">
+            <canvas id="renderCanvas" touch-action="none"></canvas>
+          </div>
+        `;
 
         const canvas = shadowRoot.querySelector("#renderCanvas") as HTMLCanvasElement;
         this._viewer = createViewerForCanvas(canvas);
