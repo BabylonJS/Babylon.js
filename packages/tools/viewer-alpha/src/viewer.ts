@@ -3,13 +3,10 @@ import { ArcRotateCamera } from "core/Cameras/arcRotateCamera";
 import type { AbstractEngine } from "core/Engines";
 import { HemisphericLight } from "core/Lights/hemisphericLight";
 import { SceneLoader } from "core/Loading/sceneLoader";
-import { PBRMaterial } from "core/Materials/PBR/pbrMaterial";
-import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math";
 import { Vector3 } from "core/Maths/math.vector";
-import { CreateBox } from "core/Meshes/Builders/boxBuilder";
 import type { AssetContainer } from "core/assetContainer";
 import type { IDisposable } from "core/scene";
 import { Scene } from "core/scene";
@@ -18,41 +15,50 @@ import type { Nullable } from "core/types";
 // TODO: Dynamic imports?
 import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
+import "core/Helpers/sceneHelpers";
 import "loaders/glTF/2.0";
 
 import { AsyncLock } from "./asyncLock";
 
-//copy/paste from scene helpers
-function createDefaultSkybox(scene: Scene, reflectionTexture: BaseTexture, scale: number, blur: number) {
-    const hdrSkybox = CreateBox("hdrSkyBox", { size: scale }, scene);
-    const hdrSkyboxMaterial = new PBRMaterial("skyBox", scene);
-    hdrSkyboxMaterial.backFaceCulling = false;
-    hdrSkyboxMaterial.reflectionTexture = reflectionTexture;
-    if (hdrSkyboxMaterial.reflectionTexture) {
-        hdrSkyboxMaterial.reflectionTexture.coordinatesMode = Texture.SKYBOX_MODE;
-    }
-    hdrSkyboxMaterial.microSurface = 1.0 - blur;
-    hdrSkyboxMaterial.disableLighting = true;
-    hdrSkyboxMaterial.twoSidedLighting = true;
-    hdrSkybox.material = hdrSkyboxMaterial;
-    hdrSkybox.isPickable = false;
-    hdrSkybox.infiniteDistance = true;
-    hdrSkybox.ignoreCameraMaxZ = true;
-
-    return hdrSkybox;
-}
-
-export const defaultViewerOptions = {
+const defaultViewerOptions = {
     backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
 } as const;
 
 export type ViewerOptions = Partial<
     typeof defaultViewerOptions &
         Readonly<{
-            onInitialized: (details: { scene: Scene; camera: ArcRotateCamera }) => void;
+            /**
+             * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
+             */
+            onInitialized: (
+                details: Readonly<{
+                    /**
+                     * Provides access to the Scene managed by the Viewer.
+                     */
+                    scene: Scene;
+
+                    /**
+                     * Provides access to the Camera managed by the Viewer.
+                     */
+                    camera: ArcRotateCamera;
+                }>
+            ) => void;
         }>
 >;
 
+/**
+ * Provides an experience for viewing a single 3D model.
+ * @remarks
+ * The Viewer is not tied to a specific UI framework and can be used with Babylon.js in a browser or with Babylon Native.
+ * Includes (or will include) support for common model viewing requirements such as:
+ * - Loading different model formats.
+ * - Setting up a camera and providing default behaviors like auto orbit and pose interpolation.
+ * - Framing the loaded model in the camera's view.
+ * - Setting up the environment, lighting, and tone mapping.
+ * - Enumerating and playing (or auto playing) animations.
+ * - Enumerating and switching between material variants.
+ * - Full screen and XR modes.
+ */
 export class Viewer implements IDisposable {
     private readonly _scene: Scene;
     private readonly _camera: ArcRotateCamera;
@@ -78,7 +84,7 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
 
-        // render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
+        // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         this._engine.runRenderLoop(() => {
             this._scene.render();
         });
@@ -86,6 +92,13 @@ export class Viewer implements IDisposable {
         options?.onInitialized?.({ scene: this._scene, camera: this._camera });
     }
 
+    /**
+     * Loads a 3D model from the specified URL.
+     * @remarks
+     * If a model is already loaded, it will be unloaded before loading the new model.
+     * @param url The URL of the model to load.
+     * @param abortSignal An optional signal that can be used to abort the loading process.
+     */
     public async loadModelAsync(url: string, abortSignal?: AbortSignal): Promise<void> {
         if (this._isDisposed) {
             throw new Error("Viewer is disposed");
@@ -111,7 +124,16 @@ export class Viewer implements IDisposable {
         });
     }
 
-    public async loadEnvironmentAsync(url: Nullable<string | undefined>): Promise<void> {
+    /**
+     * Loads an environment texture from the specified URL and sets up a corresponding skybox.
+     * @remarks
+     * If no URL is provided, a default hemispheric light will be created.
+     * If an environment is already loaded, it will be unloaded before loading the new environment.
+     * @param url The URL of the environment texture to load.
+     * @param abortSignal An optional signal that can be used to abort the loading process.
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
         if (this._isDisposed) {
             throw new Error("Viewer is disposed");
         }
@@ -137,8 +159,7 @@ export class Viewer implements IDisposable {
                     resolve(light);
                 } else {
                     const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
-                    this._scene.environmentTexture = cubeTexture;
-                    const skybox = createDefaultSkybox(this._scene, cubeTexture.clone(), (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
+                    const skybox = this._scene.createDefaultSkybox(cubeTexture, true, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
                     this._scene.autoClear = false;
 
                     const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
@@ -147,7 +168,7 @@ export class Viewer implements IDisposable {
                         resolve({
                             dispose() {
                                 cubeTexture.dispose();
-                                skybox.dispose();
+                                skybox?.dispose();
                             },
                         });
                     });
@@ -156,7 +177,7 @@ export class Viewer implements IDisposable {
                         if (texture === cubeTexture) {
                             successObserver.remove();
                             errorObserver.remove();
-                            reject(new Error("Failed to load environment texture"));
+                            reject(new Error("Failed to load environment texture."));
                         }
                     });
                 }
@@ -164,6 +185,9 @@ export class Viewer implements IDisposable {
         });
     }
 
+    /**
+     * Disposes of the resources held by the Viewer.
+     */
     public dispose(): void {
         this._scene.dispose();
         this._isDisposed = true;
