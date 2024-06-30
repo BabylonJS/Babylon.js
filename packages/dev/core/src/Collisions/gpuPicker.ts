@@ -90,6 +90,7 @@ export class GPUPicker {
     /**
      * Set the list of meshes to pick from
      * Set that value to null to clear the list (and avoid leaks)
+     * If set to null, the array passed will be cleared
      * @param list defines the list of meshes to pick from
      */
     public setPickingList(list: Nullable<Array<AbstractMesh>>) {
