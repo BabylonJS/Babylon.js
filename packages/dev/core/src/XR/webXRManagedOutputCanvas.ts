@@ -59,7 +59,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     /**
      * Rendering context of the canvas which can be used to display/mirror xr content
      */
-    public canvasContext: WebGLRenderingContext;
+    public canvasContext: WebGL2RenderingContext;
 
     /**
      * xr layer for the canvas
@@ -117,13 +117,24 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
     }
 
     private _makeCanvasCompatibleAsync() {
-        this._canvasCompatiblePromise = new Promise<void>((resolve) => {
-            if (this.canvasContext && (this.canvasContext as any).makeXRCompatible) {
-                (this.canvasContext as any).makeXRCompatible().then(() => {
+        this._canvasCompatiblePromise = new Promise<void>((resolve, reject) => {
+            // stay safe - make sure the context has the function
+            try {
+                if (this.canvasContext && (this.canvasContext as any).makeXRCompatible) {
+                    this.canvasContext.makeXRCompatible().then(
+                        () => {
+                            resolve();
+                        },
+                        () => {
+                            // fail silently
+                            reject("makeXRCompatible failed");
+                        }
+                    );
+                } else {
                     resolve();
-                });
-            } else {
-                resolve();
+                }
+            } catch (e) {
+                reject(e);
             }
         });
     }

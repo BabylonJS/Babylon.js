@@ -5,7 +5,7 @@
  * is used will be selected based on their order in this enum - i.e.
  * a value later in this list will be preferentially used.
  */
-export enum PhysicsMaterialCombineMode {
+export const enum PhysicsMaterialCombineMode {
     /**
      * The final value will be the geometric mean of the two values:
      * sqrt( valueA *  valueB )

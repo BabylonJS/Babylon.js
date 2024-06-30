@@ -16,7 +16,7 @@ import { Scalar } from "../Maths/math.scalar";
 import type { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
-export enum PointColor {
+export const enum PointColor {
     /** color value */
     Color = 2,
     /** uv value */

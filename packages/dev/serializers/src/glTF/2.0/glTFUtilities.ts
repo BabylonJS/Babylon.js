@@ -107,7 +107,7 @@ export class _GLTFUtilities {
         return { min, max };
     }
 
-    public static _NormalizeTangentFromRef(tangent: Vector4) {
+    public static _NormalizeTangentFromRef(tangent: Vector4 | Vector3) {
         const length = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z);
         if (length > 0) {
             tangent.x /= length;

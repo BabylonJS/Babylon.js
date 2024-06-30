@@ -94,7 +94,7 @@ export type MaterialPluginHardBindForSubMesh = {
 /**
  * @internal
  */
-export enum MaterialPluginEvent {
+export const enum MaterialPluginEvent {
     Created = 0x0001,
     Disposed = 0x0002,
     GetDefineNames = 0x0004,

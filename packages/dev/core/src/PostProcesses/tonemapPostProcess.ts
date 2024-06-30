@@ -9,7 +9,7 @@ import type { Nullable } from "../types";
 import type { Engine } from "../Engines/engine";
 
 /** Defines operator used for tonemapping */
-export enum TonemappingOperator {
+export const enum TonemappingOperator {
     /** Hable */
     Hable = 0,
     /** Reinhard */

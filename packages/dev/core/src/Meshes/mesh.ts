@@ -21,6 +21,7 @@ import type { IGetSetVerticesData } from "./mesh.vertexData";
 import { VertexData } from "./mesh.vertexData";
 
 import { Geometry } from "./geometry";
+import type { IMeshDataOptions } from "./abstractMesh";
 import { AbstractMesh } from "./abstractMesh";
 import { SubMesh } from "./subMesh";
 import type { BoundingSphere } from "../Culling/boundingSphere";
@@ -1118,6 +1119,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         return data;
     }
 
+    public override copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
+        if (this._geometry) {
+            this._geometry.copyVerticesData(kind, vertexData);
+        }
+    }
+
     /**
      * Returns the mesh VertexBuffer object from the requested `kind`
      * @param kind defines which buffer to read from (positions, indices, normals, etc). Possible `kind` values :
@@ -1456,17 +1463,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /**
      * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
      * This means the mesh underlying bounding box and sphere are recomputed.
-     * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
-     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
+     * @param applySkeletonOrOptions defines whether to apply the skeleton before computing the bounding info or a set of options
+     * @param applyMorph defines whether to apply the morph target before computing the bounding info
      * @returns the current mesh
      */
-    public override refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): Mesh {
+    public override refreshBoundingInfo(applySkeletonOrOptions: boolean | IMeshDataOptions = false, applyMorph: boolean = false): Mesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
+        let options: IMeshDataOptions;
+        if (typeof applySkeletonOrOptions === "object") {
+            options = applySkeletonOrOptions;
+        } else {
+            options = {
+                applySkeleton: applySkeletonOrOptions,
+                applyMorph: applyMorph,
+            };
+        }
+
         const bias = this.geometry ? this.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._getPositionData(applySkeleton, applyMorph), bias);
+        this._refreshBoundingInfo(this._getData(options, null, VertexBuffer.PositionKind), bias);
         return this;
     }
 
@@ -2882,14 +2899,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @internal */
     public override get _positions(): Nullable<Vector3[]> {
-        if (this._internalAbstractMeshDataInfo._positions) {
-            return this._internalAbstractMeshDataInfo._positions;
-        }
-
-        if (this._geometry) {
-            return this._geometry._positions;
-        }
-        return null;
+        return this._internalAbstractMeshDataInfo._positions || (this._geometry && this._geometry._positions) || null;
     }
 
     /** @internal */

@@ -11,7 +11,7 @@ import { EngineStore } from "core/Engines/engineStore";
 /**
  * Enum that determines the text-wrapping mode to use.
  */
-export enum TextWrapping {
+export const enum TextWrapping {
     /**
      * Clip the text when it's larger than Control.width; this is the default mode.
      */

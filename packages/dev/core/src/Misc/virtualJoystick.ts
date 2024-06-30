@@ -9,7 +9,7 @@ import { StringDictionary } from "./stringDictionary";
 /**
  * Defines the potential axis of a Joystick
  */
-export enum JoystickAxis {
+export const enum JoystickAxis {
     /** X axis */
     X,
     /** Y axis */

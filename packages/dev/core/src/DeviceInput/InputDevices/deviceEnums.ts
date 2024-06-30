@@ -50,7 +50,7 @@ export enum PointerInput {
 }
 
 /** @internal */
-export enum NativePointerInput {
+export const enum NativePointerInput {
     /** Horizontal Axis */
     Horizontal = PointerInput.Horizontal,
     /** Vertical Axis */
@@ -80,7 +80,7 @@ export enum NativePointerInput {
 /**
  * Enum for Dual Shock Gamepad
  */
-export enum DualShockInput {
+export const enum DualShockInput {
     /** Cross */
     Cross = 0,
     /** Circle */
@@ -130,7 +130,7 @@ export enum DualShockInput {
 /**
  * Enum for Dual Sense Gamepad
  */
-export enum DualSenseInput {
+export const enum DualSenseInput {
     /** Cross */
     Cross = 0,
     /** Circle */
@@ -180,7 +180,7 @@ export enum DualSenseInput {
 /**
  * Enum for Xbox Gamepad
  */
-export enum XboxInput {
+export const enum XboxInput {
     /** A */
     A = 0,
     /** B */
@@ -228,7 +228,7 @@ export enum XboxInput {
 /**
  * Enum for Switch (Pro/JoyCon L+R) Gamepad
  */
-export enum SwitchInput {
+export const enum SwitchInput {
     /** B */
     B = 0,
     /** A */

@@ -173,7 +173,7 @@ const defaultMaterialColors = [
 /**
  * Supported visualizations of MeshDebugPluginMaterial
  */
-export enum MeshDebugMode {
+export const enum MeshDebugMode {
     /**
      * Material without any mesh debug visualization
      */

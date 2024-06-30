@@ -19,7 +19,7 @@ import { GreasedLineMaterialDefaults } from "../../Materials/GreasedLine/greased
  * How are the colors distributed along the color table
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colors-and-colordistribution}
  */
-export enum GreasedLineMeshColorDistribution {
+export const enum GreasedLineMeshColorDistribution {
     /**
      * Do no modify the color table
      */
@@ -50,7 +50,7 @@ export enum GreasedLineMeshColorDistribution {
  * How are the widths distributed along the width table
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#widths-and-widthdistribution}
  */
-export enum GreasedLineMeshWidthDistribution {
+export const enum GreasedLineMeshWidthDistribution {
     /**
      * Do no modify the width table
      */

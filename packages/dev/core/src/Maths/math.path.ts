@@ -7,7 +7,7 @@ import { Epsilon } from "./math.constants";
 /**
  * Defines potential orientation for back face culling
  */
-export enum Orientation {
+export const enum Orientation {
     /**
      * Clockwise
      */

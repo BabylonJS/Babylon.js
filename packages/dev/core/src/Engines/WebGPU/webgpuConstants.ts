@@ -1,12 +1,12 @@
 /** @internal */
 // eslint-disable-next-line import/export
-export enum PowerPreference {
+export const enum PowerPreference {
     LowPower = "low-power",
     HighPerformance = "high-performance",
 }
 
 /** @internal */
-export enum FeatureName {
+export const enum FeatureName {
     DepthClipControl = "depth-clip-control",
     Depth32FloatStencil8 = "depth32float-stencil8",
     TextureCompressionBC = "texture-compression-bc",
@@ -21,7 +21,7 @@ export enum FeatureName {
 }
 
 /** @internal */
-export enum BufferMapState {
+export const enum BufferMapState {
     Unmapped = "unmapped",
     Pending = "pending",
     Mapped = "mapped",
@@ -42,20 +42,20 @@ export enum BufferUsage {
 }
 
 /** @internal */
-export enum MapMode {
+export const enum MapMode {
     Read = 1,
     Write = 2,
 }
 
 /** @internal */
-export enum TextureDimension {
+export const enum TextureDimension {
     E1d = "1d",
     E2d = "2d",
     E3d = "3d",
 }
 
 /** @internal */
-export enum TextureUsage {
+export const enum TextureUsage {
     CopySrc = 1,
     CopyDst = 2,
     TextureBinding = 4,
@@ -64,7 +64,7 @@ export enum TextureUsage {
 }
 
 /** @internal */
-export enum TextureViewDimension {
+export const enum TextureViewDimension {
     E1d = "1d",
     E2d = "2d",
     E2dArray = "2d-array",
@@ -74,7 +74,7 @@ export enum TextureViewDimension {
 }
 
 /** @internal */
-export enum TextureAspect {
+export const enum TextureAspect {
     All = "all",
     StencilOnly = "stencil-only",
     DepthOnly = "depth-only",
@@ -84,7 +84,7 @@ export enum TextureAspect {
  * Comments taken from https://github.com/gfx-rs/wgpu/blob/master/wgpu-types/src/lib.rs
  * @internal
  */
-export enum TextureFormat {
+export const enum TextureFormat {
     // 8-bit formats
     R8Unorm = "r8unorm", // Red channel only. 8 bit integer per channel. [0, 255] converted to/from float [0, 1] in shader.
     R8Snorm = "r8snorm", // Red channel only. 8 bit integer per channel. [-127, 127] converted to/from float [-1, 1] in shader.
@@ -206,26 +206,26 @@ export enum TextureFormat {
 }
 
 /** @internal */
-export enum AddressMode {
+export const enum AddressMode {
     ClampToEdge = "clamp-to-edge",
     Repeat = "repeat",
     MirrorRepeat = "mirror-repeat",
 }
 
 /** @internal */
-export enum FilterMode {
+export const enum FilterMode {
     Nearest = "nearest",
     Linear = "linear",
 }
 
 /** @internal */
-export enum MipmapFilterMode {
+export const enum MipmapFilterMode {
     Nearest = "nearest",
     Linear = "linear",
 }
 
 /** @internal */
-export enum CompareFunction {
+export const enum CompareFunction {
     Never = "never",
     Less = "less",
     Equal = "equal",
@@ -237,28 +237,28 @@ export enum CompareFunction {
 }
 
 /** @internal */
-export enum ShaderStage {
+export const enum ShaderStage {
     Vertex = 1,
     Fragment = 2,
     Compute = 4,
 }
 
 /** @internal */
-export enum BufferBindingType {
+export const enum BufferBindingType {
     Uniform = "uniform",
     Storage = "storage",
     ReadOnlyStorage = "read-only-storage",
 }
 
 /** @internal */
-export enum SamplerBindingType {
+export const enum SamplerBindingType {
     Filtering = "filtering",
     NonFiltering = "non-filtering",
     Comparison = "comparison",
 }
 
 /** @internal */
-export enum TextureSampleType {
+export const enum TextureSampleType {
     Float = "float",
     UnfilterableFloat = "unfilterable-float",
     Depth = "depth",
@@ -267,32 +267,32 @@ export enum TextureSampleType {
 }
 
 /** @internal */
-export enum StorageTextureAccess {
+export const enum StorageTextureAccess {
     WriteOnly = "write-only",
     ReadOnly = "read-only",
     ReadWrite = "read-write",
 }
 
 /** @internal */
-export enum CompilationMessageType {
+export const enum CompilationMessageType {
     Error = "error",
     Warning = "warning",
     Info = "info",
 }
 
 /** @internal */
-export enum PipelineErrorReason {
+export const enum PipelineErrorReason {
     Validation = "validation",
     Internal = "internal",
 }
 
 /** @internal */
-export enum AutoLayoutMode {
+export const enum AutoLayoutMode {
     Auto = "auto",
 }
 
 /** @internal */
-export enum PrimitiveTopology {
+export const enum PrimitiveTopology {
     PointList = "point-list",
     LineList = "line-list",
     LineStrip = "line-strip",
@@ -301,20 +301,20 @@ export enum PrimitiveTopology {
 }
 
 /** @internal */
-export enum FrontFace {
+export const enum FrontFace {
     CCW = "ccw",
     CW = "cw",
 }
 
 /** @internal */
-export enum CullMode {
+export const enum CullMode {
     None = "none",
     Front = "front",
     Back = "back",
 }
 
 /** @internal */
-export enum ColorWrite {
+export const enum ColorWrite {
     Red = 1,
     Green = 2,
     Blue = 4,
@@ -323,7 +323,7 @@ export enum ColorWrite {
 }
 
 /** @internal */
-export enum BlendFactor {
+export const enum BlendFactor {
     Zero = "zero",
     One = "one",
     Src = "src",
@@ -340,7 +340,7 @@ export enum BlendFactor {
 }
 
 /** @internal */
-export enum BlendOperation {
+export const enum BlendOperation {
     Add = "add",
     Subtract = "subtract",
     ReverseSubtract = "reverse-subtract",
@@ -349,7 +349,7 @@ export enum BlendOperation {
 }
 
 /** @internal */
-export enum StencilOperation {
+export const enum StencilOperation {
     Keep = "keep",
     Zero = "zero",
     Replace = "replace",
@@ -361,13 +361,13 @@ export enum StencilOperation {
 }
 
 /** @internal */
-export enum IndexFormat {
+export const enum IndexFormat {
     Uint16 = "uint16",
     Uint32 = "uint32",
 }
 
 /** @internal */
-export enum VertexFormat {
+export const enum VertexFormat {
     Uint8x2 = "uint8x2",
     Uint8x4 = "uint8x4",
     Sint8x2 = "sint8x2",
@@ -402,55 +402,55 @@ export enum VertexFormat {
 }
 
 /** @internal */
-export enum VertexStepMode {
+export const enum VertexStepMode {
     Vertex = "vertex",
     Instance = "instance",
 }
 
 /** @internal */
-export enum ComputePassTimestampLocation {
+export const enum ComputePassTimestampLocation {
     Beginning = "beginning",
     End = "end",
 }
 
 /** @internal */
-export enum RenderPassTimestampLocation {
+export const enum RenderPassTimestampLocation {
     Beginning = "beginning",
     End = "end",
 }
 
 /** @internal */
-export enum LoadOp {
+export const enum LoadOp {
     Load = "load",
     Clear = "clear",
 }
 
 /** @internal */
-export enum StoreOp {
+export const enum StoreOp {
     Store = "store",
     Discard = "discard",
 }
 
 /** @internal */
-export enum QueryType {
+export const enum QueryType {
     Occlusion = "occlusion",
     Timestamp = "timestamp",
 }
 
 /** @internal */
-export enum CanvasAlphaMode {
+export const enum CanvasAlphaMode {
     Opaque = "opaque",
     Premultiplied = "premultiplied",
 }
 
 /** @internal */
-export enum DeviceLostReason {
+export const enum DeviceLostReason {
     Unknown = "unknown",
     Destroyed = "destroyed",
 }
 
 /** @internal */
-export enum ErrorFilter {
+export const enum ErrorFilter {
     Validation = "validation",
     OutOfMemory = "out-of-memory",
     Internal = "internal",

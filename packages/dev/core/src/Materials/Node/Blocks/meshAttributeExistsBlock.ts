@@ -9,7 +9,7 @@ import { MorphTargetsBlock } from "./Vertex/morphTargetsBlock";
 import { PropertyTypeForEdition, editableInPropertyPage } from "../../../Decorators/nodeDecorator";
 import type { Scene } from "core/scene";
 
-export enum MeshAttributeExistsBlockTypes {
+export const enum MeshAttributeExistsBlockTypes {
     None,
     Normal,
     Tangent,

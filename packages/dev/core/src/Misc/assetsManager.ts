@@ -21,7 +21,7 @@ import type { Nullable } from "../types";
 /**
  * Defines the list of states available for a task inside a AssetsManager
  */
-export enum AssetTaskState {
+export const enum AssetTaskState {
     /**
      * Initialization
      */
