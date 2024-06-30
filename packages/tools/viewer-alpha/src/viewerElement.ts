@@ -25,8 +25,8 @@ export class HTML3DElement extends HTMLElement {
           <style>
             :host {
               display: block;
-              width: 300px;
-              height: 150px;
+              width: 100%;
+              height: 100%;
             }
 
             #container {
