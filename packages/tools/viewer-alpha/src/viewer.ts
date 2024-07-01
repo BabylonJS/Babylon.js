@@ -7,6 +7,7 @@ import { CubeTexture } from "core/Materials/Textures/cubeTexture";
 import { Texture } from "core/Materials/Textures/texture";
 import { Color4 } from "core/Maths/math";
 import { Vector3 } from "core/Maths/math.vector";
+import { AsyncLock } from "core/Misc/asyncLock";
 import type { AssetContainer } from "core/assetContainer";
 import type { IDisposable } from "core/scene";
 import { Scene } from "core/scene";
@@ -17,8 +18,6 @@ import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
 import "core/Helpers/sceneHelpers";
 import "loaders/glTF/2.0";
-
-import { AsyncLock } from "./asyncLock";
 
 const defaultViewerOptions = {
     backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
