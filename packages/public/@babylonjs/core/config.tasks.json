@@ -2,7 +2,7 @@
     "commands": [
         {
             "command": "declarations-es6",
-            "args": ["-r", "../../../dev/core/src/LibDeclarations", "-atf", "./Engines/engine.d.ts"]
+            "args": ["-r", "../../../dev/core/src/LibDeclarations", "-atf", "./Engines/engine.d.ts", "-cete"]
         },
         {
             "command": "add-js-to-es6"
