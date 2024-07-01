@@ -5,9 +5,9 @@
     "sideEffects": false,
     "description": "A viewer using BabylonJS to display 3D elements natively",
     "scripts": {
+        "start": "npm run serve -- --open",
         "preserve": "npm run build",
         "serve": "webpack serve",
-        "start": "npm run serve -- --open",
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
