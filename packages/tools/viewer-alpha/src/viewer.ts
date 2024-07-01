@@ -100,23 +100,13 @@ export class Viewer implements IDisposable {
      * @param abortSignal An optional signal that can be used to abort the loading process.
      */
     public async loadModelAsync(url: string, abortSignal?: AbortSignal): Promise<void> {
-        if (this._isDisposed) {
-            throw new Error("Viewer is disposed");
-        }
+        this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadModelAbortController?.abort();
         const abortController = (this._loadModelAbortController = new AbortController());
 
-        const throwIfAborted = () => {
-            // External cancellation
-            abortSignal?.throwIfAborted();
-
-            // Internal cancellation
-            abortController.signal.throwIfAborted();
-        };
-
         await this._loadModelLock.lockAsync(async () => {
-            throwIfAborted();
+            this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._assetContainer?.dispose();
             this._assetContainer = await SceneLoader.LoadAssetContainerAsync("", url, this._scene);
             this._assetContainer.addAllToScene();
@@ -134,23 +124,13 @@ export class Viewer implements IDisposable {
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
-        if (this._isDisposed) {
-            throw new Error("Viewer is disposed");
-        }
+        this._throwIfDisposedOrAborted(abortSignal);
 
         this._loadEnvironmentAbortController?.abort();
         const abortController = (this._loadEnvironmentAbortController = new AbortController());
 
-        const throwIfAborted = () => {
-            // External cancellation
-            abortController.signal.throwIfAborted();
-
-            // Internal cancellation
-            abortController.signal.throwIfAborted();
-        };
-
         await this._loadEnvironmentLock.lockAsync(async () => {
-            throwIfAborted();
+            this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._environment?.dispose();
             this._environment = await new Promise<IDisposable>((resolve, reject) => {
                 if (!url) {
@@ -236,5 +216,19 @@ export class Viewer implements IDisposable {
         this._camera.upperRadiusLimit = 5 * this._camera.radius;
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
+    }
+
+    /**
+     * Check for disposed or aborted state (basically everything that can interupt an async operation).
+     * @param abortSignals A set of optional AbortSignals to also check.
+     */
+    private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
+        if (this._isDisposed) {
+            throw new Error("Viewer is disposed.");
+        }
+
+        for (const signal of abortSignals) {
+            signal?.throwIfAborted();
+        }
     }
 }
