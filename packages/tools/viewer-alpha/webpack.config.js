@@ -17,7 +17,7 @@ module.exports = (env) => {
             },
             {
                 static: ["public"],
-                port: process.env.VIEWER_PORT || 1339,
+                port: process.env.VIEWER_PORT || 1342,
             }
         ),
 
