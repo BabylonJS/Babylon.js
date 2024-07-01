@@ -22,6 +22,10 @@ export class MonacoManager {
     private _hostElement: HTMLDivElement;
     private _templates: {
         label: string;
+        key: string;
+        documentation: string;
+        insertText: string;
+        plainText: string;
         language: string;
         kind: number;
         sortText: string;
@@ -31,91 +35,114 @@ export class MonacoManager {
     private _isDirty = false;
 
     public constructor(public globalState: GlobalState) {
-        window.addEventListener("beforeunload", (evt) => {
-            if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
-                const message = "Are you sure you want to leave. You have unsaved work.";
-                evt.preventDefault();
-                evt.returnValue = message;
+        // First Fetch JSON data for procedural code
+        fetch("templates.json").then((response) => {
+            if (response.ok) {
+                response.json().then((data) => {
+                    this._templates = data;
+
+                    window.addEventListener("beforeunload", (evt) => {
+                        if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
+                            const message = "Are you sure you want to leave. You have unsaved work.";
+                            evt.preventDefault();
+                            evt.returnValue = message;
+                        }
+                    });
+
+                    globalState.onNewRequiredObservable.add(() => {
+                        if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
+                            this._setNewContent();
+                            this._resetEditor(true);
+                        }
+                    });
+
+                    globalState.onUpdateGeneratorRequiredObservable.add(() => {
+                        if (Utilities.ReadBoolFromStore("generateAuto", true)) {
+                            this._setGeneratedContent();
+                            this._resetEditor(true);
+                        }
+                    });
+
+                    globalState.onGenerateRequiredObservable.add(() => {
+                        if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
+                            this._setGeneratedContent();
+                            this._resetEditor(true);
+                        }
+                    });
+
+                    globalState.onClearRequiredObservable.add(() => {
+                        if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
+                            this._editor?.setValue("");
+                            this._resetEditor();
+                        }
+                    });
+
+                    globalState.onNavigateRequiredObservable.add((position) => {
+                        this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
+                        this._editor?.setPosition(position);
+                    });
+
+                    globalState.onSavedObservable.add(() => {
+                        this._isDirty = false;
+                    });
+
+                    globalState.onCodeLoaded.add((code) => {
+                        if (!code) {
+                            this._setDefaultContent();
+                            return;
+                        }
+
+                        if (this._editor) {
+                            this._editor?.setValue(code);
+                            this._isDirty = false;
+                            this.globalState.onRunRequiredObservable.notifyObservers();
+                        } else {
+                            this.globalState.currentCode = code;
+                        }
+                    });
+
+                    globalState.onFormatCodeRequiredObservable.add(() => {
+                        this._editor?.getAction("editor.action.formatDocument").run();
+                    });
+
+                    globalState.onMinimapChangedObservable.add((value) => {
+                        this._editor?.updateOptions({
+                            minimap: {
+                                enabled: value,
+                            },
+                        });
+                    });
+
+                    globalState.onFontSizeChangedObservable.add(() => {
+                        this._editor?.updateOptions({
+                            fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
+                        });
+                    });
+
+                    globalState.onLanguageChangedObservable.add(async () => {
+                        await this.setupMonacoAsync(this._hostElement);
+                    });
+
+                    globalState.onThemeChangedObservable.add(() => {
+                        this._createEditor();
+                    });
+
+                    // Register a global observable for inspector to request code changes
+                    const pgConnect = {
+                        onRequestCodeChangeObservable: new Observable(),
+                    };
+
+                    pgConnect.onRequestCodeChangeObservable.add((options: any) => {
+                        let code = this._editor?.getValue() || "";
+                        code = code.replace(options.regex, options.replace);
+
+                        this._editor?.setValue(code);
+                    });
+
+                    (window as any).Playground = pgConnect;
+                });
             }
         });
-
-        globalState.onNewRequiredObservable.add(() => {
-            if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
-                this._setNewContent();
-                this._resetEditor(true);
-            }
-        });
-
-        globalState.onClearRequiredObservable.add(() => {
-            if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
-                this._editor?.setValue("");
-                this._resetEditor();
-            }
-        });
-
-        globalState.onNavigateRequiredObservable.add((position) => {
-            this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
-            this._editor?.setPosition(position);
-        });
-
-        globalState.onSavedObservable.add(() => {
-            this._isDirty = false;
-        });
-
-        globalState.onCodeLoaded.add((code) => {
-            if (!code) {
-                this._setDefaultContent();
-                return;
-            }
-
-            if (this._editor) {
-                this._editor?.setValue(code);
-                this._isDirty = false;
-                this.globalState.onRunRequiredObservable.notifyObservers();
-            } else {
-                this.globalState.currentCode = code;
-            }
-        });
-
-        globalState.onFormatCodeRequiredObservable.add(() => {
-            this._editor?.getAction("editor.action.formatDocument").run();
-        });
-
-        globalState.onMinimapChangedObservable.add((value) => {
-            this._editor?.updateOptions({
-                minimap: {
-                    enabled: value,
-                },
-            });
-        });
-
-        globalState.onFontSizeChangedObservable.add(() => {
-            this._editor?.updateOptions({
-                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
-            });
-        });
-
-        globalState.onLanguageChangedObservable.add(async () => {
-            await this.setupMonacoAsync(this._hostElement);
-        });
-
-        globalState.onThemeChangedObservable.add(() => {
-            this._createEditor();
-        });
-
-        // Register a global observable for inspector to request code changes
-        const pgConnect = {
-            onRequestCodeChangeObservable: new Observable(),
-        };
-
-        pgConnect.onRequestCodeChangeObservable.add((options: any) => {
-            let code = this._editor?.getValue() || "";
-            code = code.replace(options.regex, options.replace);
-
-            this._editor?.setValue(code);
-        });
-
-        (window as any).Playground = pgConnect;
     }
 
     private _setNewContent() {
@@ -171,6 +198,145 @@ class Playground {
             // reload to create a new pg if in full-path playground mode.
             window.location.pathname = "";
         }
+    }
+
+    private _indentCode(code: string, indentation: number): string {
+        const indent = " ".repeat(indentation);
+        const lines = code.split("\n");
+        const indentedCode = lines.map((line) => indent + line).join("\n");
+        return indentedCode;
+    }
+
+    private getCode(key: string): string {
+        let code = "";
+        this._templates.forEach(function (item) {
+            if (item.key === key) {
+                code = item.plainText;
+            }
+        });
+        return code + "\n";
+    }
+
+    private _setGeneratedContent() {
+        this._createEditor();
+        this.globalState.currentSnippetToken = "";
+
+        // Retreive user params
+        const debugLayer = Utilities.ReadBoolFromStore("debugLayer", false);
+        const useCamera = Utilities.ReadStringFromStore("useCamera", "Arc Rotate (Rad)");
+        const useLight = Utilities.ReadStringFromStore("useLight", "Hemispheric");
+        const useShadows = Utilities.ReadBoolFromStore("useShadows", false);
+        const useGround = Utilities.ReadBoolFromStore("useGround", true);
+        const useSphere = Utilities.ReadBoolFromStore("useSphere", true);
+        const useBox = Utilities.ReadBoolFromStore("useBox", false);
+        const useCylinder = Utilities.ReadBoolFromStore("useCylinder", false);
+        const useAnimation = Utilities.ReadStringFromStore("useAnimation", "None");
+        const useParticles = Utilities.ReadStringFromStore("useParticles", "None");
+        const useSnippet = Utilities.ReadStringFromStore("useSnippet", "None");
+        const useImport = Utilities.ReadStringFromStore("useImport", "None");
+
+        // Build code
+        let code = "";
+
+        // Scene
+        code += "// Create a new Scene :\n";
+        code += "var scene = new BABYLON.Scene(engine);\n";
+
+        if (debugLayer) {
+            code += "\n// Show the inspector :\n";
+            code += this.getCode("debugLayer");
+        }
+
+        // Camera
+        code += "\n// Create a camera and attach it to canvas :\n";
+        code += this.getCode(useCamera);
+
+        // Light
+        code += "\n// Create light :\n";
+        code += this.getCode(useLight);
+
+        // Shadows
+        if (useShadows) {
+            code += "\n// Create a shadow generator :\n";
+            if (useLight == "Hemispheric") {
+                code += "// Shadows cannot be generated with Hemispheric light !\n";
+            } else {
+                code += this.getCode("useShadows");
+            }
+        }
+
+        // Meshes
+        if (useGround || useSphere || useBox || useCylinder) {
+            code += "\n// Add geometry\n";
+        }
+        if (useGround) {
+            code += this.getCode("useGround");
+            if (useShadows && useLight != "Hemispheric") {
+                code += "ground.receiveShadows = true;\n";
+            }
+        }
+        if (useSphere) {
+            code += this.getCode("useSphere");
+            if (useShadows && useLight != "Hemispheric") {
+                code += "shadowGenerator.addShadowCaster(sphere);\n";
+            }
+        }
+        if (useBox) {
+            code += this.getCode("useBox");
+            if (useShadows && useLight != "Hemispheric") {
+                code += "shadowGenerator.addShadowCaster(box);\n";
+            }
+        }
+        if (useCylinder) {
+            code += this.getCode("useCylinder");
+            if (useShadows && useLight != "Hemispheric") {
+                code += "shadowGenerator.addShadowCaster(cylinder);\n";
+            }
+        }
+
+        // Animations
+        if (useAnimation != "None") {
+            code += "\n// Import animated character :\n";
+            code += this.getCode(useAnimation);
+            if (useShadows && useLight != "Hemispheric") {
+                code = code.slice(0, code.length - 4) + "    shadowGenerator.addShadowCaster(hero);\n});\n";
+            }
+        }
+
+        // Particles
+        if (useParticles != "None") {
+            code += "\n// Create particle system :\n";
+            code += this.getCode(useParticles);
+        }
+
+        // Snippets
+        if (useSnippet != "None") {
+            code += "\n// Load snippet from server :\n";
+            code += this.getCode(useSnippet);
+        }
+
+        // Import / Export
+        if (useImport != "None") {
+            code += "\n// Import or Export meshes :\n";
+            code += this.getCode(useImport);
+        }
+
+        code += "\n// Return\nreturn scene;";
+
+        // Encapsulate function (Javascript)
+        let all_code = "";
+        if (this.globalState.language === "JS") {
+            all_code = "var createScene = function () {" + this._indentCode(code, 4) + "\n};";
+
+            // Encapsulate function (Typescript)
+        } else {
+            all_code += "class Playground {\n";
+            all_code += "    public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {" + this._indentCode(code, 8) + "\n";
+            all_code += "    }\n";
+            all_code += "}";
+        }
+        // Edit
+        this._editor?.setValue(all_code);
     }
 
     private _resetEditor(resetMetadata?: boolean) {
@@ -331,12 +497,6 @@ declare var canvas: HTMLCanvasElement;
         this._setupMonacoColorProvider();
 
         if (initialCall) {
-            // Load code templates
-            const response = await fetch("templates.json");
-            if (response.ok) {
-                this._templates = await response.json();
-            }
-
             // enhance templates with extra properties
             for (const template of this._templates) {
                 template.kind = monaco.languages.CompletionItemKind.Snippet;
@@ -557,10 +717,16 @@ declare var canvas: HTMLCanvasElement;
         }[] = [];
 
         for (const candidate of this._tagCandidates) {
+            if (model.isDisposed()) {
+                continue;
+            }
             const matches = model.findMatches(candidate.name, false, false, true, null, false);
             if (!matches) continue;
 
             for (const match of matches) {
+                if (model.isDisposed()) {
+                    continue;
+                }
                 const position = {
                     lineNumber: match.range.startLineNumber,
                     column: match.range.startColumn,
