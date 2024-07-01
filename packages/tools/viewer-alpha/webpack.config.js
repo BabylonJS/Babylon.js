@@ -26,6 +26,7 @@ module.exports = (env) => {
             filename: "webtest.js",
             path: path.resolve(__dirname, "dist"),
             library: "BabylonViewer",
+            devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
         },
 
         resolve: {

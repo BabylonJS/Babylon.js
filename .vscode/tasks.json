@@ -452,6 +452,20 @@
             "command": "echo ${input:terminate}",
             "type": "shell",
             "problemMatcher": []
+        },
+        {
+            "label": "Viewer (Alpha)",
+            "type": "shell",
+            "command": "npm",
+            "runOptions": {
+                "instanceLimit": 1
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "args": ["run", "serve", "-w", "@tools/viewer-alpha"],
+            "isBackground": true,
+            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
         }
     ],
     "inputs": [
