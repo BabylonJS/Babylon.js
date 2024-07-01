@@ -9,7 +9,7 @@
         "tooltip": "Automatic run of the code generator on param change",
         "storeKey": "generateAuto",
         "defaultValue": true,
-        "onCheck": "",
+        "onCheck": "empty",
         "keepExpanded": true
     },
     {

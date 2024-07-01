@@ -207,7 +207,7 @@ class Playground {
         return indentedCode;
     }
 
-    private getCode(key: string): string {
+    private _getCode(key: string): string {
         let code = "";
         this._templates.forEach(function (item) {
             if (item.key === key) {
@@ -244,16 +244,16 @@ class Playground {
 
         if (debugLayer) {
             code += "\n// Show the inspector :\n";
-            code += this.getCode("debugLayer");
+            code += this._getCode("debugLayer");
         }
 
         // Camera
         code += "\n// Create a camera and attach it to canvas :\n";
-        code += this.getCode(useCamera);
+        code += this._getCode(useCamera);
 
         // Light
         code += "\n// Create light :\n";
-        code += this.getCode(useLight);
+        code += this._getCode(useLight);
 
         // Shadows
         if (useShadows) {
@@ -261,7 +261,7 @@ class Playground {
             if (useLight == "Hemispheric") {
                 code += "// Shadows cannot be generated with Hemispheric light !\n";
             } else {
-                code += this.getCode("useShadows");
+                code += this._getCode("useShadows");
             }
         }
 
@@ -270,25 +270,25 @@ class Playground {
             code += "\n// Add geometry\n";
         }
         if (useGround) {
-            code += this.getCode("useGround");
+            code += this._getCode("useGround");
             if (useShadows && useLight != "Hemispheric") {
                 code += "ground.receiveShadows = true;\n";
             }
         }
         if (useSphere) {
-            code += this.getCode("useSphere");
+            code += this._getCode("useSphere");
             if (useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(sphere);\n";
             }
         }
         if (useBox) {
-            code += this.getCode("useBox");
+            code += this._getCode("useBox");
             if (useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(box);\n";
             }
         }
         if (useCylinder) {
-            code += this.getCode("useCylinder");
+            code += this._getCode("useCylinder");
             if (useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(cylinder);\n";
             }
@@ -297,7 +297,7 @@ class Playground {
         // Animations
         if (useAnimation != "None") {
             code += "\n// Import animated character :\n";
-            code += this.getCode(useAnimation);
+            code += this._getCode(useAnimation);
             if (useShadows && useLight != "Hemispheric") {
                 code = code.slice(0, code.length - 4) + "    shadowGenerator.addShadowCaster(hero);\n});\n";
             }
@@ -306,19 +306,19 @@ class Playground {
         // Particles
         if (useParticles != "None") {
             code += "\n// Create particle system :\n";
-            code += this.getCode(useParticles);
+            code += this._getCode(useParticles);
         }
 
         // Snippets
         if (useSnippet != "None") {
             code += "\n// Load snippet from server :\n";
-            code += this.getCode(useSnippet);
+            code += this._getCode(useSnippet);
         }
 
         // Import / Export
         if (useImport != "None") {
             code += "\n// Import or Export meshes :\n";
-            code += this.getCode(useImport);
+            code += this._getCode(useImport);
         }
 
         code += "\n// Return\nreturn scene;";

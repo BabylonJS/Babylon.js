@@ -190,31 +190,32 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         ];
 
         // Procedural Code Generator Options (build from procedural.json)
-        const this_ = this;
         let proceduralOptions: any[] = [];
         proceduralOptions = this._procedural.map((item) => ({
             ...item,
+            // onClick: typeof item.onClick === "string"? {"":()=>{}, onGenerate:()=>{this.onGenerate();}, onUpdateGenerator:()=>{this.onUpdateGenerator();},}[item.onClick]: undefined,
+            // onCheck: typeof item.onCheck === "string"? {"":()=>{}, onGenerate:()=>{this.onGenerate();}, onUpdateGenerator:()=>{this.onUpdateGenerator();},}[item.onCheck]: undefined
             onClick:
                 typeof item.onClick === "string"
                     ? {
-                          "": () => {},
+                          empty: () => {},
                           onGenerate: () => {
-                              this_.onGenerate();
+                              this.onGenerate();
                           },
                           onUpdateGenerator: () => {
-                              this_.onUpdateGenerator();
+                              this.onUpdateGenerator();
                           },
                       }[item.onClick]
                     : undefined,
             onCheck:
                 typeof item.onCheck === "string"
                     ? {
-                          "": () => {},
+                          empty: () => {},
                           onGenerate: () => {
-                              this_.onGenerate();
+                              this.onGenerate();
                           },
                           onUpdateGenerator: () => {
-                              this_.onUpdateGenerator();
+                              this.onUpdateGenerator();
                           },
                       }[item.onCheck]
                     : undefined,
