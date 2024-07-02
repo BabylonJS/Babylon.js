@@ -1,4 +1,5 @@
-import { Engine, type EngineOptions } from "core/Engines";
+import { Engine } from "core/Engines/engine";
+import type { EngineOptions } from "core/Engines";
 
 import type { ViewerOptions } from "./viewer";
 import { Viewer } from "./viewer";

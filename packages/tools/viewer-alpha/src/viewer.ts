@@ -17,7 +17,8 @@ import type { Nullable } from "core/types";
 import "core/Animations/animatable";
 import "core/Materials/Textures/Loaders/envTextureLoader";
 import "core/Helpers/sceneHelpers";
-import "loaders/glTF/2.0";
+// eslint-disable-next-line import/no-internal-modules
+import "loaders/glTF/2.0/index";
 
 const defaultViewerOptions = {
     backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
@@ -83,6 +84,9 @@ export class Viewer implements IDisposable {
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
 
+        // Load a default light, but ignore errors as the user might be immediately loading their own environment.
+        this.loadEnvironmentAsync(undefined).catch(() => {});
+
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         this._engine.runRenderLoop(() => {
             this._scene.render();
@@ -101,7 +105,7 @@ export class Viewer implements IDisposable {
     public async loadModelAsync(url: string, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadModelAbortController?.abort();
+        this._loadModelAbortController?.abort("New model is being loaded before previous model finished loading.");
         const abortController = (this._loadModelAbortController = new AbortController());
 
         await this._loadModelLock.lockAsync(async () => {
@@ -125,7 +129,7 @@ export class Viewer implements IDisposable {
     public async loadEnvironmentAsync(url: Nullable<string | undefined>, abortSignal?: AbortSignal): Promise<void> {
         this._throwIfDisposedOrAborted(abortSignal);
 
-        this._loadEnvironmentAbortController?.abort();
+        this._loadEnvironmentAbortController?.abort("New environment is being loaded before previous environment finished loading.");
         const abortController = (this._loadEnvironmentAbortController = new AbortController());
 
         await this._loadEnvironmentLock.lockAsync(async () => {
@@ -185,7 +189,7 @@ export class Viewer implements IDisposable {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtends = this._scene.getWorldExtends(function (mesh) {
+            const worldExtends = this._scene.getWorldExtends((mesh) => {
                 return mesh.isVisible && mesh.isEnabled();
             });
             framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
