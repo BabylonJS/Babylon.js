@@ -19,8 +19,12 @@ interface ICommandDropdownComponentProps {
         storeKey?: string;
         isActive?: boolean;
         defaultValue?: boolean | string;
+        storeKeys?: string[];
+        defaultValues?: boolean[];
         subItems?: string[];
+        subItemsBools?: string[];
         validate?: () => boolean;
+        keepExpanded?: boolean;
     }[];
     toRight?: boolean;
 }
@@ -107,7 +111,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         title={m.tooltip || m.label}
                                     >
                                         <div className="command-dropdown-label-text">{(m.isActive && !this.props.hamburgerMode ? "> " : "") + m.label}</div>
-                                        {m.onCheck && (
+                                        {m.onCheck && !m.storeKeys && (
                                             <input
                                                 type="checkBox"
                                                 className="command-dropdown-label-check"
@@ -122,7 +126,7 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                         {m.subItems && <div className="command-dropdown-arrow">{">"}</div>}
                                         {m.subItems && (
                                             <div className={"sub-items " + (this.props.globalState.language === "JS" ? "background-js" : "background-ts")}>
-                                                {m.subItems.map((s) => {
+                                                {m.subItems.map((s, index) => {
                                                     return (
                                                         <div
                                                             key={s}
@@ -136,15 +140,37 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                 if (m.validate && !m.validate()) {
                                                                     return;
                                                                 }
-
+                                                                if (m.defaultValues) {
+                                                                    const newValue = !Utilities.ReadBoolFromStore(
+                                                                        m.storeKeys![index],
+                                                                        (m.defaultValues[index] as boolean) || false
+                                                                    );
+                                                                    Utilities.StoreBoolToStore(m.storeKeys![index], newValue);
+                                                                    //this.forceUpdate();
+                                                                    m.onCheck!(newValue);
+                                                                    this.setState({ isExpanded: m.keepExpanded || false });
+                                                                    return;
+                                                                }
                                                                 if (m.storeKey) {
                                                                     Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
                                                                 }
                                                                 m.onClick!();
-                                                                this.setState({ isExpanded: false });
+                                                                this.setState({ isExpanded: m.keepExpanded || false });
                                                             }}
                                                         >
                                                             <div className="sub-item-label">{s}</div>
+                                                            {m.defaultValues && (
+                                                                <input
+                                                                    type="checkBox"
+                                                                    className="command-subitem-label-check"
+                                                                    onChange={(evt) => {
+                                                                        Utilities.StoreBoolToStore(m.storeKeys![index], evt.target.checked);
+                                                                        this.forceUpdate();
+                                                                        m.onCheck!(evt.target.checked);
+                                                                    }}
+                                                                    checked={Utilities.ReadBoolFromStore(m.storeKeys![index], (m.defaultValues[index] as boolean) || false)}
+                                                                />
+                                                            )}
                                                         </div>
                                                     );
                                                 })}
