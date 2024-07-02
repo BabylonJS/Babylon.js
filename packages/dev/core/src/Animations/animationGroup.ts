@@ -203,6 +203,11 @@ export class AnimationGroup implements IDisposable {
         }
     }
 
+    /** Gets the scene associated with this animation group */
+    public get scene(): Scene {
+        return this._scene;
+    }
+
     /**
      * Gets or sets the first frame
      */
