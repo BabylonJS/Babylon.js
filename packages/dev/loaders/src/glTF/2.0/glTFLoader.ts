@@ -93,9 +93,7 @@ interface ILoaderProperty extends IProperty {
     };
 }
 
-interface IRegisteredExtension {
-    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
-}
+type IRegisteredExtension = (loader: GLTFLoader) => IGLTFLoaderExtension;
 
 interface IWithMetadata {
     metadata: any;
@@ -179,6 +177,10 @@ export interface IAnimationTargetInfo {
     properties: Array<AnimationPropertyInfo>;
 }
 
+type Options = {
+    extensions?: { [name: string]: (loader: GLTFLoader) => IGLTFLoaderExtension };
+};
+
 /**
  * The glTF 2.0 loader
  */
@@ -211,7 +213,8 @@ export class GLTFLoader implements IGLTFLoader {
     private _defaultBabylonMaterialData: { [drawMode: number]: Material } = {};
     private readonly _postSceneLoadActions = new Array<() => void>();
 
-    private static _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
+    private readonly _registeredExtensions: { [name: string]: IRegisteredExtension };
+    private static readonly _RegisteredExtensions: { [name: string]: IRegisteredExtension } = {};
 
     /**
      * The default glTF sampler.
@@ -228,9 +231,7 @@ export class GLTFLoader implements IGLTFLoader {
             Logger.Warn(`Extension with the name '${name}' already exists`);
         }
 
-        GLTFLoader._RegisteredExtensions[name] = {
-            factory: factory,
-        };
+        GLTFLoader._RegisteredExtensions[name] = factory;
     }
 
     /**
@@ -300,8 +301,21 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    constructor(parent: GLTFFileLoader) {
+    constructor(
+        parent: GLTFFileLoader,
+        options: Options = {
+            extensions: GLTFLoader._RegisteredExtensions,
+        }
+    ) {
         this._parent = parent;
+        this._registeredExtensions = options.extensions ?? {};
+    }
+
+    public static Configure(options: Options) {
+        return {
+            // eslint-disable-next-line @typescript-eslint/naming-convention
+            2: (parent: GLTFFileLoader) => new GLTFLoader(parent, options),
+        } as const;
     }
 
     /** @internal */
@@ -564,8 +578,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadExtensions(): void {
-        for (const name in GLTFLoader._RegisteredExtensions) {
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+        for (const name in this._registeredExtensions) {
+            const extension = this._registeredExtensions[name](this);
             if (extension.name !== name) {
                 Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
             }
