@@ -127,13 +127,15 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
                         },
                         () => {
                             // fail silently
-                            reject("makeXRCompatible failed");
+                            Tools.Warn("Error executing makeXRCompatible. This does not mean that the session will work incorrectly.");
+                            resolve();
                         }
                     );
                 } else {
                     resolve();
                 }
             } catch (e) {
+                // if this fails - the exception will be caught and the promise will be rejected
                 reject(e);
             }
         });
@@ -156,10 +158,7 @@ export class WebXRManagedOutputCanvas implements WebXRRenderTarget {
             .then(
                 // catch any error and continue. When using the emulator is throws this error for no apparent reason.
                 () => {},
-                () => {
-                    // log the error, continue nonetheless!
-                    Tools.Warn("Error executing makeXRCompatible. This does not mean that the session will work incorrectly.");
-                }
+                () => {}
             )
             .then(() => {
                 return createLayer();
