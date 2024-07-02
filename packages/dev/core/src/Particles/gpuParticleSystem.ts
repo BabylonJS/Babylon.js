@@ -409,6 +409,9 @@ export class GPUParticleSystem extends BaseParticleSystem implements IDisposable
         if (this._stopped) {
             return;
         }
+
+        this.onStoppedObservable.notifyObservers(this);
+
         this._stopped = true;
     }
 
