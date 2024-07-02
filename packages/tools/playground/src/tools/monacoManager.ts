@@ -44,7 +44,7 @@ export class MonacoManager {
                 this._load(globalState);
             })
             .catch((err) => {
-                console.error("Unable to load templates.json", err);
+                console.log("Unable to load templates.json", err);
                 this._load(globalState);
             });
     }
