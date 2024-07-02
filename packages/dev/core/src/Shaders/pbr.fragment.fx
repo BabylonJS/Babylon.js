@@ -642,6 +642,10 @@ void main(void) {
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
+    #ifdef PREPASS_LOCAL_POSITION
+    gl_FragData[PREPASS_LOCAL_POSITION_INDEX] = vec4(vPosition * 0.5 + 0.5, writeGeometryInfo);
+    #endif
+
     #ifdef PREPASS_VELOCITY
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
     vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
@@ -681,12 +685,20 @@ void main(void) {
         gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
+    #ifdef PREPASS_CLIPSPACE_DEPTH
+        gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+    #endif
+
     #ifdef PREPASS_NORMAL
         #ifdef PREPASS_NORMAL_WORLDSPACE
             gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
         #else
             gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
         #endif
+    #endif
+
+    #ifdef PREPASS_WORLD_NORMAL
+        gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW * 0.5 + 0.5, writeGeometryInfo); // Normal
     #endif
 
     #ifdef PREPASS_ALBEDO_SQRT

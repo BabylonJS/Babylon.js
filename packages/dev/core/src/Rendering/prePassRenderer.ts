@@ -155,7 +155,7 @@ export class PrePassRenderer {
         {
             purpose: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_FLOAT,
-            format: Constants.TEXTUREFORMAT_R,
+            format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Depth",
         },
         {
@@ -169,6 +169,24 @@ export class PrePassRenderer {
             type: Constants.TEXTURETYPE_UNSIGNED_INT,
             format: Constants.TEXTUREFORMAT_RGBA,
             name: "prePass_Albedo",
+        },
+        {
+            purpose: Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_UNSIGNED_INT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_WorldNormal",
+        },
+        {
+            purpose: Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_LocalPosition",
+        },
+        {
+            purpose: Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_ClipSpaceDepth",
         },
     ];
 
