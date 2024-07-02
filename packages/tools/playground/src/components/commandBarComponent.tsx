@@ -29,29 +29,34 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
 
     public constructor(props: ICommandBarComponentProps) {
         super(props);
-        this._procedural = [];
         // First Fetch JSON data for procedural code
-        fetch("procedural.json").then((response) => {
-            if (response.ok) {
-                response.json().then((data) => {
-                    this._procedural = data;
+        this._procedural = [];
+        fetch("procedural.json")
+            .then((response) => response.json())
+            .then((data) => {
+                this._procedural = data;
+                this._load();
+            })
+            .catch((err) => {
+                console.error("Unable to load procedural.json", err);
+                this._load();
+            });
+    }
 
-                    this.props.globalState.onLanguageChangedObservable.add(() => {
-                        this.forceUpdate();
-                    });
-
-                    if (typeof WebGPUEngine !== "undefined") {
-                        WebGPUEngine.IsSupportedAsync.then((result) => {
-                            this._webGPUSupported = result;
-                            if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
-                                Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
-                            }
-                            this.forceUpdate();
-                        });
-                    }
-                });
-            }
+    private _load() {
+        this.props.globalState.onLanguageChangedObservable.add(() => {
+            this.forceUpdate();
         });
+
+        if (typeof WebGPUEngine !== "undefined") {
+            WebGPUEngine.IsSupportedAsync.then((result) => {
+                this._webGPUSupported = result;
+                if (location.search.indexOf("webgpu") !== -1 && this._webGPUSupported) {
+                    Utilities.StoreStringToStore("engineVersion", "WebGPU", true);
+                }
+                this.forceUpdate();
+            });
+        }
     }
 
     onPlay() {
@@ -193,8 +198,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         let proceduralOptions: any[] = [];
         proceduralOptions = this._procedural.map((item) => ({
             ...item,
-            // onClick: typeof item.onClick === "string"? {"":()=>{}, onGenerate:()=>{this.onGenerate();}, onUpdateGenerator:()=>{this.onUpdateGenerator();},}[item.onClick]: undefined,
-            // onCheck: typeof item.onCheck === "string"? {"":()=>{}, onGenerate:()=>{this.onGenerate();}, onUpdateGenerator:()=>{this.onUpdateGenerator();},}[item.onCheck]: undefined
             onClick:
                 typeof item.onClick === "string"
                     ? {

@@ -35,114 +35,120 @@ export class MonacoManager {
     private _isDirty = false;
 
     public constructor(public globalState: GlobalState) {
-        // First Fetch JSON data for procedural code
-        fetch("templates.json").then((response) => {
-            if (response.ok) {
-                response.json().then((data) => {
-                    this._templates = data;
+        // First Fetch JSON data for templates code
+        this._templates = [];
+        fetch("templates.json")
+            .then((response) => response.json())
+            .then((data) => {
+                this._templates = data;
+                this._load(globalState);
+            })
+            .catch((err) => {
+                console.error("Unable to load templates.json", err);
+                this._load(globalState);
+            });
+    }
 
-                    window.addEventListener("beforeunload", (evt) => {
-                        if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
-                            const message = "Are you sure you want to leave. You have unsaved work.";
-                            evt.preventDefault();
-                            evt.returnValue = message;
-                        }
-                    });
-
-                    globalState.onNewRequiredObservable.add(() => {
-                        if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
-                            this._setNewContent();
-                            this._resetEditor(true);
-                        }
-                    });
-
-                    globalState.onUpdateGeneratorRequiredObservable.add(() => {
-                        if (Utilities.ReadBoolFromStore("generateAuto", true)) {
-                            this._setGeneratedContent();
-                            this._resetEditor(true);
-                        }
-                    });
-
-                    globalState.onGenerateRequiredObservable.add(() => {
-                        if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
-                            this._setGeneratedContent();
-                            this._resetEditor(true);
-                        }
-                    });
-
-                    globalState.onClearRequiredObservable.add(() => {
-                        if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
-                            this._editor?.setValue("");
-                            this._resetEditor();
-                        }
-                    });
-
-                    globalState.onNavigateRequiredObservable.add((position) => {
-                        this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
-                        this._editor?.setPosition(position);
-                    });
-
-                    globalState.onSavedObservable.add(() => {
-                        this._isDirty = false;
-                    });
-
-                    globalState.onCodeLoaded.add((code) => {
-                        if (!code) {
-                            this._setDefaultContent();
-                            return;
-                        }
-
-                        if (this._editor) {
-                            this._editor?.setValue(code);
-                            this._isDirty = false;
-                            this.globalState.onRunRequiredObservable.notifyObservers();
-                        } else {
-                            this.globalState.currentCode = code;
-                        }
-                    });
-
-                    globalState.onFormatCodeRequiredObservable.add(() => {
-                        this._editor?.getAction("editor.action.formatDocument").run();
-                    });
-
-                    globalState.onMinimapChangedObservable.add((value) => {
-                        this._editor?.updateOptions({
-                            minimap: {
-                                enabled: value,
-                            },
-                        });
-                    });
-
-                    globalState.onFontSizeChangedObservable.add(() => {
-                        this._editor?.updateOptions({
-                            fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
-                        });
-                    });
-
-                    globalState.onLanguageChangedObservable.add(async () => {
-                        await this.setupMonacoAsync(this._hostElement);
-                    });
-
-                    globalState.onThemeChangedObservable.add(() => {
-                        this._createEditor();
-                    });
-
-                    // Register a global observable for inspector to request code changes
-                    const pgConnect = {
-                        onRequestCodeChangeObservable: new Observable(),
-                    };
-
-                    pgConnect.onRequestCodeChangeObservable.add((options: any) => {
-                        let code = this._editor?.getValue() || "";
-                        code = code.replace(options.regex, options.replace);
-
-                        this._editor?.setValue(code);
-                    });
-
-                    (window as any).Playground = pgConnect;
-                });
+    private _load(globalState: GlobalState) {
+        window.addEventListener("beforeunload", (evt) => {
+            if (this._isDirty && Utilities.ReadBoolFromStore("safe-mode", false)) {
+                const message = "Are you sure you want to leave. You have unsaved work.";
+                evt.preventDefault();
+                evt.returnValue = message;
             }
         });
+
+        globalState.onNewRequiredObservable.add(() => {
+            if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
+                this._setNewContent();
+                this._resetEditor(true);
+            }
+        });
+
+        globalState.onUpdateGeneratorRequiredObservable.add(() => {
+            if (Utilities.ReadBoolFromStore("generateAuto", true)) {
+                this._setGeneratedContent();
+                this._resetEditor(true);
+            }
+        });
+
+        globalState.onGenerateRequiredObservable.add(() => {
+            if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
+                this._setGeneratedContent();
+                this._resetEditor(true);
+            }
+        });
+
+        globalState.onClearRequiredObservable.add(() => {
+            if (Utilities.CheckSafeMode("Are you sure you want to remove all your code?")) {
+                this._editor?.setValue("");
+                this._resetEditor();
+            }
+        });
+
+        globalState.onNavigateRequiredObservable.add((position) => {
+            this._editor?.revealPositionInCenter(position, monaco.editor.ScrollType.Smooth);
+            this._editor?.setPosition(position);
+        });
+
+        globalState.onSavedObservable.add(() => {
+            this._isDirty = false;
+        });
+
+        globalState.onCodeLoaded.add((code) => {
+            if (!code) {
+                this._setDefaultContent();
+                return;
+            }
+
+            if (this._editor) {
+                this._editor?.setValue(code);
+                this._isDirty = false;
+                this.globalState.onRunRequiredObservable.notifyObservers();
+            } else {
+                this.globalState.currentCode = code;
+            }
+        });
+
+        globalState.onFormatCodeRequiredObservable.add(() => {
+            this._editor?.getAction("editor.action.formatDocument").run();
+        });
+
+        globalState.onMinimapChangedObservable.add((value) => {
+            this._editor?.updateOptions({
+                minimap: {
+                    enabled: value,
+                },
+            });
+        });
+
+        globalState.onFontSizeChangedObservable.add(() => {
+            this._editor?.updateOptions({
+                fontSize: parseInt(Utilities.ReadStringFromStore("font-size", "14")),
+            });
+        });
+
+        globalState.onLanguageChangedObservable.add(async () => {
+            await this.setupMonacoAsync(this._hostElement);
+        });
+
+        globalState.onThemeChangedObservable.add(() => {
+            this._createEditor();
+        });
+
+        // Register a global observable for inspector to request code changes
+        const pgConnect = {
+            onRequestCodeChangeObservable: new Observable(),
+        };
+
+        pgConnect.onRequestCodeChangeObservable.add((options: any) => {
+            let code = this._editor?.getValue() || "";
+            code = code.replace(options.regex, options.replace);
+
+            this._editor?.setValue(code);
+        });
+
+        (window as any).Playground = pgConnect;
     }
 
     private _setNewContent() {
@@ -271,25 +277,25 @@ class Playground {
         }
         if (useGround) {
             code += this._getCode("useGround");
-            if (useShadows && useLight != "Hemispheric") {
+            if (this._templates.length && useShadows && useLight != "Hemispheric") {
                 code += "ground.receiveShadows = true;\n";
             }
         }
         if (useSphere) {
             code += this._getCode("useSphere");
-            if (useShadows && useLight != "Hemispheric") {
+            if (this._templates.length && useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(sphere);\n";
             }
         }
         if (useBox) {
             code += this._getCode("useBox");
-            if (useShadows && useLight != "Hemispheric") {
+            if (this._templates.length && useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(box);\n";
             }
         }
         if (useCylinder) {
             code += this._getCode("useCylinder");
-            if (useShadows && useLight != "Hemispheric") {
+            if (this._templates.length && useShadows && useLight != "Hemispheric") {
                 code += "shadowGenerator.addShadowCaster(cylinder);\n";
             }
         }
@@ -298,7 +304,7 @@ class Playground {
         if (useAnimation != "None") {
             code += "\n// Import animated character :\n";
             code += this._getCode(useAnimation);
-            if (useShadows && useLight != "Hemispheric") {
+            if (this._templates.length && useShadows && useLight != "Hemispheric") {
                 code = code.slice(0, code.length - 4) + "    shadowGenerator.addShadowCaster(hero);\n});\n";
             }
         }
