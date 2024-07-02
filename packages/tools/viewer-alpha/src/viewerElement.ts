@@ -96,11 +96,4 @@ export class HTML3DElement extends HTMLElement {
     }
 }
 
-/**
- * Registers all Viewer related custom elements.
- * @remarks
- * This function must be called once before using any Viewer related custom elements.
- */
-export function registerCustomElements() {
-    globalThis.customElements.define("babylon-viewer", HTML3DElement);
-}
+globalThis.customElements.define("babylon-viewer", HTML3DElement);
