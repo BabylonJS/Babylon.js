@@ -933,19 +933,22 @@ export class ArcRotateCamera extends TargetCamera {
         if (this._progressiveRestore) {
             const dt = this._scene.getEngine().getDeltaTime() / 1000;
             const t = 1 - Math.pow(2, -dt / this.restoreStateInterpolationFactor);
+            const mod = 2 * Math.PI;
 
             // can't use tmp vector here because of assignment
             this.setTarget(Vector3.Lerp(this.getTarget(), this._storedTarget, t));
-            this.alpha += (this._storedAlpha - this.alpha) * t;
-            this.beta += (this._storedBeta - this.beta) * t;
+            this.alpha %= mod;
+            this.beta %= mod;
+            this.alpha += ((this._storedAlpha % mod) - this.alpha) * t;
+            this.beta += ((this._storedBeta % mod) - this.beta) * t;
             this.radius += (this._storedRadius - this.radius) * t;
             Vector2.LerpToRef(this.targetScreenOffset, this._storedTargetScreenOffset, t, this.targetScreenOffset);
 
             // stop restoring when wihtin close range or when user starts interacting
             if (
                 (Vector3.DistanceSquared(this.getTarget(), this._storedTarget) < Epsilon &&
-                    Math.pow(this._storedAlpha - this.alpha, 2) < Epsilon &&
-                    Math.pow(this._storedBeta - this.beta, 2) < Epsilon &&
+                    Math.pow((this._storedAlpha % mod) - (this.alpha % mod), 2) < Epsilon &&
+                    Math.pow((this._storedBeta % mod) - (this.beta % mod), 2) < Epsilon &&
                     Math.pow(this._storedRadius - this.radius, 2) < Epsilon &&
                     Vector2.Distance(this.targetScreenOffset, this._storedTargetScreenOffset) < Epsilon) ||
                 this.inertialAlphaOffset !== 0 ||
