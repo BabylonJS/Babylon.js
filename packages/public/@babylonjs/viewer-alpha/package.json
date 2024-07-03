@@ -1,6 +1,6 @@
 {
     "name": "@babylonjs/viewer-alpha",
-    "version": "7.13.1",
+    "version": "1.0.0",
     "private": true,
     "type": "module",
     "main": "lib/index.js",
@@ -18,12 +18,11 @@
         "build": "npm run clean && npm run bundle",
         "clean": "rimraf lib && rimraf src && rimraf *.tsbuildinfo",
         "bundle": "rollup -c",
-        "pack": "npm run build && npm pack",
-        "prepublish": "prepublish.cjs"
+        "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
-        "@babylonjs/core": "^7.13.1",
-        "@babylonjs/loaders": "^7.13.1"
+        "@babylonjs/core": "^7.13.2",
+        "@babylonjs/loaders": "^7.0.0"
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
