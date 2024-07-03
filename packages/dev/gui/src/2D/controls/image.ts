@@ -620,7 +620,7 @@ export class Image extends Control {
      * @returns the svg
      */
     private _svgCheck(value: string): string {
-        if (window.SVGSVGElement && value.search(/.svg#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
+        if (window.SVGSVGElement && value.search(/.svg.*#/gi) !== -1 && value.indexOf("#") === value.lastIndexOf("#")) {
             this._isSVG = true;
             const svgsrc = value.split("#")[0];
             const elemid = value.split("#")[1];
