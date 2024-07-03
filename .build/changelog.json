@@ -1,6 +1,64 @@
 {
-    "fromTag": "7.13.1",
+    "fromTag": "7.13.2",
     "changelog": {
+        "7.13.3": [
+            {
+                "pr": "15250",
+                "title": "Fix missing test with ArcRotateCamera",
+                "description": "Fix missing test for https://github.com/BabylonJS/Babylon.js/pull/15248",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15248",
+                "title": "ArcRotate progressive restore state",
+                "description": "Double click restore to saved state. This PR adds the ability to interpolate between current and saved states.\r\n\r\nPG : https://playground.babylonjs.com/?snapshot=refs/pull/15248/merge#TT1T4C",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15246",
+                "title": "Viewer alpha public package initial checkin",
+                "description": "This PR introduces the public package build for the alpha viewer that was previously introduced in this PR: https://github.com/BabylonJS/Babylon.js/pull/15241\r\n\r\nThe overall strategy is summarized in the comment at the top of the `prepublish.cjs` script:\r\n```js\r\n// The alpha version of the viewer package must have a unique package name within the context of the mono repo / npm workspace\r\n// as long as the legacy version is still being maintained and published. Therefore, the alpha package has a unique name, but this\r\n// is not the actual name we want to publish it under. This script copies the name and version from the legacy package.json to the\r\n// alpha package.json, appends \"-alpha\" to the version, and removes the private flag, scripts, and devDependencies from the alpha,\r\n// and finally deletes the legacy package.json. This script should be run after the alpha package has been built and before it is\r\n// published. This script is not necessary when the legacy package is deprecated and the alpha package is published under the same\r\n// name as the legacy package.\r\n```\r\n\r\nGiven this, the high level aspects of this new folder are:\r\n- Includes a rollup based build that bundles everything into a single file but still uses esm (webpack is good at creating umd bundle files, but not esm bundle files).\r\n  - Bundling to esm allows us to not \"ship our directory structure,\" which gives us the freedom to update the directory structure or file names in the viewer source without creating back compat issues.\r\n  - It also bundles the d.ts files into a single d.ts\r\n  - Later when we introduce dynamic imports, it won't be one bundle file but rather a handful. Technically people could import the dynamic import bundles, but it's unlikely someone would do so since rollup basically gives them random names.\r\n- Includes a prepublish.cjs script that modifies the package.json and deletes the legacy viewer package.json so the new alpha viewer can be published with the same name (with the `-alpha` version suffix).\r\n\r\nSeparately, @RaananW (or me with @RaananW's help) will modify the CI build to run this prepublish step and then specifically publish the new alpha viewer package. That will come in a different PR.\r\n\r\nI also had to make a few changes to the actual viewer source code to get this all working (tested a local build of the package in a vanilla-ts Vite project).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/viewer-alpha/license.md",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/prepublish.cjs",
+                    "packages/public/@babylonjs/viewer-alpha/readme.md",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.json",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.json",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.13.2": [
             {
                 "pr": "15245",

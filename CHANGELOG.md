@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.13.3
+
+### Core
+
+- ArcRotate progressive restore state - by [CedricGuillemet](https://github.com/CedricGuillemet) ([#15248](https://github.com/BabylonJS/Babylon.js/pull/15248))
+
 ## 7.13.2
 
 ### Core
