@@ -2,8 +2,12 @@ import typescript from "@rollup/plugin-typescript";
 //import terser from "@rollup/plugin-terser";
 import { dts } from "rollup-plugin-dts";
 
-const jsConfig = {
+const commonConfig = {
     input: "../../../tools/viewer-alpha/src/index.ts",
+};
+
+const jsConfig = {
+    ...commonConfig,
     output: {
         dir: "lib",
         sourcemap: true,
@@ -14,7 +18,7 @@ const jsConfig = {
 };
 
 const dtsConfig = {
-    input: "../../../tools/viewer-alpha/src/index.ts",
+    ...commonConfig,
     output: {
         file: "lib/index.d.ts",
         format: "es",
