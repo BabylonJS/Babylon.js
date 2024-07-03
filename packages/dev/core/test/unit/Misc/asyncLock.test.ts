@@ -30,6 +30,22 @@ describe("AsyncLock", () => {
         expect(result).toBe(42);
     });
 
+    it("basic func throws error", async () => {
+        const asyncLock = new AsyncLock();
+
+        const expectedError = new Error("Test error");
+        let actualError: Nullable<unknown> = null;
+        try {
+            await asyncLock.lockAsync(() => {
+                throw expectedError;
+            });
+        } catch (e: unknown) {
+            actualError = e;
+        }
+
+        expect(actualError).toBe(expectedError);
+    });
+
     it("basic sequencing", async () => {
         const asyncLock = new AsyncLock();
         const operation1Started = new Deferred<void>();
@@ -143,6 +159,26 @@ describe("AsyncLock", () => {
         expect(lockAcquired).toBe(true);
 
         expect(await promise).toBe(42);
+    });
+
+    it("lock many func throws error", async () => {
+        const asyncLock1 = new AsyncLock();
+        const asyncLock2 = new AsyncLock();
+
+        asyncLock1.lockAsync(() => {});
+        asyncLock2.lockAsync(() => {});
+
+        const expectedError = new Error("Test error");
+        let actualError: Nullable<unknown> = null;
+        try {
+            await AsyncLock.LockAsync(() => {
+                throw expectedError;
+            }, [asyncLock1, asyncLock2]);
+        } catch (e: unknown) {
+            actualError = e;
+        }
+
+        expect(actualError).toBe(expectedError);
     });
 
     it("lock many basic cancellation", async () => {
