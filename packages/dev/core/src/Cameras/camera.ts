@@ -477,6 +477,13 @@ export class Camera extends Node {
     }
 
     /**
+     * Returns true if a state has been stored by calling storeState method.
+     * @returns true if state has been stored.
+     */
+    public hasStateStored(): boolean {
+        return !!this._stateStored;
+    }
+    /**
      * Restores the camera state values if it has been stored. You must call storeState() first
      * @returns true if restored and false otherwise
      */

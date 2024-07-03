@@ -799,7 +799,7 @@ export class ArcRotateCamera extends TargetCamera {
      * Restored camera state. You must call storeState() first
      */
     public override _restoreStateValues(): boolean {
-        if (this.restoreStateInterpolationFactor > Epsilon || this.restoreStateInterpolationFactor < 1) {
+        if (this.hasStateStored() && this.restoreStateInterpolationFactor > Epsilon && this.restoreStateInterpolationFactor < 1) {
             this._progressiveRestore = true;
             this.inertialAlphaOffset = 0;
             this.inertialBetaOffset = 0;
