@@ -1,6 +1,100 @@
 {
-    "fromTag": "7.13.0",
+    "fromTag": "7.13.1",
     "changelog": {
+        "7.13.2": [
+            {
+                "pr": "15245",
+                "title": "Added notifying onStopped observers in gpu particles",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15241",
+                "title": "Viewer alpha initial checkin",
+                "description": "This is an initial very minimal subset of the new Viewer package. @CedricGuillemet and I got this far together in a side repo, and I'm mostly just bringing over the code. This is just enough to satisfy one specific use case we have in mind, but is not specific to that use case (it is just the min subset that supports that use case).\r\n\r\n## Included in this PR:\r\n- A core `Viewer` class that provides the bulk of the (currently minimal) functionality agnostic to the UI layer (it can be used in the browser with Web Components, React, etc., or in Babylon Native). \r\n- A small wrapper factory that binds a `Viewer` instance to a `Canvas` and handles a few things like resizing (it can be used for different browser UI layers such as Web Components and React).\r\n- A Web Components custom element to provide a solution for HTML (should work in React as well, but not yet tested).\r\n- A plain HTML test app with a web pack config (just bundles the Viewer code, registers the custom element, and then uses the custom element with `src` and `env` attributes set).\r\n\r\nThere are many TODOs in the code for things that are not complete, either because we don't need them for our initial use case, or because we're trying to keep the code minimal for the initial checkin.\r\n\r\nIn later PRs, we'll address the TODOs and also add a React test app.\r\n\r\nThis is what the Viewer looks like in the current test app:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/5084643/f24d12a0-358d-45f7-b9f8-6eb1a15ee66f)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "packages/dev/core/src/Misc/asyncLock.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/public/index.html",
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts",
+                    "packages/tools/viewer-alpha/tsconfig.build.json",
+                    "packages/tools/viewer-alpha/tsconfig.json",
+                    "packages/tools/viewer-alpha/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15239",
+                "title": "documenting side-effect in gpuPicker.",
+                "description": "as per request https://forum.babylonjs.com/t/passing-scene-meshes-to-gpupicker-setpickinglist-will-clear-them-when-gpupicker-dispose/51658/2",
+                "author": {
+                    "name": "Joe-Kerr",
+                    "url": "https://github.com/Joe-Kerr"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15242",
+                "title": "modify declaration's const enum to enums",
+                "description": "Fixes #15238\n\nWe can do that since typescript exports the const enums just as if they were enums. The step to use const enums still provides advantages to people consuming the framework, but this way typescript will treat them as regular enums on projects using babylon.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/public/@babylonjs/core/config.tasks.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15240",
+                "title": "Flycamera element fix",
+                "description": "https://forum.babylonjs.com/t/procedural-galaxy-and-streaming/51468/22",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15237",
+                "title": "Throw error in CSG when adding a mesh that lacks indices, positions or normals",
+                "description": "Small issue found, where Babylon reads from a null array. Added some checks that throw more descriptive errors and adjusted the typing as well to better represent the data usage.",
+                "author": {
+                    "name": "rapid-images-tore-levenstam",
+                    "url": "https://github.com/rapid-images-tore-levenstam"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.13.1": [
             {
                 "pr": "15234",
