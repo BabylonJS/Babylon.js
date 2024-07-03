@@ -128,14 +128,10 @@ describe("AsyncLock", () => {
             return operation2Completed.promise;
         });
 
-        const promise = AsyncLock.LockAsync(
-            () => {
-                lockAcquired = true;
-                return 42;
-            },
-            asyncLock1,
-            asyncLock2
-        );
+        const promise = AsyncLock.LockAsync(() => {
+            lockAcquired = true;
+            return 42;
+        }, [asyncLock1, asyncLock2]);
 
         await whenJSFrames(5);
         expect(lockAcquired).toBe(false);
@@ -162,9 +158,8 @@ describe("AsyncLock", () => {
             () => {
                 lockAcquired = true;
             },
-            abortController.signal,
-            asyncLock1,
-            asyncLock2
+            [asyncLock1, asyncLock2],
+            abortController.signal
         );
 
         const expectedAbortReason = "Aborting operation before it starts.";
@@ -191,13 +186,9 @@ describe("AsyncLock", () => {
         asyncLock2.lockAsync(() => {}, abortController.signal);
 
         let lockAcquired = false;
-        AsyncLock.LockAsync(
-            () => {
-                lockAcquired = true;
-            },
-            asyncLock1,
-            asyncLock2
-        );
+        AsyncLock.LockAsync(() => {
+            lockAcquired = true;
+        }, [asyncLock1, asyncLock2]);
 
         expect(lockAcquired).toBe(false);
         abortController.abort();

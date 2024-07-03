@@ -25,6 +25,8 @@ export class AsyncLock {
      * @returns A promise that resolves when the func finishes executing.
      */
     public lockAsync<T>(func: () => T | Promise<T>, signal?: AbortSignal): Promise<T> {
+        signal?.throwIfAborted();
+
         const wrappedFunc = signal
             ? () => {
                   signal.throwIfAborted();
@@ -42,31 +44,10 @@ export class AsyncLock {
      * Executes the provided function when all the specified locks are acquired.
      * @param func The function to execute.
      * @param locks The locks to acquire.
+     * @param signal An optional signal that can be used to abort the operation.
      * @returns A promise that resolves when the func finishes executing.
      */
-    public static LockAsync<T>(func: () => T | Promise<T>, ...locks: AsyncLock[]): Promise<T>;
-
-    /**
-     * Executes the provided function when all the specified locks are acquired.
-     * @param func The function to execute.
-     * @param signal A signal that can be used to abort the operation.
-     * @param locks The locks to acquire.
-     * @returns A promise that resolves when the func finishes executing.
-     */
-    public static LockAsync<T>(func: () => T | Promise<T>, signal: AbortSignal, ...locks: AsyncLock[]): Promise<T>;
-
-    public static async LockAsync<T>(
-        ...args: [func: () => T | Promise<T>, ...locks: AsyncLock[]] | [func: () => T | Promise<T>, signal: AbortSignal, ...locks: AsyncLock[]]
-    ): Promise<T> {
-        const [func, arg1, ...locks] = args;
-        let signal: AbortSignal | undefined;
-        if (!(arg1 instanceof AbortSignal)) {
-            signal = undefined;
-            locks.unshift(arg1);
-        } else {
-            signal = arg1;
-        }
-
+    public static async LockAsync<T>(func: () => T | Promise<T>, locks: AsyncLock[], signal?: AbortSignal): Promise<T> {
         signal?.throwIfAborted();
 
         if (locks.length === 0) {
