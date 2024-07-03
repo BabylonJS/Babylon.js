@@ -215,6 +215,7 @@ export class Viewer implements IDisposable {
         this._camera.upperRadiusLimit = 5 * this._camera.radius;
         this._camera.wheelDeltaPercentage = 0.01;
         this._camera.pinchDeltaPercentage = 0.01;
+        this._camera.restoreStateInterpolationFactor = 0.1;
     }
 
     /**

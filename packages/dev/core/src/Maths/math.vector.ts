@@ -966,9 +966,21 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns a new Vector2
      */
     public static Lerp(start: DeepImmutable<IVector2Like>, end: DeepImmutable<IVector2Like>, amount: number): Vector2 {
-        const x = start.x + (end.x - start.x) * amount;
-        const y = start.y + (end.y - start.y) * amount;
-        return new Vector2(x, y);
+        return Vector2.LerpToRef(start, end, amount, new Vector2());
+    }
+
+    /**
+     * Sets the given vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+     * @param start defines the start value
+     * @param end defines the end value
+     * @param amount max defines amount between both (between 0 and 1)
+     * @param result defines the Vector2 where to store the result
+     * @returns result input
+     */
+    public static LerpToRef(start: DeepImmutable<IVector2Like>, end: DeepImmutable<IVector2Like>, amount: number, result: Vector2): Vector2 {
+        result.x = start.x + (end.x - start.x) * amount;
+        result.y = start.y + (end.y - start.y) * amount;
+        return result;
     }
 
     /**
