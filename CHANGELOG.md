@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.14.0
+
+### Core
+
+- Fix cube texture defaultLodScale - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15251](https://github.com/BabylonJS/Babylon.js/pull/15251))
+
 ## 7.13.3
 
 ### Core
