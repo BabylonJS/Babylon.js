@@ -24,25 +24,25 @@ const defaultViewerOptions = {
     backgroundColor: new Color4(0.1, 0.1, 0.2, 1.0),
 } as const;
 
+export type ViewerDetails = {
+    /**
+     * Provides access to the Scene managed by the Viewer.
+     */
+    scene: Scene;
+
+    /**
+     * Provides access to the currently loaded model.
+     */
+    model: Nullable<AssetContainer>;
+};
+
 export type ViewerOptions = Partial<
     typeof defaultViewerOptions &
         Readonly<{
             /**
              * Called once when the viewer is initialized and provides viewer details that can be used for advanced customization.
              */
-            onInitialized: (
-                details: Readonly<{
-                    /**
-                     * Provides access to the Scene managed by the Viewer.
-                     */
-                    scene: Scene;
-
-                    /**
-                     * Provides access to the Camera managed by the Viewer.
-                     */
-                    camera: ArcRotateCamera;
-                }>
-            ) => void;
+            onInitialized: (details: Readonly<ViewerDetails>) => void;
         }>
 >;
 
@@ -60,13 +60,12 @@ export type ViewerOptions = Partial<
  * - Full screen and XR modes.
  */
 export class Viewer implements IDisposable {
-    private readonly _scene: Scene;
+    private readonly _details: ViewerDetails;
     private readonly _camera: ArcRotateCamera;
 
     private _isDisposed = false;
 
     private readonly _loadModelLock = new AsyncLock();
-    private _assetContainer: Nullable<AssetContainer> = null;
     private _loadModelAbortController: Nullable<AbortController> = null;
 
     private readonly _loadEnvironmentLock = new AsyncLock();
@@ -78,9 +77,12 @@ export class Viewer implements IDisposable {
         options?: ViewerOptions
     ) {
         const finalOptions = { ...defaultViewerOptions, ...options };
-        this._scene = new Scene(this._engine);
-        this._scene.clearColor = finalOptions.backgroundColor;
-        this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._scene);
+        this._details = {
+            scene: new Scene(this._engine),
+            model: null,
+        };
+        this._details.scene.clearColor = finalOptions.backgroundColor;
+        this._camera = new ArcRotateCamera("camera1", 0, 0, 1, Vector3.Zero(), this._details.scene);
         this._camera.attachControl();
         this._reframeCamera(); // set default camera values
 
@@ -89,10 +91,10 @@ export class Viewer implements IDisposable {
 
         // TODO: render at least back ground. Maybe we can only run renderloop when a mesh is loaded. What to render until then?
         this._engine.runRenderLoop(() => {
-            this._scene.render();
+            this._details.scene.render();
         });
 
-        options?.onInitialized?.({ scene: this._scene, camera: this._camera });
+        options?.onInitialized?.(this._details);
     }
 
     /**
@@ -110,9 +112,9 @@ export class Viewer implements IDisposable {
 
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
-            this._assetContainer?.dispose();
-            this._assetContainer = await SceneLoader.LoadAssetContainerAsync("", url, this._scene);
-            this._assetContainer.addAllToScene();
+            this._details.model?.dispose();
+            this._details.model = await SceneLoader.LoadAssetContainerAsync("", url, this._details.scene);
+            this._details.model.addAllToScene();
             this._reframeCamera();
         });
     }
@@ -137,13 +139,13 @@ export class Viewer implements IDisposable {
             this._environment?.dispose();
             this._environment = await new Promise<IDisposable>((resolve, reject) => {
                 if (!url) {
-                    const light = new HemisphericLight("hemilight", Vector3.Up(), this._scene);
-                    this._scene.autoClear = true;
+                    const light = new HemisphericLight("hemilight", Vector3.Up(), this._details.scene);
+                    this._details.scene.autoClear = true;
                     resolve(light);
                 } else {
-                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._scene);
-                    const skybox = this._scene.createDefaultSkybox(cubeTexture, true, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
-                    this._scene.autoClear = false;
+                    const cubeTexture = CubeTexture.CreateFromPrefilteredData(url, this._details.scene);
+                    const skybox = this._details.scene.createDefaultSkybox(cubeTexture, true, (this._camera.maxZ - this._camera.minZ) / 2, 0.3);
+                    this._details.scene.autoClear = false;
 
                     const successObserver = cubeTexture.onLoadObservable.addOnce(() => {
                         successObserver.remove();
@@ -172,7 +174,7 @@ export class Viewer implements IDisposable {
      * Disposes of the resources held by the Viewer.
      */
     public dispose(): void {
-        this._scene.dispose();
+        this._details.scene.dispose();
         this._isDisposed = true;
     }
 
@@ -185,11 +187,11 @@ export class Viewer implements IDisposable {
         framingBehavior.elevationReturnTime = -1;
 
         let radius = 1;
-        if (this._scene.meshes.length) {
+        if (this._details.scene.meshes.length) {
             // get bounds and prepare framing/camera radius from its values
             this._camera.lowerRadiusLimit = null;
 
-            const worldExtends = this._scene.getWorldExtends((mesh) => {
+            const worldExtends = this._details.scene.getWorldExtends((mesh) => {
                 return mesh.isVisible && mesh.isEnabled();
             });
             framingBehavior.zoomOnBoundingInfo(worldExtends.min, worldExtends.max);
@@ -223,7 +225,7 @@ export class Viewer implements IDisposable {
     }
 
     /**
-     * Check for disposed or aborted state (basically everything that can interupt an async operation).
+     * Check for disposed or aborted state (basically everything that can interrupt an async operation).
      * @param abortSignals A set of optional AbortSignals to also check.
      */
     private _throwIfDisposedOrAborted(...abortSignals: (Nullable<AbortSignal> | undefined)[]): void {
