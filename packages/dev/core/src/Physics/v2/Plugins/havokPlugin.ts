@@ -1158,6 +1158,8 @@ export class HavokPlugin implements IPhysicsEnginePluginV2 {
             }
         } else if (body.getPrestepType() == PhysicsPrestepType.ACTION) {
             this.setTargetTransform(body, node.absolutePosition, node.absoluteRotationQuaternion);
+        } else if (body.getPrestepType() == PhysicsPrestepType.DISABLED) {
+            Logger.Warn("Prestep type is set to DISABLED. Unable to set physics body transformation.");
         } else {
             Logger.Warn("Invalid prestep type set to physics body.");
         }
