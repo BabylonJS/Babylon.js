@@ -1039,6 +1039,7 @@ export class VertexBuffer {
                 const remainder = offset % 4;
 
                 if (remainder) {
+                    Logger.Warn("GetFloatData: copied misaligned data.");
                     // If not aligned, copy the data to aligned buffer
                     return new Float32Array(data.buffer.slice(offset, offset + count * 4));
                 }
