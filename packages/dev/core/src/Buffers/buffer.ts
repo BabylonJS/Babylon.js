@@ -1025,7 +1025,7 @@ export class VertexBuffer {
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, byteOffset, count);
             } else {
-                let offset = data.byteOffset + byteOffset;
+                const offset = data.byteOffset + byteOffset;
                 if (forceCopy) {
                     const result = new Float32Array(count);
                     const source = new Float32Array(data.buffer, offset, count);
@@ -1039,7 +1039,9 @@ export class VertexBuffer {
                 const remainder = offset % 4;
 
                 if (remainder) {
-                    offset = Math.max(0, offset - remainder);
+                    Logger.Warn("GetFloatData: copied misaligned data.");
+                    // If not aligned, copy the data to aligned buffer
+                    return new Float32Array(data.buffer.slice(offset, offset + count * 4));
                 }
 
                 return new Float32Array(data.buffer, offset, count);

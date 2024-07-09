@@ -1,5 +1,6 @@
 import type { DataArray } from "../types";
 import { VertexBuffer } from "./buffer";
+import { Logger } from "../Misc/logger";
 
 /**
  * Copies the given data array to the given float array.
@@ -41,12 +42,15 @@ export function CopyFloatData(
         const floatData = new Float32Array(input, byteOffset, count);
         output.set(floatData);
     } else {
-        let offset = input.byteOffset + byteOffset;
+        const offset = input.byteOffset + byteOffset;
 
         // Protect against bad data
         const remainder = offset % 4;
         if (remainder) {
-            offset = Math.max(0, offset - remainder);
+            Logger.Warn("CopyFloatData: copied misaligned data.");
+            // If not aligned, copy the data to aligned buffer
+            output.set(new Float32Array(input.buffer.slice(offset, offset + count * 4)));
+            return;
         }
 
         const floatData = new Float32Array(input.buffer, offset, count);
