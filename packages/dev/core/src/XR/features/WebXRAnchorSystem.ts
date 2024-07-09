@@ -144,11 +144,11 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
         _xrSessionManager: WebXRSessionManager,
         private _options: IWebXRAnchorSystemOptions = {}
     ) {
-        super(_xrSessionManager);
-        this.xrNativeFeatureName = "anchors";
         // because of a browser issue in chrome, forcing the `doNotRemoveAnchorsOnSessionEnded` to true
         // will cause the anchors to not be removed from the feature!
-        this._options.doNotRemoveAnchorsOnSessionEnded = true;
+        _options.doNotRemoveAnchorsOnSessionEnded = true;
+        super(_xrSessionManager);
+        this.xrNativeFeatureName = "anchors";
 
         if (!this._options.doNotClearAnchorsOnSessionInit) {
             this._xrSessionManager.onXRSessionInit.add(() => {
@@ -334,7 +334,7 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
                     const newAnchor: Partial<IWebXRAnchor> = {
                         id: anchorIdProvider++,
                         xrAnchor: xrAnchor,
-                        remove: () => xrAnchor.delete(),
+                        remove: () => {},
                     };
                     const anchor = this._updateAnchorWithXRFrame(xrAnchor, newAnchor, frame);
                     this._trackedAnchors.push(anchor);
