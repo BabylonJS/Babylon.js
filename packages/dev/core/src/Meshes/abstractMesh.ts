@@ -1658,7 +1658,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     }
 
     /** @internal */
-    protected _getData(options: IMeshDataOptions, data: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
+    public _getData(options: IMeshDataOptions, data: Nullable<FloatArray>, kind: string = VertexBuffer.PositionKind): Nullable<FloatArray> {
         const cache = options.cache;
 
         const getVertexData = (kind: string): Nullable<FloatArray> => {
