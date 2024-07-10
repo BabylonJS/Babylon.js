@@ -26,9 +26,19 @@ export interface IAudioEngineOptions {
     autoUpdateRate?: number;
 
     /**
-     * The maximum number of simultaneously playing voices. Defaults to 192.
+     * The maximum number of simultaneously playing spatial voices. Defaults to 64.
      */
-    maxVoices?: number;
+    maxSpatialVoices?: number;
+
+    /**
+     * The maximum number of simultaneously playing static voices. Defaults to 128.
+     */
+    maxStaticVoices?: number;
+
+    /**
+     * The maximum number of simultaneously playing streaming voices. Defaults to 8.
+     */
+    maxStreamingVoices?: number;
 }
 
 /** @internal */

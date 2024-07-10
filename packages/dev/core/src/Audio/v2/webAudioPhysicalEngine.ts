@@ -1,5 +1,8 @@
 import type { IAudioPhysicalEngine } from "./audioEngine";
 import type { IWebAudioEngineOptions } from "./webAudioEngine";
+import type { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
+import type { WebAudioStaticVoice } from "./webAudioStaticVoice";
+import type { WebAudioStreamingVoice } from "./webAudioStreamingVoice";
 
 /**
  *
@@ -8,6 +11,13 @@ export class WebAudioPhysicalEngine implements IAudioPhysicalEngine {
     private _audioContext: AudioContext;
     private _lastUpdateTime: number = 0;
     private _startTime: number = 0;
+
+    /** */
+    public readonly spatialVoices: Array<WebAudioSpatialVoice>;
+    /** */
+    public readonly staticVoices: Array<AudioBufferSourceNode>;
+    /** */
+    public readonly streamingVoices: Array<MediaElementAudioSourceNode>;
 
     /**
      * @param options
@@ -34,6 +44,10 @@ export class WebAudioPhysicalEngine implements IAudioPhysicalEngine {
             };
             this._audioContext.addEventListener("statechange", onAudioContextStateChange);
         }
+
+        this.spatialVoices = new Array<WebAudioSpatialVoice>(options?.maxSpatialVoices ?? 64);
+        this.staticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
+        this.streamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
     }
 
     /**
@@ -69,6 +83,6 @@ export class WebAudioPhysicalEngine implements IAudioPhysicalEngine {
         }
         this._lastUpdateTime = currentTime;
 
-        console.debug(`WebAudioPhysicalEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
+        // console.debug(`WebAudioPhysicalEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
     }
 }
