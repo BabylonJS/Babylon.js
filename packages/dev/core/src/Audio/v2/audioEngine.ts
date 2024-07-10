@@ -29,7 +29,7 @@ export interface IAudioEngineOptions {
     autoUpdate?: boolean;
 
     /**
-     * The automatic update rate in milliseconds. Ignored if `autoUpdate` is `false`.
+     * The automatic update rate in milliseconds. Defaults to 50. Ignored if `autoUpdate` is `false`.
      */
     autoUpdateRate?: number;
 

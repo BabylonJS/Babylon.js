@@ -32,7 +32,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
     public constructor(options?: IWebAudioEngineOptions) {
         super(new WebPhysicalAudioEngine(options));
 
-        this.autoUpdateRate = options?.autoUpdateRate !== undefined ? options.autoUpdateRate : 10;
+        this.autoUpdateRate = options?.autoUpdateRate !== undefined ? options.autoUpdateRate : 50;
         this.autoUpdate = options?.autoUpdate !== undefined ? options.autoUpdate : true;
     }
 
