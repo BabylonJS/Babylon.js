@@ -38,7 +38,6 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 this._load();
             })
             .catch((err) => {
-                //console.log("Unable to load procedural.json", err);
                 this._load();
             });
     }

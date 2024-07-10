@@ -37,16 +37,12 @@ export class MonacoManager {
     public constructor(public globalState: GlobalState) {
         // First Fetch JSON data for templates code
         this._templates = [];
+        this._load(globalState);
         fetch("templates.json")
             .then((response) => response.json())
             .then((data) => {
                 this._templates = data;
-                this._load(globalState);
             })
-            .catch((err) => {
-                //console.log("Unable to load templates.json", err);
-                this._load(globalState);
-            });
     }
 
     private _load(globalState: GlobalState) {
@@ -245,7 +241,7 @@ class Playground {
         let code = "";
 
         // Scene
-        code += "// Create a new Scene :\n";
+        code += "\n// Create a new Scene :\n";
         code += "var scene = new BABYLON.Scene(engine);\n";
 
         if (debugLayer) {
