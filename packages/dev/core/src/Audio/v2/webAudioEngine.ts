@@ -1,6 +1,6 @@
 import type { IAudioEngineOptions } from "./audioEngine";
 import { AbstractAudioEngine } from "./audioEngine";
-import { WebPhysicalAudioEngine } from "./webPhysicalAudioEngine";
+import { WebAudioPhysicalEngine } from "./webAudioPhysicalEngine";
 import type { Nullable } from "core/types";
 
 /**
@@ -35,7 +35,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
      * @param options
      */
     public constructor(options?: IWebAudioEngineOptions) {
-        super(new WebPhysicalAudioEngine(options));
+        super(new WebAudioPhysicalEngine(options));
 
         this.autoUpdateRate = options?.autoUpdateRate !== undefined ? options.autoUpdateRate : 50;
         this.autoUpdate = options?.autoUpdate !== undefined ? options.autoUpdate : true;
@@ -69,7 +69,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
      * Unlocks the audio engine.
      */
     public unlock(): void {
-        (this._physicalAudioEngine as WebPhysicalAudioEngine).unlock();
+        (this._physicalEngine as WebAudioPhysicalEngine).unlock();
     }
 
     /**

@@ -1,10 +1,10 @@
-import type { IPhysicalAudioEngine } from "./audioEngine";
+import type { IAudioPhysicalEngine } from "./audioEngine";
 import type { IWebAudioEngineOptions } from "./webAudioEngine";
 
 /**
  *
  */
-export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
+export class WebAudioPhysicalEngine implements IAudioPhysicalEngine {
     private _audioContext: AudioContext;
     private _lastUpdateTime: number = 0;
     private _startTime: number = 0;
@@ -37,7 +37,7 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
     }
 
     /**
-     * {@inheritdoc IPhysicalAudioEngine.currentTime}
+     * {@inheritdoc IAudioPhysicalEngine.currentTime}
      */
     public get currentTime(): number {
         return this.unlocked ? this._startTime + this._audioContext.currentTime : (performance.now() - this._startTime) / 1000;
@@ -60,7 +60,7 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
     }
 
     /**
-     * {@inheritdoc IPhysicalAudioEngine.update}
+     * {@inheritdoc IAudioPhysicalEngine.update}
      */
     public update(): void {
         const currentTime = this.currentTime;
@@ -69,6 +69,6 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
         }
         this._lastUpdateTime = currentTime;
 
-        console.debug(`WebPhysicalAudioEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
+        console.debug(`WebAudioPhysicalEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
     }
 }

@@ -1,13 +1,5 @@
 /** @internal */
-export interface IPhysicalAudioEngineOptions {
-    /**
-     * The maximum number of simultaneously playing voices.
-     */
-    maxVoices?: number;
-}
-
-/** @internal */
-export interface IPhysicalAudioEngine {
+export interface IAudioPhysicalEngine {
     /**
      * Returns a double representing an ever-increasing hardware time in seconds used for scheduling. It starts at 0.
      */
@@ -41,24 +33,24 @@ export interface IAudioEngineOptions {
 
 /** @internal */
 export class AbstractAudioEngine {
-    protected _physicalAudioEngine: IPhysicalAudioEngine;
+    protected _physicalEngine: IAudioPhysicalEngine;
 
     /** @internal */
-    public constructor(physicalAudioEngine: IPhysicalAudioEngine) {
-        this._physicalAudioEngine = physicalAudioEngine;
+    public constructor(physicalEngine: IAudioPhysicalEngine) {
+        this._physicalEngine = physicalEngine;
     }
 
     /**
      * Returns the current time in seconds.
      */
     public get currentTime(): number {
-        return this._physicalAudioEngine.currentTime;
+        return this._physicalEngine.currentTime;
     }
 
     /**
      * Updates audio engine control rate (k-rate) settings. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
-        this._physicalAudioEngine.update();
+        this._physicalEngine.update();
     }
 }

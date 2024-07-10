@@ -1,7 +1,7 @@
-import type { IPhysicalAudioEngine } from "./audioEngine";
+import type { IAudioPhysicalEngine } from "./audioEngine";
 
 /** @internal */
-export class NullPhysicalAudioEngine implements IPhysicalAudioEngine {
+export class NullAudioPhysicalEngine implements IAudioPhysicalEngine {
     private _startTime: number = 0;
 
     /** @internal */
@@ -9,13 +9,13 @@ export class NullPhysicalAudioEngine implements IPhysicalAudioEngine {
         this._startTime = performance.now();
     }
 
-    /** {@inheritdoc IPhysicalAudioEngine.currentTime} */
+    /** {@inheritdoc IAudioPhysicalEngine.currentTime} */
     public get currentTime(): number {
         return (performance.now() - this._startTime) / 1000;
     }
 
     /**
-     * {@inheritdoc IPhysicalAudioEngine.update}
+     * {@inheritdoc IAudioPhysicalEngine.update}
      */
     public update(): void {}
 }
