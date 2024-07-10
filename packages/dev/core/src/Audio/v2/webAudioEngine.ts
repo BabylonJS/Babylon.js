@@ -1,11 +1,11 @@
+/* eslint-disable babylonjs/available */
+/* eslint-disable jsdoc/require-jsdoc */
+
 import type { IAudioEngineOptions } from "./audioEngine";
 import { AbstractAudioEngine } from "./audioEngine";
 import { WebAudioPhysicalEngine } from "./webAudioPhysicalEngine";
 import type { Nullable } from "core/types";
 
-/**
- *
- */
 export interface IWebAudioEngineOptions extends IAudioEngineOptions {
     /**
      * An existing audio context to use. Defaults to a new `AudioContext`.
@@ -31,9 +31,6 @@ export class WebAudioEngine extends AbstractAudioEngine {
      */
     public autoUpdateRate: number;
 
-    /**
-     * @param options
-     */
     public constructor(options?: IWebAudioEngineOptions) {
         super(new WebAudioPhysicalEngine(options));
 
@@ -66,10 +63,12 @@ export class WebAudioEngine extends AbstractAudioEngine {
     }
 
     /**
-     * Unlocks the audio engine.
+     * Sends an audio context unlock request. Called automatically on user interaction when the `autoLock` option is `true`.
+     *
+     * Note that the audio context cannot be locked again after it is unlocked.
      */
     public unlock(): void {
-        (this._physicalEngine as WebAudioPhysicalEngine).unlock();
+        (this.physicalEngine as WebAudioPhysicalEngine).unlock();
     }
 
     /**
