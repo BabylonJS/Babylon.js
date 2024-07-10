@@ -38,7 +38,8 @@ export class MonacoManager {
         // First Fetch JSON data for templates code
         this._templates = [];
         this._load(globalState);
-        fetch("templates.json")
+        const url = "templates.json?uncacher="+Date.now();
+        fetch(url)
             .then((response) => response.json())
             .then((data) => {
                 this._templates = data;
