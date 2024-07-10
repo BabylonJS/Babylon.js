@@ -31,14 +31,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         super(props);
         // First Fetch JSON data for procedural code
         this._procedural = [];
-        fetch("procedural.json")
+        const url = "procedural.json?uncacher=" + Date.now();
+        fetch(url)
             .then((response) => response.json())
             .then((data) => {
                 this._procedural = data;
                 this._load();
             })
             .catch((err) => {
-                //console.log("Unable to load procedural.json", err);
                 this._load();
             });
     }
