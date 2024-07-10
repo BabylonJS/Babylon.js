@@ -6,6 +6,7 @@ import type { IWebAudioEngineOptions } from "./webAudioEngine";
  */
 export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
     private _audioContext: AudioContext;
+    private _lastUpdateTime: number = 0;
     private _startTime: number = 0;
 
     /**
@@ -58,6 +59,12 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
      * {@inheritdoc IPhysicalAudioEngine.update}
      */
     public update(): void {
-        console.debug(`WebPhysicalAudioEngine.update: currentTime: ${this.currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
+        const currentTime = this.currentTime;
+        if (this._lastUpdateTime == currentTime) {
+            return;
+        }
+        this._lastUpdateTime = currentTime;
+
+        console.debug(`WebPhysicalAudioEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
     }
 }
