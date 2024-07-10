@@ -18,16 +18,18 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
         if (!this.unlocked) {
             this._startTime = performance.now();
 
-            const onWindowClick = () => {
-                this.unlock();
-            };
-            window.addEventListener("click", onWindowClick);
+            if (options?.autoUnlock === undefined || options.autoUnlock) {
+                const onWindowClick = () => {
+                    this.unlock();
+                    window.removeEventListener("click", onWindowClick);
+                };
+                window.addEventListener("click", onWindowClick);
+            }
 
             const onAudioContextStateChange = () => {
                 if (this.unlocked) {
-                    window.removeEventListener("click", onWindowClick);
-                    this._audioContext.removeEventListener("statechange", onAudioContextStateChange);
                     this._startTime = (performance.now() - this._startTime) / 1000;
+                    this._audioContext.removeEventListener("statechange", onAudioContextStateChange);
                 }
             };
             this._audioContext.addEventListener("statechange", onAudioContextStateChange);
@@ -49,7 +51,7 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
     }
 
     /**
-     * Unlocks the audio context.
+     * Sends an audio context unlock request. Called automatically on user interaction when the `autoLock` option is `true`.
      */
     public unlock(): void {
         this._audioContext.resume();

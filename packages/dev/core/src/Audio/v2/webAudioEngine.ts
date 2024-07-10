@@ -11,6 +11,11 @@ export interface IWebAudioEngineOptions extends IAudioEngineOptions {
      * The audio context.
      */
     audioContext?: AudioContext;
+
+    /**
+     * Whether to automatically unlock the audio context on user interaction, or not. Defaults to `true`.
+     */
+    autoUnlock?: boolean;
 }
 
 /**
