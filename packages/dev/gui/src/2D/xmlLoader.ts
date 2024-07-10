@@ -85,8 +85,9 @@ export class XmlLoader {
                     } else {
                         guiNode.linkWithMesh(window[node.attributes[i].value]);
                     }
-                } else if (node.attributes[i].value.startsWith("{{") && node.attributes[i].value.endsWith("}}")) {
-                    const element = this._getChainElement(node.attributes[i].value.substring(2, node.attributes[i].value.length - 2));
+                } else if (node.attributes[i].value.match(/{{.*}}/)) {
+                    const matches = node.attributes[i].value.match(/{{(.*)}}/);
+                    const element = (node.attributes[i].value as string).replace(/{{.*}}/, `${this._getChainElement(matches[1])}`);
                     guiNode[node.attributes[i].name] = element;
                 } else if (!this._objectAttributes[node.attributes[i].name]) {
                     if (node.attributes[i].value == "true" || node.attributes[i].value == "false") {
