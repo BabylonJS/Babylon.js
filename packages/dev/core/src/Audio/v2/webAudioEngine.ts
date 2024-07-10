@@ -8,7 +8,7 @@ import type { Nullable } from "core/types";
  */
 export interface IWebAudioEngineOptions extends IAudioEngineOptions {
     /**
-     * The audio context.
+     * An existing audio context to use. Defaults to a new `AudioContext`.
      */
     audioContext?: AudioContext;
 

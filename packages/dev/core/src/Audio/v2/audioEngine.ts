@@ -34,7 +34,7 @@ export interface IAudioEngineOptions {
     autoUpdateRate?: number;
 
     /**
-     * The maximum number of simultaneously playing voices.
+     * The maximum number of simultaneously playing voices. Defaults to 192.
      */
     maxVoices?: number;
 }

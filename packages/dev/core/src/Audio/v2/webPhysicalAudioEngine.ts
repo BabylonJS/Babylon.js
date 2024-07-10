@@ -52,6 +52,8 @@ export class WebPhysicalAudioEngine implements IPhysicalAudioEngine {
 
     /**
      * Sends an audio context unlock request. Called automatically on user interaction when the `autoLock` option is `true`.
+     *
+     * Note that the audio context cannot be locked again after it is unlocked.
      */
     public unlock(): void {
         this._audioContext.resume();
