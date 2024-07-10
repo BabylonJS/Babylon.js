@@ -24,7 +24,8 @@ export interface IWebXRAnchorSystemOptions {
 
     /**
      * Not setting this flag will clear the anchors array when the session is initialized.
-     * Note that the native anchors will not be removed. The onl thing cleared would be the anchors array of the feature itself.
+     * Note that the native anchors will not be removed. The only thing cleared would be the anchors array of the feature itself.
+
      */
     doNotClearAnchorsOnSessionInit?: boolean;
 }
