@@ -24,9 +24,14 @@ export interface IPhysicalAudioEngine {
  */
 export interface IAudioEngineOptions {
     /**
-     * The update rate in milliseconds.
+     * Update the audio engine automatically. Defaults to `true`.
      */
-    updateRate?: number;
+    autoUpdate?: boolean;
+
+    /**
+     * The automatic update rate in milliseconds. Ignored if `autoUpdate` is `false`.
+     */
+    autoUpdateRate?: number;
 
     /**
      * The maximum number of simultaneously playing voices.
@@ -51,9 +56,7 @@ export class AbstractAudioEngine {
     }
 
     /**
-     * Updates the audio engine.
-     *
-     * Should be called multiple times per second.
+     * Updates audio engine control rate (k-rate) settings. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
         this._physicalAudioEngine.update();
