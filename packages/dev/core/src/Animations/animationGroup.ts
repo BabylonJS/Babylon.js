@@ -859,6 +859,9 @@ export class AnimationGroup implements IDisposable {
      * Dispose all associated resources
      */
     public dispose(): void {
+        if (this.isStarted) {
+            this.stop();
+        }
         this._targetedAnimations.length = 0;
         this._animatables.length = 0;
 
