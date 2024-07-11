@@ -490,7 +490,7 @@ export class TextBlock extends Control {
 
     protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
         this._linesTemp.length = 0;
-        const _lines = this.text.split("\n");
+        const _lines = this._textWrapping === TextWrapping.HTML ? this._parseHTMLText(refWidth, refHeight, context) : this.text.split("\n");
 
         switch (this._textWrapping) {
             case TextWrapping.WordWrap:
@@ -509,12 +509,6 @@ export class TextBlock extends Control {
                 }
                 break;
             case TextWrapping.HTML:
-                _lines.length = 0;
-                _lines.push(...this._parseHTMLText(refWidth, refHeight, context));
-                for (const _line of _lines) {
-                    this._linesTemp.push(this._parseLine(_line, context));
-                }
-                break;
             default:
                 for (const _line of _lines) {
                     this._linesTemp.push(this._parseLine(_line, context));
