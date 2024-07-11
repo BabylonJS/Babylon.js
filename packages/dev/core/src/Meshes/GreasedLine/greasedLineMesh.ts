@@ -185,7 +185,7 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                     const uvOffsetBase = uvOffset + j * 4;
                     uvArr[uvOffsetBase + 0] = lengthRatio;
                     uvArr[uvOffsetBase + 1] = 0;
-                    uvArr[uvOffsetBase + 2] = uvArr[uvOffsetBase + 0];
+                    uvArr[uvOffsetBase + 2] = lengthRatio;
                     uvArr[uvOffsetBase + 3] = 1;
                 }
             }
