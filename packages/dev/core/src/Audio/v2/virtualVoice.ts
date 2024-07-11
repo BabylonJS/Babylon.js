@@ -1,16 +1,17 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioBuffer, IAudioStream, ISoundOptions, IStaticSoundOptions, IStreamingSoundOptions } from "./audioEngine";
+import type { ISoundOptions } from "./audioEngine";
 import { Observable } from "../../Misc/observable";
 
-enum VirtualVoiceType {
+export enum VirtualVoiceType {
     Static,
     Streaming,
 }
 
 export interface IVirtualVoice {
     id: number;
+    sourceId: number;
     priority: number;
     type: VirtualVoiceType;
     spatial: boolean;
@@ -18,7 +19,7 @@ export interface IVirtualVoice {
     active: boolean; // `true` if playing or paused.
     onDeactivatedObservable: Observable<IVirtualVoice>;
 
-    playing: boolean;
+    playing: boolean; // `true` if playing; `false` if paused.
 
     play(): void;
     stop(): void;
@@ -27,8 +28,10 @@ export interface IVirtualVoice {
     resume(): void;
 }
 
-class AbstractVirtualVoice {
+export class VirtualVoice implements IVirtualVoice {
+    public readonly type: VirtualVoiceType;
     public readonly id: number;
+    public readonly sourceId: number;
     public readonly priority: number;
     public readonly spatial: boolean;
 
@@ -37,14 +40,20 @@ class AbstractVirtualVoice {
     private _active: boolean = false;
     private _playing: boolean = false;
 
-    public constructor(id: number, options: ISoundOptions) {
+    public constructor(type: VirtualVoiceType, id: number, sourceId: number, options: ISoundOptions) {
+        this.type = type;
         this.id = id;
+        this.sourceId = sourceId;
         this.priority = options?.priority ?? 0;
         this.spatial = options?.spatial ?? false;
     }
 
     public get active(): boolean {
         return this._active;
+    }
+
+    public get playing(): boolean {
+        return this._playing;
     }
 
     public play(): void {
@@ -64,21 +73,5 @@ class AbstractVirtualVoice {
 
     public resume(): void {
         this._playing = true;
-    }
-}
-
-export class StaticVirtualVoice extends AbstractVirtualVoice implements IVirtualVoice {
-    public readonly type: VirtualVoiceType = VirtualVoiceType.Static;
-
-    public constructor(id: number, options: IStaticSoundOptions, _buffer: IAudioBuffer) {
-        super(id, options);
-    }
-}
-
-export class StreamingVirtualVoice extends AbstractVirtualVoice implements IVirtualVoice {
-    public readonly type: VirtualVoiceType = VirtualVoiceType.Streaming;
-
-    public constructor(id: number, options: IStreamingSoundOptions, _stream: IAudioStream) {
-        super(id, options);
     }
 }

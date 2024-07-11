@@ -1,16 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type {
-    IAudioBuffer,
-    IAudioPhysicalEngine,
-    IAudioSpatializer,
-    IAudioStream,
-    ISpatialSoundOptions,
-    IStaticSoundOptions,
-    IStreamingSoundOptions,
-    VirtualVoicesByPriority,
-} from "./audioEngine";
+import type { IAudioPhysicalEngine, ISpatialSoundOptions, IStaticSoundOptions, IStreamingSoundOptions, VirtualVoicesByPriority } from "./audioEngine";
 import { AbstractPhysicalAudioEngine } from "./audioEngine";
 import type { IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioBuffer } from "./webAudioBuffer";
@@ -29,7 +20,9 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     // private readonly _staticVoices: Array<WebAudioStaticVoice>;
     // private readonly _streamingVoices: Array<WebAudioStreamingVoice>;
 
+    private readonly _spatializers = new Map<number, WebAudioSpatializer>();
     private readonly _audioBuffers = new Map<number, WebAudioBuffer>();
+    private readonly _streams = new Map<number, WebAudioStream>();
 
     public constructor(options?: IWebAudioEngineOptions) {
         super();
@@ -81,18 +74,22 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         this._audioContext.resume();
     }
 
-    public createSpatializer(options: ISpatialSoundOptions): IAudioSpatializer {
-        return new WebAudioSpatializer(this._audioContext, this._nextSpatializerId, options);
+    public createSpatializer(options: ISpatialSoundOptions): number {
+        const spatializer = new WebAudioSpatializer(this._audioContext, this._getNextSpatializerId(), options);
+        this._spatializers.set(spatializer.id, spatializer);
+        return spatializer.id;
     }
 
-    public createBuffer(options: IStaticSoundOptions): IAudioBuffer {
-        const buffer = new WebAudioBuffer(this._audioContext, this._nextBufferId, options);
+    public createBuffer(options: IStaticSoundOptions): number {
+        const buffer = new WebAudioBuffer(this._audioContext, this._getNextSourceId(), options);
         this._audioBuffers.set(buffer.id, buffer);
-        return buffer;
+        return buffer.id;
     }
 
-    public createStream(options: IStreamingSoundOptions): IAudioStream {
-        return new WebAudioStream(this._audioContext, this._nextStreamId, options);
+    public createStream(options: IStreamingSoundOptions): number {
+        const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
+        this._streams.set(stream.id, stream);
+        return stream.id;
     }
 
     public update(_virtualVoicesByPriority: VirtualVoicesByPriority): void {

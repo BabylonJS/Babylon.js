@@ -41,6 +41,7 @@ export interface ISoundOptions {
     sourceUrls?: string[];
 
     loop?: boolean;
+    maxVoices?: number;
     priority?: number;
     spatial?: boolean;
     volume?: number;
@@ -64,11 +65,11 @@ export interface IAudioPhysicalEngine {
      */
     currentTime: number;
 
-    update(virtualVoicesByPriority: VirtualVoicesByPriority): void;
+    update(voicesByPriority: VirtualVoicesByPriority): void;
 
-    createSpatializer(options: ISpatialSoundOptions): IAudioSpatializer;
-    createBuffer(options: IStaticSoundOptions): IAudioBuffer;
-    createStream(options: IStreamingSoundOptions): IAudioStream;
+    createSpatializer(options: ISpatialSoundOptions): number;
+    createBuffer(options: IStaticSoundOptions): number;
+    createStream(options: IStreamingSoundOptions): number;
 }
 
 export interface IAudioEngineOptions {
@@ -107,10 +108,10 @@ export interface IAudioEngine {
 export class AbstractAudioEngine implements IAudioEngine {
     public readonly physicalEngine: IAudioPhysicalEngine;
 
-    private _nextVirtualVoiceId: number = 0;
-    private _virtualVoices = new Map<number, IVirtualVoice>();
-    private _virtualVoicesByPriority: VirtualVoicesByPriority = {};
-    private _virtualVoicesDirty: boolean = false;
+    private _nextVoiceId: number = 0;
+    private _voices = new Map<number, IVirtualVoice>();
+    private _voicesByPriority: VirtualVoicesByPriority = {};
+    private _voicesDirty: boolean = false;
 
     public constructor(physicalEngine: IAudioPhysicalEngine) {
         this.physicalEngine = physicalEngine;
@@ -123,54 +124,50 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
-    public get nextVirtualVoiceId(): number {
-        return this._nextVirtualVoiceId++;
+    public getNextVoiceId(): number {
+        return this._nextVoiceId++;
     }
 
-    addVirtualVoice(virtualVoice: IVirtualVoice): void {
-        this._virtualVoices.set(virtualVoice.id, virtualVoice);
+    addVoice(voice: IVirtualVoice): void {
+        this._voices.set(voice.id, voice);
 
-        this._virtualVoicesByPriority[virtualVoice.priority] ??= new Map<number, IVirtualVoice>();
-        const priorityMap = this._virtualVoicesByPriority[virtualVoice.priority];
-        priorityMap.set(virtualVoice.id, virtualVoice);
+        this._voicesByPriority[voice.priority] ??= new Map<number, IVirtualVoice>();
+        const priorityMap = this._voicesByPriority[voice.priority];
+        priorityMap.set(voice.id, voice);
 
-        this._virtualVoicesDirty = true;
+        this._voicesDirty = true;
     }
 
-    removeVirtualVoice(virtualVoice: IVirtualVoice): void {
-        this._virtualVoices.delete(virtualVoice.id);
-        const priorityMap = this._virtualVoicesByPriority[virtualVoice.priority];
-        priorityMap.delete(virtualVoice.id);
-        if (priorityMap.size === 0) {
-            delete this._virtualVoicesByPriority[virtualVoice.priority];
-        }
-        this._virtualVoicesDirty = true;
+    removeVoice(voice: IVirtualVoice): void {
+        this._voices.delete(voice.id);
+        this._voicesByPriority[voice.priority].delete(voice.id);
+
+        this._voicesDirty = true;
     }
 
     /**
      * Updates virtual voice statuses. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
-        if (!this._virtualVoicesDirty) {
+        if (!this._voicesDirty) {
             return;
         }
 
-        this.physicalEngine.update(this._virtualVoicesByPriority);
+        this.physicalEngine.update(this._voicesByPriority);
 
-        this._virtualVoicesDirty = false;
+        this._voicesDirty = false;
     }
 }
 
 export class AbstractPhysicalAudioEngine {
-    protected get _nextSpatializerId(): number {
-        return 0;
+    private _nextSpatializerId: number = 0;
+    private _nextSourceId: number = 0;
+
+    protected _getNextSpatializerId(): number {
+        return this._nextSpatializerId++;
     }
 
-    protected get _nextBufferId(): number {
-        return 0;
-    }
-
-    protected get _nextStreamId(): number {
-        return 0;
+    protected _getNextSourceId(): number {
+        return this._nextSourceId++;
     }
 }

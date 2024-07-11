@@ -1,8 +1,9 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { AbstractAudioEngine, IAudioEngine } from "./audioEngine";
+import type { AbstractAudioEngine, IAudioEngine, ISoundOptions } from "./audioEngine";
 import type { IVirtualVoice } from "./virtualVoice";
+import type { Nullable } from "../../types";
 
 export interface ISound {
     audioEngine: IAudioEngine;
@@ -16,12 +17,21 @@ export interface ISound {
 
 export class AbstractSound {
     public readonly audioEngine: AbstractAudioEngine;
+    public readonly options: ISoundOptions;
+
+    protected _sourceId: number;
 
     private _paused: boolean = false;
-    private _virtualVoices: Array<IVirtualVoice> = new Array<IVirtualVoice>();
 
-    public constructor(audioEngine: IAudioEngine) {
+    private _voices: Array<Nullable<IVirtualVoice>>;
+    private _voiceIndex: number = 0;
+
+    public constructor(audioEngine: IAudioEngine, options: ISoundOptions) {
         this.audioEngine = audioEngine as AbstractAudioEngine;
+        this.options = options;
+
+        this._voices = new Array<IVirtualVoice>(Math.max(options.maxVoices ?? 1, 1));
+        this._voices.fill(null);
     }
 
     public get paused(): boolean {
@@ -31,22 +41,25 @@ export class AbstractSound {
     public play(): IVirtualVoice {
         this.resume();
 
-        const virtualVoice = this._createVirtualVoice();
-        this._virtualVoices.push(virtualVoice);
+        const voice = this._createVoice();
+        voice.play();
+        this.audioEngine.addVoice(voice);
 
-        this.audioEngine.addVirtualVoice(virtualVoice);
+        this._voices[this._voiceIndex]?.stop();
+        this._voices[this._voiceIndex] = voice;
 
-        virtualVoice.play();
+        this._voiceIndex++;
+        this._voiceIndex %= this._voices.length;
 
-        return virtualVoice;
+        return voice;
     }
 
     public stop(): void {
-        for (const virtualVoice of this._virtualVoices) {
-            virtualVoice.stop();
+        for (const voice of this._voices) {
+            voice?.stop();
         }
 
-        this._virtualVoices.length = 0;
+        this._voices.fill(null);
     }
 
     public pause(): void {
@@ -54,9 +67,11 @@ export class AbstractSound {
             return;
         }
 
-        for (const virtualVoice of this._virtualVoices) {
-            virtualVoice.pause();
+        for (const voice of this._voices) {
+            voice?.pause();
         }
+
+        this._paused = true;
     }
 
     public resume(): void {
@@ -64,12 +79,14 @@ export class AbstractSound {
             return;
         }
 
-        for (const virtualVoice of this._virtualVoices) {
-            virtualVoice.resume();
+        for (const voice of this._voices) {
+            voice?.resume();
         }
+
+        this._paused = false;
     }
 
-    protected _createVirtualVoice(): IVirtualVoice {
+    protected _createVoice(): IVirtualVoice {
         throw new Error("Not implemented");
     }
 }
