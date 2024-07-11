@@ -81,6 +81,11 @@ export class TextBlock extends Control {
     public adjustWordWrappingHTMLElement: Nullable<(element: HTMLElement) => void>;
 
     /**
+     * Gets or sets a boolean indicating if the HTML element generated for word wrapping should be reused or removed after each wrapping.
+     */
+    public reuseHTMLForWordWrapping: boolean = false;
+
+    /**
      * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
      */
     public get lines(): any[] {
@@ -519,7 +524,7 @@ export class TextBlock extends Control {
         return this._linesTemp;
     }
 
-    private _htmlElement: HTMLElement;
+    private _htmlElement: Nullable<HTMLElement> = null;
 
     protected _parseHTMLText(refWidth: number, refHeight: number, context: ICanvasRenderingContext): string[] {
         const lines = [] as string[];
@@ -552,6 +557,11 @@ export class TextBlock extends Control {
             const lineIndex = range.getClientRects().length - 1;
             lines[lineIndex] = (lines[lineIndex] || "") + c;
             idx++;
+        }
+
+        if (!this.reuseHTMLForWordWrapping) {
+            htmlElement.remove();
+            this._htmlElement = null;
         }
 
         return lines;
@@ -740,6 +750,7 @@ export class TextBlock extends Control {
 
         this.onTextChangedObservable.clear();
         this._htmlElement?.remove();
+        this._htmlElement = null;
     }
 }
 RegisterClass("BABYLON.GUI.TextBlock", TextBlock);
