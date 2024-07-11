@@ -182,9 +182,9 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
                 for (let j = 0; j < l; j++) {
                     // uvs
                     const uvOffsetBase = uvOffset + j * 4;
-                    uvArr[uvOffsetBase + 0] = j / (l - 1);
+                    uvArr[uvOffsetBase + 0] = (j / (l - 2)) * (lengthArray[j >> 1] / totalLength);
                     uvArr[uvOffsetBase + 1] = 0;
-                    uvArr[uvOffsetBase + 2] = j / (l - 1);
+                    uvArr[uvOffsetBase + 2] = uvArr[uvOffsetBase + 0];
                     uvArr[uvOffsetBase + 3] = 1;
                 }
                 uvOffset += l * 4;
