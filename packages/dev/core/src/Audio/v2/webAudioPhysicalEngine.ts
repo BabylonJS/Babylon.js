@@ -1,7 +1,16 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioBuffer, IAudioPhysicalEngine, IAudioSpatializer, IAudioStream, ISpatialSoundOptions, IStaticSoundOptions, IStreamingSoundOptions } from "./audioEngine";
+import type {
+    IAudioBuffer,
+    IAudioPhysicalEngine,
+    IAudioSpatializer,
+    IAudioStream,
+    ISpatialSoundOptions,
+    IStaticSoundOptions,
+    IStreamingSoundOptions,
+    VirtualVoicesByPriority,
+} from "./audioEngine";
 import { AbstractPhysicalAudioEngine } from "./audioEngine";
 import type { IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioBuffer } from "./webAudioBuffer";
@@ -20,7 +29,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     // private readonly _staticVoices: Array<WebAudioStaticVoice>;
     // private readonly _streamingVoices: Array<WebAudioStreamingVoice>;
 
-    // private readonly _audioBuffers: Nullable<Array<WebAudioBuffer>> = null;
+    private readonly _audioBuffers = new Map<number, WebAudioBuffer>();
 
     public constructor(options?: IWebAudioEngineOptions) {
         super();
@@ -77,14 +86,16 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     }
 
     public createBuffer(options: IStaticSoundOptions): IAudioBuffer {
-        return new WebAudioBuffer(this._audioContext, this._nextBufferId, options);
+        const buffer = new WebAudioBuffer(this._audioContext, this._nextBufferId, options);
+        this._audioBuffers.set(buffer.id, buffer);
+        return buffer;
     }
 
     public createStream(options: IStreamingSoundOptions): IAudioStream {
         return new WebAudioStream(this._audioContext, this._nextStreamId, options);
     }
 
-    public update(): void {
+    public update(_virtualVoicesByPriority: VirtualVoicesByPriority): void {
         const currentTime = this.currentTime;
         if (this._lastUpdateTime == currentTime) {
             return;

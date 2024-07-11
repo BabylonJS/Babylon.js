@@ -1,6 +1,11 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
+import type { IVirtualVoice } from "./virtualVoice";
+import type { Observable } from "../../Misc/observable";
+
+export type VirtualVoicesByPriority = { [key: number]: Map<number, IVirtualVoice> };
+
 export interface ISound {}
 
 /**
@@ -16,6 +21,10 @@ export interface IAudioSpatializer {
  */
 export interface IAudioBuffer {
     id: number;
+    loaded: boolean;
+    duration: number; // seconds
+
+    onLoadObservable: Observable<IAudioBuffer>;
 }
 
 /**
@@ -55,7 +64,7 @@ export interface IAudioPhysicalEngine {
      */
     currentTime: number;
 
-    update(): void;
+    update(virtualVoicesByPriority: VirtualVoicesByPriority): void;
 
     createSpatializer(options: ISpatialSoundOptions): IAudioSpatializer;
     createBuffer(options: IStaticSoundOptions): IAudioBuffer;
@@ -98,6 +107,11 @@ export interface IAudioEngine {
 export class AbstractAudioEngine implements IAudioEngine {
     public readonly physicalEngine: IAudioPhysicalEngine;
 
+    private _nextVirtualVoiceId: number = 0;
+    private _virtualVoices = new Map<number, IVirtualVoice>();
+    private _virtualVoicesByPriority: VirtualVoicesByPriority = {};
+    private _virtualVoicesDirty: boolean = false;
+
     public constructor(physicalEngine: IAudioPhysicalEngine) {
         this.physicalEngine = physicalEngine;
     }
@@ -109,11 +123,41 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
+    public get nextVirtualVoiceId(): number {
+        return this._nextVirtualVoiceId++;
+    }
+
+    addVirtualVoice(virtualVoice: IVirtualVoice): void {
+        this._virtualVoices.set(virtualVoice.id, virtualVoice);
+
+        this._virtualVoicesByPriority[virtualVoice.priority] ??= new Map<number, IVirtualVoice>();
+        const priorityMap = this._virtualVoicesByPriority[virtualVoice.priority];
+        priorityMap.set(virtualVoice.id, virtualVoice);
+
+        this._virtualVoicesDirty = true;
+    }
+
+    removeVirtualVoice(virtualVoice: IVirtualVoice): void {
+        this._virtualVoices.delete(virtualVoice.id);
+        const priorityMap = this._virtualVoicesByPriority[virtualVoice.priority];
+        priorityMap.delete(virtualVoice.id);
+        if (priorityMap.size === 0) {
+            delete this._virtualVoicesByPriority[virtualVoice.priority];
+        }
+        this._virtualVoicesDirty = true;
+    }
+
     /**
-     * Updates audio engine control rate (k-rate) settings. Called automatically if `autoUpdate` is `true`.
+     * Updates virtual voice statuses. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
-        this.physicalEngine.update();
+        if (!this._virtualVoicesDirty) {
+            return;
+        }
+
+        this.physicalEngine.update(this._virtualVoicesByPriority);
+
+        this._virtualVoicesDirty = false;
     }
 }
 
