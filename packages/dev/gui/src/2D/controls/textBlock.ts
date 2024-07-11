@@ -519,12 +519,19 @@ export class TextBlock extends Control {
         return this._linesTemp;
     }
 
+    private _htmlElement: HTMLElement;
+
     protected _parseHTMLText(refWidth: number, refHeight: number, context: ICanvasRenderingContext): string[] {
         const lines = [] as string[];
-        const htmlElement = document.createElement("div");
-        htmlElement.innerHTML = this.text;
+        if (!this._htmlElement) {
+            this._htmlElement = document.createElement("div");
+            document.body.appendChild(this._htmlElement);
+        }
+        const htmlElement = this._htmlElement;
+        htmlElement.textContent = this.text;
         htmlElement.style.font = context.font;
         htmlElement.style.position = "absolute";
+        htmlElement.style.visibility = "hidden";
         htmlElement.style.top = "-1000px";
         htmlElement.style.left = "-1000px";
         this.adjustWordWrappingHTMLElement?.(htmlElement);
@@ -534,8 +541,6 @@ export class TextBlock extends Control {
         if (!textContent) {
             return lines;
         }
-        document.body.appendChild(htmlElement);
-
         // get the text node
         const textNode = htmlElement.childNodes[0];
         const range = document.createRange();
@@ -548,8 +553,6 @@ export class TextBlock extends Control {
             lines[lineIndex] = (lines[lineIndex] || "") + c;
             idx++;
         }
-
-        document.body.removeChild(htmlElement);
 
         return lines;
     }
@@ -736,6 +739,7 @@ export class TextBlock extends Control {
         super.dispose();
 
         this.onTextChangedObservable.clear();
+        this._htmlElement?.remove();
     }
 }
 RegisterClass("BABYLON.GUI.TextBlock", TextBlock);
