@@ -1,6 +1,14 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-export class WebAudioSpatialVoice {
-    public constructor() {}
+import { WebAudioAbstractVoice } from "./webAudioAbstractVoice";
+
+export class WebAudioSpatialVoice extends WebAudioAbstractVoice {
+    public constructor() {
+        super();
+    }
+
+    public override copyFrom(_voice: WebAudioSpatialVoice): void {
+        // ...
+    }
 }

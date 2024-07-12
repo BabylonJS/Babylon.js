@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ISoundOptions } from "./abstractSound";
+import { type ISoundOptions, SoundPriority } from "./abstractSound";
 import { Observable } from "../../Misc/observable";
 
 export enum VirtualVoiceType {
@@ -12,7 +12,7 @@ export enum VirtualVoiceType {
 export interface IVirtualVoice {
     id: number;
     sourceId: number;
-    priority: number;
+    priority: SoundPriority;
     type: VirtualVoiceType;
     spatial: boolean;
 
@@ -32,8 +32,10 @@ export class VirtualVoice implements IVirtualVoice {
     public readonly type: VirtualVoiceType;
     public readonly id: number;
     public readonly sourceId: number;
-    public readonly priority: number;
     public readonly spatial: boolean;
+
+    public priority: number;
+    public updated: boolean = false;
 
     public readonly onDeactivatedObservable = new Observable<IVirtualVoice>();
     public readonly onPlayingChangedObservable = new Observable<IVirtualVoice>();
@@ -45,7 +47,7 @@ export class VirtualVoice implements IVirtualVoice {
         this.type = type;
         this.id = id;
         this.sourceId = sourceId;
-        this.priority = options?.priority ?? 0;
+        this.priority = options?.priority ?? SoundPriority.Optional; // TODO: What default should be used here?
         this.spatial = options?.spatial ?? false;
     }
 

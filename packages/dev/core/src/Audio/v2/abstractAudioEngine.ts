@@ -1,11 +1,12 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import { SoundPriority } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
-import type { IVirtualVoice } from "./virtualVoice";
+import { type IVirtualVoice } from "./virtualVoice";
 
-export type VirtualVoicesByPriority = { [key: number]: Map<number, IVirtualVoice> };
+export class VirtualVoicesByPriority extends Array<Map<number, IVirtualVoice>> {}
 
 export interface IAudioEngineOptions {
     /**
@@ -45,7 +46,7 @@ export class AbstractAudioEngine implements IAudioEngine {
 
     private _nextVoiceId: number = 0;
     private _voices = new Map<number, IVirtualVoice>();
-    private _voicesByPriority: VirtualVoicesByPriority = {};
+    private _voicesByPriority = new VirtualVoicesByPriority(SoundPriority.Count);
     private _voicesDirty: boolean = false;
 
     public constructor(physicalEngine: IAudioPhysicalEngine) {

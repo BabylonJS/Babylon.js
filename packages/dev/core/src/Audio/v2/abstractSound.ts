@@ -7,6 +7,13 @@ import { getCurrentAudioEngine } from "./audioEngine";
 import type { IVirtualVoice } from "./virtualVoice";
 import type { Nullable } from "../../types";
 
+export enum SoundPriority {
+    Optional,
+    Important,
+    Critical,
+    Count,
+}
+
 export interface ISoundOptions {
     name?: string;
 
@@ -15,7 +22,7 @@ export interface ISoundOptions {
 
     loop?: boolean;
     maxVoices?: number;
-    priority?: number;
+    priority?: SoundPriority;
     spatial?: boolean;
     volume?: number;
 }
