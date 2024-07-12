@@ -587,6 +587,7 @@ export class Image extends Control {
         if (imgElement.style && this._source?.endsWith(".svg")) {
             imgElement.style.visibility = "hidden";
             imgElement.style.position = "absolute";
+            imgElement.style.top = "0";
             engine.getRenderingCanvas()?.parentNode?.appendChild(imgElement);
             addedToDom = true;
         }
