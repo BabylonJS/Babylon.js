@@ -2,9 +2,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable no-console */
 
-import { type VirtualVoicesByPriority } from "./abstractAudioEngine";
 import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { SoundPriority, type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
 import { WebAudioStaticBuffer } from "./webAudioStaticBuffer";
@@ -12,7 +12,6 @@ import { WebAudioStream } from "./webAudioStream";
 import { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
 import { WebAudioStaticVoice } from "./webAudioStaticVoice";
 import { WebAudioStreamingVoice } from "./webAudioStreamingVoice";
-import { Logger } from "../../Misc/logger";
 
 export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implements IAudioPhysicalEngine {
     private _audioContext: AudioContext;
@@ -122,70 +121,11 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         return stream.id;
     }
 
-    public update(virtualVoicesByPriority: VirtualVoicesByPriority, _fullUpdate?: boolean): void {
+    public update(_virtualVoices: Array<VirtualVoice>): void {
         const currentTime = this.currentTime;
         if (this._lastUpdateTime == currentTime) {
             return;
         }
         this._lastUpdateTime = currentTime;
-
-        if (_fullUpdate) {
-            this._fullUpdate(virtualVoicesByPriority);
-        }
-    }
-
-    /**
-     * Updates physical voices based on priorities and volumes of virtual voices.
-     * @param virtualVoicesByPriority - The virtual voices sorted by priority.
-     */
-    private _fullUpdate(virtualVoicesByPriority: VirtualVoicesByPriority): void {
-        for (let i = 0; i < SoundPriority.Count; i++) {
-            const voices = virtualVoicesByPriority[i];
-            voices?.forEach((voice) => {
-                voice.updated = false;
-            });
-        }
-
-        for (let i = 0; i < this._spatialVoices.length; i++) {
-            this._oldSpatialVoices[i].copyFrom(this._spatialVoices[i]);
-        }
-        for (let i = 0; i < this._staticVoices.length; i++) {
-            this._oldStaticVoices[i].copyFrom(this._staticVoices[i]);
-        }
-        for (let i = 0; i < this._streamingVoices.length; i++) {
-            this._oldStreamingVoices[i].copyFrom(this._streamingVoices[i]);
-        }
-
-        let spatialIndex = 0;
-        let oldSpatialIndex = 0;
-        // let oldStaticIndex = 0;
-        // let oldStreamingIndex = 0;
-
-        for (let priority = SoundPriority.Critical; 0 <= priority; priority--) {
-            const virtualVoices = virtualVoicesByPriority[priority];
-            while (spatialIndex < this._spatialVoices.length) {
-                const oldVoice = this._oldSpatialVoices[oldSpatialIndex];
-                if (!oldVoice.virtualVoice || oldVoice.virtualVoice.priority < priority) {
-                    virtualVoices.forEach((virtualVoice) => {
-                        if (spatialIndex < this._spatialVoices.length && !virtualVoice.updated) {
-                            this._spatialVoices[spatialIndex].virtualVoice = virtualVoice;
-                            spatialIndex++;
-                            virtualVoice.updated = true;
-                        }
-                    });
-                    break;
-                } else if (oldVoice.active && !!oldVoice.virtualVoice && !oldVoice.virtualVoice.updated) {
-                    this._spatialVoices[spatialIndex].copyFrom(oldVoice);
-                    oldVoice.virtualVoice.updated = true;
-                    oldSpatialIndex++;
-                    spatialIndex++;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        console.log("Spatial Voices ... ");
-        console.log(this._spatialVoices);
     }
 }

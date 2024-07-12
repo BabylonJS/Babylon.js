@@ -4,8 +4,7 @@
 import type { AbstractAudioEngine, IAudioEngine } from "./abstractAudioEngine";
 import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
 import { getCurrentAudioEngine } from "./audioEngine";
-import type { IVirtualVoice } from "./virtualVoice";
-import type { Nullable } from "../../types";
+import type { VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 
 export enum SoundPriority {
     Optional,
@@ -39,7 +38,7 @@ export interface IStreamingSoundOptions extends ISoundOptions {}
 export interface ISound {
     audioEngine: IAudioEngine;
 
-    play(): IVirtualVoice;
+    play(): VirtualVoice;
     stop(): void;
 
     pause(): void;
@@ -54,48 +53,35 @@ export class AbstractSound {
 
     private _paused: boolean = false;
 
-    private _voices: Array<Nullable<IVirtualVoice>>;
+    private _voices: Array<VirtualVoice>;
     private _voiceIndex: number = 0;
 
-    public constructor(options?: ISoundOptions, audioEngine?: IAudioEngine) {
+    public constructor(type: VirtualVoiceType, options?: ISoundOptions, audioEngine?: IAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
         this.options = options;
 
-        this._voices = new Array<IVirtualVoice>(Math.max(options?.maxVoices ?? 1, 1));
-        this._voices.fill(null);
+        this._voices = this.audioEngine.activateVoices(options?.maxVoices ?? 1, type, this._sourceId, options);
     }
 
     public get paused(): boolean {
         return this._paused;
     }
 
-    public play(): IVirtualVoice {
+    public play(): VirtualVoice {
         this.resume();
 
-        this._removeVoice(this._voices[this._voiceIndex]);
+        const voice = this._voices[this._voiceIndex];
+        voice.start();
 
-        const voice = this._createVoice();
-
-        voice.onDeactivatedObservable.addOnce((voice) => {
-            this._removeVoice(voice);
-        });
-
-        this.audioEngine.addVoice(voice);
-
-        this._voices[this._voiceIndex] = voice;
-
-        this._voiceIndex++;
-        this._voiceIndex %= this._voices.length;
+        this._voiceIndex = (this._voiceIndex + 1) % this._voices.length;
 
         return voice;
     }
 
     public stop(): void {
         for (const voice of this._voices) {
-            voice?.stop();
+            voice.stop();
         }
-
-        this._voices.fill(null);
     }
 
     public pause(): void {
@@ -104,7 +90,7 @@ export class AbstractSound {
         }
 
         for (const voice of this._voices) {
-            voice?.pause();
+            voice.pause();
         }
 
         this._paused = true;
@@ -116,24 +102,9 @@ export class AbstractSound {
         }
 
         for (const voice of this._voices) {
-            voice?.resume();
+            voice.resume();
         }
 
         this._paused = false;
-    }
-
-    protected _createVoice(): IVirtualVoice {
-        throw new Error("Not implemented");
-    }
-
-    private _removeVoice(voice: Nullable<IVirtualVoice>): void {
-        if (!voice) {
-            return;
-        }
-
-        voice.stop();
-
-        this.audioEngine.removeVoice(voice);
-        this._voices[this._voices.indexOf(voice)] = null;
     }
 }

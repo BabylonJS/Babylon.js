@@ -9,84 +9,67 @@ export enum VirtualVoiceType {
     Streaming,
 }
 
-export interface IVirtualVoice {
-    id: number;
-    sourceId: number;
-    priority: SoundPriority;
-
-    type: VirtualVoiceType;
-    spatial: boolean;
-
-    active: boolean; // `true` if playing or paused.
-    onDeactivatedObservable: Observable<IVirtualVoice>;
-
-    playing: boolean; // `true` if playing; `false` if paused.
-    onPlayingChangedObservable: Observable<IVirtualVoice>;
-
-    updated: boolean;
-
-    stop(): void;
-
-    pause(): void;
-    resume(): void;
+export enum VirtualVoiceState {
+    Starting,
+    Resuming,
+    Restarting,
+    Started,
+    Pausing,
+    Paused,
+    Stopping,
+    Stopped,
 }
 
-export class VirtualVoice implements IVirtualVoice {
-    public readonly type: VirtualVoiceType;
-    public readonly id: number;
-    public readonly sourceId: number;
-    public readonly spatial: boolean;
-
+export class VirtualVoice {
+    public id: number;
+    public index: number;
     public priority: number;
+    public sourceId: number;
+    public spatial: boolean;
+    public type: VirtualVoiceType;
     public updated: boolean = false;
 
-    public readonly onDeactivatedObservable = new Observable<IVirtualVoice>();
-    public readonly onPlayingChangedObservable = new Observable<IVirtualVoice>();
+    private _state: VirtualVoiceState = VirtualVoiceState.Starting;
+    public readonly onStateChangedObservable = new Observable<VirtualVoice>();
 
-    private _active: boolean = true;
-    private _playing: boolean = true;
+    public constructor(index: number) {
+        this.index = index;
+    }
 
-    public constructor(type: VirtualVoiceType, id: number, sourceId: number, options?: ISoundOptions) {
-        this.type = type;
+    public init(type: VirtualVoiceType, id: number, sourceId: number, options?: ISoundOptions): void {
         this.id = id;
-        this.sourceId = sourceId;
         this.priority = options?.priority ?? SoundPriority.Optional; // TODO: What default should be used here?
+        this.sourceId = sourceId;
         this.spatial = options?.spatial ?? false;
+        this.type = type;
     }
 
-    public get active(): boolean {
-        return this._active;
+    public get state(): VirtualVoiceState {
+        return this._state;
     }
 
-    public get playing(): boolean {
-        return this._playing;
+    public set state(value: VirtualVoiceState) {
+        if (this._state === value) {
+            return;
+        }
+        this.updated = false;
+        this._state = value;
+        this.onStateChangedObservable.notifyObservers(this);
+    }
+
+    public start(): void {
+        this.state = this._state === VirtualVoiceState.Stopped ? VirtualVoiceState.Starting : VirtualVoiceState.Restarting;
     }
 
     public stop(): void {
-        if (!this._active) {
-            return;
-        }
-
-        this._playing = false;
-        this._active = false;
-        this.onDeactivatedObservable.notifyObservers(this);
+        this.state = VirtualVoiceState.Stopping;
     }
 
     public pause(): void {
-        if (!this._playing) {
-            return;
-        }
-
-        this._playing = false;
-        this.onPlayingChangedObservable.notifyObservers(this);
+        this.state = VirtualVoiceState.Pausing;
     }
 
     public resume(): void {
-        if (this._playing) {
-            return;
-        }
-
-        this._playing = true;
-        this.onPlayingChangedObservable.notifyObservers(this);
+        this.state = VirtualVoiceState.Resuming;
     }
 }

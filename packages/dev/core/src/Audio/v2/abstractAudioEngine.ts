@@ -2,11 +2,9 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { SoundPriority } from "./abstractSound";
+import { type ISoundOptions } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
-import { type IVirtualVoice } from "./virtualVoice";
-
-export class VirtualVoicesByPriority extends Array<Map<number, IVirtualVoice>> {}
+import { VirtualVoice, type VirtualVoiceType } from "./virtualVoice";
 
 export interface IAudioEngineOptions {
     /**
@@ -45,9 +43,9 @@ export class AbstractAudioEngine implements IAudioEngine {
     public readonly physicalEngine: IAudioPhysicalEngine;
 
     private _nextVoiceId: number = 0;
-    private _voices = new Map<number, IVirtualVoice>();
-    private _voicesByPriority = new VirtualVoicesByPriority(SoundPriority.Count);
+    private _voices = new Array<VirtualVoice>();
     private _voicesDirty: boolean = false;
+    private _lastActiveVoiceIndex: number = 1;
 
     public constructor(physicalEngine: IAudioPhysicalEngine) {
         this.physicalEngine = physicalEngine;
@@ -66,36 +64,52 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this._nextVoiceId++;
     }
 
-    addVoice(voice: IVirtualVoice): void {
-        this._voices.set(voice.id, voice);
+    public activateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): Array<VirtualVoice> {
+        const voices = new Array<VirtualVoice>(count);
+        if (count === 0) {
+            return voices;
+        }
 
-        this._voicesByPriority[voice.priority] ??= new Map<number, IVirtualVoice>();
-        const priorityMap = this._voicesByPriority[voice.priority];
-        priorityMap.set(voice.id, voice);
+        for (let i = 0; i < count; i++) {
+            const voice = this._lastActiveVoiceIndex < this._voices.length ? this._voices[this._lastActiveVoiceIndex] : this._createVoice();
+            voices[i] = voice;
 
-        voice.onDeactivatedObservable.addOnce((voice) => {
-            this.removeVoice(voice);
-        });
+            voice.init(type, this.getNextVoiceId(), sourceId, options);
+        }
 
         this._voicesDirty = true;
 
-        voice.onPlayingChangedObservable.add(() => {
-            this._voicesDirty = true;
-        });
+        return voices;
     }
 
-    removeVoice(voice: IVirtualVoice): void {
-        this._voices.delete(voice.id);
-        this._voicesByPriority[voice.priority].delete(voice.id);
-
-        this._voicesDirty = true;
+    public deactivateVoices(voices: Array<VirtualVoice>): void {
+        for (const voice of voices) {
+            this._voices[voice.index].stop();
+        }
     }
 
     /**
      * Updates virtual voices. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
-        this.physicalEngine.update(this._voicesByPriority, this._voicesDirty);
+        if (this._voicesDirty) {
+            this._voices.sort((_a, _b) => {
+                return 0;
+            });
+        }
+
+        this.physicalEngine.update(this._voices);
         this._voicesDirty = false;
+    }
+
+    private _createVoice(): VirtualVoice {
+        const voice = new VirtualVoice(this._voices.length);
+        this._voices.push(voice);
+
+        voice.onStateChangedObservable.add(() => {
+            this._voicesDirty = true;
+        });
+
+        return voice;
     }
 }
