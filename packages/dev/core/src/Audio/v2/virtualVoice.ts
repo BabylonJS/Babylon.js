@@ -13,6 +13,7 @@ export interface IVirtualVoice {
     id: number;
     sourceId: number;
     priority: SoundPriority;
+
     type: VirtualVoiceType;
     spatial: boolean;
 
@@ -21,6 +22,8 @@ export interface IVirtualVoice {
 
     playing: boolean; // `true` if playing; `false` if paused.
     onPlayingChangedObservable: Observable<IVirtualVoice>;
+
+    updated: boolean;
 
     stop(): void;
 

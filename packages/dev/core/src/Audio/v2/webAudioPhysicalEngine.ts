@@ -1,17 +1,17 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
+/* eslint-disable no-console */
 
 import { type VirtualVoicesByPriority } from "./abstractAudioEngine";
 import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
 import { SoundPriority, type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
-import { VirtualVoiceType } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
 import { WebAudioStaticBuffer } from "./webAudioStaticBuffer";
 import { WebAudioStream } from "./webAudioStream";
-import { type WebAudioSpatialVoice } from "./webAudioSpatialVoice";
-import { type WebAudioStaticVoice } from "./webAudioStaticVoice";
-import { type WebAudioStreamingVoice } from "./webAudioStreamingVoice";
+import { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
+import { WebAudioStaticVoice } from "./webAudioStaticVoice";
+import { WebAudioStreamingVoice } from "./webAudioStreamingVoice";
 import { Logger } from "../../Misc/logger";
 
 export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implements IAudioPhysicalEngine {
@@ -23,11 +23,11 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     private readonly _audioBuffers = new Map<number, WebAudioStaticBuffer>();
     private readonly _streams = new Map<number, WebAudioStream>();
 
-    private _spatialVoices: Array<WebAudioSpatialVoice>;
+    private _spatialVoices: WebAudioSpatialVoice[] = [];
     private _staticVoices: Array<WebAudioStaticVoice>;
     private _streamingVoices: Array<WebAudioStreamingVoice>;
 
-    private _oldSpatialVoices: Array<WebAudioSpatialVoice>;
+    private _oldSpatialVoices: WebAudioSpatialVoice[] = [];
     private _oldStaticVoices: Array<WebAudioStaticVoice>;
     private _oldStreamingVoices: Array<WebAudioStreamingVoice>;
 
@@ -57,12 +57,31 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         }
 
         // These arrays will always be sorted by priority, high to low.
-        this._spatialVoices = new Array<WebAudioSpatialVoice>(options?.maxSpatialVoices ?? 64);
+        this._spatialVoices.length = options?.maxSpatialVoices ?? 64;
         this._staticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
         this._streamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
-        this._oldSpatialVoices = new Array<WebAudioSpatialVoice>(options?.maxSpatialVoices ?? 64);
+        this._oldSpatialVoices.length = options?.maxSpatialVoices ?? 64;
         this._oldStaticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
         this._oldStreamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
+
+        for (let i = 0; i < this._spatialVoices.length; i++) {
+            this._spatialVoices[i] = new WebAudioSpatialVoice();
+        }
+        for (let i = 0; i < this._staticVoices.length; i++) {
+            this._staticVoices[i] = new WebAudioStaticVoice();
+        }
+        for (let i = 0; i < this._streamingVoices.length; i++) {
+            this._streamingVoices[i] = new WebAudioStreamingVoice();
+        }
+        for (let i = 0; i < this._oldSpatialVoices.length; i++) {
+            this._oldSpatialVoices[i] = new WebAudioSpatialVoice();
+        }
+        for (let i = 0; i < this._oldStaticVoices.length; i++) {
+            this._oldStaticVoices[i] = new WebAudioStaticVoice();
+        }
+        for (let i = 0; i < this._oldStreamingVoices.length; i++) {
+            this._oldStreamingVoices[i] = new WebAudioStreamingVoice();
+        }
     }
 
     public get currentTime(): number {
@@ -137,25 +156,36 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
             this._oldStreamingVoices[i].copyFrom(this._streamingVoices[i]);
         }
 
+        let spatialIndex = 0;
         let oldSpatialIndex = 0;
-        let oldStaticIndex = 0;
-        let oldStreamingIndex = 0;
+        // let oldStaticIndex = 0;
+        // let oldStreamingIndex = 0;
 
         for (let priority = SoundPriority.Critical; 0 <= priority; priority--) {
             const virtualVoices = virtualVoicesByPriority[priority];
-            for (let spatialIndex = 0; spatialIndex < this._spatialVoices.length; spatialIndex++) {
+            while (spatialIndex < this._spatialVoices.length) {
                 const oldVoice = this._oldSpatialVoices[oldSpatialIndex];
-                if (oldVoice.priority < priority) {
+                if (!oldVoice.virtualVoice || oldVoice.virtualVoice.priority < priority) {
                     virtualVoices.forEach((virtualVoice) => {
-                        this._spatialVoices[spatialIndex].virtualVoice = virtualVoice;
-                        virtualVoice.updated = true;
+                        if (spatialIndex < this._spatialVoices.length && !virtualVoice.updated) {
+                            this._spatialVoices[spatialIndex].virtualVoice = virtualVoice;
+                            spatialIndex++;
+                            virtualVoice.updated = true;
+                        }
                     });
-                } else if (oldVoice.active && !oldVoice.virtualVoice.updated) {
+                    break;
+                } else if (oldVoice.active && !!oldVoice.virtualVoice && !oldVoice.virtualVoice.updated) {
                     this._spatialVoices[spatialIndex].copyFrom(oldVoice);
                     oldVoice.virtualVoice.updated = true;
                     oldSpatialIndex++;
+                    spatialIndex++;
+                } else {
+                    break;
                 }
             }
         }
+
+        console.log("Spatial Voices ... ");
+        console.log(this._spatialVoices);
     }
 }

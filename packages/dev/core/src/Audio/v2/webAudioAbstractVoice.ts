@@ -1,13 +1,12 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { SoundPriority } from "./abstractSound";
-import { type VirtualVoice } from "./virtualVoice";
+import { type IVirtualVoice } from "./virtualVoice";
+import { type Nullable } from "../../types";
 
 export class WebAudioAbstractVoice {
-    public active: boolean = true;
-    public priority: SoundPriority = SoundPriority.Optional;
-    public virtualVoice: Nullable<VirtualVoice>;
+    public active: boolean = false;
+    public virtualVoice: Nullable<IVirtualVoice> = null;
 
     public constructor() {
         // ...

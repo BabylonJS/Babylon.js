@@ -1,6 +1,10 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-export class WebAudioStreamingVoice {
-    public constructor() {}
+import { WebAudioAbstractVoice } from "./webAudioAbstractVoice";
+
+export class WebAudioStreamingVoice extends WebAudioAbstractVoice {
+    public constructor() {
+        super();
+    }
 }
