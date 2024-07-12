@@ -67,12 +67,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onNewRequiredObservable.notifyObservers();
     }
 
-    onUpdateGenerator() {
-        this.props.globalState.onUpdateGeneratorRequiredObservable.notifyObservers();
-    }
-
-    onGenerate() {
-        this.props.globalState.onGenerateRequiredObservable.notifyObservers();
+    onInsertSnippet() {
+        this.props.globalState.onInsertSnippetRequiredObservable.notifyObservers();
     }
 
     onClear() {
@@ -198,30 +194,10 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         let proceduralOptions: any[] = [];
         proceduralOptions = this._procedural.map((item) => ({
             ...item,
-            onClick:
-                typeof item.onClick === "string"
-                    ? {
-                          empty: () => {},
-                          onGenerate: () => {
-                              this.onGenerate();
-                          },
-                          onUpdateGenerator: () => {
-                              this.onUpdateGenerator();
-                          },
-                      }[item.onClick]
-                    : undefined,
-            onCheck:
-                typeof item.onCheck === "string"
-                    ? {
-                          empty: () => {},
-                          onGenerate: () => {
-                              this.onGenerate();
-                          },
-                          onUpdateGenerator: () => {
-                              this.onUpdateGenerator();
-                          },
-                      }[item.onCheck]
-                    : undefined,
+            storeKey: "snippetKey",
+            onClick: () => {
+                this.onInsertSnippet();
+            },
         }));
 
         // Engine Version Options

@@ -44,8 +44,7 @@ export class GlobalState {
     public onRunExecutedObservable = new Observable<void>();
     public onSavedObservable = new Observable<void>();
     public onNewRequiredObservable = new Observable<void>();
-    public onUpdateGeneratorRequiredObservable = new Observable<void>();
-    public onGenerateRequiredObservable = new Observable<void>();
+    public onInsertSnippetRequiredObservable = new Observable<void>();
     public onClearRequiredObservable = new Observable<void>();
     public onSaveRequiredObservable = new Observable<void>();
     public onLoadRequiredObservable = new Observable<string>();

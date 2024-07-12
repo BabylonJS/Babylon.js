@@ -1,93 +1,65 @@
 [
     {
-        "label": "Run",
-        "tooltip": "Run the code generator with these params",
-        "onClick": "onGenerate"
-    },
-    {
-        "label": "Run Auto",
-        "tooltip": "Automatic run of the code generator on param change",
-        "storeKey": "generateAuto",
-        "defaultValue": true,
-        "onCheck": "empty",
+        "label": "Scene",
+        "tooltip": "Scene tools",
+        "defaultValue": "Debug Layer",
+        "subItems": ["Debug Layer", "Shadows", "Skybox", "Audio", "Lens Flare", "Sprites"],
+        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
-        "label": "Debug Layer",
-        "tooltip": "Open debug layer",
-        "storeKey": "debugLayer",
-        "defaultValue": false,
-        "onCheck": "onUpdateGenerator",
-        "keepExpanded": true
-    },
-    {
-        "label": "Camera",
+        "label": "Cameras",
         "tooltip": "Select a camera type",
-        "storeKey": "useCamera",
         "defaultValue": "Arc Rotate (Rad)",
         "subItems": ["Arc Rotate (Rad)", "Arc Rotate (Deg)", "Free", "WebXR"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
-        "label": "Light",
+        "label": "Lights",
         "tooltip": "Select a light type",
-        "storeKey": "useLight",
         "defaultValue": "Hemispheric",
         "subItems": ["Hemispheric", "Directionnal", "Point", "Spot", "3 Spots"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
-        "label": "Shadows",
-        "tooltip": "Enable shadows",
-        "storeKey": "useShadows",
-        "defaultValue": false,
-        "onCheck": "onUpdateGenerator",
-        "keepExpanded": true
-    },
-    {
         "label": "Mesh Builder",
         "tooltip": "Build meshes using BABYLON.MeshBuilder",
-        "storeKeys": ["useGround", "useSphere", "useBox", "useCylinder"],
-        "defaultValues": [true, true, false, false],
+        "defaultValue": "Ground",
         "subItems": ["Ground", "Sphere", "Box", "Cylinder"],
-        "onCheck": "onUpdateGenerator",
+        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Animations",
         "tooltip": "Import animated characters",
-        "storeKey": "useAnimation",
-        "defaultValue": "None",
-        "subItems": ["None", "Dude", "Dummy", "Samba Girl"],
+        "defaultValue": "Dude",
+        "subItems": ["Dude", "Dummy", "Samba Girl"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Particles",
         "tooltip": "Add a simple particle system to the scene",
-        "storeKey": "useParticles",
-        "defaultValue": "None",
-        "subItems": ["None", "Simple", "Color Gradient", "Complex"],
+        "defaultValue": "Simple",
+        "subItems": ["Simple", "Color Gradient", "Complex"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Load Snippet",
         "tooltip": "Load asset from Snippet Server",
-        "storeKey": "useSnippet",
-        "defaultValue": "None",
-        "subItems": ["None", "Particles", "Node Material", "GUI", "GUI on Mesh"],
+        "defaultValue": "Particles",
+        "subItems": ["Particles", "Node Material", "GUI", "GUI on Mesh"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Import / Export",
         "tooltip": "Import or Export assets",
-        "storeKey": "useImport",
-        "defaultValue": "None",
-        "subItems": ["None", "Import Mesh", "Export GLB", "Export GLTF"],
+        "defaultValue": "Import Mesh",
+        "subItems": ["Import Mesh", "Export GLB", "Export GLTF"],
         "onClick": "onUpdateGenerator",
         "keepExpanded": true
     }
