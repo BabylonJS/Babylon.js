@@ -42,6 +42,9 @@ export function computeMaxExtents(
     const skinnedMeshExtents = new Map<number, Map<number, { minimum: Vector3; maximum: Vector3 }>>();
 
     // Compute the non-skinned and skinned mesh extents.
+    const maxLength = meshes.reduce((previous, current) => Math.max(previous, current.getTotalVertices()), 0);
+    const minPositions = Array.from({ length: maxLength }, () => new Vector3());
+    const maxPositions = Array.from({ length: maxLength }, () => new Vector3());
     for (const mesh of meshes) {
         const positions = mesh.getVerticesData(VertexBuffer.PositionKind);
         if (!positions) {
@@ -50,12 +53,12 @@ export function computeMaxExtents(
 
         // Initialize min/max positions with the original positions.
         const numVertices = mesh.getTotalVertices();
-        const minPositions = new Array<Vector3>(numVertices);
-        const maxPositions = new Array<Vector3>(numVertices);
+        minPositions.length = Math.max(minPositions.length, numVertices);
+        maxPositions.length = Math.max(minPositions.length, numVertices);
         for (let i = 0, j = 0; i < numVertices; i++, j += 3) {
             position.set(positions[j], positions[j + 1], positions[j + 2]);
-            minPositions[i] = position.clone();
-            maxPositions[i] = position.clone();
+            minPositions[i].copyFrom(position);
+            maxPositions[i].copyFrom(position);
         }
 
         // Apply morph targets to the min/max positions.
@@ -87,30 +90,30 @@ export function computeMaxExtents(
             const perBoneExtents = skinnedMeshExtents.get(mesh.uniqueId) || new Map<number, { minimum: Vector3; maximum: Vector3 }>();
             skinnedMeshExtents.set(mesh.uniqueId, perBoneExtents);
 
-            for (let i = 0, j = 0; i < numVertices; i++, j += 4) {
-                const updateExtents = (weights: FloatArray, indices: FloatArray): void => {
-                    for (let k = j; k < j + 4; k++) {
-                        if (weights[k] > 0) {
-                            const boneIndex = indices[k];
+            const updateExtents = (i: number, j: number, weights: FloatArray, indices: FloatArray): void => {
+                for (let k = j; k < j + 4; k++) {
+                    if (weights[k] > 0) {
+                        const boneIndex = indices[k];
 
-                            const extent = perBoneExtents.get(boneIndex);
-                            if (extent) {
-                                extent.minimum.minimizeInPlace(minPositions[i]);
-                                extent.maximum.maximizeInPlace(maxPositions[i]);
-                            } else {
-                                perBoneExtents.set(boneIndex, {
-                                    minimum: minPositions[i].clone(),
-                                    maximum: maxPositions[i].clone(),
-                                });
-                            }
+                        const extent = perBoneExtents.get(boneIndex);
+                        if (extent) {
+                            extent.minimum.minimizeInPlace(minPositions[i]);
+                            extent.maximum.maximizeInPlace(maxPositions[i]);
+                        } else {
+                            perBoneExtents.set(boneIndex, {
+                                minimum: minPositions[i].clone(),
+                                maximum: maxPositions[i].clone(),
+                            });
                         }
                     }
-                };
+                }
+            };
 
-                updateExtents(weights, indices);
+            for (let i = 0, j = 0; i < numVertices; i++, j += 4) {
+                updateExtents(i, j, weights, indices);
 
                 if (weightsExtra && indicesExtra) {
-                    updateExtents(weightsExtra, indicesExtra);
+                    updateExtents(i, j, weightsExtra, indicesExtra);
                 }
             }
         } else {
@@ -143,7 +146,7 @@ export function computeMaxExtents(
                 const perBoneCorners = new Map<number, Array<Vector3>>();
                 skinnedMeshCorners.set(mesh.uniqueId, perBoneCorners);
 
-                for (const [boneIndex, extent] of perBoneExtents) {
+                perBoneExtents.forEach((extent, boneIndex) => {
                     const corners = getExtentCorners(extent);
 
                     // Transform the coordinates of the corners for skinned meshes to bone space.
@@ -153,7 +156,7 @@ export function computeMaxExtents(
                     }
 
                     perBoneCorners.set(boneIndex, corners);
-                }
+                });
             }
         }
     }
@@ -175,7 +178,7 @@ export function computeMaxExtents(
 
                 const bones = skeleton.bones;
                 const perBoneCorners = skinnedMeshCorners.get(mesh.uniqueId)!;
-                for (const [boneIndex, corners] of perBoneCorners) {
+                perBoneCorners.forEach((corners, boneIndex) => {
                     // Transform the per-bone corners into world space and update the max extent for each corner.
                     for (const corner of corners) {
                         const matrix = bones[boneIndex].getFinalMatrix().multiplyToRef(worldMatrix, TmpVectors.Matrix[0]);
@@ -183,7 +186,7 @@ export function computeMaxExtents(
                         maxExtents[i].minimum.minimizeInPlace(position);
                         maxExtents[i].maximum.maximizeInPlace(position);
                     }
-                }
+                });
             } else {
                 // Transform the corners into world space and update the max extent for each corner.
                 for (const corner of meshCorners.get(mesh.uniqueId)!) {
