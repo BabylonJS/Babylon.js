@@ -21,7 +21,6 @@ export enum VirtualVoiceState {
 }
 
 export class VirtualVoice {
-    public id: number;
     public index: number;
     public priority: number;
     public sourceId: number;
@@ -36,8 +35,7 @@ export class VirtualVoice {
         this.index = index;
     }
 
-    public init(type: VirtualVoiceType, id: number, sourceId: number, options?: ISoundOptions): void {
-        this.id = id;
+    public init(type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): void {
         this.priority = options?.priority ?? SoundPriority.Optional; // TODO: What default should be used here?
         this.sourceId = sourceId;
         this.spatial = options?.spatial ?? false;
@@ -55,6 +53,19 @@ export class VirtualVoice {
         this.updated = false;
         this._state = value;
         this.onStateChangedObservable.notifyObservers(this);
+    }
+
+    public compare(other: VirtualVoice): number {
+        if (this.state !== other.state) {
+            return this.state - other.state;
+        }
+        if (this.priority === other.priority) {
+            return 0;
+        }
+        if (this.priority > other.priority) {
+            return -1;
+        }
+        return 1;
     }
 
     public start(): void {

@@ -4,7 +4,7 @@
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
 import { type ISoundOptions } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
-import { VirtualVoice, type VirtualVoiceType } from "./virtualVoice";
+import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
 export interface IAudioEngineOptions {
     /**
@@ -42,10 +42,9 @@ export interface IAudioEngine {
 export class AbstractAudioEngine implements IAudioEngine {
     public readonly physicalEngine: IAudioPhysicalEngine;
 
-    private _nextVoiceId: number = 0;
     private _voices = new Array<VirtualVoice>();
     private _voicesDirty: boolean = false;
-    private _lastActiveVoiceIndex: number = 1;
+    private _inactiveVoiceIndex: number = 1;
 
     public constructor(physicalEngine: IAudioPhysicalEngine) {
         this.physicalEngine = physicalEngine;
@@ -60,21 +59,23 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
-    public getNextVoiceId(): number {
-        return this._nextVoiceId++;
-    }
-
     public activateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): Array<VirtualVoice> {
         const voices = new Array<VirtualVoice>(count);
         if (count === 0) {
             return voices;
         }
 
+        this._inactiveVoiceIndex = 0;
+
         for (let i = 0; i < count; i++) {
-            const voice = this._lastActiveVoiceIndex < this._voices.length ? this._voices[this._lastActiveVoiceIndex] : this._createVoice();
+            while (this._inactiveVoiceIndex < this._voices.length && this._voices[this._inactiveVoiceIndex].state !== VirtualVoiceState.Stopped) {
+                this._inactiveVoiceIndex++;
+            }
+
+            const voice = this._inactiveVoiceIndex < this._voices.length ? this._voices[this._inactiveVoiceIndex] : this._createVoice();
             voices[i] = voice;
 
-            voice.init(type, this.getNextVoiceId(), sourceId, options);
+            voice.init(type, sourceId, options);
         }
 
         this._voicesDirty = true;
@@ -93,22 +94,26 @@ export class AbstractAudioEngine implements IAudioEngine {
      */
     public update(): void {
         if (this._voicesDirty) {
-            this._voices.sort((_a, _b) => {
-                return 0;
-            });
-        }
+            this._voices.sort((a, b) => a.compare(b));
 
+            for (let i = 0; i < this._voices.length; i++) {
+                this._voices[i].index = i;
+            }
+
+            this._voicesDirty = false;
+        }
         this.physicalEngine.update(this._voices);
-        this._voicesDirty = false;
     }
 
     private _createVoice(): VirtualVoice {
         const voice = new VirtualVoice(this._voices.length);
-        this._voices.push(voice);
 
         voice.onStateChangedObservable.add(() => {
             this._voicesDirty = true;
         });
+
+        this._voices.push(voice);
+        this._inactiveVoiceIndex = this._voices.length;
 
         return voice;
     }
