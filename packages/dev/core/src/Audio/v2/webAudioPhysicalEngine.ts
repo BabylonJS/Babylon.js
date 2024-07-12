@@ -1,11 +1,13 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioPhysicalEngine, ISpatialSoundOptions, IStaticSoundOptions, IStreamingSoundOptions, VirtualVoicesByPriority } from "./audioEngine";
-import { AbstractPhysicalAudioEngine } from "./audioEngine";
+import type { VirtualVoicesByPriority } from "./abstractAudioEngine";
+import type { IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import { AbstractPhysicalAudioEngine } from "./abstractAudioPhysicalEngine";
+import type { ISoundOptions, IStaticSoundOptions, IStreamingSoundOptions } from "./abstractSound";
 import type { IWebAudioEngineOptions } from "./webAudioEngine";
-import { WebAudioBuffer } from "./webAudioBuffer";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
+import { WebAudioStaticBuffer } from "./webAudioStaticBuffer";
 import { WebAudioStream } from "./webAudioStream";
 // import type { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
 // import type { WebAudioStaticVoice } from "./webAudioStaticVoice";
@@ -21,7 +23,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     // private readonly _streamingVoices: Array<WebAudioStreamingVoice>;
 
     private readonly _spatializers = new Map<number, WebAudioSpatializer>();
-    private readonly _audioBuffers = new Map<number, WebAudioBuffer>();
+    private readonly _audioBuffers = new Map<number, WebAudioStaticBuffer>();
     private readonly _streams = new Map<number, WebAudioStream>();
 
     public constructor(options?: IWebAudioEngineOptions) {
@@ -74,31 +76,29 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         this._audioContext.resume();
     }
 
-    public createSpatializer(options: ISpatialSoundOptions): number {
+    public createSpatializer(options?: ISoundOptions): number {
         const spatializer = new WebAudioSpatializer(this._audioContext, this._getNextSpatializerId(), options);
         this._spatializers.set(spatializer.id, spatializer);
         return spatializer.id;
     }
 
-    public createBuffer(options: IStaticSoundOptions): number {
-        const buffer = new WebAudioBuffer(this._audioContext, this._getNextSourceId(), options);
+    public createBuffer(options?: IStaticSoundOptions): number {
+        const buffer = new WebAudioStaticBuffer(this._audioContext, this._getNextSourceId(), options);
         this._audioBuffers.set(buffer.id, buffer);
         return buffer.id;
     }
 
-    public createStream(options: IStreamingSoundOptions): number {
+    public createStream(options?: IStreamingSoundOptions): number {
         const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
         this._streams.set(stream.id, stream);
         return stream.id;
     }
 
-    public update(_virtualVoicesByPriority: VirtualVoicesByPriority): void {
+    public update(_virtualVoicesByPriority: VirtualVoicesByPriority, _fullUpdate?: boolean): void {
         const currentTime = this.currentTime;
         if (this._lastUpdateTime == currentTime) {
             return;
         }
         this._lastUpdateTime = currentTime;
-
-        // console.debug(`WebAudioPhysicalEngine.update: currentTime: ${currentTime.toFixed(3)}, unlocked: ${this.unlocked}`);
     }
 }

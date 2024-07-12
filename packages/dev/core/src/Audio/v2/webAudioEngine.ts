@@ -1,8 +1,8 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioEngineOptions } from "./audioEngine";
-import { AbstractAudioEngine } from "./audioEngine";
+import type { IAudioEngineOptions } from "./abstractAudioEngine";
+import { AbstractAudioEngine } from "./abstractAudioEngine";
 import { WebAudioPhysicalEngine } from "./webAudioPhysicalEngine";
 import type { Nullable } from "core/types";
 

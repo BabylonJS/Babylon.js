@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ISoundOptions } from "./audioEngine";
+import type { ISoundOptions } from "./abstractSound";
 import { Observable } from "../../Misc/observable";
 
 export enum VirtualVoiceType {
@@ -20,8 +20,8 @@ export interface IVirtualVoice {
     onDeactivatedObservable: Observable<IVirtualVoice>;
 
     playing: boolean; // `true` if playing; `false` if paused.
+    onPlayingChangedObservable: Observable<IVirtualVoice>;
 
-    play(): void;
     stop(): void;
 
     pause(): void;
@@ -36,11 +36,12 @@ export class VirtualVoice implements IVirtualVoice {
     public readonly spatial: boolean;
 
     public readonly onDeactivatedObservable = new Observable<IVirtualVoice>();
+    public readonly onPlayingChangedObservable = new Observable<IVirtualVoice>();
 
-    private _active: boolean = false;
-    private _playing: boolean = false;
+    private _active: boolean = true;
+    private _playing: boolean = true;
 
-    public constructor(type: VirtualVoiceType, id: number, sourceId: number, options: ISoundOptions) {
+    public constructor(type: VirtualVoiceType, id: number, sourceId: number, options?: ISoundOptions) {
         this.type = type;
         this.id = id;
         this.sourceId = sourceId;
@@ -56,22 +57,31 @@ export class VirtualVoice implements IVirtualVoice {
         return this._playing;
     }
 
-    public play(): void {
-        this._active = true;
-        this._playing = true;
-    }
-
     public stop(): void {
+        if (!this._active) {
+            return;
+        }
+
         this._playing = false;
         this._active = false;
         this.onDeactivatedObservable.notifyObservers(this);
     }
 
     public pause(): void {
+        if (!this._playing) {
+            return;
+        }
+
         this._playing = false;
+        this.onPlayingChangedObservable.notifyObservers(this);
     }
 
     public resume(): void {
+        if (this._playing) {
+            return;
+        }
+
         this._playing = true;
+        this.onPlayingChangedObservable.notifyObservers(this);
     }
 }

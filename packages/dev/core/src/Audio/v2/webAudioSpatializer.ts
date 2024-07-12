@@ -1,20 +1,21 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioSpatializer, ISound, ISpatialSoundOptions } from "./audioEngine";
+import type { IAudioSpatializer } from "./abstractAudioPhysicalEngine";
+import type { ISound, ISoundOptions } from "./abstractSound";
 
 export class WebAudioSpatializer implements IAudioSpatializer {
     public readonly id: number;
     public readonly sounds: Array<ISound> = new Array<ISound>();
     public readonly node: PannerNode;
 
-    public constructor(audioContext: AudioContext, id: number, options: ISpatialSoundOptions) {
+    public constructor(audioContext: AudioContext, id: number, options?: ISoundOptions) {
         this.id = id;
 
         this.node = this._createNode(audioContext, options);
     }
 
-    private _createNode(audioContext: AudioContext, _options: ISpatialSoundOptions): PannerNode {
+    private _createNode(audioContext: AudioContext, _options?: ISoundOptions): PannerNode {
         return new PannerNode(audioContext, {});
     }
 }
