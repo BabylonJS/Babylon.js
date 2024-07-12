@@ -21,6 +21,11 @@ export interface IWebXRAnchorSystemOptions {
      * If not defined, anchors will be removed from the array when the feature is detached or the session ended.
      */
     doNotRemoveAnchorsOnSessionEnded?: boolean;
+
+    /**
+     * If set to true, all anchor arrays will be cleared when the session initializes
+     */
+    clearAnchorsOnSessionInit?: boolean;
 }
 
 /**
@@ -140,6 +145,14 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
     ) {
         super(_xrSessionManager);
         this.xrNativeFeatureName = "anchors";
+
+        if (this._options.clearAnchorsOnSessionInit) {
+            this._xrSessionManager.onXRSessionInit.add(() => {
+                this._trackedAnchors.length = 0;
+                this._futureAnchors.length = 0;
+                this._lastFrameDetected.clear();
+            });
+        }
     }
 
     private _tmpVector = new Vector3();
@@ -266,14 +279,9 @@ export class WebXRAnchorSystem extends WebXRAbstractFeature {
             while (this._trackedAnchors.length) {
                 const toRemove = this._trackedAnchors.pop();
                 if (toRemove) {
-                    try {
-                        // try to natively remove it as well
-                        toRemove.remove();
-                    } catch (e) {
-                        // no-op
-                    }
                     // as the xr frame loop is removed, we need to notify manually
                     this.onAnchorRemovedObservable.notifyObservers(toRemove);
+                    // no need to call the remove fn as the anchor is already removed from the session
                 }
             }
         }
