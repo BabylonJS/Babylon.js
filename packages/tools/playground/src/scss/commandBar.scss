@@ -13,6 +13,11 @@
         display: flex;
     }
 
+    .command-subitem-label-check {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
     &.background-ts {
         .command-button,
         .command-dropdown {
@@ -244,6 +249,7 @@
                     padding-left: 10px;
                     height: 35px;
                     display: grid;
+                    grid-template-columns: 1fr 20px;
 
                     &.checked {
                         background: white;

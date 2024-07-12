@@ -126,7 +126,9 @@ export class GreasedLineSimpleMaterial extends ShaderMaterial implements IGrease
         }
 
         if (this._colors) {
-            this.setColors(this._colors);
+            if (this.useColors) {
+                this.colorsTexture = GreasedLineTools.CreateColorsTexture(`${this.name}-colors-texture`, this._colors, this.colorsSampling, scene);
+            }
         }
 
         engine.onDisposeObservable.add(() => {

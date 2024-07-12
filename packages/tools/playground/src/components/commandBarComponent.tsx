@@ -16,9 +16,34 @@ interface ICommandBarComponentProps {
 
 export class CommandBarComponent extends React.Component<ICommandBarComponentProps> {
     private _webGPUSupported: boolean = false;
+    private _procedural: {
+        label: string;
+        tooltip: string;
+        storeKey?: string;
+        defaultValue?: boolean | string;
+        subItems?: string[];
+        onClick?: string;
+        onCheck?: string;
+        keepExpanded?: boolean;
+    }[];
+
     public constructor(props: ICommandBarComponentProps) {
         super(props);
+        // First Fetch JSON data for procedural code
+        this._procedural = [];
+        const url = "procedural.json?uncacher=" + Date.now();
+        fetch(url)
+            .then((response) => response.json())
+            .then((data) => {
+                this._procedural = data;
+                this._load();
+            })
+            .catch((err) => {
+                this._load();
+            });
+    }
 
+    private _load() {
         this.props.globalState.onLanguageChangedObservable.add(() => {
             this.forceUpdate();
         });
@@ -42,6 +67,14 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onNewRequiredObservable.notifyObservers();
     }
 
+    onUpdateGenerator() {
+        this.props.globalState.onUpdateGeneratorRequiredObservable.notifyObservers();
+    }
+
+    onGenerate() {
+        this.props.globalState.onGenerateRequiredObservable.notifyObservers();
+    }
+
     onClear() {
         this.props.globalState.onClearRequiredObservable.notifyObservers();
     }
@@ -63,6 +96,135 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     }
 
     public override render() {
+        // Main options for the editor itself
+        const editorOptions = [
+            {
+                label: "Theme",
+                tooltip: "Controls the color scheme of the playground",
+                storeKey: "theme",
+                defaultValue: "Light",
+                subItems: ["Light", "Dark"],
+                onClick: () => {
+                    this.props.globalState.onThemeChangedObservable.notifyObservers();
+                },
+            },
+            {
+                label: "Font size",
+                tooltip: "Change the font size of the code editor",
+                storeKey: "font-size",
+                defaultValue: "14",
+                subItems: ["12", "14", "16", "18", "20", "22", "24", "26", "28", "30"],
+                onClick: () => {
+                    this.props.globalState.onFontSizeChangedObservable.notifyObservers();
+                },
+            },
+            {
+                label: "Safe mode",
+                tooltip: "Asks to confirm if you leave page without saving",
+                storeKey: "safe-mode",
+                defaultValue: false,
+                onCheck: () => {},
+            },
+            {
+                label: "CTRL+S to save",
+                tooltip: "Saves your playground code online and creates a shareable link",
+                storeKey: "ctrl-s-to-save",
+                defaultValue: true,
+                onCheck: () => {},
+            },
+            {
+                label: "editor",
+                tooltip: "Show/Hide the Code Editor",
+                storeKey: "editor",
+                defaultValue: true,
+                onCheck: (value: boolean) => {
+                    this.props.globalState.onEditorDisplayChangedObservable.notifyObservers(value);
+                },
+            },
+            {
+                label: "minimap",
+                tooltip: "Show/Hide the Code Minimap",
+                storeKey: "minimap",
+                defaultValue: true,
+                onCheck: (value: boolean) => {
+                    this.props.globalState.onMinimapChangedObservable.notifyObservers(value);
+                },
+            },
+            {
+                label: "fullscreen",
+                tooltip: "Makes the canvas fullscreen",
+                onClick: () => {
+                    this.props.globalState.onFullcreenRequiredObservable.notifyObservers();
+                },
+            },
+            {
+                label: "fullscreen editor",
+                tooltip: "Makes the code editor fullscreen",
+                onClick: () => {
+                    this.props.globalState.onEditorFullcreenRequiredObservable.notifyObservers();
+                },
+            },
+            {
+                label: "format code",
+                tooltip: "Autoformats code",
+                onClick: () => {
+                    this.props.globalState.onFormatCodeRequiredObservable.notifyObservers();
+                },
+            },
+            {
+                label: "metadata",
+                tooltip: "Edit the playground title, description, and tags",
+                onClick: () => {
+                    this.props.globalState.onDisplayMetadataObservable.notifyObservers(true);
+                },
+            },
+            {
+                label: "QR code",
+                tooltip: "Shows a QR code that points to this playground",
+                onClick: () => {
+                    this.props.globalState.onQRCodeRequiredObservable.notifyObservers(true);
+                },
+            },
+            {
+                label: "Load Unity Toolkit",
+                tooltip: "Loads the Unity Toolkit into the playground",
+                storeKey: "unity-toolkit",
+                defaultValue: false,
+                onCheck: () => {},
+            },
+        ];
+
+        // Procedural Code Generator Options (build from procedural.json)
+        let proceduralOptions: any[] = [];
+        proceduralOptions = this._procedural.map((item) => ({
+            ...item,
+            onClick:
+                typeof item.onClick === "string"
+                    ? {
+                          empty: () => {},
+                          onGenerate: () => {
+                              this.onGenerate();
+                          },
+                          onUpdateGenerator: () => {
+                              this.onUpdateGenerator();
+                          },
+                      }[item.onClick]
+                    : undefined,
+            onCheck:
+                typeof item.onCheck === "string"
+                    ? {
+                          empty: () => {},
+                          onGenerate: () => {
+                              this.onGenerate();
+                          },
+                          onUpdateGenerator: () => {
+                              this.onUpdateGenerator();
+                          },
+                      }[item.onCheck]
+                    : undefined,
+        }));
+
+        // Engine Version Options
         const activeVersion = Utilities.ReadStringFromStore("version", "Latest", true);
         const activeEngineVersion = Utilities.ReadStringFromStore("engineVersion", "WebGL2", true);
 
@@ -147,108 +309,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                         onClick={() => this.onDownload()}
                     />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Create new" icon="new" isActive={false} onClick={() => this.onNew()} />
+                    <CommandDropdownComponent globalState={this.props.globalState} icon="fluentCode" tooltip="Code Generator" items={proceduralOptions} />
                     <CommandButtonComponent globalState={this.props.globalState} tooltip="Clear code" icon="clear" isActive={false} onClick={() => this.onClear()} />
-                    <CommandDropdownComponent
-                        globalState={this.props.globalState}
-                        icon="options"
-                        tooltip="Options"
-                        items={[
-                            {
-                                label: "Theme",
-                                tooltip: "Controls the color scheme of the playground",
-                                storeKey: "theme",
-                                defaultValue: "Light",
-                                subItems: ["Light", "Dark"],
-                                onClick: () => {
-                                    this.props.globalState.onThemeChangedObservable.notifyObservers();
-                                },
-                            },
-                            {
-                                label: "Font size",
-                                tooltip: "Change the font size of the code editor",
-                                storeKey: "font-size",
-                                defaultValue: "14",
-                                subItems: ["12", "14", "16", "18", "20", "22", "24", "26", "28", "30"],
-                                onClick: () => {
-                                    this.props.globalState.onFontSizeChangedObservable.notifyObservers();
-                                },
-                            },
-                            {
-                                label: "Safe mode",
-                                tooltip: "Asks to confirm if you leave page without saving",
-                                storeKey: "safe-mode",
-                                defaultValue: false,
-                                onCheck: () => {},
-                            },
-                            {
-                                label: "CTRL+S to save",
-                                tooltip: "Saves your playground code online and creates a shareable link",
-                                storeKey: "ctrl-s-to-save",
-                                defaultValue: true,
-                                onCheck: () => {},
-                            },
-                            {
-                                label: "editor",
-                                tooltip: "Show/Hide the Code Editor",
-                                storeKey: "editor",
-                                defaultValue: true,
-                                onCheck: (value) => {
-                                    this.props.globalState.onEditorDisplayChangedObservable.notifyObservers(value);
-                                },
-                            },
-                            {
-                                label: "minimap",
-                                tooltip: "Show/Hide the Code Minimap",
-                                storeKey: "minimap",
-                                defaultValue: true,
-                                onCheck: (value) => {
-                                    this.props.globalState.onMinimapChangedObservable.notifyObservers(value);
-                                },
-                            },
-                            {
-                                label: "fullscreen",
-                                tooltip: "Makes the canvas fullscreen",
-                                onClick: () => {
-                                    this.props.globalState.onFullcreenRequiredObservable.notifyObservers();
-                                },
-                            },
-                            {
-                                label: "fullscreen editor",
-                                tooltip: "Makes the code editor fullscreen",
-                                onClick: () => {
-                                    this.props.globalState.onEditorFullcreenRequiredObservable.notifyObservers();
-                                },
-                            },
-                            {
-                                label: "format code",
-                                tooltip: "Autoformats code",
-                                onClick: () => {
-                                    this.props.globalState.onFormatCodeRequiredObservable.notifyObservers();
-                                },
-                            },
-                            {
-                                label: "metadata",
-                                tooltip: "Edit the playground title, description, and tags",
-                                onClick: () => {
-                                    this.props.globalState.onDisplayMetadataObservable.notifyObservers(true);
-                                },
-                            },
-                            {
-                                label: "QR code",
-                                tooltip: "Shows a QR code that points to this playground",
-                                onClick: () => {
-                                    this.props.globalState.onQRCodeRequiredObservable.notifyObservers(true);
-                                },
-                            },
-                            {
-                                label: "Load Unity Toolkit",
-                                tooltip: "Loads the Unity Toolkit into the playground",
-                                storeKey: "unity-toolkit",
-                                defaultValue: false,
-                                onCheck: () => {},
-                            },
-                        ]}
-                    />
+                    <CommandDropdownComponent globalState={this.props.globalState} icon="options" tooltip="Options" items={editorOptions} />
                 </div>
                 <div className="commands-right">
                     <CommandDropdownComponent

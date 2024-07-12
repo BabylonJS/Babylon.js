@@ -5109,6 +5109,39 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     }
 
     /**
+     * Sets the given vector3 "result" with the Alpha, Beta, Gamma Euler angles translated from the current quaternion
+     * @param result defines the vector which will be filled with the Euler angles
+     * @returns result input
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
+     */
+    public toAlphaBetaGammaToRef<T extends Vector3>(result: T): T {
+        const qz = this._z;
+        const qx = this._x;
+        const qy = this._y;
+        const qw = this._w;
+
+        // Compute intermediate values
+        const sinHalfBeta = Math.sqrt(qx * qx + qy * qy);
+        const cosHalfBeta = Math.sqrt(qz * qz + qw * qw);
+
+        // Calculate beta
+        const beta = 2 * Math.atan2(sinHalfBeta, cosHalfBeta);
+
+        // Calculate gamma + alpha
+        const gammaPlusAlpha = 2 * Math.atan2(qz, qw);
+
+        // Calculate gamma - alpha
+        const gammaMinusAlpha = 2 * Math.atan2(qy, qx);
+
+        // Calculate gamma and alpha
+        const gamma = (gammaPlusAlpha + gammaMinusAlpha) / 2;
+        const alpha = (gammaPlusAlpha - gammaMinusAlpha) / 2;
+
+        result.set(alpha, beta, gamma);
+        return result;
+    }
+
+    /**
      * Updates the given rotation matrix with the current quaternion values
      * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
@@ -8828,8 +8861,8 @@ export class TmpVectors {
     /** 3 temp Vector4 at once should be enough */
     public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero);
 
-    /** 2 temp Quaternion at once should be enough */
-    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero);
+    /** 3 temp Quaternion at once should be enough */
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 
     /** 8 temp Matrices at once should be enough */
     public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity);

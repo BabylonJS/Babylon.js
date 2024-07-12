@@ -210,7 +210,7 @@ export const LoadImage = (
         usingObjectURL = true;
     } else {
         url = FileToolsOptions.CleanUrl(input);
-        url = FileToolsOptions.PreprocessUrl(input);
+        url = FileToolsOptions.PreprocessUrl(url);
     }
 
     const onErrorHandler = (exception: any) => {

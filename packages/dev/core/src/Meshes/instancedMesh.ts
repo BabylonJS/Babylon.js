@@ -370,7 +370,7 @@ export class InstancedMesh extends AbstractMesh {
         }
 
         const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._getData(options, null, VertexBuffer.PositionKind), bias);
+        this._refreshBoundingInfo(this._sourceMesh._getData(options, null, VertexBuffer.PositionKind), bias);
         return this;
     }
 
