@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.13.3",
+    "fromTag": "7.14.0",
     "changelog": {
         "7.14.0": [
             {
@@ -16,6 +16,214 @@
                 "tags": [
                     "bug"
                 ]
+            }
+        ],
+        "7.15.0": [
+            {
+                "pr": "15255",
+                "title": "Remove check for pointer out",
+                "description": "See https://forum.babylonjs.com/t/clicking-through-world-ui/51905?u=raananw\n\nThe problem is that (almost) every direct call for this function is calling:\n\n`this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);`, meaning it will always return unless force is passed (which isn't being passed on standard input loop).\n\nThe call that does not use the same object to the call checks beforehnd if the target and `this` are equal, so there is no change in the default behavior. Tested with a few UI playgrounds and seems to make no difference in standard behavior.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15262",
+                "title": "Allow part matching in XMLLoader",
+                "description": "See https://forum.babylonjs.com/t/xmlloader-dynamic-attributes-not-work/48429/10?u=raananw\n\nPG to test with:\n\n#6C1GM9#1",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/xmlLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15264",
+                "title": "Fixed Playground loading on custom SnippetID",
+                "description": "In my last [PR adding the procedural code generator](https://github.com/BabylonJS/Babylon.js/pull/15243), I inserted the JSON fetch in the monacoEditor constructor, to make sure it was loaded first, but the `_load` function was called after the fetch, which could lead to \"forever\" engine loading UI in the event of [loading a custom PG](https://playground.babylonjs.com/#4U4QH9#9).\r\n\r\n- This PR fixes the previous issue. (--> `_load` before `fetch`)\r\n- It also fixes the [potential cache issue](https://forum.babylonjs.com/t/edit-released-what-about-a-code-generator-for-the-playground/50396/34) by adding an `uncacher` param to the JSON urls (since it's very light) :\r\n`const url = \"templates.json?uncacher=\"+Date.now();`\r\n- Missing `\"\\n\"` at beginning of generated code was added",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15259",
+                "title": "Wrong loadMipmaps flag in ddsTextureLoader",
+                "description": "https://forum.babylonjs.com/t/wrong-loadmipmaps-flag-in-ddstextureloader/51942\r\n\r\nAs @RaananW mentioned on forum, there still'll be discussion about presence of `loadMipmaps` parameter at the first place, but here's my temp fix until it is done.",
+                "author": {
+                    "name": "Nikys",
+                    "url": "https://github.com/Nikys"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15260",
+                "title": "changes to image adding when using Image in GUI",
+                "description": "This changes the behavior that was added to support svg files:\n\n1. Only SVGs are added to the DOM (files that end with .svg)\n2. The SVGs are removed from thee DOM right after they are no longer needed.\n\nPG for testing: #XCPP9Y#21986",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15243",
+                "title": "Added JSON-based procedural code generator to the Playground",
+                "description": "This PR is following the [same topic on the forum](https://forum.babylonjs.com/t/what-about-a-code-generator-for-the-playground/50396/7)\r\n\r\n- source code is the same than CTRL+SPACE menu (`tools/playground/public/templates.json`)\r\n- any new code block from this code generator is now as well available from the CTRL+SPACE menu :heavy_check_mark: \r\n- added a structure json in `tools/playground/public/procedural.json` which is used to build the drop down menu :heavy_check_mark: \r\n- the `fetch(\"templates.json\").then()` has been move to the monaco constuctor since now it's used from different places.\r\n- `NB:` the code generator is not \"100%\" based on the JSON (for now...?) since some conditions have been included outside, such as for example a `shadowGenerator` check (cannot be enabled on hemi light), etc.\r\n- `NB:` In the monaco editor I added a `if (model.isDisposed())` check (see line 720 & 727), but I could not find exactly when the error `Model is disposed!` is triggered. Seems to be a bit random :thinking: \r\n___\r\nDemo : https://github.com/BabylonJS/Babylon.js/assets/167624418/6b95747b-8f10-42ca-955a-46dc873e0f96\r\n\r\n",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/public/imgs/fluentCode.svg",
+                    "packages/tools/playground/public/procedural.json",
+                    "packages/tools/playground/public/templates.json",
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts",
+                    "packages/tools/playground/src/scss/commandBar.scss",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15247",
+                "title": "buffer: copy unaligned data in GetFloatData",
+                "description": "In `VertexBuffer.GetFloatData`, if data is not aligned to 4 bytes, the current impl is to align the offset to make code work, but this would make data returned here differ from data passed to gpu, so algos depending on result of it could be wrong. This commit changes this behavior to copying the buffer on unaligned buffers or offsets.\r\n\r\nRelated playground: <https://playground.babylonjs.com/#5T7E1W#8>\r\nForum thread: <https://forum.babylonjs.com/t/picked-point-at-wrong-position/51698>\r\nRelated commit: https://github.com/BabylonJS/Babylon.js/commit/9c2df86f54d7660b859eabcdb3b096c1f83800d4",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Buffers/bufferUtils.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15257",
+                "title": "Fix a typo with new bounding box code",
+                "description": "See https://forum.babylonjs.com/t/pg-crashes-an-example-of-playing-vats-on-instances/51768.\r\n\r\nWe should consider adding a test for this.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15258",
+                "title": "Make `CleanUrl` effective in fileTools.ts",
+                "description": "Hi looks like there was a bug in `fileTools.ts`, where the cleaned URL is not passed to `PreprocessUrl`.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15256",
+                "title": "Remove camera from and add model to viewer details",
+                "description": "It's a little unclear whether `ArcRotateCamera` will always and in all cases be the right camera for the viewer, so removing this from details for now. The camera can still abstractly be retrieved from `scene.activeCamera`.\r\n\r\nAdding the loaded model (or rather the `AssetContainer`) to the details.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15254",
+                "title": "Use Quaternion and slerp for alpha/beta/gamma arcrotate interpolation",
+                "description": "Using modulo and Euler angles is always a bad idea. Using quaternion and slerp instead.\r\n\r\ntest PG : #TT1T4C#2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15244",
+                "title": "catch and log the exceptions earlier",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15249",
+                "title": "allow url query parameters on svg paths",
+                "description": "Allow svg file paths to contain url query parameters (eg: cache busters) or uri fragments (eg: svg fragment identifiers).",
+                "author": {
+                    "name": "tachyean",
+                    "url": "https://github.com/tachyean"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15252",
+                "title": "Add cancellation and \"lock many\" to AsyncLock",
+                "description": "I added this `AsyncLock` as part of the initial alpha viewer impl. I expect to need to better cancellation support and the ability to acquire multiple locks (especially for the dispose scenario), but as much as possible I don't want to keep upping the alpha viewer's min version of the dependency on @babylonjs/core (more of a hassle for consumers), so I wanted to proactively get this additional `AsyncLock` behavior in sooner than later. Since I don't have code using it quite yet, I added unit tests. If there is opposition to adding this code before it is being used, then I can sit on this PR, it just means I'll need to update the min ver on the @babylonjs/core dependency and anyone using the alpha viewer will have to update their @babylonjs/core dependency.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/asyncLock.ts",
+                    "packages/dev/core/test/unit/Misc/asyncLock.test.ts"
+                ],
+                "tags": []
             }
         ],
         "7.13.3": [
