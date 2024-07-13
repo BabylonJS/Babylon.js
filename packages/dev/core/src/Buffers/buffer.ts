@@ -1033,7 +1033,7 @@ export class VertexBuffer {
 
                 if (forceCopy) {
                     const result = new Uint8Array(count * Float32Array.BYTES_PER_ELEMENT);
-                    const source = new Uint8Array(data.buffer, offset, count * Float32Array.BYTES_PER_ELEMENT);
+                    const source = new Uint8Array(data.buffer, offset, result.length);
                     result.set(source);
                     return new Float32Array(result.buffer);
                 } else {
