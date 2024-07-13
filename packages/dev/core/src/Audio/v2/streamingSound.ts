@@ -4,11 +4,11 @@
 import type { IAudioEngine } from "./abstractAudioEngine";
 import type { ISound, IStreamingSoundOptions } from "./abstractSound";
 import { AbstractSound } from "./abstractSound";
+import { getCurrentAudioEngine } from "./audioEngine";
 import { VirtualVoiceType } from "./virtualVoice";
 
 export class StreamingSound extends AbstractSound implements ISound {
     public constructor(options?: IStreamingSoundOptions, audioEngine?: IAudioEngine) {
-        super(VirtualVoiceType.Streaming, options, audioEngine);
-        this._sourceId = this.audioEngine.physicalEngine.createStream(options);
+        super(VirtualVoiceType.Streaming, (audioEngine ?? getCurrentAudioEngine()).createStream(options), options, audioEngine);
     }
 }

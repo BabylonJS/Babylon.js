@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ISoundOptions } from "./abstractSound";
+import { type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
@@ -36,6 +36,9 @@ export interface IAudioEngineOptions {
 export interface IAudioEngine {
     readonly currentTime: number;
 
+    createSpatializer(options?: ISoundOptions): number;
+    createBuffer(options?: IStaticSoundOptions): number;
+    createStream(options?: IStreamingSoundOptions): number;
     update(): void;
 }
 
@@ -85,28 +88,40 @@ export class AbstractAudioEngine implements IAudioEngine {
 
     public deactivateVoices(voices: Array<VirtualVoice>): void {
         for (const voice of voices) {
-            this._voices[voice.index].stop();
+            voice.stop();
         }
+        // TODO: Finish implementation.
+    }
+
+    public createSpatializer(options?: ISoundOptions): number {
+        return this.physicalEngine.createSpatializer(options);
+    }
+
+    public createBuffer(options?: IStaticSoundOptions): number {
+        return this.physicalEngine.createBuffer(options);
+    }
+
+    public createStream(options?: IStreamingSoundOptions): number {
+        return this.physicalEngine.createStream(options);
     }
 
     /**
-     * Updates virtual voices. Called automatically if `autoUpdate` is `true`.
+     * Updates virtual and physical voices. Called automatically if `autoUpdate` is `true`.
      */
     public update(): void {
-        if (this._voicesDirty) {
-            this._voices.sort((a, b) => a.compare(b));
-
-            for (let i = 0; i < this._voices.length; i++) {
-                this._voices[i].index = i;
-            }
-
-            this._voicesDirty = false;
+        if (!this._voicesDirty) {
+            return;
         }
+
+        // TODO: There maybe be a faster way to sort since we don't care about the order of inactive voices.
+        this._voices.sort((a, b) => a.compare(b));
+
+        this._voicesDirty = false;
         this.physicalEngine.update(this._voices);
     }
 
     private _createVoice(): VirtualVoice {
-        const voice = new VirtualVoice(this._voices.length);
+        const voice = new VirtualVoice();
 
         voice.onStateChangedObservable.add(() => {
             this._voicesDirty = true;

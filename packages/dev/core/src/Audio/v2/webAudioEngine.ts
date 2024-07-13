@@ -71,9 +71,6 @@ export class WebAudioEngine extends AbstractAudioEngine {
         (this.physicalEngine as WebAudioPhysicalEngine).unlock();
     }
 
-    /**
-     * Updates audio engine control rate (k-rate) settings. Called automatically if `autoUpdate` is `true`.
-     */
     public override update(): void {
         super.update();
     }
@@ -87,6 +84,7 @@ export class WebAudioEngine extends AbstractAudioEngine {
     };
 
     private _startAutoUpdate(): void {
+        // TODO: Find a better way to do this. Only queue updates when needed.
         this._autoUpdateHandle = requestAnimationFrame(this._onRequestedAnimationFrame);
     }
 

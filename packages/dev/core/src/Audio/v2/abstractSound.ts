@@ -6,13 +6,6 @@ import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
 import { getCurrentAudioEngine } from "./audioEngine";
 import type { VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 
-export enum SoundPriority {
-    Optional,
-    Important,
-    Critical,
-    Count,
-}
-
 export interface ISoundOptions {
     name?: string;
 
@@ -21,7 +14,7 @@ export interface ISoundOptions {
 
     loop?: boolean;
     maxVoices?: number;
-    priority?: SoundPriority;
+    priority?: number;
     spatial?: boolean;
     volume?: number;
 }
@@ -48,19 +41,19 @@ export interface ISound {
 export class AbstractSound {
     public readonly audioEngine: AbstractAudioEngine;
     public readonly options?: ISoundOptions;
-
-    protected _sourceId: number;
+    public readonly sourceId: number;
 
     private _paused: boolean = false;
 
     private _voices: Array<VirtualVoice>;
     private _voiceIndex: number = 0;
 
-    public constructor(type: VirtualVoiceType, options?: ISoundOptions, audioEngine?: IAudioEngine) {
+    public constructor(type: VirtualVoiceType, sourceId: number, options?: ISoundOptions, audioEngine?: IAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
         this.options = options;
+        this.sourceId = sourceId;
 
-        this._voices = this.audioEngine.activateVoices(options?.maxVoices ?? 1, type, this._sourceId, options);
+        this._voices = this.audioEngine.activateVoices(options?.maxVoices ?? 1, type, this.sourceId, options);
     }
 
     public get paused(): boolean {

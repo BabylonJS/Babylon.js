@@ -26,10 +26,6 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
     private _staticVoices: Array<WebAudioStaticVoice>;
     private _streamingVoices: Array<WebAudioStreamingVoice>;
 
-    private _oldSpatialVoices: WebAudioSpatialVoice[] = [];
-    private _oldStaticVoices: Array<WebAudioStaticVoice>;
-    private _oldStreamingVoices: Array<WebAudioStreamingVoice>;
-
     public constructor(options?: IWebAudioEngineOptions) {
         super();
 
@@ -59,9 +55,6 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         this._spatialVoices.length = options?.maxSpatialVoices ?? 64;
         this._staticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
         this._streamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
-        this._oldSpatialVoices.length = options?.maxSpatialVoices ?? 64;
-        this._oldStaticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
-        this._oldStreamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
 
         for (let i = 0; i < this._spatialVoices.length; i++) {
             this._spatialVoices[i] = new WebAudioSpatialVoice();
@@ -71,15 +64,6 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         }
         for (let i = 0; i < this._streamingVoices.length; i++) {
             this._streamingVoices[i] = new WebAudioStreamingVoice();
-        }
-        for (let i = 0; i < this._oldSpatialVoices.length; i++) {
-            this._oldSpatialVoices[i] = new WebAudioSpatialVoice();
-        }
-        for (let i = 0; i < this._oldStaticVoices.length; i++) {
-            this._oldStaticVoices[i] = new WebAudioStaticVoice();
-        }
-        for (let i = 0; i < this._oldStreamingVoices.length; i++) {
-            this._oldStreamingVoices[i] = new WebAudioStreamingVoice();
         }
     }
 
@@ -121,11 +105,127 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         return stream.id;
     }
 
-    public update(_virtualVoices: Array<VirtualVoice>): void {
+    /**
+     *
+     * @param virtualVoices - The given virtual voices pre-sorted by state and priority.
+     *
+     */
+    public update(virtualVoices: Array<VirtualVoice>): void {
         const currentTime = this.currentTime;
         if (this._lastUpdateTime == currentTime) {
             return;
         }
         this._lastUpdateTime = currentTime;
+
+        // Update virtual voice states according to the number of physical voices available.
+        let spatialCount = 0;
+        let staticCount = 0;
+        let streamingCount = 0;
+        let spatialMaxed = false;
+        let staticMaxed = false;
+        let streamingMaxed = false;
+        let allMaxed = false;
+
+        for (let i = 0; i < virtualVoices.length; i++) {
+            const virtualVoice = virtualVoices[i];
+
+            if (!virtualVoice.active) {
+                break;
+            }
+
+            if (allMaxed || (virtualVoice.spatial && spatialMaxed)) {
+                virtualVoice.mute();
+                return;
+            }
+
+            if (virtualVoice.static) {
+                if (staticMaxed) {
+                    virtualVoice.mute();
+                    return;
+                }
+                virtualVoice.start();
+
+                staticCount++;
+                if (staticCount >= this._staticVoices.length) {
+                    staticMaxed = true;
+                }
+            }
+
+            if (virtualVoice.streaming) {
+                if (streamingMaxed) {
+                    virtualVoice.mute();
+                    return;
+                }
+                virtualVoice.start();
+
+                streamingCount++;
+                if (streamingCount >= this._streamingVoices.length) {
+                    streamingMaxed = true;
+                }
+            }
+
+            if (virtualVoice.spatial) {
+                spatialCount++;
+                if (spatialCount >= this._spatialVoices.length) {
+                    spatialMaxed = true;
+                }
+            }
+
+            if (spatialMaxed && staticMaxed && streamingMaxed) {
+                allMaxed = true;
+            }
+        }
+
+        // Sort active, unmuted voices to the top of the physical voice array while muting, pausing, or stopping
+        //  virtual voices that can be physically ignored.
+        //
+        // When complete, `pastLastActiveIndex` is set to one past the last active and unmuted voice. Voices from this
+        //  index on are available for virtual voices waiting to start.
+        let pastLastActiveIndex = 0;
+        for (let i = 0; i < this._staticVoices.length; i++) {
+            const voice = this._staticVoices[i];
+            const virtualVoice = voice.virtualVoice;
+
+            if (!virtualVoice) {
+                break;
+            }
+
+            if (virtualVoice.active && !virtualVoice.muted) {
+                if (pastLastActiveIndex < i) {
+                    this._staticVoices[pastLastActiveIndex].copyFrom(voice);
+                }
+                pastLastActiveIndex++;
+            } else if (virtualVoice.muting) {
+                voice.mute();
+            } else if (virtualVoice.pausing) {
+                voice.pause();
+            } else if (virtualVoice.stopping) {
+                voice.stop();
+            }
+        }
+
+        // Physically start virtual voices waiting to start.
+        let virtualVoiceIndex = virtualVoices.findIndex((virtualVoice) => virtualVoice.waitingToStart);
+        for (let i = pastLastActiveIndex; i < this._staticVoices.length; i++) {
+            const voice = this._staticVoices[i];
+            voice.virtualVoice = virtualVoices[virtualVoiceIndex];
+            voice.start();
+
+            // Set `virtualVoiceIndex` to the next virtual voice waiting to start.
+            let done = false;
+            do {
+                virtualVoiceIndex++;
+                done = virtualVoiceIndex >= virtualVoices.length;
+            } while (!done && !virtualVoices[virtualVoiceIndex].waitingToStart);
+
+            // Exit the loop if there are no more virtual voices waiting to start.
+            if (done) {
+                break;
+            }
+        }
+
+        // console.log(this._staticVoices);
+
+        // TODO: Implement spatial and streaming voice updates.
     }
 }
