@@ -1026,9 +1026,12 @@ export class VertexBuffer {
                 return new Float32Array(data, byteOffset, count);
             } else {
                 const offset = data.byteOffset + byteOffset;
-                const wrongAlign = (offset & 3) !== 0;
-                if (forceCopy || wrongAlign) {
-                    if(wrongAlign) console.warn("Float array must be aligned to 4-bytes border")
+                if ((offset & 3) !== 0) {
+                    Logger.Warn("Float array must be aligned to 4-bytes border");
+                    forceCopy = true;
+                }
+
+                if (forceCopy) {
                     const result = new Uint8Array(count * Float32Array.BYTES_PER_ELEMENT);
                     const source = new Uint8Array(data.buffer, offset, count * Float32Array.BYTES_PER_ELEMENT);
                     result.set(source);
