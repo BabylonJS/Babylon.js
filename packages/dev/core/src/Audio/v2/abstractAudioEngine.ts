@@ -36,6 +36,7 @@ export interface IAudioEngineOptions {
 export interface IAudioEngine {
     readonly currentTime: number;
 
+    // TODO: Rename these with `Source` suffixes, e.g. `createSpatialSource`, `createStaticSource`, `createdStreamedSource`.
     createSpatializer(options?: ISoundOptions): number;
     createBuffer(options?: IStaticSoundOptions): number;
     createStream(options?: IStreamingSoundOptions): number;
