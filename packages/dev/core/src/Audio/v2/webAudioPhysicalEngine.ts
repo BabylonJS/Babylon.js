@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 
 import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type ICommonSoundOptions, type ISoundOptions, type IStreamingSoundOptions } from "./abstractSound";
 import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
@@ -87,13 +87,13 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         this._audioContext.resume();
     }
 
-    public createSpatializer(options?: ISoundOptions): number {
+    public createSpatializer(options?: ICommonSoundOptions): number {
         const spatializer = new WebAudioSpatializer(this._audioContext, this._getNextSpatializerId(), options);
         this._spatializers.set(spatializer.id, spatializer);
         return spatializer.id;
     }
 
-    public createBuffer(options?: IStaticSoundOptions): number {
+    public createBuffer(options?: ISoundOptions): number {
         const buffer = new WebAudioStaticBuffer(this._audioContext, this._getNextSourceId(), options);
         this._audioBuffers.set(buffer.id, buffer);
         return buffer.id;

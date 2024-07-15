@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ISoundOptions, type IStaticSoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type ICommonSoundOptions, type ISoundOptions, type IStreamingSoundOptions } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
@@ -37,8 +37,8 @@ export interface IAudioEngine {
     readonly currentTime: number;
 
     // TODO: Rename these with `Source` suffixes, e.g. `createSpatialSource`, `createStaticSource`, `createdStreamedSource`.
-    createSpatializer(options?: ISoundOptions): number;
-    createBuffer(options?: IStaticSoundOptions): number;
+    createSpatializer(options?: ICommonSoundOptions): number;
+    createBuffer(options?: ISoundOptions): number;
     createStream(options?: IStreamingSoundOptions): number;
     update(): void;
 }
@@ -63,7 +63,7 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
-    public activateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): Array<VirtualVoice> {
+    public activateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ICommonSoundOptions): Array<VirtualVoice> {
         const voices = new Array<VirtualVoice>(count);
         if (count === 0) {
             return voices;
@@ -94,11 +94,11 @@ export class AbstractAudioEngine implements IAudioEngine {
         // TODO: Finish implementation.
     }
 
-    public createSpatializer(options?: ISoundOptions): number {
+    public createSpatializer(options?: ICommonSoundOptions): number {
         return this.physicalEngine.createSpatializer(options);
     }
 
-    public createBuffer(options?: IStaticSoundOptions): number {
+    public createBuffer(options?: ISoundOptions): number {
         return this.physicalEngine.createBuffer(options);
     }
 

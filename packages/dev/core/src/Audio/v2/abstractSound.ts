@@ -6,7 +6,7 @@ import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
 import { getCurrentAudioEngine } from "./audioEngine";
 import type { VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 
-export interface ISoundOptions {
+export interface ICommonSoundOptions {
     name?: string;
 
     sourceUrl?: string;
@@ -19,14 +19,14 @@ export interface ISoundOptions {
     volume?: number;
 }
 
-export interface IStaticSoundOptions extends ISoundOptions {
+export interface ISoundOptions extends ICommonSoundOptions {
     sourceBuffer?: IAudioStaticBuffer;
 
     pitch?: number;
     playbackRate?: number;
 }
 
-export interface IStreamingSoundOptions extends ISoundOptions {}
+export interface IStreamingSoundOptions extends ICommonSoundOptions {}
 
 export interface ISound {
     audioEngine: IAudioEngine;
@@ -40,7 +40,7 @@ export interface ISound {
 
 export class AbstractSound {
     public readonly audioEngine: AbstractAudioEngine;
-    public readonly options?: ISoundOptions;
+    public readonly options?: ICommonSoundOptions;
     public readonly sourceId: number;
 
     private _paused: boolean = false;
@@ -48,7 +48,7 @@ export class AbstractSound {
     private _voices: Array<VirtualVoice>;
     private _voiceIndex: number = 0;
 
-    public constructor(type: VirtualVoiceType, sourceId: number, options?: ISoundOptions, audioEngine?: IAudioEngine) {
+    public constructor(type: VirtualVoiceType, sourceId: number, options?: ICommonSoundOptions, audioEngine?: IAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
         this.options = options;
         this.sourceId = sourceId;

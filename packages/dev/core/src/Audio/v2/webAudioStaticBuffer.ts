@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
-import type { IStaticSoundOptions } from "./abstractSound";
+import type { ISoundOptions } from "./abstractSound";
 import type { Nullable } from "core/types";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
@@ -13,7 +13,7 @@ export class WebAudioStaticBuffer implements IAudioStaticBuffer {
 
     private _buffer: Nullable<AudioBuffer> = null;
 
-    public constructor(audioContext: AudioContext, id: number, options?: IStaticSoundOptions) {
+    public constructor(audioContext: AudioContext, id: number, options?: ISoundOptions) {
         this.id = id;
         this._createBuffer(audioContext, options);
     }
@@ -33,7 +33,7 @@ export class WebAudioStaticBuffer implements IAudioStaticBuffer {
         return this._buffer.duration;
     }
 
-    private async _createBuffer(audioContext: AudioContext, options?: IStaticSoundOptions): Promise<void> {
+    private async _createBuffer(audioContext: AudioContext, options?: ISoundOptions): Promise<void> {
         if (options === undefined) {
             this._buffer = new AudioBuffer({ length: 1, sampleRate: audioContext.sampleRate });
             return Promise.resolve();

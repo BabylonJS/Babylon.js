@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ISound, ISoundOptions, IStaticSoundOptions, IStreamingSoundOptions } from "./abstractSound";
+import type { ISound, ICommonSoundOptions, ISoundOptions, IStreamingSoundOptions } from "./abstractSound";
 import { type VirtualVoice } from "./virtualVoice";
 import type { Observable } from "../../Misc/observable";
 
@@ -30,8 +30,8 @@ export interface IAudioPhysicalEngine {
 
     update(voices: Array<VirtualVoice>): void;
 
-    createSpatializer(options?: ISoundOptions): number;
-    createBuffer(options?: IStaticSoundOptions): number;
+    createSpatializer(options?: ICommonSoundOptions): number;
+    createBuffer(options?: ISoundOptions): number;
     createStream(options?: IStreamingSoundOptions): number;
 }
 
