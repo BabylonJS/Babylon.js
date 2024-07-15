@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
-import type { ISoundOptions } from "./abstractSound";
+import type { ISoundOptions } from "./sound";
 import type { Nullable } from "core/types";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";

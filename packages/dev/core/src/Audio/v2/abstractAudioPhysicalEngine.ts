@@ -1,15 +1,16 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ISound, ICommonSoundOptions, ISoundOptions, IStreamedSoundOptions } from "./abstractSound";
+import type { ISoundOptions, Sound } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
 import type { Observable } from "../../Misc/observable";
 
 export interface IAudioSpatializer {
     id: number;
-    sounds: Array<ISound>;
+    sounds: Array<Sound>;
 }
 
+// TODO: Consider renaming this to `IAudioStaticSource`.
 export interface IAudioStaticBuffer {
     id: number;
     loaded: boolean;
@@ -30,9 +31,8 @@ export interface IAudioPhysicalEngine {
 
     update(voices: Array<VirtualVoice>): void;
 
-    createSpatializer(options?: ICommonSoundOptions): number;
-    createBuffer(options?: ISoundOptions): number;
-    createStream(options?: IStreamedSoundOptions): number;
+    createSpatializer(options?: ISoundOptions): number;
+    createSource(options?: ISoundOptions): number;
 }
 
 export class AbstractPhysicalAudioEngine {

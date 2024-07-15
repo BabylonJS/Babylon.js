@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type ISoundOptions } from "./abstractSound";
+import { type ISoundOptions } from "./sound";
 import { Observable } from "../../Misc/observable";
 
 export enum VirtualVoiceType {

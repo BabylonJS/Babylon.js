@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ICommonSoundOptions, type ISoundOptions, type IStreamedSoundOptions } from "./abstractSound";
+import { type ISoundOptions } from "./sound";
 import { setCurrentAudioEngine } from "./audioEngine";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
@@ -37,9 +37,8 @@ export interface IAudioEngine {
     readonly currentTime: number;
 
     // TODO: Rename these with `Source` suffixes, e.g. `createSpatialSource`, `createStaticSource`, `createdStreamedSource`.
-    createSpatializer(options?: ICommonSoundOptions): number;
-    createBuffer(options?: ISoundOptions): number;
-    createStream(options?: IStreamedSoundOptions): number;
+    createSpatializer(options?: ISoundOptions): number;
+    createSource(options?: ISoundOptions): number;
     update(): void;
 }
 
@@ -63,7 +62,7 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
-    public activateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ICommonSoundOptions): Array<VirtualVoice> {
+    public allocateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): Array<VirtualVoice> {
         const voices = new Array<VirtualVoice>(count);
         if (count === 0) {
             return voices;
@@ -87,23 +86,19 @@ export class AbstractAudioEngine implements IAudioEngine {
         return voices;
     }
 
-    public deactivateVoices(voices: Array<VirtualVoice>): void {
+    public freeVoices(voices: Array<VirtualVoice>): void {
         for (const voice of voices) {
             voice.stop();
         }
         // TODO: Finish implementation.
     }
 
-    public createSpatializer(options?: ICommonSoundOptions): number {
+    public createSpatializer(options?: ISoundOptions): number {
         return this.physicalEngine.createSpatializer(options);
     }
 
-    public createBuffer(options?: ISoundOptions): number {
-        return this.physicalEngine.createBuffer(options);
-    }
-
-    public createStream(options?: IStreamedSoundOptions): number {
-        return this.physicalEngine.createStream(options);
+    public createSource(options?: ISoundOptions): number {
+        return this.physicalEngine.createSource(options);
     }
 
     /**

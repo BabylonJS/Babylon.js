@@ -2,11 +2,11 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import type { IAudioSpatializer } from "./abstractAudioPhysicalEngine";
-import type { ISound, ISoundOptions } from "./abstractSound";
+import type { ISoundOptions, Sound } from "./sound";
 
 export class WebAudioSpatializer implements IAudioSpatializer {
     public readonly id: number;
-    public readonly sounds: Array<ISound> = new Array<ISound>();
+    public readonly sounds: Array<Sound> = new Array<Sound>();
     public readonly node: PannerNode;
 
     public constructor(audioContext: AudioContext, id: number, options?: ISoundOptions) {

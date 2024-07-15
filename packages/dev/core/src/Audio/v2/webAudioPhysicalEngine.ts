@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 
 import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ICommonSoundOptions, type ISoundOptions, type IStreamedSoundOptions } from "./abstractSound";
+import { type ISoundOptions } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
@@ -87,22 +87,22 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         this._audioContext.resume();
     }
 
-    public createSpatializer(options?: ICommonSoundOptions): number {
+    public createSpatializer(options?: ISoundOptions): number {
         const spatializer = new WebAudioSpatializer(this._audioContext, this._getNextSpatializerId(), options);
         this._spatializers.set(spatializer.id, spatializer);
         return spatializer.id;
     }
 
-    public createBuffer(options?: ISoundOptions): number {
-        const buffer = new WebAudioStaticBuffer(this._audioContext, this._getNextSourceId(), options);
-        this._audioBuffers.set(buffer.id, buffer);
-        return buffer.id;
-    }
-
-    public createStream(options?: IStreamedSoundOptions): number {
-        const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
-        this._streams.set(stream.id, stream);
-        return stream.id;
+    public createSource(options?: ISoundOptions): number {
+        if (options?.streaming) {
+            const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
+            this._streams.set(stream.id, stream);
+            return stream.id;
+        } else {
+            const buffer = new WebAudioStaticBuffer(this._audioContext, this._getNextSourceId(), options);
+            this._audioBuffers.set(buffer.id, buffer);
+            return buffer.id;
+        }
     }
 
     /**
