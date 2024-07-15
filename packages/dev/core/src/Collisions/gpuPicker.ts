@@ -92,6 +92,29 @@ export class GPUPicker {
         this._renderMaterial.onBindObservable.add(callback);
     }
 
+    private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+        const colorData = new Float32Array(4 * (instanceCount + 1));
+
+        colorData[0] = r / 255.0;
+        colorData[1] = g / 255.0;
+        colorData[2] = b / 255.0;
+        colorData[3] = 1.0;
+        for (let i = 0; i < instanceCount; i++) {
+            const r = (id & 0xff0000) >> 16;
+            const g = (id & 0x00ff00) >> 8;
+            const b = (id & 0x0000ff) >> 0;
+            onInstance(i, id);
+
+            colorData[(i + 1) * 4] = r / 255.0;
+            colorData[(i + 1) * 4 + 1] = g / 255.0;
+            colorData[(i + 1) * 4 + 2] = b / 255.0;
+            colorData[(i + 1) * 4 + 3] = 1.0;
+            id++;
+        }
+
+        return colorData;
+    }
+
     /**
      * Set the list of meshes to pick from
      * Set that value to null to clear the list (and avoid leaks)
@@ -163,48 +186,19 @@ export class GPUPicker {
             id++;
 
             if (mesh.hasThinInstances) {
-                const geoMesh = mesh as Mesh;
-                const colorData = new Float32Array(4 * (geoMesh.thinInstanceCount + 1));
-
-                colorData[0] = r / 255.0;
-                colorData[1] = g / 255.0;
-                colorData[2] = b / 255.0;
-                colorData[3] = 1.0;
-                for (let i = 0; i < geoMesh.thinInstanceCount; i++) {
-                    const r = (id & 0xff0000) >> 16;
-                    const g = (id & 0x00ff00) >> 8;
-                    const b = (id & 0x0000ff) >> 0;
+                const colorData = this._generateColorData((mesh as Mesh).thinInstanceCount, id, index, r, g, b, (i, id) => {
                     this._thinIdMap[id] = { meshId: index, thinId: i };
-
-                    colorData[(i + 1) * 4] = r / 255.0;
-                    colorData[(i + 1) * 4 + 1] = g / 255.0;
-                    colorData[(i + 1) * 4 + 2] = b / 255.0;
-                    colorData[(i + 1) * 4 + 3] = 1.0;
-                    id++;
-                }
-                geoMesh.thinInstanceSetBuffer(this._attributeName, colorData, 4);
+                });
+                id += (mesh as Mesh).thinInstanceCount;
+                (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
             } else if (mesh.hasInstances) {
                 const instances = (mesh as Mesh).instances;
-                const colorData = new Float32Array(4 * (instances.length + 1));
-                const engine = mesh.getEngine();
-
-                colorData[0] = r / 255.0;
-                colorData[1] = g / 255.0;
-                colorData[2] = b / 255.0;
-                colorData[3] = 1.0;
-                for (let i = 0; i < instances.length; i++) {
+                const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
                     const instance = instances[i];
-                    const r = (id & 0xff0000) >> 16;
-                    const g = (id & 0x00ff00) >> 8;
-                    const b = (id & 0x0000ff) >> 0;
                     this._idMap[id] = this._pickableMeshes.indexOf(instance);
-
-                    colorData[(i + 1) * 4] = r / 255.0;
-                    colorData[(i + 1) * 4 + 1] = g / 255.0;
-                    colorData[(i + 1) * 4 + 2] = b / 255.0;
-                    colorData[(i + 1) * 4 + 3] = 1.0;
-                    id++;
-                }
+                });
+                id += instances.length;
+                const engine = mesh.getEngine();
 
                 const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
                 (mesh as Mesh).setVerticesBuffer(buffer, true);
@@ -267,7 +261,7 @@ export class GPUPicker {
         this._pickingTexure!.onBeforeRender = () => {
             // Enable scissor
             if ((engine as WebGPUEngine | Engine).enableScissor) {
-                //   (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
+                (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
             }
         };
 
@@ -275,7 +269,7 @@ export class GPUPicker {
             this._pickingTexure!.onAfterRender = async () => {
                 // Disable scissor
                 if ((engine as WebGPUEngine | Engine).disableScissor) {
-                    //    (engine as WebGPUEngine | Engine).disableScissor();
+                    (engine as WebGPUEngine | Engine).disableScissor();
                 }
 
                 if (!this._pickingTexure) {
