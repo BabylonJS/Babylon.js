@@ -6,45 +6,65 @@ import { VirtualVoiceState, type VirtualVoice } from "./virtualVoice";
 import { type Nullable } from "../../types";
 
 export class WebAudioAbstractVoice {
-    public virtualVoice: Nullable<VirtualVoice> = null;
+    private _virtualVoice: Nullable<VirtualVoice> = null;
 
     public constructor() {
         // ...
     }
 
+    public init(virtualVoice: VirtualVoice): void {
+        if (!this.available) {
+            throw new Error("WebAudioAbstractVoice is not available.");
+            return;
+        }
+        this._virtualVoice = virtualVoice;
+    }
+
     public copyFrom(voice: WebAudioAbstractVoice): void {
-        this.virtualVoice = voice.virtualVoice;
+        this._virtualVoice = voice.virtualVoice;
+    }
+
+    public clear(): void {
+        this._virtualVoice = null;
+    }
+
+    public get available(): boolean {
+        return this._virtualVoice === null;
+    }
+
+    public get virtualVoice(): Nullable<VirtualVoice> {
+        return this._virtualVoice;
     }
 
     start(): void {
-        if (!this.virtualVoice || this.virtualVoice?.updated) {
+        if (!this._virtualVoice || this._virtualVoice?.updated) {
             return;
         }
-        this.virtualVoice?.setState(VirtualVoiceState.Started);
+        this._virtualVoice?.setState(VirtualVoiceState.Started);
         console.log("WebAudioAbstractVoice.start()");
     }
 
     mute(): void {
-        if (!this.virtualVoice || this.virtualVoice?.updated) {
+        if (!this._virtualVoice || this._virtualVoice?.updated) {
             return;
         }
-        this.virtualVoice?.setState(VirtualVoiceState.Muted);
+        this._virtualVoice?.setState(VirtualVoiceState.Muted);
         console.log("WebAudioAbstractVoice.mute()");
     }
 
     pause(): void {
-        if (!this.virtualVoice || this.virtualVoice?.updated) {
+        if (!this._virtualVoice || this._virtualVoice?.updated) {
             return;
         }
-        this.virtualVoice?.setState(VirtualVoiceState.Paused);
+        this._virtualVoice?.setState(VirtualVoiceState.Paused);
         console.log("WebAudioAbstractVoice.pause()");
     }
 
     stop(): void {
-        if (!this.virtualVoice || this.virtualVoice?.updated) {
+        if (!this._virtualVoice || this._virtualVoice?.updated) {
             return;
         }
-        this.virtualVoice?.setState(VirtualVoiceState.Stopped);
+        this._virtualVoice?.setState(VirtualVoiceState.Stopped);
         console.log("WebAudioAbstractVoice.stop()");
     }
 }

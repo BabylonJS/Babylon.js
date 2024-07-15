@@ -188,11 +188,12 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         let pastLastActiveIndex = 0;
         for (let i = 0; i < this._staticVoices.length; i++) {
             const voice = this._staticVoices[i];
-            const virtualVoice = voice.virtualVoice;
 
-            if (!virtualVoice) {
+            if (voice.available) {
                 break;
             }
+
+            const virtualVoice = voice.virtualVoice!;
 
             if (virtualVoice.active && !virtualVoice.muted) {
                 if (pastLastActiveIndex < i) {
@@ -213,7 +214,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         if (virtualVoiceIndex !== -1) {
             for (; pastLastActiveIndex < this._staticVoices.length; pastLastActiveIndex++) {
                 const voice = this._staticVoices[pastLastActiveIndex];
-                voice.virtualVoice = virtualVoices[virtualVoiceIndex];
+                voice.init(virtualVoices[virtualVoiceIndex]);
                 voice.start();
 
                 // Set `virtualVoiceIndex` to the next virtual voice waiting to start.
@@ -230,10 +231,10 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
             }
         }
 
-        // Set the first inactive voice's `virtualVoice` to null to stop the active/unmuted voices sort early in the
+        // Clear the first inactive voice to make it available and stop the active/unmuted voices sort early in the
         //  next update.
         if (pastLastActiveIndex < this._staticVoices.length) {
-            this._staticVoices[pastLastActiveIndex].virtualVoice = null;
+            this._staticVoices[pastLastActiveIndex].clear();
         }
 
         // console.log(this._staticVoices);
