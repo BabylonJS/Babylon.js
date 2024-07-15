@@ -231,6 +231,12 @@ class _InternalAbstractMeshDataInfo {
      * We use that as a clue to force the material to sideOrientation = null
      */
     public _sideOrientationHint = false;
+
+    /**
+     * @internal
+     * if this is set to true, the mesh will be visible only if its parent(s) are also visible
+     */
+    public _inheritedVisibility = false;
 }
 
 /**
@@ -539,7 +545,13 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * If set to true, a mesh will only be visible only if its parent(s) are also visible (default is false)
      */
-    public inheritedVisibility = false;
+    public get inheritedVisibility(): boolean {
+        return this._internalAbstractMeshDataInfo._inheritedVisibility;
+    }
+
+    public set inheritedVisibility(value: boolean) {
+        this._internalAbstractMeshDataInfo._inheritedVisibility = value;
+    }
 
     private _isVisible = true;
     /**
