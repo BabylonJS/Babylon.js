@@ -1,15 +1,15 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioStaticBuffer } from "./abstractAudioPhysicalEngine";
+import type { IAudioStaticSource } from "./abstractAudioPhysicalEngine";
 import type { ISoundOptions } from "./sound";
 import type { Nullable } from "core/types";
 import { Logger } from "../../Misc/logger";
 import { Observable } from "../../Misc/observable";
 
-export class WebAudioStaticBuffer implements IAudioStaticBuffer {
+export class WebAudioStaticBuffer implements IAudioStaticSource {
     public readonly id: number;
-    public readonly onLoadObservable = new Observable<IAudioStaticBuffer>();
+    public readonly onLoadObservable = new Observable<IAudioStaticSource>();
 
     private _buffer: Nullable<AudioBuffer> = null;
 

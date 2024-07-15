@@ -1,10 +1,10 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioStream } from "./abstractAudioPhysicalEngine";
+import type { IAudioStreamedSource } from "./abstractAudioPhysicalEngine";
 import type { ISoundOptions } from "./sound";
 
-export class WebAudioStream implements IAudioStream {
+export class WebAudioStream implements IAudioStreamedSource {
     public readonly id: number;
     public readonly node: AudioNode;
 

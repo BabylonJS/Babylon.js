@@ -10,16 +10,15 @@ export interface IAudioSpatializer {
     sounds: Array<Sound>;
 }
 
-// TODO: Consider renaming this to `IAudioStaticSource`.
-export interface IAudioStaticBuffer {
+export interface IAudioStaticSource {
     id: number;
     loaded: boolean;
     duration: number; // seconds
 
-    onLoadObservable: Observable<IAudioStaticBuffer>;
+    onLoadObservable: Observable<IAudioStaticSource>;
 }
 
-export interface IAudioStream {
+export interface IAudioStreamedSource {
     id: number;
 }
 
