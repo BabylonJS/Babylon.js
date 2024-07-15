@@ -206,8 +206,8 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
 
         // Physically start virtual voices waiting to start.
         let virtualVoiceIndex = virtualVoices.findIndex((virtualVoice) => virtualVoice.waitingToStart);
-        for (let i = pastLastActiveIndex; i < this._staticVoices.length; i++) {
-            const voice = this._staticVoices[i];
+        for (; pastLastActiveIndex < this._staticVoices.length; pastLastActiveIndex++) {
+            const voice = this._staticVoices[pastLastActiveIndex];
             voice.virtualVoice = virtualVoices[virtualVoiceIndex];
             voice.start();
 
@@ -222,6 +222,12 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
             if (done) {
                 break;
             }
+        }
+
+        // Set the first inactive voice's `virtualVoice` to null to stop the active/unmuted voices sort early in the
+        //  next update.
+        if (pastLastActiveIndex < this._staticVoices.length) {
+            this._staticVoices[pastLastActiveIndex].virtualVoice = null;
         }
 
         // console.log(this._staticVoices);
