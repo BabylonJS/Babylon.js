@@ -1,21 +1,120 @@
 {
-    "fromTag": "7.14.0",
+    "fromTag": "7.15.0",
     "changelog": {
-        "7.14.0": [
+        "7.15.1": [
             {
-                "pr": "15251",
-                "title": "Fix cube texture defaultLodScale",
-                "description": "https://forum.babylonjs.com/t/incorrect-lodscale-value-in-cubetexture-constructor/51772",
+                "pr": "15270",
+                "title": "Fix align in buffers function GetFloatData",
+                "description": "https://forum.babylonjs.com/t/silent-bug-in-buffers/51596",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "Taras55",
+                    "url": "https://github.com/Taras55"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                    "packages/dev/core/src/Buffers/buffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15274",
+                "title": "rtt screenshot fix",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15273",
+                "title": "Add a new utility function to compute the max extents of an array of meshes",
+                "description": "This change adds a new utility function `computeMaxExtents` that will take an array of meshes and an optional animation group to compute an approximate overall minimum and maximum vector that considers animations, skinning, and morph targets.\r\n\r\nThe morph targets are computed by taking each target and updating the max extents to fit each morph target. Weights are not considered in this computation.\r\n\r\nSkinning is computed by computing the max extents per bone. Again, weights are not considered in this computation.\r\n\r\nThe max extents are converted into the corners of the bounding box before computing the final max extents.\r\n\r\nAnimations are considered by stepping through the animation group at a fixed step in seconds. For skinning, each bone's corners are updated with the bone's final matrix for each frame step.\r\n\r\nThis function is significantly faster than using `mesh.refreshBoundingInfo` applying skeleton and/or morph targets looping through the animation frames in a similar fashion.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-BoxAnimated.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-MorphStressTest.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15272",
+                "title": "Fix gpu part aging issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx"
                 ],
                 "tags": [
                     "bug"
                 ]
+            },
+            {
+                "pr": "15268",
+                "title": "Update image.ts",
+                "description": "add top :0",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15261",
+                "title": "Change default behavior for anchors",
+                "description": "It seems like chrome has an issue with removing created anchors after a session has ended. I am still investigating the source of the issue, but until then - setting the flag to true to not remove the anchors on session end allows the scene to continue correctly.\n\nAlso added a new flag to reset the list of anchors on session init (without using the webxr \"delete\" function)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15267",
+                "title": "AnimationGroup start should restart if an animatable is available",
+                "description": "See https://forum.babylonjs.com/t/animationgroup-documentation-issue/52001?u=raananw\r\n\r\nPG to test with - #ZI9AK7#4084\r\n\r\nAlso addressing https://forum.babylonjs.com/t/scene-removeanimationgroup-not-working/52006?u=raananw - the dispose function will stop the animation if it is running.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15265",
+                "title": "colors and useColors fix in GRLSimpleMaterial, uv calc fix",
+                "description": "SImpleMaterial didn't create the colors texture. Fixed.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts"
+                ],
+                "tags": []
             }
         ],
         "7.15.0": [
@@ -224,6 +323,23 @@
                     "packages/dev/core/test/unit/Misc/asyncLock.test.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.14.0": [
+            {
+                "pr": "15251",
+                "title": "Fix cube texture defaultLodScale",
+                "description": "https://forum.babylonjs.com/t/incorrect-lodscale-value-in-cubetexture-constructor/51772",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "7.13.3": [
