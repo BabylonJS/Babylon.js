@@ -236,7 +236,7 @@ class _InternalAbstractMeshDataInfo {
      * @internal
      * if this is set to true, the mesh will be visible only if its parent(s) are also visible
      */
-    public _inheritedVisibility = false;
+    public _inheritVisibility = false;
 }
 
 /**
@@ -545,12 +545,12 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     /**
      * If set to true, a mesh will only be visible only if its parent(s) are also visible (default is false)
      */
-    public get inheritedVisibility(): boolean {
-        return this._internalAbstractMeshDataInfo._inheritedVisibility;
+    public get inheritVisibility(): boolean {
+        return this._internalAbstractMeshDataInfo._inheritVisibility;
     }
 
-    public set inheritedVisibility(value: boolean) {
-        this._internalAbstractMeshDataInfo._inheritedVisibility = value;
+    public set inheritVisibility(value: boolean) {
+        this._internalAbstractMeshDataInfo._inheritVisibility = value;
     }
 
     private _isVisible = true;
@@ -558,7 +558,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
      * Gets or sets a boolean indicating if the mesh is visible (renderable). Default is true
      */
     public get isVisible(): boolean {
-        if (!this._isVisible || !this.inheritedVisibility || !this._parentNode) {
+        if (!this._isVisible || !this.inheritVisibility || !this._parentNode) {
             return this._isVisible;
         }
         if (this._isVisible) {
@@ -566,7 +566,7 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
             while (parent) {
                 const parentVisible = (parent as AbstractMesh).isVisible;
                 if (typeof parentVisible !== "undefined") {
-                    return this._isVisible && parentVisible;
+                    return parentVisible;
                 }
                 parent = parent.parent;
             }
