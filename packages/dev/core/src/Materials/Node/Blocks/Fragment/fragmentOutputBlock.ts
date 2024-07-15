@@ -103,6 +103,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         const rgb = this.rgb;
         const a = this.a;
 
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
@@ -160,7 +161,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         // TODOWGSL
         state.compilationString += `#if defined(PREPASS)\r\n`;
-        state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+        state.compilationString += `${isWebGPU ? "fragmentOutputs.fragData0" : "gl_FragData[0]"} = ${outputString};\r\n`;
         state.compilationString += `#endif\r\n`;
 
         return this;

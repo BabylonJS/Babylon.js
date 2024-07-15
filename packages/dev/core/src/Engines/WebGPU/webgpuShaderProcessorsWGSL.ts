@@ -370,6 +370,16 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
 
+        const regex = /const SCENE_MRT_COUNT = (\d+);/;
+        const match = fragmentCode.match(regex);
+
+        if (match) {
+            const number = parseInt(match[1]);
+            for (let index = 0; index < number; index++) {
+                fragmentOutputs += ` @location(${index + 1}) fragData${index} : vec4<f32>,\n`;
+            }
+        }
+
         let hasFragDepth = false;
         let idx = 0;
         while (!hasFragDepth) {
