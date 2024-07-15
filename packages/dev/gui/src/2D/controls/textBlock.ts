@@ -30,7 +30,12 @@ export const enum TextWrapping {
     /**
      * Wrap the text word-wise and clip the text when the text's height is larger than the Control.height, and shrink the last line with trailing … .
      */
-    WordWrapEllipsis,
+    WordWrapEllipsis = 3,
+
+    /**
+     * Use HTML to wrap the text. This is the only mode that supports east-asian languages.
+     */
+    HTML = 4,
 }
 
 /**
@@ -67,6 +72,18 @@ export class TextBlock extends Control {
      * Function used to split a string into words. By default, a string is split at each space character found
      */
     public wordSplittingFunction: Nullable<(line: string) => string[]>;
+
+    /**
+     * This function will be called when a new HTML element is generated to be used for word wrapping.
+     * This is only used when wrapping mode HTML is selected.
+     * Using this function you can adjust word-break, overflow-wrap, hyphens, or any other CSS properties of the HTML element, language-dependent.
+     */
+    public adjustWordWrappingHTMLElement: Nullable<(element: HTMLElement) => void>;
+
+    /**
+     * Gets or sets a boolean indicating if the HTML element generated for word wrapping should be reused or removed after each wrapping.
+     */
+    public reuseHTMLForWordWrapping: boolean = false;
 
     /**
      * Return the line list (you may need to use the onLinesReadyObservable to make sure the list is ready)
@@ -478,27 +495,76 @@ export class TextBlock extends Control {
 
     protected _breakLines(refWidth: number, refHeight: number, context: ICanvasRenderingContext): object[] {
         this._linesTemp.length = 0;
-        const _lines = this.text.split("\n");
+        const _lines = this._textWrapping === TextWrapping.HTML ? this._parseHTMLText(refWidth, refHeight, context) : this.text.split("\n");
 
-        if (this._textWrapping === TextWrapping.Ellipsis) {
-            for (const _line of _lines) {
-                this._linesTemp.push(this._parseLineEllipsis(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrap) {
-            for (const _line of _lines) {
-                this._linesTemp.push(...this._parseLineWordWrap(_line, refWidth, context));
-            }
-        } else if (this._textWrapping === TextWrapping.WordWrapEllipsis) {
-            for (const _line of _lines) {
-                this._linesTemp.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight!, context));
-            }
-        } else {
-            for (const _line of _lines) {
-                this._linesTemp.push(this._parseLine(_line, context));
-            }
+        switch (this._textWrapping) {
+            case TextWrapping.WordWrap:
+                for (const _line of _lines) {
+                    this._linesTemp.push(...this._parseLineWordWrap(_line, refWidth, context));
+                }
+                break;
+            case TextWrapping.Ellipsis:
+                for (const _line of _lines) {
+                    this._linesTemp.push(this._parseLineEllipsis(_line, refWidth, context));
+                }
+                break;
+            case TextWrapping.WordWrapEllipsis:
+                for (const _line of _lines) {
+                    this._linesTemp.push(...this._parseLineWordWrapEllipsis(_line, refWidth, refHeight, context));
+                }
+                break;
+            case TextWrapping.HTML:
+            default:
+                for (const _line of _lines) {
+                    this._linesTemp.push(this._parseLine(_line, context));
+                }
+                break;
         }
 
         return this._linesTemp;
+    }
+
+    private _htmlElement: Nullable<HTMLElement> = null;
+
+    protected _parseHTMLText(refWidth: number, refHeight: number, context: ICanvasRenderingContext): string[] {
+        const lines = [] as string[];
+        if (!this._htmlElement) {
+            this._htmlElement = document.createElement("div");
+            document.body.appendChild(this._htmlElement);
+        }
+        const htmlElement = this._htmlElement;
+        htmlElement.textContent = this.text;
+        htmlElement.style.font = context.font;
+        htmlElement.style.position = "absolute";
+        htmlElement.style.visibility = "hidden";
+        htmlElement.style.top = "-1000px";
+        htmlElement.style.left = "-1000px";
+        this.adjustWordWrappingHTMLElement?.(htmlElement);
+        htmlElement.style.width = refWidth + "px";
+        htmlElement.style.height = refHeight + "px";
+        const textContent = htmlElement.textContent;
+        if (!textContent) {
+            return lines;
+        }
+        // get the text node
+        const textNode = htmlElement.childNodes[0];
+        const range = document.createRange();
+        let idx = 0;
+        for (const c of textContent) {
+            range.setStart(textNode, 0);
+            range.setEnd(textNode, idx + 1);
+            // "select" text from beginning to this position to determine the line
+            const lineIndex = range.getClientRects().length - 1;
+            lines[lineIndex] = (lines[lineIndex] || "") + c;
+            idx++;
+        }
+
+        if (!this.reuseHTMLForWordWrapping) {
+            htmlElement.remove();
+            this._htmlElement = null;
+        }
+
+        return lines;
     }
 
     protected _parseLine(line: string = "", context: ICanvasRenderingContext): object {
@@ -683,6 +749,8 @@ export class TextBlock extends Control {
         super.dispose();
 
         this.onTextChangedObservable.clear();
+        this._htmlElement?.remove();
+        this._htmlElement = null;
     }
 }
 RegisterClass("BABYLON.GUI.TextBlock", TextBlock);
