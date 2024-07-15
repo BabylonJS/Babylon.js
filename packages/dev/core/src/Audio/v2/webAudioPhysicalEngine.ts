@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 
 import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ICommonSoundOptions, type ISoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type ICommonSoundOptions, type ISoundOptions, type IStreamedSoundOptions } from "./abstractSound";
 import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
@@ -11,7 +11,7 @@ import { WebAudioStaticBuffer } from "./webAudioStaticBuffer";
 import { WebAudioStream } from "./webAudioStream";
 import { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
 import { WebAudioStaticVoice } from "./webAudioStaticVoice";
-import { WebAudioStreamingVoice } from "./webAudioStreamingVoice";
+import { WebAudioStreamedVoice } from "./webAudioStreamedVoice";
 
 export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implements IAudioPhysicalEngine {
     private _audioContext: AudioContext;
@@ -24,7 +24,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
 
     private _spatialVoices: WebAudioSpatialVoice[] = [];
     private _staticVoices: Array<WebAudioStaticVoice>;
-    private _streamingVoices: Array<WebAudioStreamingVoice>;
+    private _streamedVoices: Array<WebAudioStreamedVoice>;
 
     public constructor(options?: IWebAudioEngineOptions) {
         super();
@@ -54,7 +54,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         // These arrays will always be sorted by priority, high to low.
         this._spatialVoices.length = options?.maxSpatialVoices ?? 64;
         this._staticVoices = new Array<WebAudioStaticVoice>(options?.maxStaticVoices ?? 128);
-        this._streamingVoices = new Array<WebAudioStreamingVoice>(options?.maxStreamingVoices ?? 8);
+        this._streamedVoices = new Array<WebAudioStreamedVoice>(options?.maxStreamedVoices ?? 8);
 
         for (let i = 0; i < this._spatialVoices.length; i++) {
             this._spatialVoices[i] = new WebAudioSpatialVoice();
@@ -62,8 +62,8 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         for (let i = 0; i < this._staticVoices.length; i++) {
             this._staticVoices[i] = new WebAudioStaticVoice();
         }
-        for (let i = 0; i < this._streamingVoices.length; i++) {
-            this._streamingVoices[i] = new WebAudioStreamingVoice();
+        for (let i = 0; i < this._streamedVoices.length; i++) {
+            this._streamedVoices[i] = new WebAudioStreamedVoice();
         }
     }
 
@@ -99,7 +99,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         return buffer.id;
     }
 
-    public createStream(options?: IStreamingSoundOptions): number {
+    public createStream(options?: IStreamedSoundOptions): number {
         const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
         this._streams.set(stream.id, stream);
         return stream.id;
@@ -120,10 +120,10 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
         // Update virtual voice states according to the number of physical voices available.
         let spatialCount = 0;
         let staticCount = 0;
-        let streamingCount = 0;
+        let streamedCount = 0;
         let spatialMaxed = false;
         let staticMaxed = false;
-        let streamingMaxed = false;
+        let streamedMaxed = false;
         let allMaxed = false;
 
         for (let i = 0; i < virtualVoices.length; i++) {
@@ -151,16 +151,16 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
                 }
             }
 
-            if (virtualVoice.streaming) {
-                if (streamingMaxed) {
+            if (virtualVoice.streamed) {
+                if (streamedMaxed) {
                     virtualVoice.mute();
                     return;
                 }
                 virtualVoice.start();
 
-                streamingCount++;
-                if (streamingCount >= this._streamingVoices.length) {
-                    streamingMaxed = true;
+                streamedCount++;
+                if (streamedCount >= this._streamedVoices.length) {
+                    streamedMaxed = true;
                 }
             }
 
@@ -171,7 +171,7 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
                 }
             }
 
-            if (spatialMaxed && staticMaxed && streamingMaxed) {
+            if (spatialMaxed && staticMaxed && streamedMaxed) {
                 allMaxed = true;
             }
         }
@@ -226,6 +226,6 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
 
         // console.log(this._staticVoices);
 
-        // TODO: Implement spatial and streaming voice updates.
+        // TODO: Implement spatial and streamed voice updates.
     }
 }

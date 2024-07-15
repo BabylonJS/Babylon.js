@@ -3,7 +3,7 @@
 
 import { WebAudioAbstractVoice } from "./webAudioAbstractVoice";
 
-export class WebAudioStreamingVoice extends WebAudioAbstractVoice {
+export class WebAudioStreamedVoice extends WebAudioAbstractVoice {
     public constructor() {
         super();
     }

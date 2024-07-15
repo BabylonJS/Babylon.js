@@ -26,7 +26,7 @@ export interface ISoundOptions extends ICommonSoundOptions {
     playbackRate?: number;
 }
 
-export interface IStreamingSoundOptions extends ICommonSoundOptions {}
+export interface IStreamedSoundOptions extends ICommonSoundOptions {}
 
 export interface ISound {
     audioEngine: IAudioEngine;

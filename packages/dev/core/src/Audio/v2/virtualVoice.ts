@@ -6,7 +6,7 @@ import { Observable } from "../../Misc/observable";
 
 export enum VirtualVoiceType {
     Static,
-    Streaming,
+    Streamed,
 }
 
 export enum VirtualVoiceState {
@@ -46,8 +46,8 @@ export class VirtualVoice {
         return this.type === VirtualVoiceType.Static;
     }
 
-    public get streaming(): boolean {
-        return this.type === VirtualVoiceType.Streaming;
+    public get streamed(): boolean {
+        return this.type === VirtualVoiceType.Streamed;
     }
 
     public get state(): VirtualVoiceState {
@@ -119,8 +119,8 @@ export class VirtualVoice {
             return -1;
         }
 
-        // Streaming voices are hard to restart cleanly, so they are prioritized over static voices.
-        if (this.static && other.streaming) {
+        // Streamed voices are hard to restart cleanly, so they are prioritized over static voices.
+        if (this.static && other.streamed) {
             return -1;
         }
 

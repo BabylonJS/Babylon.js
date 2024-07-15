@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ICommonSoundOptions, type ISoundOptions, type IStreamingSoundOptions } from "./abstractSound";
+import { type ICommonSoundOptions, type ISoundOptions, type IStreamedSoundOptions } from "./abstractSound";
 import { setCurrentAudioEngine } from "./audioEngine";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
@@ -28,9 +28,9 @@ export interface IAudioEngineOptions {
     maxStaticVoices?: number;
 
     /**
-     * The maximum number of simultaneously playing streaming voices. Defaults to 8.
+     * The maximum number of simultaneously playing streamed voices. Defaults to 8.
      */
-    maxStreamingVoices?: number;
+    maxStreamedVoices?: number;
 }
 
 export interface IAudioEngine {
@@ -39,7 +39,7 @@ export interface IAudioEngine {
     // TODO: Rename these with `Source` suffixes, e.g. `createSpatialSource`, `createStaticSource`, `createdStreamedSource`.
     createSpatializer(options?: ICommonSoundOptions): number;
     createBuffer(options?: ISoundOptions): number;
-    createStream(options?: IStreamingSoundOptions): number;
+    createStream(options?: IStreamedSoundOptions): number;
     update(): void;
 }
 
@@ -102,7 +102,7 @@ export class AbstractAudioEngine implements IAudioEngine {
         return this.physicalEngine.createBuffer(options);
     }
 
-    public createStream(options?: IStreamingSoundOptions): number {
+    public createStream(options?: IStreamedSoundOptions): number {
         return this.physicalEngine.createStream(options);
     }
 
