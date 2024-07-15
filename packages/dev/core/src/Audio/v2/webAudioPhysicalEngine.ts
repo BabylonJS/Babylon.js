@@ -176,11 +176,15 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
             }
         }
 
-        // Sort active, unmuted voices to the top of the physical voice array while muting, pausing, or stopping
-        //  virtual voices that can be physically ignored.
+        // Sort active/unmuted voices to the top of the physical voice array while muting, pausing, or stopping virtual
+        //  voices that can be physically ignored.
         //
-        // When complete, `pastLastActiveIndex` is set to one past the last active and unmuted voice. Voices from this
-        //  index on are available for virtual voices waiting to start.
+        // When complete, `pastLastActiveIndex` is set to one past the last active and unmuted voice. Starting at this
+        //  index, physical voices can be used by virtual voices waiting to start.
+        //
+        // Note that it is assumed the number of virtual voices waiting to to start is not more than than the number of
+        //  physical voices available. This assumption is not checked here, which means any virtual voices waiting to
+        //  start beyond the number of physical voices available will be ignored.
         let pastLastActiveIndex = 0;
         for (let i = 0; i < this._staticVoices.length; i++) {
             const voice = this._staticVoices[i];
