@@ -129,6 +129,9 @@ export class GPUPicker {
                 if (mesh.hasInstances) {
                     (mesh as Mesh).removeVerticesData(this._attributeName);
                 }
+                if (mesh.hasThinInstances) {
+                    (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, null);
+                }
                 if (this._pickingTexure) {
                     this._pickingTexure.setMaterialForRendering(mesh, undefined);
                 }
