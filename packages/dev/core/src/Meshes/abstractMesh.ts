@@ -537,9 +537,34 @@ export abstract class AbstractMesh extends TransformNode implements IDisposable,
     public alphaIndex = Number.MAX_VALUE;
 
     /**
+     * If set to true, a mesh will only be visible only if its parent(s) are also visible (default is false)
+     */
+    public inheritedVisibility = false;
+
+    private _isVisible = true;
+    /**
      * Gets or sets a boolean indicating if the mesh is visible (renderable). Default is true
      */
-    public isVisible = true;
+    public get isVisible(): boolean {
+        if (!this._isVisible || !this.inheritedVisibility || !this._parentNode) {
+            return this._isVisible;
+        }
+        if (this._isVisible) {
+            let parent: Nullable<Node> = this._parentNode;
+            while (parent) {
+                const parentVisible = (parent as AbstractMesh).isVisible;
+                if (typeof parentVisible !== "undefined") {
+                    return this._isVisible && parentVisible;
+                }
+                parent = parent.parent;
+            }
+        }
+        return this._isVisible;
+    }
+
+    public set isVisible(value: boolean) {
+        this._isVisible = value;
+    }
 
     /**
      * Gets or sets a boolean indicating if the mesh can be picked (by scene.pick for instance or through actions). Default is true
