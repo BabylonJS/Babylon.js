@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type AbstractAudioEngine, type IAudioEngine } from "./abstractAudioEngine";
+import { type AbstractAudioEngine } from "./abstractAudioEngine";
 import { getCurrentAudioEngine } from "./audioEngine";
 import { type VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 import { type IDisposable } from "../../scene";
@@ -34,7 +34,7 @@ export class Sound implements IDisposable {
     private _voices: Array<VirtualVoice>;
     private _voiceIndex: number = 0;
 
-    public constructor(options?: ISoundOptions, audioEngine?: IAudioEngine) {
+    public constructor(options?: ISoundOptions, audioEngine?: AbstractAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
         this.options = options;
         this.sourceId = options?.sourceId !== undefined ? options.sourceId : this.audioEngine.createSource(options);

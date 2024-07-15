@@ -1,9 +1,9 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { ISoundOptions, Sound } from "./sound";
+import { type ISoundOptions, type Sound } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
-import type { Observable } from "../../Misc/observable";
+import { type Observable } from "../../Misc/observable";
 
 export interface IAudioSpatializer {
     id: number;
@@ -22,21 +22,19 @@ export interface IAudioStreamedSource {
     id: number;
 }
 
-export interface IAudioPhysicalEngine {
-    /**
-     * Returns a double representing an ever-increasing hardware time in seconds used for scheduling. It starts at 0.
-     */
-    currentTime: number;
-
-    update(voices: Array<VirtualVoice>): void;
-
-    createSpatializer(options?: ISoundOptions): number;
-    createSource(options?: ISoundOptions): number;
-}
-
-export class AbstractPhysicalAudioEngine {
+export abstract class AbstractAudioPhysicalEngine {
     private _nextSpatializerId: number = 0;
     private _nextSourceId: number = 0;
+
+    /**
+     * An ever-increasing hardware time in seconds used for scheduling. Starts at 0.
+     */
+    public abstract currentTime: number;
+
+    public abstract update(voices: Array<VirtualVoice>): void;
+
+    public abstract createSpatializer(options?: ISoundOptions): number;
+    public abstract createSource(options?: ISoundOptions): number;
 
     protected _getNextSpatializerId(): number {
         return this._nextSpatializerId++;

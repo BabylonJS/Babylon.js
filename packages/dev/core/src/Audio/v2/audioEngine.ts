@@ -1,21 +1,19 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioEngine } from "./abstractAudioEngine";
+import { type AbstractAudioEngine } from "./abstractAudioEngine";
 import { WebAudioEngine } from "./webAudioEngine";
-import type { Nullable } from "../../types";
+import { type Nullable } from "../../types";
 
-export { WebAudioEngine as AudioEngine };
+let currentAudioEngine: Nullable<AbstractAudioEngine> = null;
 
-let currentAudioEngine: Nullable<IAudioEngine> = null;
-
-export function getCurrentAudioEngine(): IAudioEngine {
+export function getCurrentAudioEngine(): AbstractAudioEngine {
     if (!currentAudioEngine) {
         currentAudioEngine = new WebAudioEngine();
     }
     return currentAudioEngine;
 }
 
-export function setCurrentAudioEngine(engine: Nullable<IAudioEngine>): void {
+export function setCurrentAudioEngine(engine: Nullable<AbstractAudioEngine>): void {
     currentAudioEngine = engine;
 }

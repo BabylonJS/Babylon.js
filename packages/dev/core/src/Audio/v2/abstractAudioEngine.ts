@@ -1,9 +1,9 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ISoundOptions } from "./sound";
+import { type AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
 import { setCurrentAudioEngine } from "./audioEngine";
+import { type ISoundOptions } from "./sound";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
 export interface IAudioEngineOptions {
@@ -33,22 +33,14 @@ export interface IAudioEngineOptions {
     maxStreamedVoices?: number;
 }
 
-export interface IAudioEngine {
-    readonly currentTime: number;
-
-    createSpatializer(options?: ISoundOptions): number;
-    createSource(options?: ISoundOptions): number;
-    update(): void;
-}
-
-export class AbstractAudioEngine implements IAudioEngine {
-    public readonly physicalEngine: IAudioPhysicalEngine;
+export abstract class AbstractAudioEngine {
+    public readonly physicalEngine: AbstractAudioPhysicalEngine;
 
     private _voices = new Array<VirtualVoice>();
     private _voicesDirty: boolean = false;
     private _inactiveVoiceIndex: number = 1;
 
-    public constructor(physicalEngine: IAudioPhysicalEngine) {
+    public constructor(physicalEngine: AbstractAudioPhysicalEngine) {
         this.physicalEngine = physicalEngine;
 
         setCurrentAudioEngine(this);

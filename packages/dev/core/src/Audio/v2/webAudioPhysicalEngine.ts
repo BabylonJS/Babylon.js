@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 /* eslint-disable no-console */
 
-import { AbstractPhysicalAudioEngine, type IAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import { AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
 import { type ISoundOptions } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
@@ -13,7 +13,7 @@ import { WebAudioSpatialVoice } from "./webAudioSpatialVoice";
 import { WebAudioStaticVoice } from "./webAudioStaticVoice";
 import { WebAudioStreamedVoice } from "./webAudioStreamedVoice";
 
-export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implements IAudioPhysicalEngine {
+export class WebAudioPhysicalEngine extends AbstractAudioPhysicalEngine {
     private _audioContext: AudioContext;
     private _lastUpdateTime: number = 0;
     private _startTime: number = 0;

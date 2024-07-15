@@ -5,7 +5,7 @@
 import { VirtualVoiceState, type VirtualVoice } from "./virtualVoice";
 import { type Nullable } from "../../types";
 
-export class WebAudioAbstractVoice {
+export abstract class WebAudioAbstractVoice {
     private _virtualVoice: Nullable<VirtualVoice> = null;
 
     public constructor() {
