@@ -21,6 +21,10 @@ export interface IGPUPickingInfo {
      * Picked mesh
      */
     mesh: AbstractMesh;
+    /**
+     * Picked thin instance index
+     */
+    thinInstanceIndex?: number;
 }
 
 /**
@@ -30,6 +34,7 @@ export interface IGPUPickingInfo {
 export class GPUPicker {
     private _pickingTexure: Nullable<RenderTargetTexture> = null;
     private _idMap: Array<number> = [];
+    private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
     private _idColors: Array<Color3> = [];
     private _cachedScene: Nullable<Scene>;
     private _renderMaterial: Nullable<ShaderMaterial>;
@@ -77,7 +82,7 @@ export class GPUPicker {
 
             const effect = this._renderMaterial!.getEffect();
 
-            if (!mesh.hasInstances && !mesh.isAnInstance) {
+            if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
                 effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
             }
 
@@ -107,6 +112,7 @@ export class GPUPicker {
             }
             this._pickableMeshes.length = 0;
             this._idMap.length = 0;
+            this._thinIdMap.length = 0;
             this._idColors.length = 0;
             if (this._pickingTexure) {
                 this._pickingTexure.renderList = [];
@@ -156,7 +162,28 @@ export class GPUPicker {
             this._idMap[id] = index;
             id++;
 
-            if (mesh.hasInstances) {
+            if (mesh.hasThinInstances) {
+                const geoMesh = mesh as Mesh;
+                const colorData = new Float32Array(4 * (geoMesh.thinInstanceCount + 1));
+
+                colorData[0] = r / 255.0;
+                colorData[1] = g / 255.0;
+                colorData[2] = b / 255.0;
+                colorData[3] = 1.0;
+                for (let i = 0; i < geoMesh.thinInstanceCount; i++) {
+                    const r = (id & 0xff0000) >> 16;
+                    const g = (id & 0x00ff00) >> 8;
+                    const b = (id & 0x0000ff) >> 0;
+                    this._thinIdMap[id] = { meshId: index, thinId: i };
+
+                    colorData[(i + 1) * 4] = r / 255.0;
+                    colorData[(i + 1) * 4 + 1] = g / 255.0;
+                    colorData[(i + 1) * 4 + 2] = b / 255.0;
+                    colorData[(i + 1) * 4 + 3] = 1.0;
+                    id++;
+                }
+                geoMesh.thinInstanceSetBuffer(this._attributeName, colorData, 4);
+            } else if (mesh.hasInstances) {
                 const instances = (mesh as Mesh).instances;
                 const colorData = new Float32Array(4 * (instances.length + 1));
                 const engine = mesh.getEngine();
@@ -240,7 +267,7 @@ export class GPUPicker {
         this._pickingTexure!.onBeforeRender = () => {
             // Enable scissor
             if ((engine as WebGPUEngine | Engine).enableScissor) {
-                (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
+                //   (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
             }
         };
 
@@ -248,7 +275,7 @@ export class GPUPicker {
             this._pickingTexure!.onAfterRender = async () => {
                 // Disable scissor
                 if ((engine as WebGPUEngine | Engine).disableScissor) {
-                    (engine as WebGPUEngine | Engine).disableScissor();
+                    //    (engine as WebGPUEngine | Engine).disableScissor();
                 }
 
                 if (!this._pickingTexure) {
@@ -256,6 +283,7 @@ export class GPUPicker {
                 }
 
                 let pickedMesh: Nullable<AbstractMesh> = null;
+                let thinInstanceIndex: number | undefined = undefined;
                 const wasSuccessfull = this._meshRenderingCount > 0;
 
                 if (wasSuccessfull) {
@@ -271,7 +299,14 @@ export class GPUPicker {
                         const g = this._readbuffer[1];
                         const b = this._readbuffer[2];
                         const colorId = (r << 16) + (g << 8) + b;
-                        pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+
+                        // Thin?
+                        if (this._thinIdMap[colorId]) {
+                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                            thinInstanceIndex = this._thinIdMap[colorId].thinId;
+                        } else {
+                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                        }
                     }
                 }
 
@@ -284,7 +319,7 @@ export class GPUPicker {
                         this.dispose();
                     }
                     if (pickedMesh) {
-                        resolve({ mesh: pickedMesh });
+                        resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
                     } else {
                         resolve(null);
                     }
