@@ -192,10 +192,9 @@ export abstract class BaseCameraPointersInput implements ICameraInput<Camera> {
                 if (this._pointA && this._pointB === null) {
                     const offsetX = evt.clientX - this._pointA.x;
                     const offsetY = evt.clientY - this._pointA.y;
-                    this.onTouch(this._pointA, offsetX, offsetY);
-
                     this._pointA.x = evt.clientX;
                     this._pointA.y = evt.clientY;
+                    this.onTouch(this._pointA, offsetX, offsetY);
                 }
                 // Two buttons down: pinch
                 else if (this._pointA && this._pointB) {
