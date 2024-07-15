@@ -14,7 +14,7 @@ The first golden rule is a really important one because we want our users to tru
 
 ### Performance
 
-Babylon.js is a 3D rendering engine. So every piece of code has to be scrutinized to look for potential bottlenecks or slowdowns. Ultimately the goal is to render more with less resources.
+Babylon.js is one of the most popular 3D game engines used by developers. As with any other 3D library it provides built-in functions to help you implement common 3D functionality more quickly.
 
 ### Simplicity
 
