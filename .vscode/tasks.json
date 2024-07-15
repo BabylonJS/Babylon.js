@@ -463,7 +463,7 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             },
-            "args": ["run", "serve:web", "-w", "@tools/viewer-alpha"],
+            "args": ["run", "serve", "-w", "@tools/viewer-alpha"],
             "isBackground": true,
             "problemMatcher": {
                 "pattern": "$tsc",
