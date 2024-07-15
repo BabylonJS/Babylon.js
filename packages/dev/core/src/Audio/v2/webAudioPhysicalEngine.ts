@@ -210,21 +210,23 @@ export class WebAudioPhysicalEngine extends AbstractPhysicalAudioEngine implemen
 
         // Physically start virtual voices waiting to start.
         let virtualVoiceIndex = virtualVoices.findIndex((virtualVoice) => virtualVoice.waitingToStart);
-        for (; pastLastActiveIndex < this._staticVoices.length; pastLastActiveIndex++) {
-            const voice = this._staticVoices[pastLastActiveIndex];
-            voice.virtualVoice = virtualVoices[virtualVoiceIndex];
-            voice.start();
+        if (virtualVoiceIndex !== -1) {
+            for (; pastLastActiveIndex < this._staticVoices.length; pastLastActiveIndex++) {
+                const voice = this._staticVoices[pastLastActiveIndex];
+                voice.virtualVoice = virtualVoices[virtualVoiceIndex];
+                voice.start();
 
-            // Set `virtualVoiceIndex` to the next virtual voice waiting to start.
-            let done = false;
-            do {
-                virtualVoiceIndex++;
-                done = virtualVoiceIndex >= virtualVoices.length;
-            } while (!done && !virtualVoices[virtualVoiceIndex].waitingToStart);
+                // Set `virtualVoiceIndex` to the next virtual voice waiting to start.
+                let done = false;
+                do {
+                    virtualVoiceIndex++;
+                    done = virtualVoiceIndex >= virtualVoices.length;
+                } while (!done && !virtualVoices[virtualVoiceIndex].waitingToStart);
 
-            // Exit the loop if there are no more virtual voices waiting to start.
-            if (done) {
-                break;
+                // Exit the loop if there are no more virtual voices waiting to start.
+                if (done) {
+                    break;
+                }
             }
         }
 
