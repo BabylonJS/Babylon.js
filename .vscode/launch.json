@@ -512,16 +512,22 @@
         {
             "type": "msedge",
             "request": "launch",
-            "name": "Viewer (Alpha) (Edge)",
-            "url": "http://localhost:1342",
-            "preLaunchTask": "Viewer (Alpha)"
+            "name": "Viewer (Alpha) (Web) (Edge)",
+            "url": "http://localhost:1342/test/apps/web/index.html",
+            "preLaunchTask": "Viewer (Alpha - Web)",
+            "pathMapping": {
+                "/": "${webRoot}/packages/tools/viewer-alpha"
+            }
         },
         {
             "type": "chrome",
             "request": "launch",
-            "name": "Viewer (Alpha) (Chrome)",
-            "url": "http://localhost:1342",
-            "preLaunchTask": "Viewer (Alpha)"
+            "name": "Viewer (Alpha) (Web) (Chrome)",
+            "url": "http://localhost:1342/test/apps/web/index.html",
+            "preLaunchTask": "Viewer (Alpha - Web)",
+            "pathMapping": {
+                "/": "${webRoot}/packages/tools/viewer-alpha"
+            }
         }
     ],
     "inputs": [
