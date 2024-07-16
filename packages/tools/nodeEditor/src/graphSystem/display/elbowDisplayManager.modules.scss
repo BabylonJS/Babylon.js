@@ -1,8 +1,8 @@
 .elbowBlock {
-    width: 40px;
-    grid-template-rows: 0px 40px 0px;
-    border-radius: 40px;
-    transform: translateY(-7px);
+    width: 40px !important;
+    grid-template-rows: 0px 40px 0px !important;
+    border-radius: 40px !important;
+    transform: translateY(-7px) !important;
 }
 
 .hidden {
