@@ -1,20 +1,19 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioStreamedSource } from "./abstractAudioPhysicalEngine";
-import type { ISoundOptions } from "./sound";
+import { AbstractAudioStreamedSource } from "./abstractAudioPhysicalEngine";
+import { type SoundOptions } from "./sound";
 
-export class WebAudioStream implements IAudioStreamedSource {
-    public readonly id: number;
+export class WebAudioStream extends AbstractAudioStreamedSource {
     public readonly node: AudioNode;
 
-    public constructor(audioContext: AudioContext, id: number, options?: ISoundOptions) {
-        this.id = id;
+    public constructor(audioContext: AudioContext, id: number, options?: SoundOptions) {
+        super(id);
 
         this.node = this._createNode(audioContext, options);
     }
 
-    private _createNode(_audioContext: AudioContext, _options?: ISoundOptions): AudioNode {
+    private _createNode(_audioContext: AudioContext, _options?: SoundOptions): AudioNode {
         // TODO: Implement.
         return new AudioNode();
     }

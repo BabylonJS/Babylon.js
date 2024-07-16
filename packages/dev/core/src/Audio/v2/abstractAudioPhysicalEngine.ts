@@ -1,30 +1,55 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type ISoundOptions, type Sound } from "./sound";
+import { type AudioBusOptions } from "./audioBus";
+import { type AudioSpatializerOptions } from "./audioSpatializer";
+import { type SoundOptions, type Sound } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
-import { type Observable } from "../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 
-export interface IAudioSpatializer {
-    id: number;
-    sounds: Array<Sound>;
+export abstract class AbstractAudioBus {
+    public readonly id: number;
+    public readonly sounds = new Array<Sound>();
+
+    public constructor(id: number) {
+        this.id = id;
+    }
 }
 
-export interface IAudioStaticSource {
-    id: number;
-    loaded: boolean;
-    duration: number; // seconds
+export abstract class AbstractAudioSpatializer {
+    public readonly id: number;
+    public readonly sounds = new Array<Sound>();
 
-    onLoadObservable: Observable<IAudioStaticSource>;
+    public constructor(id: number) {
+        this.id = id;
+    }
 }
 
-export interface IAudioStreamedSource {
-    id: number;
+export abstract class AbstractAudioStaticSource {
+    public readonly id: number;
+    public onLoadObservable = new Observable<AbstractAudioStaticSource>();
+
+    public abstract loaded: boolean;
+    public abstract duration: number; // seconds
+
+    public constructor(id: number) {
+        this.id = id;
+    }
+}
+
+export abstract class AbstractAudioStreamedSource {
+    public readonly id: number;
+
+    public constructor(id: number) {
+        this.id = id;
+    }
 }
 
 export abstract class AbstractAudioPhysicalEngine {
-    private _nextSpatializerId: number = 0;
-    private _nextSourceId: number = 0;
+    private _nextBusId: number = 1;
+    private _nextSoundFieldRotatorId: number = 1;
+    private _nextSpatializerId: number = 1;
+    private _nextSourceId: number = 1;
 
     /**
      * An ever-increasing hardware time in seconds used for scheduling. Starts at 0.
@@ -33,8 +58,17 @@ export abstract class AbstractAudioPhysicalEngine {
 
     public abstract update(voices: Array<VirtualVoice>): void;
 
-    public abstract createSpatializer(options?: ISoundOptions): number;
-    public abstract createSource(options?: ISoundOptions): number;
+    public abstract createBus(options?: AudioBusOptions): number;
+    public abstract createSpatializer(options?: AudioSpatializerOptions): number;
+    public abstract createSource(options?: SoundOptions): number;
+
+    protected _getNextBusId(): number {
+        return this._nextBusId++;
+    }
+
+    protected _getNextSoundFieldRotatorId(): number {
+        return this._nextSoundFieldRotatorId++;
+    }
 
     protected _getNextSpatializerId(): number {
         return this._nextSpatializerId++;

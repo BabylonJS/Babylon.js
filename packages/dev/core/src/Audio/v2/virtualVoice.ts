@@ -1,7 +1,7 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type ISoundOptions } from "./sound";
+import { type SoundOptions } from "./sound";
 import { Observable } from "../../Misc/observable";
 
 export enum VirtualVoiceType {
@@ -24,21 +24,24 @@ export enum VirtualVoiceState {
 }
 
 export class VirtualVoice {
+    private _state: VirtualVoiceState = VirtualVoiceState.Starting;
+
     public index: number;
     public loop: boolean;
+    public readonly onStateChangedObservable = new Observable<VirtualVoice>();
+    public physicalSourceId: number;
+    public physicalSpatializerId: number;
     public priority: number;
-    public sourceId: number;
-    public spatial: boolean;
     public type: VirtualVoiceType;
 
-    private _state: VirtualVoiceState = VirtualVoiceState.Starting;
-    public readonly onStateChangedObservable = new Observable<VirtualVoice>();
+    public get spatial(): boolean {
+        return 0 < this.physicalSpatializerId;
+    }
 
-    public init(type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): void {
+    public init(type: VirtualVoiceType, physicalSourceId: number, options?: SoundOptions): void {
         this.loop = options?.loop ?? false;
         this.priority = options?.priority ?? 0;
-        this.sourceId = sourceId;
-        this.spatial = options?.spatial ?? false;
+        this.physicalSourceId = physicalSourceId;
         this.type = type;
     }
 

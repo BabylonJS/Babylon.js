@@ -1,12 +1,12 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioEngineOptions } from "./abstractAudioEngine";
+import type { AudioEngineOptions } from "./abstractAudioEngine";
 import { AbstractAudioEngine } from "./abstractAudioEngine";
 import { WebAudioPhysicalEngine } from "./webAudioPhysicalEngine";
 import type { Nullable } from "core/types";
 
-export interface IWebAudioEngineOptions extends IAudioEngineOptions {
+export interface IWebAudioEngineOptions extends AudioEngineOptions {
     /**
      * An existing audio context to use. Defaults to a new `AudioContext`.
      */

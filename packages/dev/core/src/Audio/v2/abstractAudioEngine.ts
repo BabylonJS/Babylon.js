@@ -2,11 +2,13 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import { type AudioBusOptions } from "./audioBus";
 import { setCurrentAudioEngine } from "./audioEngine";
-import { type ISoundOptions } from "./sound";
+import { type AudioSpatializerOptions } from "./audioSpatializer";
+import { type SoundOptions } from "./sound";
 import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
 
-export interface IAudioEngineOptions {
+export interface AudioEngineOptions {
     /**
      * Update the audio engine automatically. Defaults to `true`.
      */
@@ -16,6 +18,11 @@ export interface IAudioEngineOptions {
      * The automatic update rate in milliseconds. Defaults to 50. Ignored if `autoUpdate` is `false`.
      */
     autoUpdateRate?: number;
+
+    /**
+     * The maximum number of simultaneously playing sound field voices. Defaults to 64.
+     */
+    maxSoundFieldVoices?: number;
 
     /**
      * The maximum number of simultaneously playing spatial voices. Defaults to 64.
@@ -53,7 +60,7 @@ export abstract class AbstractAudioEngine {
         return this.physicalEngine.currentTime;
     }
 
-    public allocateVoices(count: number, type: VirtualVoiceType, sourceId: number, options?: ISoundOptions): Array<VirtualVoice> {
+    public allocateVoices(count: number, type: VirtualVoiceType, physicalSourceId: number, options?: SoundOptions): Array<VirtualVoice> {
         const voices = new Array<VirtualVoice>(count);
         if (count === 0) {
             return voices;
@@ -69,7 +76,7 @@ export abstract class AbstractAudioEngine {
             const voice = this._inactiveVoiceIndex < this._voices.length ? this._voices[this._inactiveVoiceIndex] : this._createVoice();
             voices[i] = voice;
 
-            voice.init(type, sourceId, options);
+            voice.init(type, physicalSourceId, options);
         }
 
         this._voicesDirty = true;
@@ -84,11 +91,15 @@ export abstract class AbstractAudioEngine {
         // TODO: Finish implementation.
     }
 
-    public createSpatializer(options?: ISoundOptions): number {
+    public createPhysicalBus(options?: AudioBusOptions): number {
+        return this.physicalEngine.createBus(options);
+    }
+
+    public createPhysicalSpatializer(options?: AudioSpatializerOptions): number {
         return this.physicalEngine.createSpatializer(options);
     }
 
-    public createSource(options?: ISoundOptions): number {
+    public createPhysicalSource(options?: SoundOptions): number {
         return this.physicalEngine.createSource(options);
     }
 

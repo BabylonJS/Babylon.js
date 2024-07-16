@@ -3,9 +3,12 @@
 /* eslint-disable no-console */
 
 import { AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type ISoundOptions } from "./sound";
+import { type AudioBusOptions } from "./audioBus";
+import { type AudioSpatializerOptions } from "./audioSpatializer";
+import { type SoundOptions } from "./sound";
 import { type VirtualVoice } from "./virtualVoice";
 import { type IWebAudioEngineOptions } from "./webAudioEngine";
+import { WebAudioBus } from "./webAudioBus";
 import { WebAudioSpatializer } from "./webAudioSpatializer";
 import { WebAudioStaticBuffer } from "./webAudioStaticBuffer";
 import { WebAudioStream } from "./webAudioStream";
@@ -18,6 +21,7 @@ export class WebAudioPhysicalEngine extends AbstractAudioPhysicalEngine {
     private _lastUpdateTime: number = 0;
     private _startTime: number = 0;
 
+    private readonly _buses = new Map<number, WebAudioBus>();
     private readonly _spatializers = new Map<number, WebAudioSpatializer>();
     private readonly _audioBuffers = new Map<number, WebAudioStaticBuffer>();
     private readonly _streams = new Map<number, WebAudioStream>();
@@ -87,13 +91,19 @@ export class WebAudioPhysicalEngine extends AbstractAudioPhysicalEngine {
         this._audioContext.resume();
     }
 
-    public createSpatializer(options?: ISoundOptions): number {
+    public createBus(options?: AudioBusOptions): number {
+        const bus = new WebAudioBus(this._audioContext, this._getNextBusId(), options);
+        this._buses.set(bus.id, bus);
+        return bus.id;
+    }
+
+    public createSpatializer(options?: AudioSpatializerOptions): number {
         const spatializer = new WebAudioSpatializer(this._audioContext, this._getNextSpatializerId(), options);
         this._spatializers.set(spatializer.id, spatializer);
         return spatializer.id;
     }
 
-    public createSource(options?: ISoundOptions): number {
+    public createSource(options?: SoundOptions): number {
         if (options?.streaming) {
             const stream = new WebAudioStream(this._audioContext, this._getNextSourceId(), options);
             this._streams.set(stream.id, stream);

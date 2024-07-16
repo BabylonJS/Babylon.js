@@ -2,45 +2,51 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type AbstractAudioEngine } from "./abstractAudioEngine";
+import { type AudioBusSendOptions } from "./audioBus";
 import { getCurrentAudioEngine } from "./audioEngine";
 import { type VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 import { type IDisposable } from "../../scene";
 
-export interface ISoundOptions {
+export interface SoundOptions {
     name?: string;
 
-    sourceId?: number;
+    physicalSourceId?: number;
+    physicalSpatializerId?: number;
+
     sourceUrl?: string;
     sourceUrls?: string[];
 
+    autoplay?: boolean;
     loop?: boolean;
     maxVoices?: number;
+    outputBusId?: number;
     pitch?: number;
     playbackRate?: number;
     priority?: number;
-    spatial?: boolean;
+    sends?: Array<AudioBusSendOptions>;
     streaming?: boolean;
     volume?: number;
 }
 
 export class Sound implements IDisposable {
-    public readonly audioEngine: AbstractAudioEngine;
-    public readonly options?: ISoundOptions;
-    public readonly sourceId: number;
-    public readonly type: VirtualVoiceType;
-
     private _paused: boolean = false;
-
     private _voices: Array<VirtualVoice>;
     private _voiceIndex: number = 0;
 
-    public constructor(options?: ISoundOptions, audioEngine?: AbstractAudioEngine) {
+    public readonly audioEngine: AbstractAudioEngine;
+    public readonly options?: SoundOptions;
+    public readonly physicalSourceId: number;
+    public readonly physicalSpatializerId: number;
+    public readonly type: VirtualVoiceType;
+
+    public constructor(options?: SoundOptions, audioEngine?: AbstractAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
         this.options = options;
-        this.sourceId = options?.sourceId !== undefined ? options.sourceId : this.audioEngine.createSource(options);
+        this.physicalSourceId = options?.physicalSourceId !== undefined ? options.physicalSourceId : this.audioEngine.createPhysicalSource(options);
+        this.physicalSpatializerId = options?.physicalSpatializerId ?? 0;
         this.type = options?.streaming ? VirtualVoiceType.Streamed : VirtualVoiceType.Static;
 
-        this._voices = this.audioEngine.allocateVoices(options?.maxVoices ?? 1, this.type, this.sourceId, options);
+        this._voices = this.audioEngine.allocateVoices(options?.maxVoices ?? 1, this.type, this.physicalSourceId, options);
     }
 
     public dispose(): void {

@@ -1,20 +1,17 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import type { IAudioStaticSource } from "./abstractAudioPhysicalEngine";
-import type { ISoundOptions } from "./sound";
+import { AbstractAudioStaticSource } from "./abstractAudioPhysicalEngine";
+import type { SoundOptions } from "./sound";
 import type { Nullable } from "core/types";
 import { Logger } from "../../Misc/logger";
-import { Observable } from "../../Misc/observable";
 
-export class WebAudioStaticBuffer implements IAudioStaticSource {
-    public readonly id: number;
-    public readonly onLoadObservable = new Observable<IAudioStaticSource>();
-
+export class WebAudioStaticBuffer extends AbstractAudioStaticSource {
     private _buffer: Nullable<AudioBuffer> = null;
 
-    public constructor(audioContext: AudioContext, id: number, options?: ISoundOptions) {
-        this.id = id;
+    public constructor(audioContext: AudioContext, id: number, options?: SoundOptions) {
+        super(id);
+
         this._createBuffer(audioContext, options);
     }
 
@@ -33,7 +30,7 @@ export class WebAudioStaticBuffer implements IAudioStaticSource {
         return this._buffer.duration;
     }
 
-    private async _createBuffer(audioContext: AudioContext, options?: ISoundOptions): Promise<void> {
+    private async _createBuffer(audioContext: AudioContext, options?: SoundOptions): Promise<void> {
         if (options === undefined) {
             this._buffer = new AudioBuffer({ length: 1, sampleRate: audioContext.sampleRate });
             return Promise.resolve();
