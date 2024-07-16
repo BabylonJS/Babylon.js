@@ -166,7 +166,6 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
         }
 
-        // TODOWGSL
         state.compilationString += `#if defined(PREPASS)\r\n`;
         state.compilationString += `${isWebGPU ? "fragmentOutputs.fragData0" : "gl_FragData[0]"} = ${outputString};\r\n`;
         state.compilationString += `#endif\r\n`;
