@@ -161,9 +161,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
             state.compilationString += `#endif\r\n`;
         }
 
-        // TODOWGSL
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
-            state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
+            const fragDepth = isWebGPU ? "input.vFragmentDepth" : "vFragmentDepth";
+            const uniformP = isWebGPU ? "uniforms." : "";
+            const output = isWebGPU ? "fragmentOutputs.fragDepth" : "gl_FragDepthEXT";
+
+            state.compilationString += `${output} = log2(${fragDepth}) * ${uniformP}logarithmicDepthConstant * 0.5;\n`;
         }
 
         state.compilationString += `#if defined(PREPASS)\r\n`;
