@@ -11,9 +11,9 @@
 
     // Depth texture Linear bias.
     #ifdef USE_REVERSE_DEPTHBUFFER
-        vertexOutputs.position.z -= biasAndScaleSM.x * vertexOutputs.position.w * BIASFACTOR;
+        vertexOutputs.position.z -= uniforms.biasAndScaleSM.x * vertexOutputs.position.w * BIASFACTOR;
     #else
-        vertexOutputs.position.z += biasAndScaleSM.x * vertexOutputs.position.w * BIASFACTOR;
+        vertexOutputs.position.z += uniforms.biasAndScaleSM.x * vertexOutputs.position.w * BIASFACTOR;
     #endif
 #endif
 
@@ -23,8 +23,8 @@
 #elif SM_USEDISTANCE == 0
     // Color Texture Linear bias.
     #ifdef USE_REVERSE_DEPTHBUFFER
-        vDepthMetricSM = (-vertexOutputs.position.z + depthValuesSM.x) / depthValuesSM.y + biasAndScaleSM.x;
+        vDepthMetricSM = (-vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
     #else
-        vDepthMetricSM = (vertexOutputs.position.z + depthValuesSM.x) / depthValuesSM.y + biasAndScaleSM.x;
+        vDepthMetricSM = (vertexOutputs.position.z + uniforms.depthValuesSM.x) / uniforms.depthValuesSM.y + uniforms.biasAndScaleSM.x;
     #endif
 #endif
