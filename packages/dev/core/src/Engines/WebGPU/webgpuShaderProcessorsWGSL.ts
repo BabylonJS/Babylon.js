@@ -368,7 +368,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
         fragmentInputs += "\n};\nvar<private> fragmentInputs : FragmentInputs;\n";
 
-        let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
+        let fragmentOutputs = "struct FragmentOutputs {\n";
 
         const regex = /const SCENE_MRT_COUNT = (\d+);/;
         const match = fragmentCode.match(regex);
@@ -376,8 +376,10 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         if (match) {
             const number = parseInt(match[1]);
             for (let index = 0; index < number; index++) {
-                fragmentOutputs += ` @location(${index + 1}) fragData${index} : vec4<f32>,\n`;
+                fragmentOutputs += ` @location(${index}) fragData${index} : vec4<f32>,\n`;
             }
+        } else {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
         }
 
         let hasFragDepth = false;

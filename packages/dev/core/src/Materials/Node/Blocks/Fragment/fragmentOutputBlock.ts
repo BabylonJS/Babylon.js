@@ -119,7 +119,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         let outputString = "gl_FragColor";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            outputString = "fragmentOutputs.color";
+            state.compilationString += `var fragmentOutputsColor : vec4<f32>;\r\n`;
+            outputString = "fragmentOutputsColor";
         }
 
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -153,6 +154,12 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.compilationString += `#ifdef ${this._gammaDefineName}\n`;
         state.compilationString += `${outputString}  = toGammaSpace(${outputString});\n`;
         state.compilationString += `#endif\n`;
+
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `#if !defined(PREPASS)\r\n`;
+            state.compilationString += `fragmentOutputs.color = fragmentOutputsColor;\r\n`;
+            state.compilationString += `#endif\r\n`;
+        }
 
         // TODOWGSL
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {

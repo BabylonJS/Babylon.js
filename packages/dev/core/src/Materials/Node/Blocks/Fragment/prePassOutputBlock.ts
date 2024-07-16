@@ -130,9 +130,6 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         }
         state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#if SCENE_MRT_COUNT > 0\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 0)} = fragData[0];\r\n`;
-        state.compilationString += `#endif\r\n`;
         state.compilationString += `#if SCENE_MRT_COUNT > 1\r\n`;
         state.compilationString += `${this._getFragData(isWebGPU, 1)} = fragData[1];\r\n`;
         state.compilationString += `#endif\r\n`;
