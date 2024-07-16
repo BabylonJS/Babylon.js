@@ -18,6 +18,7 @@
         "strictFunctionTypes": true,
         "skipLibCheck": true,
         "removeComments": false,
+        "preserveConstEnums": true,
         "jsx": "react-jsx",
         "lib": ["es5", "dom", "es2015.promise", "es2015.collection", "es2015.iterable", "es2015.symbol.wellknown", "es2020.bigint", "es2017"],
         "paths": {

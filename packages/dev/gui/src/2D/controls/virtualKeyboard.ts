@@ -10,6 +10,7 @@ import type { InputText } from "./inputText";
 import { RegisterClass } from "core/Misc/typeStore";
 import type { AdvancedDynamicTexture } from "../advancedDynamicTexture";
 import { InputTextArea } from "./inputTextArea";
+import type { Control } from "./control";
 
 /**
  * Class used to store key control properties
@@ -35,8 +36,8 @@ export class KeyPropertySet {
 
 type ConnectedInputText = {
     input: InputText;
-    onFocusObserver: Nullable<Observer<InputText>>;
-    onBlurObserver: Nullable<Observer<InputText>>;
+    onFocusObserver: Nullable<Observer<Control>>;
+    onBlurObserver: Nullable<Observer<Control>>;
 };
 
 /**
@@ -239,13 +240,13 @@ export class VirtualKeyboard extends StackPanel {
         input._connectedVirtualKeyboard = this;
 
         // Events hooking
-        const onFocusObserver: Nullable<Observer<InputText>> = input.onFocusObservable.add(() => {
+        const onFocusObserver: Nullable<Observer<Control>> = input.onFocusObservable.add(() => {
             this._currentlyConnectedInputText = input;
             input._connectedVirtualKeyboard = this;
             this.isVisible = true;
         });
 
-        const onBlurObserver: Nullable<Observer<InputText>> = input.onBlurObservable.add(() => {
+        const onBlurObserver: Nullable<Observer<Control>> = input.onBlurObservable.add(() => {
             input._connectedVirtualKeyboard = null;
             this._currentlyConnectedInputText = null;
             this.isVisible = false;

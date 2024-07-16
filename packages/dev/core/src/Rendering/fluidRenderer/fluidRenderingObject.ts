@@ -237,7 +237,7 @@ export abstract class FluidRenderingObject {
      * Releases the ressources used by the class
      */
     public dispose(): void {
-        this._depthEffectWrapper?.dispose();
-        this._thicknessEffectWrapper?.dispose();
+        this._depthEffectWrapper?.dispose(false);
+        this._thicknessEffectWrapper?.dispose(false);
     }
 }

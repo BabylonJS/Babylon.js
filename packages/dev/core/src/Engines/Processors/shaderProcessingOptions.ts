@@ -5,7 +5,7 @@ import type { Nullable } from "../../types";
 /**
  * Function for custom code generation
  */
-export type ShaderCustomProcessingFunction = (shaderType: string, code: string) => string;
+export type ShaderCustomProcessingFunction = (shaderType: string, code: string, defines?: string[]) => string;
 
 /** @internal */
 export interface ShaderProcessingContext {

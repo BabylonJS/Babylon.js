@@ -130,11 +130,11 @@ export class Animatable {
         scene: Scene,
         /** defines the target object */
         public target: any,
-        /** defines the starting frame number (default is 0) */
+        /** [0] defines the starting frame number (default is 0) */
         public fromFrame: number = 0,
-        /** defines the ending frame number (default is 100) */
+        /** [100] defines the ending frame number (default is 100) */
         public toFrame: number = 100,
-        /** defines if the animation must loop (default is false)  */
+        /** [false] defines if the animation must loop (default is false)  */
         public loopAnimation: boolean = false,
         speedRatio: number = 1.0,
         /** defines a callback to call when animation ends if it is not looping */
@@ -142,9 +142,9 @@ export class Animatable {
         animations?: Animation[],
         /** defines a callback to call when animation loops */
         public onAnimationLoop?: Nullable<() => void>,
-        /** defines whether the animation should be evaluated additively */
+        /** [false] defines whether the animation should be evaluated additively */
         public isAdditive: boolean = false,
-        /** defines the order in which this animatable should be processed in the list of active animatables (default: 0) */
+        /** [0] defines the order in which this animatable should be processed in the list of active animatables (default: 0) */
         public playOrder = 0
     ) {
         this._scene = scene;

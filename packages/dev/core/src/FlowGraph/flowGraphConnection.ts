@@ -6,7 +6,7 @@ import type { FlowGraphBlock } from "./flowGraphBlock";
  * @experimental
  * The type of a connection point - inpput or output.
  */
-export enum FlowGraphConnectionType {
+export const enum FlowGraphConnectionType {
     Input,
     Output,
 }

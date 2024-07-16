@@ -197,7 +197,7 @@ export class SimplificationQueue {
  * At the moment only Quadratic Error Decimation is implemented
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
  */
-export enum SimplificationType {
+export const enum SimplificationType {
     /** Quadratic error decimation */
     QUADRATIC,
 }

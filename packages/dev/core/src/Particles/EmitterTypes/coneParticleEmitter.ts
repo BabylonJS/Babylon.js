@@ -72,7 +72,7 @@ export class ConeParticleEmitter implements IParticleEmitterType {
     constructor(
         radius = 1,
         angle = Math.PI,
-        /** defines how much to randomize the particle direction [0-1] (default is 0) */
+        /** [0] defines how much to randomize the particle direction [0-1] (default is 0) */
         public directionRandomizer = 0
     ) {
         this.angle = angle;

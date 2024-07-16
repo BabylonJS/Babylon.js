@@ -4,7 +4,7 @@ import type { IDisposable } from "../scene";
 /**
  * States of the webXR experience
  */
-export enum WebXRState {
+export const enum WebXRState {
     /**
      * Transitioning to being in XR mode
      */
@@ -26,7 +26,7 @@ export enum WebXRState {
 /**
  * The state of the XR camera's tracking
  */
-export enum WebXRTrackingState {
+export const enum WebXRTrackingState {
     /**
      * No transformation received, device is not being tracked
      */

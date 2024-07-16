@@ -16,6 +16,7 @@ export * from "./mesh.vertexData";
 export * from "./meshBuilder";
 export * from "./meshSimplification";
 export * from "./meshSimplificationSceneComponent";
+export * from "./meshUtils";
 export * from "./polygonMesh";
 export * from "./geodesicMesh";
 export * from "./subMesh";

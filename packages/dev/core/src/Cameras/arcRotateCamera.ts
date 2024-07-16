@@ -2,7 +2,7 @@ import { serialize, serializeAsVector3, serializeAsMeshReference, serializeAsVec
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
-import { Matrix, Vector3, Vector2, TmpVectors } from "../Maths/math.vector";
+import { Matrix, Vector3, Vector2, TmpVectors, Quaternion } from "../Maths/math.vector";
 import { Node } from "../node";
 import type { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
@@ -533,6 +533,12 @@ export class ArcRotateCamera extends TargetCamera {
     @serialize()
     public useInputToRestoreState = true;
 
+    /**
+     * Factor for restoring information interpolation. default is 0 = off. Any value \< 0 or \> 1 will disable interpolation.
+     */
+    @serialize()
+    public restoreStateInterpolationFactor = 0;
+
     /** @internal */
     public override _viewMatrix = new Matrix();
     /** @internal */
@@ -561,6 +567,9 @@ export class ArcRotateCamera extends TargetCamera {
 
     // Behaviors
     private _bouncingBehavior: Nullable<BouncingBehavior>;
+
+    // restoring state progressively
+    private _progressiveRestore: boolean = false;
 
     /**
      * Gets the bouncing behavior of the camera if it has been enabled.
@@ -790,6 +799,15 @@ export class ArcRotateCamera extends TargetCamera {
      * Restored camera state. You must call storeState() first
      */
     public override _restoreStateValues(): boolean {
+        if (this.hasStateStored() && this.restoreStateInterpolationFactor > Epsilon && this.restoreStateInterpolationFactor < 1) {
+            this._progressiveRestore = true;
+            this.inertialAlphaOffset = 0;
+            this.inertialBetaOffset = 0;
+            this.inertialRadiusOffset = 0;
+            this.inertialPanningX = 0;
+            this.inertialPanningY = 0;
+            return true;
+        }
         if (!super._restoreStateValues()) {
             return false;
         }
@@ -910,6 +928,43 @@ export class ArcRotateCamera extends TargetCamera {
         }
 
         this.inputs.checkInputs();
+
+        // progressive restore
+        if (this._progressiveRestore) {
+            const dt = this._scene.getEngine().getDeltaTime() / 1000;
+            const t = 1 - Math.pow(2, -dt / this.restoreStateInterpolationFactor);
+
+            // can't use tmp vector here because of assignment
+            this.setTarget(Vector3.Lerp(this.getTarget(), this._storedTarget, t));
+
+            // Using quaternion for smoother interpolation (and no Euler angles modulo)
+            Quaternion.RotationAlphaBetaGammaToRef(this._storedAlpha, this._storedBeta, 0, TmpVectors.Quaternion[0]);
+            Quaternion.RotationAlphaBetaGammaToRef(this.alpha, this.beta, 0, TmpVectors.Quaternion[1]);
+            Quaternion.SlerpToRef(TmpVectors.Quaternion[1], TmpVectors.Quaternion[0], t, TmpVectors.Quaternion[2]);
+            TmpVectors.Quaternion[2].normalize();
+            TmpVectors.Quaternion[2].toAlphaBetaGammaToRef(TmpVectors.Vector3[0]);
+            this.alpha = TmpVectors.Vector3[0].x;
+            this.beta = TmpVectors.Vector3[0].y;
+
+            this.radius += (this._storedRadius - this.radius) * t;
+            Vector2.LerpToRef(this.targetScreenOffset, this._storedTargetScreenOffset, t, this.targetScreenOffset);
+
+            // stop restoring when wihtin close range or when user starts interacting
+            if (
+                (Vector3.DistanceSquared(this.getTarget(), this._storedTarget) < Epsilon &&
+                    TmpVectors.Quaternion[2].equalsWithEpsilon(TmpVectors.Quaternion[0]) &&
+                    Math.pow(this._storedRadius - this.radius, 2) < Epsilon &&
+                    Vector2.Distance(this.targetScreenOffset, this._storedTargetScreenOffset) < Epsilon) ||
+                this.inertialAlphaOffset !== 0 ||
+                this.inertialBetaOffset !== 0 ||
+                this.inertialRadiusOffset !== 0 ||
+                this.inertialPanningX !== 0 ||
+                this.inertialPanningY !== 0
+            ) {
+                this._progressiveRestore = false;
+            }
+        }
+
         // Inertia
         if (this.inertialAlphaOffset !== 0 || this.inertialBetaOffset !== 0 || this.inertialRadiusOffset !== 0) {
             const directionModifier = this.invertRotation ? -1 : 1;

@@ -59,6 +59,15 @@ import type { WebGLHardwareTexture } from "./WebGL/webGLHardwareTexture";
 
 import "../Buffers/buffer.align";
 
+// REVIEW: add a flag to effect to prevent multiple compilations of the same shader.
+declare module "../Materials/effect" {
+    /** internal */
+    export interface Effect {
+        /** internal */
+        _checkedNonFloatVertexBuffers?: boolean;
+    }
+}
+
 declare const _native: INative;
 
 const onNativeObjectInitialized = new Observable<INative>();
@@ -541,7 +550,10 @@ export class NativeEngine extends Engine {
         effect: Effect,
         overrideVertexBuffers?: { [kind: string]: Nullable<VertexBuffer> }
     ): void {
-        checkNonFloatVertexBuffers(vertexBuffers, effect);
+        if (!effect._checkedNonFloatVertexBuffers) {
+            checkNonFloatVertexBuffers(vertexBuffers, effect);
+            effect._checkedNonFloatVertexBuffers = true;
+        }
 
         if (indexBuffer) {
             this._engine.recordIndexBuffer(vertexArray, indexBuffer.nativeIndexBuffer!);

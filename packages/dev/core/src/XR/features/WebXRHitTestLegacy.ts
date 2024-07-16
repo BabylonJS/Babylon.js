@@ -87,7 +87,7 @@ export class WebXRHitTestLegacy extends WebXRAbstractFeature implements IWebXRHi
     constructor(
         _xrSessionManager: WebXRSessionManager,
         /**
-         * options to use when constructing this feature
+         * [Empty Object] options to use when constructing this feature
          */
         public readonly options: IWebXRLegacyHitTestOptions = {}
     ) {

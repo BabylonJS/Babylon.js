@@ -37,7 +37,7 @@ export interface IAnimationKey {
 /**
  * Enum for the animation key frame interpolation type
  */
-export enum AnimationKeyInterpolation {
+export const enum AnimationKeyInterpolation {
     /**
      * Use tangents to interpolate between start and end values.
      */

@@ -287,12 +287,11 @@ export function CreateScreenshotUsingRenderTarget(
                 }
             });
 
-            texture.render(true);
-
             // re-render the scene after the camera has been reset to the original camera to avoid a flicker that could occur
             // if the camera used for the RTT rendering stays in effect for the next frame (and if that camera was different from the original camera)
             scene.incrementRenderId();
             scene.resetCachedMaterial();
+            texture.render(true);
             engine.setSize(originalSize.width, originalSize.height);
             camera.getProjectionMatrix(true); // Force cache refresh;
             scene.render();

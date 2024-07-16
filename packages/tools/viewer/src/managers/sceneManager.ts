@@ -176,7 +176,7 @@ export class SceneManager {
         this.onLightsConfiguredObservable = new Observable();
         this.onModelsConfiguredObservable = new Observable();
         this.onSceneConfiguredObservable = new Observable();
-        this.onSceneInitObservable = new Observable();
+        this.onSceneInitObservable = new Observable(undefined, true);
         this.onSceneOptimizerConfiguredObservable = new Observable();
         this.onEnvironmentConfiguredObservable = new Observable();
         this.onVRConfiguredObservable = new Observable();

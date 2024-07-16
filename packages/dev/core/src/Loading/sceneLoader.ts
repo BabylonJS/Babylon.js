@@ -296,7 +296,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
 /**
  * Mode that determines how to handle old animation groups before loading new ones.
  */
-export enum SceneLoaderAnimationGroupLoadingMode {
+export const enum SceneLoaderAnimationGroupLoadingMode {
     /**
      * Reset all old animations to initial state then dispose them.
      */

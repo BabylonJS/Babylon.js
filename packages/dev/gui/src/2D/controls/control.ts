@@ -23,17 +23,18 @@ import { SerializationHelper } from "core/Misc/decorators.serialization";
 import type { ICanvasGradient, ICanvasRenderingContext } from "core/Engines/ICanvas";
 import { EngineStore } from "core/Engines/engineStore";
 import type { IAccessibilityTag } from "core/IAccessibilityTag";
-import type { IPointerEvent } from "core/Events/deviceInputEvents";
+import type { IKeyboardEvent, IPointerEvent } from "core/Events/deviceInputEvents";
 import type { IAnimatable } from "core/Animations/animatable.interface";
 import type { Animation } from "core/Animations/animation";
 import type { BaseGradient } from "./gradient/BaseGradient";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { IFocusableControl } from "./focusableControl";
 
 /**
  * Root class used for all 2D controls
  * @see https://doc.babylonjs.com/features/featuresDeepDive/gui/gui#controls
  */
-export class Control implements IAnimatable {
+export class Control implements IAnimatable, IFocusableControl {
     /**
      * Gets or sets a boolean indicating if alpha must be an inherited value (false by default)
      */
@@ -364,6 +365,11 @@ export class Control implements IAnimatable {
      * An event triggered when a control is clicked on
      */
     public onPointerClickObservable = new Observable<Vector2WithInfo>();
+
+    /**
+     * An event triggered when a control receives an ENTER key down event
+     */
+    public onEnterPressedObservable = new Observable<Control>();
 
     /**
      * An event triggered when pointer enters the control
@@ -1303,6 +1309,96 @@ export class Control implements IAnimatable {
      * Array of animations
      */
     animations: Nullable<Animation[]> = null;
+
+    // Focus functionality
+
+    protected _focusedColor: Nullable<string> = null;
+    /**
+     * Border color when control is focused
+     * When not defined the ADT color will be used. If no ADT color is defined, focused state won't have any border
+     */
+    public get focusedColor(): Nullable<string> {
+        return this._focusedColor;
+    }
+    public set focusedColor(value: Nullable<string>) {
+        this._focusedColor = value;
+    }
+    /**
+     * The tab index of this control. -1 indicates this control is not part of the tab navigation.
+     * A positive value indicates the order of the control in the tab navigation.
+     * A value of 0 indicated the control will be focused after all controls with a positive index.
+     * More than one control can have the same tab index and the navigation would then go through all controls with the same value in an order defined by the layout or the hierarchy.
+     * The value can be changed at any time.
+     * @see https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex
+     */
+    public tabIndex: number = -1;
+    protected _isFocused = false;
+    protected _unfocusedColor: Nullable<string> = null;
+
+    /** Observable raised when the control gets the focus */
+    public onFocusObservable = new Observable<Control>();
+    /** Observable raised when the control loses the focus */
+    public onBlurObservable = new Observable<Control>();
+    /** Observable raised when a key event was processed */
+    public onKeyboardEventProcessedObservable = new Observable<IKeyboardEvent>();
+
+    /** @internal */
+    public onBlur(): void {
+        if (this._isFocused) {
+            this._isFocused = false;
+            if (this.focusedColor && this._unfocusedColor != null) {
+                // Set color back to saved unfocused color
+                this.color = this._unfocusedColor;
+            }
+            this.onBlurObservable.notifyObservers(this);
+        }
+    }
+
+    /** @internal */
+    public onFocus(): void {
+        this._isFocused = true;
+
+        if (this.focusedColor) {
+            // Save the unfocused color
+            this._unfocusedColor = this.color;
+            this.color = this.focusedColor;
+        }
+        this.onFocusObservable.notifyObservers(this);
+    }
+
+    /**
+     * Function called to get the list of controls that should not steal the focus from this control
+     * @returns an array of controls
+     */
+    public keepsFocusWith(): Nullable<Control[]> {
+        return null;
+    }
+
+    /**
+     * Function to focus a button programmatically
+     */
+    public focus() {
+        this._host.moveFocusToControl(this);
+    }
+
+    /**
+     * Function to unfocus a button programmatically
+     */
+    public blur() {
+        this._host.focusedControl = null;
+    }
+
+    /**
+     * Handles the keyboard event
+     * @param evt Defines the KeyboardEvent
+     */
+    public processKeyboard(evt: IKeyboardEvent): void {
+        // if enter, trigger the new observable
+        if (evt.key === "Enter") {
+            this.onEnterPressedObservable.notifyObservers(this);
+        }
+        this.onKeyboardEventProcessedObservable.notifyObservers(evt, -1, this);
+    }
 
     // Functions
 
@@ -2248,7 +2344,7 @@ export class Control implements IAnimatable {
      * @internal
      */
     public _onPointerOut(target: Control, pi: Nullable<PointerInfoBase>, force = false): void {
-        if (!force && (!this._isEnabled || target === this)) {
+        if (!force && !this._isEnabled) {
             return;
         }
         this._enterCount = 0;
@@ -2602,6 +2698,11 @@ export class Control implements IAnimatable {
         this.onPointerClickObservable.clear();
         this.onWheelObservable.clear();
 
+        // focus
+        this.onBlurObservable.clear();
+        this.onFocusObservable.clear();
+        this.onKeyboardEventProcessedObservable.clear();
+
         if (this._styleObserver && this._style) {
             this._style.onChangedObservable.remove(this._styleObserver);
             this._styleObserver = null;
@@ -2715,13 +2816,16 @@ export class Control implements IAnimatable {
     /**
      * @internal
      */
-    protected static drawEllipse(x: number, y: number, width: number, height: number, context: ICanvasRenderingContext): void {
+    protected static drawEllipse(x: number, y: number, width: number, height: number, arc: number, context: ICanvasRenderingContext): void {
         context.translate(x, y);
         context.scale(width, height);
 
         context.beginPath();
-        context.arc(0, 0, 1, 0, 2 * Math.PI);
-        context.closePath();
+        context.arc(0, 0, 1, 0, 2 * Math.PI * arc, arc < 0);
+
+        if (arc >= 1) {
+            context.closePath();
+        }
 
         context.scale(1 / width, 1 / height);
         context.translate(-x, -y);

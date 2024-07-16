@@ -2,6 +2,23 @@
     "root": "https://cdn.babylonjs.com",
     "tests": [
         {
+            "title": "BoundingInfo Helper",
+            "playgroundId": "#BCNJD4#42",
+            "referenceImage": "bbhelper.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "NME Shadow Map",
+            "playgroundId": "#M3QR7E#83",
+            "referenceImage": "nmeshadowmap.png",
+            "excludedEngines": ["webgl1"]
+        },
+        {
+            "title": "NMEGLTF",
+            "playgroundId": "#WGZLGJ#10320",
+            "referenceImage": "nmegltf.png"
+        },
+        {
             "title": "GPUPicker",
             "playgroundId": "#1RWFMT#2",
             "renderCount": 20,
@@ -2102,8 +2119,32 @@
         },
         {
             "title": "Load environment from data buffer",
-            "playgroundId": "#YLI4J1#",
+            "playgroundId": "#YLI4J1",
             "referenceImage": "environment-from-data-buffer.png"
+        },
+        {
+            "title": "computeMaxExtents (BrainStem)",
+            "playgroundId": "#M2H33B",
+            "replace": "//options//, modelIndex = 2;",
+            "referenceImage": "computeMaxExtents-BoxAnimated.png"
+        },
+        {
+            "title": "computeMaxExtents (Fox 0)",
+            "playgroundId": "#M2H33B",
+            "replace": "//options//, modelIndex = 4; animationIndex = 0;",
+            "referenceImage": "computeMaxExtents-Fox0.png"
+        },
+        {
+            "title": "computeMaxExtents (Fox 1)",
+            "playgroundId": "#M2H33B",
+            "replace": "//options//, modelIndex = 4; animationIndex = 1;",
+            "referenceImage": "computeMaxExtents-Fox1.png"
+        },
+        {
+            "title": "computeMaxExtents (MorphStressTest)",
+            "playgroundId": "#M2H33B",
+            "replace": "//options//, modelIndex = 5;",
+            "referenceImage": "computeMaxExtents-MorphStressTest.png"
         }
     ]
 }

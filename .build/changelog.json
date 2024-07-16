@@ -1,6 +1,1179 @@
 {
-    "fromTag": "7.10.3",
+    "fromTag": "7.15.0",
     "changelog": {
+        "7.15.1": [
+            {
+                "pr": "15270",
+                "title": "Fix align in buffers function GetFloatData",
+                "description": "https://forum.babylonjs.com/t/silent-bug-in-buffers/51596",
+                "author": {
+                    "name": "Taras55",
+                    "url": "https://github.com/Taras55"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15274",
+                "title": "rtt screenshot fix",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15273",
+                "title": "Add a new utility function to compute the max extents of an array of meshes",
+                "description": "This change adds a new utility function `computeMaxExtents` that will take an array of meshes and an optional animation group to compute an approximate overall minimum and maximum vector that considers animations, skinning, and morph targets.\r\n\r\nThe morph targets are computed by taking each target and updating the max extents to fit each morph target. Weights are not considered in this computation.\r\n\r\nSkinning is computed by computing the max extents per bone. Again, weights are not considered in this computation.\r\n\r\nThe max extents are converted into the corners of the bounding box before computing the final max extents.\r\n\r\nAnimations are considered by stepping through the animation group at a fixed step in seconds. For skinning, each bone's corners are updated with the bone's final matrix for each frame step.\r\n\r\nThis function is significantly faster than using `mesh.refreshBoundingInfo` applying skeleton and/or morph targets looping through the animation frames in a similar fashion.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-BoxAnimated.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-MorphStressTest.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15272",
+                "title": "Fix gpu part aging issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15268",
+                "title": "Update image.ts",
+                "description": "add top :0",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15261",
+                "title": "Change default behavior for anchors",
+                "description": "It seems like chrome has an issue with removing created anchors after a session has ended. I am still investigating the source of the issue, but until then - setting the flag to true to not remove the anchors on session end allows the scene to continue correctly.\n\nAlso added a new flag to reset the list of anchors on session init (without using the webxr \"delete\" function)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15267",
+                "title": "AnimationGroup start should restart if an animatable is available",
+                "description": "See https://forum.babylonjs.com/t/animationgroup-documentation-issue/52001?u=raananw\r\n\r\nPG to test with - #ZI9AK7#4084\r\n\r\nAlso addressing https://forum.babylonjs.com/t/scene-removeanimationgroup-not-working/52006?u=raananw - the dispose function will stop the animation if it is running.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15265",
+                "title": "colors and useColors fix in GRLSimpleMaterial, uv calc fix",
+                "description": "SImpleMaterial didn't create the colors texture. Fixed.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.15.0": [
+            {
+                "pr": "15255",
+                "title": "Remove check for pointer out",
+                "description": "See https://forum.babylonjs.com/t/clicking-through-world-ui/51905?u=raananw\n\nThe problem is that (almost) every direct call for this function is calling:\n\n`this._lastControlOver[pointerId]._onPointerOut(this._lastControlOver[pointerId], pi);`, meaning it will always return unless force is passed (which isn't being passed on standard input loop).\n\nThe call that does not use the same object to the call checks beforehnd if the target and `this` are equal, so there is no change in the default behavior. Tested with a few UI playgrounds and seems to make no difference in standard behavior.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15262",
+                "title": "Allow part matching in XMLLoader",
+                "description": "See https://forum.babylonjs.com/t/xmlloader-dynamic-attributes-not-work/48429/10?u=raananw\n\nPG to test with:\n\n#6C1GM9#1",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/xmlLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15264",
+                "title": "Fixed Playground loading on custom SnippetID",
+                "description": "In my last [PR adding the procedural code generator](https://github.com/BabylonJS/Babylon.js/pull/15243), I inserted the JSON fetch in the monacoEditor constructor, to make sure it was loaded first, but the `_load` function was called after the fetch, which could lead to \"forever\" engine loading UI in the event of [loading a custom PG](https://playground.babylonjs.com/#4U4QH9#9).\r\n\r\n- This PR fixes the previous issue. (--> `_load` before `fetch`)\r\n- It also fixes the [potential cache issue](https://forum.babylonjs.com/t/edit-released-what-about-a-code-generator-for-the-playground/50396/34) by adding an `uncacher` param to the JSON urls (since it's very light) :\r\n`const url = \"templates.json?uncacher=\"+Date.now();`\r\n- Missing `\"\\n\"` at beginning of generated code was added",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15259",
+                "title": "Wrong loadMipmaps flag in ddsTextureLoader",
+                "description": "https://forum.babylonjs.com/t/wrong-loadmipmaps-flag-in-ddstextureloader/51942\r\n\r\nAs @RaananW mentioned on forum, there still'll be discussion about presence of `loadMipmaps` parameter at the first place, but here's my temp fix until it is done.",
+                "author": {
+                    "name": "Nikys",
+                    "url": "https://github.com/Nikys"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/Loaders/ddsTextureLoader.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15260",
+                "title": "changes to image adding when using Image in GUI",
+                "description": "This changes the behavior that was added to support svg files:\n\n1. Only SVGs are added to the DOM (files that end with .svg)\n2. The SVGs are removed from thee DOM right after they are no longer needed.\n\nPG for testing: #XCPP9Y#21986",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15243",
+                "title": "Added JSON-based procedural code generator to the Playground",
+                "description": "This PR is following the [same topic on the forum](https://forum.babylonjs.com/t/what-about-a-code-generator-for-the-playground/50396/7)\r\n\r\n- source code is the same than CTRL+SPACE menu (`tools/playground/public/templates.json`)\r\n- any new code block from this code generator is now as well available from the CTRL+SPACE menu :heavy_check_mark: \r\n- added a structure json in `tools/playground/public/procedural.json` which is used to build the drop down menu :heavy_check_mark: \r\n- the `fetch(\"templates.json\").then()` has been move to the monaco constuctor since now it's used from different places.\r\n- `NB:` the code generator is not \"100%\" based on the JSON (for now...?) since some conditions have been included outside, such as for example a `shadowGenerator` check (cannot be enabled on hemi light), etc.\r\n- `NB:` In the monaco editor I added a `if (model.isDisposed())` check (see line 720 & 727), but I could not find exactly when the error `Model is disposed!` is triggered. Seems to be a bit random :thinking: \r\n___\r\nDemo : https://github.com/BabylonJS/Babylon.js/assets/167624418/6b95747b-8f10-42ca-955a-46dc873e0f96\r\n\r\n",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/public/imgs/fluentCode.svg",
+                    "packages/tools/playground/public/procedural.json",
+                    "packages/tools/playground/public/templates.json",
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts",
+                    "packages/tools/playground/src/scss/commandBar.scss",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15247",
+                "title": "buffer: copy unaligned data in GetFloatData",
+                "description": "In `VertexBuffer.GetFloatData`, if data is not aligned to 4 bytes, the current impl is to align the offset to make code work, but this would make data returned here differ from data passed to gpu, so algos depending on result of it could be wrong. This commit changes this behavior to copying the buffer on unaligned buffers or offsets.\r\n\r\nRelated playground: <https://playground.babylonjs.com/#5T7E1W#8>\r\nForum thread: <https://forum.babylonjs.com/t/picked-point-at-wrong-position/51698>\r\nRelated commit: https://github.com/BabylonJS/Babylon.js/commit/9c2df86f54d7660b859eabcdb3b096c1f83800d4",
+                "author": {
+                    "name": "kzhsw",
+                    "url": "https://github.com/kzhsw"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts",
+                    "packages/dev/core/src/Buffers/bufferUtils.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15257",
+                "title": "Fix a typo with new bounding box code",
+                "description": "See https://forum.babylonjs.com/t/pg-crashes-an-example-of-playing-vats-on-instances/51768.\r\n\r\nWe should consider adding a test for this.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15258",
+                "title": "Make `CleanUrl` effective in fileTools.ts",
+                "description": "Hi looks like there was a bug in `fileTools.ts`, where the cleaned URL is not passed to `PreprocessUrl`.",
+                "author": {
+                    "name": "chubei-urus",
+                    "url": "https://github.com/chubei-urus"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/fileTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15256",
+                "title": "Remove camera from and add model to viewer details",
+                "description": "It's a little unclear whether `ArcRotateCamera` will always and in all cases be the right camera for the viewer, so removing this from details for now. The camera can still abstractly be retrieved from `scene.activeCamera`.\r\n\r\nAdding the loaded model (or rather the `AssetContainer`) to the details.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15254",
+                "title": "Use Quaternion and slerp for alpha/beta/gamma arcrotate interpolation",
+                "description": "Using modulo and Euler angles is always a bad idea. Using quaternion and slerp instead.\r\n\r\ntest PG : #TT1T4C#2",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15244",
+                "title": "catch and log the exceptions earlier",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15249",
+                "title": "allow url query parameters on svg paths",
+                "description": "Allow svg file paths to contain url query parameters (eg: cache busters) or uri fragments (eg: svg fragment identifiers).",
+                "author": {
+                    "name": "tachyean",
+                    "url": "https://github.com/tachyean"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15252",
+                "title": "Add cancellation and \"lock many\" to AsyncLock",
+                "description": "I added this `AsyncLock` as part of the initial alpha viewer impl. I expect to need to better cancellation support and the ability to acquire multiple locks (especially for the dispose scenario), but as much as possible I don't want to keep upping the alpha viewer's min version of the dependency on @babylonjs/core (more of a hassle for consumers), so I wanted to proactively get this additional `AsyncLock` behavior in sooner than later. Since I don't have code using it quite yet, I added unit tests. If there is opposition to adding this code before it is being used, then I can sit on this PR, it just means I'll need to update the min ver on the @babylonjs/core dependency and anyone using the alpha viewer will have to update their @babylonjs/core dependency.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/asyncLock.ts",
+                    "packages/dev/core/test/unit/Misc/asyncLock.test.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.14.0": [
+            {
+                "pr": "15251",
+                "title": "Fix cube texture defaultLodScale",
+                "description": "https://forum.babylonjs.com/t/incorrect-lodscale-value-in-cubetexture-constructor/51772",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
+        "7.13.3": [
+            {
+                "pr": "15250",
+                "title": "Fix missing test with ArcRotateCamera",
+                "description": "Fix missing test for https://github.com/BabylonJS/Babylon.js/pull/15248",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Cameras/camera.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15248",
+                "title": "ArcRotate progressive restore state",
+                "description": "Double click restore to saved state. This PR adds the ability to interpolate between current and saved states.\r\n\r\nPG : https://playground.babylonjs.com/?snapshot=refs/pull/15248/merge#TT1T4C",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/arcRotateCamera.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15246",
+                "title": "Viewer alpha public package initial checkin",
+                "description": "This PR introduces the public package build for the alpha viewer that was previously introduced in this PR: https://github.com/BabylonJS/Babylon.js/pull/15241\r\n\r\nThe overall strategy is summarized in the comment at the top of the `prepublish.cjs` script:\r\n```js\r\n// The alpha version of the viewer package must have a unique package name within the context of the mono repo / npm workspace\r\n// as long as the legacy version is still being maintained and published. Therefore, the alpha package has a unique name, but this\r\n// is not the actual name we want to publish it under. This script copies the name and version from the legacy package.json to the\r\n// alpha package.json, appends \"-alpha\" to the version, and removes the private flag, scripts, and devDependencies from the alpha,\r\n// and finally deletes the legacy package.json. This script should be run after the alpha package has been built and before it is\r\n// published. This script is not necessary when the legacy package is deprecated and the alpha package is published under the same\r\n// name as the legacy package.\r\n```\r\n\r\nGiven this, the high level aspects of this new folder are:\r\n- Includes a rollup based build that bundles everything into a single file but still uses esm (webpack is good at creating umd bundle files, but not esm bundle files).\r\n  - Bundling to esm allows us to not \"ship our directory structure,\" which gives us the freedom to update the directory structure or file names in the viewer source without creating back compat issues.\r\n  - It also bundles the d.ts files into a single d.ts\r\n  - Later when we introduce dynamic imports, it won't be one bundle file but rather a handful. Technically people could import the dynamic import bundles, but it's unlikely someone would do so since rollup basically gives them random names.\r\n- Includes a prepublish.cjs script that modifies the package.json and deletes the legacy viewer package.json so the new alpha viewer can be published with the same name (with the `-alpha` version suffix).\r\n\r\nSeparately, @RaananW (or me with @RaananW's help) will modify the CI build to run this prepublish step and then specifically publish the new alpha viewer package. That will come in a different PR.\r\n\r\nI also had to make a few changes to the actual viewer source code to get this all working (tested a local build of the package in a vanilla-ts Vite project).",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/public/@babylonjs/viewer-alpha/license.md",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/prepublish.cjs",
+                    "packages/public/@babylonjs/viewer-alpha/readme.md",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.json",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.json",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.13.2": [
+            {
+                "pr": "15245",
+                "title": "Added notifying onStopped observers in gpu particles",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Particles/gpuParticleSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15241",
+                "title": "Viewer alpha initial checkin",
+                "description": "This is an initial very minimal subset of the new Viewer package. @CedricGuillemet and I got this far together in a side repo, and I'm mostly just bringing over the code. This is just enough to satisfy one specific use case we have in mind, but is not specific to that use case (it is just the min subset that supports that use case).\r\n\r\n## Included in this PR:\r\n- A core `Viewer` class that provides the bulk of the (currently minimal) functionality agnostic to the UI layer (it can be used in the browser with Web Components, React, etc., or in Babylon Native). \r\n- A small wrapper factory that binds a `Viewer` instance to a `Canvas` and handles a few things like resizing (it can be used for different browser UI layers such as Web Components and React).\r\n- A Web Components custom element to provide a solution for HTML (should work in React as well, but not yet tested).\r\n- A plain HTML test app with a web pack config (just bundles the Viewer code, registers the custom element, and then uses the custom element with `src` and `env` attributes set).\r\n\r\nThere are many TODOs in the code for things that are not complete, either because we don't need them for our initial use case, or because we're trying to keep the code minimal for the initial checkin.\r\n\r\nIn later PRs, we'll address the TODOs and also add a React test app.\r\n\r\nThis is what the Viewer looks like in the current test app:\r\n\r\n![image](https://github.com/BabylonJS/Babylon.js/assets/5084643/f24d12a0-358d-45f7-b9f8-6eb1a15ee66f)",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "packages/dev/core/src/Misc/asyncLock.ts",
+                    "packages/dev/core/src/Misc/index.ts",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/public/index.html",
+                    "packages/tools/viewer-alpha/src/index.ts",
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/src/viewerFactory.ts",
+                    "packages/tools/viewer-alpha/tsconfig.build.json",
+                    "packages/tools/viewer-alpha/tsconfig.json",
+                    "packages/tools/viewer-alpha/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15239",
+                "title": "documenting side-effect in gpuPicker.",
+                "description": "as per request https://forum.babylonjs.com/t/passing-scene-meshes-to-gpupicker-setpickinglist-will-clear-them-when-gpupicker-dispose/51658/2",
+                "author": {
+                    "name": "Joe-Kerr",
+                    "url": "https://github.com/Joe-Kerr"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15242",
+                "title": "modify declaration's const enum to enums",
+                "description": "Fixes #15238\n\nWe can do that since typescript exports the const enums just as if they were enums. The step to use const enums still provides advantages to people consuming the framework, but this way typescript will treat them as regular enums on projects using babylon.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/declarationsEs6.ts",
+                    "packages/public/@babylonjs/core/config.tasks.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15240",
+                "title": "Flycamera element fix",
+                "description": "https://forum.babylonjs.com/t/procedural-galaxy-and-streaming/51468/22",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/flyCameraMouseInput.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15237",
+                "title": "Throw error in CSG when adding a mesh that lacks indices, positions or normals",
+                "description": "Small issue found, where Babylon reads from a null array. Added some checks that throw more descriptive errors and adjusted the typing as well to better represent the data usage.",
+                "author": {
+                    "name": "rapid-images-tore-levenstam",
+                    "url": "https://github.com/rapid-images-tore-levenstam"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/csg.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.13.1": [
+            {
+                "pr": "15234",
+                "title": "Add options to refreshBoundingBox to improve performance",
+                "description": "Before:\r\n``` js\r\nrefreshBoundingInfo(applySkeleton: boolean, applyMorph: boolean)\r\n```\r\n\r\nAfter:\r\n``` js\r\nexport interface IMeshDataOptions {\r\n    applySkeleton?: boolean;\r\n    applyMorph?: boolean;\r\n    updatePositionsArray?: boolean;\r\n    cache?: IMeshDataCache;\r\n}\r\n\r\nrefreshBoundingInfo(options: IMeshDataOptions)\r\n```\r\n\r\nThe `updatePositionsArray` flag will allow users to disable computing this array which isn't used in all situations.\r\nThe `cache` object will cache the allocations, reduce `slice` calls, etc.\r\n\r\nOn my machine:\r\n[Before](https://playground.babylonjs.com/#B8B8Z2#5): 2.81s\r\n[After](http://localhost:1338/#B8B8Z2#61): 1.67s",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/bufferUtils.ts",
+                    "packages/dev/core/src/Buffers/index.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/geometry.ts",
+                    "packages/dev/core/src/Meshes/instancedMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15235",
+                "title": "Declarations - const enum to enums",
+                "description": "When preserving const enums (to be available in js) the exported code is identical to a standard export ofr an enum. However, typescript still fails compilation when trying to iterate over it though it will work correctly when used directly in js.\n\nThis reverts const enums to enums in our UMD declarations, which will allow any playground using enum iteration in typescript to work. ",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/generateDeclaration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15232",
+                "title": "allow any element to be focused",
+                "description": "This PR adds a few parameters to control (the base class of all GUI elements):\n\n1. tabIndex - works similar to tabIndex in HTML. Defaults to -1, meaning - not focusable\n2. focusedColor - the (border) color of the element if it is focussed using tab\n3. onEnterPressedObservable - works similat to onPointerClicked - what happens when enter is pressed on a focused element.\n\nAny control has onBlur and onFocus callbacks, and observables to catch these events.\n\nThe ADT has a flag that can turn off the entire behavior (`disableTabNavigation`). It is on per default, but since tabIndex is -1 per default, it shouldn't change anything.\n\nThere is a slight typing change, but it shouldn't be a breaking change, as we moved from an interface to a class that holds the entire interface (and actually implements it).\nThe only real breaking change is the onFocusObservable in virtual keyboard, which is not often used.\n\nTest with this playground - #KKA6L4#16",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/focusableButton.ts",
+                    "packages/dev/gui/src/2D/controls/focusableControl.ts",
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/virtualKeyboard.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.13.0": [
+            {
+                "pr": "15231",
+                "title": "makeXRCompatible might fail - catch and reject correctly",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/webXRManagedOutputCanvas.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15229",
+                "title": "Rewrite morph target gltf export",
+                "description": "`glTFExporter` had logic to export morph targets, but it did not work correctly with submeshes (see this forum thread: https://forum.babylonjs.com/t/gltfexporter-not-working-with-morph-targets/51337). There were a couple significant problems with the code that basically required a rewrite of this logic:\r\n1. It was writing separate segments of data to the buffer (and separate buffer views) for each submesh. This is always wrong for indexed geometry, and is broken if there are multiple submeshes.\r\n2. The logic for determining the range of vertex data to write per submesh was just wrong, and could only work for indexed geometry with one submesh.\r\n\r\nFor 2, I couldn't even tell what the logic was trying to do:\r\n```ts\r\nfor (let k = meshPrimitive.verticesStart; k < meshPrimitive.verticesCount; ++k) {\r\n  index = meshPrimitive.indexStart + k * stride;\r\n    const vertexData = Vector3.FromArray(meshAttributeArray, index);\r\n```\r\n`verticesStart` is only meaningful for non-indexed geometry, so combining `indexStart` and `verticesStart` in any way doesn't make sense. I think this code only worked because it was only ever tested in cases where both `indexStart` and `verticesStart` were zero.\r\n\r\nOverall, the approach now is to write all the morph target vertex data for the entire mesh and create an associated buffer view for each attribute (where morph data is present), then create one accessor per submesh per morph target that potentially has an offset into the buffer view (for submeshes beyond the first).\r\n\r\nThis does not fix the pre-existing issues with non-indexed geometry in general, but that should be handled in a separate PR. This approach does not prevent us from making non-indexed geometry work, there are just additional changes needed that can be done in isolation from these changes.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/dev/serializers/src/glTF/2.0/glTFExporter.ts",
+                    "packages/dev/serializers/src/glTF/2.0/glTFUtilities.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15227",
+                "title": "Physics Prestep Types",
+                "description": "After questions on forum like https://forum.babylonjs.com/t/physicsbody-with-animated-motion-type-does-not-have-any-friction/51554/2\r\nI'm expanding the prestep. \r\n\r\ntest https://playground.babylonjs.com/#E9R16H\r\n\r\nDocumentation will follow",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/Plugins/havokPlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsBody.ts"
+                ],
+                "tags": [
+                    "enhancement",
+                    "physics"
+                ]
+            },
+            {
+                "pr": "15228",
+                "title": "Move to const enum where possible",
+                "description": "This change has no direct influence on any of our users, but will improve performance slightly.\n\nSince we are exporting the const-enums (a change in this PR), js developers can still use it, and they will still be included in the types. We are maintainin back-compat. The only difference is that modules using the const enums in this repository will get the value injected directly, thus avoiding one object lookup.\n\nThe only way this could be considered breaking change is for people who are creating a framework that embeds babylon and exporing it - in this case, they will need to preserve const enums as well, otherwise their js (and only js) consumers won't find them. The compiled application will still work correctly.\n\nCC @ryantrem who suggested using const enums (for a slightly different use-case). This step will allow us to start using const enums more often in more performance-heavy sections of the framework.\n\nnote (probably slightly repeating myself) - the string lookup that typescript enums do is still present and has not been changed. It improves perf only for compiled js files that are a part of the framework.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/animationKey.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/handConstraintBehavior.ts",
+                    "packages/dev/core/src/Debug/debugLayer.ts",
+                    "packages/dev/core/src/Decorators/nodeDecorator.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceEnums.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.computeShader.ts",
+                    "packages/dev/core/src/Engines/WebGPU/webgpuConstants.ts",
+                    "packages/dev/core/src/Events/deviceInputEvents.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraph.ts",
+                    "packages/dev/core/src/FlowGraph/flowGraphConnection.ts",
+                    "packages/dev/core/src/Gamepads/dualShockGamepad.ts",
+                    "packages/dev/core/src/Gamepads/xboxGamepad.ts",
+                    "packages/dev/core/src/Gizmos/gizmo.ts",
+                    "packages/dev/core/src/Loading/sceneLoader.ts",
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineMaterialInterfaces.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/meshAttributeExistsBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/waveBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Enums/nodeMaterialBlockConnectionPointMode.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Materials/Textures/internalTexture.ts",
+                    "packages/dev/core/src/Materials/Textures/ktx2decoderTypes.ts",
+                    "packages/dev/core/src/Materials/materialPluginEvent.ts",
+                    "packages/dev/core/src/Materials/meshDebugPluginMaterial.ts",
+                    "packages/dev/core/src/Materials/shaderLanguage.ts",
+                    "packages/dev/core/src/Maths/math.axis.ts",
+                    "packages/dev/core/src/Maths/math.path.ts",
+                    "packages/dev/core/src/Meshes/Builders/greasedLineBuilder.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineBaseMesh.ts",
+                    "packages/dev/core/src/Meshes/Node/nodeGeometryBlockConnectionPoint.ts",
+                    "packages/dev/core/src/Meshes/meshSimplification.ts",
+                    "packages/dev/core/src/Misc/assetsManager.ts",
+                    "packages/dev/core/src/Misc/copyTextureToTexture.ts",
+                    "packages/dev/core/src/Misc/iInspectable.ts",
+                    "packages/dev/core/src/Misc/timer.ts",
+                    "packages/dev/core/src/Misc/virtualJoystick.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/Particles/subEmitter.ts",
+                    "packages/dev/core/src/Physics/physicsHelper.ts",
+                    "packages/dev/core/src/Physics/v2/IPhysicsEnginePlugin.ts",
+                    "packages/dev/core/src/Physics/v2/physicsMaterial.ts",
+                    "packages/dev/core/src/PostProcesses/depthOfFieldEffect.ts",
+                    "packages/dev/core/src/PostProcesses/tonemapPostProcess.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/core/src/XR/features/WebXRHandTracking.ts",
+                    "packages/dev/core/src/XR/features/WebXRNearInteraction.ts",
+                    "packages/dev/core/src/XR/webXRTypes.ts",
+                    "packages/dev/core/src/scene.ts",
+                    "packages/dev/gui/src/2D/controls/textBlock.ts",
+                    "packages/dev/gui/src/3D/gizmos/gizmoHandle.ts",
+                    "packages/public/@babylonjs/core/core.zip",
+                    "packages/tools/ktx2Decoder/src/Transcoders/mscTranscoder.ts",
+                    "tsconfig.build.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15225",
+                "title": "BoundingBox helper: add batch methods",
+                "description": "You can now do:\r\n```typescript\r\nawait BBHelper.batchInitializeAsync(meshList);\r\nBBHelper.batchProcess();\r\n<...update animation...>\r\nBBHelper.batchProcess();\r\n<...update animation...>\r\nBBHelper.batchProcess();\r\n...\r\nawait BBHelper.batchFetchResultsAsync();\r\n```\r\nThis will calculate bounding boxes that are the union of all the bounding boxes computed by each call to `batchProcess`.\r\n\r\nThe existing API (`computeAsync`) still exists, this PR is not a breaking change.\r\n\r\nNote: I'm not sure if the new methods have the right name...",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/IBoundingInfoHelperPlatform.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/ShadersWGSL/boundingInfo.compute.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15226",
+                "title": "SpriteMap: Fix WebGPU compilation",
+                "description": "See https://forum.babylonjs.com/t/webgpu-spritemap-not-working/51538",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/spriteMap.fragment.fx"
+                ],
+                "tags": [
+                    "bug",
+                    "WebGPU"
+                ]
+            }
+        ],
+        "7.12.0": [
+            {
+                "pr": "15224",
+                "title": "Improve comments around disposeWhenUnowned, make check slightly more efficient",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.11.4": [
+            {
+                "pr": "15221",
+                "title": "Bbhelper 2 - compute shaders",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Culling/Helper/IBoundingInfoHelperPlatform.ts",
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/computeShaderBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/transformFeedbackBoundingHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/webgl2BoundingHelper.ts",
+                    "packages/dev/core/src/Culling/index.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessingOptions.ts",
+                    "packages/dev/core/src/Engines/Processors/shaderProcessor.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Morph/morphTargetManager.ts",
+                    "packages/dev/core/src/ShadersWGSL/boundingInfo.compute.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/bbhelper.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.11.3": [
+            {
+                "pr": "15223",
+                "title": "raw camera access texture is not a cube",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRRawCameraAccess.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15217",
+                "title": "Fix shader compile issue with non-float vertex buffers for native",
+                "description": null,
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15218",
+                "title": "Add default value to documented constructor parameters",
+                "description": "When compiling babylon using closure compiler it complains that default parameters don't have the default value, in accordance to JSDoc specifications. as we are using tsdoc and not jsdoc, this introduces a bit of an issue if we document the constructor with default values (tsdoc doesn't have a definition for default value of a paremeter).\n\nThe solution is to add the default value to the actual documentation of the paremeter, if provided. This is needed if a constructor has a public member that is documented and has a default value. These are the ones I found, I guess there might be more and I will try adding a step to check for missing values in the future.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroupMask.ts",
+                    "packages/dev/core/src/Animations/easing.ts",
+                    "packages/dev/core/src/Behaviors/Meshes/attachToBoxBehavior.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraMouseInput.ts",
+                    "packages/dev/core/src/Cameras/Inputs/freeCameraTouchInput.ts",
+                    "packages/dev/core/src/Culling/Octrees/octree.ts",
+                    "packages/dev/core/src/Culling/ray.ts",
+                    "packages/dev/core/src/Debug/skeletonViewer.ts",
+                    "packages/dev/core/src/DeviceInput/InputDevices/deviceSource.ts",
+                    "packages/dev/core/src/Maths/math.color.ts",
+                    "packages/dev/core/src/Maths/math.isovector.ts",
+                    "packages/dev/core/src/Maths/math.vector.ts",
+                    "packages/dev/core/src/Maths/math.vertexFormat.ts",
+                    "packages/dev/core/src/Misc/observable.ts",
+                    "packages/dev/core/src/Misc/sceneOptimizer.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/coneParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/cylinderParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/hemisphericParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/EmitterTypes/sphereParticleEmitter.ts",
+                    "packages/dev/core/src/Particles/pointsCloudSystem.ts",
+                    "packages/dev/core/src/XR/features/WebXRBackgroundRemover.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTest.ts",
+                    "packages/dev/core/src/XR/features/WebXRHitTestLegacy.ts",
+                    "packages/dev/core/src/XR/motionController/webXRAbstractMotionController.ts",
+                    "packages/public/@babylonjs/core/core.zip"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15220",
+                "title": "Use key instead of code to support other keyboard layouts",
+                "description": "On keyboard with a different layout (for example french) KeyA might be a different character (i.e. q on french keyboards). This PR switches to use the actual key code instead of the .code property for copy, paste, cut and select all",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15219",
+                "title": "Add notifyIfTriggered to all Init observables",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/viewer/src/managers/observablesManager.ts",
+                    "packages/tools/viewer/src/managers/sceneManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15215",
+                "title": "Bump ws from 8.17.0 to 8.17.1",
+                "description": "Bumps [ws](https://github.com/websockets/ws) from 8.17.0 to 8.17.1.\n<details>\n<summary>Release notes</summary>\n<p><em>Sourced from <a href=\"https://github.com/websockets/ws/releases\">ws's releases</a>.</em></p>\n<blockquote>\n<h2>8.17.1</h2>\n<h1>Bug fixes</h1>\n<ul>\n<li>Fixed a DoS vulnerability (<a href=\"https://redirect.github.com/websockets/ws/issues/2231\">#2231</a>).</li>\n</ul>\n<p>A request with a number of headers exceeding the[<code>server.maxHeadersCount</code>][]\nthreshold could be used to crash a ws server.</p>\n<pre lang=\"js\"><code>const http = require('http');\nconst WebSocket = require('ws');\n<p>const wss = new WebSocket.Server({ port: 0 }, function () {\nconst chars = &quot;!#$%&amp;'*+-.0123456789abcdefghijklmnopqrstuvwxyz^_`|~&quot;.split('');\nconst headers = {};\nlet count = 0;</p>\n<p>for (let i = 0; i &lt; chars.length; i++) {\nif (count === 2000) break;</p>\n<pre><code>for (let j = 0; j &amp;lt; chars.length; j++) {\n  const key = chars[i] + chars[j];\n  headers[key] = 'x';\n\n  if (++count === 2000) break;\n}\n</code></pre>\n<p>}</p>\n<p>headers.Connection = 'Upgrade';\nheaders.Upgrade = 'websocket';\nheaders['Sec-WebSocket-Key'] = 'dGhlIHNhbXBsZSBub25jZQ==';\nheaders['Sec-WebSocket-Version'] = '13';</p>\n<p>const request = http.request({\nheaders: headers,\nhost: '127.0.0.1',\nport: wss.address().port\n});</p>\n<p>request.end();\n});\n</code></pre></p>\n<p>The vulnerability was reported by <a href=\"https://github.com/rrlapointe\">Ryan LaPointe</a> in <a href=\"https://redirect.github.com/websockets/ws/issues/2230\">websockets/ws#2230</a>.</p>\n<p>In vulnerable versions of ws, the issue can be mitigated in the following ways:</p>\n<ol>\n<li>Reduce the maximum allowed length of the request headers using the\n[<code>--max-http-header-size=size</code>][] and/or the [<code>maxHeaderSize</code>][] options so\nthat no more headers than the <code>server.maxHeadersCount</code> limit can be sent.</li>\n</ol>\n<!-- raw HTML omitted -->\n</blockquote>\n<p>... (truncated)</p>\n</details>\n<details>\n<summary>Commits</summary>\n<ul>\n<li><a href=\"https://github.com/websockets/ws/commit/3c56601092872f7d7566989f0e379271afd0e4a1\"><code>3c56601</code></a> [dist] 8.17.1</li>\n<li><a href=\"https://github.com/websockets/ws/commit/e55e5106f10fcbaac37cfa89759e4cc0d073a52c\"><code>e55e510</code></a> [security] Fix crash when the Upgrade header cannot be read (<a href=\"https://redirect.github.com/websockets/ws/issues/2231\">#2231</a>)</li>\n<li><a href=\"https://github.com/websockets/ws/commit/6a00029edd924499f892aed8003cef1fa724cfe5\"><code>6a00029</code></a> [test] Increase code coverage</li>\n<li><a href=\"https://github.com/websockets/ws/commit/ddfe4a804d79e7788ab136290e609f91cf68423f\"><code>ddfe4a8</code></a> [perf] Reduce the amount of <code>crypto.randomFillSync()</code> calls</li>\n<li>See full diff in <a href=\"https://github.com/websockets/ws/compare/8.17.0...8.17.1\">compare view</a></li>\n</ul>\n</details>\n<br />\n\n\n[![Dependabot compatibility score](https://dependabot-badges.githubapp.com/badges/compatibility_score?dependency-name=ws&package-manager=npm_and_yarn&previous-version=8.17.0&new-version=8.17.1)](https://docs.github.com/en/github/managing-security-vulnerabilities/about-dependabot-security-updates#about-compatibility-scores)\n\nDependabot will resolve any conflicts with this PR as long as you don't alter it yourself. You can also trigger a rebase manually by commenting `@dependabot rebase`.\n\n[//]: # (dependabot-automerge-start)\n[//]: # (dependabot-automerge-end)\n\n---\n\n<details>\n<summary>Dependabot commands and options</summary>\n<br />\n\nYou can trigger Dependabot actions by commenting on this PR:\n- `@dependabot rebase` will rebase this PR\n- `@dependabot recreate` will recreate this PR, overwriting any edits that have been made to it\n- `@dependabot merge` will merge this PR after your CI passes on it\n- `@dependabot squash and merge` will squash and merge this PR after your CI passes on it\n- `@dependabot cancel merge` will cancel a previously requested merge and block automerging\n- `@dependabot reopen` will reopen this PR if it is closed\n- `@dependabot close` will close this PR and stop Dependabot recreating it. You can achieve the same result by closing it manually\n- `@dependabot show <dependency name> ignore conditions` will show all of the ignore conditions of the specified dependency\n- `@dependabot ignore this major version` will close this PR and stop Dependabot creating any more for this major version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this minor version` will close this PR and stop Dependabot creating any more for this minor version (unless you reopen the PR or upgrade to it yourself)\n- `@dependabot ignore this dependency` will close this PR and stop Dependabot creating any more for this dependency (unless you reopen the PR or upgrade to it yourself)\nYou can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/BabylonJS/Babylon.js/network/alerts).\n\n</details>",
+                "author": {
+                    "name": "dependabot[bot]",
+                    "url": "https://github.com/apps/dependabot"
+                },
+                "files": [
+                    "package-lock.json"
+                ],
+                "tags": [
+                    "dependencies"
+                ]
+            },
+            {
+                "pr": "15216",
+                "title": "New BoundingBoxHelper class used to compute Bounding Box info with GPU",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Culling/Helper/boundingInfoHelper.ts",
+                    "packages/dev/core/src/Culling/Helper/webgl2BoundingHelper.ts",
+                    "packages/dev/core/src/Culling/index.ts",
+                    "packages/dev/core/src/Engines/Extensions/engine.transformFeedback.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/dev/core/src/Shaders/gpuTransform.fragment.fx",
+                    "packages/dev/core/src/Shaders/gpuTransform.vertex.fx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            }
+        ],
+        "7.11.2": [
+            {
+                "pr": "15214",
+                "title": "Move hideLoadingUI() call to Engine & WebGPEngine from AbstractEngine",
+                "description": null,
+                "author": {
+                    "name": "AmoebaChant",
+                    "url": "https://github.com/AmoebaChant"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/abstractEngine.ts",
+                    "packages/dev/core/src/Engines/engine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15213",
+                "title": "A few GUI fixes",
+                "description": "Reported here - https://forum.babylonjs.com/t/gui-inputtextarea-broken/50925?u=raananw",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputText.ts",
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15212",
+                "title": "Fix regex to ignore commented imports",
+                "description": "this a the post-build script. Fix is because of failed ES6 build in #15106",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/buildTools/src/addJSToCompiledFiles.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15200",
+                "title": "add option to control actionManager dispose behavior",
+                "description": "Related forum issue: https://forum.babylonjs.com/t/how-do-you-dispose-the-actions-of-an-actionmanager/9985/12",
+                "author": {
+                    "name": "SalmaBesbes",
+                    "url": "https://github.com/SalmaBesbes"
+                },
+                "files": [
+                    "packages/dev/core/src/Actions/abstractActionManager.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15211",
+                "title": "Fluid renderer: Don't dispose of effects when disposing of fluid objects",
+                "description": "See https://forum.babylonjs.com/t/fluid-renderer-not-working-with-particle-subemitters/51367/2.\r\n\r\nThat's because effects are cached by the engine.\r\n\r\nThis means that if the same effect is used in different places in the code (which is the case in the fluid renderer, if you add several particle systems, for example), disposing of the effect in one place will cause the code to crash in all other places.\r\n\r\nExample of PG that generates errors: https://playground.babylonjs.com/#9NHBCC#65\r\n\r\nIf you wait a few seconds, you will see these errors in the console log:\r\n\r\n```md\r\nWebGL: INVALID_OPERATION: useProgram: attempt to use a deleted object\r\n[.WebGL-0000223000726A00] GL_INVALID_OPERATION: Active draw buffers with missing fragment shader outputs.\r\n```",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/effectRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingObject.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15210",
+                "title": "Fix CCW 2D GUI Ellipse Arcing.",
+                "description": "Fix counter-clockwise arcing. (negative arc value)\r\n\r\nSee top right ellipse stack.\r\nBefore;\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#3\r\n\r\nAfter;\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#4",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15207",
+                "title": "2D GUI ellipse arcing",
+                "description": "Allow Arcing of the 2D GUI Ellipse control.\r\n\r\nLet's us create Semi-circles, and opens open a wide range of new GUI design options.\r\nIt's something i've felt have been lacking for a while, with the only option being doing it through images.\r\n\r\nUnfortunately the starting angle(0) of context.arc() function is on the far right end of the ellipse for some reason.. \r\nwould have been great to have to start/end at the top, i think leave it to the dev to control with rotation of the control.\r\n\r\nRef use-case; https://forum.babylonjs.com/t/loading-timer-circular-ui/51364\r\n\r\n**PG samples**\r\nNote that when a single ellipse is arced, and both filled (background) and stroked (thickness) the border/thickness is not connected/closed.\r\nas that would require an additional property to force closePath() on context even when arcing.\r\nhttps://playground.babylonjs.com/?snapshot=refs/pull/15207/merge#IC5LC6#3",
+                "author": {
+                    "name": "aWeirdo",
+                    "url": "https://github.com/aWeirdo"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/control.ts",
+                    "packages/dev/gui/src/2D/controls/ellipse.ts",
+                    "packages/dev/gui/src/2D/controls/radioButton.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15206",
+                "title": "Mesh: Fix back compat for sideOrientation when parsing mesh",
+                "description": "See https://forum.babylonjs.com/t/new-versions-7-10-7-11-have-errors-with-model-normal-maps/51320/6",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug",
+                    "rendering engine"
+                ]
+            },
+            {
+                "pr": "15204",
+                "title": "fix fragdepthblock issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragDepthBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nmeshadowmap.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15205",
+                "title": "Add optional parameters notation to JSDoc",
+                "description": "Closure is failing with a message like:\r\n\r\n`ERROR in abc.js:48234 (originally at @babylonjs-core@7.10.0-e5902e94f7a1ba005e89/dev/core/src/Misc/observable.ts:99) from closure-compiler: Inline JSDoc on default parameters must be marked as optional\r\n     * Defines the current scope used to restore the JS context\r\n       ^^^^^^^`\r\n\r\nAdding these comments to the JSDoc fixes that ",
+                "author": {
+                    "name": "arista-ms",
+                    "url": "https://github.com/arista-ms"
+                },
+                "files": [
+                    "packages/dev/core/src/Misc/observable.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15203",
+                "title": "Stronger defense for Back compat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15202",
+                "title": "Nmegltf test",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/tests/test/visualization/ReferenceImages/nmegltf.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            }
+        ],
+        "7.11.1": [
+            {
+                "pr": "15201",
+                "title": "Fix backcompat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15199",
+                "title": "Restore back compat",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15198",
+                "title": "ReflectionTextureBlock",
+                "description": "Associated with #14929 ",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/reflectionFunction.fx",
+                    "packages/tools/nodeEditor/src/main.scss"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15196",
+                "title": "Finishing particles for nme Webgpu",
+                "description": "plus UI to change engine",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeEditor/src/components/propertyTab/propertyTabComponent.tsx",
+                    "packages/tools/nodeEditor/src/globalState.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15197",
+                "title": "Fix UI in property manager for sideOrientation",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/commonMaterialPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15195",
+                "title": "Inspector: allows to change outline width",
+                "description": "See https://forum.babylonjs.com/t/render-outline-fails-for-certain-models/51291",
+                "author": {
+                    "name": "Popov72",
+                    "url": "https://github.com/Popov72"
+                },
+                "files": [
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/meshes/meshPropertyGridComponent.tsx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "inspector"
+                ]
+            },
+            {
+                "pr": "15193",
+                "title": "Improve GS quality with XR Camera",
+                "description": "fixes #15109 \r\n\r\nExtract needed value from projection matrix to compute focal shader uniform",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GaussianSplatting/gaussianSplattingMaterial.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            }
+        ],
         "7.11.0": [],
         "7.10.3": [
             {

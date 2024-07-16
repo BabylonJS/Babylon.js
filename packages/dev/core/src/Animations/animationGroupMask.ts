@@ -1,7 +1,7 @@
 /**
  * Enum used to define the mode for an animation group mask
  */
-export enum AnimationGroupMaskMode {
+export const enum AnimationGroupMaskMode {
     /**
      * The mask defines the animatable target names that should be included
      */
@@ -36,7 +36,7 @@ export class AnimationGroupMask {
     constructor(
         names?: string[],
         /**
-         * Defines the mode for the mask
+         * [0] Defines the mode for the mask
          */
         public mode: AnimationGroupMaskMode = AnimationGroupMaskMode.Include
     ) {

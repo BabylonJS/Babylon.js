@@ -14,7 +14,7 @@ import { _isADescendantOf } from "./utils";
 import type { IPathToObjectConverter } from "../ObjectModel/objectModelInterfaces";
 import { defaultValueParseFunction } from "./serialization";
 
-export enum FlowGraphState {
+export const enum FlowGraphState {
     /**
      * The graph is stopped
      */

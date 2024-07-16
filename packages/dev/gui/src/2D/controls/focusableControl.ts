@@ -32,4 +32,15 @@ export interface IFocusableControl {
      * Function to unfocus the control programmatically
      */
     blur(): void;
+
+    /**
+     * Gets or sets the tabIndex of the control
+     */
+    tabIndex?: number;
+
+    /**
+     * Gets or sets the color used to draw the focus border
+     * Defaults to "white"
+     */
+    focusBorderColor?: string;
 }

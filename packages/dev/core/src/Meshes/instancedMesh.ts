@@ -4,6 +4,7 @@ import { Matrix, TmpVectors } from "../Maths/math.vector";
 import { Logger } from "../Misc/logger";
 import type { Camera } from "../Cameras/camera";
 import type { Node } from "../node";
+import type { IMeshDataOptions } from "../Meshes/abstractMesh";
 import { AbstractMesh } from "../Meshes/abstractMesh";
 import { Mesh } from "../Meshes/mesh";
 import type { Material } from "../Materials/material";
@@ -227,6 +228,10 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh.getVerticesData(kind, copyWhenShared, forceCopy);
     }
 
+    public override copyVerticesData(kind: string, vertexData: { [kind: string]: Float32Array }): void {
+        this._sourceMesh.copyVerticesData(kind, vertexData);
+    }
+
     /**
      * Sets the vertex data of the mesh geometry for the requested `kind`.
      * If the mesh has no geometry, a new Geometry object is set to the mesh and then passed this vertex data.
@@ -349,20 +354,23 @@ export class InstancedMesh extends AbstractMesh {
         return this._sourceMesh._positions;
     }
 
-    /**
-     * This method recomputes and sets a new BoundingInfo to the mesh unless it is locked.
-     * This means the mesh underlying bounding box and sphere are recomputed.
-     * @param applySkeleton defines whether to apply the skeleton before computing the bounding info
-     * @param applyMorph  defines whether to apply the morph target before computing the bounding info
-     * @returns the current mesh
-     */
-    public override refreshBoundingInfo(applySkeleton: boolean = false, applyMorph: boolean = false): InstancedMesh {
+    public override refreshBoundingInfo(applySkeletonOrOptions: boolean | IMeshDataOptions = false, applyMorph: boolean = false): InstancedMesh {
         if (this.hasBoundingInfo && this.getBoundingInfo().isLocked) {
             return this;
         }
 
+        let options: IMeshDataOptions;
+        if (typeof applySkeletonOrOptions === "object") {
+            options = applySkeletonOrOptions;
+        } else {
+            options = {
+                applySkeleton: applySkeletonOrOptions,
+                applyMorph: applyMorph,
+            };
+        }
+
         const bias = this._sourceMesh.geometry ? this._sourceMesh.geometry.boundingBias : null;
-        this._refreshBoundingInfo(this._sourceMesh._getPositionData(applySkeleton, applyMorph), bias);
+        this._refreshBoundingInfo(this._sourceMesh._getData(options, null, VertexBuffer.PositionKind), bias);
         return this;
     }
 

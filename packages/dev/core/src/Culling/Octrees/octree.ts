@@ -35,7 +35,7 @@ export class Octree<T> {
     constructor(
         creationFunc: (entry: T, block: OctreeBlock<T>) => void,
         maxBlockCapacity?: number,
-        /** Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
+        /** [2] Defines the maximum depth (sub-levels) for your octree. Default value is 2, which means 8 8 8 = 512 blocks :) (This parameter takes precedence over capacity.) */
         public maxDepth = 2
     ) {
         this._maxBlockCapacity = maxBlockCapacity || 64;

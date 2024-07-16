@@ -8,7 +8,6 @@ import type { PointerInfo, PointerInfoBase } from "core/Events/pointerEvents";
 import { PointerEventTypes } from "core/Events/pointerEvents";
 
 import { Control } from "./control";
-import type { IFocusableControl } from "./focusableControl";
 import { ValueAndUnit } from "../valueAndUnit";
 import type { VirtualKeyboard } from "./virtualKeyboard";
 import { RegisterClass } from "core/Misc/typeStore";
@@ -20,18 +19,16 @@ import type { ICanvasRenderingContext } from "core/Engines/ICanvas";
 /**
  * Class used to create input text control
  */
-export class InputText extends Control implements IFocusableControl {
+export class InputText extends Control {
     protected _textWrapper: TextWrapper;
     protected _placeholderText = "";
     protected _background = "#222222";
     protected _focusedBackground = "#000000";
-    protected _focusedColor = "white";
     protected _placeholderColor = "gray";
     protected _thickness = 1;
     protected _margin = new ValueAndUnit(10, ValueAndUnit.UNITMODE_PIXEL);
     protected _autoStretchWidth = true;
     protected _maxWidth = new ValueAndUnit(1, ValueAndUnit.UNITMODE_PERCENTAGE, false);
-    protected _isFocused = false;
     /** the type of device that most recently focused the input: "mouse", "touch" or "pen" */
     protected _focusedBy: string;
     protected _blinkTimeout: number;
@@ -101,10 +98,6 @@ export class InputText extends Control implements IFocusableControl {
     public onTextChangedObservable = new Observable<InputText>();
     /** Observable raised just before an entered character is to be added */
     public onBeforeKeyAddObservable = new Observable<InputText>();
-    /** Observable raised when the control gets the focus */
-    public onFocusObservable = new Observable<InputText>();
-    /** Observable raised when the control loses the focus */
-    public onBlurObservable = new Observable<InputText>();
     /** Observable raised when the text is highlighted */
     public onTextHighlightObservable = new Observable<InputText>();
     /** Observable raised when copy event is triggered */
@@ -113,8 +106,6 @@ export class InputText extends Control implements IFocusableControl {
     public onTextCutObservable = new Observable<InputText>();
     /** Observable raised when paste event is triggered */
     public onTextPasteObservable = new Observable<InputText>();
-    /** Observable raised when a key event was processed */
-    public onKeyboardEventProcessedObservable = new Observable<IKeyboardEvent>();
 
     /** Gets or sets the maximum width allowed by the control */
     @serialize()
@@ -246,12 +237,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** Gets or sets the background color when focused */
-    @serialize()
-    public get focusedColor(): string {
-        return this._focusedColor;
-    }
-
-    public set focusedColor(value: string) {
+    public override set focusedColor(value: string) {
         if (this._focusedColor === value) {
             return;
         }
@@ -384,7 +370,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     public override set width(value: string | number) {
-        if (this._width.toString(this._host) === value) {
+        if (this._width.toString(this._host) === value && !this._autoStretchWidth) {
             return;
         }
 
@@ -408,10 +394,11 @@ export class InputText extends Control implements IFocusableControl {
 
         this.text = text;
         this.isPointerBlocker = true;
+        this._focusedColor = "white";
     }
 
     /** @internal */
-    public onBlur(): void {
+    public override onBlur(): void {
         this._isFocused = false;
         this._scrollLeft = null;
         this._cursorOffset = 0;
@@ -431,7 +418,7 @@ export class InputText extends Control implements IFocusableControl {
     }
 
     /** @internal */
-    public onFocus(): void {
+    public override onFocus(): void {
         if (!this._isEnabled) {
             return;
         }
@@ -441,7 +428,7 @@ export class InputText extends Control implements IFocusableControl {
         this._cursorOffset = 0;
         this._markAsDirty();
 
-        this.onFocusObservable.notifyObservers(this);
+        this.onFocusObservable.notifyObservers(this as Control);
 
         if (this._focusedBy === "touch" && !this.disableMobilePrompt) {
             const value = prompt(this.promptMessage);
@@ -493,20 +480,6 @@ export class InputText extends Control implements IFocusableControl {
         }
     }
 
-    /**
-     * Function to focus an inputText programmatically
-     */
-    public focus() {
-        this._host.moveFocusToControl(this);
-    }
-
-    /**
-     * Function to unfocus an inputText programmatically
-     */
-    public blur() {
-        this._host.focusedControl = null;
-    }
-
     protected override _getTypeName(): string {
         return "InputText";
     }
@@ -515,7 +488,7 @@ export class InputText extends Control implements IFocusableControl {
      * Function called to get the list of controls that should not steal the focus from this control
      * @returns an array of controls
      */
-    public keepsFocusWith(): Nullable<Control[]> {
+    public override keepsFocusWith(): Nullable<Control[]> {
         if (!this._connectedVirtualKeyboard) {
             return null;
         }
@@ -843,11 +816,11 @@ export class InputText extends Control implements IFocusableControl {
      * Handles the keyboard event
      * @param evt Defines the KeyboardEvent
      */
-    public processKeyboard(evt: IKeyboardEvent): void {
+    public override processKeyboard(evt: IKeyboardEvent): void {
         // process pressed key
         this.processKey(evt.keyCode, evt.key, evt);
 
-        this.onKeyboardEventProcessedObservable.notifyObservers(evt);
+        super.processKeyboard(evt);
     }
 
     /**

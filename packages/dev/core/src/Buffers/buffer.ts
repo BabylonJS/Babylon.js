@@ -1025,24 +1025,20 @@ export class VertexBuffer {
             } else if (data instanceof ArrayBuffer) {
                 return new Float32Array(data, byteOffset, count);
             } else {
-                let offset = data.byteOffset + byteOffset;
+                const offset = data.byteOffset + byteOffset;
+                if ((offset & 3) !== 0) {
+                    Logger.Warn("Float array must be aligned to 4-bytes border");
+                    forceCopy = true;
+                }
+
                 if (forceCopy) {
-                    const result = new Float32Array(count);
-                    const source = new Float32Array(data.buffer, offset, count);
-
+                    const result = new Uint8Array(count * Float32Array.BYTES_PER_ELEMENT);
+                    const source = new Uint8Array(data.buffer, offset, result.length);
                     result.set(source);
-
-                    return result;
+                    return new Float32Array(result.buffer);
+                } else {
+                    return new Float32Array(data.buffer, offset, count);
                 }
-
-                // Protect against bad data
-                const remainder = offset % 4;
-
-                if (remainder) {
-                    offset = Math.max(0, offset - remainder);
-                }
-
-                return new Float32Array(data.buffer, offset, count);
             }
         }
 

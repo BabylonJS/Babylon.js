@@ -1,0 +1,51 @@
+{
+    "name": "@babylonjs/viewer-alpha",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "main": "lib/index.js",
+    "module": "lib/index.js",
+    "esnext": "lib/index.js",
+    "types": "lib/index.d.ts",
+    "files": [
+        "lib/**/*.js",
+        "lib/**/*.d.ts",
+        "lib/**/*.map",
+        "readme.md",
+        "license.md"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run bundle",
+        "clean": "rimraf lib && rimraf src && rimraf *.tsbuildinfo",
+        "bundle": "rollup -c",
+        "pack": "npm run build && npm pack"
+    },
+    "peerDependencies": {
+        "@babylonjs/core": "^7.13.2",
+        "@babylonjs/loaders": "^7.0.0"
+    },
+    "devDependencies": {
+        "@dev/build-tools": "^1.0.0",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@rollup/plugin-typescript": "^11.1.6",
+        "rollup": "^4.18.0",
+        "rollup-plugin-dts": "^6.1.1"
+    },
+    "keywords": [
+        "3D",
+        "javascript",
+        "html5",
+        "webgl",
+        "babylon.js"
+    ],
+    "license": "Apache-2.0",
+    "sideEffects": false,
+    "homepage": "https://www.babylonjs.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/BabylonJS/Babylon.js.git"
+    },
+    "bugs": {
+        "url": "https://github.com/BabylonJS/Babylon.js/issues"
+    }
+}

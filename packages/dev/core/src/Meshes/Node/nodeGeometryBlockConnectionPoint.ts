@@ -8,7 +8,7 @@ import type { NodeGeometryBuildState } from "./nodeGeometryBuildState";
 /**
  * Enum used to define the compatibility state between two connection points
  */
-export enum NodeGeometryConnectionPointCompatibilityStates {
+export const enum NodeGeometryConnectionPointCompatibilityStates {
     /** Points are compatibles */
     Compatible,
     /** Points are incompatible because of their types */
@@ -20,7 +20,7 @@ export enum NodeGeometryConnectionPointCompatibilityStates {
 /**
  * Defines the direction of a connection point
  */
-export enum NodeGeometryConnectionPointDirection {
+export const enum NodeGeometryConnectionPointDirection {
     /** Input */
     Input,
     /** Output */

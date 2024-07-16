@@ -11,7 +11,7 @@ import type { Observer } from "core/Misc/observable";
 /**
  * State of the handle regarding user interaction
  */
-export enum HandleState {
+export const enum HandleState {
     /**
      * Handle is idle
      */

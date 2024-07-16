@@ -18,7 +18,6 @@ import type { Scene } from "core/scene";
 
 import { Container } from "./controls/container";
 import { Control } from "./controls/control";
-import type { IFocusableControl } from "./controls/focusableControl";
 import { Style } from "./style";
 import { Measure } from "./measure";
 import { Constants } from "core/Engines/constants";
@@ -85,7 +84,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     private _idealHeight = 0;
     private _useSmallestIdeal: boolean = false;
     private _renderAtIdealSize = false;
-    private _focusedControl: Nullable<IFocusableControl>;
+    private _focusedControl: Nullable<Control>;
     private _blockNextFocusCheck = false;
     private _renderScale = 1;
     private _rootElement: Nullable<HTMLElement>;
@@ -147,6 +146,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Gets or sets a boolean indicating that the canvas must be reverted on Y when updating the texture
      */
     public applyYInversionOnUpdate = true;
+
+    /**
+     * A boolean indicating whether or not the elements can be navigated to using the tab key.
+     * Defaults to false.
+     */
+    public disableTabNavigation = false;
     /**
      * Gets or sets a number used to scale rendering size (2 means that the texture will be twice bigger).
      * Useful when you want more antialiasing
@@ -322,10 +327,10 @@ export class AdvancedDynamicTexture extends DynamicTexture {
     /**
      * Gets or sets the current focused control
      */
-    public get focusedControl(): Nullable<IFocusableControl> {
+    public get focusedControl(): Nullable<Control> {
         return this._focusedControl;
     }
-    public set focusedControl(control: Nullable<IFocusableControl>) {
+    public set focusedControl(control: Nullable<Control>) {
         if (this._focusedControl == control) {
             return;
         }
@@ -411,6 +416,12 @@ export class AdvancedDynamicTexture extends DynamicTexture {
             }
         });
         this._preKeyboardObserver = scene.onPreKeyboardObservable.add((info) => {
+            // check if tab is pressed
+            if (!this.disableTabNavigation && info.type === KeyboardEventTypes.KEYDOWN && info.event.code === "Tab") {
+                this._focusNextElement(!info.event.shiftKey);
+                info.event.preventDefault();
+                return;
+            }
             if (!this._focusedControl) {
                 return;
             }
@@ -984,6 +995,38 @@ export class AdvancedDynamicTexture extends DynamicTexture {
         this._attachToOnBlur(scene);
     }
 
+    private _focusNextElement(forward: boolean = true): void {
+        // generate the order of tab-able controls
+        const sortedTabbableControls: Control[] = [];
+        this.executeOnAllControls((control) => {
+            if (control.isFocusInvisible || !control.isVisible || control.tabIndex < 0) {
+                return;
+            }
+            sortedTabbableControls.push(control);
+        });
+        // if no control is tab-able, return
+        if (sortedTabbableControls.length === 0) {
+            return;
+        }
+        sortedTabbableControls.sort((a, b) => {
+            // if tabIndex is 0, put it in the end of the list, otherwise sort by tabIndex
+            return a.tabIndex === 0 ? 1 : b.tabIndex === 0 ? -1 : a.tabIndex - b.tabIndex;
+        });
+        // if no control is focused, focus the first one
+        if (!this._focusedControl) {
+            sortedTabbableControls[0].focus();
+        } else {
+            const currentIndex = sortedTabbableControls.indexOf(this._focusedControl);
+            let nextIndex = currentIndex + (forward ? 1 : -1);
+            if (nextIndex < 0) {
+                nextIndex = sortedTabbableControls.length - 1;
+            } else if (nextIndex >= sortedTabbableControls.length) {
+                nextIndex = 0;
+            }
+            sortedTabbableControls[nextIndex].focus();
+        }
+    }
+
     /**
      * @internal
      */
@@ -1189,7 +1232,7 @@ export class AdvancedDynamicTexture extends DynamicTexture {
      * Move the focus to a specific control
      * @param control defines the control which will receive the focus
      */
-    public moveFocusToControl(control: IFocusableControl): void {
+    public moveFocusToControl(control: Control): void {
         this.focusedControl = control;
         this._lastPickedControl = <any>control;
         this._blockNextFocusCheck = true;

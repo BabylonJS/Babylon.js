@@ -61,7 +61,7 @@ export class FragDepthBlock extends NodeMaterialBlock {
         } else if (this.worldPos.isConnected && this.viewProjection.isConnected) {
             state.compilationString += `
                 ${state._declareLocalVar("p", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.viewProjection.associatedVariableName} * ${this.worldPos.associatedVariableName};
-                ${state._declareLocalVar("v", NodeMaterialBlockConnectionPointTypes.Vector4)} = p.z / p.w;
+                ${state._declareLocalVar("v", NodeMaterialBlockConnectionPointTypes.Float)} = p.z / p.w;
                 #ifndef IS_NDC_HALF_ZRANGE
                     v = v * 0.5 + 0.5;
                 #endif

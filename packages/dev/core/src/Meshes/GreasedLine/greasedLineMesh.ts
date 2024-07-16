@@ -181,13 +181,13 @@ export class GreasedLineMesh extends GreasedLineBaseMesh {
             } else {
                 for (let j = 0; j < l; j++) {
                     // uvs
+                    const lengthRatio = lengthArray[j] / totalLength;
                     const uvOffsetBase = uvOffset + j * 4;
-                    uvArr[uvOffsetBase + 0] = j / (l - 1);
+                    uvArr[uvOffsetBase + 0] = lengthRatio;
                     uvArr[uvOffsetBase + 1] = 0;
-                    uvArr[uvOffsetBase + 2] = j / (l - 1);
+                    uvArr[uvOffsetBase + 2] = lengthRatio;
                     uvArr[uvOffsetBase + 3] = 1;
                 }
-                uvOffset += l * 4;
             }
         });
         this._vertexPositions = vertexPositionsArr;

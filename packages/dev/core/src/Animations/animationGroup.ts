@@ -717,8 +717,8 @@ export class AnimationGroup implements IDisposable {
      * @returns the animation group
      */
     public play(loop?: boolean): AnimationGroup {
-        // only if all animatables are ready and exist
-        if (this.isStarted && this._animatables.length === this._targetedAnimations.length) {
+        // only if there are animatable available
+        if (this.isStarted && this._animatables.length) {
             if (loop !== undefined) {
                 this.loopAnimation = loop;
             }
@@ -754,7 +754,7 @@ export class AnimationGroup implements IDisposable {
     }
 
     /**
-     * Restart animations from key 0
+     * Restart animations from after pausing it
      * @returns the animation group
      */
     public restart(): AnimationGroup {
@@ -859,6 +859,9 @@ export class AnimationGroup implements IDisposable {
      * Dispose all associated resources
      */
     public dispose(): void {
+        if (this.isStarted) {
+            this.stop();
+        }
         this._targetedAnimations.length = 0;
         this._animatables.length = 0;
 

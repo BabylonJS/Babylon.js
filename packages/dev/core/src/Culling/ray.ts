@@ -34,9 +34,9 @@ export class Ray {
         public origin: Vector3,
         /** direction */
         public direction: Vector3,
-        /** length of the ray */
+        /** [Number.MAX_VALUE] length of the ray */
         public length: number = Number.MAX_VALUE,
-        /** The epsilon value to use when calculating the ray/triangle intersection (default: Epsilon from math constants) */
+        /** [Epsilon] The epsilon value to use when calculating the ray/triangle intersection (default: Epsilon from math constants) */
         public epsilon: number = Epsilon
     ) {}
 

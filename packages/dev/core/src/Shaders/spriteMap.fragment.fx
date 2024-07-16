@@ -27,7 +27,7 @@ uniform vec3 colorMul;
 float mt;
 
 const float fdStep = 1. / 4.;
-const float aFrameSteps = 1. / MAX_ANIMATION_FRAMES;
+const float aFrameSteps = MAX_ANIMATION_FRAMES == 0. ? 0. : 1. / MAX_ANIMATION_FRAMES;
 
 mat4 getFrameData(float frameID){
     float fX = frameID / spriteCount;

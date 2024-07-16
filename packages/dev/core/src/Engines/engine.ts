@@ -1045,6 +1045,8 @@ export class Engine extends ThinEngine {
     }
 
     public override dispose(): void {
+        this.hideLoadingUI();
+
         // Rescale PP
         if (this._rescalePostProcess) {
             this._rescalePostProcess.dispose();

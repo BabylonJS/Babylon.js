@@ -16,7 +16,7 @@ import { Scalar } from "../Maths/math.scalar";
 import type { Material } from "../Materials/material";
 
 /** Defines the 4 color options */
-export enum PointColor {
+export const enum PointColor {
     /** color value */
     Color = 2,
     /** uv value */
@@ -118,7 +118,6 @@ export class PointsCloudSystem implements IDisposable {
      * @param scene (Scene) is the scene in which the PCS is added
      * @param options defines the options of the PCS e.g.
      * * updatable (optional boolean, default true) : if the PCS must be updatable or immutable
-     * @param options.updatable
      */
     constructor(name: string, pointSize: number, scene: Scene, options?: { updatable?: boolean }) {
         this.name = name;

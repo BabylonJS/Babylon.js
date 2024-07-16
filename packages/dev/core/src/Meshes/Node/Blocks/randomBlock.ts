@@ -19,6 +19,8 @@ export enum RandomBlockLocks {
     LoopID,
     /** InstanceID */
     InstanceID,
+    /** Once */
+    Once,
 }
 
 /**
@@ -35,6 +37,7 @@ export class RandomBlock extends NodeGeometryBlock {
             { label: "None", value: RandomBlockLocks.None },
             { label: "LoopID", value: RandomBlockLocks.LoopID },
             { label: "InstanceID", value: RandomBlockLocks.InstanceID },
+            { label: "Once", value: RandomBlockLocks.Once },
         ],
     })
     public lockMode = RandomBlockLocks.None;
@@ -162,6 +165,9 @@ export class RandomBlock extends NodeGeometryBlock {
                         break;
                     case RandomBlockLocks.LoopID:
                         lockId = state.getContextualValue(NodeGeometryContextualSources.LoopID, true) || 0;
+                        break;
+                    case RandomBlockLocks.Once:
+                        lockId = state.buildId || 0;
                         break;
                 }
 

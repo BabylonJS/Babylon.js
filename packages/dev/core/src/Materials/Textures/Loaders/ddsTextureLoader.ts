@@ -106,7 +106,7 @@ export class _DDSTextureLoader implements IInternalTextureLoader {
     ): void {
         const info = DDSTools.GetDDSInfo(data);
 
-        const loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && texture.generateMipMaps && info.width >> (info.mipmapCount - 1) === 1;
+        const loadMipmap = (info.isRGB || info.isLuminance || info.mipmapCount > 1) && texture.generateMipMaps && Math.max(info.width, info.height) >> (info.mipmapCount - 1) === 1;
         callback(info.width, info.height, loadMipmap, info.isFourCC, () => {
             DDSTools.UploadDDSLevels(texture.getEngine(), texture, data, info, loadMipmap, 1);
         });

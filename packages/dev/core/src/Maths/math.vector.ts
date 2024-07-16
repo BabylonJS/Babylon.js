@@ -122,9 +122,9 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @param y defines the second coordinate
      */
     constructor(
-        /** defines the first coordinate */
+        /** [0] defines the first coordinate */
         public x: number = 0,
-        /** defines the second coordinate */
+        /** [0] defines the second coordinate */
         public y: number = 0
     ) {}
 
@@ -966,9 +966,21 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns a new Vector2
      */
     public static Lerp(start: DeepImmutable<IVector2Like>, end: DeepImmutable<IVector2Like>, amount: number): Vector2 {
-        const x = start.x + (end.x - start.x) * amount;
-        const y = start.y + (end.y - start.y) * amount;
-        return new Vector2(x, y);
+        return Vector2.LerpToRef(start, end, amount, new Vector2());
+    }
+
+    /**
+     * Sets the given vector "result" with the result of the linear interpolation from the vector "start" for "amount" to the vector "end"
+     * @param start defines the start value
+     * @param end defines the end value
+     * @param amount max defines amount between both (between 0 and 1)
+     * @param result defines the Vector2 where to store the result
+     * @returns result input
+     */
+    public static LerpToRef(start: DeepImmutable<IVector2Like>, end: DeepImmutable<IVector2Like>, amount: number, result: Vector2): Vector2 {
+        result.x = start.x + (end.x - start.x) * amount;
+        result.y = start.y + (end.y - start.y) * amount;
+        return result;
     }
 
     /**
@@ -3364,13 +3376,13 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @param w w value of the vector
      */
     constructor(
-        /** x value of the vector */
+        /** [0] x value of the vector */
         public x: number = 0,
-        /** y value of the vector */
+        /** [0] y value of the vector */
         public y: number = 0,
-        /** z value of the vector */
+        /** [0] z value of the vector */
         public z: number = 0,
-        /** w value of the vector */
+        /** [0] w value of the vector */
         public w: number = 0
     ) {}
 
@@ -5097,6 +5109,39 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     }
 
     /**
+     * Sets the given vector3 "result" with the Alpha, Beta, Gamma Euler angles translated from the current quaternion
+     * @param result defines the vector which will be filled with the Euler angles
+     * @returns result input
+     * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms/center_origin/rotation_conventions
+     */
+    public toAlphaBetaGammaToRef<T extends Vector3>(result: T): T {
+        const qz = this._z;
+        const qx = this._x;
+        const qy = this._y;
+        const qw = this._w;
+
+        // Compute intermediate values
+        const sinHalfBeta = Math.sqrt(qx * qx + qy * qy);
+        const cosHalfBeta = Math.sqrt(qz * qz + qw * qw);
+
+        // Calculate beta
+        const beta = 2 * Math.atan2(sinHalfBeta, cosHalfBeta);
+
+        // Calculate gamma + alpha
+        const gammaPlusAlpha = 2 * Math.atan2(qz, qw);
+
+        // Calculate gamma - alpha
+        const gammaMinusAlpha = 2 * Math.atan2(qy, qx);
+
+        // Calculate gamma and alpha
+        const gamma = (gammaPlusAlpha + gammaMinusAlpha) / 2;
+        const alpha = (gammaPlusAlpha - gammaMinusAlpha) / 2;
+
+        result.set(alpha, beta, gamma);
+        return result;
+    }
+
+    /**
      * Updates the given rotation matrix with the current quaternion values
      * Example Playground https://playground.babylonjs.com/#L49EJ7#67
      * @param result defines the target matrix
@@ -6226,9 +6271,22 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
     public addToSelf(other: DeepImmutable<Matrix>): this {
         const m = this._m;
         const otherM = other.m;
-        for (let index = 0; index < 16; index++) {
-            m[index] += otherM[index];
-        }
+        m[0] += otherM[0];
+        m[1] += otherM[1];
+        m[2] += otherM[2];
+        m[3] += otherM[3];
+        m[4] += otherM[4];
+        m[5] += otherM[5];
+        m[6] += otherM[6];
+        m[7] += otherM[7];
+        m[8] += otherM[8];
+        m[9] += otherM[9];
+        m[10] += otherM[10];
+        m[11] += otherM[11];
+        m[12] += otherM[12];
+        m[13] += otherM[13];
+        m[14] += otherM[14];
+        m[15] += otherM[15];
         this.markAsUpdated();
         return this;
     }
@@ -7245,9 +7303,22 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      * @returns result input
      */
     public static FromFloat32ArrayToRefScaled<T extends Matrix>(array: DeepImmutable<Float32Array | Array<number>>, offset: number, scale: number, result: T): T {
-        for (let index = 0; index < 16; index++) {
-            result._m[index] = array[index + offset] * scale;
-        }
+        result._m[0] = array[0 + offset] * scale;
+        result._m[1] = array[1 + offset] * scale;
+        result._m[2] = array[2 + offset] * scale;
+        result._m[3] = array[3 + offset] * scale;
+        result._m[4] = array[4 + offset] * scale;
+        result._m[5] = array[5 + offset] * scale;
+        result._m[6] = array[6 + offset] * scale;
+        result._m[7] = array[7 + offset] * scale;
+        result._m[8] = array[8 + offset] * scale;
+        result._m[9] = array[9 + offset] * scale;
+        result._m[10] = array[10 + offset] * scale;
+        result._m[11] = array[11 + offset] * scale;
+        result._m[12] = array[12 + offset] * scale;
+        result._m[13] = array[13 + offset] * scale;
+        result._m[14] = array[14 + offset] * scale;
+        result._m[15] = array[15 + offset] * scale;
         result.markAsUpdated();
         return result;
     }
@@ -8790,8 +8861,8 @@ export class TmpVectors {
     /** 3 temp Vector4 at once should be enough */
     public static Vector4 = ArrayTools.BuildTuple(3, Vector4.Zero);
 
-    /** 2 temp Quaternion at once should be enough */
-    public static Quaternion = ArrayTools.BuildTuple(2, Quaternion.Zero);
+    /** 3 temp Quaternion at once should be enough */
+    public static Quaternion = ArrayTools.BuildTuple(3, Quaternion.Zero);
 
     /** 8 temp Matrices at once should be enough */
     public static Matrix = ArrayTools.BuildTuple(8, Matrix.Identity);

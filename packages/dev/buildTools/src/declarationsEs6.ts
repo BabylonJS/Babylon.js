@@ -6,6 +6,7 @@ import * as glob from "glob";
 export const declarationsEs6 = () => {
     const root = checkArgs(["--root", "-r"]) as string;
     const appendToFile = checkArgs(["--append-to-file", "-atf"]) as string;
+    const constEnumToEnum = checkArgs(["--const-enum-to-enum", "-cete"]) as boolean;
     // eslint-disable-next-line no-console
     console.log(`Declarations ES6: root: ${root}`, appendToFile ? `append to file: ${appendToFile}` : "");
 
@@ -24,4 +25,16 @@ declare global{
 ${mixins}
 }`;
     fs.writeFileSync(path.join(".", appendToFile), newContent);
+
+    if (constEnumToEnum) {
+        // iterate over all files in the current directory and change const enum to enum
+        // This can be done since we are exporting the enums to js as well
+        const files = glob.sync(path.join("./**/*.d.ts"));
+
+        files.forEach((file) => {
+            let content = fs.readFileSync(file, "utf8");
+            content = content.replace(/const enum/g, "enum");
+            fs.writeFileSync(file, content);
+        });
+    }
 };
