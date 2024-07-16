@@ -455,6 +455,7 @@
         },
         {
             "label": "Viewer (Alpha - Web)",
+            "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {

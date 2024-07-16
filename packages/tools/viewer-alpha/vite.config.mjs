@@ -6,9 +6,10 @@ export default defineConfig(({ mode }) => {
     const source = env.source ?? "dev";
 
     const port = env.VIEWER_PORT ?? 1342;
-    console.log(`${chalk.bold(`Web Test App`)}: ${chalk.cyan(`http://localhost:${port}/test/apps/web/index.html`)}`);
+    console.log(`${chalk.bold(`Web Test App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/index.html`)}`);
 
     return {
+        root: "../../../",
         server: {
             port,
         },
