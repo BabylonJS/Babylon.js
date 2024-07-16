@@ -16,6 +16,7 @@ import { Tools } from "../Misc/tools";
 import type { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
+import { FrameGraphClearBlock } from "./Blocks/frameGraphClearBlock";
 
 // declare FRAMEGRAPHEDITOR namespace for compilation issue
 declare let FRAMEGRAPHEDITOR: any;
@@ -101,6 +102,8 @@ export class FrameGraph {
      */
     @serialize("comment")
     public comment: string;
+
+    private _executedBlocks: FrameGraphBlock[] = [];
 
     /**
      * Creates a new frame graph
@@ -239,6 +242,12 @@ export class FrameGraph {
         this.onBuildObservable.notifyObservers(this);
     }
 
+    public execute() {
+        for (const block of this._executedBlocks) {
+            block.execute();
+        }
+    }
+
     private _initializeBlock(node: FrameGraphBlock, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
@@ -258,6 +267,10 @@ export class FrameGraph {
                 }
             }
         }
+
+        if (!node.isInput && this._executedBlocks.indexOf(node) === -1) {
+            this._executedBlocks.push(node);
+        }
     }
 
     /**
@@ -266,6 +279,7 @@ export class FrameGraph {
     public clear() {
         this.outputBlock = null;
         this.attachedBlocks.length = 0;
+        this._executedBlocks.length = 0;
     }
 
     /**
@@ -276,6 +290,11 @@ export class FrameGraph {
         const attachedBlockIndex = this.attachedBlocks.indexOf(block);
         if (attachedBlockIndex > -1) {
             this.attachedBlocks.splice(attachedBlockIndex, 1);
+        }
+
+        const executedBlockIndex = this._executedBlocks.indexOf(block);
+        if (executedBlockIndex > -1) {
+            this._executedBlocks.splice(executedBlockIndex, 1);
         }
 
         if (block === this.outputBlock) {
@@ -475,11 +494,16 @@ export class FrameGraph {
         this.editorData = null;
 
         // Source
-        const texture = new FrameGraphInputBlock("Texture", FrameGraphBlockConnectionPointTypes.Texture);
+        const backBuffer = new FrameGraphInputBlock("BackBuffer", FrameGraphBlockConnectionPointTypes.TextureBackbuffer);
+
+        // Clear texture
+        const clear = new FrameGraphClearBlock("Clear");
+
+        backBuffer.output.connectTo(clear.texture);
 
         // Final output
         const output = new FrameGraphOutputBlock("Frame graph Output");
-        texture.output.connectTo(output.texture);
+        clear.output.connectTo(output.texture);
 
         this.outputBlock = output;
     }
@@ -550,6 +574,7 @@ export class FrameGraph {
         }
 
         this.attachedBlocks.length = 0;
+        this._executedBlocks.length = 0;
         this.onBuildObservable.clear();
     }
 

@@ -4,12 +4,16 @@ import { FrameGraphBlock } from "../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
 import { RegisterClass } from "../../Misc/typeStore";
 import type { FrameGraphBuildState } from "../frameGraphBuildState";
+import type { Camera } from "../../Cameras/camera";
+import type { ThinTexture } from "../../Materials/Textures/thinTexture";
+
+export type FrameGraphResourceType = ThinTexture | Camera;
 
 /**
  * Block used to expose an input value
  */
 export class FrameGraphInputBlock extends FrameGraphBlock {
-    private _storedValue: any;
+    private _storedValue: FrameGraphResourceType | undefined = undefined;
     private _type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.Undefined;
     /** Gets an observable raised when the value is changed */
     public onValueChangedObservable = new Observable<FrameGraphInputBlock>();
@@ -17,45 +21,29 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
      * Gets or sets the connection point type (default is Undefined)
      */
     public get type(): FrameGraphBlockConnectionPointTypes {
-        if (this._type === FrameGraphBlockConnectionPointTypes.AutoDetect) {
-            if (this.value != null) {
-                if (this.value._isCamera) {
-                    this._type = FrameGraphBlockConnectionPointTypes.Camera;
-                    return this._type;
-                }
-                switch (this.value.getClassName()) {
-                    case "TextureHandle":
-                        this._type = FrameGraphBlockConnectionPointTypes.Texture;
-                        return this._type;
-                    case "RenderableList":
-                        this._type = FrameGraphBlockConnectionPointTypes.RenderableList;
-                        return this._type;
-                }
-            }
-        }
         return this._type;
     }
     /**
      * Creates a new FrameGraphInputBlock
      * @param name defines the block name
-     * @param type defines the type of the input (can be set to FrameGraphBlockConnectionPointTypes.AutoDetect)
+     * @param type defines the type of the input (can be set to FrameGraphBlockConnectionPointTypes.Undefined)
      */
-    public constructor(name: string, type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.AutoDetect) {
+    public constructor(name: string, type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.Undefined) {
         super(name);
         this._type = type;
         this._isInput = true;
-        this.setDefaultValue();
         this.registerOutput("output", type);
+        this.output.value = this;
     }
 
     /**
      * Gets or sets the value of that point.
      */
-    public get value(): any {
+    public get value(): FrameGraphResourceType | undefined {
         return this._storedValue;
     }
 
-    public set value(value: any) {
+    public set value(value: FrameGraphResourceType) {
         this._storedValue = value;
         this.onValueChangedObservable.notifyObservers(this);
     }
@@ -69,27 +57,18 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
     }
 
     /**
-     * Gets the frame graph output component
+     * Gets the output component
      */
     public get output(): FrameGraphConnectionPoint {
         return this._outputs[0];
     }
 
     /**
-     * Set the input block to its default value (based on its type)
+     * Check if the block is a texture of any type
+     * @returns true if the block is a texture
      */
-    public setDefaultValue() {
-        switch (this.type) {
-            case FrameGraphBlockConnectionPointTypes.Texture:
-                this.value = undefined;
-                break;
-            case FrameGraphBlockConnectionPointTypes.Camera:
-                this.value = undefined;
-                break;
-            case FrameGraphBlockConnectionPointTypes.RenderableList:
-                this.value = undefined;
-                break;
-        }
+    public isAnyTexture(): boolean {
+        return (this.type & FrameGraphBlockConnectionPointTypes.TextureAll) !== 0;
     }
 
     protected override _buildBlock(state: FrameGraphBuildState) {

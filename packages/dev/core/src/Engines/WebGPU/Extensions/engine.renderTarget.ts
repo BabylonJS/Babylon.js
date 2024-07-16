@@ -65,6 +65,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.samplingMode = options.samplingMode === undefined ? Constants.TEXTURE_TRILINEAR_SAMPLINGMODE : options.samplingMode;
         fullOptions.creationFlags = options.creationFlags ?? 0;
         fullOptions.noColorAttachment = !!options.noColorAttachment;
+        fullOptions.colorAttachment = options.colorAttachment;
         fullOptions.samples = options.samples;
         fullOptions.label = options.label;
     } else {
@@ -76,7 +77,7 @@ WebGPUEngine.prototype.createRenderTargetTexture = function (size: TextureSize, 
         fullOptions.noColorAttachment = false;
     }
 
-    const texture = fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget);
+    const texture = fullOptions.colorAttachment || (fullOptions.noColorAttachment ? null : this._createInternalTexture(size, options, true, InternalTextureSource.RenderTarget));
 
     rtWrapper.label = fullOptions.label ?? "RenderTargetWrapper";
     rtWrapper._samples = fullOptions.samples ?? 1;

@@ -3,23 +3,24 @@ import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoin
 import { RegisterClass } from "../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
 import type { FrameGraphBuildState } from "../frameGraphBuildState";
+import type { ThinTexture } from "../../Materials/Textures/thinTexture";
 
 /**
- * Block used to generate the final graph
+ * Block used to clear a texture
  */
-export class FrameGraphOutputBlock extends FrameGraphBlock {
+export class FrameGraphClearBlock extends FrameGraphBlock {
     /**
-     * Create a new FrameGraphOutputBlock
+     * Create a new FrameGraphClearBlock
      * @param name defines the block name
      */
     public constructor(name: string) {
         super(name);
 
-        this._isUnique = true;
-
         this.registerInput("texture", FrameGraphBlockConnectionPointTypes.Texture);
+        this.registerOutput("output", FrameGraphBlockConnectionPointTypes.BasedOnInput);
 
         this.texture.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
+        this.output._typeConnectionSource = this.texture;
     }
 
     /**
@@ -27,7 +28,7 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphOutputBlock";
+        return "FrameGraphClearBlock";
     }
     /**
      * Gets the texture input component
@@ -36,9 +37,25 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
         return this._inputs[0];
     }
 
+    /**
+     * Gets the texture output component
+     */
+    public get output(): FrameGraphConnectionPoint {
+        return this._outputs[0];
+    }
+
     protected override _buildBlock(state: FrameGraphBuildState) {
         super._buildBlock(state);
+        this.output.value = this.texture.value;
+    }
+
+    protected override _execute(): void {
+        const inputTextureCP = this.texture.connectedPoint;
+        if (!inputTextureCP || !inputTextureCP.value || !inputTextureCP.value.isAnyTexture) {
+            return;
+        }
+        const texture = inputTextureCP.value.value as ThinTexture;
     }
 }
 
-RegisterClass("BABYLON.FrameGraphOutputBlock", FrameGraphOutputBlock);
+RegisterClass("BABYLON.FrameGraphClearBlock", FrameGraphClearBlock);

@@ -57,6 +57,11 @@ export class FrameGraphConnectionPoint {
     }
 
     /**
+     * The value stored in this connection point
+     */
+    public value: FrameGraphInputBlock;
+
+    /**
      * Gets or sets the additional types supported by this connection point
      */
     public acceptedConnectionPointTypes: FrameGraphBlockConnectionPointTypes[] = [];
@@ -87,7 +92,7 @@ export class FrameGraphConnectionPoint {
     public exposedPortPosition: number = -1;
 
     /**
-     * Gets or sets the connection point type (default is float)
+     * Gets or sets the connection point type (default is Undefined)
      */
     public get type(): FrameGraphBlockConnectionPointTypes {
         if (this._type === FrameGraphBlockConnectionPointTypes.AutoDetect) {
@@ -106,10 +111,10 @@ export class FrameGraphConnectionPoint {
 
         if (this._type === FrameGraphBlockConnectionPointTypes.BasedOnInput) {
             if (this._typeConnectionSource) {
-                if (!this._typeConnectionSource.isConnected && this._defaultConnectionPointType) {
-                    return this._defaultConnectionPointType;
+                if (!this._typeConnectionSource.isConnected) {
+                    return this._defaultConnectionPointType ?? this._typeConnectionSource.type;
                 }
-                return this._typeConnectionSource.type;
+                return this._typeConnectionSource._connectedPoint!.type;
             } else if (this._defaultConnectionPointType) {
                 return this._defaultConnectionPointType;
             }
@@ -300,7 +305,7 @@ export class FrameGraphConnectionPoint {
     }
 
     /**
-     * Fill the list of excluded connection point types with all types other than those passed in the parameter
+     * Fills the list of excluded connection point types with all types other than those passed in the parameter
      * @param mask Types (ORed values of FrameGraphBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
      */
     public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
@@ -308,6 +313,20 @@ export class FrameGraphConnectionPoint {
         while (bitmask < FrameGraphBlockConnectionPointTypes.All) {
             if (!(mask & bitmask)) {
                 this.excludedConnectionPointTypes.push(bitmask);
+            }
+            bitmask = bitmask << 1;
+        }
+    }
+
+    /**
+     * Adds accepted connection point types
+     * @param mask Types (ORed values of FrameGraphBlockConnectionPointTypes) that are allowed to connect to this point
+     */
+    public addAcceptedConnectionPointTypes(mask: number): void {
+        let bitmask = 1;
+        while (bitmask < FrameGraphBlockConnectionPointTypes.All) {
+            if (mask & bitmask && this.acceptedConnectionPointTypes.indexOf(bitmask) === -1) {
+                this.acceptedConnectionPointTypes.push(bitmask);
             }
             bitmask = bitmask << 1;
         }

@@ -26,6 +26,16 @@ export class FrameGraphBlock {
      */
     public onBuildObservable = new Observable<FrameGraphBlock>();
 
+    /**
+     * Gets an observable raised before the block is executed
+     */
+    public onBeforeExecuteObservable = new Observable<FrameGraphBlock>();
+
+    /**
+     * Gets an observable raised after the block is executed
+     */
+    public onAfterExecuteObservable = new Observable<FrameGraphBlock>();
+
     /** @internal */
     public _inputs = new Array<FrameGraphConnectionPoint>();
 
@@ -302,6 +312,14 @@ export class FrameGraphBlock {
 
         return false;
     }
+
+    public execute() {
+        this.onBeforeExecuteObservable.notifyObservers(this);
+        this._execute();
+        this.onAfterExecuteObservable.notifyObservers(this);
+    }
+
+    protected _execute() {}
 
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
         if (looseCoupling) {
