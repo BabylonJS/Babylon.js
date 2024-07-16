@@ -42,7 +42,13 @@ export class SaveManager {
                     } else {
                         // default behavior!
                         const baseUrl = location.href.replace(location.hash, "");
-                        let newUrl = baseUrl + "#" + snippet.id;
+                        let toolkit = "";
+
+                        if (Utilities.ReadBoolFromStore("babylon-toolkit", false) && location.href.indexOf("BabylonToolkit") === -1) {
+                            toolkit = "?BabylonToolkit";
+                        }
+
+                        let newUrl = baseUrl + toolkit + "#" + snippet.id;
                         newUrl = newUrl.replace("##", "#");
                         this.globalState.currentSnippetToken = snippet.id;
                         if (snippet.version && snippet.version !== "0") {
