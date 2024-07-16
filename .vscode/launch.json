@@ -523,11 +523,8 @@
             "type": "chrome",
             "request": "launch",
             "name": "Viewer (Alpha) (Web) (Chrome)",
-            "url": "http://localhost:1342/test/apps/web/index.html",
-            "preLaunchTask": "Viewer (Alpha - Web)",
-            "pathMapping": {
-                "/": "${webRoot}/packages/tools/viewer-alpha"
-            }
+            "url": "http://localhost:1342/packages/tools/viewer-alpha/test/apps/web/index.html",
+            "preLaunchTask": "Viewer (Alpha - Web)"
         }
     ],
     "inputs": [
