@@ -2185,6 +2185,8 @@ export class NodeMaterial extends PushMaterial {
             }
         }
 
+        serializationObject.uniqueId = this.uniqueId;
+
         return serializationObject;
     }
 
