@@ -519,11 +519,14 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
             return;
         }
 
-        subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
-
-        const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
-
-        uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
+        // If min/max thickness is 0, avoid decompising to determine the scaled thickness (it's always zero).
+        if (this.maximumThickness === 0.0 && this.minimumThickness === 0.0) {
+            uniformBuffer.updateFloat2("vThicknessParam", 0, 0);
+        } else {
+            subMesh.getRenderingMesh().getWorldMatrix().decompose(TmpVectors.Vector3[0]);
+            const thicknessScale = Math.max(Math.abs(TmpVectors.Vector3[0].x), Math.abs(TmpVectors.Vector3[0].y), Math.abs(TmpVectors.Vector3[0].z));
+            uniformBuffer.updateFloat2("vThicknessParam", this.minimumThickness * thicknessScale, (this.maximumThickness - this.minimumThickness) * thicknessScale);
+        }
     }
 
     public override bindForSubMesh(uniformBuffer: UniformBuffer, scene: Scene, engine: Engine, subMesh: SubMesh): void {
