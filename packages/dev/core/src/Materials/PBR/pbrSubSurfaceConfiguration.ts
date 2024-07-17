@@ -379,6 +379,12 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                     }
                 }
 
+                if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled) {
+                    if (!this._translucencyIntensityTexture.isReadyOrNotBlocking()) {
+                        return false;
+                    }
+                }
+
                 const refractionTexture = this._getRefractionTexture(scene);
                 if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                     if (!refractionTexture.isReadyOrNotBlocking()) {
@@ -549,6 +555,11 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
                 BindTextureMatrix(this._translucencyColorTexture, uniformBuffer, "translucencyColor");
             }
 
+            if (this._translucencyIntensityTexture && MaterialFlags.TranslucencyIntensityTextureEnabled && defines.SS_TRANSLUCENCYINTENSITY_TEXTURE) {
+                uniformBuffer.updateFloat2("vTranslucencyIntensityInfos", this._translucencyIntensityTexture.coordinatesIndex, this._translucencyIntensityTexture.level);
+                BindTextureMatrix(this._translucencyIntensityTexture, uniformBuffer, "translucencyIntensity");
+            }
+
             if (refractionTexture && MaterialFlags.RefractionTextureEnabled) {
                 uniformBuffer.updateMatrix("refractionMatrix", refractionTexture.getRefractionTextureMatrix());
 
@@ -704,6 +715,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
         if (this._translucencyColorTexture) {
             activeTextures.push(this._translucencyColorTexture);
         }
+
+        if (this._translucencyIntensityTexture) {
+            activeTextures.push(this._translucencyIntensityTexture);
+        }
     }
 
     public override getAnimatables(animatables: IAnimatable[]): void {
@@ -717,6 +732,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
         if (this._translucencyColorTexture && this._translucencyColorTexture.animations && this._translucencyColorTexture.animations.length > 0) {
             animatables.push(this._translucencyColorTexture);
+        }
+
+        if (this._translucencyIntensityTexture && this._translucencyIntensityTexture.animations && this._translucencyIntensityTexture.animations.length > 0) {
+            animatables.push(this._translucencyIntensityTexture);
         }
     }
 
@@ -732,6 +751,10 @@ export class PBRSubSurfaceConfiguration extends MaterialPluginBase {
 
             if (this._translucencyColorTexture) {
                 this._translucencyColorTexture.dispose();
+            }
+
+            if (this._translucencyIntensityTexture) {
+                this._translucencyIntensityTexture.dispose();
             }
         }
     }
