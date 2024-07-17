@@ -186,9 +186,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
                 },
             },
             {
-                label: "Load Unity Toolkit",
-                tooltip: "Loads the Unity Toolkit into the playground",
-                storeKey: "unity-toolkit",
+                label: "Load Babylon Toolkit",
+                tooltip: "Loads the Babylon Toolkit into the playground",
+                storeKey: "babylon-toolkit",
                 defaultValue: false,
                 onCheck: () => {},
             },

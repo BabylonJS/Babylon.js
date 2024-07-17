@@ -103,6 +103,7 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         const rgb = this.rgb;
         const a = this.a;
 
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         state.sharedData.hints.needAlphaBlending = rgba.isConnected || a.isConnected;
         state.sharedData.blocksWithDefines.push(this);
         if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
@@ -118,7 +119,8 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
 
         let outputString = "gl_FragColor";
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            outputString = "fragmentOutputs.color";
+            state.compilationString += `var fragmentOutputsColor : vec4<f32>;\r\n`;
+            outputString = "fragmentOutputsColor";
         }
 
         const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -153,14 +155,22 @@ export class FragmentOutputBlock extends NodeMaterialBlock {
         state.compilationString += `${outputString}  = toGammaSpace(${outputString});\n`;
         state.compilationString += `#endif\n`;
 
-        // TODOWGSL
-        if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
-            state.compilationString += `gl_FragDepthEXT = log2(vFragmentDepth) * logarithmicDepthConstant * 0.5;\n`;
+        if (state.shaderLanguage === ShaderLanguage.WGSL) {
+            state.compilationString += `#if !defined(PREPASS)\r\n`;
+            state.compilationString += `fragmentOutputs.color = fragmentOutputsColor;\r\n`;
+            state.compilationString += `#endif\r\n`;
         }
 
-        // TODOWGSL
+        if (this.useLogarithmicDepth || state.sharedData.nodeMaterial.useLogarithmicDepth) {
+            const fragDepth = isWebGPU ? "input.vFragmentDepth" : "vFragmentDepth";
+            const uniformP = isWebGPU ? "uniforms." : "";
+            const output = isWebGPU ? "fragmentOutputs.fragDepth" : "gl_FragDepthEXT";
+
+            state.compilationString += `${output} = log2(${fragDepth}) * ${uniformP}logarithmicDepthConstant * 0.5;\n`;
+        }
+
         state.compilationString += `#if defined(PREPASS)\r\n`;
-        state.compilationString += `gl_FragData[0] = gl_FragColor;\r\n`;
+        state.compilationString += `${isWebGPU ? "fragmentOutputs.fragData0" : "gl_FragData[0]"} = ${outputString};\r\n`;
         state.compilationString += `#endif\r\n`;
 
         return this;
