@@ -45,6 +45,9 @@ import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
 import "../../ShadersWGSL/ShadersInclude/reflectionFunction";
+import "../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric";
+import "../../ShadersWGSL/ShadersInclude/packingFunctions";
+import "../../ShadersWGSL/ShadersInclude/shadowMapFragment";
 import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
@@ -368,7 +371,25 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
         fragmentInputs += "\n};\nvar<private> fragmentInputs : FragmentInputs;\n";
 
-        let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
+        let fragmentOutputs = "struct FragmentOutputs {\n";
+
+        const regex = /const SCENE_MRT_COUNT = (\d+);/;
+        const match = fragmentCode.match(regex);
+        let mrt = false;
+
+        if (match) {
+            const number = parseInt(match[1]);
+            if (number > 0) {
+                mrt = true;
+                for (let index = 0; index < number; index++) {
+                    fragmentOutputs += ` @location(${index}) fragData${index} : vec4<f32>,\n`;
+                }
+            }
+        }
+
+        if (!mrt) {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+        }
 
         let hasFragDepth = false;
         let idx = 0;

@@ -422,7 +422,7 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
             }
         }
 
@@ -463,7 +463,7 @@ class Playground {
 
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
-        const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+        const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
                 // attempt a fallback

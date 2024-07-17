@@ -3874,9 +3874,10 @@ export class ThinEngine extends AbstractEngine {
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
     public releaseEffects() {
-        for (const name in this._compiledEffects) {
-            const webGLPipelineContext = this._compiledEffects[name].getPipelineContext() as WebGLPipelineContext;
-            this._deletePipelineContext(webGLPipelineContext);
+        const keys = Object.keys(this._compiledEffects);
+        for (const name of keys) {
+            const effect = this._compiledEffects[name];
+            effect.dispose();
         }
 
         this._compiledEffects = {};

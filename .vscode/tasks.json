@@ -454,7 +454,8 @@
             "problemMatcher": []
         },
         {
-            "label": "Viewer (Alpha)",
+            "label": "Viewer (Alpha - Web)",
+            "dependsOn": ["Watch all (Dev)"],
             "type": "shell",
             "command": "npm",
             "runOptions": {
@@ -465,7 +466,18 @@
             },
             "args": ["run", "serve", "-w", "@tools/viewer-alpha"],
             "isBackground": true,
-            "problemMatcher": ["$ts-webpack-watch", "$tslint-webpack-watch"]
+            "problemMatcher": {
+                "pattern": "$tsc",
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": {
+                        "regexp": ".*Executing task.*"
+                    },
+                    "endsPattern": {
+                        "regexp": ".*VITE.*ready.*"
+                    }
+                }
+            }
         }
     ],
     "inputs": [

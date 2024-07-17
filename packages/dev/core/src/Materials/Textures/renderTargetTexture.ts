@@ -1142,6 +1142,8 @@ export class RenderTargetTexture extends Texture implements IRenderTargetTexture
                             this._renderingManager.dispatch(subMesh, meshToRender);
                         }
                     }
+
+                    mesh._postActivate();
                 }
             }
         }

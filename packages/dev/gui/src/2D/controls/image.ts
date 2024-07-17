@@ -25,7 +25,7 @@ export class Image extends Control {
     private _imageHeight: number;
     private _loaded = false;
     private _stretch = Image.STRETCH_FILL;
-    private _source: Nullable<string>;
+    private _source: Nullable<string> = null;
     private _autoScale = false;
 
     private _sourceLeft = 0;
