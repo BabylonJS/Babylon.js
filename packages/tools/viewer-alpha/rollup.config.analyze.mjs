@@ -9,8 +9,7 @@ const source = "dev";
 export default {
     input: "src/index.ts",
     output: {
-        //file: "dist/analyze/index.js",
-        dir: "dist/analyze",
+        dir: "dist/analyze/loose",
         sourcemap: false,
         format: "es",
         exports: "named",
@@ -18,7 +17,7 @@ export default {
         preserveModulesRoot: "../../",
     },
     plugins: [
-        typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir: "dist/analyze" }),
+        typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir: "dist/analyze/loose" }),
         alias({
             entries: [
                 { find: "core", replacement: `@${source}/core/dist` },

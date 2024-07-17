@@ -5,14 +5,16 @@
     "sideEffects": false,
     "description": "A viewer using BabylonJS to display 3D elements natively",
     "scripts": {
-        "start:web": "npm run serve -- --open test/apps/web/index.html",
+        "start:web": "npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/index.html",
+        "start:bundle-test": "npm run bundle && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/bundle-test.html",
         "preserve": "npm run build",
         "serve": "vite",
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
+        "bundle": "rollup -c rollup.config.analyze.bundle.mjs",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "analyze": "rollup -c rollup.config.analyze.mjs && node ../../../scripts/folderSizeFlameChart dist/analyze **/*.js"
+        "analyze": "rollup -c rollup.config.analyze.mjs && node ../../../scripts/folderSizeFlameChart dist/analyze/loose **/*.js"
     },
     "files": [
         "dist"
