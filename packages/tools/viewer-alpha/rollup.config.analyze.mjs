@@ -10,9 +10,13 @@ export default {
     input: "src/index.ts",
     output: {
         dir: "dist/analyze/loose",
+        // No need for source maps for size analysis
         sourcemap: false,
+        // Output as ES module
         format: "es",
         exports: "named",
+        // Prevent bundling multiple files into one
+        // We want to keep them separate so we can easily see file/folder size
         preserveModules: true,
         preserveModulesRoot: "../../",
     },
