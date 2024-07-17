@@ -28,6 +28,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
     private _colorsTexture: Nullable<BaseTexture> = null;
+    private _splatPositions: Nullable<Float32Array> = null;
 
     /**
      * Gets the covariancesA texture
@@ -326,6 +327,31 @@ export class GaussianSplattingMesh extends Mesh {
         super.dispose(doNotRecurse);
     }
 
+    /**
+     * Returns a new Mesh object generated from the current mesh properties.
+     * @param name is a string, the name given to the new mesh
+     * @returns a new Gaussian Splatting Mesh
+     */
+    public override clone(name: string = ""): GaussianSplattingMesh {
+        const newGS = new GaussianSplattingMesh(name, undefined, this.getScene());
+        newGS._copySource(this);
+        newGS._vertexCount = this._vertexCount;
+        newGS._modelViewMatrix = Matrix.Identity();
+        newGS._covariancesATexture = this._covariancesATexture;
+        newGS._covariancesBTexture = this._covariancesBTexture;
+        newGS._centersTexture = this._centersTexture;
+        newGS._colorsTexture = this._colorsTexture;
+        newGS._splatPositions = this._splatPositions;
+        newGS._instanciateWorker();
+
+        const binfo = this.getBoundingInfo();
+        newGS.getBoundingInfo().reConstruct(binfo.minimum, binfo.maximum, this.getWorldMatrix());
+
+        newGS.forcedInstanceCount = newGS._vertexCount;
+        newGS.setEnabled(true);
+        return newGS;
+    }
+
     private static _CreateWorker = function (self: Worker) {
         let vertexCount = 0;
         let positions: Float32Array;
@@ -388,7 +414,7 @@ export class GaussianSplattingMesh extends Mesh {
         const textureSize = this._getTextureSize(vertexCount);
         const textureLength = textureSize.x * textureSize.y;
 
-        const positions = new Float32Array(3 * textureLength);
+        this._splatPositions = new Float32Array(3 * textureLength);
         const covA = new Float32Array(3 * textureLength);
         const covB = new Float32Array(3 * textureLength);
 
@@ -404,9 +430,9 @@ export class GaussianSplattingMesh extends Mesh {
             const y = -fBuffer[8 * i + 1];
             const z = fBuffer[8 * i + 2];
 
-            positions[3 * i + 0] = x;
-            positions[3 * i + 1] = y;
-            positions[3 * i + 2] = z;
+            this._splatPositions[3 * i + 0] = x;
+            this._splatPositions[3 * i + 1] = y;
+            this._splatPositions[3 * i + 2] = z;
 
             minimum.minimizeInPlaceFromFloats(x, y, z);
             maximum.maximizeInPlaceFromFloats(x, y, z);
@@ -438,10 +464,6 @@ export class GaussianSplattingMesh extends Mesh {
         this.forcedInstanceCount = this._vertexCount;
         this.setEnabled(true);
 
-        const splatIndex = new Float32Array(this._vertexCount * 1);
-
-        this.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
-
         // Update the material
         const createTextureFromData = (data: Float32Array, width: number, height: number, format: number) => {
             return new RawTexture(data, width, height, format, this._scene, false, false, Constants.TEXTURE_BILINEAR_SAMPLINGMODE, Constants.TEXTURETYPE_FLOAT);
@@ -469,8 +491,19 @@ export class GaussianSplattingMesh extends Mesh {
 
         this._covariancesATexture = createTextureFromData(convertRgbToRgba(covA), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._covariancesBTexture = createTextureFromData(convertRgbToRgba(covB), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
-        this._centersTexture = createTextureFromData(convertRgbToRgba(positions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+        this._centersTexture = createTextureFromData(convertRgbToRgba(this._splatPositions), textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
         this._colorsTexture = createTextureFromData(colorArray, textureSize.x, textureSize.y, Constants.TEXTUREFORMAT_RGBA);
+
+        this._instanciateWorker();
+    }
+
+    private _instanciateWorker(): void {
+        if (!this._vertexCount) {
+            return;
+        }
+        const splatIndex = new Float32Array(this._vertexCount);
+
+        this.thinInstanceSetBuffer("splatIndex", splatIndex, 1, false);
 
         // Start the worker thread
         this._worker?.terminate();
@@ -482,9 +515,11 @@ export class GaussianSplattingMesh extends Mesh {
             )
         );
 
-        this._depthMix = new BigInt64Array(vertexCount);
+        this._depthMix = new BigInt64Array(this._vertexCount);
+        const positions = Float32Array.from(this._splatPositions!);
+        const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
+        this._worker.postMessage({ positions, vertexCount }, [positions!.buffer]);
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
