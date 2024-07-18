@@ -15,12 +15,12 @@
 }
 
 .highlighted {
+    animation: glow 0.5s infinite alternate;
     @keyframes glow {
         to {
             border-color: white;
         }
     }
-    animation: glow 0.5s infinite alternate;
 }
 
 .header-container {

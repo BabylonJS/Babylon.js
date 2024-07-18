@@ -1,6 +1,6 @@
 import * as React from "react";
 import { HeaderComponent } from "../headerComponent";
-import Resizable from "re-resizable";
+import { Resizable } from "re-resizable";
 import { SceneExplorerComponent } from "../sceneExplorer/sceneExplorerComponent";
 import { ActionTabsComponent } from "../actionTabs/actionTabsComponent";
 import type { Scene } from "core/scene";
@@ -8,6 +8,8 @@ import type { GlobalState } from "../../components/globalState";
 import type { IExplorerExtensibilityGroup, DebugLayerTab, IExplorerAdditionalNode } from "core/Debug/debugLayer";
 
 const Split = require("split.js").default;
+
+const ResizableCasted = Resizable as any as React.ComponentClass<any>;
 
 import "./embedHost.scss";
 
@@ -124,7 +126,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
         }
 
         return (
-            <Resizable
+            <ResizableCasted
                 id="embed"
                 minWidth={300}
                 maxWidth={600}
@@ -142,7 +144,7 @@ export class EmbedHostComponent extends React.Component<IEmbedHostComponentProps
                     onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
                 />
                 {this.renderContent()}
-            </Resizable>
+            </ResizableCasted>
         );
     }
 }
