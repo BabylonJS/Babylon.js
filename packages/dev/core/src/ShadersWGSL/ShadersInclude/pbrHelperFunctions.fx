@@ -4,7 +4,7 @@
 fn convertRoughnessToAverageSlope(roughness: f32) -> f32
 {
     // Calculate AlphaG as square of roughness (add epsilon to avar numerical: voidnull issues)
-    return square(roughness) + MINIMUMVARIANCE;
+    return roughness * roughness + MINIMUMVARIANCE;
 }
 
 fn fresnelGrazingReflectance(reflectance0: f32) -> f32 {

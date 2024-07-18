@@ -298,9 +298,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             state._emitUniformFromString("vClearCoatTangentSpaceParams", NodeMaterialBlockConnectionPointTypes.Vector2);
 
             const normalShading = ccBlock.worldNormal;
-            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
+            code += `${state._declareLocalVar("vGeometricNormaClearCoatW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
         } else {
-            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\n`;
+            code += `${state._declareLocalVar("vGeometricNormaClearCoatW", NodeMaterialBlockConnectionPointTypes.Vector3)} = geometricNormalW;\n`;
         }
 
         if (generateTBNSpace && ccBlock) {

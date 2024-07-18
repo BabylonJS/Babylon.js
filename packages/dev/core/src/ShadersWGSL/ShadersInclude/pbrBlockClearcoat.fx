@@ -282,7 +282,7 @@ struct clearcoatOutParams
 
             // _________________________ Clear Coat Environment Oclusion __________________________
             #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
-                var clearCoatEnvironmentReflectance: vec3f = getReflectanceFromBRDFLookup( vec3f(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
+                var clearCoatEnvironmentReflectance: vec3f = getReflectanceFromBRDFLookup(vec3f(vClearCoatRefractionParams.x), environmentClearCoatBrdf);
 
                 #ifdef HORIZONOCCLUSION
                     #ifdef BUMP

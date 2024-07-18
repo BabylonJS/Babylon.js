@@ -29,7 +29,7 @@
         return brdfLookup.rgb;
     }
 
-    fn getReflectanceFromBRDFLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, environmentBrdf: vec3f) -> vec3f {
+    fn getReflectanceFromBRDFWithEnvLookup(specularEnvironmentR0: vec3f, specularEnvironmentR90: vec3f, environmentBrdf: vec3f) -> vec3f {
         #ifdef BRDF_V_HEIGHT_CORRELATED
             var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.x + specularEnvironmentR0 * environmentBrdf.y;
             // Simplification if F90 = 1 var reflectance: vec3f = (specularEnvironmentR90 - specularEnvironmentR0) * environmentBrdf.xxx + specularEnvironmentR0 * environmentBrdf.yyy;
@@ -112,7 +112,7 @@ fn getBRDFLookupCharlieSheen(NdotV: f32, perceptualRoughness: f32) -> f32
 //     return getR0fromIOR(iorBase, clearCoatIor);
 // }
 
-fn fresnelSchlickGGX(VdotH: f32, reflectance0: vec3f, reflectance90: vec3f) -> vec3f
+fn fresnelSchlickGGXVec3(VdotH: f32, reflectance0: vec3f, reflectance90: vec3f) -> vec3f
 {
     return reflectance0 + (reflectance90 - reflectance0) * pow5(1.0 - VdotH);
 }
@@ -213,7 +213,7 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     // Second interface
     var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
     var R1: vec3f = getR0fromIORs(baseIOR, iridescenceIOR);
-    var R23: vec3f = fresnelSchlickGGX(cosTheta2, R1,  vec3f(1.));
+    var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
     var phi23: vec3f =  vec3f(0.0);
     if (baseIOR[0] < iridescenceIOR) phi23[0] = PI;
     if (baseIOR[1] < iridescenceIOR) phi23[1] = PI;

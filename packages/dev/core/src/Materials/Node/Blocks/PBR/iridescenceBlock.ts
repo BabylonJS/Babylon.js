@@ -125,7 +125,7 @@ export class IridescenceBlock extends NodeMaterialBlock {
 
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
-        code += `${isWebGPU ? "iridescenceOutParams iridescenceOut" : "iridescenceOutParams iridescenceOut"};
+        code += `${isWebGPU ? "var iridescenceOut: iridescenceOutParams" : "iridescenceOutParams iridescenceOut"};
 
         #ifdef IRIDESCENCE
             iridescenceOut = iridescenceBlock(

@@ -517,86 +517,85 @@ void main(void) {
             vec4 translucencyColorMap = texture2D(translucencyColorSampler, vTranslucencyColorUV + uvOffset);
         #endif
 
-        subSurfaceBlock(
-            vSubSurfaceIntensity,
-            vThicknessParam,
-            vTintColor,
-            normalW,
-            specularEnvironmentReflectance,
+        subSurfaceOut = subSurfaceBlock(
+            vSubSurfaceIntensity
+            , vThicknessParam
+            , vTintColor
+            , normalW
+            , specularEnvironmentReflectance
         #ifdef SS_THICKNESSANDMASK_TEXTURE
-            thicknessMap,
+            , thicknessMap
         #endif
         #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-            refractionIntensityMap,
+            , refractionIntensityMap
         #endif
         #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-            translucencyIntensityMap,
+            , translucencyIntensityMap
         #endif
         #ifdef REFLECTION
             #ifdef SS_TRANSLUCENCY
-                reflectionMatrix,
+                , reflectionMatrix
                 #ifdef USESPHERICALFROMREFLECTIONMAP
                     #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                        reflectionOut.irradianceVector,
+                        , reflectionOut.irradianceVector
                     #endif
                     #if defined(REALTIME_FILTERING)
-                        reflectionSampler,
-                        vReflectionFilteringInfo,
+                        , reflectionSampler
+                        , vReflectionFilteringInfo
                     #endif
                 #endif
                 #ifdef USEIRRADIANCEMAP
-                    irradianceSampler,
+                    , irradianceSampler
                 #endif
             #endif
         #endif
         #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-            surfaceAlbedo,
+            , surfaceAlbedo
         #endif
         #ifdef SS_REFRACTION
-            vPositionW,
-            viewDirectionW,
-            view,
-            vRefractionInfos,
-            refractionMatrix,
-            vRefractionMicrosurfaceInfos,
-            vLightingIntensity,
+            , vPositionW
+            , viewDirectionW
+            , view
+            , vRefractionInfos
+            , refractionMatrix
+            , vRefractionMicrosurfaceInfos
+            , vLightingIntensity
             #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-                alpha,
+                , alpha
             #endif
             #ifdef SS_LODINREFRACTIONALPHA
-                NdotVUnclamped,
+                , NdotVUnclamped
             #endif
             #ifdef SS_LINEARSPECULARREFRACTION
-                roughness,
+                , roughness
             #endif
-            alphaG,
-            refractionSampler,
+            , alphaG
+            , refractionSampler
             #ifndef LODBASEDMICROSFURACE
-                refractionSamplerLow,
-                refractionSamplerHigh,
+                , refractionSamplerLow
+                , refractionSamplerHigh
             #endif
             #ifdef ANISOTROPIC
-                anisotropicOut,
+                , anisotropicOut
             #endif
             #ifdef REALTIME_FILTERING
-                vRefractionFilteringInfo,
+                , vRefractionFilteringInfo
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-                vRefractionPosition,
-                vRefractionSize,
+                , vRefractionPosition
+                , vRefractionSize
             #endif
             #ifdef SS_DISPERSION
-                dispersion,
+                , dispersion
             #endif
         #endif
         #ifdef SS_TRANSLUCENCY
-            vDiffusionDistance,
-            vTranslucencyColor,
+            , vDiffusionDistance
+            , vTranslucencyColor
             #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-                translucencyColorMap,
+                , translucencyColorMap
             #endif
         #endif
-            subSurfaceOut
         );
 
         #ifdef SS_REFRACTION

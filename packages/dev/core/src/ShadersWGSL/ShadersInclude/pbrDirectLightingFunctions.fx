@@ -68,7 +68,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var roughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(roughness);
 
-        var fresnel: vec3f = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
+        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);
@@ -100,7 +100,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var alphaTB: vec2f = getAnisotropicRoughness(alphaG, anisotropy);
         alphaTB = max(alphaTB, square(geometricRoughnessFactor));
 
-        var fresnel: vec3f = fresnelSchlickGGX(info.VdotH, reflectance0, reflectance90);
+        var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90);
 
         #ifdef IRIDESCENCE
             fresnel = mix(fresnel, reflectance0, info.iridescenceIntensity);

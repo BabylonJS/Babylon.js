@@ -981,7 +981,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
-        code += `vec3 baseColor = surfaceAlbedo;
+        code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
 
             reflectivityOut = reflectivityBlock(
                 vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)

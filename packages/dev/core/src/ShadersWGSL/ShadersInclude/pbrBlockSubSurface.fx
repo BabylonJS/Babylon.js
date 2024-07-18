@@ -1,30 +1,30 @@
 struct subSurfaceOutParams
 {
-    var specularEnvironmentReflectance: vec3f;
+    specularEnvironmentReflectance: vec3f,
 #ifdef SS_REFRACTION
-    var finalRefraction: vec3f;
-    var surfaceAlbedo: vec3f;
+    finalRefraction: vec3f,
+    surfaceAlbedo: vec3f,
     #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-        var alpha: f32;
+        alpha: f32,
     #endif
     #ifdef REFLECTION
-        var refractionFactorForIrradiance: f32;
+        refractionFactorForIrradiance: f32,
     #endif
 #endif
 #ifdef SS_TRANSLUCENCY
-    var transmittance: vec3f;
-    var translucencyIntensity: f32;
+    transmittance: vec3f,
+    translucencyIntensity: f32,
     #ifdef REFLECTION
-        var refractionIrradiance: vec3f;
+        refractionIrradiance: vec3f,
     #endif
 #endif
 #if DEBUGMODE > 0
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        var thicknessMap: vec4f;
+        thicknessMap: vec4f,
     #endif
     #ifdef SS_REFRACTION
-        var environmentRefraction: vec4f;
-        var refractionTransmittance: vec3f;
+        environmentRefraction: vec4f,
+        refractionTransmittance: vec3f
     #endif
 #endif
 };
@@ -32,19 +32,18 @@ struct subSurfaceOutParams
 #ifdef SUBSURFACE
     #ifdef SS_REFRACTION
         #define pbr_inline
-        #define inline
-        var sampleEnvironmentRefraction: vec4f(
-            in var ior: f32
-            , in var thickness: f32
-            , in var refractionLOD: f32
-            , in var normalW: vec3f
-            , in var vPositionW: vec3f
-            , in var viewDirectionW: vec3f
-            , in var view: mat4x4f
-            , in var vRefractionInfos: vec4f
-            , in var refractionMatrix: mat4x4f
-            , in var vRefractionMicrosurfaceInfos: vec4f
-            , in var alphaG: f32
+        fn sampleEnvironmentRefraction(
+            ior: f32
+            , thickness: f32
+            , refractionLOD: f32
+            , normalW: vec3f
+            , vPositionW: vec3f
+            , viewDirectionW: vec3f
+            , view: mat4x4f
+            , vRefractionInfos: vec4f
+            , refractionMatrix: mat4x4f
+            , vRefractionMicrosurfaceInfos: vec4f
+            , alphaG: f32
             #ifdef SS_REFRACTIONMAP_3D
                 , in samplerCube refractionSampler
                 #ifndef LODBASEDMICROSFURACE
@@ -62,13 +61,13 @@ struct subSurfaceOutParams
                 , in anisotropicOutParams anisotropicOut
             #endif
             #ifdef REALTIME_FILTERING
-                , in var vRefractionFilteringInfo: vec2f
+                , vRefractionFilteringInfo: vec2f
             #endif
             #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-                , in var refractionPosition: vec3f
-                , in var refractionSize: vec3f
+                , refractionPosition: vec3f
+                , refractionSize: vec3f
             #endif
-        ) {
+        ) -> vec4f {
             var environmentRefraction: vec4f =  vec4f(0., 0., 0., 0.);
             #ifdef ANISOTROPIC
                 var refractionVector: vec3f = refract(-viewDirectionW, anisotropicOut.anisotropicNormal, ior);
@@ -154,101 +153,100 @@ struct subSurfaceOutParams
         }
     #endif
     #define pbr_inline
-    #define inline
-    var subSurfaceBlock: voidnull(
-        in var vSubSurfaceIntensity: vec3f,
-        in var vThicknessParam: vec2f,
-        in var vTintColor: vec4f,
-        in var normalW: vec3f,
-        in var specularEnvironmentReflectance: vec3f,
+    fn subSurfaceBlock(
+        vSubSurfaceIntensity: vec3f
+        , vThicknessParam: vec2f
+        , vTintColor: vec4f
+        , normalW: vec3f
+        , specularEnvironmentReflectance: vec3f
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        in var thicknessMap: vec4f,
+        , thicknessMap: vec4f
     #endif
     #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-        in var refractionIntensityMap: vec4f,
+        , refractionIntensityMap: vec4f
     #endif
     #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-        in var translucencyIntensityMap: vec4f,
+        , translucencyIntensityMap: vec4f
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
-            in var reflectionMatrix: mat4x4f,
+            , reflectionMatrix: mat4x4f
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    in var irradianceVector_: vec3f,
+                    , irradianceVector_: vec3f
                 #endif
                 #if defined(REALTIME_FILTERING)
-                    in samplerCube reflectionSampler,
-                    in var vReflectionFilteringInfo: vec2f,
+                    , samplerCube reflectionSampler
+                    , vReflectionFilteringInfo: vec2f
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
-                    in samplerCube irradianceSampler,
+                    , samplerCube irradianceSampler
                 #else
-                    in sampler2D irradianceSampler,
+                    , sampler2D irradianceSampler
                 #endif
             #endif
         #endif
     #endif
     #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-        in var surfaceAlbedo: vec3f,
+        , surfaceAlbedo: vec3f
     #endif
     #ifdef SS_REFRACTION
-        in var vPositionW: vec3f,
-        in var viewDirectionW: vec3f,
-        in var view: mat4x4f,
-        in var vRefractionInfos: vec4f,
-        in var refractionMatrix: mat4x4f,
-        in var vRefractionMicrosurfaceInfos: vec4f,
-        in var vLightingIntensity: vec4f,
+        , vPositionW: vec3f
+        , viewDirectionW: vec3f
+        , view: mat4x4f
+        , vRefractionInfos: vec4f
+        , refractionMatrix: mat4x4f
+        , vRefractionMicrosurfaceInfos: vec4f
+        , vLightingIntensity: vec4f
         #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-            in var alpha: f32,
+            , alpha: f32
         #endif
         #ifdef SS_LODINREFRACTIONALPHA
-            in var NdotVUnclamped: f32,
+            , NdotVUnclamped: f32
         #endif
         #ifdef SS_LINEARSPECULARREFRACTION
-            in var roughness: f32,
+            , roughness: f32
         #endif
-        in var alphaG: f32,
+        , alphaG: f32
         #ifdef SS_REFRACTIONMAP_3D
-            in samplerCube refractionSampler,
+            , samplerCube refractionSampler
             #ifndef LODBASEDMICROSFURACE
-                in samplerCube refractionSamplerLow,
-                in samplerCube refractionSamplerHigh,
+                , samplerCube refractionSamplerLow
+                , samplerCube refractionSamplerHigh
             #endif
         #else
-            in sampler2D refractionSampler,
+            , sampler2D refractionSampler
             #ifndef LODBASEDMICROSFURACE
-                in sampler2D refractionSamplerLow,
-                in sampler2D refractionSamplerHigh,
+                , sampler2D refractionSamplerLow
+                , sampler2D refractionSamplerHigh
             #endif
         #endif
         #ifdef ANISOTROPIC
-            in anisotropicOutParams anisotropicOut,
+            , anisotropicOut: anisotropicOutParams
         #endif
         #ifdef REALTIME_FILTERING
-            in var vRefractionFilteringInfo: vec2f,
+            , vRefractionFilteringInfo: vec2f
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-            in var refractionPosition: vec3f,
-            in var refractionSize: vec3f,
+            , refractionPosition: vec3f
+            , refractionSize: vec3f
         #endif
         #ifdef SS_DISPERSION
-            in var dispersion: f32,
+            , dispersion: f32
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
-        in var vDiffusionDistance: vec3f,
-        in var vTranslucencyColor: vec4f,
+        , vDiffusionDistance: vec3f
+        , vTranslucencyColor: vec4f
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-            in var translucencyColorMap: vec4f,
+            , translucencyColorMap: vec4f
         #endif
     #endif
-        out subSurfaceOutParams outParams
-    )
+    ) -> subSurfaceOutParams
     {
+        var outParams: subSurfaceOutParams;
         outParams.specularEnvironmentReflectance = specularEnvironmentReflectance;
 
     // ______________________________________________________________________________________
@@ -526,6 +524,8 @@ struct subSurfaceOutParams
 
         outParams.refractionIrradiance = refractionIrradiance.rgb;
     #endif
+
+        return outParams;
     }
 #endif
 
