@@ -19,11 +19,7 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
     private _procedural: {
         label: string;
         tooltip: string;
-        storeKey?: string;
-        defaultValue?: boolean | string;
         subItems?: string[];
-        onClick?: string;
-        onCheck?: string;
         keepExpanded?: boolean;
     }[];
 
@@ -67,8 +63,8 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         this.props.globalState.onNewRequiredObservable.notifyObservers();
     }
 
-    onInsertSnippet() {
-        this.props.globalState.onInsertSnippetRequiredObservable.notifyObservers();
+    onInsertSnippet(snippetKey: string) {
+        this.props.globalState.onInsertSnippetRequiredObservable.notifyObservers(snippetKey);
     }
 
     onClear() {
@@ -194,9 +190,9 @@ export class CommandBarComponent extends React.Component<ICommandBarComponentPro
         let proceduralOptions: any[] = [];
         proceduralOptions = this._procedural.map((item) => ({
             ...item,
-            storeKey: "snippetKey",
-            onClick: () => {
-                this.onInsertSnippet();
+            onClick: () => {},
+            onInsert: (snippetKey: string) => {
+                this.onInsertSnippet(snippetKey);
             },
         }));
 

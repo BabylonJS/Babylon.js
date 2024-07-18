@@ -62,8 +62,8 @@ export class MonacoManager {
             }
         });
 
-        globalState.onInsertSnippetRequiredObservable.add(() => {
-            this._insertSnippet();
+        globalState.onInsertSnippetRequiredObservable.add((snippetKey: string) => {
+            this._insertSnippet(snippetKey);
         });
 
         globalState.onClearRequiredObservable.add(() => {
@@ -231,12 +231,9 @@ class Playground {
         }
     }
 
-    private _insertSnippet() {
-        const snippetKey = Utilities.ReadStringFromStore("snippetKey", "");
-        if (snippetKey.length) {
-            const snippet = this._getCode(snippetKey);
-            this._insertCodeAtCursor(snippet);
-        }
+    private _insertSnippet(snippetKey: string) {
+        const snippet = this._getCode(snippetKey);
+        this._insertCodeAtCursor(snippet);
     }
 
     private _resetEditor(resetMetadata?: boolean) {

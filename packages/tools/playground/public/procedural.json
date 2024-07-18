@@ -2,65 +2,49 @@
     {
         "label": "Scene",
         "tooltip": "Scene tools",
-        "defaultValue": "Debug Layer",
         "subItems": ["Debug Layer", "Shadows", "Skybox", "Audio", "Lens Flare", "Sprites"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Cameras",
         "tooltip": "Select a camera type",
-        "defaultValue": "Arc Rotate (Rad)",
         "subItems": ["Arc Rotate (Rad)", "Arc Rotate (Deg)", "Free", "WebXR"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Lights",
         "tooltip": "Select a light type",
-        "defaultValue": "Hemispheric",
         "subItems": ["Hemispheric", "Directionnal", "Point", "Spot", "3 Spots"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Mesh Builder",
         "tooltip": "Build meshes using BABYLON.MeshBuilder",
-        "defaultValue": "Ground",
         "subItems": ["Ground", "Sphere", "Box", "Cylinder"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Animations",
         "tooltip": "Import animated characters",
-        "defaultValue": "Dude",
         "subItems": ["Dude", "Dummy", "Samba Girl"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Particles",
         "tooltip": "Add a simple particle system to the scene",
-        "defaultValue": "Simple",
         "subItems": ["Simple", "Color Gradient", "Complex"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Load Snippet",
         "tooltip": "Load asset from Snippet Server",
-        "defaultValue": "Particles",
         "subItems": ["Particles", "Node Material", "GUI", "GUI on Mesh"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     },
     {
         "label": "Import / Export",
         "tooltip": "Import or Export assets",
-        "defaultValue": "Import Mesh",
         "subItems": ["Import Mesh", "Export GLB", "Export GLTF"],
-        "onClick": "onUpdateGenerator",
         "keepExpanded": true
     }
 ]
