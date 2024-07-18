@@ -72,7 +72,7 @@ export class SubMesh implements ICullable {
      * Gets associated (main) effect (possibly the effect override if defined)
      */
     public get effect(): Nullable<Effect> {
-        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : this._getDrawWrapper()?.effect ?? null;
+        return this._mainDrawWrapperOverride ? this._mainDrawWrapperOverride.effect : (this._getDrawWrapper()?.effect ?? null);
     }
 
     /** @internal */

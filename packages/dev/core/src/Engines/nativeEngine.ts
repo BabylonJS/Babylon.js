@@ -920,7 +920,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
     }
