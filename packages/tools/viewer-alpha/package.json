@@ -12,9 +12,9 @@
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
-        "bundle": "rollup -c rollup.config.analyze.bundle.mjs",
+        "bundle": "rollup -c rollup.config.analyze.mjs",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "analyze": "rollup -c rollup.config.analyze.mjs && node ../../../scripts/folderSizeFlameChart dist/analyze/loose **/*.js"
+        "analyze": "npm run bundle && node ../../../scripts/folderSizeFlameChart dist/analyze **/*.js"
     },
     "files": [
         "dist"

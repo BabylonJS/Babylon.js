@@ -9,7 +9,7 @@ const source = "dev";
 export default {
     input: "src/index.ts",
     output: {
-        dir: "dist/analyze/loose",
+        dir: "dist/analyze",
         // No need for source maps for size analysis
         sourcemap: false,
         // Output as ES module
@@ -21,7 +21,7 @@ export default {
         preserveModulesRoot: "../../",
     },
     plugins: [
-        typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir: "dist/analyze/loose" }),
+        typescript({ tsconfig: "tsconfig.build.json", sourceMap: false, inlineSources: false, declaration: false, declarationMap: false, outDir: "dist/analyze" }),
         alias({
             entries: [
                 { find: "core", replacement: `@${source}/core/dist` },
