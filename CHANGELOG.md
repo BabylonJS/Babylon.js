@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.16.0
+
+### Core
+
+- Fix raw texture clone by leveraging a shared internal texture - [_Bug Fix_] by [sebavan](https://github.com/sebavan) ([#15299](https://github.com/BabylonJS/Babylon.js/pull/15299))
+
 ## 7.15.2
 
 ### Core
