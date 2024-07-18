@@ -213,14 +213,14 @@ class Playground {
     private _insertCodeAtCursor(code: string) {
         if (this._editor) {
             // Get the current position of the cursor
-            const position = this._editor?.getPosition();
+            const position = this._editor.getPosition();
             if (position) {
                 // Fix indent regarding current position
                 if (position.column && position.column > 1) {
                     code = this._indentCode(code, position.column - 1).slice(position.column - 1);
                 }
                 // Insert code
-                this._editor?.executeEdits("", [
+                this._editor.executeEdits("", [
                     {
                         range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
                         text: code,
