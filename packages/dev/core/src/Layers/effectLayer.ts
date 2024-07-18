@@ -493,7 +493,15 @@ export abstract class EffectLayer {
             const previousAlphaMode = engine.getAlphaMode();
 
             for (index = 0; index < transparentSubMeshes.length; index++) {
-                this._renderSubMesh(transparentSubMeshes.data[index], true);
+                const subMesh = transparentSubMeshes.data[index];
+                const material = subMesh.getMaterial();
+                if (material && material.needDepthPrePass) {
+                    const engine = material.getScene().getEngine();
+                    engine.setColorWrite(false);
+                    this._renderSubMesh(subMesh);
+                    engine.setColorWrite(true);
+                }
+                this._renderSubMesh(subMesh, true);
             }
 
             engine.setAlphaMode(previousAlphaMode);
