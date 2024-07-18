@@ -6,8 +6,10 @@ import { Vector3 } from "../../../Maths";
 export class Engine implements Physical.IEngine {
     audioContext: AudioContext;
 
+    graphItems: Map<number, AbstractGraphItem>;
+    sources: Map<number, AbstractSource>;
+
     inputs: Array<Bus>;
-    graphObjects: Map<number, AbstractGraphObject>;
 }
 
 abstract class AbstractSubGraph {
@@ -44,7 +46,7 @@ class Positioner extends AbstractSubGraph implements Physical.IPositioner {
     set position(position: Vector3) {}
 }
 
-abstract class AbstractGraphObject {
+abstract class AbstractGraphItem {
     id: number;
 
     abstract node: AudioNode;
@@ -54,26 +56,42 @@ abstract class AbstractGraphObject {
     outputs: Array<Bus>;
 }
 
-export class Bus extends AbstractGraphObject implements Physical.IBus {
+export class Bus extends AbstractGraphItem implements Physical.IBus {
     node: GainNode;
 
-    inputs: Array<AbstractGraphObject>;
+    inputs: Array<AbstractGraphItem>;
 }
 
-abstract class AbstractSource extends AbstractGraphObject implements Physical.IVoice {
+abstract class AbstractSource implements Physical.ISource {
+    id: number;
+}
+
+class Source extends AbstractSource {
+    buffer: AudioBuffer;
+}
+
+class StreamedSource extends AbstractSource {
+    audioElement: HTMLAudioElement;
+}
+
+abstract class AbstractSound extends AbstractGraphItem implements Physical.IVoice {
+    abstract source: AbstractSource;
+
     abstract start(): void;
     abstract stop(): void;
 }
 
-export class Sound extends AbstractSource {
+export class Sound extends AbstractSound {
     node: AudioBufferSourceNode;
+    source: Source;
 
     start(): void {}
     stop(): void {}
 }
 
-export class StreamedSound extends AbstractSource {
+export class StreamedSound extends AbstractSound {
     node: MediaElementAudioSourceNode;
+    source: StreamedSource;
 
     start(): void {}
     stop(): void {}
@@ -85,6 +103,24 @@ class AdvancedBus extends Bus implements Physical.IAdvancedBus {
     constructor() {
         super();
         this.physicalImplementation = new Physical.Bus(this);
+    }
+}
+
+class AdvancedSource extends Source implements Physical.IAdvancedSource {
+    physicalImplementation: Physical.Source;
+
+    constructor() {
+        super();
+        this.physicalImplementation = new Physical.Source(this);
+    }
+}
+
+class AdvancedStreamedSource extends StreamedSource implements Physical.IAdvancedSource {
+    physicalImplementation: Physical.Source;
+
+    constructor() {
+        super();
+        this.physicalImplementation = new Physical.Source(this);
     }
 }
 
@@ -114,15 +150,15 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
         this.physicalImplementation = new Physical.Engine(this);
     }
 
-    createBus(): AdvancedBus {
+    createBus(options?: any): Physical.IAdvancedBus {
         return new AdvancedBus();
     }
 
-    createVoice(): AdvancedSound {
-        return new AdvancedSound();
+    createSource(options?: any): Physical.IAdvancedSource {
+        return options?.streaming ? new AdvancedStreamedSource() : new AdvancedSource();
     }
 
-    createStreamedVoice(): AdvancedStreamedSound {
-        return new AdvancedStreamedSound();
+    createVoice(options?: any): Physical.IAdvancedVoice {
+        return options?.streaming ? new AdvancedStreamedSound() : new AdvancedSound();
     }
 }

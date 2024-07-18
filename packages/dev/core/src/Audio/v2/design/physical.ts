@@ -2,17 +2,31 @@
 
 import { Vector3 } from "../../../Maths";
 
+export enum VoiceState {
+    Starting,
+    Unmuting,
+    Resuming,
+    Restarting,
+    Started,
+    Muting,
+    Muted,
+    Pausing,
+    Paused,
+    Stopping,
+    Stopped,
+}
+
 export interface IEngine {
     inputs: Array<IBus>;
-    graphObjects: Map<number, IGraphObject>;
+    graphItems: Map<number, IGraphItem>;
 }
 
 export interface IAdvancedEngine extends IEngine {
     physicalImplementation: Engine;
 
-    createBus(): IAdvancedBus;
-    createVoice(): IAdvancedVoice;
-    createStreamedVoice(): IAdvancedVoice;
+    createBus(options?: any): IAdvancedBus;
+    createSource(options?: any): IAdvancedSource;
+    createVoice(options?: any): IAdvancedVoice;
 }
 
 export class Engine {
@@ -27,14 +41,14 @@ export interface IPositioner {
     position: Vector3;
 }
 
-export interface IGraphObject {
+export interface IGraphItem {
     id: number;
     outputs: Array<IBus>;
     positioner: IPositioner;
 }
 
-export interface IBus extends IGraphObject {
-    inputs: Array<IGraphObject>;
+export interface IBus extends IGraphItem {
+    inputs: Array<IGraphItem>;
 }
 
 export interface IAdvancedBus extends IBus {
@@ -49,7 +63,25 @@ export class Bus {
     }
 }
 
-export interface IVoice extends IGraphObject {
+export interface ISource {
+    id: number;
+}
+
+export interface IAdvancedSource extends ISource {
+    physicalImplementation: Source;
+}
+
+export class Source {
+    backend: IAdvancedSource;
+
+    constructor(backend: IAdvancedSource) {
+        this.backend = backend;
+    }
+}
+
+export interface IVoice extends IGraphItem {
+    source: ISource;
+
     start(): void;
     stop(): void;
 }
