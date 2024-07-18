@@ -23,7 +23,7 @@ export class GaussianSplattingMesh extends Mesh {
     private _material: Nullable<GaussianSplattingMaterial> = null;
     private _depthMix: BigInt64Array;
     private _canPostToWorker = true;
-    private _lastProj: DeepImmutable<FloatArray>;
+    private _lastModelViewMatrix: DeepImmutable<FloatArray>;
     private _covariancesATexture: Nullable<BaseTexture> = null;
     private _covariancesBTexture: Nullable<BaseTexture> = null;
     private _centersTexture: Nullable<BaseTexture> = null;
@@ -78,7 +78,7 @@ export class GaussianSplattingMesh extends Mesh {
 
         this.setEnabled(false);
 
-        this._lastProj = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this._lastModelViewMatrix = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         if (url) {
             this.loadFileAsync(url);
@@ -117,12 +117,16 @@ export class GaussianSplattingMesh extends Mesh {
         const frameId = this.getScene().getFrameId();
         if (frameId !== this._frameIdLastUpdate && this._worker && this._scene.activeCamera && this._canPostToWorker) {
             this.getWorldMatrix().multiplyToRef(this._scene.activeCamera.getViewMatrix(), this._modelViewMatrix);
+            TmpVectors.Vector3[0].set(this._lastModelViewMatrix[8], this._lastModelViewMatrix[9], this._lastModelViewMatrix[10]);
+            TmpVectors.Vector3[1].set(this._modelViewMatrix.m[8], this._modelViewMatrix.m[9], this._modelViewMatrix.m[10]);
+            TmpVectors.Vector3[0].normalize();
+            TmpVectors.Vector3[1].normalize();
 
-            const dot = this._lastProj[2] * this._modelViewMatrix.m[2] + this._lastProj[6] * this._modelViewMatrix.m[6] + this._lastProj[10] * this._modelViewMatrix.m[10];
+            const dot = Vector3.Dot(TmpVectors.Vector3[0], TmpVectors.Vector3[1]);
             if (Math.abs(dot - 1) >= 0.01) {
                 this._frameIdLastUpdate = frameId;
                 this._canPostToWorker = false;
-                this._lastProj = this._modelViewMatrix.m.slice(0);
+                this._lastModelViewMatrix = this._modelViewMatrix.m.slice(0);
                 this._worker.postMessage({ view: this._modelViewMatrix.m, depthMix: this._depthMix, useRightHandedSystem: this._scene.useRightHandedSystem }, [
                     this._depthMix.buffer,
                 ]);
