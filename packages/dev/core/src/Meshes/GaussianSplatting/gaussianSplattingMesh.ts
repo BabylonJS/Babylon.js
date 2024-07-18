@@ -336,11 +336,11 @@ export class GaussianSplattingMesh extends Mesh {
         const newGS = new GaussianSplattingMesh(name, undefined, this.getScene());
         newGS._copySource(this);
         newGS._vertexCount = this._vertexCount;
+        this._covariancesATexture = this._covariancesATexture?.clone()!;
+        this._covariancesBTexture = this._covariancesBTexture?.clone()!;
+        this._centersTexture = this._centersTexture?.clone()!;
+        this._colorsTexture = this._colorsTexture?.clone()!;
         newGS._modelViewMatrix = Matrix.Identity();
-        newGS._covariancesATexture = this._covariancesATexture;
-        newGS._covariancesBTexture = this._covariancesBTexture;
-        newGS._centersTexture = this._centersTexture;
-        newGS._colorsTexture = this._colorsTexture;
         newGS._splatPositions = this._splatPositions;
         newGS._instanciateWorker();
 
@@ -519,7 +519,7 @@ export class GaussianSplattingMesh extends Mesh {
         const positions = Float32Array.from(this._splatPositions!);
         const vertexCount = this._vertexCount;
 
-        this._worker.postMessage({ positions, vertexCount }, [positions!.buffer]);
+        this._worker.postMessage({ positions, vertexCount }, [positions.buffer]);
 
         this._worker.onmessage = (e) => {
             this._depthMix = e.data.depthMix;
