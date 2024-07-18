@@ -547,7 +547,7 @@ export class EdgesRenderer implements IEdgesRenderer {
          * Find all vertices that are at the same location (with an epsilon) and remapp them on the same vertex
          */
         const useFastVertexMerger = this._options?.useFastVertexMerger ?? true;
-        const epsVertexMerge = useFastVertexMerger ? Math.round(-Math.log(this._options?.epsilonVertexMerge ?? 1e-6) / Math.log(10)) : this._options?.epsilonVertexMerge ?? 1e-6;
+        const epsVertexMerge = useFastVertexMerger ? Math.round(-Math.log(this._options?.epsilonVertexMerge ?? 1e-6) / Math.log(10)) : (this._options?.epsilonVertexMerge ?? 1e-6);
         const remapVertexIndices: Array<number> = [];
         const uniquePositions: Array<number> = []; // list of unique index of vertices - needed for tessellation
 

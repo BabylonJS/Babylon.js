@@ -7,7 +7,7 @@ import type { Scene } from "core/scene";
 import { EngineStore } from "core/Engines/engineStore";
 
 import { TreeItemComponent } from "./treeItemComponent";
-import Resizable from "re-resizable";
+import { Resizable } from "re-resizable";
 import { HeaderComponent } from "../headerComponent";
 import { SceneTreeItemComponent } from "./entities/sceneTreeItemComponent";
 import { Tools } from "../../tools";
@@ -41,6 +41,8 @@ import "./sceneExplorer.scss";
 interface ISceneExplorerFilterComponentProps {
     onFilter: (filter: string) => void;
 }
+
+const ResizableCasted = Resizable as any as React.ComponentClass<any>;
 
 export class SceneExplorerFilterComponent extends React.Component<ISceneExplorerFilterComponentProps> {
     constructor(props: ISceneExplorerFilterComponentProps) {
@@ -732,16 +734,16 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
         }
 
         return (
-            <Resizable
+            <ResizableCasted
                 tabIndex={-1}
                 id="sceneExplorer"
-                ref={this._sceneExplorerRef}
                 size={{ height: "100%" }}
+                ref={this._sceneExplorerRef}
                 minWidth={300}
                 maxWidth={600}
                 minHeight="100%"
                 enable={{ top: false, right: true, bottom: false, left: false, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
-                onKeyDown={(keyEvent) => this.processKeys(keyEvent, allNodes)}
+                onKeyDown={(keyEvent: React.KeyboardEvent<HTMLDivElement>) => this.processKeys(keyEvent, allNodes)}
             >
                 {!this.props.noHeader && (
                     <HeaderComponent
@@ -754,7 +756,7 @@ export class SceneExplorerComponent extends React.Component<ISceneExplorerCompon
                     />
                 )}
                 {this.renderContent(allNodes)}
-            </Resizable>
+            </ResizableCasted>
         );
     }
 }

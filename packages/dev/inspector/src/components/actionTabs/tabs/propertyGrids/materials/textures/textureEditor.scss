@@ -111,22 +111,22 @@
         }
 
         .pixel-data {
+            width: 45px;
+            color: #afafaf;
+            display: flex;
+            justify-content: space-between;
+            font-size: 15px;
             &:first-of-type {
                 margin-left: 15px;
             }
             &:last-of-type {
                 padding-right: 15px;
             }
-            width: 45px;
-            color: #afafaf;
-            display: flex;
-            justify-content: space-between;
             .value {
                 display: inline-block;
                 width: 30px;
                 color: white;
             }
-            font-size: 15px;
         }
     }
 
@@ -206,6 +206,7 @@
         right: 0;
         width: 80px;
         background: #666666;
+        user-select: none;
         .channel {
             color: white;
             border-bottom: 2px solid #232323;
@@ -227,7 +228,6 @@
                 border-bottom: none;
             }
         }
-        user-select: none;
     }
 
     #canvas-ui {
