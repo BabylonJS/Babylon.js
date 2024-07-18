@@ -39,6 +39,7 @@ import {
     PrepareDefinesForMultiview,
     PrepareUniformsAndSamplersForLight,
 } from "../../../materialHelper.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
@@ -867,6 +868,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _injectVertexCode(state: NodeMaterialBuildState) {
         const worldPos = this.worldPosition;
         const comments = `//${this.name}`;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         // Declaration
         if (!this.light) {
@@ -894,7 +896,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // Inject code in vertex
         const worldPosVaryingName = "v_" + worldPos.associatedVariableName;
         if (state._emitVaryingFromString(worldPosVaryingName, NodeMaterialBlockConnectionPointTypes.Vector4)) {
-            state.compilationString += `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
+            state.compilationString += (isWebGPU ? "vertexOutputs." : "") + `${worldPosVaryingName} = ${worldPos.associatedVariableName};\n`;
         }
 
         const reflectionBlock = this.reflection.isConnected ? (this.reflection.connectedPoint?.ownerBlock as ReflectionBlock) : null;
@@ -919,9 +921,9 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                 ],
             });
         } else {
-            state.compilationString += `vec4 worldPos = ${worldPos.associatedVariableName};\n`;
+            state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${worldPos.associatedVariableName};\n`;
             if (this.view.isConnected) {
-                state.compilationString += `mat4 view = ${this.view.associatedVariableName};\n`;
+                state.compilationString += `${state._declareLocalVar("view", NodeMaterialBlockConnectionPointTypes.Matrix)} = ${this.view.associatedVariableName};\n`;
             }
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
                 repeatKey: "maxSimultaneousLights",
@@ -929,40 +931,41 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
     }
 
-    private _getAlbedoOpacityCode(): string {
-        let code = `albedoOpacityOutParams albedoOpacityOut;\n`;
+    private _getAlbedoOpacityCode(state: NodeMaterialBuildState): string {
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+
+        let code = isWebGPU ? "var albedoOpacityOut: albedoOpacityOutParamst;\n" : `albedoOpacityOutParams albedoOpacityOut;\n`;
 
         const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec3(1.)";
         const opacity = this.opacity.isConnected ? this.opacity.associatedVariableName : "1.";
 
-        code += `albedoOpacityBlock(
-                vec4(${albedoColor}, 1.),
+        code += `albedoOpacityOut = albedoOpacityBlock(
+                vec4${state.fSuffix}(${albedoColor}, 1.)
             #ifdef ALBEDO
-                vec4(1.),
-                vec2(1., 1.),
+                ,vec4${state.fSuffix}(1.)
+                ,vec2${state.fSuffix}(1., 1.)
             #endif
             #ifdef OPACITY
-                vec4(${opacity}),
-                vec2(1., 1.),
-            #endif
-                albedoOpacityOut
+                ,vec4${state.fSuffix}(${opacity})
+                ,vec2${state.fSuffix}(1., 1.)
+            #endif                
             );
 
-            vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
-            float alpha = albedoOpacityOut.alpha;\n`;
+            ${state._declareLocalVar("surfaceAlbedo", NodeMaterialBlockConnectionPointTypes.Vector3)} = albedoOpacityOut.surfaceAlbedo;
+            ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = albedoOpacityOut.alpha;\n`;
 
         return code;
     }
 
-    private _getAmbientOcclusionCode(): string {
+    private _getAmbientOcclusionCode(state: NodeMaterialBuildState): string {
         let code = `ambientOcclusionOutParams aoOut;\n`;
 
         const ao = this.ambientOcc.isConnected ? this.ambientOcc.associatedVariableName : "1.";
 
         code += `ambientOcclusionBlock(
             #ifdef AMBIENT
-                vec3(${ao}),
-                vec4(0., 1.0, 1.0, 0.),
+                vec3${state.fSuffix}(${ao}),
+                vec4${state.fSuffix}(0., 1.0, 1.0, 0.),
             #endif
                 aoOut
             );\n`;
@@ -971,8 +974,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     private _getReflectivityCode(state: NodeMaterialBuildState): string {
-        let code = `reflectivityOutParams reflectivityOut;\n`;
-
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        let code = isWebGPU ? "var reflectivityOut: reflectivityOutParams;\n" : `reflectivityOutParams reflectivityOut;\n`;
         const aoIntensity = "1.";
 
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
@@ -980,27 +983,26 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         code += `vec3 baseColor = surfaceAlbedo;
 
-            reflectivityBlock(
-                vec4(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.),
+            reflectivityOut = reflectivityBlock(
+                vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)
             #ifdef METALLICWORKFLOW
-                surfaceAlbedo,
-                ${this._vMetallicReflectanceFactorsName},
+                , surfaceAlbedo
+                , ${this._vMetallicReflectanceFactorsName}
             #endif
             #ifdef REFLECTIVITY
-                vec3(0., 0., ${aoIntensity}),
-                vec4(1.),
+                , vec3${state.fSuffix}(0., 0., ${aoIntensity})
+                , vec4${state.fSuffix}(1.)
             #endif
             #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-                aoOut.ambientOcclusionColor,
+                , aoOut.ambientOcclusionColor
             #endif
             #ifdef MICROSURFACEMAP
-                microSurfaceTexel, <== not handled!
+                , microSurfaceTexel <== not handled!
             #endif
-                reflectivityOut
             );
 
-            float microSurface = reflectivityOut.microSurface;
-            float roughness = reflectivityOut.roughness;
+            ${state._declareLocalVar("microSurface", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.microSurface;
+            ${state._declareLocalVar("roughness", NodeMaterialBlockConnectionPointTypes.Float)} = reflectivityOut.roughness;
 
             #ifdef METALLICWORKFLOW
                 surfaceAlbedo = reflectivityOut.surfaceAlbedo;
@@ -1052,7 +1054,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         let worldPosVarName = this.worldPosition.associatedVariableName;
         if (this.generateOnlyFragmentCode) {
             worldPosVarName = state._getFreeVariableName("globalWorldPos");
-            state._emitFunction("pbr_globalworldpos", `vec3 ${worldPosVarName};\n`, comments);
+            state._emitFunction("pbr_globalworldpos", `vec3${state.fSuffix} ${worldPosVarName};\n`, comments);
             state.compilationString += `${worldPosVarName} = ${this.worldPosition.associatedVariableName}.xyz;\n`;
 
             state.compilationString += state._emitCodeFromInclude("shadowsVertex", comments, {
@@ -1061,7 +1063,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             });
 
             state.compilationString += `#if DEBUGMODE > 0\n`;
-            state.compilationString += `vec4 vClipSpacePosition = vec4((vec2(gl_FragCoord.xy) / vec2(1.0)) * 2.0 - 1.0, 0.0, 1.0);\n`;
+            state.compilationString += `${state._declareLocalVar("vClipSpacePosition", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}((vec2${state.fSuffix}(gl_FragCoord.xy) / vec2${state.fSuffix}(1.0)) * 2.0 - 1.0, 0.0, 1.0);\n`;
             state.compilationString += `#endif\n`;
         } else {
             worldPosVarName = "v_" + worldPosVarName;
@@ -1156,15 +1158,15 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         // _____________________________ Geometry Information ____________________________
         this._vNormalWName = state._getFreeVariableName("vNormalW");
 
-        state.compilationString += `vec4 ${this._vNormalWName} = normalize(${this.worldNormal.associatedVariableName});\n`;
+        state.compilationString += `${state._declareLocalVar(this._vNormalWName, NodeMaterialBlockConnectionPointTypes.Vector4)} = normalize(${this.worldNormal.associatedVariableName});\n`;
 
         if (state._registerTempVariable("viewDirectionW")) {
-            state.compilationString += `vec3 viewDirectionW = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVarName}.xyz);\n`;
+            state.compilationString += `${state._declareLocalVar("viewDirectionW", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${this.cameraPosition.associatedVariableName} - ${worldPosVarName}.xyz);\n`;
         }
 
-        state.compilationString += `vec3 geometricNormalW = ${this._vNormalWName}.xyz;\n`;
+        state.compilationString += `${state._declareLocalVar("geometricNormalW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this._vNormalWName}.xyz;\n`;
 
-        state.compilationString += `vec3 normalW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
+        state.compilationString += `${state._declareLocalVar("normalW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
 
         this._invertNormalName = state._getFreeVariableName("invertNormal");
 
@@ -1178,18 +1180,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Albedo & Opacity ______________________________
-        state.compilationString += this._getAlbedoOpacityCode();
+        state.compilationString += this._getAlbedoOpacityCode(state);
 
         state.compilationString += state._emitCodeFromInclude("depthPrePass", comments);
 
         // _____________________________ AO  _______________________________
-        state.compilationString += this._getAmbientOcclusionCode();
+        state.compilationString += this._getAmbientOcclusionCode(state);
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockLightmapInit", comments);
 
         // _____________________________ UNLIT  _______________________________
         state.compilationString += `#ifdef UNLIT
-                vec3 diffuseBase = vec3(1., 1., 1.);
+                ${state._declareLocalVar("diffuseBase", NodeMaterialBlockConnectionPointTypes.Vector3)} = vec3${state.fSuffix}(1., 1., 1.);
             #else\n`;
 
         // _____________________________ Reflectivity _______________________________
@@ -1351,7 +1353,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += `#endif\n`; // UNLIT
 
         // _____________________________ Compute Final Unlit Components ________________________
-        const aoColor = this.ambientColor.isConnected ? this.ambientColor.associatedVariableName : "vec3(0., 0., 0.)";
+        const aoColor = this.ambientColor.isConnected ? this.ambientColor.associatedVariableName : `vec3${state.fSuffix}(0., 0., 0.)`;
 
         let aoDirectLightIntensity = PBRBaseMaterial.DEFAULT_AO_ON_ANALYTICAL_LIGHTS.toString();
 
@@ -1382,7 +1384,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             replaceStrings: [
                 { search: /vNormalW/g, replace: this._vNormalWName },
                 { search: /vPositionW/g, replace: worldPosVarName },
-                { search: /albedoTexture\.rgb;/g, replace: "vec3(1.);\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\n" },
+                { search: /albedoTexture\.rgb;/g, replace: "vec3${state.fSuffix}(1.);\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\n" },
             ],
         });
 
@@ -1398,7 +1400,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
                     state.compilationString += `${state._declareOutput(output)} = ${varName};\n`;
                     if (conditions) {
                         state.compilationString += `#else\n`;
-                        state.compilationString += `${state._declareOutput(output)} = vec3(0.);\n`;
+                        state.compilationString += `${state._declareOutput(output)} = vec3${state.fSuffix}(0.);\n`;
                         state.compilationString += `#endif\n`;
                     }
                 } else {

@@ -365,11 +365,12 @@ export class NodeMaterialBuildState {
             substitutionVars?: string;
         }
     ) {
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
+
         if (options && options.repeatKey) {
             return `#include<${includeName}>${options.substitutionVars ? "(" + options.substitutionVars + ")" : ""}[0..${options.repeatKey}]\n`;
         }
 
-        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
         let code = store[includeName] + "\n";
 
         if (this.sharedData.emitComments) {
@@ -411,6 +412,7 @@ export class NodeMaterialBuildState {
         if (this.functions[key]) {
             return;
         }
+        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
 
         if (!options || (!options.removeAttributes && !options.removeUniforms && !options.removeVaryings && !options.removeIfDef && !options.replaceStrings)) {
             if (options && options.repeatKey) {
@@ -425,8 +427,6 @@ export class NodeMaterialBuildState {
 
             return;
         }
-
-        const store = EngineShaderStore.GetIncludesShadersStore(this.shaderLanguage);
 
         this.functions[key] = store[includeName];
 

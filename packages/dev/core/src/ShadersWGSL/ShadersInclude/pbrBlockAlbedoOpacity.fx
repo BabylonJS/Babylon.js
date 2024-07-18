@@ -1,34 +1,34 @@
 struct albedoOpacityOutParams
 {
-    vec3 surfaceAlbedo;
-    float alpha;
+    surfaceAlbedo: vec3f,
+    alpha: f32
 };
 
 #define pbr_inline
-albedoOpacityOutParams albedoOpacityBlock(
-    in vec4 vAlbedoColor
+fn albedoOpacityBlock(
+    vAlbedoColor: vec4f
 #ifdef ALBEDO
-    ,in vec4 albedoTexture
-    ,in vec2 albedoInfos
+    ,albedoTexture: vec4f
+    ,albedoInfos: vec2f
 #endif
 #ifdef OPACITY
-    ,in vec4 opacityMap
-    ,in vec2 vOpacityInfos
+    ,opacityMap: vec4f
+    ,vOpacityInfos: vec2f
 #endif
 #ifdef DETAIL
-    ,in vec4 detailColor
-    ,in vec4 vDetailInfos
+    ,detailColor: vec4f
+    ,vDetailInfos: vec4f
 #endif
 #ifdef DECAL
-    ,in vec4 decalColor
-    ,in vec4 vDecalInfos
-#endif 
-)
+    ,decalColor: vec4f
+    ,vDecalInfos: vec4f
+#endif
+) -> albedoOpacityOutParams
 {
-    albedoOpacityOutParams outParams;
+    var outParams: albedoOpacityOutParams;
     // _____________________________ Albedo Information ______________________________
-    vec3 surfaceAlbedo = vAlbedoColor.rgb;
-    float alpha = vAlbedoColor.a;
+    var surfaceAlbedo: vec3f = vAlbedoColor.rgb;
+    var alpha: f32 = vAlbedoColor.a;
 
     #ifdef ALBEDO
         #if defined(ALPHAFROMALBEDO) || defined(ALPHATEST)
@@ -53,7 +53,7 @@ albedoOpacityOutParams albedoOpacityBlock(
     #endif
 
     #ifdef DETAIL
-        float detailAlbedo = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
+        var detailAlbedo: f32 = 2.0 * mix(0.5, detailColor.r, vDetailInfos.y);
         surfaceAlbedo.rgb = surfaceAlbedo.rgb * detailAlbedo * detailAlbedo; // should be pow(detailAlbedo, 2.2) but detailAlbedo² is close enough and cheaper to compute
     #endif
 

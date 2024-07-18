@@ -1,60 +1,60 @@
 struct reflectivityOutParams
 {
-    float microSurface;
-    float roughness;
-    vec3 surfaceReflectivityColor;
+    microSurface: f32,
+    roughness: f32,
+    surfaceReflectivityColor: vec3f,
 #ifdef METALLICWORKFLOW
-    vec3 surfaceAlbedo;
+    surfaceAlbedo: vec3f,
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    vec3 ambientOcclusionColor;
+    ambientOcclusionColor: vec3f,
 #endif
 #if DEBUGMODE > 0
     #ifdef METALLICWORKFLOW
-        vec2 metallicRoughness;
+        metallicRoughness: vec2f,
         #ifdef REFLECTIVITY
-            vec4 surfaceMetallicColorMap;
+            surfaceMetallicColorMap: vec4f,
         #endif
         #ifndef FROSTBITE_REFLECTANCE
-            vec3 metallicF0;
+            metallicF0: vec3f,
         #endif
     #else
         #ifdef REFLECTIVITY
-            vec4 surfaceReflectivityColorMap;
+            surfaceReflectivityColorMap: vec4f,
         #endif
     #endif
 #endif
 };
 
 #define pbr_inline
-reflectivityOutParams reflectivityBlock(
-    in vec4 vReflectivityColor
+fn reflectivityBlock(
+    vReflectivityColor: vec4f
 #ifdef METALLICWORKFLOW
-    , in vec3 surfaceAlbedo
-    , in vec4 metallicReflectanceFactors
+    , surfaceAlbedo: vec3f
+    , metallicReflectanceFactors: vec4f
 #endif
 #ifdef REFLECTIVITY
-    , in vec3 reflectivityInfos
-    , in vec4 surfaceMetallicOrReflectivityColorMap
+    , reflectivityInfos: vec3f
+    , surfaceMetallicOrReflectivityColorMap: vec4f
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    , in vec3 ambientOcclusionColorIn
+    , ambientOcclusionColorIn: vec3f
 #endif
 #ifdef MICROSURFACEMAP
-    , in vec4 microSurfaceTexel
+    , microSurfaceTexel: vec4f
 #endif
 #ifdef DETAIL
-    , in vec4 detailColor
-    , in vec4 vDetailInfos
+    , detailColor: vec4f
+    , vDetailInfos: vec4f
 #endif
-)
+) -> reflectivityOutParams
 {
-    reflectivityOutParams outParams;
-    float microSurface = vReflectivityColor.a;
-    vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
+    var outParams: reflectivityOutParams;
+    var microSurface: f32 = vReflectivityColor.a;
+    var surfaceReflectivityColor: vec3f = vReflectivityColor.rgb;
 
     #ifdef METALLICWORKFLOW
-        vec2 metallicRoughness = surfaceReflectivityColor.rg;
+        var metallicRoughness: vec2f = surfaceReflectivityColor.rg;
 
         #ifdef REFLECTIVITY
             #if DEBUGMODE > 0
@@ -62,7 +62,7 @@ reflectivityOutParams reflectivityBlock(
             #endif
 
             #ifdef AOSTOREINMETALMAPRED
-                vec3 aoStoreInMetalMap = vec3(surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r);
+                var aoStoreInMetalMap: vec3f =  vec3f(surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r, surfaceMetallicOrReflectivityColorMap.r);
                 outParams.ambientOcclusionColor = mix(ambientOcclusionColorIn, aoStoreInMetalMap, reflectivityInfos.z);
             #endif
 
@@ -82,9 +82,9 @@ reflectivityOutParams reflectivityBlock(
         #endif
 
         #ifdef DETAIL
-            float detailRoughness = mix(0.5, detailColor.b, vDetailInfos.w);
-            float loLerp = mix(0., metallicRoughness.g, detailRoughness * 2.);
-            float hiLerp = mix(metallicRoughness.g, 1., (detailRoughness - 0.5) * 2.);
+            var detailRoughness: f32 = mix(0.5, detailColor.b, vDetailInfos.w);
+            var loLerp: f32 = mix(0., metallicRoughness.g, detailRoughness * 2.);
+            var hiLerp: f32 = mix(metallicRoughness.g, 1., (detailRoughness - 0.5) * 2.);
             metallicRoughness.g = mix(loLerp, hiLerp, step(detailRoughness, 0.5));
         #endif
 
@@ -102,13 +102,13 @@ reflectivityOutParams reflectivityBlock(
         microSurface = 1.0 - metallicRoughness.g;
 
         // Diffuse is used as the base of the reflectivity.
-        vec3 baseColor = surfaceAlbedo;
+        var baseColor: vec3f = surfaceAlbedo;
 
         #ifdef FROSTBITE_REFLECTANCE
             // *** NOT USED ANYMORE ***
             // Following Frostbite Remapping,
             // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf page 115
-            // vec3 f0 = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
+            // var f0: vec3f = 0.16 * reflectance * reflectance * (1.0 - metallic) + baseColor * metallic;
             // where 0.16 * reflectance * reflectance remaps the reflectance to allow storage in 8 bit texture
 
             // Compute the converted diffuse.
@@ -117,14 +117,14 @@ reflectivityOutParams reflectivityBlock(
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(0.16 * reflectance * reflectance, baseColor, metallicRoughness.r);
         #else
-            vec3 metallicF0 = metallicReflectanceFactors.rgb;
+            var metallicF0: vec3f = metallicReflectanceFactors.rgb;
 
             #if DEBUGMODE > 0
                 outParams.metallicF0 = metallicF0;
             #endif
 
             // Compute the converted diffuse.
-            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0), vec3(0., 0., 0.), metallicRoughness.r);
+            outParams.surfaceAlbedo = mix(baseColor.rgb * (1.0 - metallicF0),  vec3f(0., 0., 0.), metallicRoughness.r);
 
             // Compute the converted reflectivity.
             surfaceReflectivityColor = mix(metallicF0, baseColor, metallicRoughness.r);
@@ -158,7 +158,7 @@ reflectivityOutParams reflectivityBlock(
 	// Adapt microSurface.
     microSurface = saturate(microSurface);
     // Compute roughness.
-    float roughness = 1. - microSurface;
+    var roughness: f32 = 1. - microSurface;
 
     outParams.microSurface = microSurface;
     outParams.roughness = roughness;
