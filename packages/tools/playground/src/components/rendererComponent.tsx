@@ -119,8 +119,12 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 break;
         }
 
-        while (EngineStore.Instances.length) {
-            EngineStore.Instances[0].dispose();
+        try {
+            while (EngineStore.Instances.length) {
+                EngineStore.Instances[0].dispose();
+            }
+        } catch (ex) {
+            // just ignore
         }
 
         this._engine = null;
