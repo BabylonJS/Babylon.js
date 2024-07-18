@@ -41,9 +41,9 @@ var finalColor: vec4f =  vec4f(
 #endif
 
 // _____________________________ EmissiveLight _____________________________________
-finalColor.rgb += finalEmissive;
+finalColor = vec4f(finalColor.rgb + finalEmissive, finalColor.a);
 
 #define CUSTOM_FRAGMENT_BEFORE_FOG
 
 // _____________________________ Finally ___________________________________________
-finalColor = max(finalColor, 0.0);
+finalColor = max(finalColor, vec4f(0.0));

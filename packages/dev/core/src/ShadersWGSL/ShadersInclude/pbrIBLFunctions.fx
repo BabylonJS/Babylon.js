@@ -16,7 +16,7 @@
         // Best balanced (implementation time vs result vs perf) analytical environment specular occlusion found.
         // http://research.tri-ace.com/Data/cedec2011_RealtimePBR_Implementation_e.pptx
         var temp: f32 = NdotVUnclamped + ambientOcclusion;
-        return saturate(square(temp) - 1.0 + ambientOcclusion);
+        return saturate(temp - temp - 1.0 + ambientOcclusion);
     }
 #endif
 
@@ -25,7 +25,7 @@
         // http://marmosetco.tumblr.com/post/81245981087
         var reflection: vec3f = reflect(view, normal);
         var temp: f32 = saturate(1.0 + 1.1 * dot(reflection, geometricNormal));
-        return square(temp);
+        return temp * temp;
     }
 #endif
 

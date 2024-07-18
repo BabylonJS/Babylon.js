@@ -1,7 +1,7 @@
 // _____________________________ Diffuse ________________________________________
 var finalDiffuse: vec3f = diffuseBase;
 finalDiffuse *= surfaceAlbedo.rgb;
-finalDiffuse = max(finalDiffuse, 0.0);
+finalDiffuse = max(finalDiffuse, vec3f(0.0));
 finalDiffuse *= vLightingIntensity.x;
 
 // _____________________________ Ambient ________________________________________

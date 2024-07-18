@@ -20,7 +20,7 @@
         var UV: vec2f =  vec2f(NdotV, perceptualRoughness);
         
         // We can find the scale and offset to apply to the specular value.
-        var brdfLookup: vec4f = texture2D(environmentBrdfSampler, UV);
+        var brdfLookup: vec4f =  textureSample(environmentBrdfSampler, environmentBrdfSamplerSampler, UV);
 
         #ifdef ENVIRONMENTBRDF_RGBD
             brdfLookup.rgb = fromRGBD(brdfLookup.rgba);
@@ -258,7 +258,7 @@ fn normalDistributionFunction_TrowbridgeReitzGGX(NdotH: f32, alphaG: f32) -> f32
     // Note: alphaG is average slope (gradient) of the normals in slope-space.
     // It is also the (trigonometric) tangent of the median distribution value, i.e. 50% of normals have
     // a tangent (gradient) closer to the macrosurface than this slope.
-    var a2: f32 = square(alphaG);
+    var a2: f32 = alphaG * alphaG;
     var d: f32 = NdotH * NdotH * (a2 - 1.0) + 1.0;
     return a2 / (PI * d * d);
 }

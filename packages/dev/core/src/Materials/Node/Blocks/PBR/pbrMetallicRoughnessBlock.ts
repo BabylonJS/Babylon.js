@@ -909,7 +909,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         if (state._emitVaryingFromString("vClipSpacePosition", NodeMaterialBlockConnectionPointTypes.Vector4, "defined(IGNORE) || DEBUGMODE > 0")) {
             state._injectAtEnd += `#if DEBUGMODE > 0\n`;
-            state._injectAtEnd += `vClipSpacePosition = gl_Position;\n`;
+            state._injectAtEnd += (isWebGPU ? "vertexOutputs." : "") + `vClipSpacePosition = ${isWebGPU ? "vertexOutputs.position" : "gl_Position"};\n`;
             state._injectAtEnd += `#endif\n`;
         }
 
@@ -981,6 +981,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
+        if (isWebGPU) {
+            this._vMetallicReflectanceFactorsName = "uniforms." + this._vMetallicReflectanceFactorsName;
+        }
+
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
 
             reflectivityOut = reflectivityBlock(
@@ -1018,6 +1022,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         this._scene = state.sharedData.scene;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         if (!this._environmentBRDFTexture) {
             this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this._scene);
@@ -1063,10 +1068,10 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             });
 
             state.compilationString += `#if DEBUGMODE > 0\n`;
-            state.compilationString += `${state._declareLocalVar("vClipSpacePosition", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}((vec2${state.fSuffix}(gl_FragCoord.xy) / vec2${state.fSuffix}(1.0)) * 2.0 - 1.0, 0.0, 1.0);\n`;
+            state.compilationString += `${state._declareLocalVar("vClipSpacePosition", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}((vec2${state.fSuffix}(${isWebGPU ? "fragmentInputs.position" : "gl_FragCoord.xy"}) / vec2${state.fSuffix}(1.0)) * 2.0 - 1.0, 0.0, 1.0);\n`;
             state.compilationString += `#endif\n`;
         } else {
-            worldPosVarName = "v_" + worldPosVarName;
+            worldPosVarName = (isWebGPU ? "input." : "") + "v_" + worldPosVarName;
         }
 
         this._environmentBrdfSamplerName = state._getFreeVariableName("environmentBrdfSampler");
@@ -1123,9 +1128,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("shadowsFragmentFunctions", comments);
 
-        state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
-        });
+        state._emitFunctionFromInclude("pbrDirectLightingSetupFunctions", comments);
 
         state._emitFunctionFromInclude("pbrDirectLightingFalloffFunctions", comments);
         state._emitFunctionFromInclude("pbrBRDFFunctions", comments, {
@@ -1133,9 +1136,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
         state._emitFunctionFromInclude("hdrFilteringFunctions", comments);
 
-        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments, {
-            replaceStrings: [{ search: /vPositionW/g, replace: worldPosVarName + ".xyz" }],
-        });
+        state._emitFunctionFromInclude("pbrDirectLightingFunctions", comments);
 
         state._emitFunctionFromInclude("pbrIBLFunctions", comments);
 
@@ -1175,7 +1176,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
                 { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
-                { search: /vEyePosition.w/g, replace: this._invertNormalName },
+                { search: /vEyePosition.w/g, replace: (isWebGPU ? "uniforms." : "") + this._invertNormalName },
             ],
         });
 
@@ -1347,7 +1348,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // _____________________________ Compute Final Lit Components ________________________
-        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
+        if (isWebGPU) {
+            state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments, {
+                replaceStrings: [{ search: /vLightingIntensity/g, replace: "uniforms.vLightingIntensity" }],
+            });
+        } else {
+            state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
+        }
 
         // _____________________________ UNLIT (2) ________________________
         state.compilationString += `#endif\n`; // UNLIT
@@ -1361,17 +1368,24 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
             aoDirectLightIntensity += ".";
         }
 
+        let replaceStrings = [
+            { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
+            { search: /vAmbientColor/g, replace: aoColor + ` * ${isWebGPU ? "uniforms." : ""}ambientFromScene` },
+            { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
+        ];
+
+        if (isWebGPU) {
+            replaceStrings[0] = { search: /var finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" };
+            replaceStrings.push({ search: /vLightingIntensity/g, replace: "uniforms.vLightingIntensity" });
+        }
+
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments, {
-            replaceStrings: [
-                { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
-                { search: /vAmbientColor/g, replace: aoColor + " * ambientFromScene" },
-                { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
-            ],
+            replaceStrings: replaceStrings,
         });
 
         // _____________________________ Output Final Color Composition ________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalColorComposition", comments, {
-            replaceStrings: [{ search: /finalEmissive/g, replace: "vec3(0.)" }],
+            replaceStrings: [{ search: /finalEmissive/g, replace: `vec3${state.fSuffix}(0.)` }],
         });
 
         // _____________________________ Apply image processing ________________________
@@ -1380,12 +1394,18 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Generate debug code ________________________
+
+        const colorOutput = isWebGPU ? "fragmentOutputs.color" : "gl_FragColor";
+        replaceStrings = [
+            { search: /vNormalW/g, replace: this._vNormalWName },
+            { search: /vPositionW/g, replace: worldPosVarName },
+            {
+                search: /albedoTexture\.rgb;/g,
+                replace: `vec3${state.fSuffix}(1.);\n${colorOutput}.rgb = toGammaSpace(${colorOutput}.rgb);\n`,
+            },
+        ];
         state.compilationString += state._emitCodeFromInclude("pbrDebug", comments, {
-            replaceStrings: [
-                { search: /vNormalW/g, replace: this._vNormalWName },
-                { search: /vPositionW/g, replace: worldPosVarName },
-                { search: /albedoTexture\.rgb;/g, replace: "vec3${state.fSuffix}(1.);\ngl_FragColor.rgb = toGammaSpace(gl_FragColor.rgb);\n" },
-            ],
+            replaceStrings: replaceStrings,
         });
 
         // _____________________________ Generate end points ________________________

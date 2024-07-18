@@ -16,8 +16,8 @@ fn fresnelGrazingReflectance(reflectance0: f32) -> f32 {
 
 fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
     #ifdef SPECULARAA
-        var nDfdx: vec3f = dFdx(normalVector.xyz);
-        var nDfdy: vec3f = dFdy(normalVector.xyz);
+        var nDfdx: vec3f = dpdx(normalVector.xyz);
+        var nDfdy: vec3f = dpdy(normalVector.xyz);
         var slopeSquare: f32 = max(dot(nDfdx, nDfdx), dot(nDfdy, nDfdy));
 
         // Vive analytical lights roughness factor.

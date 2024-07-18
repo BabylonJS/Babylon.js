@@ -48,7 +48,7 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Specular ________________________________________
 #ifdef SPECULARTERM
     var finalSpecular: vec3f = specularBase;
-    finalSpecular = max(finalSpecular, 0.0);
+    finalSpecular = max(finalSpecular, vec3f(0.0));
 
     var finalSpecularScaled: vec3f = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
 

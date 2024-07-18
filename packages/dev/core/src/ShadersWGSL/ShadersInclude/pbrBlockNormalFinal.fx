@@ -1,5 +1,5 @@
 #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-    var faceNormal: vec3f = normalize(cross(dFdx(vPositionW), dFdy(vPositionW))) * vEyePosition.w;
+    var faceNormal: vec3f = normalize(cross(dpdx(vPositionW), dpdy(vPositionW))) * vEyePosition.w;
     #if defined(TWOSIDEDLIGHTING)
         faceNormal = gl_FrontFacing ? faceNormal : -faceNormal;
     #endif

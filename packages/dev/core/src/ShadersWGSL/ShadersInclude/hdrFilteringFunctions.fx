@@ -3,9 +3,9 @@
 
     // https://learnopengl.com/PBR/IBL/Specular-IBL
     // Hammersley
-    fn radicalInverse_VdC(ubits: i32) -> f32 
+    fn radicalInverse_VdC(value: u32) -> f32 
     {
-        bits = (bits << 16u) | (bits >> 16u);
+        var bits = (value << 16u) | (value >> 16u);
         bits = ((bits & 0x55555555u) << 1u) | ((bits & 0xAAAAAAAAu) >> 1u);
         bits = ((bits & 0x33333333u) << 2u) | ((bits & 0xCCCCCCCCu) >> 2u);
         bits = ((bits & 0x0F0F0F0Fu) << 4u) | ((bits & 0xF0F0F0F0u) >> 4u);
@@ -13,9 +13,9 @@
         return  f32(bits) * 2.3283064365386963e-10; // / 0x100000000
     }
 
-    fn hammersley(ui: i32, uN: i32) -> vec2f
+    fn hammersley(i: u32, N: u32) -> vec2f
     {
-        return  vec2f( f32(i)/ f32(N), radicalInverse_VdC(i));
+        return vec2f( f32(i)/ f32(N), radicalInverse_VdC(i));
     }
 
     fn log4(x: f32) -> f32 {
@@ -156,7 +156,7 @@
             var dim0: f32 = filteringInfo.x;
             var omegaP: f32 = (4. * PI) / (6. * dim0 * dim0);
 
-            for(var i: i32 = 0u; i < NUM_SAMPLES; i++)
+            for(var i: u32 = 0u; i < NUM_SAMPLES; i++)
             {
                 var Xi: vec2f = hammersley(i, NUM_SAMPLES);
                 var Ls: vec3f = hemisphereCosSample(Xi);
@@ -190,7 +190,7 @@
         fn radiance(alphaG: f32, inputTexture: texture_cube<f32>, inputSampler: sampler, inputN: vec3f, filteringInfo: vec2f) -> vec3f
         {
             var n: vec3f = normalize(inputN);
-            var c: vec3f = textureCube(inputTexture, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
+            var c: vec3f = textureSample(inputTexture, inputSampler, n).rgb; // Don't put it in the "if (alphaG == 0.)" branch for uniformity (analysis) reasons!
 
             if (alphaG == 0.) {
                 #ifdef GAMMA_INPUT
@@ -210,7 +210,7 @@
                 var omegaP: f32 = (4. * PI) / (6. * dim0 * dim0);
 
                 var weight: f32 = 0.;
-                for(var i: i32 = 0u; i < NUM_SAMPLES; i++)
+                for(var i: u32 = 0u; i < NUM_SAMPLES; i++)
                 {
                     var Xi: vec2f = hammersley(i, NUM_SAMPLES);
                     var H: vec3f = hemisphereImportanceSampleDggx(Xi, alphaG);

@@ -23,11 +23,11 @@ struct preLightingInfo
     #endif
 };
 
-preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 N) {
+preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 N, vec3 posW) {
     preLightingInfo result;
 
     // Attenuation data.
-    result.lightOffset = lightData.xyz - vPositionW;
+    result.lightOffset = lightData.xyz - posW;
     result.lightDistanceSquared = dot(result.lightOffset, result.lightOffset);
 
     // Roughness.

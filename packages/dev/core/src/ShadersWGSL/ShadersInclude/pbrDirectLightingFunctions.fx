@@ -39,11 +39,11 @@ fn computeDiffuseLighting(info: preLightingInfo, lightColor: vec3f) -> vec3f {
     return diffuseTerm * info.attenuation * info.NdotL * lightColor;
 }
 
-fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f32>, projectionLightSampler: sampler, textureProjectionMatrix: mat4x4f) -> vec3f{
-    var strq: vec4f = textureProjectionMatrix *  vec4f(vPositionW, 1.0);
+fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f32>, projectionLightSampler: sampler, textureProjectionMatrix: mat4x4f, posW: vec3f) -> vec3f{
+    var strq: vec4f = textureProjectionMatrix *  vec4f(posW, 1.0);
     strq /= strq.w;
     var textureColor: vec3f = textureSample(projectionLightTexture, projectionLightSampler, strq.xy).rgb;
-    return toLinearSpace(textureColor);
+    return toLinearSpaceVec3(textureColor);
 }
 
 #ifdef SS_TRANSLUCENCY
