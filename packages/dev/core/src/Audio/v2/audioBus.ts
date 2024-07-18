@@ -5,34 +5,31 @@ import { type AbstractAudioEngine } from "./abstractAudioEngine";
 import { getCurrentAudioEngine } from "./audioEngine";
 
 export interface AudioBusSendOptions {
-    busId: number;
-    volume?: number;
+    bus: AudioBus;
+    volume: number;
 }
 
 export interface AudioBusOptions {
-    channelCount?: number;
-    channelVolumes?: Array<number>;
-    pan?: number;
     volume?: number;
 
-    outputBusId?: number;
+    outputBus?: AudioBus;
     sends?: Array<AudioBusSendOptions>;
 }
 
 export class AudioBus {
     private _audioEngine: AbstractAudioEngine;
-    private _options: AudioBusOptions;
+    private _volume: number;
 
-    public readonly physicalBusId: number;
+    public readonly physicalId: number;
+
+    public get volume(): number {
+        return this._volume;
+    }
 
     public constructor(options?: AudioBusOptions, audioEngine?: AbstractAudioEngine) {
         this._audioEngine = audioEngine ?? getCurrentAudioEngine();
-        this._options = options ?? {};
+        this._volume = options?.volume !== undefined ? options.volume : 1.0;
 
-        this.physicalBusId = this._audioEngine.createPhysicalBus(this._options);
-
-        if (this._options.volume === undefined) {
-            this._options.volume = 1.0;
-        }
+        this.physicalId = this._audioEngine.createPhysicalBus(options);
     }
 }

@@ -2,7 +2,7 @@
 /* eslint-disable jsdoc/require-jsdoc */
 
 import { type AbstractAudioEngine } from "./abstractAudioEngine";
-import { type AudioBusSendOptions } from "./audioBus";
+import type { AudioBus, AudioBusSendOptions } from "./audioBus";
 import { getCurrentAudioEngine } from "./audioEngine";
 import { type VirtualVoice, VirtualVoiceType } from "./virtualVoice";
 import { type IDisposable } from "../../scene";
@@ -19,7 +19,7 @@ export interface SoundOptions {
     autoplay?: boolean;
     loop?: boolean;
     maxVoices?: number;
-    outputBusId?: number;
+    outputBus?: AudioBus;
     pitch?: number;
     playbackRate?: number;
     priority?: number;
@@ -34,14 +34,14 @@ export class Sound implements IDisposable {
     private _voiceIndex: number = 0;
 
     public readonly audioEngine: AbstractAudioEngine;
-    public readonly options?: SoundOptions;
+    public readonly outputBus: AudioBus;
     public readonly physicalSourceId: number;
     public readonly physicalSpatializerId: number;
     public readonly type: VirtualVoiceType;
 
     public constructor(options?: SoundOptions, audioEngine?: AbstractAudioEngine) {
         this.audioEngine = (audioEngine ?? getCurrentAudioEngine()) as AbstractAudioEngine;
-        this.options = options;
+        this.outputBus = options?.outputBus ?? this.audioEngine.mainBus;
         this.physicalSourceId = options?.physicalSourceId !== undefined ? options.physicalSourceId : this.audioEngine.createPhysicalSource(options);
         this.physicalSpatializerId = options?.physicalSpatializerId ?? 0;
         this.type = options?.streaming ? VirtualVoiceType.Streamed : VirtualVoiceType.Static;

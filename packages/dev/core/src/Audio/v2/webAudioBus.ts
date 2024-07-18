@@ -3,7 +3,7 @@
 /* eslint-disable no-console */
 
 import { AbstractAudioBus } from "./abstractAudioPhysicalEngine";
-import { type AudioBusOptions } from "./audioBus";
+import type { AudioBusOptions } from "./audioBus";
 
 export class WebAudioBus extends AbstractAudioBus {
     public readonly node: GainNode;
@@ -15,8 +15,8 @@ export class WebAudioBus extends AbstractAudioBus {
     }
 
     private _createNode(audioContext: AudioContext, options?: AudioBusOptions): GainNode {
-        const node = audioContext.createGain();
-        node.gain.value = options?.volume ?? 1;
-        return node;
+        return new GainNode(audioContext, {
+            gain: options?.volume !== undefined ? options.volume : 1,
+        });
     }
 }

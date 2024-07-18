@@ -1,12 +1,14 @@
 /* eslint-disable babylonjs/available */
 /* eslint-disable jsdoc/require-jsdoc */
 
-import { type AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
-import { type AudioBusOptions } from "./audioBus";
+import type { AbstractAudioPhysicalEngine } from "./abstractAudioPhysicalEngine";
+import type { AudioBusOptions } from "./audioBus";
+import { AudioBus } from "./audioBus";
 import { setCurrentAudioEngine } from "./audioEngine";
-import { type AudioSpatializerOptions } from "./audioSpatializer";
-import { type SoundOptions } from "./sound";
-import { VirtualVoice, VirtualVoiceState, type VirtualVoiceType } from "./virtualVoice";
+import type { AudioSpatializerOptions } from "./audioSpatializer";
+import type { SoundOptions } from "./sound";
+import type { VirtualVoiceType } from "./virtualVoice";
+import { VirtualVoice, VirtualVoiceState } from "./virtualVoice";
 
 export interface AudioEngineOptions {
     /**
@@ -41,23 +43,25 @@ export interface AudioEngineOptions {
 }
 
 export abstract class AbstractAudioEngine {
-    public readonly physicalEngine: AbstractAudioPhysicalEngine;
-
     private _voices = new Array<VirtualVoice>();
     private _voicesDirty: boolean = false;
     private _inactiveVoiceIndex: number = 1;
 
-    public constructor(physicalEngine: AbstractAudioPhysicalEngine) {
-        this.physicalEngine = physicalEngine;
-
-        setCurrentAudioEngine(this);
-    }
+    public readonly mainBus: AudioBus;
+    public readonly physicalEngine: AbstractAudioPhysicalEngine;
 
     /**
      * Returns the current time in seconds.
      */
     public get currentTime(): number {
         return this.physicalEngine.currentTime;
+    }
+
+    public constructor(physicalEngine: AbstractAudioPhysicalEngine) {
+        setCurrentAudioEngine(this);
+
+        this.physicalEngine = physicalEngine;
+        this.mainBus = new AudioBus(undefined, this);
     }
 
     public allocateVoices(count: number, type: VirtualVoiceType, physicalSourceId: number, options?: SoundOptions): Array<VirtualVoice> {
@@ -91,8 +95,10 @@ export abstract class AbstractAudioEngine {
         // TODO: Finish implementation.
     }
 
+    // TODO: Do these `createXXX` functions need to be exposed? Do they even need to exist? Can they only be on the
+    //  physical audio engine?
     public createPhysicalBus(options?: AudioBusOptions): number {
-        return this.physicalEngine.createBus(options);
+        return this.physicalEngine.createBus(options, options?.outputBus?.physicalId ?? this.mainBus?.physicalId);
     }
 
     public createPhysicalSpatializer(options?: AudioSpatializerOptions): number {
@@ -105,6 +111,8 @@ export abstract class AbstractAudioEngine {
 
     /**
      * Updates virtual and physical voices. Called automatically if `autoUpdate` is `true`.
+     *
+     * TODO: Add option to skip prioritization and sorting by default since most users won't need it.
      */
     public update(): void {
         if (!this._voicesDirty) {

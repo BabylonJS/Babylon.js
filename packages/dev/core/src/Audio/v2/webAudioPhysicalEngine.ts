@@ -91,8 +91,10 @@ export class WebAudioPhysicalEngine extends AbstractAudioPhysicalEngine {
         this._audioContext.resume();
     }
 
-    public createBus(options?: AudioBusOptions): number {
+    public createBus(options?: AudioBusOptions, outputBusId?: number): number {
         const bus = new WebAudioBus(this._audioContext, this._getNextBusId(), options);
+        if (outputBusId) {
+        }
         this._buses.set(bus.id, bus);
         return bus.id;
     }
