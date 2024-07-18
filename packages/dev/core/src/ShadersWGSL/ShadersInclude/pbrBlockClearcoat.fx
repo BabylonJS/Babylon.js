@@ -1,114 +1,113 @@
 struct clearcoatOutParams
 {
-    var specularEnvironmentR0: vec3f;
-    var conservationFactor: f32;
-    var clearCoatNormalW: vec3f;
-    var clearCoatAARoughnessFactors: vec2f;
-    var clearCoatIntensity: f32;
-    var clearCoatRoughness: f32;
+    specularEnvironmentR0: vec3f,
+    conservationFactor: f32,
+    clearCoatNormalW: vec3f,
+    clearCoatAARoughnessFactors: vec2f,
+    clearCoatIntensity: f32,
+    clearCoatRoughness: f32,
 #ifdef REFLECTION
-    var finalClearCoatRadianceScaled: vec3f;
+    finalClearCoatRadianceScaled: vec3f,
 #endif
 #ifdef CLEARCOAT_TINT
-    var absorption: vec3f;
-    var clearCoatNdotVRefract: f32;
-    var clearCoatColor: vec3f;
-    var clearCoatThickness: f32;
+    absorption: vec3f,
+    clearCoatNdotVRefract: f32,
+    clearCoatColor: vec3f,
+    clearCoatThickness: f32,
 #endif
 #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
-    var energyConservationFactorClearCoat: vec3f;
+    energyConservationFactorClearCoat: vec3f,
 #endif
 #if DEBUGMODE > 0
     #ifdef CLEARCOAT_BUMP
-        var TBNClearCoat: mat3x3f;
+        TBNClearCoat: mat3x3f,
     #endif
     #ifdef CLEARCOAT_TEXTURE
-        var clearCoatMapData: vec2f;
+        clearCoatMapData: vec2f,
     #endif
     #if defined(CLEARCOAT_TINT) && defined(CLEARCOAT_TINT_TEXTURE)
-        var clearCoatTintMapData: vec4f;
+        clearCoatTintMapData: vec4f,
     #endif
     #ifdef REFLECTION
-        var environmentClearCoatRadiance: vec4f;
-        var clearCoatEnvironmentReflectance: vec3f;
+        environmentClearCoatRadiance: vec4f,
+        clearCoatEnvironmentReflectance: vec3f,
     #endif
-    var clearCoatNdotV: f32;
+    clearCoatNdotV: f32
 #endif
 };
 
 #ifdef CLEARCOAT
     #define pbr_inline
-    #define inline
-    var clearcoatBlock: voidnull(
-        in var vPositionW: vec3f,
-        in var geometricNormalW: vec3f,
-        in var viewDirectionW: vec3f,
-        in var vClearCoatParams: vec2f,
+    fn clearcoatBlock(
+        vPositionW: vec3f
+        , geometricNormalW: vec3f
+        , viewDirectionW: vec3f
+        , vClearCoatParams: vec2f
     #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-        in var clearCoatMapRoughnessData: vec4f,
+        , clearCoatMapRoughnessData: vec4f
     #endif
-        in var specularEnvironmentR0: vec3f,
+        , specularEnvironmentR0: vec3f
     #ifdef CLEARCOAT_TEXTURE
-        in var clearCoatMapData: vec2f,
+        , clearCoatMapData: vec2f
     #endif
     #ifdef CLEARCOAT_TINT
-        in var vClearCoatTintParams: vec4f,
-        in var clearCoatColorAtDistance: f32,
-        in var vClearCoatRefractionParams: vec4f,
+        , vClearCoatTintParams: vec4f
+        , clearCoatColorAtDistance: f32
+        , vClearCoatRefractionParams: vec4f
         #ifdef CLEARCOAT_TINT_TEXTURE
-            in var clearCoatTintMapData: vec4f,
+            , clearCoatTintMapData: vec4f
         #endif
     #endif
     #ifdef CLEARCOAT_BUMP
-        in var vClearCoatBumpInfos: vec2f,
-        in var clearCoatBumpMapData: vec4f,
-        in var vClearCoatBumpUV: vec2f,
+        , vClearCoatBumpInfos: vec2f
+        , clearCoatBumpMapData: vec4f
+        , vClearCoatBumpUV: vec2f
         #if defined(TANGENT) && defined(NORMAL)
-            in var vTBN: mat3x3f,
+            , vTBN: mat3x3f
         #else
-            in var vClearCoatTangentSpaceParams: vec2f,
+            , vClearCoatTangentSpaceParams: vec2f
         #endif
         #ifdef OBJECTSPACE_NORMALMAP
-            in var normalMatrix: mat4x4f,
+            , normalMatrix: mat4x4f
         #endif
     #endif
     #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-        in var faceNormal: vec3f,
+        , faceNormal: vec3f
     #endif
     #ifdef REFLECTION
-        in var vReflectionMicrosurfaceInfos: vec3f,
-        in var vReflectionInfos: vec2f,
-        in var vReflectionColor: vec3f,
-        in var vLightingIntensity: vec4f,
+        , vReflectionMicrosurfaceInfos: vec3f
+        , vReflectionInfos: vec2f
+        , vReflectionColor: vec3f
+        , vLightingIntensity: vec4f
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSampler,
+            , samplerCube reflectionSampler
         #else
-            in sampler2D reflectionSampler,
+            , sampler2D reflectionSampler
         #endif
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                in samplerCube reflectionSamplerLow,
-                in samplerCube reflectionSamplerHigh,
+                , samplerCube reflectionSamplerLow
+                , samplerCube reflectionSamplerHigh
             #else
-                in sampler2D reflectionSamplerLow,
-                in sampler2D reflectionSamplerHigh,
+                , sampler2D reflectionSamplerLow
+                , sampler2D reflectionSamplerHigh
             #endif
         #endif
         #ifdef REALTIME_FILTERING
-            in var vReflectionFilteringInfo: vec2f,
+            , vReflectionFilteringInfo: vec2f
         #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
-            in var ambientMonochrome: f32,
+            , ambientMonochrome: f32
         #endif
     #endif
     #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-        in var frontFacingMultiplier: f32,
-    #endif
-        out clearcoatOutParams outParams
-    )
+        , frontFacingMultiplier: f32
+    #endif        
+    ) -> clearcoatOutParams
     {
+        var outParams: clearcoatOutParams;
         // Clear COAT parameters.
         var clearCoatIntensity: f32 = vClearCoatParams.x;
         var clearCoatRoughness: f32 = vClearCoatParams.y;
@@ -324,5 +323,7 @@ struct clearcoatOutParams
         #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             outParams.energyConservationFactorClearCoat = getEnergyConservationFactor(outParams.specularEnvironmentR0, environmentClearCoatBrdf);
         #endif
+
+        return outParams;
     }
 #endif

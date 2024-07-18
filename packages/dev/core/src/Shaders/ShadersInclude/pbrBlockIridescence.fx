@@ -9,25 +9,25 @@ struct iridescenceOutParams
 #ifdef IRIDESCENCE
     #define pbr_inline
     #define inline
-    void iridescenceBlock(
-        in vec4 vIridescenceParams,
-        in float viewAngle,
-        in vec3 specularEnvironmentR0,
+    iridescenceOutParams iridescenceBlock(
+        in vec4 vIridescenceParams
+        , in float viewAngle
+        , in vec3 specularEnvironmentR0
         #ifdef IRIDESCENCE_TEXTURE
-            in vec2 iridescenceMapData,
+            , in vec2 iridescenceMapData
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            in vec2 iridescenceThicknessMapData,
+            , in vec2 iridescenceThicknessMapData
         #endif
         #ifdef CLEARCOAT
-            in float NdotVUnclamped,
+            , in float NdotVUnclamped
             #ifdef CLEARCOAT_TEXTURE
-                in vec2 clearCoatMapData,
+                , in vec2 clearCoatMapData
             #endif
         #endif
-        out iridescenceOutParams outParams
     )
     {
+        iridescenceOutParams outParams;
         float iridescenceIntensity = vIridescenceParams.x;
         float iridescenceIOR = vIridescenceParams.y;
 
@@ -65,5 +65,7 @@ struct iridescenceOutParams
         outParams.iridescenceIntensity = iridescenceIntensity;
         outParams.iridescenceThickness = iridescenceThickness;
         outParams.iridescenceIOR = iridescenceIOR;
+
+        return outParams;
     }
 #endif

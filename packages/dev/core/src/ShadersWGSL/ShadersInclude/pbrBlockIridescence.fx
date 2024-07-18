@@ -1,33 +1,33 @@
 struct iridescenceOutParams
 {
-    var iridescenceIntensity: f32;
-    var iridescenceIOR: f32;
-    var iridescenceThickness: f32;
-    var specularEnvironmentR0: vec3f;
+    iridescenceIntensity: f32,
+    iridescenceIOR: f32,
+    iridescenceThickness: f32,
+    specularEnvironmentR0: vec3f
 };
 
 #ifdef IRIDESCENCE
     #define pbr_inline
     #define inline
-    var iridescenceBlock: voidnull(
-        in var vIridescenceParams: vec4f,
-        in var viewAngle: f32,
-        in var specularEnvironmentR0: vec3f,
+    fn iridescenceBlock(
+        vIridescenceParams: vec4f
+        , viewAngle: f32,
+        , specularEnvironmentR0: vec3f
         #ifdef IRIDESCENCE_TEXTURE
-            in var iridescenceMapData: vec2f,
+            , iridescenceMapData: vec2f
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            in var iridescenceThicknessMapData: vec2f,
+            , iridescenceThicknessMapData: vec2f
         #endif
         #ifdef CLEARCOAT
-            in var NdotVUnclamped: f32,
+            , NdotVUnclamped: f32
             #ifdef CLEARCOAT_TEXTURE
-                in var clearCoatMapData: vec2f,
+                , clearCoatMapData: vec2f
             #endif
         #endif
-        out iridescenceOutParams outParams
-    )
+    ) -> iridescenceOutParams
     {
+        var outParams: iridescenceOutParams;
         var iridescenceIntensity: f32 = vIridescenceParams.x;
         var iridescenceIOR: f32 = vIridescenceParams.y;
 
@@ -65,5 +65,7 @@ struct iridescenceOutParams
         outParams.iridescenceIntensity = iridescenceIntensity;
         outParams.iridescenceThickness = iridescenceThickness;
         outParams.iridescenceIOR = iridescenceIOR;
+
+        return outParams;
     }
 #endif

@@ -96,25 +96,24 @@ void main(void) {
     vec4 decalColor = texture2D(decalSampler, vDecalUV + uvOffset);
 #endif
 
-    albedoOpacityBlock(
-        vAlbedoColor,
+    albedoOpacityOut = albedoOpacityBlock(
+        vAlbedoColor
     #ifdef ALBEDO
-        albedoTexture,
-        vAlbedoInfos,
+        , albedoTexture
+        , vAlbedoInfos
     #endif
     #ifdef OPACITY
-        opacityMap,
-        vOpacityInfos,
+        , opacityMap
+        , vOpacityInfos
     #endif
     #ifdef DETAIL
-        detailColor,
-        vDetailInfos,
+        , detailColor
+        , vDetailInfos
     #endif
     #ifdef DECAL
-        decalColor,
-        vDecalInfos,
+        , decalColor
+        , vDecalInfos
     #endif
-        albedoOpacityOut
     );
 
     vec3 surfaceAlbedo = albedoOpacityOut.surfaceAlbedo;
@@ -133,12 +132,11 @@ void main(void) {
     vec3 ambientOcclusionColorMap = texture2D(ambientSampler, vAmbientUV + uvOffset).rgb;
 #endif
 
-    ambientOcclusionBlock(
+    aoOut = ambientOcclusionBlock(
     #ifdef AMBIENT
         ambientOcclusionColorMap,
-        vAmbientInfos,
-    #endif
-        aoOut
+        vAmbientInfos
+    #endif        
     );
 
     #include<pbrBlockLightmapInit>
@@ -190,27 +188,26 @@ void main(void) {
     #endif
 #endif
 
-    reflectivityBlock(
-        vReflectivityColor,
+    reflectivityOut = reflectivityBlock(
+        vReflectivityColor
     #ifdef METALLICWORKFLOW
-        surfaceAlbedo,
-        metallicReflectanceFactors,
+        , surfaceAlbedo
+        , metallicReflectanceFactors
     #endif
     #ifdef REFLECTIVITY
-        vReflectivityInfos,
-        surfaceMetallicOrReflectivityColorMap,
+        , vReflectivityInfos
+        , surfaceMetallicOrReflectivityColorMap
     #endif
     #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-        aoOut.ambientOcclusionColor,
+        , aoOut.ambientOcclusionColor
     #endif
     #ifdef MICROSURFACEMAP
-        microSurfaceTexel,
+        , microSurfaceTexel
     #endif
     #ifdef DETAIL
-        detailColor,
-        vDetailInfos,
+        , detailColor
+        , vDetailInfos
     #endif
-        reflectivityOut
     );
 
     float microSurface = reflectivityOut.microSurface;
@@ -396,23 +393,22 @@ void main(void) {
             vec2 iridescenceThicknessMapData = texture2D(iridescenceThicknessSampler, vIridescenceThicknessUV + uvOffset).rg * vIridescenceInfos.w;
         #endif
 
-        iridescenceBlock(
-            vIridescenceParams,
-            NdotV,
-            specularEnvironmentR0,
+        iridescenceOut = iridescenceBlock(
+            vIridescenceParams
+            , NdotV
+            , specularEnvironmentR0
             #ifdef IRIDESCENCE_TEXTURE
-                iridescenceMapData,
+                , iridescenceMapData
             #endif
             #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-                iridescenceThicknessMapData,
+                , iridescenceThicknessMapData
             #endif
             #ifdef CLEARCOAT
-                NdotVUnclamped,
+                , NdotVUnclamped
                 #ifdef CLEARCOAT_TEXTURE
-                    clearCoatMapData,
+                    , clearCoatMapData
                 #endif
             #endif
-            iridescenceOut
         );
 
         float iridescenceIntensity = iridescenceOut.iridescenceIntensity;
@@ -435,65 +431,64 @@ void main(void) {
             vec4 clearCoatBumpMapData = texture2D(clearCoatBumpSampler, vClearCoatBumpUV + uvOffset);
         #endif
 
-        clearcoatBlock(
-            vPositionW,
-            geometricNormalW,
-            viewDirectionW,
-            vClearCoatParams,
+        clearcoatOut = clearcoatBlock(
+            vPositionW
+            , geometricNormalW
+            , viewDirectionW
+            , vClearCoatParams
             #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-                clearCoatMapRoughnessData,
+                , clearCoatMapRoughnessData
             #endif
-            specularEnvironmentR0,
+            , specularEnvironmentR0
         #ifdef CLEARCOAT_TEXTURE
-            clearCoatMapData,
+            , clearCoatMapData
         #endif
         #ifdef CLEARCOAT_TINT
-            vClearCoatTintParams,
-            clearCoatColorAtDistance,
-            vClearCoatRefractionParams,
+            , vClearCoatTintParams
+            , clearCoatColorAtDistance
+            , vClearCoatRefractionParams
             #ifdef CLEARCOAT_TINT_TEXTURE
-                clearCoatTintMapData,
+                , clearCoatTintMapData
             #endif
         #endif
         #ifdef CLEARCOAT_BUMP
-            vClearCoatBumpInfos,
-            clearCoatBumpMapData,
-            vClearCoatBumpUV,
+            , vClearCoatBumpInfos
+            , clearCoatBumpMapData
+            , vClearCoatBumpUV
             #if defined(TANGENT) && defined(NORMAL)
-                vTBN,
+                , vTBN
             #else
-                vClearCoatTangentSpaceParams,
+                , vClearCoatTangentSpaceParams
             #endif
             #ifdef OBJECTSPACE_NORMALMAP
-                normalMatrix,
+                , normalMatrix
             #endif
         #endif
         #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-            faceNormal,
+            , faceNormal
         #endif
         #ifdef REFLECTION
-            vReflectionMicrosurfaceInfos,
-            vReflectionInfos,
-            vReflectionColor,
-            vLightingIntensity,
-            reflectionSampler,
+            , vReflectionMicrosurfaceInfos
+            , vReflectionInfos
+            , vReflectionColor
+            , vLightingIntensity
+            , reflectionSampler
             #ifndef LODBASEDMICROSFURACE
-                reflectionSamplerLow,
-                reflectionSamplerHigh,
+                , reflectionSamplerLow
+                , reflectionSamplerHigh
             #endif
             #ifdef REALTIME_FILTERING
-                vReflectionFilteringInfo,
+                , vReflectionFilteringInfo
             #endif
         #endif
         #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
             #ifdef RADIANCEOCCLUSION
-                ambientMonochrome,
+                , ambientMonochrome
             #endif
         #endif
         #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-            (gl_FrontFacing ? 1. : -1.),
+            , (gl_FrontFacing ? 1. : -1.)
         #endif
-            clearcoatOut
         );
     #else
         clearcoatOut.specularEnvironmentR0 = specularEnvironmentR0;

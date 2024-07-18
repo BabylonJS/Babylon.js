@@ -934,7 +934,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private _getAlbedoOpacityCode(state: NodeMaterialBuildState): string {
         const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
-        let code = isWebGPU ? "var albedoOpacityOut: albedoOpacityOutParamst;\n" : `albedoOpacityOutParams albedoOpacityOut;\n`;
+        let code = isWebGPU ? "var albedoOpacityOut: albedoOpacityOutParams;\n" : `albedoOpacityOutParams albedoOpacityOut;\n`;
 
         const albedoColor = this.baseColor.isConnected ? this.baseColor.associatedVariableName : "vec3(1.)";
         const opacity = this.opacity.isConnected ? this.opacity.associatedVariableName : "1.";
@@ -958,16 +958,16 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     }
 
     private _getAmbientOcclusionCode(state: NodeMaterialBuildState): string {
-        let code = `ambientOcclusionOutParams aoOut;\n`;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        let code = isWebGPU ? "var aoOut: ambientOcclusionOutParams;\n" : `ambientOcclusionOutParams aoOut;\n`;
 
         const ao = this.ambientOcc.isConnected ? this.ambientOcc.associatedVariableName : "1.";
 
-        code += `ambientOcclusionBlock(
+        code += `aoOut = ambientOcclusionBlock(
             #ifdef AMBIENT
                 vec3${state.fSuffix}(${ao}),
-                vec4${state.fSuffix}(0., 1.0, 1.0, 0.),
+                vec4${state.fSuffix}(0., 1.0, 1.0, 0.)
             #endif
-                aoOut
             );\n`;
 
         return code;
@@ -1255,7 +1255,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // _____________________________ Iridescence _______________________________
         const iridescenceBlock = this.iridescence.isConnected ? (this.iridescence.connectedPoint?.ownerBlock as IridescenceBlock) : null;
-        state.compilationString += IridescenceBlock.GetCode(iridescenceBlock);
+        state.compilationString += IridescenceBlock.GetCode(iridescenceBlock, state);
 
         state._emitFunctionFromInclude("pbrBlockIridescence", comments, {
             replaceStrings: [],

@@ -39,76 +39,76 @@ struct clearcoatOutParams
 #ifdef CLEARCOAT
     #define pbr_inline
     #define inline
-    void clearcoatBlock(
-        in vec3 vPositionW,
-        in vec3 geometricNormalW,
-        in vec3 viewDirectionW,
-        in vec2 vClearCoatParams,
+    clearcoatOutParams clearcoatBlock(
+        in vec3 vPositionW
+        , in vec3 geometricNormalW
+        , in vec3 viewDirectionW
+        , in vec2 vClearCoatParams
     #if defined(CLEARCOAT_TEXTURE_ROUGHNESS) && !defined(CLEARCOAT_TEXTURE_ROUGHNESS_IDENTICAL) && !defined(CLEARCOAT_USE_ROUGHNESS_FROM_MAINTEXTURE)
-        in vec4 clearCoatMapRoughnessData,
+        , in vec4 clearCoatMapRoughnessData
     #endif
-        in vec3 specularEnvironmentR0,
+        , in vec3 specularEnvironmentR0
     #ifdef CLEARCOAT_TEXTURE
-        in vec2 clearCoatMapData,
+        , in vec2 clearCoatMapData
     #endif
     #ifdef CLEARCOAT_TINT
-        in vec4 vClearCoatTintParams,
-        in float clearCoatColorAtDistance,
-        in vec4 vClearCoatRefractionParams,
+        , in vec4 vClearCoatTintParams
+        , in float clearCoatColorAtDistance
+        , in vec4 vClearCoatRefractionParams
         #ifdef CLEARCOAT_TINT_TEXTURE
-            in vec4 clearCoatTintMapData,
+            , in vec4 clearCoatTintMapData
         #endif
     #endif
     #ifdef CLEARCOAT_BUMP
-        in vec2 vClearCoatBumpInfos,
-        in vec4 clearCoatBumpMapData,
-        in vec2 vClearCoatBumpUV,
+        , in vec2 vClearCoatBumpInfos
+        , in vec4 clearCoatBumpMapData
+        , in vec2 vClearCoatBumpUV
         #if defined(TANGENT) && defined(NORMAL)
-            in mat3 vTBN,
+            , in mat3 vTBN
         #else
-            in vec2 vClearCoatTangentSpaceParams,
+            , in vec2 vClearCoatTangentSpaceParams
         #endif
         #ifdef OBJECTSPACE_NORMALMAP
-            in mat4 normalMatrix,
+            , in mat4 normalMatrix
         #endif
     #endif
     #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-        in vec3 faceNormal,
+        , in vec3 faceNormal
     #endif
     #ifdef REFLECTION
-        in vec3 vReflectionMicrosurfaceInfos,
-        in vec2 vReflectionInfos,
-        in vec3 vReflectionColor,
-        in vec4 vLightingIntensity,
+        , in vec3 vReflectionMicrosurfaceInfos
+        , in vec2 vReflectionInfos
+        , in vec3 vReflectionColor
+        , in vec4 vLightingIntensity
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSampler,
+            , in samplerCube reflectionSampler
         #else
-            in sampler2D reflectionSampler,
+            , in sampler2D reflectionSampler
         #endif
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                in samplerCube reflectionSamplerLow,
-                in samplerCube reflectionSamplerHigh,
+                , in samplerCube reflectionSamplerLow
+                , in samplerCube reflectionSamplerHigh
             #else
-                in sampler2D reflectionSamplerLow,
-                in sampler2D reflectionSamplerHigh,
+                , in sampler2D reflectionSamplerLow
+                , in sampler2D reflectionSamplerHigh
             #endif
         #endif
         #ifdef REALTIME_FILTERING
-            in vec2 vReflectionFilteringInfo,
+            , in vec2 vReflectionFilteringInfo
         #endif
     #endif
     #if defined(ENVIRONMENTBRDF) && !defined(REFLECTIONMAP_SKYBOX)
         #ifdef RADIANCEOCCLUSION
-            in float ambientMonochrome,
+            , in float ambientMonochrome
         #endif
     #endif
     #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-        in float frontFacingMultiplier,
+        , in float frontFacingMultiplier
     #endif
-        out clearcoatOutParams outParams
     )
     {
+        clearcoatOutParams outParams;
         // Clear COAT parameters.
         float clearCoatIntensity = vClearCoatParams.x;
         float clearCoatRoughness = vClearCoatParams.y;
@@ -324,5 +324,7 @@ struct clearcoatOutParams
         #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
             outParams.energyConservationFactorClearCoat = getEnergyConservationFactor(outParams.specularEnvironmentR0, environmentClearCoatBrdf);
         #endif
+
+        return outParams;
     }
 #endif
