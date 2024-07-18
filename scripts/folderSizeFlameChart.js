@@ -1,5 +1,7 @@
 "use strict";
 
+/* eslint-disable no-console */
+
 // This script generates an interactive flame chart for file/folder sizes.
 // node folderSizeFlameChart.js [pattern=**/*] [outputFile=FoldersSizes]
 // Example: node folderSizeFlameChart.js **/*.ts,!**/*.d.ts,!**/test/**
@@ -10,10 +12,11 @@ const path = require("path");
 const os = require("os");
 const https = require("https");
 const glob = require("glob");
+const chalk = require("chalk");
 
 let [scriptPath, folder = ".", pattern = "**", outputFile = "FoldersSizes"] = process.argv.slice(1);
 
-console.log(`${path.basename(scriptPath)} ${folder} ${pattern} ${outputFile}`);
+console.log(chalk.bold(`${path.basename(scriptPath)} ${folder} ${pattern} ${outputFile}`));
 
 // Resolve to an absolute path
 folder = path.resolve(folder);
@@ -71,7 +74,7 @@ function generateFlameChart() {
 
     // Construct the flamegraph command
     const flameGraphCommand = `${flameGraphScriptPath} --title "File &amp; Folder Sizes" --subtitle "Sizes of files and folders matching glob '${pattern}' under '${folder}'" --width 1800 --height 32 --countname "bytes" --nametype Folder/File ${tempFilePath} > ${outputFile}.svg`;
-    console.log(`Running command: ${flameGraphCommand}`);
+    console.log(`${chalk.bold(chalk.italic(`Running command`))}: ${chalk.italic(flameGraphCommand)}`);
 
     // Execute the flamegraph command, waiting for it to finish
     child_process.execSync(flameGraphCommand);
