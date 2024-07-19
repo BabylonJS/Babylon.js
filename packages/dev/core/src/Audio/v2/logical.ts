@@ -2,12 +2,18 @@
 
 import { VoiceState, VirtualVoice } from "./common";
 import * as Physical from "./physical";
-import * as WebAudio from "./webAudio";
+import * as WebAudio from "./webAudio"; // TODO: Remove this. Doesn't belong here.
 import { IDisposable } from "../../scene";
 import { Nullable } from "../../types";
 
 /*
-Logical layer of the advanced audio engine.
+Logical layer of the advanced audio engine. Communicates with the physical layer using virtual voices.
+
+The logical layer wants to play all the virtual voices it's asked to play, but the physical layer limits the actual
+number of voices that can be played at once. The logical layer sorts the virtual voices by importance, and the physical
+layer mutes the least important virtual voices when there are too many of them trying to play.
+
+See the `Engine.update` function.
 */
 
 let currentEngine: Nullable<Engine> = null;
@@ -73,9 +79,9 @@ export class Engine {
     /**
      * Updates virtual and physical voices.
      *
-     * TODO: Make this get called automatically by the engine.
+     * TODO: Add an option to make this get called automatically by the engine.
      */
-    public update(): void {
+    update(): void {
         // TODO: Uncomment this when observing virtual voice changes is implemented.
         // if (!this.voicesDirty) {
         //     return;

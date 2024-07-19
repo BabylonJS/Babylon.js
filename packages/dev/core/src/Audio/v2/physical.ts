@@ -8,25 +8,25 @@ import { Nullable } from "core/types";
 Physical layer of the advanced audio engine.
 
 All interfaces in this file must be implemented by the backend, and they should only be used by the physical layer.
-The logical and common layers should not use these interfaces! They should only use the classes.
+
+The logical and common layers can use the classes in this file, but not the interfaces.
 */
 
-// TODO: Maybe rename IEngine to ICoreEngine and rename IAdvancedEngine to IEngine? ... for the IAdvanced* interfaces, too.
-export interface IEngine {
-    inputs: Array<IBus>;
+export interface ICoreEngine {
+    inputs: Array<ICoreBus>;
 }
 
-export interface IAdvancedEngine extends IEngine {
+export interface IEngine extends ICoreEngine {
     physicalEngine: AbstractEngine;
     currentTime: number;
 
-    createBus(options?: any): IAdvancedBus;
-    createSource(options?: any): IAdvancedSource;
-    createVoice(options?: any): IAdvancedVoice;
+    createBus(options?: any): IBus;
+    createSource(options?: any): ISource;
+    createVoice(options?: any): IVoice;
 }
 
 export abstract class AbstractEngine {
-    backend: IAdvancedEngine;
+    backend: IEngine;
 
     graphItems = new Map<number, AbstractEngineItem>();
     nextItemId: number = 1;
@@ -41,7 +41,7 @@ export abstract class AbstractEngine {
 
     lastUpdateTime: number = 0;
 
-    constructor(backend: IAdvancedEngine, options?: any) {
+    constructor(backend: IEngine, options?: any) {
         this.backend = backend;
 
         this.maxSpatialVoices = options?.maxSpatialVoices ?? 64;
@@ -227,16 +227,16 @@ export interface IPositioner {
 }
 
 export interface IGraphItem {
-    outputs: Array<IBus>;
+    outputs: Array<ICoreBus>;
     positioner?: IPositioner;
 }
 
-interface IAdvancedEngineItem {
-    engine: IAdvancedEngine;
+interface IEngineItem {
+    engine: IEngine;
 }
 
 abstract class AbstractEngineItem {
-    abstract backend: IAdvancedEngineItem;
+    abstract backend: IEngineItem;
 
     get engine(): AbstractEngine {
         return this.backend.engine.physicalEngine;
@@ -245,64 +245,64 @@ abstract class AbstractEngineItem {
     id: number;
 }
 
-export interface IBus extends IGraphItem {
+export interface ICoreBus extends IGraphItem {
     inputs: Array<IGraphItem>;
 }
 
-export interface IAdvancedBus extends IBus {
-    engine: IAdvancedEngine;
+export interface IBus extends ICoreBus {
+    engine: IEngine;
     physicalBus: Bus;
 }
 
-type IAdvancedBusBackend = IAdvancedBus & IAdvancedEngineItem;
+type IBusBackend = IBus & IEngineItem;
 
 export class Bus extends AbstractEngineItem {
-    backend: IAdvancedBusBackend;
+    backend: IBusBackend;
 
-    constructor(backend: IAdvancedBusBackend, options?: any) {
+    constructor(backend: IBusBackend, options?: any) {
         super();
 
         this.backend = backend;
     }
 }
 
-export interface ISource {
+export interface ICoreSource {
     //
 }
 
-export interface IAdvancedSource extends ISource {
-    engine: IAdvancedEngine;
+export interface ISource extends ICoreSource {
+    engine: IEngine;
     physicalSource: Source;
 }
 
-type IAdvancedSourceBackend = IAdvancedSource & IAdvancedEngineItem;
+type ISourceBackend = ISource & IEngineItem;
 
 export class Source extends AbstractEngineItem {
-    backend: IAdvancedSourceBackend;
+    backend: ISourceBackend;
 
-    constructor(backend: IAdvancedSourceBackend, options?: any) {
+    constructor(backend: ISourceBackend, options?: any) {
         super();
 
         this.backend = backend;
     }
 }
 
-export interface IVoice extends IGraphItem {
-    source: ISource;
+export interface ICoreVoice extends IGraphItem {
+    source: ICoreSource;
 
     start(): void;
     stop(): void;
 }
 
-export interface IAdvancedVoice extends IVoice {
-    engine: IAdvancedEngine;
+export interface IVoice extends ICoreVoice {
+    engine: IEngine;
     physicalVoice: Voice;
 }
 
-type IAdvancedVoiceBackend = IAdvancedVoice & IAdvancedEngineItem;
+type IVoiceBackend = IVoice & IEngineItem;
 
 export class Voice extends AbstractEngineItem {
-    backend: IAdvancedVoiceBackend;
+    backend: IVoiceBackend;
 
     virtualVoice: Nullable<VirtualVoice> = null;
 
@@ -310,7 +310,7 @@ export class Voice extends AbstractEngineItem {
         return this.virtualVoice === null;
     }
 
-    constructor(backend: IAdvancedVoiceBackend, options?: any) {
+    constructor(backend: IVoiceBackend, options?: any) {
         super();
 
         this.backend = backend;

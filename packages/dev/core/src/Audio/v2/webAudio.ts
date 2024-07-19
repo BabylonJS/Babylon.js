@@ -6,23 +6,21 @@ import { Vector3 } from "../../Maths/math.vector";
 /*
 WebAudio backend.
 
-The core classes in this module will replace our legacy audio engine.
-They are ...
-    - Engine
-    - Bus
-    - Sound
-    - SoundStream (considering rename to SoundStream)
+The core classes in this module will replace our legacy audio engine ...
+    - CoreEngine
+    - CoreBus
+    - CoreSound
+    - CoreSoundStream
 
 The advanced classes extend the core classes to implement the advanced audio engine's physical interfaces.
 
-Maybe break this file up into webAudioCore.ts and webAudioAdvanced.ts?
+TODO: Split file into webAudioCore.ts and webAudio.ts?
 */
 
-// Core
-export class Engine implements Physical.IEngine {
+export class CoreEngine implements Physical.ICoreEngine {
     audioContext: AudioContext;
 
-    inputs = new Array<Bus>();
+    inputs = new Array<CoreBus>();
 
     get unlocked(): boolean {
         return this.audioContext.state !== "suspended";
@@ -64,11 +62,11 @@ export class Engine implements Physical.IEngine {
 }
 
 // Advanced
-export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
+export class Engine extends CoreEngine implements Physical.IEngine {
     physicalEngine: Physical.AbstractEngine;
     startTime: number;
 
-    override inputs = new Array<AdvancedBus>();
+    override inputs = new Array<Bus>();
 
     get currentTime(): number {
         return this.unlocked ? this.startTime + this.audioContext.currentTime : (performance.now() - this.startTime) / 1000;
@@ -91,23 +89,22 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
         }
     }
 
-    createBus(options?: any): Physical.IAdvancedBus {
-        return new AdvancedBus(this, options);
+    createBus(options?: any): Physical.IBus {
+        return new Bus(this, options);
     }
 
-    createSource(options?: any): Physical.IAdvancedSource {
-        return options?.stream ? new AdvancedStreamSource(this, options) : new AdvancedStaticSource(this, options);
+    createSource(options?: any): Physical.ISource {
+        return options?.stream ? new StreamSource(this, options) : new StaticSource(this, options);
     }
 
-    createVoice(options?: any): Physical.IAdvancedVoice {
-        return options?.stream ? new AdvancedStreamVoice(this, options) : new AdvancedStaticVoice(this, options);
+    createVoice(options?: any): Physical.IVoice {
+        return options?.stream ? new StreamVoice(this, options) : new StaticVoice(this, options);
     }
 }
 
-// Advanced
 export class PhysicalEngine extends Physical.AbstractEngine {
     constructor(options?: any) {
-        super(new AdvancedEngine(options), options);
+        super(new Engine(options), options);
 
         this.backend.physicalEngine = this;
     }
@@ -148,7 +145,7 @@ class Positioner extends AbstractSubGraph implements Physical.IPositioner {
 }
 
 abstract class AbstractGraphItem {
-    engine: Engine;
+    engine: CoreEngine;
     abstract node: AudioNode;
 
     effectChain?: EffectChain;
@@ -160,29 +157,28 @@ abstract class AbstractGraphItem {
         return this.engine.audioContext;
     }
 
-    constructor(engine: Engine, options?: any) {
+    constructor(engine: CoreEngine, options?: any) {
         this.engine = engine;
     }
 }
 
-// Core
-export class Bus extends AbstractGraphItem implements Physical.IBus {
+export class CoreBus extends AbstractGraphItem implements Physical.ICoreBus {
     node: GainNode;
 
     inputs = new Array<AbstractGraphItem>();
 
-    constructor(engine: Engine, options?: any) {
+    constructor(engine: CoreEngine, options?: any) {
         super(engine, options);
 
         this.node = new GainNode(this.audioContext);
     }
 }
 
-class AdvancedBus extends Bus implements Physical.IAdvancedBus {
-    override engine: AdvancedEngine;
+class Bus extends CoreBus implements Physical.IBus {
+    override engine: Engine;
     physicalBus: Physical.Bus;
 
-    constructor(engine: AdvancedEngine, options?: any) {
+    constructor(engine: Engine, options?: any) {
         super(engine, options);
 
         this.engine = engine;
@@ -190,41 +186,41 @@ class AdvancedBus extends Bus implements Physical.IAdvancedBus {
     }
 }
 
-abstract class AbstractSource implements Physical.ISource {
-    constructor(engine: Engine, options?: any) {
+abstract class AbstractSource implements Physical.ICoreSource {
+    constructor(engine: CoreEngine, options?: any) {
         //
     }
 }
 
-class StaticSource extends AbstractSource {
+class CoreStaticSource extends AbstractSource {
     buffer: AudioBuffer;
+
+    constructor(engine: CoreEngine, options?: any) {
+        super(engine, options);
+    }
+}
+
+class StaticSource extends CoreStaticSource implements Physical.ISource {
+    engine: Engine;
+    physicalSource: Physical.Source;
 
     constructor(engine: Engine, options?: any) {
         super(engine, options);
-    }
-}
-
-class AdvancedStaticSource extends StaticSource implements Physical.IAdvancedSource {
-    engine: AdvancedEngine;
-    physicalSource: Physical.Source;
-
-    constructor(engine: AdvancedEngine, options?: any) {
-        super(engine, options);
 
         this.engine = engine;
         this.physicalSource = new Physical.Source(this, options);
     }
 }
 
-class StreamSource extends AbstractSource {
+class CoreStreamSource extends AbstractSource {
     audioElement: HTMLAudioElement;
 }
 
-class AdvancedStreamSource extends StreamSource implements Physical.IAdvancedSource {
-    engine: AdvancedEngine;
+class StreamSource extends CoreStreamSource implements Physical.ISource {
+    engine: Engine;
     physicalSource: Physical.Source;
 
-    constructor(engine: AdvancedEngine, options?: any) {
+    constructor(engine: Engine, options?: any) {
         super(engine, options);
 
         this.engine = engine;
@@ -232,47 +228,45 @@ class AdvancedStreamSource extends StreamSource implements Physical.IAdvancedSou
     }
 }
 
-abstract class AbstractSound extends AbstractGraphItem implements Physical.IVoice {
+abstract class AbstractSound extends AbstractGraphItem implements Physical.ICoreVoice {
     abstract source: AbstractSource;
 
     abstract start(): void;
     abstract stop(): void;
 }
 
-// Core
-export class Sound extends AbstractSound {
+export class CoreSound extends AbstractSound {
     node: AudioBufferSourceNode;
-    source: StaticSource;
+    source: CoreStaticSource;
 
     start(): void {}
     stop(): void {}
 }
 
-class AdvancedStaticVoice extends Sound implements Physical.IAdvancedVoice {
-    override engine: AdvancedEngine;
+class StaticVoice extends CoreSound implements Physical.IVoice {
+    override engine: Engine;
     physicalVoice: Physical.Voice;
 
-    constructor(engine: AdvancedEngine, options?: any) {
+    constructor(engine: Engine, options?: any) {
         super(engine, options);
         this.engine = engine;
         this.physicalVoice = new Physical.Voice(this, options);
     }
 }
 
-// Core
-export class SoundStream extends AbstractSound {
+export class CoreSoundStream extends AbstractSound {
     node: MediaElementAudioSourceNode;
-    source: StreamSource;
+    source: CoreStreamSource;
 
     start(): void {}
     stop(): void {}
 }
 
-class AdvancedStreamVoice extends SoundStream implements Physical.IAdvancedVoice {
-    override engine: AdvancedEngine;
+class StreamVoice extends CoreSoundStream implements Physical.IVoice {
+    override engine: Engine;
     physicalVoice: Physical.Voice;
 
-    constructor(engine: AdvancedEngine, options?: any) {
+    constructor(engine: Engine, options?: any) {
         super(engine, options);
         this.engine = engine;
         this.physicalVoice = new Physical.Voice(this, options);
