@@ -1,5 +1,6 @@
 /* eslint-disable */
 
+import { VirtualVoice } from "./common";
 import * as Physical from "./physical";
 import { Vector3 } from "../../../Maths";
 
@@ -160,5 +161,9 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
 
     createVoice(options?: any): Physical.IAdvancedVoice {
         return options?.streaming ? new AdvancedStreamedSound() : new AdvancedSound();
+    }
+
+    update(voices: Array<VirtualVoice>): void {
+        //
     }
 }

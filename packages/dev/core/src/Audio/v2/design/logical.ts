@@ -1,11 +1,28 @@
 /* eslint-disable */
 
+import { VoiceState, VirtualVoice } from "./common";
 import * as Physical from "./physical";
-import { Observable } from "../../../Misc/observable";
+import * as WebAudio from "./webAudio";
+import { IDisposable } from "../../../scene";
+import { Nullable } from "../../../types";
+
+export let createDefaultEngine = (): Engine => {
+    return new Engine(new WebAudio.AdvancedEngine());
+};
+
+let currentEngine: Nullable<Engine> = null;
+
+function getCurrentEngine(): Engine {
+    return currentEngine ?? createDefaultEngine();
+}
+
+let setCurrentEngine = (engine: Engine) => {
+    currentEngine = engine;
+};
 
 export class Engine {
     physicalEngine: Physical.IAdvancedEngine;
-    mainBusses: Array<Bus>; // public add and remove except for first item.
+    mainBusses = new Array<Bus>(); // public add and remove except for first item.
 
     voices = new Array<VirtualVoice>();
     voicesDirty: boolean = false;
@@ -17,7 +34,9 @@ export class Engine {
 
     constructor(physicalEngine: Physical.IAdvancedEngine, options?: any) {
         this.physicalEngine = physicalEngine;
-        this.mainBusses = [new Bus(this)];
+        this.mainBusses.push(new Bus(this));
+
+        setCurrentEngine(this);
     }
 
     getVoices(count: number, physicalSource: Physical.IAdvancedSource, options?: any): Array<VirtualVoice> {
@@ -29,11 +48,11 @@ export class Engine {
         this.inactiveVoiceIndex = 0;
 
         for (let i = 0; i < count; i++) {
-            while (this.inactiveVoiceIndex < this.voices.length && this.voices[this.inactiveVoiceIndex].state !== Physical.VoiceState.Stopped) {
+            while (this.inactiveVoiceIndex < this.voices.length && this.voices[this.inactiveVoiceIndex].state !== VoiceState.Stopped) {
                 this.inactiveVoiceIndex++;
             }
 
-            const voice = this.inactiveVoiceIndex < this.voices.length ? this.voices[this.inactiveVoiceIndex] : this.createVoice();
+            const voice = this.inactiveVoiceIndex < this.voices.length ? this.voices[this.inactiveVoiceIndex] : this._createVoice();
             voices[i] = voice;
 
             voice.init(physicalSource, options);
@@ -44,7 +63,29 @@ export class Engine {
         return voices;
     }
 
-    createVoice(): VirtualVoice {
+    freeVoices(voices: Array<VirtualVoice>): void {
+        for (const voice of voices) {
+            voice.stop();
+        }
+        // TODO: Finish implementation.
+    }
+
+    /**
+     * Updates virtual and physical voices.
+     */
+    public update(): void {
+        if (!this.voicesDirty) {
+            return;
+        }
+
+        // TODO: There maybe be a faster way to sort since we don't care about the order of inactive voices.
+        this.voices.sort((a, b) => a.compare(b));
+
+        this.voicesDirty = false;
+        this.physicalEngine.update(this.voices);
+    }
+
+    _createVoice(): VirtualVoice {
         const voice = new VirtualVoice();
 
         voice.onStateChangedObservable.add(() => {
@@ -61,163 +102,84 @@ export class Engine {
 abstract class EngineObject {
     engine: Engine;
 
-    constructor(engine: Engine, options?: any) {
-        this.engine = engine;
+    get physicalEngine(): Physical.IAdvancedEngine {
+        return this.engine.physicalEngine;
+    }
+
+    constructor(engine?: Engine, options?: any) {
+        this.engine = engine ?? getCurrentEngine();
     }
 }
 
 export class Bus extends EngineObject {
     physicalBus: Physical.IAdvancedBus;
 
-    constructor(engine: Engine, options?: any) {
+    constructor(engine?: Engine, options?: any) {
         super(engine);
-        this.physicalBus = engine.physicalEngine.createBus(options);
+        this.physicalBus = this.physicalEngine.createBus(options);
     }
 }
 
-export class Sound extends EngineObject {
-    voices: Array<VirtualVoice>;
+export class Sound extends EngineObject implements IDisposable {
+    outputBus: Bus;
+    physicalSource: Physical.IAdvancedSource;
 
-    constructor(engine: Engine, options?: any) {
+    voices: Array<VirtualVoice>;
+    nextVoiceIndex: number = 0;
+
+    paused: boolean = false;
+
+    constructor(engine?: Engine, options?: any) {
         super(engine);
+        this.outputBus = options?.outputBus ?? this.engine.mainBus;
+        this.physicalSource = options?.physicalSource ?? this.physicalEngine.createSource(options);
+
+        this.voices = this.engine.getVoices(options?.maxVoices ?? 1, this.physicalSource, options);
+    }
+
+    public dispose(): void {
+        this.stop();
+        this.engine.freeVoices(this.voices);
     }
 
     play(): VirtualVoice {
-        // TODO: Reuse oldest voice in preallocated `voices` pool and return it here.
-        return this.voices[0];
-    }
-}
+        this.resume();
 
-export class VirtualVoice {
-    physicalSource: Physical.IAdvancedSource;
-    options: any;
+        const voice = this.voices[this.nextVoiceIndex];
+        voice.start();
 
-    _state: Physical.VoiceState = Physical.VoiceState.Starting;
-    onStateChangedObservable = new Observable<VirtualVoice>();
+        this.nextVoiceIndex = (this.nextVoiceIndex + 1) % this.voices.length;
 
-    init(physicalSource: Physical.IAdvancedSource, options?: any): void {
-        this.physicalSource = physicalSource;
-        this.options = options;
-    }
-
-    get state(): Physical.VoiceState {
-        return this._state;
-    }
-
-    set state(value: Physical.VoiceState) {
-        this.setState(value);
-    }
-
-    setState(value: Physical.VoiceState) {
-        if (this._state === value) {
-            return;
-        }
-        this._state = value;
-        this.onStateChangedObservable.notifyObservers(this);
-    }
-
-    get priority(): number {
-        return this.options?.priority !== undefined ? this.options.priority : 0;
-    }
-
-    get loop(): boolean {
-        return this.options?.loop === true;
-    }
-
-    get static(): boolean {
-        return this.options?.stream !== true;
-    }
-
-    get streamed(): boolean {
-        return this.options?.stream === true;
-    }
-
-    get updated(): boolean {
-        return (
-            this._state === Physical.VoiceState.Muted ||
-            this._state === Physical.VoiceState.Paused ||
-            this._state === Physical.VoiceState.Started ||
-            this._state === Physical.VoiceState.Stopped
-        );
-    }
-
-    get active(): boolean {
-        return this.state < Physical.VoiceState.Pausing;
-    }
-
-    get waitingToStart(): boolean {
-        return this.state < Physical.VoiceState.Started;
-    }
-
-    get started(): boolean {
-        return this.state === Physical.VoiceState.Started;
-    }
-
-    get muting(): boolean {
-        return this.state === Physical.VoiceState.Muting;
-    }
-
-    get muted(): boolean {
-        return this.state === Physical.VoiceState.Muted;
-    }
-
-    get pausing(): boolean {
-        return this.state === Physical.VoiceState.Pausing;
-    }
-
-    get stopping(): boolean {
-        return this.state === Physical.VoiceState.Stopping;
-    }
-
-    compare(other: VirtualVoice): number {
-        if (this.state !== other.state) {
-            return this.state - other.state;
-        }
-        if (this.priority === other.priority) {
-            return 0;
-        }
-        if (this.priority > other.priority) {
-            return -1;
-        }
-
-        // Looped voices are more noticeable when they stop and start, so they are prioritized over non-looped voices.
-        if (!this.loop && other.loop) {
-            return -1;
-        }
-
-        // Streamed voices are hard to restart cleanly, so they are prioritized over static voices.
-        if (this.static && other.streamed) {
-            return -1;
-        }
-
-        return 1;
-    }
-
-    start(): void {
-        if (this._state === Physical.VoiceState.Muted) {
-            this.state = Physical.VoiceState.Unmuting;
-        } else if (this._state === Physical.VoiceState.Paused) {
-            this.state = Physical.VoiceState.Resuming;
-        } else if (this._state === Physical.VoiceState.Stopped) {
-            this.state = Physical.VoiceState.Restarting;
-        } else if (this._state === Physical.VoiceState.Muting || this._state === Physical.VoiceState.Pausing) {
-            this.state = Physical.VoiceState.Started;
-        }
-    }
-
-    mute(): void {
-        this.state = Physical.VoiceState.Muting;
-    }
-
-    pause(): void {
-        this.state = Physical.VoiceState.Pausing;
-    }
-
-    resume(): void {
-        this.state = Physical.VoiceState.Resuming;
+        return voice;
     }
 
     stop(): void {
-        this.state = Physical.VoiceState.Stopping;
+        for (const voice of this.voices) {
+            voice.stop();
+        }
+    }
+
+    pause(): void {
+        if (this.paused) {
+            return;
+        }
+
+        for (const voice of this.voices) {
+            voice.pause();
+        }
+
+        this.paused = true;
+    }
+
+    resume(): void {
+        if (!this.paused) {
+            return;
+        }
+
+        for (const voice of this.voices) {
+            voice.resume();
+        }
+
+        this.paused = false;
     }
 }

@@ -1,20 +1,7 @@
 /* eslint-disable */
 
+import { VirtualVoice } from "./common";
 import { Vector3 } from "../../../Maths";
-
-export enum VoiceState {
-    Starting,
-    Unmuting,
-    Resuming,
-    Restarting,
-    Started,
-    Muting,
-    Muted,
-    Pausing,
-    Paused,
-    Stopping,
-    Stopped,
-}
 
 export interface IEngine {
     inputs: Array<IBus>;
@@ -27,6 +14,8 @@ export interface IAdvancedEngine extends IEngine {
     createBus(options?: any): IAdvancedBus;
     createSource(options?: any): IAdvancedSource;
     createVoice(options?: any): IAdvancedVoice;
+
+    update(voices: Array<VirtualVoice>): void;
 }
 
 export class Engine {
