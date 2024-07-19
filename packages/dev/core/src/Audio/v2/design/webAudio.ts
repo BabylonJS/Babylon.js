@@ -78,8 +78,6 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     constructor(options?: any) {
         super(options);
 
-        // this.physicalImplementation = new Physical.AbstractEngine(this, options);
-
         if (!this.unlocked) {
             // Keep track of time while the audio context is locked so the engine still seems like it's running.
             this.startTime = performance.now();
