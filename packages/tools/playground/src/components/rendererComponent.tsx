@@ -3,10 +3,9 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, WebGPUEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine } from "@dev/core";
 
-import type { Nullable } from "@dev/core";
-import type { Scene } from "@dev/core";
+import type { Nullable, Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 
@@ -119,14 +118,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 break;
         }
 
-        if (this._engine) {
-            try {
-                this._engine.dispose();
-            } catch (ex) {
-                // just ignore
+        try {
+            while (EngineStore.Instances.length) {
+                EngineStore.Instances[0].dispose();
             }
-            this._engine = null;
+        } catch (ex) {
+            // just ignore
         }
+
+        this._engine = null;
 
         try {
             // Set up the global object ("window" and "this" for user code).
