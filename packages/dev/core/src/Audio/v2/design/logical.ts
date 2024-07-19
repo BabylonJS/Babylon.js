@@ -6,8 +6,12 @@ import * as WebAudio from "./webAudio";
 import { IDisposable } from "../../../scene";
 import { Nullable } from "../../../types";
 
+/*
+Logical layer of the advanced audio engine.
+*/
+
 export let createDefaultEngine = (): Engine => {
-    return new Engine(new WebAudio.AdvancedEngine());
+    return new Engine(new WebAudio.PhysicalEngine());
 };
 
 let currentEngine: Nullable<Engine> = null;
@@ -21,8 +25,8 @@ let setCurrentEngine = (engine: Engine) => {
 };
 
 export class Engine {
-    physicalEngine: Physical.IAdvancedEngine;
-    mainBusses = new Array<Bus>(); // public add and remove except for first item.
+    physicalEngine: Physical.AbstractEngine;
+    mainBusses = new Array<Bus>(); // TODO: Add public `addBus` and `removeBus` (except for first bus).
 
     voices = new Array<VirtualVoice>();
     voicesDirty: boolean = false;
@@ -32,14 +36,14 @@ export class Engine {
         return this.mainBusses[0];
     }
 
-    constructor(physicalEngine: Physical.IAdvancedEngine, options?: any) {
+    constructor(physicalEngine: Physical.AbstractEngine, options?: any) {
         this.physicalEngine = physicalEngine;
         this.mainBusses.push(new Bus(this));
 
         setCurrentEngine(this);
     }
 
-    getVoices(count: number, physicalSource: Physical.IAdvancedSource, options?: any): Array<VirtualVoice> {
+    getVoices(count: number, physicalSource: Physical.Source, options?: any): Array<VirtualVoice> {
         const voices = new Array<VirtualVoice>(count);
         if (count === 0) {
             return voices;
@@ -67,7 +71,7 @@ export class Engine {
         for (const voice of voices) {
             voice.stop();
         }
-        // TODO: Finish implementation.
+        // TODO: Cleanup resources.
     }
 
     /**
@@ -79,6 +83,12 @@ export class Engine {
         }
 
         // TODO: There maybe be a faster way to sort since we don't care about the order of inactive voices.
+        //
+        // Inactive voices are only required to be at the end of the array, after the active voices.
+        //
+        // Active voices need to be sorted amongs themselves using `compare`, but inactive voices don't. They just need
+        // to come after all active voices in the array.
+        //
         this.voices.sort((a, b) => a.compare(b));
 
         this.voicesDirty = false;
@@ -102,7 +112,7 @@ export class Engine {
 abstract class EngineObject {
     engine: Engine;
 
-    get physicalEngine(): Physical.IAdvancedEngine {
+    get physicalEngine(): Physical.AbstractEngine {
         return this.engine.physicalEngine;
     }
 
@@ -112,17 +122,18 @@ abstract class EngineObject {
 }
 
 export class Bus extends EngineObject {
-    physicalBus: Physical.IAdvancedBus;
+    physicalBus: Physical.Bus;
 
     constructor(engine?: Engine, options?: any) {
         super(engine);
+
         this.physicalBus = this.physicalEngine.createBus(options);
     }
 }
 
 export class Sound extends EngineObject implements IDisposable {
     outputBus: Bus;
-    physicalSource: Physical.IAdvancedSource;
+    physicalSource: Physical.Source;
 
     voices: Array<VirtualVoice>;
     nextVoiceIndex: number = 0;
@@ -131,9 +142,9 @@ export class Sound extends EngineObject implements IDisposable {
 
     constructor(engine?: Engine, options?: any) {
         super(engine);
+
         this.outputBus = options?.outputBus ?? this.engine.mainBus;
         this.physicalSource = options?.physicalSource ?? this.physicalEngine.createSource(options);
-
         this.voices = this.engine.getVoices(options?.maxVoices ?? 1, this.physicalSource, options);
     }
 

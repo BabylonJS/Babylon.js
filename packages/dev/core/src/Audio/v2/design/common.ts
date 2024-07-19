@@ -18,13 +18,13 @@ export enum VoiceState {
 }
 
 export class VirtualVoice {
-    physicalSource: Physical.IAdvancedSource;
+    physicalSource: Physical.Source;
     options: any;
 
     _state: VoiceState = VoiceState.Starting;
     onStateChangedObservable = new Observable<VirtualVoice>();
 
-    init(physicalSource: Physical.IAdvancedSource, options?: any): void {
+    init(physicalSource: Physical.Source, options?: any): void {
         this.physicalSource = physicalSource;
         this.options = options;
     }

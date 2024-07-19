@@ -1,8 +1,13 @@
 /* eslint-disable */
 
-import { VirtualVoice } from "./common";
 import * as Physical from "./physical";
 import { Vector3 } from "../../../Maths";
+
+/*
+WebAudio backend.
+
+Maybe break this file up into webAudioCore.ts and webAudioAdvanced.ts?
+*/
 
 export class Engine implements Physical.IEngine {
     audioContext: AudioContext;
@@ -49,7 +54,7 @@ export class Engine implements Physical.IEngine {
 }
 
 export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
-    physicalImplementation: Physical.Engine;
+    physicalImplementation: Physical.AbstractEngine;
     startTime: number;
 
     override inputs = new Array<AdvancedBus>();
@@ -61,7 +66,7 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     constructor(options?: any) {
         super(options);
 
-        this.physicalImplementation = new Physical.Engine(this, options);
+        // this.physicalImplementation = new Physical.AbstractEngine(this, options);
 
         if (!this.unlocked) {
             // Keep track of time while the audio context is locked so the engine still seems like it's running.
@@ -88,9 +93,13 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     createVoice(options?: any): Physical.IAdvancedVoice {
         return options?.stream ? new AdvancedStreamedSound(this, options) : new AdvancedSound(this, options);
     }
+}
 
-    update(voices: Array<VirtualVoice>): void {
-        //
+export class PhysicalEngine extends Physical.AbstractEngine {
+    constructor(options?: any) {
+        super(new AdvancedEngine(options), options);
+
+        this.backend.physicalImplementation = this;
     }
 }
 
