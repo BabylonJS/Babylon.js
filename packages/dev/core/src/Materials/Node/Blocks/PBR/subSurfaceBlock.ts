@@ -210,7 +210,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , ${refractionBlock?._vRefractionInfosName ?? ""}
                 , ${refractionBlock?._refractionMatrixName ?? ""}
                 , ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
-                vLightingIntensity,
+                , vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     , alpha
                 #endif
@@ -220,7 +220,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
                     , roughness
                 #endif
-                alphaG,
+                , alphaG
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
                     , ${refractionBlock?._cubeSamplerName ?? ""}
                 #else

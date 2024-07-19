@@ -335,7 +335,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #ifdef CLEARCOAT_BUMP
                 , vec2${state.fSuffix}(0., 1.)
                 , vec4${state.fSuffix}(${normalMapColor}, 0.)
-                ${uv},
+                , ${uv}
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                     , vTBN
                 #else
@@ -374,7 +374,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                , (${isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing"}} ? 1. : -1.)
+                , (${isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing"} ? 1. : -1.)
             #endif
             );
         #else
