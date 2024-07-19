@@ -5,11 +5,12 @@ import { Vector3 } from "../../../Maths";
 
 export interface IEngine {
     inputs: Array<IBus>;
-    graphItems: Map<number, IGraphItem>;
 }
 
 export interface IAdvancedEngine extends IEngine {
     physicalImplementation: Engine;
+
+    graphItems: Map<number, IGraphItem>;
 
     createBus(options?: any): IAdvancedBus;
     createSource(options?: any): IAdvancedSource;
@@ -19,10 +20,23 @@ export interface IAdvancedEngine extends IEngine {
 }
 
 export class Engine {
-    backend: IEngine;
+    backend: IAdvancedEngine;
 
-    constructor(backend: IEngine) {
+    staticVoices: Array<IAdvancedVoice>;
+    streamedVoices: Array<IAdvancedVoice>;
+
+    constructor(backend: IAdvancedEngine, options?: any) {
         this.backend = backend;
+
+        this.staticVoices = new Array<IAdvancedVoice>(options?.maxStaticVoices ?? 128);
+        this.streamedVoices = new Array<IAdvancedVoice>(options?.maxStreamVoices ?? 8);
+
+        for (let i = 0; i < this.staticVoices.length; i++) {
+            this.staticVoices[i] = this.backend.createVoice();
+        }
+        for (let i = 0; i < this.streamedVoices.length; i++) {
+            this.streamedVoices[i] = this.backend.createVoice({ stream: true });
+        }
     }
 }
 
@@ -31,9 +45,8 @@ export interface IPositioner {
 }
 
 export interface IGraphItem {
-    id: number;
     outputs: Array<IBus>;
-    positioner: IPositioner;
+    positioner?: IPositioner;
 }
 
 export interface IBus extends IGraphItem {
@@ -47,14 +60,12 @@ export interface IAdvancedBus extends IBus {
 export class Bus {
     backend: IAdvancedBus;
 
-    constructor(backend: IAdvancedBus) {
+    constructor(backend: IAdvancedBus, options?: any) {
         this.backend = backend;
     }
 }
 
-export interface ISource {
-    id: number;
-}
+export interface ISource {}
 
 export interface IAdvancedSource extends ISource {
     physicalImplementation: Source;
@@ -63,7 +74,7 @@ export interface IAdvancedSource extends ISource {
 export class Source {
     backend: IAdvancedSource;
 
-    constructor(backend: IAdvancedSource) {
+    constructor(backend: IAdvancedSource, options?: any) {
         this.backend = backend;
     }
 }
@@ -81,9 +92,8 @@ export interface IAdvancedVoice extends IVoice {
 
 export class Voice {
     backend: IAdvancedVoice;
-    logicalSoundId: number;
 
-    constructor(backend: IAdvancedVoice) {
+    constructor(backend: IAdvancedVoice, options?: any) {
         this.backend = backend;
     }
 }
