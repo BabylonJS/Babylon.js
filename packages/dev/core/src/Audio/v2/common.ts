@@ -101,24 +101,30 @@ export class VirtualVoice {
         if (this.state !== other.state) {
             return this.state - other.state;
         }
-        if (this.priority === other.priority) {
-            return 0;
+        if (this.priority < other.priority) {
+            return 1;
         }
         if (this.priority > other.priority) {
             return -1;
         }
 
         // Looped voices are more noticeable when they stop and start, so they are prioritized over non-looped voices.
+        if (this.loop && !other.loop) {
+            return 1;
+        }
         if (!this.loop && other.loop) {
             return -1;
         }
 
         // Streamed voices are hard to restart cleanly, so they are prioritized over static voices.
-        if (this.static && other.streamed) {
+        if (this.stream && other.static) {
+            return 1;
+        }
+        if (this.static && other.stream) {
             return -1;
         }
 
-        return 1;
+        return 0;
     }
 
     start(): void {
