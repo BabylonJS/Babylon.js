@@ -11,6 +11,7 @@ All interfaces in this file must be implemented by the backend, and they should 
 The logical and common layers should not use these interfaces! They should only use the classes.
 */
 
+// TODO: Maybe rename IEngine to ICoreEngine and rename IAdvancedEngine to IEngine? ... for the IAdvanced* interfaces, too.
 export interface IEngine {
     inputs: Array<IBus>;
 }

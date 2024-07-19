@@ -19,7 +19,6 @@ Maybe break this file up into webAudioCore.ts and webAudioAdvanced.ts?
 */
 
 // Core
-// TODO: Is there any reason to mark this as implementing IEngine anymore? (Same for other core classes).
 export class Engine implements Physical.IEngine {
     audioContext: AudioContext;
 
