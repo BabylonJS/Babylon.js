@@ -201,21 +201,21 @@ export function CreateDecal(
                 weights[3] /= sumw;
             }
 
-            const v0LocalPositionX = v0.localPositionOverride ? v0.localPositionOverride[0] : localPositions?.[v0.vertexIdx] ?? 0;
-            const v0LocalPositionY = v0.localPositionOverride ? v0.localPositionOverride[1] : localPositions?.[v0.vertexIdx + 1] ?? 0;
-            const v0LocalPositionZ = v0.localPositionOverride ? v0.localPositionOverride[2] : localPositions?.[v0.vertexIdx + 2] ?? 0;
+            const v0LocalPositionX = v0.localPositionOverride ? v0.localPositionOverride[0] : (localPositions?.[v0.vertexIdx] ?? 0);
+            const v0LocalPositionY = v0.localPositionOverride ? v0.localPositionOverride[1] : (localPositions?.[v0.vertexIdx + 1] ?? 0);
+            const v0LocalPositionZ = v0.localPositionOverride ? v0.localPositionOverride[2] : (localPositions?.[v0.vertexIdx + 2] ?? 0);
 
-            const v1LocalPositionX = v1.localPositionOverride ? v1.localPositionOverride[0] : localPositions?.[v1.vertexIdx] ?? 0;
-            const v1LocalPositionY = v1.localPositionOverride ? v1.localPositionOverride[1] : localPositions?.[v1.vertexIdx + 1] ?? 0;
-            const v1LocalPositionZ = v1.localPositionOverride ? v1.localPositionOverride[2] : localPositions?.[v1.vertexIdx + 2] ?? 0;
+            const v1LocalPositionX = v1.localPositionOverride ? v1.localPositionOverride[0] : (localPositions?.[v1.vertexIdx] ?? 0);
+            const v1LocalPositionY = v1.localPositionOverride ? v1.localPositionOverride[1] : (localPositions?.[v1.vertexIdx + 1] ?? 0);
+            const v1LocalPositionZ = v1.localPositionOverride ? v1.localPositionOverride[2] : (localPositions?.[v1.vertexIdx + 2] ?? 0);
 
-            const v0LocalNormalX = v0.localNormalOverride ? v0.localNormalOverride[0] : localNormals?.[v0.vertexIdx] ?? 0;
-            const v0LocalNormalY = v0.localNormalOverride ? v0.localNormalOverride[1] : localNormals?.[v0.vertexIdx + 1] ?? 0;
-            const v0LocalNormalZ = v0.localNormalOverride ? v0.localNormalOverride[2] : localNormals?.[v0.vertexIdx + 2] ?? 0;
+            const v0LocalNormalX = v0.localNormalOverride ? v0.localNormalOverride[0] : (localNormals?.[v0.vertexIdx] ?? 0);
+            const v0LocalNormalY = v0.localNormalOverride ? v0.localNormalOverride[1] : (localNormals?.[v0.vertexIdx + 1] ?? 0);
+            const v0LocalNormalZ = v0.localNormalOverride ? v0.localNormalOverride[2] : (localNormals?.[v0.vertexIdx + 2] ?? 0);
 
-            const v1LocalNormalX = v1.localNormalOverride ? v1.localNormalOverride[0] : localNormals?.[v1.vertexIdx] ?? 0;
-            const v1LocalNormalY = v1.localNormalOverride ? v1.localNormalOverride[1] : localNormals?.[v1.vertexIdx + 1] ?? 0;
-            const v1LocalNormalZ = v1.localNormalOverride ? v1.localNormalOverride[2] : localNormals?.[v1.vertexIdx + 2] ?? 0;
+            const v1LocalNormalX = v1.localNormalOverride ? v1.localNormalOverride[0] : (localNormals?.[v1.vertexIdx] ?? 0);
+            const v1LocalNormalY = v1.localNormalOverride ? v1.localNormalOverride[1] : (localNormals?.[v1.vertexIdx + 1] ?? 0);
+            const v1LocalNormalZ = v1.localNormalOverride ? v1.localNormalOverride[2] : (localNormals?.[v1.vertexIdx + 2] ?? 0);
 
             const interpNormalX = v0LocalNormalX + (v1LocalNormalX - v0LocalNormalX) * clipFactor;
             const interpNormalY = v0LocalNormalY + (v1LocalNormalY - v0LocalNormalY) * clipFactor;

@@ -323,7 +323,7 @@ export class KhronosTextureContainer2 {
             } else if (typeof KTX2DECODER !== "undefined") {
                 KhronosTextureContainer2._KTX2DecoderModule = KTX2DECODER;
             }
-            const numberOfWorkers = typeof numWorkersOrOptions === "number" ? numWorkersOrOptions : numWorkersOrOptions.numWorkers ?? KhronosTextureContainer2.DefaultNumWorkers;
+            const numberOfWorkers = typeof numWorkersOrOptions === "number" ? numWorkersOrOptions : (numWorkersOrOptions.numWorkers ?? KhronosTextureContainer2.DefaultNumWorkers);
             KhronosTextureContainer2._Initialize(numberOfWorkers);
         }
     }

@@ -1,29 +1,69 @@
 [
     {
-        "label": "Show the Inspector",
-        "key": "debugLayer",
+        "label": "Scene : Show the Inspector",
+        "key": "Debug Layer",
         "documentation": "https://doc.babylonjs.com/toolsAndResources/inspector",
         "insertText": "scene.debugLayer.show();",
         "plainText": "scene.debugLayer.show();"
     },
     {
+        "label": "Scene : Setup a shadow generator",
+        "key": "Shadows",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows",
+        "insertText": "var shadowGenerator = new BABYLON.ShadowGenerator(${1:1024}, ${2:light});\nshadowGenerator.useExponentialShadowMap = true;",
+        "plainText": "var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);\nshadowGenerator.useExponentialShadowMap = true;"
+    },
+    {
+        "label": "Scene : Setup a Skybox",
+        "key": "Skybox",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/environment/skybox",
+        "insertText": "var skybox = BABYLON.MeshBuilder.CreateBox(\"skyBox\", {size:1000.0}, scene);\nvar skyboxMaterial = new BABYLON.StandardMaterial(\"skyBox\", scene);\nskyboxMaterial.backFaceCulling = false;\nskyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(\"textures/skybox\", scene);\nskyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;\nskyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);\nskyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0); skybox.material = skyboxMaterial;",
+        "plainText": "var skybox = BABYLON.MeshBuilder.CreateBox(\"skyBox\", {size:1000.0}, scene);\nvar skyboxMaterial = new BABYLON.StandardMaterial(\"skyBox\", scene);\nskyboxMaterial.backFaceCulling = false;\nskyboxMaterial.reflectionTexture = new BABYLON.CubeTexture(\"textures/skybox\", scene);\nskyboxMaterial.reflectionTexture.coordinatesMode = BABYLON.Texture.SKYBOX_MODE;\nskyboxMaterial.diffuseColor = new BABYLON.Color3(0, 0, 0);\nskyboxMaterial.specularColor = new BABYLON.Color3(0, 0, 0); skybox.material = skyboxMaterial;"
+    },
+    {
+        "label": "Scene : Setup a lens flare system",
+        "key": "Lens Flare",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/environment/lenseFlare",
+        "insertText": "var lensFlareSystem = new BABYLON.LensFlareSystem(\"lensFlareSystem\", scene.getMeshByName(\"Cylinder_004\"), scene);\nvar flare00 = new BABYLON.LensFlare(0.1, 0, new BABYLON.Color3(1, 1, 1), \"textures/flare.png\", lensFlareSystem);\nvar flare01 = new BABYLON.LensFlare(0.075, 0.5, new BABYLON.Color3(0.8, 0.56, 0.72), \"textures/flare3.png\", lensFlareSystem);\nvar flare02 = new BABYLON.LensFlare(0.1, -0.15, new BABYLON.Color3(0.71, 0.8, 0.95), \"textures/Flare2.png\", lensFlareSystem);\nvar flare03 = new BABYLON.LensFlare(0.15, 0.25, new BABYLON.Color3(0.95, 0.89, 0.71), \"textures/flare.png\", lensFlareSystem);",
+        "plainText": "var lensFlareSystem = new BABYLON.LensFlareSystem(\"lensFlareSystem\", scene.getMeshByName(\"Cylinder_004\"), scene);\nvar flare00 = new BABYLON.LensFlare(0.1, 0, new BABYLON.Color3(1, 1, 1), \"textures/flare.png\", lensFlareSystem);\nvar flare01 = new BABYLON.LensFlare(0.075, 0.5, new BABYLON.Color3(0.8, 0.56, 0.72), \"textures/flare3.png\", lensFlareSystem);\nvar flare02 = new BABYLON.LensFlare(0.1, -0.15, new BABYLON.Color3(0.71, 0.8, 0.95), \"textures/Flare2.png\", lensFlareSystem);\nvar flare03 = new BABYLON.LensFlare(0.15, 0.25, new BABYLON.Color3(0.95, 0.89, 0.71), \"textures/flare.png\", lensFlareSystem);"
+    },
+    {
+        "label": "Scene : Setup audio in the scene",
+        "key": "Audio",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/audio/playingSoundsMusic#how-to-play-sounds-and-music",
+        "insertText": "var music = new BABYLON.Sound(\"Violons\", \"sounds/violons11.wav\", scene, null, {loop: true, autoplay: true});",
+        "plainText": "var music = new BABYLON.Sound(\"Violons\", \"sounds/violons11.wav\", scene, null, {loop: true, autoplay: true});"
+    },
+    {
+        "label": "Scene : Setup a Sprite System",
+        "key": "Sprites",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/sprites/sprite_map",
+        "insertText": "// Load the spritesheet (with appropriate settings) associated with the JSON Atlas.\nlet spriteSheet = new BABYLON.Texture(\"textures/spriteMap/none_trimmed/Legends_Level_A.png\", scene,\n    false, //NoMipMaps\n    false, //InvertY usually false if exported from TexturePacker\n    BABYLON.Texture.NEAREST_NEAREST, //Sampling Mode\n    null, //Onload, you could spin up the sprite map in a function nested here\n    null, //OnError\n    null, //CustomBuffer\n    false, //DeleteBuffer\n    BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA\n);\n// Create an assets manager to load the JSON file\nconst assetsManager = new BABYLON.AssetsManager(scene);\nconst textTask = assetsManager.addTextFileTask(\"text task\", \"textures/spriteMap/none_trimmed/Legends_Level_A.json\");\n// Create the sprite map on succeful loading\ntextTask.onSuccess = (task) => {\n    let background = new BABYLON.SpriteMap(\"background\", JSON.parse(task.text), spriteSheet, {\n            stageSize: new BABYLON.Vector2(2, 2),\n            flipU: true //Sometimes you need to flip, depending on the sprite format.\n        }, scene);\n    // Set 4 sprites one per tile.\n    for (let i = 0; i < 4; i++) {\n        background.changeTiles(0, new BABYLON.Vector2(i % 2, Math.floor(i / 2)), 9 * i + 9);\n    }\n};\n//load the assets manager\nassetsManager.load();",
+        "plainText": "// Load the spritesheet (with appropriate settings) associated with the JSON Atlas.\nlet spriteSheet = new BABYLON.Texture(\"textures/spriteMap/none_trimmed/Legends_Level_A.png\", scene,\n    false, //NoMipMaps\n    false, //InvertY usually false if exported from TexturePacker\n    BABYLON.Texture.NEAREST_NEAREST, //Sampling Mode\n    null, //Onload, you could spin up the sprite map in a function nested here\n    null, //OnError\n    null, //CustomBuffer\n    false, //DeleteBuffer\n    BABYLON.Engine.TEXTURETYPE_RGBA //ImageFormageType RGBA\n);\n// Create an assets manager to load the JSON file\nconst assetsManager = new BABYLON.AssetsManager(scene);\nconst textTask = assetsManager.addTextFileTask(\"text task\", \"textures/spriteMap/none_trimmed/Legends_Level_A.json\");\n// Create the sprite map on succeful loading\ntextTask.onSuccess = (task) => {\n    let background = new BABYLON.SpriteMap(\"background\", JSON.parse(task.text), spriteSheet, {\n            stageSize: new BABYLON.Vector2(2, 2),\n            flipU: true //Sometimes you need to flip, depending on the sprite format.\n        }, scene);\n    // Set 4 sprites one per tile.\n    for (let i = 0; i < 4; i++) {\n        background.changeTiles(0, new BABYLON.Vector2(i % 2, Math.floor(i / 2)), 9 * i + 9);\n    }\n};\n//load the assets manager\nassetsManager.load();"
+    },
+
+
+
+
+
+    {
         "label": "Add Camera : Arc Rotate Camera w/Radians",
         "key": "Arc Rotate (Rad)",
-        "documentation": "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction",
         "insertText": "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", ${2:0}, ${3:1}, ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);\ncamera.attachControl(canvas, true);",
         "plainText": "var camera = new BABYLON.ArcRotateCamera(\"camera\", 0, 1, 10, BABYLON.Vector3.Zero(), scene);\ncamera.attachControl(canvas, true);"
     },
     {
         "label": "Add Camera : Arc Rotate Camera w/Degrees",
         "key": "Arc Rotate (Deg)",
-        "documentation": "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction",
         "insertText": "var camera = new BABYLON.ArcRotateCamera(\"${1:camera}\", BABYLON.Tools.ToRadians(${2:0}), BABYLON.Tools.ToRadians(${3:57.3}), ${4:10}, ${5:BABYLON.Vector3.Zero()}, scene);\ncamera.attachControl(canvas, true);",
         "plainText": "var camera = new BABYLON.ArcRotateCamera(\"camera\", 0, BABYLON.Tools.ToRadians(57.3), 10, BABYLON.Vector3.Zero(), scene);\ncamera.attachControl(canvas, true);"
     },
     {
         "label": "Add Camera : Free Camera",
         "key": "Free",
-        "documentation": "https://doc.babylonjs.com/babylon101/cameras#arc-rotate-camera",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction",
         "insertText": "var camera = new BABYLON.FreeCamera(\"${1:camera}\", ${2:new BABYLON.Vector3(8, 3, 0)}, scene);\ncamera.setTarget(BABYLON.Vector3.Zero());\ncamera.attachControl(canvas, true);",
         "plainText": "var camera = new BABYLON.FreeCamera(\"camera\", new BABYLON.Vector3(8, 3, 0), scene);\ncamera.setTarget(BABYLON.Vector3.Zero());\ncamera.attachControl(canvas, true);"
     },
@@ -42,35 +82,35 @@
     {
         "label": "Add Light : Hemispheric light",
         "key": "Hemispheric",
-        "documentation": "https://doc.babylonjs.com/babylon101/lights#the-hemispheric-light",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-hemispheric-light",
         "insertText": "var light = new BABYLON.HemisphericLight(\"${1:hemiLight}\", new BABYLON.Vector3(${2:0}, ${3:1}, ${4:0}), scene);",
         "plainText": "var light = new BABYLON.HemisphericLight(\"hemiLight\", new BABYLON.Vector3(0,1,0), scene);"
     },
     {
         "label": "Add Light : Directional light",
         "key": "Directionnal",
-        "documentation": "https://doc.babylonjs.com/babylon101/lights#the-directional-light",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-directional-light",
         "insertText": "var light = new BABYLON.DirectionalLight(\"${1:dirLight}\", new BABYLON.Vector3(${2:-1},${3:-2},${4:-1}), scene);\nlight.position = new BABYLON.Vector3(${5:4},${6:8},${7:4});",
         "plainText": "var light = new BABYLON.DirectionalLight(\"dirLight\", new BABYLON.Vector3(-1,-2,-1), scene);\nlight.position = new BABYLON.Vector3(4,8,4);"
     },
     {
         "label": "Add Light : Point light",
         "key": "Point",
-        "documentation": "https://doc.babylonjs.com/babylon101/lights#the-point-light",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-point-light",
         "insertText": "var light = new BABYLON.PointLight(\"${1:pointLight}\", new BABYLON.Vector3(${2:2},${3:4},${4:2}), scene);\nlight.position = new BABYLON.Vector3(${5:4},${6:8},${7:4});",
         "plainText": "var light = new BABYLON.PointLight(\"pointLight\", new BABYLON.Vector3(2,4,2), scene);\nlight.position = new BABYLON.Vector3(4,8,4);"
     },
     {
         "label": "Add Light : Spot light",
         "key": "Spot",
-        "documentation": "https://doc.babylonjs.com/babylon101/lights#the-spot-light",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-spot-light",
         "insertText": "var light = new BABYLON.SpotLight(\"spotLight\", new BABYLON.Vector3(-Math.cos(Math.PI/6), 4 , -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);",
         "plainText": "var light = new BABYLON.SpotLight(\"spotLight\", new BABYLON.Vector3(-Math.cos(Math.PI/6), 4 , -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);"
     },
     {
         "label": "Add Light : Spot lights (3 colors)",
         "key": "3 Spots",
-        "documentation": "https://doc.babylonjs.com/babylon101/lights#the-spot-light",
+        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/lights_introduction#the-spot-light",
         "insertText": "//red spot\nvar light = new BABYLON.SpotLight(\"spotLight\", new BABYLON.Vector3(-Math.cos(Math.PI/6), 4 , -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight.diffuse = new BABYLON.Color3(1, 0, 0);\n\n//green spot\nvar light1 = new BABYLON.SpotLight(\"spotLight1\", new BABYLON.Vector3(0, 4, 1 - Math.sin(Math.PI / 6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight1.diffuse = new BABYLON.Color3(0, 1, 0);\n\n//blue spot\nvar light2 = new BABYLON.SpotLight(\"spotLight2\", new BABYLON.Vector3(Math.cos(Math.PI/6), 4, -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight2.diffuse = new BABYLON.Color3(0, 0, 1);",
         "plainText": "//red spot\nvar light = new BABYLON.SpotLight(\"spotLight\", new BABYLON.Vector3(-Math.cos(Math.PI/6), 4 , -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight.diffuse = new BABYLON.Color3(1, 0, 0);\n\n//green spot\nvar light1 = new BABYLON.SpotLight(\"spotLight1\", new BABYLON.Vector3(0, 4, 1 - Math.sin(Math.PI / 6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight1.diffuse = new BABYLON.Color3(0, 1, 0);\n\n//blue spot\nvar light2 = new BABYLON.SpotLight(\"spotLight2\", new BABYLON.Vector3(Math.cos(Math.PI/6), 4, -Math.sin(Math.PI/6)), new BABYLON.Vector3(0, -1, 0), Math.PI / 4, 1.5, scene);\nlight2.diffuse = new BABYLON.Color3(0, 0, 1);"
     },
@@ -80,41 +120,29 @@
 
 
     {
-        "label": "Setup a shadow generator",
-        "key": "useShadows",
-        "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/lights/shadows",
-        "insertText": "var shadowGenerator = new BABYLON.ShadowGenerator(${1:1024}, ${2:light});\nshadowGenerator.useExponentialShadowMap = true;",
-        "plainText": "var shadowGenerator = new BABYLON.ShadowGenerator(1024, light);\nshadowGenerator.useExponentialShadowMap = true;"
-    },
-
-
-
-
-
-    {
         "label": "Build a ground plane",
-        "key": "useGround",
+        "key": "Ground",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var ground = BABYLON.MeshBuilder.CreateGround(\"${1:ground}\", {width: ${2:6}, height: ${3:6}}, scene);",
         "plainText": "var ground = BABYLON.MeshBuilder.CreateGround(\"ground\", {width: 6, height: 6}, scene);"
     },
     {
         "label": "Build a sphere",
-        "key": "useSphere",
+        "key": "Sphere",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var sphere = BABYLON.MeshBuilder.CreateSphere(\"${1:sphere}\", {diameter: ${2:2}}, scene);\nsphere.position.y = 1;",
         "plainText": "var sphere = BABYLON.MeshBuilder.CreateSphere(\"sphere\", {diameter: 2}, scene);\nsphere.position.y = 1;"
     },
     {
         "label": "Build a box",
-        "key": "useBox",
+        "key": "Box",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var box = BABYLON.MeshBuilder.CreateBox(\"${1:box}\", {size: ${2:2}}, scene);\nbox.position.y = 1;",
         "plainText": "var box = BABYLON.MeshBuilder.CreateBox(\"box\", {size: 2}, scene);\nbox.position.y = 1;"
     },
     {
         "label": "Build a cylinder",
-        "key": "useCylinder",
+        "key": "Cylinder",
         "documentation": "https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set",
         "insertText": "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"${1:cylinder}\", {height: ${2:2}, diameter: ${3:1}}, scene);\ncylinder.position.y = 1;",
         "plainText": "var cylinder = BABYLON.MeshBuilder.CreateCylinder(\"cylinder\", {height: 2, diameter: 1}, scene);\ncylinder.position.y = 1;"

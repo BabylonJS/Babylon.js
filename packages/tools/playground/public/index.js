@@ -103,7 +103,7 @@ var Versions = {
     // ],
 };
 
-const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
 
 let loadScriptAsync = function (url, instantResolve) {
     return new Promise((resolve) => {
@@ -179,7 +179,7 @@ let checkBabylonVersionAsync = function () {
 
     let frameworkScripts = Versions[activeVersion] || Versions["Latest"];
     if (snapshot) {
-        frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot));
+        frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot));
     } else if (version) {
         frameworkScripts = frameworkScripts.map((v) => v.replace("https://preview.babylonjs.com", "https://cdn.babylonjs.com/v" + version));
     } else if (window.location.href.includes("debug.html")) {

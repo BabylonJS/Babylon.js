@@ -1080,7 +1080,7 @@ export class ThinEngine extends AbstractEngine {
         }
 
         // Cull face
-        const cullFace = this.cullBackFaces ?? cullBackFaces ?? true ? this._gl.BACK : this._gl.FRONT;
+        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? this._gl.BACK : this._gl.FRONT;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
         }
@@ -3407,7 +3407,7 @@ export class ThinEngine extends AbstractEngine {
         texture.isReady = true;
         texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
         texture.format =
-            texture.format !== -1 ? texture.format : format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA);
+            texture.format !== -1 ? texture.format : (format ?? (extension === ".jpg" && !texture._useSRGBBuffer ? Constants.TEXTUREFORMAT_RGB : Constants.TEXTUREFORMAT_RGBA));
 
         if (
             processFunction(potWidth, potHeight, img, extension, texture, () => {
@@ -3874,9 +3874,10 @@ export class ThinEngine extends AbstractEngine {
      * Force the engine to release all cached effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
      */
     public releaseEffects() {
-        for (const name in this._compiledEffects) {
-            const webGLPipelineContext = this._compiledEffects[name].getPipelineContext() as WebGLPipelineContext;
-            this._deletePipelineContext(webGLPipelineContext);
+        const keys = Object.keys(this._compiledEffects);
+        for (const name of keys) {
+            const effect = this._compiledEffects[name];
+            effect.dispose();
         }
 
         this._compiledEffects = {};

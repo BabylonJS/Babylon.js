@@ -4,6 +4,7 @@ import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
 import { NodeMaterialBlockTargets } from "../../Enums/nodeMaterialBlockTargets";
 import type { NodeMaterialConnectionPoint } from "../../nodeMaterialBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to output the depth to a shadow map
@@ -80,6 +81,7 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const comments = `//${this.name}`;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state._emitUniformFromString("biasAndScaleSM", NodeMaterialBlockConnectionPointTypes.Vector3);
         state._emitUniformFromString("lightDataSM", NodeMaterialBlockConnectionPointTypes.Vector3);
@@ -87,22 +89,26 @@ export class ShadowMapBlock extends NodeMaterialBlock {
 
         state._emitFunctionFromInclude("packingFunctions", comments);
 
-        state.compilationString += `vec4 worldPos = ${this.worldPosition.associatedVariableName};\n`;
-        state.compilationString += `vec3 vPositionWSM;\n`;
-        state.compilationString += `float vDepthMetricSM = 0.0;\n`;
-        state.compilationString += `float zSM;\n`;
+        state.compilationString += `${state._declareLocalVar("worldPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.worldPosition.associatedVariableName};\n`;
+        state.compilationString += `${state._declareLocalVar("vPositionWSM", NodeMaterialBlockConnectionPointTypes.Vector3)};\n`;
+        state.compilationString += `${state._declareLocalVar("vDepthMetricSM", NodeMaterialBlockConnectionPointTypes.Float)} = 0.0;\n`;
+        state.compilationString += `${state._declareLocalVar("zSM", NodeMaterialBlockConnectionPointTypes.Float)};\n`;
 
         if (this.worldNormal.isConnected) {
-            state.compilationString += `vec3 vNormalW = ${this.worldNormal.associatedVariableName}.xyz;\n`;
+            state.compilationString += `${state._declareLocalVar("vNormalW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this.worldNormal.associatedVariableName}.xyz;\n`;
             state.compilationString += state._emitCodeFromInclude("shadowMapVertexNormalBias", comments);
         }
 
-        state.compilationString += `vec4 clipPos = ${this.viewProjection.associatedVariableName} * worldPos;\n`;
+        state.compilationString += `${state._declareLocalVar("clipPos", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.viewProjection.associatedVariableName} * worldPos;\n`;
 
         state.compilationString += state._emitCodeFromInclude("shadowMapVertexMetric", comments, {
             replaceStrings: [
                 {
                     search: /gl_Position/g,
+                    replace: "clipPos",
+                },
+                {
+                    search: /vertexOutputs.position/g,
                     replace: "clipPos",
                 },
             ],
@@ -116,18 +122,18 @@ export class ShadowMapBlock extends NodeMaterialBlock {
                 },
             ],
         });
-
+        const output = isWebGPU ? "fragmentOutputs.fragDepth" : "gl_FragDepth";
         state.compilationString += `
             #if SM_DEPTHTEXTURE == 1
                 #ifdef IS_NDC_HALF_ZRANGE
-                    gl_FragDepth = (clipPos.z / clipPos.w);
+                    ${output} = (clipPos.z / clipPos.w);
                 #else
-                    gl_FragDepth = (clipPos.z / clipPos.w) * 0.5 + 0.5;
+                    ${output} = (clipPos.z / clipPos.w) * 0.5 + 0.5;
                 #endif
             #endif
         `;
 
-        state.compilationString += `${state._declareOutput(this.depth)} = vec3(depthSM, 1., 1.);\n`;
+        state.compilationString += `${state._declareOutput(this.depth)} = vec3${state.fSuffix}(depthSM, 1., 1.);\n`;
 
         return this;
     }
