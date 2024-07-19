@@ -66,7 +66,7 @@ export class Engine implements Physical.IEngine {
 
 // Advanced
 export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
-    physicalImplementation: Physical.AbstractEngine;
+    physicalEngine: Physical.AbstractEngine;
     startTime: number;
 
     override inputs = new Array<AdvancedBus>();
@@ -112,7 +112,7 @@ export class PhysicalEngine extends Physical.AbstractEngine {
     constructor(options?: any) {
         super(new AdvancedEngine(options), options);
 
-        this.backend.physicalImplementation = this;
+        this.backend.physicalEngine = this;
     }
 }
 
@@ -183,13 +183,13 @@ export class Bus extends AbstractGraphItem implements Physical.IBus {
 
 class AdvancedBus extends Bus implements Physical.IAdvancedBus {
     override engine: AdvancedEngine;
-    physicalImplementation: Physical.Bus;
+    physicalBus: Physical.Bus;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
 
         this.engine = engine;
-        this.physicalImplementation = new Physical.Bus(this);
+        this.physicalBus = new Physical.Bus(this);
     }
 }
 
@@ -209,13 +209,13 @@ class Source extends AbstractSource {
 
 class AdvancedSource extends Source implements Physical.IAdvancedSource {
     engine: AdvancedEngine;
-    physicalImplementation: Physical.Source;
+    physicalSource: Physical.Source;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
 
         this.engine = engine;
-        this.physicalImplementation = new Physical.Source(this, options);
+        this.physicalSource = new Physical.Source(this, options);
     }
 }
 
@@ -225,13 +225,13 @@ class StreamedSource extends AbstractSource {
 
 class AdvancedStreamedSource extends StreamedSource implements Physical.IAdvancedSource {
     engine: AdvancedEngine;
-    physicalImplementation: Physical.Source;
+    physicalSource: Physical.Source;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
 
         this.engine = engine;
-        this.physicalImplementation = new Physical.Source(this, options);
+        this.physicalSource = new Physical.Source(this, options);
     }
 }
 
@@ -253,12 +253,12 @@ export class Sound extends AbstractSound {
 
 class AdvancedSound extends Sound implements Physical.IAdvancedVoice {
     override engine: AdvancedEngine;
-    physicalImplementation: Physical.Voice;
+    physicalVoice: Physical.Voice;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
         this.engine = engine;
-        this.physicalImplementation = new Physical.Voice(this, options);
+        this.physicalVoice = new Physical.Voice(this, options);
     }
 }
 
@@ -274,11 +274,11 @@ export class StreamedSound extends AbstractSound {
 
 class AdvancedStreamedSound extends StreamedSound implements Physical.IAdvancedVoice {
     override engine: AdvancedEngine;
-    physicalImplementation: Physical.Voice;
+    physicalVoice: Physical.Voice;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
         this.engine = engine;
-        this.physicalImplementation = new Physical.Voice(this, options);
+        this.physicalVoice = new Physical.Voice(this, options);
     }
 }

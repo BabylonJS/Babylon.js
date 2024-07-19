@@ -16,7 +16,7 @@ export interface IEngine {
 }
 
 export interface IAdvancedEngine extends IEngine {
-    physicalImplementation: AbstractEngine;
+    physicalEngine: AbstractEngine;
     currentTime: number;
 
     createBus(options?: any): IAdvancedBus;
@@ -56,19 +56,19 @@ export abstract class AbstractEngine {
     }
 
     createBus(options?: any): Bus {
-        const bus = this.backend.createBus(options).physicalImplementation;
+        const bus = this.backend.createBus(options).physicalBus;
         this._addItem(bus, options);
         return bus;
     }
 
     createSource(options?: any): Source {
-        const source = this.backend.createSource(options).physicalImplementation;
+        const source = this.backend.createSource(options).physicalSource;
         this._addItem(source, options);
         return source;
     }
 
     createVoice(options?: any): Voice {
-        const voice = this.backend.createVoice(options).physicalImplementation;
+        const voice = this.backend.createVoice(options).physicalVoice;
         this._addItem(voice, options);
         return voice;
     }
@@ -238,7 +238,7 @@ abstract class AbstractEngineItem {
     abstract backend: IAdvancedEngineItem;
 
     get engine(): AbstractEngine {
-        return this.backend.engine.physicalImplementation;
+        return this.backend.engine.physicalEngine;
     }
 
     id: number;
@@ -250,7 +250,7 @@ export interface IBus extends IGraphItem {
 
 export interface IAdvancedBus extends IBus {
     engine: IAdvancedEngine;
-    physicalImplementation: Bus;
+    physicalBus: Bus;
 }
 
 type IAdvancedBusBackend = IAdvancedBus & IAdvancedEngineItem;
@@ -271,7 +271,7 @@ export interface ISource {
 
 export interface IAdvancedSource extends ISource {
     engine: IAdvancedEngine;
-    physicalImplementation: Source;
+    physicalSource: Source;
 }
 
 type IAdvancedSourceBackend = IAdvancedSource & IAdvancedEngineItem;
@@ -295,7 +295,7 @@ export interface IVoice extends IGraphItem {
 
 export interface IAdvancedVoice extends IVoice {
     engine: IAdvancedEngine;
-    physicalImplementation: Voice;
+    physicalVoice: Voice;
 }
 
 type IAdvancedVoiceBackend = IAdvancedVoice & IAdvancedEngineItem;
