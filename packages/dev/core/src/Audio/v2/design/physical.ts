@@ -8,7 +8,7 @@ import { Nullable } from "core/types";
 Physical layer of the advanced audio engine.
 
 All interfaces in this file must be implemented by the backend, and they should only be used by the physical layer.
-The logical and common layers should only use the classes in this file, not the interfaces!
+The logical and common layers should not use these interfaces! They should only use the classes.
 */
 
 export interface IEngine {
@@ -27,7 +27,7 @@ export interface IAdvancedEngine extends IEngine {
 export abstract class AbstractEngine {
     backend: IAdvancedEngine;
 
-    graphItems: Map<number, AbstractEngineItem>;
+    graphItems = new Map<number, AbstractEngineItem>();
     nextItemId: number = 1;
 
     maxSpatialVoices: number = 0;
@@ -48,10 +48,10 @@ export abstract class AbstractEngine {
         this.streamVoices = new Array<Voice>(options?.maxStreamVoices ?? 8);
 
         for (let i = 0; i < this.staticVoices.length; i++) {
-            this.createVoice();
+            this.staticVoices[i] = this.createVoice();
         }
         for (let i = 0; i < this.streamVoices.length; i++) {
-            this.createVoice({ stream: true });
+            this.streamVoices[i] = this.createVoice({ stream: true });
         }
     }
 
@@ -69,7 +69,7 @@ export abstract class AbstractEngine {
 
     createVoice(options?: any): Voice {
         const voice = this.backend.createVoice(options).physicalImplementation;
-        this._addVoice(voice, options);
+        this._addItem(voice, options);
         return voice;
     }
 
@@ -81,15 +81,6 @@ export abstract class AbstractEngine {
             item.id = this.nextItemId++;
         }
         this.graphItems.set(item.id, item);
-    }
-
-    _addVoice(voice: Voice, options?: any): void {
-        this._addItem(voice, options);
-        if (options?.stream) {
-            this.streamVoices.push(voice);
-        } else {
-            this.staticVoices.push(voice);
-        }
     }
 
     update(virtualVoices: Array<VirtualVoice>): void {
@@ -164,9 +155,10 @@ export abstract class AbstractEngine {
         // When complete, `pastLastActiveIndex` is set to one past the last active and unmuted voice. Starting at this
         // index, physical voices can be used by virtual voices waiting to start.
         //
-        // Note that it is assumed the number of virtual voices waiting to to start is not more than than the number of
+        // Note that it is assumed the number of virtual voices waiting to start is not more than than the number of
         // physical voices available. This assumption is not checked here, which means any virtual voices waiting to
-        // start beyond the number of physical voices available are ignored.
+        // start are ignored beyond the number of physical voices available. This can result in voices not playing when
+        // they are supposed to.
         //
         let pastLastActiveIndex = 0;
         for (let i = 0; i < this.staticVoices.length; i++) {
@@ -195,10 +187,13 @@ export abstract class AbstractEngine {
         // Physically start virtual voices waiting to start.
         let virtualVoiceIndex = virtualVoices.findIndex((virtualVoice) => virtualVoice.waitingToStart);
         if (virtualVoiceIndex !== -1) {
-            for (; pastLastActiveIndex < this.staticVoices.length; pastLastActiveIndex++) {
+            while (pastLastActiveIndex < this.staticVoices.length) {
                 const voice = this.staticVoices[pastLastActiveIndex];
+
                 voice.init(virtualVoices[virtualVoiceIndex]);
                 voice.start();
+
+                pastLastActiveIndex++;
 
                 // Set `virtualVoiceIndex` to the next virtual voice waiting to start.
                 let done = false;
@@ -247,10 +242,6 @@ abstract class AbstractEngineItem {
     }
 
     id: number;
-
-    constructor(backend: IAdvancedEngineItem, options?: any) {
-        backend.engine.physicalImplementation._addItem(this, options);
-    }
 }
 
 export interface IBus extends IGraphItem {
@@ -268,7 +259,7 @@ export class Bus extends AbstractEngineItem {
     backend: IAdvancedBusBackend;
 
     constructor(backend: IAdvancedBusBackend, options?: any) {
-        super(options);
+        super();
 
         this.backend = backend;
     }
@@ -289,7 +280,7 @@ export class Source extends AbstractEngineItem {
     backend: IAdvancedSourceBackend;
 
     constructor(backend: IAdvancedSourceBackend, options?: any) {
-        super(options);
+        super();
 
         this.backend = backend;
     }
@@ -319,11 +310,9 @@ export class Voice extends AbstractEngineItem {
     }
 
     constructor(backend: IAdvancedVoiceBackend, options?: any) {
-        super(options);
+        super();
 
         this.backend = backend;
-
-        this.engine._addVoice(this, options);
     }
 
     init(virtualVoice: VirtualVoice): void {

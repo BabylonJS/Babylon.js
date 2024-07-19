@@ -10,10 +10,6 @@ import { Nullable } from "../../../types";
 Logical layer of the advanced audio engine.
 */
 
-export let createDefaultEngine = (): Engine => {
-    return new Engine(new WebAudio.PhysicalEngine());
-};
-
 let currentEngine: Nullable<Engine> = null;
 
 function getCurrentEngine(): Engine {
@@ -71,16 +67,19 @@ export class Engine {
         for (const voice of voices) {
             voice.stop();
         }
-        // TODO: Cleanup resources.
+        // TODO: Free resources.
     }
 
     /**
      * Updates virtual and physical voices.
+     *
+     * TODO: Make this get called automatically by the engine.
      */
     public update(): void {
-        if (!this.voicesDirty) {
-            return;
-        }
+        // TODO: Uncomment this when observing virtual voice changes is implemented.
+        // if (!this.voicesDirty) {
+        //     return;
+        // }
 
         // TODO: There maybe be a faster way to sort since we don't care about the order of inactive voices.
         //
@@ -140,7 +139,7 @@ export class Sound extends EngineObject implements IDisposable {
 
     paused: boolean = false;
 
-    constructor(engine?: Engine, options?: any) {
+    constructor(name: string, options?: any, engine?: Engine) {
         super(engine);
 
         this.outputBus = options?.outputBus ?? this.engine.mainBus;
@@ -194,3 +193,14 @@ export class Sound extends EngineObject implements IDisposable {
         this.paused = false;
     }
 }
+
+// TODO: Move this. It doesn't belong in the logical layer.
+export class WebAudioEngine extends Engine {
+    constructor(options?: any) {
+        super(new WebAudio.PhysicalEngine(), options);
+    }
+}
+
+export let createDefaultEngine = (): Engine => {
+    return new WebAudioEngine();
+};

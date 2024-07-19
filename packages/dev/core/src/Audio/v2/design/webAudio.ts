@@ -1,14 +1,25 @@
 /* eslint-disable */
 
 import * as Physical from "./physical";
-import { Vector3 } from "../../../Maths";
+import { Vector3 } from "../../../Maths/math.vector";
 
 /*
 WebAudio backend.
 
+The core classes in this module will replace our legacy audio engine.
+They are ...
+    - Engine
+    - Bus
+    - Sound
+    - StreamedSound (considering rename to SoundStream)
+
+The advanced classes extend the core classes to implement the advanced audio engine's physical interfaces.
+
 Maybe break this file up into webAudioCore.ts and webAudioAdvanced.ts?
 */
 
+// Core
+// TODO: Is there any reason to mark this as implementing IEngine anymore? (Same for other core classes).
 export class Engine implements Physical.IEngine {
     audioContext: AudioContext;
 
@@ -53,6 +64,7 @@ export class Engine implements Physical.IEngine {
     }
 }
 
+// Advanced
 export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     physicalImplementation: Physical.AbstractEngine;
     startTime: number;
@@ -95,6 +107,7 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     }
 }
 
+// Advanced
 export class PhysicalEngine extends Physical.AbstractEngine {
     constructor(options?: any) {
         super(new AdvancedEngine(options), options);
@@ -155,6 +168,7 @@ abstract class AbstractGraphItem {
     }
 }
 
+// Core
 export class Bus extends AbstractGraphItem implements Physical.IBus {
     node: GainNode;
 
@@ -228,6 +242,7 @@ abstract class AbstractSound extends AbstractGraphItem implements Physical.IVoic
     abstract stop(): void;
 }
 
+// Core
 export class Sound extends AbstractSound {
     node: AudioBufferSourceNode;
     source: Source;
@@ -247,6 +262,8 @@ class AdvancedSound extends Sound implements Physical.IAdvancedVoice {
     }
 }
 
+// Core
+// TODO: Maybe rename this to `SoundStream`?
 export class StreamedSound extends AbstractSound {
     node: MediaElementAudioSourceNode;
     source: StreamedSource;
