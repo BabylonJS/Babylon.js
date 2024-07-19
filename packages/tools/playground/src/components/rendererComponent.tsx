@@ -5,8 +5,7 @@ import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
 import { Engine, EngineStore, WebGPUEngine } from "@dev/core";
 
-import type { Nullable } from "@dev/core";
-import type { Scene } from "@dev/core";
+import type { Nullable, Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 
