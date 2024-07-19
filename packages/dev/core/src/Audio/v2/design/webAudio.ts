@@ -7,10 +7,43 @@ import { Vector3 } from "../../../Maths";
 export class Engine implements Physical.IEngine {
     audioContext: AudioContext;
 
-    graphItems: Map<number, AbstractGraphItem>;
-    sources: Map<number, AbstractSource>;
+    graphItems = new Map<number, AbstractGraphItem>();
+    sources = new Map<number, AbstractSource>();
+    inputs = new Array<Bus>();
 
-    inputs: Array<Bus>;
+    get unlocked(): boolean {
+        return this.audioContext.state !== "suspended";
+    }
+
+    constructor(options?: any) {
+        this.audioContext = options?.audioContext ?? new AudioContext();
+
+        if (!this.unlocked) {
+            if (options?.autoUnlock !== false) {
+                const onWindowClick = () => {
+                    this.unlock();
+                    window.removeEventListener("click", onWindowClick);
+                };
+                window.addEventListener("click", onWindowClick);
+            }
+
+            const onAudioContextStateChange = () => {
+                if (this.unlocked) {
+                    this.audioContext.removeEventListener("statechange", onAudioContextStateChange);
+                }
+            };
+            this.audioContext.addEventListener("statechange", onAudioContextStateChange);
+        }
+    }
+
+    /**
+     * Sends an audio context unlock request. Called automatically on user interaction when the `autoUnlock` option is `true`.
+     *
+     * Note that the audio context cannot be locked again after it is unlocked.
+     */
+    public unlock(): void {
+        this.audioContext.resume();
+    }
 }
 
 abstract class AbstractSubGraph {
@@ -145,10 +178,40 @@ class AdvancedStreamedSound extends StreamedSound implements Physical.IAdvancedV
 
 export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     physicalImplementation: Physical.Engine;
+    startTime: number;
 
-    constructor() {
-        super();
+    get currentTime(): number {
+        return this.unlocked ? this.startTime + this.audioContext.currentTime : (performance.now() - this.startTime) / 1000;
+    }
+
+    staticVoices: Array<AdvancedSound>;
+    streamedVoices: Array<AdvancedStreamedSound>;
+
+    constructor(options?: any) {
+        super(options);
         this.physicalImplementation = new Physical.Engine(this);
+
+        if (!this.unlocked) {
+            this.startTime = performance.now();
+
+            const onAudioContextStateChange = () => {
+                if (this.unlocked) {
+                    this.startTime = (performance.now() - this.startTime) / 1000;
+                    this.audioContext.removeEventListener("statechange", onAudioContextStateChange);
+                }
+            };
+            this.audioContext.addEventListener("statechange", onAudioContextStateChange);
+        }
+
+        this.staticVoices = new Array<AdvancedSound>(options?.maxStaticVoices ?? 128);
+        this.streamedVoices = new Array<AdvancedStreamedSound>(options?.maxStreamedVoices ?? 8);
+
+        for (let i = 0; i < this.staticVoices.length; i++) {
+            this.staticVoices[i] = new AdvancedSound();
+        }
+        for (let i = 0; i < this.streamedVoices.length; i++) {
+            this.streamedVoices[i] = new AdvancedStreamedSound();
+        }
     }
 
     createBus(options?: any): Physical.IAdvancedBus {
