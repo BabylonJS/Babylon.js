@@ -62,18 +62,8 @@ export class MonacoManager {
             }
         });
 
-        globalState.onUpdateGeneratorRequiredObservable.add(() => {
-            if (Utilities.ReadBoolFromStore("generateAuto", true)) {
-                this._setGeneratedContent();
-                this._resetEditor(true);
-            }
-        });
-
-        globalState.onGenerateRequiredObservable.add(() => {
-            if (Utilities.CheckSafeMode("Are you sure you want to create a new playground?")) {
-                this._setGeneratedContent();
-                this._resetEditor(true);
-            }
+        globalState.onInsertSnippetRequiredObservable.add((snippetKey: string) => {
+            this._insertSnippet(snippetKey);
         });
 
         globalState.onClearRequiredObservable.add(() => {
@@ -220,126 +210,30 @@ class Playground {
         return code + "\n";
     }
 
-    private _setGeneratedContent() {
-        this._createEditor();
-        this.globalState.currentSnippetToken = "";
-
-        // Retreive user params
-        const debugLayer = Utilities.ReadBoolFromStore("debugLayer", false);
-        const useCamera = Utilities.ReadStringFromStore("useCamera", "Arc Rotate (Rad)");
-        const useLight = Utilities.ReadStringFromStore("useLight", "Hemispheric");
-        const useShadows = Utilities.ReadBoolFromStore("useShadows", false);
-        const useGround = Utilities.ReadBoolFromStore("useGround", true);
-        const useSphere = Utilities.ReadBoolFromStore("useSphere", true);
-        const useBox = Utilities.ReadBoolFromStore("useBox", false);
-        const useCylinder = Utilities.ReadBoolFromStore("useCylinder", false);
-        const useAnimation = Utilities.ReadStringFromStore("useAnimation", "None");
-        const useParticles = Utilities.ReadStringFromStore("useParticles", "None");
-        const useSnippet = Utilities.ReadStringFromStore("useSnippet", "None");
-        const useImport = Utilities.ReadStringFromStore("useImport", "None");
-
-        // Build code
-        let code = "";
-
-        // Scene
-        code += "\n// Create a new Scene :\n";
-        code += "var scene = new BABYLON.Scene(engine);\n";
-
-        if (debugLayer) {
-            code += "\n// Show the inspector :\n";
-            code += this._getCode("debugLayer");
-        }
-
-        // Camera
-        code += "\n// Create a camera and attach it to canvas :\n";
-        code += this._getCode(useCamera);
-
-        // Light
-        code += "\n// Create light :\n";
-        code += this._getCode(useLight);
-
-        // Shadows
-        if (useShadows) {
-            code += "\n// Create a shadow generator :\n";
-            if (useLight == "Hemispheric") {
-                code += "// Shadows cannot be generated with Hemispheric light !\n";
-            } else {
-                code += this._getCode("useShadows");
+    private _insertCodeAtCursor(code: string) {
+        if (this._editor) {
+            // Get the current position of the cursor
+            const position = this._editor.getPosition();
+            if (position) {
+                // Fix indent regarding current position
+                if (position.column && position.column > 1) {
+                    code = this._indentCode(code, position.column - 1).slice(position.column - 1);
+                }
+                // Insert code
+                this._editor.executeEdits("", [
+                    {
+                        range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                        text: code,
+                        forceMoveMarkers: true,
+                    },
+                ]);
             }
         }
+    }
 
-        // Meshes
-        if (useGround || useSphere || useBox || useCylinder) {
-            code += "\n// Add geometry\n";
-        }
-        if (useGround) {
-            code += this._getCode("useGround");
-            if (this._templates.length && useShadows && useLight != "Hemispheric") {
-                code += "ground.receiveShadows = true;\n";
-            }
-        }
-        if (useSphere) {
-            code += this._getCode("useSphere");
-            if (this._templates.length && useShadows && useLight != "Hemispheric") {
-                code += "shadowGenerator.addShadowCaster(sphere);\n";
-            }
-        }
-        if (useBox) {
-            code += this._getCode("useBox");
-            if (this._templates.length && useShadows && useLight != "Hemispheric") {
-                code += "shadowGenerator.addShadowCaster(box);\n";
-            }
-        }
-        if (useCylinder) {
-            code += this._getCode("useCylinder");
-            if (this._templates.length && useShadows && useLight != "Hemispheric") {
-                code += "shadowGenerator.addShadowCaster(cylinder);\n";
-            }
-        }
-
-        // Animations
-        if (useAnimation != "None") {
-            code += "\n// Import animated character :\n";
-            code += this._getCode(useAnimation);
-            if (this._templates.length && useShadows && useLight != "Hemispheric") {
-                code = code.slice(0, code.length - 4) + "    shadowGenerator.addShadowCaster(hero);\n});\n";
-            }
-        }
-
-        // Particles
-        if (useParticles != "None") {
-            code += "\n// Create particle system :\n";
-            code += this._getCode(useParticles);
-        }
-
-        // Snippets
-        if (useSnippet != "None") {
-            code += "\n// Load snippet from server :\n";
-            code += this._getCode(useSnippet);
-        }
-
-        // Import / Export
-        if (useImport != "None") {
-            code += "\n// Import or Export meshes :\n";
-            code += this._getCode(useImport);
-        }
-
-        code += "\n// Return\nreturn scene;";
-
-        // Encapsulate function (Javascript)
-        let all_code = "";
-        if (this.globalState.language === "JS") {
-            all_code = "var createScene = function () {" + this._indentCode(code, 4) + "\n};";
-
-            // Encapsulate function (Typescript)
-        } else {
-            all_code += "class Playground {\n";
-            all_code += "    public static CreateScene(engine: BABYLON.Engine, canvas: HTMLCanvasElement): BABYLON.Scene {" + this._indentCode(code, 8) + "\n";
-            all_code += "    }\n";
-            all_code += "}";
-        }
-        // Edit
-        this._editor?.setValue(all_code);
+    private _insertSnippet(snippetKey: string) {
+        const snippet = this._getCode(snippetKey);
+        this._insertCodeAtCursor(snippet);
     }
 
     private _resetEditor(resetMetadata?: boolean) {
@@ -422,7 +316,7 @@ class Playground {
             // cleanup, just in case
             snapshot = snapshot.split("&")[0];
             for (let index = 0; index < declarations.length; index++) {
-                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://babylonsnapshots.z22.web.core.windows.net/" + snapshot);
+                declarations[index] = declarations[index].replace("https://preview.babylonjs.com", "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/" + snapshot);
             }
         }
 
@@ -446,10 +340,10 @@ class Playground {
         declarations.push("https://preview.babylonjs.com/glTF2Interface/babylon.glTF2Interface.d.ts");
         declarations.push("https://assets.babylonjs.com/generated/Assets.d.ts");
 
-        // Check for Unity Toolkit
-        if (location.href.indexOf("UnityToolkit") !== -1 || Utilities.ReadBoolFromStore("unity-toolkit", false) || Utilities.ReadBoolFromStore("unity-toolkit-used", false)) {
-            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.d.ts");
-            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/unity.playground.d.ts");
+        // Check for Babylon Toolkit
+        if (location.href.indexOf("BabylonToolkit") !== -1 || Utilities.ReadBoolFromStore("babylon-toolkit", false) || Utilities.ReadBoolFromStore("babylon-toolkit-used", false)) {
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.d.ts");
+            declarations.push("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/default.playground.d.ts");
         }
 
         const timestamp = typeof globalThis !== "undefined" && (globalThis as any).__babylonSnapshotTimestamp__ ? (globalThis as any).__babylonSnapshotTimestamp__ : 0;
@@ -463,7 +357,7 @@ class Playground {
 
         let libContent = "";
         const responses = await Promise.all(declarations.map((declaration) => fetch(declaration)));
-        const fallbackUrl = "https://babylonsnapshots.z22.web.core.windows.net/refs/heads/master";
+        const fallbackUrl = "https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/heads/master";
         for (const response of responses) {
             if (!response.ok) {
                 // attempt a fallback

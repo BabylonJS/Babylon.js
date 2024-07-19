@@ -73,6 +73,35 @@ export class RawTexture extends Texture {
     }
 
     /**
+     * Clones the texture.
+     * @returns the cloned texture
+     */
+    public override clone(): Texture {
+        if (!this._texture) {
+            return super.clone();
+        }
+
+        const rawTexture = new RawTexture(
+            null,
+            this.getSize().width,
+            this.getSize().height,
+            this.format,
+            this.getScene(),
+            this._texture.generateMipMaps,
+            this._invertY,
+            this.samplingMode,
+            this._texture.type,
+            this._texture._creationFlags,
+            this._useSRGBBuffer
+        );
+
+        rawTexture._texture = this._texture;
+        this._texture.incrementReferences();
+
+        return rawTexture;
+    }
+
+    /**
      * Creates a luminance texture from some data.
      * @param data Define the texture data
      * @param width Define the width of the texture

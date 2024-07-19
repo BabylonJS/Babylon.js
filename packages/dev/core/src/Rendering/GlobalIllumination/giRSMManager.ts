@@ -465,7 +465,7 @@ export class GIRSMManager {
                     const rtws = this._countersRTW[i];
                     for (let t = 0; t < rtws.length; ++t) {
                         if (t === 0) {
-                            this._counters[i].value = this.pause ? 0 : (rtws[t] as WebGPURenderTargetWrapper).gpuTimeInFrame?.counter.lastSecAverage ?? 0;
+                            this._counters[i].value = this.pause ? 0 : ((rtws[t] as WebGPURenderTargetWrapper).gpuTimeInFrame?.counter.lastSecAverage ?? 0);
                         } else if (!this.pause) {
                             this._counters[i].value += (rtws[t] as WebGPURenderTargetWrapper).gpuTimeInFrame?.counter.lastSecAverage ?? 0;
                         }

@@ -233,6 +233,8 @@ export class NativeEngine extends Engine {
     private _zOffset: number = 0;
     private _zOffsetUnits: number = 0;
     private _depthWrite: boolean = true;
+    // warning for non supported fill mode has already been displayed
+    private _fillModeWarningDisplayed = false;
 
     public override setHardwareScalingLevel(level: number): void {
         super.setHardwareScalingLevel(level);
@@ -643,6 +645,22 @@ export class NativeEngine extends Engine {
     }
 
     /**
+     * Triangle Fan and Line Loop are not supported by modern rendering API
+     * @param fillMode  defines the primitive to use
+     * @returns true if supported
+     */
+    private _checkSupportedFillMode(fillMode: number): boolean {
+        if (fillMode == Constants.MATERIAL_LineLoopDrawMode || fillMode == Constants.MATERIAL_TriangleFanDrawMode) {
+            if (!this._fillModeWarningDisplayed) {
+                Logger.Warn("Line Loop and Triangle Fan are not supported fill modes with Babylon Native. Elements with these fill mode will not be visible.");
+                this._fillModeWarningDisplayed = true;
+            }
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Draw a list of indexed primitives
      * @param fillMode defines the primitive to use
      * @param indexStart defines the starting index
@@ -650,6 +668,9 @@ export class NativeEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public override drawElementsType(fillMode: number, indexStart: number, indexCount: number, instancesCount?: number): void {
+        if (!this._checkSupportedFillMode(fillMode)) {
+            return;
+        }
         // Apply states
         this._drawCalls.addCount(1, false);
 
@@ -678,6 +699,9 @@ export class NativeEngine extends Engine {
      * @param instancesCount defines the number of instances to draw (if instantiation is enabled)
      */
     public override drawArraysType(fillMode: number, verticesStart: number, verticesCount: number, instancesCount?: number): void {
+        if (!this._checkSupportedFillMode(fillMode)) {
+            return;
+        }
         // Apply states
         this._drawCalls.addCount(1, false);
 
@@ -920,7 +944,7 @@ export class NativeEngine extends Engine {
         this._commandBufferEncoder.encodeCommandArgAsUInt32(culling ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffset);
         this._commandBufferEncoder.encodeCommandArgAsFloat32(zOffsetUnits);
-        this._commandBufferEncoder.encodeCommandArgAsUInt32(this.cullBackFaces ?? cullBackFaces ?? true ? 1 : 0);
+        this._commandBufferEncoder.encodeCommandArgAsUInt32((this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 0);
         this._commandBufferEncoder.encodeCommandArgAsUInt32(reverseSide ? 1 : 0);
         this._commandBufferEncoder.finishEncodingCommand();
     }

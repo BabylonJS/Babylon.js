@@ -1,21 +1,462 @@
 {
-    "fromTag": "7.14.0",
+    "fromTag": "7.15.2",
     "changelog": {
-        "7.14.0": [
+        "7.16.0": [
             {
-                "pr": "15251",
-                "title": "Fix cube texture defaultLodScale",
-                "description": "https://forum.babylonjs.com/t/incorrect-lodscale-value-in-cubetexture-constructor/51772",
+                "pr": "15299",
+                "title": "Fix raw texture clone by leveraging a shared internal texture",
+                "description": null,
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
+            }
+        ],
+        "7.15.2": [
+            {
+                "pr": "15289",
+                "title": "add support for ShadowMapBlock",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/shadowMapBlock.ts",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/packingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/shadowMapVertexMetric.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15297",
+                "title": "fix: transparent objects with material settings needDepthPrePass",
+                "description": null,
+                "author": {
+                    "name": "kevinnmm",
+                    "url": "https://github.com/kevinnmm"
+                },
+                "files": [
+                    "packages/dev/core/src/Layers/effectLayer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15296",
+                "title": "Avoid some unnecessary computations in subsurface scattering code",
+                "description": "To maintain the correct thickness, the subsurface code will decompose the current mesh's world matrix each frame to determine the scale. That's a rather expensive operation and is unnecessary when the min/max thickness is 0.\r\n\r\ntodo: will share a playground that demonstrates a use case where subsurface scattering can be used in a way that this optimization is helpful.",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15295",
+                "title": "Change the URL for the snapshots server",
+                "description": "Old URL will soon be inaccessible",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    ".build/changelog.json",
+                    "packages/tools/guiEditor/public/index.js",
+                    "packages/tools/nodeEditor/public/index.js",
+                    "packages/tools/nodeGeometryEditor/public/index.js",
+                    "packages/tools/playground/public/index.js",
+                    "packages/tools/playground/src/tools/monacoManager.ts",
+                    "packages/tools/sandbox/public/index.js",
+                    "packages/tools/vsm/public/index.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15294",
+                "title": "Fix effect dispose memory leak",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/thinEngine.ts"
                 ],
                 "tags": [
                     "bug"
                 ]
+            },
+            {
+                "pr": "15293",
+                "title": "fix translucency intensity texture",
+                "description": "https://forum.babylonjs.com/t/khr-animation-pointer-with-uv-transforms/49081/45",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/PBR/pbrSubSurfaceConfiguration.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "glTF"
+                ]
+            },
+            {
+                "pr": "15291",
+                "title": "Add consistent support for toolkit",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/playground/src/tools/saveManager.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15290",
+                "title": "Fix debugging and watch mode for viewer-alpha test app",
+                "description": "This change is mostly about finishing getting debugging and hmr (hot module reload) working for code under core and loaders.\r\n\r\n- Make the repo root the web root and reference files from that context (fixes debugging)\r\n- Make the `Viewer (Alpha - Web)` task depend on `Watch all (Dev)` (starts watch mode on dev code which fixes HMR, since it now will compile any changes and HRM will pick up the associated JS changes)\r\n\r\nI also tacked on a couple other small fixes in the viewer-alpha code:\r\n\r\n- If a new model or env is begins loading before a previous one finished, just log it (not as an error, no need for scary red console logs)\r\n- In the test app, wait until we know the viewer module has finished asynchronously loading before trying to set properties on the viewer element",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html",
+                    "packages/tools/viewer-alpha/vite.config.mjs"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15288",
+                "title": "add support for log depth",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Vertex/vertexOutputBlock.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15287",
+                "title": "Fix elbow overload being ignored when using modules",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/nodeEditor/src/graphSystem/display/elbowDisplayManager.modules.scss"
+                ],
+                "tags": [
+                    "bug",
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15286",
+                "title": "Fix edges render with instances in MRT",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/renderTargetTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15280",
+                "title": "Add support for PrepassOutput",
+                "description": "@Popov72 : I probably miss the connection with the MRT. I created the required outputs in the output struct and the PG compiles but does not render as expected...\r\n\r\nPG: #WW65SN#9\r\n\r\n",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/fragmentOutputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Fragment/prePassOutputBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15282",
+                "title": "Switch Viewer alpha test app from WebPack to Vite",
+                "description": "Switching the Viewer alpha test app from WebPack to Vite for a couple reasons:\r\n1. I need to use Rollup for some of the size analysis testing as it's very easy to configure Rollup to do what I want, but I've not figured out any way to get WebPack to do the same thing.\r\n2. It is easier to setup a test app with Vite that consumes the source (e.g. index.html just references the Viewer index.ts directly as a module as opposed to WebPack where it has to reference the WebPack output explicitly).\r\n3. It was fairly easy to get working debugging in the test app's index.html inline scripts while I've not figured out how to get that to work with WebPack.\r\n4. Vite is super fast, less waiting. :)\r\n\r\nOn the other hand, a few things were harder to configure with Vite:\r\n1. Getting my Vite test app to correctly debug other parts of the code required manually configuring the `pathMapping` in launch.json.\r\n2. Getting the VSCode task to recognize that Vite is up and running required manual configuration.\r\n\r\nOverall I still prefer moving to Vite as I think the benefits outweigh the costs.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".vscode/launch.json",
+                    ".vscode/tasks.json",
+                    "package-lock.json",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/test/apps/web/index.html",
+                    "packages/tools/viewer-alpha/vite.config.mjs",
+                    "packages/tools/viewer-alpha/webpack.config.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15283",
+                "title": "Fix for <img> elements being created when not needed",
+                "description": "If Image is created with a null source URL it will always create an HTMLImageElement because _source is initialized to undefined instead of null.\r\n\r\nPlayground with fix, doesn't instantiate a new image: https://playground.babylonjs.com/?snapshot=refs/pull/15283/merge#8YG4CI#1",
+                "author": {
+                    "name": "kircher1",
+                    "url": "https://github.com/kircher1"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15284",
+                "title": "Babylon Toolkit Name Refactor",
+                "description": "Update 'Unity Toolkit' references to Babylon Toolkit'",
+                "author": {
+                    "name": "MackeyK24",
+                    "url": "https://github.com/MackeyK24"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/rendererComponent.tsx",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15281",
+                "title": "Teleport node on matrix and world pos/nor/tan blocks connected to PBR nodes causing compile error",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/Blocks/Teleport/teleportInBlock.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15277",
+                "title": "Add support for thin instances in GPUPIcking",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15276",
+                "title": "Random block in NGE could use a \"generate once\" lock in addition to the other three",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/Blocks/randomBlock.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15275",
+                "title": "Make isVisible optionally inheritable",
+                "description": "KHR Visibility, a new glTF extension, sets visibility as inherited value from a node's parent(s). Meaning, a node is only visible if it is set to be visible and all of its parents are visible. This is not what we are doing in Babylon. \r\n\r\nThis PR adds a flag that should only be turned on when using the KHR visibility extension for each mesh of the loaded glTF. Enabling the flag will allow checking  mesh's visibility, based on its parents visibility as well.\r\n\r\nThis PR is a suggestion only, but it will be needed to support the latest extension. I understand there is a slight perf hit for the default behavior. I did my best to make sure we return early for the current behavior, without iteration the parents.\r\n\r\nTest PG - #ABDDD6#118 (emulating enabling KHR interactivity).",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/abstractMesh.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15266",
+                "title": "New HTML Text wrapping mode",
+                "description": "Introducing a new text wrapping mode in the GUI's text block - HTML.\r\n\r\nThe HTML wrapping mode will use a native HTML element to decide how to wrap the text. Especially useful for east-asian languages (CJK) that don't separate words with a \" \", which is the method we used until now. It is possible to configure the HTML element to fit the needs of the application. Per default it is using the default wrapping configuration of an HTML element.\r\n\r\nPlayground to test with: https://playground.babylonjs.com/?snapshot=refs/pull/15266/merge#44KYLP#499",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/textBlock.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15271",
+                "title": "Move assignment before callback in PointersInput",
+                "description": "If the onTouch callback causes any change in the state of pointers (for example, if you actively lose focus) the point `this._pointA` is set to null, and an exception will be thrown.\n\nThere is no reason I can find not to assign the x/y values before running the callback. It actually makes sense to do it before, as the point is passed as a variable.\n\nWe don't use the point at all in any of the implementations of onTouch in the framework. It can be considered a breaking change if someone created their own input implementation and implemented onTouch which uses point.x and point.y, expecting it to be a different value (the value before the current frame, or 0,0 on first frame). That's the reason I don't see that as a breaking change.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Cameras/Inputs/BaseCameraPointersInput.ts"
+                ],
+                "tags": []
+            }
+        ],
+        "7.15.1": [
+            {
+                "pr": "15270",
+                "title": "Fix align in buffers function GetFloatData",
+                "description": "https://forum.babylonjs.com/t/silent-bug-in-buffers/51596",
+                "author": {
+                    "name": "Taras55",
+                    "url": "https://github.com/Taras55"
+                },
+                "files": [
+                    "packages/dev/core/src/Buffers/buffer.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15274",
+                "title": "rtt screenshot fix",
+                "description": null,
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Misc/screenshotTools.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15273",
+                "title": "Add a new utility function to compute the max extents of an array of meshes",
+                "description": "This change adds a new utility function `computeMaxExtents` that will take an array of meshes and an optional animation group to compute an approximate overall minimum and maximum vector that considers animations, skinning, and morph targets.\r\n\r\nThe morph targets are computed by taking each target and updating the max extents to fit each morph target. Weights are not considered in this computation.\r\n\r\nSkinning is computed by computing the max extents per bone. Again, weights are not considered in this computation.\r\n\r\nThe max extents are converted into the corners of the bounding box before computing the final max extents.\r\n\r\nAnimations are considered by stepping through the animation group at a fixed step in seconds. For skinning, each bone's corners are updated with the bone's final matrix for each frame step.\r\n\r\nThis function is significantly faster than using `mesh.refreshBoundingInfo` applying skeleton and/or morph targets looping through the animation frames in a similar fashion.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/index.ts",
+                    "packages/dev/core/src/Meshes/meshUtils.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-BoxAnimated.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox0.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-Fox1.png",
+                    "packages/tools/tests/test/visualization/ReferenceImages/computeMaxExtents-MorphStressTest.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15272",
+                "title": "Fix gpu part aging issue",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Shaders/gpuRenderParticles.vertex.fx"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15268",
+                "title": "Update image.ts",
+                "description": "add top :0",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/image.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15261",
+                "title": "Change default behavior for anchors",
+                "description": "It seems like chrome has an issue with removing created anchors after a session has ended. I am still investigating the source of the issue, but until then - setting the flag to true to not remove the anchors on session end allows the scene to continue correctly.\n\nAlso added a new flag to reset the list of anchors on session init (without using the webxr \"delete\" function)",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/XR/features/WebXRAnchorSystem.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15267",
+                "title": "AnimationGroup start should restart if an animatable is available",
+                "description": "See https://forum.babylonjs.com/t/animationgroup-documentation-issue/52001?u=raananw\r\n\r\nPG to test with - #ZI9AK7#4084\r\n\r\nAlso addressing https://forum.babylonjs.com/t/scene-removeanimationgroup-not-working/52006?u=raananw - the dispose function will stop the animation if it is running.",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15265",
+                "title": "colors and useColors fix in GRLSimpleMaterial, uv calc fix",
+                "description": "SImpleMaterial didn't create the colors texture. Fixed.",
+                "author": {
+                    "name": "RolandCsibrei",
+                    "url": "https://github.com/RolandCsibrei"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/GreasedLine/greasedLineSimpleMaterial.ts",
+                    "packages/dev/core/src/Meshes/GreasedLine/greasedLineMesh.ts"
+                ],
+                "tags": []
             }
         ],
         "7.15.0": [
@@ -224,6 +665,23 @@
                     "packages/dev/core/test/unit/Misc/asyncLock.test.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.14.0": [
+            {
+                "pr": "15251",
+                "title": "Fix cube texture defaultLodScale",
+                "description": "https://forum.babylonjs.com/t/incorrect-lodscale-value-in-cubetexture-constructor/51772",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/cubeTexture.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
             }
         ],
         "7.13.3": [
@@ -7775,7 +8233,7 @@
             {
                 "pr": "14768",
                 "title": "ShaderMaterial: add support for fog",
-                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815/4\r\n\r\n[EDIT] Example: https://babylonsnapshots.z22.web.core.windows.net/refs/pull/14768/merge/index.html#T90MQ4#16",
+                "description": "See https://forum.babylonjs.com/t/hide-particles-in-the-built-in-fog/47815/4\r\n\r\n[EDIT] Example: https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/14768/merge/index.html#T90MQ4#16",
                 "author": {
                     "name": "Popov72",
                     "url": "https://github.com/Popov72"
@@ -11738,7 +12196,7 @@
             {
                 "pr": "14538",
                 "title": "Allows SkeletonViewer to render skeleton without mesh",
-                "description": "Allows SkeletonViewer to render skeleton without mesh, handling null mesh.\r\n\r\nTested in the following playgrounds:\r\nBroke in Master:\r\nhttps://playground.babylonjs.com/#HJEBQF#5\r\n\r\nWorks with the PR:\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/14538/merge/index.html#HJEBQF#5\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/14538/merge/index.html#HJEBQF#6",
+                "description": "Allows SkeletonViewer to render skeleton without mesh, handling null mesh.\r\n\r\nTested in the following playgrounds:\r\nBroke in Master:\r\nhttps://playground.babylonjs.com/#HJEBQF#5\r\n\r\nWorks with the PR:\r\nhttps://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/14538/merge/index.html#HJEBQF#5\r\nhttps://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/14538/merge/index.html#HJEBQF#6",
                 "author": {
                     "name": "yuripourre",
                     "url": "https://github.com/yuripourre"
@@ -11867,7 +12325,7 @@
             {
                 "pr": "14534",
                 "title": "feat(gizmo): set custom rotation color",
-                "description": "### What\r\n\r\n- adds setter to allow changing color of the drag angle sector drawn by the rotation shader  \r\n  <img src=\"https://github.com/BabylonJS/Babylon.js/assets/12933406/059a53a1-aceb-41a7-aed5-2962fba9b369\" height=\"40\">\r\n- relates to https://github.com/BabylonJS/Babylon.js/pull/14525\r\n\r\n### Why\r\n\r\n- to allow changing the color after the gizmo is created\r\n- to allow having different color for mesh (torus) and drag angle sector\r\n\r\n### Visuals\r\n\r\n|Before [PG](https://playground.babylonjs.com/#VJ0MJD#1)|After [PG](https://babylonsnapshots.z22.web.core.windows.net/refs/pull/14534/merge/index.html#VJ0MJD#1) (blue & yellow)|\r\n|-|-|\r\n|![babylonjs-gizmo-before](https://github.com/BabylonJS/Babylon.js/assets/12933406/00b727a4-19e8-4bb2-aaa2-5896120333ee)|![babylonjs-gizmo-after](https://github.com/BabylonJS/Babylon.js/assets/12933406/2b80ad0f-1e33-4f98-8f79-a1177f09603e)|\r\n\r\n",
+                "description": "### What\r\n\r\n- adds setter to allow changing color of the drag angle sector drawn by the rotation shader  \r\n  <img src=\"https://github.com/BabylonJS/Babylon.js/assets/12933406/059a53a1-aceb-41a7-aed5-2962fba9b369\" height=\"40\">\r\n- relates to https://github.com/BabylonJS/Babylon.js/pull/14525\r\n\r\n### Why\r\n\r\n- to allow changing the color after the gizmo is created\r\n- to allow having different color for mesh (torus) and drag angle sector\r\n\r\n### Visuals\r\n\r\n|Before [PG](https://playground.babylonjs.com/#VJ0MJD#1)|After [PG](https://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/14534/merge/index.html#VJ0MJD#1) (blue & yellow)|\r\n|-|-|\r\n|![babylonjs-gizmo-before](https://github.com/BabylonJS/Babylon.js/assets/12933406/00b727a4-19e8-4bb2-aaa2-5896120333ee)|![babylonjs-gizmo-after](https://github.com/BabylonJS/Babylon.js/assets/12933406/2b80ad0f-1e33-4f98-8f79-a1177f09603e)|\r\n\r\n",
                 "author": {
                     "name": "PhilippeMorier",
                     "url": "https://github.com/PhilippeMorier"
@@ -42747,7 +43205,7 @@
             {
                 "pr": "12365",
                 "title": "Add support for Iridescence in PBR and GLTF",
-                "description": "* Support iridescence in PBR Material\r\n* Support iridescence in NME PBR Material\r\n* Support iridescence in GLTF Loader\r\n* Support iridescence in GLTF Exporter\r\n\r\nDoc is available here: https://documentation-git-iridescence-babylonjs.vercel.app/divingDeeper/materials/using/masterPBR#iridescence on PR https://github.com/BabylonJS/Documentation/pull/521\r\n\r\n![iridescence_nme](https://user-images.githubusercontent.com/16655165/162496948-0509c192-58d0-44ab-9358-a23565ef8bcd.png)\r\n\r\nCan Be tested on Playgrounds:\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/12365/merge/index.html#2FDQT5#1505\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/12365/merge/index.html#2FDQT5#1507\r\nhttps://babylonsnapshots.z22.web.core.windows.net/refs/pull/12365/merge/index.html#2FDQT5#1508\r\n\r\n",
+                "description": "* Support iridescence in PBR Material\r\n* Support iridescence in NME PBR Material\r\n* Support iridescence in GLTF Loader\r\n* Support iridescence in GLTF Exporter\r\n\r\nDoc is available here: https://documentation-git-iridescence-babylonjs.vercel.app/divingDeeper/materials/using/masterPBR#iridescence on PR https://github.com/BabylonJS/Documentation/pull/521\r\n\r\n![iridescence_nme](https://user-images.githubusercontent.com/16655165/162496948-0509c192-58d0-44ab-9358-a23565ef8bcd.png)\r\n\r\nCan Be tested on Playgrounds:\r\nhttps://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/12365/merge/index.html#2FDQT5#1505\r\nhttps://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/12365/merge/index.html#2FDQT5#1507\r\nhttps://snapshots-cvgtc2eugrd3cgfd.z01.azurefd.net/refs/pull/12365/merge/index.html#2FDQT5#1508\r\n\r\n",
                 "author": {
                     "name": "sebavan",
                     "url": "https://github.com/sebavan"

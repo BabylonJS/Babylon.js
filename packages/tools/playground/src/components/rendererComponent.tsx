@@ -3,10 +3,9 @@ import type { GlobalState } from "../globalState";
 import { RuntimeMode } from "../globalState";
 import { Utilities } from "../tools/utilities";
 import { DownloadManager } from "../tools/downloadManager";
-import { Engine, WebGPUEngine } from "@dev/core";
+import { Engine, EngineStore, WebGPUEngine } from "@dev/core";
 
-import type { Nullable } from "@dev/core";
-import type { Scene } from "@dev/core";
+import type { Nullable, Scene } from "@dev/core";
 
 import "../scss/rendering.scss";
 
@@ -24,7 +23,7 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
     private _scene: Nullable<Scene>;
     private _canvasRef: React.RefObject<HTMLCanvasElement>;
     private _downloadManager: DownloadManager;
-    private _unityToolkitWasLoaded = false;
+    private _babylonToolkitWasLoaded = false;
     private _tmpErrorEvent?: ErrorEvent;
 
     public constructor(props: IRenderingComponentProps) {
@@ -119,14 +118,15 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 break;
         }
 
-        if (this._engine) {
-            try {
-                this._engine.dispose();
-            } catch (ex) {
-                // just ignore
+        try {
+            while (EngineStore.Instances.length) {
+                EngineStore.Instances[0].dispose();
             }
-            this._engine = null;
+        } catch (ex) {
+            // just ignore
         }
+
+        this._engine = null;
 
         try {
             // Set up the global object ("window" and "this" for user code).
@@ -200,18 +200,18 @@ export class RenderingComponent extends React.Component<IRenderingComponentProps
                 havokInit = "globalThis.HK = await HavokPhysics();";
             }
 
-            const unityToolkit =
-                !this._unityToolkitWasLoaded &&
-                (code.includes("UNITY.SceneManager.InitializePlayground") ||
+            const babylonToolkit =
+                !this._babylonToolkitWasLoaded &&
+                (code.includes("BABYLON.Toolkit.SceneManager.InitializePlayground") ||
                     code.includes("SM.InitializePlayground") ||
-                    location.href.indexOf("UnityToolkit") !== -1 ||
-                    Utilities.ReadBoolFromStore("unity-toolkit", false));
-            // Check for Unity Toolkit
-            if (unityToolkit) {
-                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/UnityExporter@master/Redist/Runtime/babylon.toolkit.js");
-                this._unityToolkitWasLoaded = true;
+                    location.href.indexOf("BabylonToolkit") !== -1 ||
+                    Utilities.ReadBoolFromStore("babylon-toolkit", false));
+            // Check for Babylon Toolkit
+            if (babylonToolkit) {
+                await this._loadScriptAsync("https://cdn.jsdelivr.net/gh/BabylonJS/BabylonToolkit@master/Runtime/babylon.toolkit.js");
+                this._babylonToolkitWasLoaded = true;
             }
-            Utilities.StoreBoolToStore("unity-toolkit-used", unityToolkit);
+            Utilities.StoreBoolToStore("babylon-toolkit-used", babylonToolkit);
 
             let createEngineFunction = "createDefaultEngine";
             let createSceneFunction = "";
