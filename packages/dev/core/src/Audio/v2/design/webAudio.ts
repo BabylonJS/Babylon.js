@@ -35,9 +35,13 @@ export class Engine implements Physical.IEngine {
     }
 
     /**
-     * Sends an audio context unlock request. Called automatically on user interaction when the `autoUnlock` option is `true`.
+     * Sends an audio context unlock request.
      *
-     * Note that the audio context cannot be locked again after it is unlocked.
+     * Called automatically on user interaction when the `autoUnlock` option is `true`.
+     *
+     * Note that the audio context cannot be locked again after it is unlocked, and it this function should not need to
+     * be called again after the audio context is successfully unlocked. The audio context should stay unlocked for the
+     * the audio context lifetime.
      */
     public unlock(): void {
         this.audioContext.resume();
@@ -54,14 +58,13 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
         return this.unlocked ? this.startTime + this.audioContext.currentTime : (performance.now() - this.startTime) / 1000;
     }
 
-    graphItems = new Map<number, AbstractGraphItem>();
-    sources = new Map<number, AbstractSource>();
-
     constructor(options?: any) {
         super(options);
+
         this.physicalImplementation = new Physical.Engine(this, options);
 
         if (!this.unlocked) {
+            // Keep track of time while the audio context is locked so the engine still seems like it's running.
             this.startTime = performance.now();
 
             const onAudioContextStateChange = () => {
@@ -150,15 +153,19 @@ export class Bus extends AbstractGraphItem implements Physical.IBus {
 
     constructor(engine: Engine, options?: any) {
         super(engine, options);
+
         this.node = new GainNode(this.audioContext);
     }
 }
 
 class AdvancedBus extends Bus implements Physical.IAdvancedBus {
+    override engine: AdvancedEngine;
     physicalImplementation: Physical.Bus;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
+
+        this.engine = engine;
         this.physicalImplementation = new Physical.Bus(this);
     }
 }
@@ -178,10 +185,13 @@ class Source extends AbstractSource {
 }
 
 class AdvancedSource extends Source implements Physical.IAdvancedSource {
+    engine: AdvancedEngine;
     physicalImplementation: Physical.Source;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
+
+        this.engine = engine;
         this.physicalImplementation = new Physical.Source(this, options);
     }
 }
@@ -191,10 +201,13 @@ class StreamedSource extends AbstractSource {
 }
 
 class AdvancedStreamedSource extends StreamedSource implements Physical.IAdvancedSource {
+    engine: AdvancedEngine;
     physicalImplementation: Physical.Source;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
+
+        this.engine = engine;
         this.physicalImplementation = new Physical.Source(this, options);
     }
 }
@@ -215,10 +228,12 @@ export class Sound extends AbstractSound {
 }
 
 class AdvancedSound extends Sound implements Physical.IAdvancedVoice {
+    override engine: AdvancedEngine;
     physicalImplementation: Physical.Voice;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
+        this.engine = engine;
         this.physicalImplementation = new Physical.Voice(this, options);
     }
 }
@@ -232,10 +247,12 @@ export class StreamedSound extends AbstractSound {
 }
 
 class AdvancedStreamedSound extends StreamedSound implements Physical.IAdvancedVoice {
+    override engine: AdvancedEngine;
     physicalImplementation: Physical.Voice;
 
     constructor(engine: AdvancedEngine, options?: any) {
         super(engine, options);
+        this.engine = engine;
         this.physicalImplementation = new Physical.Voice(this, options);
     }
 }
