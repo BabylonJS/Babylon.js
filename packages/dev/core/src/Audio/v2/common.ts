@@ -57,7 +57,7 @@ export class VirtualVoice {
         return this.options?.stream !== true;
     }
 
-    get streamed(): boolean {
+    get stream(): boolean {
         return this.options?.stream === true;
     }
 

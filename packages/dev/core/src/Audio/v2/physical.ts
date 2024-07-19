@@ -94,10 +94,10 @@ export abstract class AbstractEngine {
         // Update virtual voice states according to the number of physical voices available.
         let spatialCount = 0;
         let staticCount = 0;
-        let streamedCount = 0;
+        let streamCount = 0;
         let spatialMaxed = false;
         let staticMaxed = false;
-        let streamedMaxed = false;
+        let streamMaxed = false;
         let allMaxed = false;
 
         for (let i = 0; i < virtualVoices.length; i++) {
@@ -125,16 +125,16 @@ export abstract class AbstractEngine {
                 }
             }
 
-            if (virtualVoice.streamed) {
-                if (streamedMaxed) {
+            if (virtualVoice.stream) {
+                if (streamMaxed) {
                     virtualVoice.mute();
                     return;
                 }
                 virtualVoice.start();
 
-                streamedCount++;
-                if (streamedCount >= this.streamVoices.length) {
-                    streamedMaxed = true;
+                streamCount++;
+                if (streamCount >= this.streamVoices.length) {
+                    streamMaxed = true;
                 }
             }
 
@@ -145,7 +145,7 @@ export abstract class AbstractEngine {
                 }
             }
 
-            if (spatialMaxed && staticMaxed && streamedMaxed) {
+            if (spatialMaxed && staticMaxed && streamMaxed) {
                 allMaxed = true;
             }
         }

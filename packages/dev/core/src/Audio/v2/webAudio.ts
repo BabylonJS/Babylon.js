@@ -11,7 +11,7 @@ They are ...
     - Engine
     - Bus
     - Sound
-    - StreamedSound (considering rename to SoundStream)
+    - SoundStream (considering rename to SoundStream)
 
 The advanced classes extend the core classes to implement the advanced audio engine's physical interfaces.
 
@@ -96,11 +96,11 @@ export class AdvancedEngine extends Engine implements Physical.IAdvancedEngine {
     }
 
     createSource(options?: any): Physical.IAdvancedSource {
-        return options?.stream ? new AdvancedStreamedSource(this, options) : new AdvancedSource(this, options);
+        return options?.stream ? new AdvancedStreamSource(this, options) : new AdvancedStaticSource(this, options);
     }
 
     createVoice(options?: any): Physical.IAdvancedVoice {
-        return options?.stream ? new AdvancedStreamedSound(this, options) : new AdvancedSound(this, options);
+        return options?.stream ? new AdvancedStreamVoice(this, options) : new AdvancedStaticVoice(this, options);
     }
 }
 
@@ -196,7 +196,7 @@ abstract class AbstractSource implements Physical.ISource {
     }
 }
 
-class Source extends AbstractSource {
+class StaticSource extends AbstractSource {
     buffer: AudioBuffer;
 
     constructor(engine: Engine, options?: any) {
@@ -204,7 +204,7 @@ class Source extends AbstractSource {
     }
 }
 
-class AdvancedSource extends Source implements Physical.IAdvancedSource {
+class AdvancedStaticSource extends StaticSource implements Physical.IAdvancedSource {
     engine: AdvancedEngine;
     physicalSource: Physical.Source;
 
@@ -216,11 +216,11 @@ class AdvancedSource extends Source implements Physical.IAdvancedSource {
     }
 }
 
-class StreamedSource extends AbstractSource {
+class StreamSource extends AbstractSource {
     audioElement: HTMLAudioElement;
 }
 
-class AdvancedStreamedSource extends StreamedSource implements Physical.IAdvancedSource {
+class AdvancedStreamSource extends StreamSource implements Physical.IAdvancedSource {
     engine: AdvancedEngine;
     physicalSource: Physical.Source;
 
@@ -242,13 +242,13 @@ abstract class AbstractSound extends AbstractGraphItem implements Physical.IVoic
 // Core
 export class Sound extends AbstractSound {
     node: AudioBufferSourceNode;
-    source: Source;
+    source: StaticSource;
 
     start(): void {}
     stop(): void {}
 }
 
-class AdvancedSound extends Sound implements Physical.IAdvancedVoice {
+class AdvancedStaticVoice extends Sound implements Physical.IAdvancedVoice {
     override engine: AdvancedEngine;
     physicalVoice: Physical.Voice;
 
@@ -260,16 +260,15 @@ class AdvancedSound extends Sound implements Physical.IAdvancedVoice {
 }
 
 // Core
-// TODO: Maybe rename this to `SoundStream`?
-export class StreamedSound extends AbstractSound {
+export class SoundStream extends AbstractSound {
     node: MediaElementAudioSourceNode;
-    source: StreamedSource;
+    source: StreamSource;
 
     start(): void {}
     stop(): void {}
 }
 
-class AdvancedStreamedSound extends StreamedSound implements Physical.IAdvancedVoice {
+class AdvancedStreamVoice extends SoundStream implements Physical.IAdvancedVoice {
     override engine: AdvancedEngine;
     physicalVoice: Physical.Voice;
 
