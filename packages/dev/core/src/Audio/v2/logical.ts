@@ -3,8 +3,8 @@
 import { VoiceState, VirtualVoice } from "./common";
 import * as Physical from "./physical";
 import * as WebAudio from "./webAudio";
-import { IDisposable } from "../../../scene";
-import { Nullable } from "../../../types";
+import { IDisposable } from "../../scene";
+import { Nullable } from "../../types";
 
 /*
 Logical layer of the advanced audio engine.

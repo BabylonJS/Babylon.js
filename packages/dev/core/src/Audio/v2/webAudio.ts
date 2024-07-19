@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import * as Physical from "./physical";
-import { Vector3 } from "../../../Maths/math.vector";
+import { Vector3 } from "../../Maths/math.vector";
 
 /*
 WebAudio backend.

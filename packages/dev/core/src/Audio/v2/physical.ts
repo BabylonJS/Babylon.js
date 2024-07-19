@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import { VirtualVoice, VoiceState } from "./common";
-import { Vector3 } from "../../../Maths";
+import { Vector3 } from "../../Maths";
 import { Nullable } from "core/types";
 
 /*
@@ -216,7 +216,7 @@ export abstract class AbstractEngine {
             this.staticVoices[pastLastActiveIndex].clear();
         }
 
-        console.log(this.staticVoices);
+        // console.log(this.staticVoices);
 
         // TODO: Update stream voices.
     }

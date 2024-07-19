@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 import * as Physical from "./physical";
-import { Observable } from "../../../Misc/observable";
+import { Observable } from "../../Misc/observable";
 
 export enum VoiceState {
     Starting,
