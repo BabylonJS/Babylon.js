@@ -331,6 +331,13 @@ export class GaussianSplattingMesh extends Mesh {
         super.dispose(doNotRecurse);
     }
 
+    private _copyTextures(source: GaussianSplattingMesh): void {
+        this._covariancesATexture = source.covariancesATexture?.clone()!;
+        this._covariancesBTexture = source.covariancesBTexture?.clone()!;
+        this._centersTexture = source.centersTexture?.clone()!;
+        this._colorsTexture = source.colorsTexture?.clone()!;
+    }
+
     /**
      * Returns a new Mesh object generated from the current mesh properties.
      * @param name is a string, the name given to the new mesh
@@ -339,11 +346,9 @@ export class GaussianSplattingMesh extends Mesh {
     public override clone(name: string = ""): GaussianSplattingMesh {
         const newGS = new GaussianSplattingMesh(name, undefined, this.getScene());
         newGS._copySource(this);
+        newGS.makeGeometryUnique();
         newGS._vertexCount = this._vertexCount;
-        this._covariancesATexture = this._covariancesATexture?.clone()!;
-        this._covariancesBTexture = this._covariancesBTexture?.clone()!;
-        this._centersTexture = this._centersTexture?.clone()!;
-        this._colorsTexture = this._colorsTexture?.clone()!;
+        newGS._copyTextures(this);
         newGS._modelViewMatrix = Matrix.Identity();
         newGS._splatPositions = this._splatPositions;
         newGS._instanciateWorker();
