@@ -881,7 +881,7 @@ export class InputTextArea extends InputText {
                     this._scrollTop += this._clipTextTop - cursorTop;
                     cursorTop = this._clipTextTop;
                     this._markAsDirty();
-                } else if (cursorTop + this._fontOffset.height > this._clipTextTop + this._availableHeight) {
+                } else if (cursorTop + this._fontOffset.height > this._clipTextTop + this._availableHeight && this._availableHeight > this._fontOffset.height) {
                     this._scrollTop += this._clipTextTop + this._availableHeight - cursorTop - this._fontOffset.height;
                     cursorTop = this._clipTextTop + this._availableHeight - this._fontOffset.height;
                     this._markAsDirty();
