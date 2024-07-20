@@ -1025,8 +1025,6 @@ export class Engine extends ThinEngine {
         gl.readPixels(x, y, w, h, format, type, 0);
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
 
-        gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
-
         const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
         if (!sync) {
             Logger.Error("Unable to get WebGLSync.");
