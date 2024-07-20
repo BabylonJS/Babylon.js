@@ -55,11 +55,10 @@
             }
 
             &.activated {
+                background-color: white;
                 .command-dropdown-active {
                     color: #f78951;
                 }
-
-                background-color: white;
             }
         }
     }
@@ -72,11 +71,10 @@
             }
 
             &.activated {
+                background-color: white;
                 .command-dropdown-active {
                     color: #9b86ff;
                 }
-
-                background-color: white;
             }
         }
     }

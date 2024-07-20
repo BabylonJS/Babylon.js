@@ -11,6 +11,11 @@
     transition: all 0.2s ease;
     height: calc(100% - 90px);
     z-index: 10;
+    width: 380px;
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows: 60px 60px 1fr;
+    overflow: hidden;
 
     &.visible {
         transform: translateX(0);
@@ -20,12 +25,6 @@
     &.removed {
         display: none;
     }
-
-    width: 380px;
-    display: grid;
-    grid-template-columns: 100%;
-    grid-template-rows: 60px 60px 1fr;
-    overflow: hidden;
 
     #examples-header {
         grid-row: 1;

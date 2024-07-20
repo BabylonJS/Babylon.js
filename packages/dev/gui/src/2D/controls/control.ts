@@ -2368,6 +2368,10 @@ export class Control implements IAnimatable, IFocusableControl {
         // Event redundancy is checked inside the function.
         this._onPointerEnter(this, pi);
 
+        if (this.tabIndex !== -1) {
+            this.host.focusedControl = this;
+        }
+
         if (this._downCount !== 0) {
             return false;
         }
