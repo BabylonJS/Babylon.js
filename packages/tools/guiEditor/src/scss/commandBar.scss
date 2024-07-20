@@ -3,14 +3,14 @@
 }
 
 .ge-commands {
+    grid-row: 1;
+    grid-column: 1;
+    user-select: none;
     * {
         font-family: "acumin-pro-condensed";
         font-weight: 600;
         font-size: 12px;
     }
-    grid-row: 1;
-    grid-column: 1;
-    user-select: none;
 
     .copy {
         display: none;
@@ -309,10 +309,10 @@
 
             &:hover {
                 background: var(--selectionGrey);
+                cursor: pointer;
                 .sub-items {
                     display: block;
                 }
-                cursor: pointer;
             }
 
             .file-upload {
@@ -495,12 +495,12 @@
             top: 0;
             flex-direction: column;
             cursor: grab;
+            filter: brightness(10);
             .downArrowIcon,
             .upArrowIcon {
                 width: 13px;
                 height: 13px;
             }
-            filter: brightness(10);
         }
         &:hover .arrows,
         &:focus .arrows,

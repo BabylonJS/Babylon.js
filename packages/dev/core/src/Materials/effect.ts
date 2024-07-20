@@ -594,7 +594,7 @@ export class Effect implements IDisposable {
     public get vertexSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
             ? this._vertexSourceCodeOverride
-            : this._pipelineContext?._getVertexShaderCode() ?? this._vertexSourceCode;
+            : (this._pipelineContext?._getVertexShaderCode() ?? this._vertexSourceCode);
     }
 
     /**
@@ -604,7 +604,7 @@ export class Effect implements IDisposable {
     public get fragmentSourceCode(): string {
         return this._vertexSourceCodeOverride && this._fragmentSourceCodeOverride
             ? this._fragmentSourceCodeOverride
-            : this._pipelineContext?._getFragmentShaderCode() ?? this._fragmentSourceCode;
+            : (this._pipelineContext?._getFragmentShaderCode() ?? this._fragmentSourceCode);
     }
 
     /**

@@ -45,6 +45,9 @@ import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
 import "../../ShadersWGSL/ShadersInclude/reflectionFunction";
+import "../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric";
+import "../../ShadersWGSL/ShadersInclude/packingFunctions";
+import "../../ShadersWGSL/ShadersInclude/shadowMapFragment";
 import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
