@@ -990,17 +990,17 @@ export class Engine extends ThinEngine {
         this._gl.deleteBuffer(buffer);
     }
 
-    private _clientWaitAsync(sync: WebGLSync, flags = 0, intervalms = 10): Promise<void> {
+    private _clientWaitAsync(sync: WebGLSync, flags = 0, checkForSyncInterval = 10): Promise<void> {
         const gl = <WebGL2RenderingContext>(this._gl as any);
         return new Promise((resolve, reject) => {
             const check = () => {
-                const res = gl.clientWaitSync(sync, flags, 0);
+                const res = gl.clientWaitSync(sync, flags, 0); // timeout = 0, checks SYNC state without blocking
                 if (res == gl.WAIT_FAILED) {
-                    reject();
+                    reject("WebGL sync object failed");
                     return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
-                    setTimeout(check, intervalms);
+                    setTimeout(check, checkForSyncInterval);
                     return;
                 }
                 resolve();
@@ -1025,8 +1025,11 @@ export class Engine extends ThinEngine {
         gl.readPixels(x, y, w, h, format, type, 0);
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
 
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this._currentFramebuffer);
+
         const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
         if (!sync) {
+            Logger.Error("Unable to get WebGLSync.");
             return null;
         }
 
