@@ -996,7 +996,7 @@ export class Engine extends ThinEngine {
             const check = () => {
                 const res = gl.clientWaitSync(sync, flags, 0); // timeout = 0, checks SYNC state without blocking
                 if (res == gl.WAIT_FAILED) {
-                    reject("WebGL sync object failed");
+                    reject(new Error("WebGL sync object failed"));
                     return;
                 }
                 if (res == gl.TIMEOUT_EXPIRED) {
