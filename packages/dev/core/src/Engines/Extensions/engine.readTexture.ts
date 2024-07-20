@@ -215,12 +215,13 @@ ThinEngine.prototype._readTexturePixels = async function (
     }
 
     const { outputBuffer, readType } = _setupOutputBuffer(this, texture, width, height, faceIndex, level, buffer, flushRenderer, noDataConversion);
-    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._currentFramebuffer);
 
     const resultBuffer = await (<Engine>this)._readPixelsAsync(x, y, width, height, this._gl.RGBA, readType, outputBuffer);
     if (resultBuffer === null) {
         throw new Error("Unable to _readPixelsAsync.");
     }
+
+    this._gl.bindFramebuffer(this._gl.FRAMEBUFFER, this._currentFramebuffer);
 
     return resultBuffer;
 };
