@@ -6,7 +6,7 @@ The viewer automatically interacts with the DOM, searching for HTML elements nam
 
 for basic and advanced usage instructions please read the doc at https://doc.babylonjs.com/features/featuresDeepDive/babylonViewer/viewerExamples
 
-The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/Viewer
+The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/packages/tools/viewer
 
 ## Basic usage
 
