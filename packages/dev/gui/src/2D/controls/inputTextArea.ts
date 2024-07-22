@@ -769,8 +769,10 @@ export class InputTextArea extends InputText {
 
         this._cursorInfo.globalStartIndex += deltaIndex;
         this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+        this._clickedCoordinateX = null;
+        this._clickedCoordinateY = null;
 
-        this._textHasChanged();
+        super._textHasChanged();
     }
 
     public override _draw(context: ICanvasRenderingContext): void {
