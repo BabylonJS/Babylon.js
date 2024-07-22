@@ -1129,7 +1129,10 @@ export class InputTextArea extends InputText {
 
                 this._cursorInfo.relativeStartIndex = this._cursorInfo.globalStartIndex - tmpLength;
 
-                if (this._highlightCursorInfo.initialStartIndex !== -1 && this._cursorInfo.globalStartIndex >= this._highlightCursorInfo.initialStartIndex) {
+                if (!this._isTextHighlightOn) {
+                    this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
+                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
+                } else if (this._highlightCursorInfo.initialStartIndex !== -1 && this._cursorInfo.globalStartIndex >= this._highlightCursorInfo.initialStartIndex) {
                     // Current line is at least below the initial highlight index
                     while (tmpLength + lineLength <= this._cursorInfo.globalEndIndex) {
                         tmpLength += lineLength;
@@ -1141,9 +1144,6 @@ export class InputTextArea extends InputText {
                     }
 
                     this._cursorInfo.relativeEndIndex = this._cursorInfo.globalEndIndex - tmpLength;
-                } else if (!this._isTextHighlightOn) {
-                    this._cursorInfo.relativeEndIndex = this._cursorInfo.relativeStartIndex;
-                    this._cursorInfo.globalEndIndex = this._cursorInfo.globalStartIndex;
                 }
             }
         }
