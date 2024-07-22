@@ -5,9 +5,9 @@
         #ifdef PBR
             // Compute Pre Lighting infos
             #ifdef SPOTLIGHT{X}
-                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
             #elif defined(POINTLIGHT{X})
-                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
+                preInfo = computePointAndSpotPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW, vPositionW);
             #elif defined(HEMILIGHT{X})
                 preInfo = computeHemisphericPreLightingInfo(light{X}.vLightData, viewDirectionW, normalW);
             #elif defined(DIRLIGHT{X})
@@ -130,7 +130,7 @@
         #endif
 
         #ifdef PROJECTEDLIGHTTEXTURE{X}
-            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X});
+            info.diffuse *= computeProjectionTextureDiffuseLighting(projectionLightTexture{X}, textureProjectionMatrix{X}, vPositionW);
         #endif
     #endif
 

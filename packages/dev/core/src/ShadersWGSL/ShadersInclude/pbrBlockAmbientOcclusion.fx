@@ -1,26 +1,26 @@
 struct ambientOcclusionOutParams
 {
-    vec3 ambientOcclusionColor;
+    ambientOcclusionColor: vec3f,
 #if DEBUGMODE > 0 && defined(AMBIENT)
-    vec3 ambientOcclusionColorMap;
+    ambientOcclusionColorMap: vec3f
 #endif
 };
 
 #define pbr_inline
-ambientOcclusionOutParams ambientOcclusionBlock(
+fn ambientOcclusionBlock(
 #ifdef AMBIENT
-    in vec3 ambientOcclusionColorMap_,
-    in vec4 vAmbientInfos
+    ambientOcclusionColorMap_: vec3f,
+    vAmbientInfos: vec4f
 #endif
-)
-{
-    ambientOcclusionOutParams outParams;
-    vec3 ambientOcclusionColor = vec3(1., 1., 1.);
+) -> ambientOcclusionOutParams
+{    
+    var outParams: ambientOcclusionOutParams;
+    var ambientOcclusionColor: vec3f =  vec3f(1., 1., 1.);
 
     #ifdef AMBIENT
-        vec3 ambientOcclusionColorMap = ambientOcclusionColorMap_ * vAmbientInfos.y;
+        var ambientOcclusionColorMap: vec3f = ambientOcclusionColorMap_ * vAmbientInfos.y;
         #ifdef AMBIENTINGRAYSCALE
-            ambientOcclusionColorMap = vec3(ambientOcclusionColorMap.r, ambientOcclusionColorMap.r, ambientOcclusionColorMap.r);
+            ambientOcclusionColorMap =  vec3f(ambientOcclusionColorMap.r, ambientOcclusionColorMap.r, ambientOcclusionColorMap.r);
         #endif
         ambientOcclusionColor = mix(ambientOcclusionColor, ambientOcclusionColorMap, vAmbientInfos.z);
 
