@@ -19,6 +19,7 @@ import type { PerturbNormalBlock } from "../Fragment/perturbNormalBlock";
 import { PBRClearCoatConfiguration } from "../../../PBR/pbrClearCoatConfiguration";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { TBNBlock } from "../Fragment/TBNBlock";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the clear coat module of the PBR material
@@ -297,9 +298,9 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             state._emitUniformFromString("vClearCoatTangentSpaceParams", NodeMaterialBlockConnectionPointTypes.Vector2);
 
             const normalShading = ccBlock.worldNormal;
-            code += `vec3 vGeometricNormaClearCoatW = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
+            code += `${state._declareLocalVar("vGeometricNormaClearCoatW", NodeMaterialBlockConnectionPointTypes.Vector3)} = ${normalShading.isConnected ? "normalize(" + normalShading.associatedVariableName + ".xyz)" : "geometricNormalW"};\n`;
         } else {
-            code += `vec3 vGeometricNormaClearCoatW = geometricNormalW;\n`;
+            code += `${state._declareLocalVar("vGeometricNormaClearCoatW", NodeMaterialBlockConnectionPointTypes.Vector3)} = geometricNormalW;\n`;
         }
 
         if (generateTBNSpace && ccBlock) {
@@ -307,74 +308,74 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             vTBNAvailable = ccBlock.worldTangent.isConnected;
         }
 
-        code += `clearcoatOutParams clearcoatOut;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        code += `${isWebGPU ? "var clearcoatOut: clearcoatOutParams" : "clearcoatOutParams clearcoatOut"};
 
         #ifdef CLEARCOAT
             vec2 vClearCoatParams = vec2(${intensity}, ${roughness});
             vec4 vClearCoatTintParams = vec4(${tintColor}, ${tintThickness});
 
-            clearcoatBlock(
-                ${worldPosVarName}.xyz,
-                vGeometricNormaClearCoatW,
-                viewDirectionW,
-                vClearCoatParams,
-                specularEnvironmentR0,
+            clearcoatOut = clearcoatBlock(
+                ${worldPosVarName}.xyz
+                , vGeometricNormaClearCoatW
+                , viewDirectionW
+                , vClearCoatParams
+                , specularEnvironmentR0
             #ifdef CLEARCOAT_TEXTURE
-                vec2(0.),
+                , vec2${state.fSuffix}(0.)
             #endif
             #ifdef CLEARCOAT_TINT
-                vClearCoatTintParams,
-                ${tintAtDistance},
-                vClearCoatRefractionParams,
+                , vClearCoatTintParams
+                , ${tintAtDistance}
+                , vClearCoatRefractionParams
                 #ifdef CLEARCOAT_TINT_TEXTURE
-                    ${tintTexture},
+                    , ${tintTexture}
                 #endif
             #endif
             #ifdef CLEARCOAT_BUMP
-                vec2(0., 1.),
-                vec4(${normalMapColor}, 0.),
-                ${uv},
+                , vec2${state.fSuffix}(0., 1.)
+                , vec4${state.fSuffix}(${normalMapColor}, 0.)
+                , ${uv}
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
-                    vTBN,
+                    , vTBN
                 #else
-                    vClearCoatTangentSpaceParams,
+                    , vClearCoatTangentSpaceParams
                 #endif
                 #ifdef OBJECTSPACE_NORMALMAP
-                    normalMatrix,
+                    , normalMatrix
                 #endif
             #endif
             #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-                faceNormal,
+                , faceNormal
             #endif
             #ifdef REFLECTION
-                ${reflectionBlock?._vReflectionMicrosurfaceInfosName},
-                ${reflectionBlock?._vReflectionInfosName},
-                ${reflectionBlock?.reflectionColor},
-                vLightingIntensity,
+                , ${reflectionBlock?._vReflectionMicrosurfaceInfosName}
+                , ${reflectionBlock?._vReflectionInfosName}
+                , ${reflectionBlock?.reflectionColor}
+                , vLightingIntensity
                 #ifdef ${reflectionBlock?._define3DName}
-                    ${reflectionBlock?._cubeSamplerName},
+                    , ${reflectionBlock?._cubeSamplerName}
                 #else
-                    ${reflectionBlock?._2DSamplerName},
+                    , ${reflectionBlock?._2DSamplerName}
                 #endif
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${reflectionBlock?._define3DName}
-                        ${reflectionBlock?._cubeSamplerName},
-                        ${reflectionBlock?._cubeSamplerName},
+                        , ${reflectionBlock?._cubeSamplerName}
+                        , ${reflectionBlock?._cubeSamplerName}
                     #else
-                        ${reflectionBlock?._2DSamplerName},
-                        ${reflectionBlock?._2DSamplerName},
+                        , ${reflectionBlock?._2DSamplerName}
+                        , ${reflectionBlock?._2DSamplerName}
                     #endif
                 #endif
             #endif
             #if defined(ENVIRONMENTBRDF) && !defined(${reflectionBlock?._defineSkyboxName})
                 #ifdef RADIANCEOCCLUSION
-                    ambientMonochrome,
+                    , ambientMonochrome
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                (gl_FrontFacing ? 1. : -1.),
+                , (${isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing"} ? 1. : -1.)
             #endif
-                clearcoatOut
             );
         #else
             clearcoatOut.specularEnvironmentR0 = specularEnvironmentR0;

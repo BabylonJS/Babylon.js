@@ -1,39 +1,39 @@
 struct iridescenceOutParams
 {
-    float iridescenceIntensity;
-    float iridescenceIOR;
-    float iridescenceThickness;
-    vec3 specularEnvironmentR0;
+    iridescenceIntensity: f32,
+    iridescenceIOR: f32,
+    iridescenceThickness: f32,
+    specularEnvironmentR0: vec3f
 };
 
 #ifdef IRIDESCENCE
     #define pbr_inline
     #define inline
-    iridescenceOutParams iridescenceBlock(
-        in vec4 vIridescenceParams
-        , in float viewAngle
-        , in vec3 specularEnvironmentR0
+    fn iridescenceBlock(
+        vIridescenceParams: vec4f
+        , viewAngle: f32,
+        , specularEnvironmentR0: vec3f
         #ifdef IRIDESCENCE_TEXTURE
-            , in vec2 iridescenceMapData
+            , iridescenceMapData: vec2f
         #endif
         #ifdef IRIDESCENCE_THICKNESS_TEXTURE
-            , in vec2 iridescenceThicknessMapData
+            , iridescenceThicknessMapData: vec2f
         #endif
         #ifdef CLEARCOAT
-            , in float NdotVUnclamped
+            , NdotVUnclamped: f32
             #ifdef CLEARCOAT_TEXTURE
-                , in vec2 clearCoatMapData
+                , clearCoatMapData: vec2f
             #endif
         #endif
-    )
+    ) -> iridescenceOutParams
     {
-        iridescenceOutParams outParams;
-        float iridescenceIntensity = vIridescenceParams.x;
-        float iridescenceIOR = vIridescenceParams.y;
+        var outParams: iridescenceOutParams;
+        var iridescenceIntensity: f32 = vIridescenceParams.x;
+        var iridescenceIOR: f32 = vIridescenceParams.y;
 
-        float iridescenceThicknessMin = vIridescenceParams.z;
-        float iridescenceThicknessMax = vIridescenceParams.w;
-        float iridescenceThicknessWeight = 1.;
+        var iridescenceThicknessMin: f32 = vIridescenceParams.z;
+        var iridescenceThicknessMax: f32 = vIridescenceParams.w;
+        var iridescenceThicknessWeight: f32 = 1.;
 
         #ifdef IRIDESCENCE_TEXTURE
             iridescenceIntensity *= iridescenceMapData.x;
@@ -43,13 +43,13 @@ struct iridescenceOutParams
             iridescenceThicknessWeight = iridescenceThicknessMapData.g;
         #endif
 
-        float iridescenceThickness = mix(iridescenceThicknessMin, iridescenceThicknessMax, iridescenceThicknessWeight);
+        var iridescenceThickness: f32 = mix(iridescenceThicknessMin, iridescenceThicknessMax, iridescenceThicknessWeight);
 
-        float topIor = 1.; // Assume air
+        var topIor: f32 = 1.; // Assume air
 
         #ifdef CLEARCOAT
             // Clear COAT parameters.
-            float clearCoatIntensity = vClearCoatParams.x;
+            var clearCoatIntensity: f32 = vClearCoatParams.x;
             #ifdef CLEARCOAT_TEXTURE
                 clearCoatIntensity *= clearCoatMapData.x;
             #endif
@@ -59,7 +59,7 @@ struct iridescenceOutParams
             viewAngle = sqrt(1.0 + square(1.0 / topIor) * (square(NdotVUnclamped) - 1.0));
         #endif
 
-        vec3 iridescenceFresnel = evalIridescence(topIor, iridescenceIOR, viewAngle, iridescenceThickness, specularEnvironmentR0);
+        var iridescenceFresnel: vec3f = evalIridescence(topIor, iridescenceIOR, viewAngle, iridescenceThickness, specularEnvironmentR0);
 
         outParams.specularEnvironmentR0 = mix(specularEnvironmentR0, iridescenceFresnel, iridescenceIntensity);
         outParams.iridescenceIntensity = iridescenceIntensity;

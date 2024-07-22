@@ -2,29 +2,29 @@
 struct preLightingInfo
 {
     // Pre Falloff Info
-    vec3 lightOffset;
-    float lightDistanceSquared;
-    float lightDistance;
+    lightOffset: vec3f,
+    lightDistanceSquared: f32,
+    lightDistance: f32,
 
     // Falloff Info
-    float attenuation;
+    attenuation: f32,
 
     // Lighting Info
-    vec3 L;
-    vec3 H;
-    float NdotV;
-    float NdotLUnclamped;
-    float NdotL;
-    float VdotH;
-    float roughness;
+    L: vec3f,
+    H: vec3f,
+    NdotV: f32,
+    NdotLUnclamped: f32,
+    NdotL: f32,
+    VdotH: f32,
+    roughness: f32,
 
     #ifdef IRIDESCENCE
-        float iridescenceIntensity;
+        iridescenceIntensity: f32
     #endif
 };
 
-preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 N, vec3 posW) {
-    preLightingInfo result;
+fn computePointAndSpotPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f, posW: vec3f) -> preLightingInfo {
+    var result: preLightingInfo;
 
     // Attenuation data.
     result.lightOffset = lightData.xyz - posW;
@@ -44,8 +44,8 @@ preLightingInfo computePointAndSpotPreLightingInfo(vec4 lightData, vec3 V, vec3 
     return result;
 }
 
-preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N) {
-    preLightingInfo result;
+fn computeDirectionalPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> preLightingInfo {
+    var result: preLightingInfo;
 
     // Roughness
     result.lightDistance = length(-lightData.xyz);
@@ -61,8 +61,8 @@ preLightingInfo computeDirectionalPreLightingInfo(vec4 lightData, vec3 V, vec3 N
     return result;
 }
 
-preLightingInfo computeHemisphericPreLightingInfo(vec4 lightData, vec3 V, vec3 N) {
-    preLightingInfo result;
+fn computeHemisphericPreLightingInfo(lightData: vec4f, V: vec3f, N: vec3f) -> preLightingInfo {
+    var result: preLightingInfo;
 
     // Geometry Data.
     // Half Lambert for Hemispherix lighting.

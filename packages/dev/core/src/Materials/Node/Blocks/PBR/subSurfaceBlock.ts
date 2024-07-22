@@ -12,6 +12,7 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { ReflectionBlock } from "./reflectionBlock";
 import type { Nullable } from "../../../../types";
 import { RefractionBlock } from "./refractionBlock";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the sub surface module of the PBR material
@@ -162,99 +163,99 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         const refractionView = refractionBlock?.view.isConnected ? refractionBlock.view.associatedVariableName : "";
 
         const dispersion = ssBlock?.dispersion.isConnected ? ssBlock?.dispersion.associatedVariableName : "0.0";
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         code += refractionBlock?.getCode(state) ?? "";
 
-        code += `subSurfaceOutParams subSurfaceOut;
+        code += `${isWebGPU ? "var subSurfaceOut: subSurfaceOutParams" : "subSurfaceOutParams subSurfaceOut"};
 
         #ifdef SUBSURFACE
             vec2 vThicknessParam = vec2(0., ${thickness});
             vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
             vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
             float dispersion = ${dispersion};
-            subSurfaceBlock(
-                vSubSurfaceIntensity,
-                vThicknessParam,
-                vTintColor,
-                normalW,
-                specularEnvironmentReflectance,
+            subSurfaceOut = subSurfaceBlock(
+                vSubSurfaceIntensity
+                , vThicknessParam
+                , vTintColor
+                , normalW
+                , specularEnvironmentReflectance
             #ifdef SS_THICKNESSANDMASK_TEXTURE
-                vec4(0.),
+                , vec4${state.fSuffix}(0.)
             #endif
             #ifdef REFLECTION
                 #ifdef SS_TRANSLUCENCY
-                    ${reflectionBlock?._reflectionMatrixName},
+                    , ${reflectionBlock?._reflectionMatrixName}
                     #ifdef USESPHERICALFROMREFLECTIONMAP
                         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                            reflectionOut.irradianceVector,
+                            , reflectionOut.irradianceVector
                         #endif
                         #if defined(REALTIME_FILTERING)
-                            ${reflectionBlock?._cubeSamplerName},
-                            ${reflectionBlock?._vReflectionFilteringInfoName},
+                            , ${reflectionBlock?._cubeSamplerName}
+                            , ${reflectionBlock?._vReflectionFilteringInfoName}
                         #endif
                         #endif
                     #ifdef USEIRRADIANCEMAP
-                        irradianceSampler,
+                        , irradianceSampler
                     #endif
                 #endif
             #endif
             #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-                surfaceAlbedo,
+                , surfaceAlbedo
             #endif
             #ifdef SS_REFRACTION
-                ${worldPosVarName}.xyz,
-                viewDirectionW,
-                ${refractionView},
-                ${refractionBlock?._vRefractionInfosName ?? ""},
-                ${refractionBlock?._refractionMatrixName ?? ""},
-                ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""},
-                vLightingIntensity,
+                , ${worldPosVarName}.xyz
+                , viewDirectionW
+                , ${refractionView}
+                , ${refractionBlock?._vRefractionInfosName ?? ""}
+                , ${refractionBlock?._refractionMatrixName ?? ""}
+                , ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
+                , vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-                    alpha,
+                    , alpha
                 #endif
                 #ifdef ${refractionBlock?._defineLODRefractionAlpha ?? "IGNORE"}
-                    NdotVUnclamped,
+                    , NdotVUnclamped
                 #endif
                 #ifdef ${refractionBlock?._defineLinearSpecularRefraction ?? "IGNORE"}
-                    roughness,
+                    , roughness
                 #endif
-                alphaG,
+                , alphaG
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
-                    ${refractionBlock?._cubeSamplerName ?? ""},
+                    , ${refractionBlock?._cubeSamplerName ?? ""}
                 #else
-                    ${refractionBlock?._2DSamplerName ?? ""},
+                    , ${refractionBlock?._2DSamplerName ?? ""}
                 #endif
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
-                        ${refractionBlock?._cubeSamplerName ?? ""},
-                        ${refractionBlock?._cubeSamplerName ?? ""},
+                        , ${refractionBlock?._cubeSamplerName ?? ""}
+                        , ${refractionBlock?._cubeSamplerName ?? ""}
                     #else
-                        ${refractionBlock?._2DSamplerName ?? ""},
-                        ${refractionBlock?._2DSamplerName ?? ""},
+                        , ${refractionBlock?._2DSamplerName ?? ""}
+                        , ${refractionBlock?._2DSamplerName ?? ""}
                     #endif
                 #endif
                 #ifdef ANISOTROPIC
-                    anisotropicOut,
+                    , anisotropicOut
                 #endif
                 #ifdef REALTIME_FILTERING
-                    ${refractionBlock?._vRefractionFilteringInfoName ?? ""},
+                    , ${refractionBlock?._vRefractionFilteringInfoName ?? ""}
                 #endif
                 #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-                    vRefractionPosition,
-                    vRefractionSize,
+                    , vRefractionPosition
+                    , vRefractionSize
                 #endif
                 #ifdef SS_DISPERSION
-                    dispersion,
+                    , dispersion
                 #endif
             #endif
             #ifdef SS_TRANSLUCENCY
-                ${translucencyDiffusionDistance},
-                vTintColor,
+                , ${translucencyDiffusionDistance}
+                , vTintColor
                 #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-                    vec4(0.),
+                    , vec4${state.fSuffix}(0.)
                 #endif
-            #endif
-                subSurfaceOut
+            #endif                
             );
 
             #ifdef SS_REFRACTION
