@@ -5,16 +5,18 @@ export const enum FrameGraphBlockConnectionPointTypes {
     /** General purpose texture */
     Texture = 0x00000001,
     /** Depth stencil attachment texture */
-    TextureDepthStencilAttachment = 0x00000002,
-    TextureBackbuffer = 0x00000004,
-    TextureDepth = 0x00000008,
-    TextureNormal = 0x00000010,
-    TextureAlbedo = 0x00000020,
-    TextureReflectivity = 0x00000040,
-    TexturePosition = 0x00000080,
-    TextureVelocity = 0x00000100,
-    TextureIrradiance = 0x00000200,
-    TextureAlbedoSqrt = 0x00000400,
+    TextureBackBuffer = 0x00000002,
+    TextureBackBufferDepthStencilAttachment = 0x00000004,
+    TextureDepthStencilAttachment = 0x00000008,
+    TextureDepth = 0x00000010,
+    TextureNormal = 0x00000020,
+    TextureAlbedo = 0x00000040,
+    TextureReflectivity = 0x00000080,
+    TexturePosition = 0x00000100,
+    TextureVelocity = 0x00000200,
+    TextureIrradiance = 0x00000400,
+    TextureAlbedoSqrt = 0x00000800,
+    TextureAllButBackBuffer = 0x0000fff9,
     TextureAll = 0x0000ffff,
 
     /** Camera */

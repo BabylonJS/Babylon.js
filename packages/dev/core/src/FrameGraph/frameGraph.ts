@@ -1,4 +1,5 @@
 import { Observable } from "../Misc/observable";
+import type { Observer } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { FrameGraphOutputBlock } from "./Blocks/frameGraphOutputBlock";
@@ -17,6 +18,7 @@ import type { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
 import { FrameGraphClearBlock } from "./Blocks/frameGraphClearBlock";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 // declare FRAMEGRAPHEDITOR namespace for compilation issue
 declare let FRAMEGRAPHEDITOR: any;
@@ -33,6 +35,26 @@ export interface IFrameGraphEditorOptions {
         backgroundColor?: Color4;
         hostScene?: Scene;
     };
+}
+
+/**
+ * Options that can be passed to the frame graph build method
+ */
+export interface IFrameGraphBuildOptions {
+    /** if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false) */
+    removeFalseBlocks?: boolean;
+    /** if true, textures created by the frame graph will be visible in the inspector, for easier debugging (default: false) */
+    debugTextures?: boolean;
+    /** Scene in which debugging textures are to be created */
+    scene?: Scene;
+    /** Rebuild the frame graph when the screen is resized (default: true) */
+    rebuildGraphOnEngineResize?: boolean;
+    /** defines if the build should log activity (default: false) */
+    verbose?: boolean;
+    /** defines if the internal build Id should be updated (default: true) */
+    updateBuildId?: boolean;
+    /** defines if the autoConfigure method should be called when initializing blocks (default: false) */
+    autoConfigure?: boolean;
 }
 
 /**
@@ -104,13 +126,17 @@ export class FrameGraph {
     public comment: string;
 
     private _executedBlocks: FrameGraphBlock[] = [];
+    private _engine: AbstractEngine;
+    private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
 
     /**
      * Creates a new frame graph
      * @param name defines the name of the frame graph
+     * @param engine defines the engine to use to execute the graph
      */
-    public constructor(name: string) {
+    public constructor(name: string, engine: AbstractEngine) {
         this.name = name;
+        this._engine = engine;
     }
 
     /**
@@ -210,29 +236,53 @@ export class FrameGraph {
     }
 
     /**
-     * Build the final graph
-     * @param verbose defines if the build should log activity
-     * @param updateBuildId defines if the internal build Id should be updated (default is true)
-     * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
+     * Build the final list of blocks that will be executed by the "execute" method
+     * @param options defines the options to use when building the graph
      */
-    public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
+    public build(options?: IFrameGraphBuildOptions) {
+        this._executedBlocks.length = 0;
+        this._engine.onResizeObservable.remove(this._resizeObserver);
+        this._resizeObserver = null;
+
+        options = {
+            removeFalseBlocks: false,
+            debugTextures: false,
+            scene: undefined,
+            autoConfigure: false,
+            verbose: false,
+            updateBuildId: true,
+            ...options,
+        };
+
         if (!this.outputBlock) {
             // eslint-disable-next-line no-throw-literal
             throw "You must define the outputBlock property before building the frame graph";
         }
 
+        if (options.rebuildGraphOnEngineResize) {
+            // Avoid reentrancy by delaying the observer registration
+            setTimeout(() => {
+                this._resizeObserver = this._engine.onResizeObservable.add(() => {
+                    this.build(options);
+                });
+            }, 0);
+        }
+
         // Initialize blocks
-        this._initializeBlock(this.outputBlock, autoConfigure);
+        this._initializeBlock(this.outputBlock, options.removeFalseBlocks, options.autoConfigure);
 
         // Build
         const state = new FrameGraphBuildState();
 
+        state.engine = this._engine;
         state.buildId = this._buildId;
-        state.verbose = verbose;
+        state.verbose = !!options.verbose;
+        state.debugTextures = !!options.debugTextures;
+        state.scene = options.scene;
 
         this.outputBlock.build(state);
 
-        if (updateBuildId) {
+        if (options.updateBuildId) {
             this._buildId = FrameGraph._BuildIdGenerator++;
         }
 
@@ -242,13 +292,42 @@ export class FrameGraph {
         this.onBuildObservable.notifyObservers(this);
     }
 
+    /**
+     * Returns a promise that resolves when the frame graph is ready to be executed
+     * This method must be called after the graph has been built (FrameGraph.build called)!
+     * @param timeout Timeout in ms between retries (default is 16)
+     * @returns The promise that resolves when the graph is ready
+     */
+    public whenReadyAsync(timeout = 16): Promise<void> {
+        return new Promise((resolve) => {
+            const checkReady = () => {
+                let ready = true;
+                for (const block of this._executedBlocks) {
+                    ready &&= block.isReady();
+                }
+                if (ready) {
+                    resolve();
+                }
+                return ready;
+            };
+
+            if (!checkReady()) {
+                setTimeout(checkReady, timeout);
+            }
+        });
+    }
+
+    /**
+     * Execute the graph (the graph must have been built before!)
+     */
     public execute() {
+        this._engine.restoreDefaultFramebuffer();
         for (const block of this._executedBlocks) {
-            block.execute();
+            block.execute(this._engine);
         }
     }
 
-    private _initializeBlock(node: FrameGraphBlock, autoConfigure = true) {
+    private _initializeBlock(node: FrameGraphBlock, removeFalseBlocks = false, autoConfigure = true) {
         node.initialize();
         if (autoConfigure) {
             node.autoConfigure();
@@ -268,7 +347,7 @@ export class FrameGraph {
             }
         }
 
-        if (!node.isInput && this._executedBlocks.indexOf(node) === -1) {
+        if (!node.isInput && (!removeFalseBlocks || (removeFalseBlocks && (!node.executeCondition || node.executeCondition()))) && this._executedBlocks.indexOf(node) === -1) {
             this._executedBlocks.push(node);
         }
     }
@@ -494,7 +573,7 @@ export class FrameGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new FrameGraphInputBlock("BackBuffer", FrameGraphBlockConnectionPointTypes.TextureBackbuffer);
+        const backBuffer = new FrameGraphInputBlock("BackBuffer", FrameGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
         const clear = new FrameGraphClearBlock("Clear");
@@ -516,12 +595,12 @@ export class FrameGraph {
     public clone(name: string): FrameGraph {
         const serializationObject = this.serialize();
 
-        const clone = SerializationHelper.Clone(() => new FrameGraph(name), this);
+        const clone = SerializationHelper.Clone(() => new FrameGraph(name, this._engine), this);
         clone.name = name;
 
         clone.parseSerializedObject(serializationObject);
         clone._buildId = this._buildId;
-        clone.build(false);
+        clone.build();
 
         return clone;
     }
@@ -573,6 +652,9 @@ export class FrameGraph {
             block.dispose();
         }
 
+        this._engine.onResizeObservable.remove(this._resizeObserver);
+        this._resizeObserver = null;
+
         this.attachedBlocks.length = 0;
         this._executedBlocks.length = 0;
         this.onBuildObservable.clear();
@@ -581,10 +663,11 @@ export class FrameGraph {
     /**
      * Creates a new frame graph set to default basic configuration
      * @param name defines the name of the frame graph
+     * @param engine defines the engine to use
      * @returns a new FrameGraph
      */
-    public static CreateDefault(name: string) {
-        const frameGraph = new FrameGraph(name);
+    public static CreateDefault(name: string, engine: AbstractEngine): FrameGraph {
+        const frameGraph = new FrameGraph(name, engine);
 
         frameGraph.setToDefault();
         frameGraph.build();
@@ -595,10 +678,11 @@ export class FrameGraph {
     /**
      * Creates a frame graph from parsed graph data
      * @param source defines the JSON representation of the frame graph
+     * @param engine defines the engine to use
      * @returns a new frame graph
      */
-    public static Parse(source: any): FrameGraph {
-        const frameGraph = SerializationHelper.Parse(() => new FrameGraph(source.name), source, null);
+    public static Parse(source: any, engine: AbstractEngine): FrameGraph {
+        const frameGraph = SerializationHelper.Parse(() => new FrameGraph(source.name, engine), source, null);
 
         frameGraph.parseSerializedObject(source);
         frameGraph.build();
@@ -609,13 +693,14 @@ export class FrameGraph {
     /**
      * Creates a frame graph from a snippet saved by the frame graph editor
      * @param snippetId defines the snippet to load
+     * @param engine defines the engine to use
      * @param frameGraph defines a frame graph to update (instead of creating a new one)
      * @param skipBuild defines whether to build the frame graph
      * @returns a promise that will resolve to the new frame graph
      */
-    public static ParseFromSnippetAsync(snippetId: string, frameGraph?: FrameGraph, skipBuild: boolean = false): Promise<FrameGraph> {
+    public static ParseFromSnippetAsync(snippetId: string, engine: AbstractEngine, frameGraph?: FrameGraph, skipBuild: boolean = false): Promise<FrameGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(FrameGraph.CreateDefault("blank"));
+            return Promise.resolve(FrameGraph.CreateDefault("blank", engine));
         }
 
         return new Promise((resolve, reject) => {
@@ -627,7 +712,7 @@ export class FrameGraph {
                         const serializationObject = JSON.parse(snippet.FrameGraph);
 
                         if (!frameGraph) {
-                            frameGraph = SerializationHelper.Parse(() => new FrameGraph(snippetId), serializationObject, null);
+                            frameGraph = SerializationHelper.Parse(() => new FrameGraph(snippetId, engine), serializationObject, null);
                         }
 
                         frameGraph.parseSerializedObject(serializationObject);

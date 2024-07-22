@@ -8,6 +8,7 @@ import type { Nullable } from "../types";
 import type { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphConnectionPoint, FrameGraphConnectionPointDirection } from "./frameGraphBlockConnectionPoint";
+import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Defines a block that can be used inside a frame graph
@@ -35,6 +36,11 @@ export class FrameGraphBlock {
      * Gets an observable raised after the block is executed
      */
     public onAfterExecuteObservable = new Observable<FrameGraphBlock>();
+
+    /**
+     * Condition to execute the block (default: undefined - block always executed)
+     */
+    public executeCondition: (() => boolean) | undefined = undefined;
 
     /** @internal */
     public _inputs = new Array<FrameGraphConnectionPoint>();
@@ -261,6 +267,12 @@ export class FrameGraphBlock {
         // Must be implemented by children
     }
 
+    protected _propagateInputValueToOutput(inputConnectionPoint: FrameGraphConnectionPoint, outputConnectionPoint: FrameGraphConnectionPoint) {
+        if (inputConnectionPoint.connectedPoint) {
+            outputConnectionPoint.value = inputConnectionPoint.connectedPoint.value;
+        }
+    }
+
     /**
      * Build the current node and generate the vertex data
      * @param state defines the current generation state
@@ -313,13 +325,28 @@ export class FrameGraphBlock {
         return false;
     }
 
-    public execute() {
+    /**
+     * Checks if the block is ready to be executed
+     * @returns true if the block is ready to be executed
+     */
+    public isReady() {
+        return true;
+    }
+
+    /**
+     * Executes the current block
+     * @param engine defines the engine to use to execute this block
+     */
+    public execute(engine: AbstractEngine) {
+        if (this.executeCondition && !this.executeCondition()) {
+            return;
+        }
         this.onBeforeExecuteObservable.notifyObservers(this);
-        this._execute();
+        this._execute(engine);
         this.onAfterExecuteObservable.notifyObservers(this);
     }
 
-    protected _execute() {}
+    protected _execute(_engine: AbstractEngine) {}
 
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
         if (looseCoupling) {

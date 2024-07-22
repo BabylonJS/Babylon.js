@@ -15,6 +15,8 @@ export const enum PropertyTypeForEdition {
     Vector2,
     /** property is a list of values */
     List,
+    /** property is a Color4 */
+    Color4,
 }
 
 /**

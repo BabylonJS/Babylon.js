@@ -4,6 +4,7 @@ import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
 import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import { Constants } from "core/Engines/constants";
+import type { Nullable } from "core/types";
 
 import "../Shaders/copyTextureToTexture.fragment";
 
@@ -80,11 +81,11 @@ export class CopyTextureToTexture {
     /**
      * Copy one texture into another
      * @param source The source texture
-     * @param destination The destination texture
+     * @param destination The destination texture. If null, copy the source to the screen
      * @param conversion The conversion mode that should be applied when copying
      * @returns
      */
-    public copy(source: InternalTexture | ThinTexture, destination: RenderTargetWrapper | IRenderTargetTexture, conversion = ConversionMode.None): boolean {
+    public copy(source: InternalTexture | ThinTexture, destination: Nullable<RenderTargetWrapper | IRenderTargetTexture>, conversion = ConversionMode.None): boolean {
         if (!this.isReady()) {
             return false;
         }

@@ -710,10 +710,18 @@ export class PostProcess {
 
     /**
      * The effect that is created when initializing the post process.
-     * @returns The created effect corresponding the postprocess.
+     * @returns The created effect corresponding to the postprocess.
      */
     public getEffect(): Effect {
         return this._drawWrapper.effect!;
+    }
+
+    /**
+     * The DrawWrapper that is created when initializing the post process.
+     * @returns The created DrawWrapper corresponding to the postprocess.
+     */
+    public getDrawWrapper(): DrawWrapper {
+        return this._drawWrapper;
     }
 
     /**
