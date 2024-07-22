@@ -6,7 +6,7 @@
     };
 
     #define pbr_inline
-    void alphaFresnelBlock(
+    alphaFresnelOutParams alphaFresnelBlock(
         in vec3 normalW,
         in vec3 viewDirectionW,
         in float alpha,
