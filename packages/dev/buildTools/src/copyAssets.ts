@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import * as glob from "glob";
+import { glob } from "glob";
 import * as path from "path";
 import { copyFile, checkArgs } from "./utils.js";
 import * as chokidar from "chokidar";
@@ -14,7 +14,7 @@ const processFile = (file: string, options: { isCore?: boolean; basePackageName?
         buildShader(file, options.basePackageName, options.isCore);
     } else {
         if (options.pathPrefix) {
-            const regex = new RegExp(`${options.pathPrefix.replace(/\//g, "\\/")}./src([/\\\\])`);
+            const regex = new RegExp(`${options.pathPrefix.replace(/\//g, "\\/")}src([/\\\\])`);
             copyFile(file, file.replace(regex, `${options.outputDir}$1`), true, true);
         } else {
             copyFile(file, file.replace(/src([/\\])/, `${options.outputDir}$1`), true, true);
@@ -28,7 +28,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     const fileTypes = checkArgs(["--file-types", "-ft"], false, true);
     const extensions = fileTypes && typeof fileTypes === "string" ? fileTypes.split(",") : options.extensions;
     const pathPrefix = (checkArgs("--path-prefix", false, true) as string) || "";
-    const globDirectory = global ? `./packages/**/*/src/**/*.+(${extensions.join("|")})` : pathPrefix + `./src/**/*.+(${extensions.join("|")})`;
+    const globDirectory = global ? `./packages/**/*/src/**/*.+(${extensions.join("|")})` : pathPrefix + `src/**/*.+(${extensions.join("|")})`;
     const isCore = !!checkArgs("--isCore", true);
     const outputDir = checkArgs(["--output-dir"], false, true) as string;
     let basePackageName: DevPackageName = "core";
@@ -60,14 +60,15 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
             });
         console.log("watching for asset changes...");
     } else {
-        glob(globDirectory, (err, files) => {
-            if (err) {
-                console.log(err);
-            } else {
+        glob(globDirectory).then(
+            (files) => {
                 files.forEach((file) => {
                     processFile(file, processOptions);
                 });
+            },
+            (err) => {
+                console.log(err);
             }
-        });
+        );
     }
 };
