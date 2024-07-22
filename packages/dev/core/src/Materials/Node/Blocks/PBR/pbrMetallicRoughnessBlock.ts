@@ -59,6 +59,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
 
 /**
  * Block used to implement the PBR metallic/roughness model
+ * #D8AK3Z#80
  */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
@@ -1242,7 +1243,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         const sheenBlock = this.sheen.isConnected ? (this.sheen.connectedPoint?.ownerBlock as SheenBlock) : null;
 
         if (sheenBlock) {
-            state.compilationString += sheenBlock.getCode(reflectionBlock);
+            state.compilationString += sheenBlock.getCode(reflectionBlock, state);
         }
 
         state._emitFunctionFromInclude("pbrBlockSheen", comments, {

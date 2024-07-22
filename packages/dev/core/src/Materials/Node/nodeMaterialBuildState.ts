@@ -612,6 +612,17 @@ export class NodeMaterialBuildState {
         return "texture2DLodEXT";
     }
 
+    public _toLinearSpace(output: NodeMaterialConnectionPoint) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Color3 || output.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                return `toLinearSpaceVec3(${output.associatedVariableName})`;
+            }
+
+            return `toLinearSpace(${output.associatedVariableName})`;
+        }
+        return `toLinearSpace(${output.associatedVariableName})`;
+    }
+
     /**
      * @internal
      */

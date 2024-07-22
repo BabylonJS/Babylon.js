@@ -170,10 +170,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         code += `${isWebGPU ? "var subSurfaceOut: subSurfaceOutParams" : "subSurfaceOutParams subSurfaceOut"};
 
         #ifdef SUBSURFACE
-            vec2 vThicknessParam = vec2(0., ${thickness});
-            vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
-            vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
-            float dispersion = ${dispersion};
+            ${state._declareLocalVar("vThicknessParam", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(0., ${thickness});
+            ${state._declareLocalVar("vTintColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${refractionTintAtDistance});
+            ${state._declareLocalVar("vSubSurfaceIntensity", NodeMaterialBlockConnectionPointTypes.Vector3)} = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
+            ${state._declareLocalVar("dispersion", NodeMaterialBlockConnectionPointTypes.Float)} = ${dispersion};
             subSurfaceOut = subSurfaceBlock(
                 vSubSurfaceIntensity
                 , vThicknessParam
@@ -210,7 +210,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , ${refractionBlock?._vRefractionInfosName ?? ""}
                 , ${refractionBlock?._refractionMatrixName ?? ""}
                 , ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
-                , vLightingIntensity
+                , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     , alpha
                 #endif

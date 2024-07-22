@@ -285,13 +285,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
         const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
-        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : "vec3(0.)";
-        const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : "vec2(0.)";
+        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : `vec3${state.fSuffix}(0.)`;
+        const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : `vec2${state.fSuffix}(0.)`;
 
-        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : "vec3(1.)";
+        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : `vec3${state.fSuffix}(1.)`;
         const tintThickness = ccBlock?.tintThickness.isConnected ? ccBlock.tintThickness.associatedVariableName : "1.";
         const tintAtDistance = ccBlock?.tintAtDistance.isConnected ? ccBlock.tintAtDistance.associatedVariableName : "1.";
-        const tintTexture = "vec4(0.)";
+        const tintTexture = `vec4${state.fSuffix}(0.)`;
 
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -312,8 +312,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         code += `${isWebGPU ? "var clearcoatOut: clearcoatOutParams" : "clearcoatOutParams clearcoatOut"};
 
         #ifdef CLEARCOAT
-            vec2 vClearCoatParams = vec2(${intensity}, ${roughness});
-            vec4 vClearCoatTintParams = vec4(${tintColor}, ${tintThickness});
+            ${state._declareLocalVar("vClearCoatParams", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${intensity}, ${roughness});
+            ${state._declareLocalVar("vClearCoatTintParams", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${tintThickness});
 
             clearcoatOut = clearcoatBlock(
                 ${worldPosVarName}.xyz
@@ -374,7 +374,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                , (${isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing"} ? 1. : -1.)
+                , ${state._generateTernary("1.", "-1.", isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing")}
             #endif
             );
         #else

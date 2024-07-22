@@ -80,17 +80,23 @@ struct clearcoatOutParams
         , vReflectionColor: vec3f
         , vLightingIntensity: vec4f
         #ifdef REFLECTIONMAP_3D
-            , samplerCube reflectionSampler
+            , reflectionSampler: texture_cube<f32>
+            , reflectionSamplerSampler: sampler
         #else
-            , sampler2D reflectionSampler
+            , reflectionSampler: texture_2d<f32>
+            , reflectionSamplerSampler: sampler
         #endif
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                , samplerCube reflectionSamplerLow
-                , samplerCube reflectionSamplerHigh
+                , reflectionLowSampler: texture_cube<f32>
+                , reflectionLowSamplerSampler: sampler            
+                , reflectionHighSampler: texture_cube<f32>
+                , reflectionHighSamplerSampler: sampler   
             #else
-                , sampler2D reflectionSamplerLow
-                , sampler2D reflectionSamplerHigh
+                , reflectionLowSampler: texture_2d<f32>
+                , reflectionLowSamplerSampler: sampler            
+                , reflectionHighSampler: texture_2d<f32>
+                , reflectionHighSamplerSampler: sampler            
             #endif
         #endif
         #ifdef REALTIME_FILTERING
@@ -253,27 +259,29 @@ struct clearcoatOutParams
                 clearCoatReflectionCoords.y = 1.0 - clearCoatReflectionCoords.y;
             #endif
 
-            sampleReflectionTexture(
-                clearCoatAlphaG,
-                vReflectionMicrosurfaceInfos,
-                vReflectionInfos,
-                vReflectionColor,
+            environmentClearCoatRadiance = sampleReflectionTexture(
+                clearCoatAlphaG
+                , vReflectionMicrosurfaceInfos
+                , vReflectionInfos
+                , vReflectionColor
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                clearCoatNdotVUnclamped,
+                , clearCoatNdotVUnclamped
             #endif
             #ifdef LINEARSPECULARREFLECTION
-                clearCoatRoughness,
+                , clearCoatRoughness
             #endif
-                reflectionSampler,
-                clearCoatReflectionCoords,
+                , reflectionSampler
+                , reflectionSamplerSampler
+                , clearCoatReflectionCoords
             #ifndef LODBASEDMICROSFURACE
-                reflectionSamplerLow,
-                reflectionSamplerHigh,
+                , reflectionLowSampler
+                , reflectionLowSamplerSampler
+                , reflectionHighSampler
+                , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                vReflectionFilteringInfo,
-            #endif
-                environmentClearCoatRadiance
+                , vReflectionFilteringInfo
+            #endif                
             );
 
             #if DEBUGMODE > 0

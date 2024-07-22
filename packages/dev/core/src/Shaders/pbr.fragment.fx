@@ -225,12 +225,11 @@ void main(void) {
         #if defined(ALPHATEST) || defined(ALPHABLEND)
             alphaFresnelOutParams alphaFresnelOut;
 
-            alphaFresnelBlock(
+            alphaFresnelOut = alphaFresnelBlock(
                 normalW,
                 viewDirectionW,
                 alpha,
-                microSurface,
-                alphaFresnelOut
+                microSurface
             );
 
             alpha = alphaFresnelOut.alpha;
@@ -248,7 +247,7 @@ void main(void) {
             vec3 anisotropyMapData = texture2D(anisotropySampler, vAnisotropyUV + uvOffset).rgb * vAnisotropyInfos.y;
         #endif
 
-        anisotropicBlock(
+        anisotropicOut = anisotropicBlock(
             vAnisotropy,
             roughness,
         #ifdef ANISOTROPIC_TEXTURE
@@ -256,8 +255,7 @@ void main(void) {
         #endif
             TBN,
             normalW,
-            viewDirectionW,
-            anisotropicOut
+            viewDirectionW            
         );
     #endif
 
@@ -266,42 +264,41 @@ void main(void) {
         reflectionOutParams reflectionOut;
 
         #ifndef USE_CUSTOM_REFLECTION
-            reflectionBlock(
-                vPositionW,
-                normalW,
-                alphaG,
-                vReflectionMicrosurfaceInfos,
-                vReflectionInfos,
-                vReflectionColor,
+            reflectionOut = reflectionBlock(
+                vPositionW
+                , normalW
+                , alphaG
+                , vReflectionMicrosurfaceInfos
+                , vReflectionInfos
+                , vReflectionColor
             #ifdef ANISOTROPIC
-                anisotropicOut,
+                , anisotropicOut
             #endif
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                NdotVUnclamped,
+                , NdotVUnclamped
             #endif
             #ifdef LINEARSPECULARREFLECTION
-                roughness,
+                , roughness
             #endif
-                reflectionSampler,
+                , reflectionSampler
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                vEnvironmentIrradiance,
+                , vEnvironmentIrradiance
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    reflectionMatrix,
+                    , reflectionMatrix
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
-                irradianceSampler,
+                , irradianceSampler
             #endif
             #ifndef LODBASEDMICROSFURACE
-                reflectionSamplerLow,
-                reflectionSamplerHigh,
+                , reflectionSamplerLow
+                , reflectionSamplerHigh
             #endif
             #ifdef REALTIME_FILTERING
-                vReflectionFilteringInfo,
+                , vReflectionFilteringInfo
             #endif
-                reflectionOut
             );
         #else
             #define CUSTOM_REFLECTION
@@ -322,52 +319,51 @@ void main(void) {
             vec4 sheenMapRoughnessData = texture2D(sheenRoughnessSampler, vSheenRoughnessUV + uvOffset) * vSheenInfos.w;
         #endif
 
-        sheenBlock(
-            vSheenColor,
+        sheenOut = sheenBlock(
+            vSheenColor
         #ifdef SHEEN_ROUGHNESS
-            vSheenRoughness,
+            , vSheenRoughness
             #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-                sheenMapRoughnessData,
+                , sheenMapRoughnessData
             #endif
         #endif
-            roughness,
+            , roughness
         #ifdef SHEEN_TEXTURE
-            sheenMapData,
-            vSheenInfos.y,
+            , sheenMapData
+            , vSheenInfos.y
         #endif
-            reflectance,
+            , reflectance
         #ifdef SHEEN_LINKWITHALBEDO
-            baseColor,
-            surfaceAlbedo,
+            , baseColor
+            , surfaceAlbedo
         #endif
         #ifdef ENVIRONMENTBRDF
-            NdotV,
-            environmentBrdf,
+            , NdotV
+            , environmentBrdf
         #endif
         #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-            AARoughnessFactors,
-            vReflectionMicrosurfaceInfos,
-            vReflectionInfos,
-            vReflectionColor,
-            vLightingIntensity,
-            reflectionSampler,
-            reflectionOut.reflectionCoords,
-            NdotVUnclamped,
+            , AARoughnessFactors
+            , vReflectionMicrosurfaceInfos
+            , vReflectionInfos
+            , vReflectionColor
+            , vLightingIntensity
+            , reflectionSampler
+            , reflectionOut.reflectionCoords
+            , NdotVUnclamped
             #ifndef LODBASEDMICROSFURACE
-                reflectionSamplerLow,
-                reflectionSamplerHigh,
+                , reflectionSamplerLow
+                , reflectionSamplerHigh
             #endif
             #ifdef REALTIME_FILTERING
-                vReflectionFilteringInfo,
+                , vReflectionFilteringInfo
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
-                seo,
+                , seo
             #endif
             #if !defined(REFLECTIONMAP_SKYBOX) && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
-                eho,
+                , eho
             #endif
         #endif
-            sheenOut
         );
 
         #ifdef SHEEN_LINKWITHALBEDO

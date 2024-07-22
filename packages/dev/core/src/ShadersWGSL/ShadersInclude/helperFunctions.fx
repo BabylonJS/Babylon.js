@@ -20,6 +20,10 @@ fn maxEps(x: f32) -> f32 {
     return max(x, Epsilon);
 }
 
+fn maxEpsVec3(x: vec3f) -> vec3f {
+    return max(x, vec3f(Epsilon));
+}
+
 fn absEps(x: f32) -> f32 {
     return abs(x) + Epsilon;
 }

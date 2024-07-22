@@ -157,57 +157,57 @@
 
     #define pbr_inline
     #define inline
-    void reflectionBlock(
-        in vec3 vPositionW,
-        in vec3 normalW,
-        in float alphaG,
-        in vec3 vReflectionMicrosurfaceInfos,
-        in vec2 vReflectionInfos,
-        in vec3 vReflectionColor,
+    reflectionOutParams reflectionBlock(
+        in vec3 vPositionW
+        , in vec3 normalW
+        , in float alphaG
+        , in vec3 vReflectionMicrosurfaceInfos
+        , in vec2 vReflectionInfos
+        , in vec3 vReflectionColor
     #ifdef ANISOTROPIC
-        in anisotropicOutParams anisotropicOut,
+        , in anisotropicOutParams anisotropicOut
     #endif
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        in float NdotVUnclamped,
+        , in float NdotVUnclamped
     #endif
     #ifdef LINEARSPECULARREFLECTION
-        in float roughness,
+        , in float roughness
     #endif
     #ifdef REFLECTIONMAP_3D
-        in samplerCube reflectionSampler,
+        , in samplerCube reflectionSampler
     #else
-        in sampler2D reflectionSampler,
+        , in sampler2D reflectionSampler
     #endif
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-        in vec3 vEnvironmentIrradiance,
+        , in vec3 vEnvironmentIrradiance
     #endif
     #ifdef USESPHERICALFROMREFLECTIONMAP
         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-            in mat4 reflectionMatrix,
+            , in mat4 reflectionMatrix
         #endif
     #endif
     #ifdef USEIRRADIANCEMAP
         #ifdef REFLECTIONMAP_3D
-            in samplerCube irradianceSampler,
+            , in samplerCube irradianceSampler
         #else
-            in sampler2D irradianceSampler,
+            , in sampler2D irradianceSampler
         #endif
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSamplerLow,
-            in samplerCube reflectionSamplerHigh,
+            , in samplerCube reflectionSamplerLow
+            , in samplerCube reflectionSamplerHigh
         #else
-            in sampler2D reflectionSamplerLow,
-            in sampler2D reflectionSamplerHigh,
+            , in sampler2D reflectionSamplerLow
+            , in sampler2D reflectionSamplerHigh
         #endif
     #endif
     #ifdef REALTIME_FILTERING
-        in vec2 vReflectionFilteringInfo,
+        , in vec2 vReflectionFilteringInfo
     #endif
-        out reflectionOutParams outParams
     )
     {
+        reflectionOutParams outParams;
         // _____________________________ Radiance ________________________________
         vec4 environmentRadiance = vec4(0., 0., 0., 0.);
 
@@ -301,5 +301,7 @@
         outParams.environmentRadiance = environmentRadiance;
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;
+
+        return outParams;
     }
 #endif

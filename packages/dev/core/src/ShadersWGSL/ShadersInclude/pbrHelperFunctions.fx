@@ -1,9 +1,9 @@
-// AlphaG epsilon to avar numerical: voidnull issues
+// AlphaG epsilon to avoid numerical issues
 #define MINIMUMVARIANCE 0.0005
 
 fn convertRoughnessToAverageSlope(roughness: f32) -> f32
 {
-    // Calculate AlphaG as square of roughness (add epsilon to avar numerical: voidnull issues)
+    // Calculate AlphaG as square of roughness (add epsilon to avoid numerical issues)
     return roughness * roughness + MINIMUMVARIANCE;
 }
 
@@ -45,8 +45,8 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
         }
         // Aniso Bent Normals
         // Mc Alley https://www.gdcvault.com/play/1022235/Rendering-the-World-of-Far 
-        fn getAnisotropicBentNormals(const T: vec3f, const B: vec3f, const N: vec3f, const V: vec3f, anisotropy: f32, roughness: f32) -> vec3f {
-            var anisotropicFrameDirection: vec3f = anisotropy >= 0.0 ? B : T;
+        fn getAnisotropicBentNormals(T: vec3f, B: vec3f, N: vec3f, V: vec3f, anisotropy: f32, roughness: f32) -> vec3f {
+            var anisotropicFrameDirection: vec3f = select(T, B, anisotropy >= 0.0);
             var anisotropicFrameTangent: vec3f = cross(normalize(anisotropicFrameDirection), V);
             var anisotropicFrameNormal: vec3f = cross(anisotropicFrameTangent, anisotropicFrameDirection);
             var anisotropicNormal: vec3f = normalize(mix(N, anisotropicFrameNormal, abs(anisotropy)));
@@ -62,7 +62,7 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
             var alphaB: f32 = max(alphaG, MINIMUMVARIANCE);
             return  vec2f(alphaT, alphaB);
         }
-        fn getAnisotropicBentNormals(const T: vec3f, const B: vec3f, const N: vec3f, const V: vec3f, anisotropy: f32, roughness: f32) -> vec3f {
+        fn getAnisotropicBentNormals(T: vec3f, B: vec3f, N: vec3f, V: vec3f, anisotropy: f32, roughness: f32) -> vec3f {
             var bentNormal: vec3f = cross(B, V);
             bentNormal = normalize(cross(bentNormal, B));
             // This heuristic can probably be improved upon
@@ -77,13 +77,13 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
     // From beer lambert law I1/I0 = e −α′lc
     // c is considered included in alpha
     // https://blog.selfshadow.com/publications/s2017-shading-course/drobot/s2017_pbs_multilayered.pdf page 47
-    fn cocaLambert(alpha: vec3f, distance: f32) -> vec3f {
+    fn cocaLambertVec3(alpha: vec3f, distance: f32) -> vec3f {
         return exp(-alpha * distance);
     }
 
     // where L on a thin constant size layer can be (d * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))
     fn cocaLambert(NdotVRefract: f32, NdotLRefract: f32, alpha: vec3f, thickness: f32) -> vec3f {
-        return cocaLambert(alpha, (thickness * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))));
+        return cocaLambertVec3(alpha, (thickness * ((NdotLRefract + NdotVRefract) / (NdotLRefract * NdotVRefract))));
     }
 
     // From beerLambert Solves what alpha should be for a given result at a known distance.
