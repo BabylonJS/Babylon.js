@@ -60,7 +60,7 @@
             , in sampler2D reflectionSampler
             , in vec2 reflectionCoords
         #endif
-        in float NdotVUnclamped,
+        , in float NdotVUnclamped
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
                 , in samplerCube reflectionSamplerLow
