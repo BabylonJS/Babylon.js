@@ -374,7 +374,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                , ${state._generateTernary("1.", "-1.", isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing")}
+                , (${state._generateTernary("1.", "-1.", isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing")})
             #endif
             );
         #else

@@ -550,7 +550,7 @@ export class NodeMaterialBuildState {
             return `select(${falseStatement}, ${trueStatement}, ${condition})`;
         }
 
-        return `${condition} ? ${trueStatement} : ${falseStatement}`;
+        return `(${condition}) ? ${trueStatement} : ${falseStatement}`;
     }
 
     /**
