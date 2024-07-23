@@ -2,20 +2,17 @@ import { FrameGraphBlock } from "../../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuildState } from "../../frameGraphBuildState";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { PostProcess } from "core/PostProcesses/postProcess";
 import { BlackAndWhitePostProcess } from "core/PostProcesses/blackAndWhitePostProcess";
 import type { Nullable } from "core/types";
 import { Constants } from "core/Engines";
-import { EffectRenderer } from "core/Materials/effectRenderer";
 
 /**
  * Block that implements the black and white post process
  */
 export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
-    private _effectRenderer: Nullable<EffectRenderer> = null;
     private _postProcess: Nullable<PostProcess> = null;
 
     /**
@@ -34,10 +31,10 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
         this.output._typeConnectionSource = this.destination;
     }
 
-    /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
-    @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES")
     private _degree = 1;
 
+    /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
+    @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES")
     public get degree(): number {
         return this._degree;
     }
@@ -91,14 +88,12 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
     public override dispose() {
         this._postProcess?.dispose();
         this._postProcess = null;
-        this._effectRenderer?.dispose();
-        this._effectRenderer = null;
 
         super.dispose();
     }
 
-    protected override _buildBlock(state: FrameGraphBuildState) {
-        super._buildBlock(state);
+    protected override _buildBlock(builder: FrameGraphBuilder) {
+        super._buildBlock(builder);
 
         this._propagateInputValueToOutput(this.destination, this.output);
 
@@ -108,34 +103,24 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
             throw new Error("FrameGraphBlackAndWhitePostProcess: Source is not connected or is not a texture");
         }
 
-        if (!this._effectRenderer) {
-            this._effectRenderer = new EffectRenderer(state.engine);
-        }
-
         this._postProcess?.dispose();
-        this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, this.sourceSamplingMode, state.engine);
+        this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, this.sourceSamplingMode, builder.engine);
         this._postProcess.externalTextureSamplerBinding = true;
         this._postProcess.onApplyObservable.add((effect) => {
             effect._bindTexture("textureSampler", sourceTexture);
         });
-    }
 
-    protected override _execute(engine: AbstractEngine): void {
         const destination = this.destination.connectedPoint?.value;
         const rtWrapper = destination?.getValueAsRenderTargetWrapper();
-        if (!rtWrapper) {
-            return;
+        if (rtWrapper) {
+            builder.addExecuteFunction(() => {
+                builder.bindRenderTargetWrapper(rtWrapper);
+
+                this._postProcess!.directRender(builder);
+
+                builder.bindRenderTargetWrapper(null);
+            });
         }
-
-        this._postProcess!.apply();
-        this._effectRenderer!.render(this._postProcess!.getDrawWrapper(), rtWrapper);
-
-        // Restore states
-        engine.setDepthBuffer(true);
-        engine.setDepthWrite(true);
-        engine.setAlphaMode(Constants.ALPHA_DISABLE);
-
-        engine.restoreDefaultFramebuffer();
     }
 }
 

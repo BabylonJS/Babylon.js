@@ -94,27 +94,19 @@ export class EffectRenderer {
         this.engine.bindBuffers(this._vertexBuffers, this._indexBuffer, effect);
     }
 
-    private _isEffectWrapper(effectWrapper: EffectWrapper | DrawWrapper): effectWrapper is EffectWrapper {
-        return (effectWrapper as EffectWrapper)._drawWrapper !== undefined;
-    }
-
     /**
      * Sets the current effect wrapper to use during draw.
      * The effect needs to be ready before calling this api.
      * This also sets the default full screen position attribute.
      * @param effectWrapper Defines the effect to draw with
      */
-    public applyEffectWrapper(effectWrapper: EffectWrapper | DrawWrapper): void {
-        const isEffectWrapper = this._isEffectWrapper(effectWrapper);
-
+    public applyEffectWrapper(effectWrapper: EffectWrapper): void {
         this.engine.setState(true);
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
-        this.engine.enableEffect(isEffectWrapper ? effectWrapper._drawWrapper : effectWrapper);
+        this.engine.enableEffect(effectWrapper._drawWrapper);
         this.bindBuffers(effectWrapper.effect!);
-        if (isEffectWrapper) {
-            effectWrapper.onApplyObservable.notifyObservers({});
-        }
+        effectWrapper.onApplyObservable.notifyObservers({});
     }
 
     /**
@@ -146,10 +138,10 @@ export class EffectRenderer {
 
     /**
      * renders one or more effects to a specified texture
-     * @param effectWrapper the effect to render - can also be a DrawWrapper
+     * @param effectWrapper the effect to render
      * @param outputTexture texture to draw to, if null it will render to the screen.
      */
-    public render(effectWrapper: EffectWrapper | DrawWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
+    public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready
         if (!effectWrapper.effect!.isReady()) {
             return;

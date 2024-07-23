@@ -4,7 +4,7 @@ import type { Nullable } from "../types";
 import type { Scene } from "../scene";
 import { FrameGraphOutputBlock } from "./Blocks/frameGraphOutputBlock";
 import type { FrameGraphBlock } from "./frameGraphBlock";
-import { FrameGraphBuildState } from "./frameGraphBuildState";
+import { FrameGraphBuilder } from "./frameGraphBuilder";
 import { GetClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { SerializationHelper } from "../Misc/decorators.serialization";
@@ -40,7 +40,7 @@ export interface IFrameGraphEditorOptions {
 /**
  * Options that can be passed to the frame graph build method
  */
-export interface IFrameGraphBuildOptions {
+export interface IFrameGraphCreateOptions {
     /** if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false) */
     removeFalseBlocks?: boolean;
     /** if true, textures created by the frame graph will be visible in the inspector, for easier debugging (default: false) */
@@ -128,15 +128,42 @@ export class FrameGraph {
     private _executedBlocks: FrameGraphBlock[] = [];
     private _engine: AbstractEngine;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
+    private _frameGraphBuilder: FrameGraphBuilder;
+    private _options: IFrameGraphCreateOptions;
 
     /**
      * Creates a new frame graph
      * @param name defines the name of the frame graph
      * @param engine defines the engine to use to execute the graph
+     * @param options defines the options to use when creating the graph
      */
-    public constructor(name: string, engine: AbstractEngine) {
+    public constructor(name: string, engine: AbstractEngine, options?: IFrameGraphCreateOptions) {
         this.name = name;
         this._engine = engine;
+        this._frameGraphBuilder = new FrameGraphBuilder(engine);
+
+        options = {
+            removeFalseBlocks: false,
+            debugTextures: false,
+            scene: undefined,
+            autoConfigure: false,
+            verbose: false,
+            updateBuildId: true,
+            ...options,
+        };
+
+        this._options = options;
+
+        if (options.rebuildGraphOnEngineResize) {
+            this._resizeObserver = this._engine.onResizeObservable.add(() => {
+                this.build();
+            });
+        }
+
+        this._frameGraphBuilder.verbose = !!options.verbose;
+        this._frameGraphBuilder.debugTextures = !!options.debugTextures;
+        this._frameGraphBuilder.scene = options.scene;
+        this._frameGraphBuilder.removeFalseBlocks = !!options.removeFalseBlocks;
     }
 
     /**
@@ -237,57 +264,23 @@ export class FrameGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
-     * @param options defines the options to use when building the graph
      */
-    public build(options?: IFrameGraphBuildOptions) {
-        this._executedBlocks.length = 0;
-        this._engine.onResizeObservable.remove(this._resizeObserver);
-        this._resizeObserver = null;
-
-        options = {
-            removeFalseBlocks: false,
-            debugTextures: false,
-            scene: undefined,
-            autoConfigure: false,
-            verbose: false,
-            updateBuildId: true,
-            ...options,
-        };
-
+    public build() {
         if (!this.outputBlock) {
-            // eslint-disable-next-line no-throw-literal
-            throw "You must define the outputBlock property before building the frame graph";
+            throw new Error("You must define the outputBlock property before building the frame graph");
         }
 
-        if (options.rebuildGraphOnEngineResize) {
-            // Avoid reentrancy by delaying the observer registration
-            setTimeout(() => {
-                this._resizeObserver = this._engine.onResizeObservable.add(() => {
-                    this.build(options);
-                });
-            }, 0);
-        }
+        this._initializeBlock(this.outputBlock);
 
-        // Initialize blocks
-        this._initializeBlock(this.outputBlock, options.removeFalseBlocks, options.autoConfigure);
+        this._frameGraphBuilder.buildId = this._buildId;
 
-        // Build
-        const state = new FrameGraphBuildState();
+        this._frameGraphBuilder._start();
+        this.outputBlock.build(this._frameGraphBuilder);
+        this._frameGraphBuilder._end();
 
-        state.engine = this._engine;
-        state.buildId = this._buildId;
-        state.verbose = !!options.verbose;
-        state.debugTextures = !!options.debugTextures;
-        state.scene = options.scene;
-
-        this.outputBlock.build(state);
-
-        if (options.updateBuildId) {
+        if (this._options.updateBuildId) {
             this._buildId = FrameGraph._BuildIdGenerator++;
         }
-
-        // Errors
-        state.emitErrors();
 
         this.onBuildObservable.notifyObservers(this);
     }
@@ -321,15 +314,12 @@ export class FrameGraph {
      * Execute the graph (the graph must have been built before!)
      */
     public execute() {
-        this._engine.restoreDefaultFramebuffer();
-        for (const block of this._executedBlocks) {
-            block.execute(this._engine);
-        }
+        this._frameGraphBuilder._execute();
     }
 
-    private _initializeBlock(node: FrameGraphBlock, removeFalseBlocks = false, autoConfigure = true) {
+    private _initializeBlock(node: FrameGraphBlock) {
         node.initialize();
-        if (autoConfigure) {
+        if (this._options.autoConfigure) {
             node.autoConfigure();
         }
 
@@ -342,12 +332,15 @@ export class FrameGraph {
             if (connectedPoint) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    this._initializeBlock(block, autoConfigure);
+                    this._initializeBlock(block);
                 }
             }
         }
 
-        if (!node.isInput && (!removeFalseBlocks || (removeFalseBlocks && (!node.executeCondition || node.executeCondition()))) && this._executedBlocks.indexOf(node) === -1) {
+        if (
+            !this._options.removeFalseBlocks ||
+            (this._executedBlocks.indexOf(node) === -1 && this._options.removeFalseBlocks && (!node.executeCondition || node.executeCondition()))
+        ) {
             this._executedBlocks.push(node);
         }
     }
@@ -651,6 +644,9 @@ export class FrameGraph {
         for (const block of this.attachedBlocks) {
             block.dispose();
         }
+
+        this._frameGraphBuilder._dispose();
+        this._frameGraphBuilder = undefined as any;
 
         this._engine.onResizeObservable.remove(this._resizeObserver);
         this._resizeObserver = null;

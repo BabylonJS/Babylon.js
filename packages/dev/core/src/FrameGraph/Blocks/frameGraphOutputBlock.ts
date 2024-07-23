@@ -2,7 +2,7 @@ import { FrameGraphBlock } from "../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
 import { RegisterClass } from "../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuildState } from "../frameGraphBuildState";
+import type { FrameGraphBuilder } from "../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
 import { CopyTextureToTexture } from "core/Misc";
 
@@ -51,15 +51,13 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
         super.dispose();
     }
 
-    protected override _buildBlock(state: FrameGraphBuildState) {
-        super._buildBlock(state);
+    protected override _buildBlock(builder: FrameGraphBuilder) {
+        super._buildBlock(builder);
 
         if (!this._copyTexture) {
-            this._copyTexture = new CopyTextureToTexture(state.engine);
+            this._copyTexture = new CopyTextureToTexture(builder.engine);
         }
-    }
 
-    protected override _execute(): void {
         const inputTexture = this.texture.connectedPoint?.value;
         if (!inputTexture || !inputTexture.value) {
             return;
@@ -70,7 +68,9 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
             return;
         }
 
-        this._copyTexture!.copy(internalTexture, null);
+        builder.addExecuteFunction(() => {
+            this._copyTexture!.copy(internalTexture, null);
+        });
     }
 }
 

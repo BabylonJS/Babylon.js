@@ -28,6 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import type { FrameGraphBuilder } from "core/FrameGraph/frameGraphBuilder";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -717,14 +718,6 @@ export class PostProcess {
     }
 
     /**
-     * The DrawWrapper that is created when initializing the post process.
-     * @returns The created DrawWrapper corresponding to the postprocess.
-     */
-    public getDrawWrapper(): DrawWrapper {
-        return this._drawWrapper;
-    }
-
-    /**
      * To avoid multiple redundant textures for multiple post process, the output the output texture for this post process can be shared with another.
      * @param postProcess The post process to share the output with.
      * @returns This post process.
@@ -1057,22 +1050,7 @@ export class PostProcess {
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
-    /**
-     * Binds all textures and uniforms to the shader, this will be run on every pass.
-     * @returns the effect corresponding to this post process. Null if not compiled or not ready.
-     */
-    public apply(): Nullable<Effect> {
-        // Check
-        if (!this._drawWrapper.effect?.isReady()) {
-            return null;
-        }
-
-        // States
-        this._engine.enableEffect(this._drawWrapper);
-        this._engine.setState(false);
-        this._engine.setDepthBuffer(false);
-        this._engine.setDepthWrite(false);
-
+    private _bind() {
         // Alpha
         this._engine.setAlphaMode(this.alphaMode);
         if (this.alphaConstants) {
@@ -1090,16 +1068,39 @@ export class PostProcess {
         }
 
         if (!this.externalTextureSamplerBinding) {
-            this._drawWrapper.effect._bindTexture("textureSampler", source?.texture);
+            this._drawWrapper.effect!._bindTexture("textureSampler", source?.texture);
         }
 
         // Parameters
-        this._drawWrapper.effect.setVector2("scale", this._scaleRatio);
-        this.onApplyObservable.notifyObservers(this._drawWrapper.effect);
+        this._drawWrapper.effect!.setVector2("scale", this._scaleRatio);
+        this.onApplyObservable.notifyObservers(this._drawWrapper.effect!);
 
-        PostProcess._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect);
+        PostProcess._GetShaderCodeProcessing(this.name)?.bindCustomBindings?.(this.name, this._drawWrapper.effect!);
+    }
+
+    /**
+     * Binds all textures and uniforms to the shader, this will be run on every pass.
+     * @returns the effect corresponding to this post process. Null if not compiled or not ready.
+     */
+    public apply(): Nullable<Effect> {
+        // Check
+        if (!this._drawWrapper.effect?.isReady()) {
+            return null;
+        }
+
+        // States
+        this._engine.enableEffect(this._drawWrapper);
+        this._engine.setState(false);
+        this._engine.setDepthBuffer(false);
+        this._engine.setDepthWrite(false);
+
+        this._bind();
 
         return this._drawWrapper.effect;
+    }
+
+    public directRender(frameGraphBuilder: FrameGraphBuilder) {
+        frameGraphBuilder.applyFullScreenEffect(this._drawWrapper, () => this._bind());
     }
 
     private _disposeTextures() {

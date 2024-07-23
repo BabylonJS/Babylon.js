@@ -3,7 +3,7 @@ import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockCon
 import { FrameGraphBlock } from "../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
 import { RegisterClass } from "../../Misc/typeStore";
-import type { FrameGraphBuildState } from "../frameGraphBuildState";
+import type { FrameGraphBuilder } from "../frameGraphBuilder";
 import type { Camera } from "../../Cameras/camera";
 import type { ThinTexture } from "../../Materials/Textures/thinTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
@@ -151,8 +151,8 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
         return (this.type & FrameGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment) !== 0;
     }
 
-    protected override _buildBlock(state: FrameGraphBuildState) {
-        super._buildBlock(state);
+    protected override _buildBlock(builder: FrameGraphBuilder) {
+        super._buildBlock(builder);
 
         if (this.isExternal) {
             if (this._storedValue === undefined || this._storedValue === null) {
@@ -172,15 +172,15 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
 
             const size = options.sizeIsPercentage
                 ? {
-                      width: (state.engine.getRenderWidth() * (options.size as { width: number }).width) / 100,
-                      height: (state.engine.getRenderHeight() * (options.size as { height: number }).height) / 100,
+                      width: (builder.engine.getRenderWidth() * (options.size as { width: number }).width) / 100,
+                      height: (builder.engine.getRenderHeight() * (options.size as { height: number }).height) / 100,
                   }
                 : options.size;
 
-            this.value = state.engine.createRenderTargetTexture(size, options.options);
+            this.value = builder.engine.createRenderTargetTexture(size, options.options);
 
-            if (state.debugTextures && state.scene) {
-                this._textureDebug = new Texture(null, state.scene);
+            if (builder.debugTextures && builder.scene) {
+                this._textureDebug = new Texture(null, builder.scene);
                 this._textureDebug.name = this.name;
                 this._textureDebug._texture = this.value.texture!;
                 this._textureDebug._texture.incrementReferences();

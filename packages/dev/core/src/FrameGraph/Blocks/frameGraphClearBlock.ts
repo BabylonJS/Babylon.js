@@ -2,8 +2,7 @@ import { FrameGraphBlock } from "../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
 import { RegisterClass } from "../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuildState } from "../frameGraphBuildState";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { FrameGraphBuilder } from "../frameGraphBuilder";
 import { Color4 } from "core/Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
 
@@ -50,13 +49,11 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
         return this._outputs[0];
     }
 
-    protected override _buildBlock(state: FrameGraphBuildState) {
-        super._buildBlock(state);
+    protected override _buildBlock(builder: FrameGraphBuilder) {
+        super._buildBlock(builder);
 
         this._propagateInputValueToOutput(this.texture, this.output);
-    }
 
-    protected override _execute(engine: AbstractEngine): void {
         const inputTexture = this.texture.connectedPoint?.value;
         if (!inputTexture || !inputTexture.isAnyTexture) {
             return;
@@ -66,18 +63,19 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
         const isBackBufferDepthStencilAttachment = inputTexture.isBackBufferDepthStencilAttachment;
         const isDepthStencilAttachment = inputTexture.type === FrameGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
 
-        if (!isBackBuffer && !isBackBufferDepthStencilAttachment) {
+        if (isBackBuffer || isBackBufferDepthStencilAttachment) {
+            builder.addExecuteFunction(() => {
+                builder.engine.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+            });
+        } else {
             const rtWrapper = inputTexture.getValueAsRenderTargetWrapper();
-            if (!rtWrapper) {
-                return;
+            if (rtWrapper) {
+                builder.addExecuteFunction(() => {
+                    builder.bindRenderTargetWrapper(rtWrapper);
+                    builder.engine.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+                    builder.bindRenderTargetWrapper(null);
+                });
             }
-            engine.bindFramebuffer(rtWrapper);
-        }
-
-        engine.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
-
-        if (!isBackBuffer && !isBackBufferDepthStencilAttachment) {
-            engine.restoreDefaultFramebuffer();
         }
     }
 }

@@ -4,7 +4,7 @@ import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlock
 import { FrameGraphBlock } from "../../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
 import type { FrameGraphTeleportInBlock } from "./frameGraphTeleportInBlock";
-import type { FrameGraphBuildState } from "../../frameGraphBuildState";
+import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -62,7 +62,7 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
         // All work done by the emitter
     }
 
-    protected override _customBuildStep(state: FrameGraphBuildState): void {
+    protected override _customBuildStep(state: FrameGraphBuilder): void {
         if (this.entryPoint) {
             this.entryPoint.build(state);
         }

@@ -2,13 +2,12 @@ import { GetClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
 import type { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuildState } from "./frameGraphBuildState";
+import type { FrameGraphBuilder } from "./frameGraphBuilder";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
 import { Logger } from "core/Misc/logger";
 import { FrameGraphConnectionPoint, FrameGraphConnectionPointDirection } from "./frameGraphBlockConnectionPoint";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
 
 /**
  * Defines a block that can be used inside a frame graph
@@ -257,13 +256,11 @@ export class FrameGraphBlock {
         return this;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _buildBlock(state: FrameGraphBuildState) {
+    protected _buildBlock(_builder: FrameGraphBuilder) {
         // Empty. Must be defined by child nodes
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _customBuildStep(state: FrameGraphBuildState): void {
+    protected _customBuildStep(_builder: FrameGraphBuilder): void {
         // Must be implemented by children
     }
 
@@ -275,47 +272,53 @@ export class FrameGraphBlock {
 
     /**
      * Build the current node and generate the vertex data
-     * @param state defines the current generation state
+     * @param builder defines the current generation builder
      * @returns true if already built
      */
-    public build(state: FrameGraphBuildState): boolean {
-        if (this._buildId === state.buildId) {
+    public build(builder: FrameGraphBuilder): boolean {
+        if (this._buildId === builder.buildId) {
             return true;
         }
 
-        this._buildId = state.buildId;
+        if (builder.removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
+            return false;
+        }
+
+        this._buildId = builder.buildId;
 
         // Check if "parent" blocks are compiled
         for (const input of this._inputs) {
             if (!input.connectedPoint) {
                 if (!input.isOptional) {
                     // Emit a warning
-                    state.notConnectedNonOptionalInputs.push(input);
+                    builder.notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
             }
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                block.build(state);
+                block.build(builder);
             }
         }
 
-        this._customBuildStep(state);
+        this._customBuildStep(builder);
 
         // Logs
-        if (state.verbose) {
+        if (builder.verbose) {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        this._buildBlock(state);
+        builder._addCondition(this.executeCondition);
+
+        this._buildBlock(builder);
 
         // Compile connected blocks
         for (const output of this._outputs) {
             for (const endpoint of output.endpoints) {
                 const block = endpoint.ownerBlock;
                 if (block) {
-                    block.build(state);
+                    block.build(builder);
                 }
             }
         }
@@ -332,21 +335,6 @@ export class FrameGraphBlock {
     public isReady() {
         return true;
     }
-
-    /**
-     * Executes the current block
-     * @param engine defines the engine to use to execute this block
-     */
-    public execute(engine: AbstractEngine) {
-        if (this.executeCondition && !this.executeCondition()) {
-            return;
-        }
-        this.onBeforeExecuteObservable.notifyObservers(this);
-        this._execute(engine);
-        this.onAfterExecuteObservable.notifyObservers(this);
-    }
-
-    protected _execute(_engine: AbstractEngine) {}
 
     protected _linkConnectionTypes(inputIndex0: number, inputIndex1: number, looseCoupling = false) {
         if (looseCoupling) {
