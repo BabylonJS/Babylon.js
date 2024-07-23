@@ -105,7 +105,7 @@ export class EffectRenderer {
         this.engine.depthCullingState.depthTest = false;
         this.engine.stencilState.stencilTest = false;
         this.engine.enableEffect(effectWrapper._drawWrapper);
-        this.bindBuffers(effectWrapper.effect!);
+        this.bindBuffers(effectWrapper.effect);
         effectWrapper.onApplyObservable.notifyObservers({});
     }
 
@@ -138,12 +138,12 @@ export class EffectRenderer {
 
     /**
      * renders one or more effects to a specified texture
-     * @param effectWrapper the effect to render
+     * @param effectWrapper the effect to renderer
      * @param outputTexture texture to draw to, if null it will render to the screen.
      */
     public render(effectWrapper: EffectWrapper, outputTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture> = null) {
         // Ensure effect is ready
-        if (!effectWrapper.effect!.isReady()) {
+        if (!effectWrapper.effect.isReady()) {
             return;
         }
 
