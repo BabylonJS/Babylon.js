@@ -327,7 +327,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #ifdef CLEARCOAT_TINT
                 , vClearCoatTintParams
                 , ${tintAtDistance}
-                , vClearCoatRefractionParams
+                , ${isWebGPU ? "uniforms." : ""}vClearCoatRefractionParams
                 #ifdef CLEARCOAT_TINT_TEXTURE
                     , ${tintTexture}
                 #endif
@@ -339,7 +339,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                     , vTBN
                 #else
-                    , vClearCoatTangentSpaceParams
+                    , ${isWebGPU ? "uniforms." : ""}vClearCoatTangentSpaceParams
                 #endif
                 #ifdef OBJECTSPACE_NORMALMAP
                     , normalMatrix
@@ -352,19 +352,25 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 , ${reflectionBlock?._vReflectionMicrosurfaceInfosName}
                 , ${reflectionBlock?._vReflectionInfosName}
                 , ${reflectionBlock?.reflectionColor}
-                , vLightingIntensity
+                , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef ${reflectionBlock?._define3DName}
-                    , ${reflectionBlock?._cubeSamplerName}
+                    , ${reflectionBlock?._cubeSamplerName}       
+                    ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                 #else
-                    , ${reflectionBlock?._2DSamplerName}
+                    , ${reflectionBlock?._2DSamplerName}       
+                    ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                 #endif
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${reflectionBlock?._define3DName}
+                        , ${reflectionBlock?._cubeSamplerName}       
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._cubeSamplerName}
-                        , ${reflectionBlock?._cubeSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                     #else
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}                        
                     #endif
                 #endif
             #endif

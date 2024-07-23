@@ -138,6 +138,7 @@ export class SheenBlock extends NodeMaterialBlock {
                 , roughness
             #ifdef SHEEN_TEXTURE
                 , ${texture}
+                ${isWebGPU ? `, ${texture}Sampler` : ""}
                 , 1.0
             #endif
                 , reflectance
@@ -156,19 +157,25 @@ export class SheenBlock extends NodeMaterialBlock {
                 , ${reflectionBlock?.reflectionColor}
                 , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef ${reflectionBlock?._define3DName}
-                    , ${reflectionBlock?._cubeSamplerName}
+                    , ${reflectionBlock?._cubeSamplerName}                                      
+                    ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                 #else
                     , ${reflectionBlock?._2DSamplerName}
+                    ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                 #endif
                 , reflectionOut.reflectionCoords
                 , NdotVUnclamped
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${reflectionBlock?._define3DName}
+                        , ${reflectionBlock?._cubeSamplerName}                        
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._cubeSamplerName}
-                        , ${reflectionBlock?._cubeSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                     #else
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                     #endif
                 #endif
                 #if !defined(${reflectionBlock?._defineSkyboxName}) && defined(RADIANCEOCCLUSION)

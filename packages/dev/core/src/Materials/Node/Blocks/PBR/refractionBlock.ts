@@ -19,6 +19,7 @@ import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Scalar } from "../../../../Maths/math.scalar";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -277,6 +278,7 @@ export class RefractionBlock extends NodeMaterialBlock {
      */
     public getCode(state: NodeMaterialBuildState): string {
         const code = "";
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state.sharedData.blockingBlocks.push(this);
         state.sharedData.textureBlocks.push(this);
@@ -308,6 +310,10 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._refractionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
+        if (isWebGPU) {
+            this._refractionMatrixName = "uniforms." + this._refractionMatrixName;
+        }
+
         state._emitFunction(
             "sampleRefraction",
             `
@@ -334,9 +340,17 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
+        if (isWebGPU) {
+            this._vRefractionMicrosurfaceInfosName = "uniforms." + this._vRefractionMicrosurfaceInfosName;
+        }
+
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
         state._emitUniformFromString(this._vRefractionInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
+
+        if (isWebGPU) {
+            this._vRefractionInfosName = "uniforms." + this._vRefractionInfosName;
+        }
 
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 
