@@ -432,6 +432,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 ${isWebGPU ? `, ${this._cubeSamplerName}Sampler` : ""}
             #else
                 , ${this._2DSamplerName}
+                ${isWebGPU ? `, ${this._2DSamplerName}Sampler` : ""}
             #endif
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
                 , ${isWebGPU ? "input." : ""}${this._vEnvironmentIrradianceName}
@@ -442,7 +443,8 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
-                , irradianceSampler // ** not handled **
+                , irradianceSampler         // ** not handled **
+                ${isWebGPU ? `, irradianceSamplerSampler` : ""}
             #endif
             #ifndef LODBASEDMICROSFURACE
                 #ifdef ${this._define3DName}

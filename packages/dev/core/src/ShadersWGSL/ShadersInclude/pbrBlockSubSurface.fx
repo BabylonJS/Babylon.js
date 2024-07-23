@@ -513,9 +513,9 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                var irr: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo);
+                var refractionIrradiance: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo);
             #else
-                var irr: vec3f = computeEnvironmentIrradiance(-irradianceVector);
+                var refractionIrradiance: vec3f = computeEnvironmentIrradiance(-irradianceVector);
             #endif
         #elif defined(USEIRRADIANCEMAP)
             #ifdef REFLECTIONMAP_3D
@@ -528,28 +528,28 @@ struct subSurfaceOutParams
                 irradianceCoords.y = 1.0 - irradianceCoords.y;
             #endif
 
-            var refractionIrradiance: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, -irradianceCoords);
-            var irr = refractionIrradiance.rgb;
+            var temp: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, -irradianceCoords);
+            var refractionIrradiance = temp.rgb;
             
             #ifdef RGBDREFLECTION
-                irr = fromRGBD(refractionIrradiance);
+                refractionIrradiance = fromRGBD(temp).rgb;
             #endif
 
             #ifdef GAMMAREFLECTION
-                irr = toLinearSpace(rirr);
+                refractionIrradiance = toLinearSpaceVec3(refractionIrradiance);
             #endif
         #else
-            var irr = vec3f(0.);
+            var refractionIrradiance: vec3f =  vec3f(0.);
         #endif
 
-        irr *= transmittance;
+        refractionIrradiance *= transmittance;
 
         #ifdef SS_ALBEDOFORTRANSLUCENCYTINT
             // Tvar the: i32 transmission with albedo.
-            irr *= surfaceAlbedo.rgb;
+            refractionIrradiance *= surfaceAlbedo.rgb;
         #endif
 
-        outParams.refractionIrradiance = irr;
+        outParams.refractionIrradiance = refractionIrradiance;
     #endif
 
         return outParams;

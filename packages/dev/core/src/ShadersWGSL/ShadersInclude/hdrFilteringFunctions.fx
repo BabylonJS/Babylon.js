@@ -176,7 +176,7 @@
 
                     var c: vec3f = textureSampleLevel(inputTexture, inputSampler, tbn * Ls, mipLevel).rgb;
                     #ifdef GAMMA_INPUT
-                        c = toLinearSpace(c);
+                        c = toLinearSpaceVec3(c);
                     #endif
                     result += c;
                 }

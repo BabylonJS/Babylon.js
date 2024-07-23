@@ -368,7 +368,7 @@ export class WebGPUEngine extends AbstractEngine {
 
     // TODO WEBGPU remove those variables when code stabilized
     /** @internal */
-    public dbgShowShaderCode = true;
+    public dbgShowShaderCode = false;
     /** @internal */
     public dbgSanityChecks = true;
     /** @internal */
