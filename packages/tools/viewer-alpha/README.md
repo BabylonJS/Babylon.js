@@ -13,8 +13,17 @@ The Canvas factory could be used for other browser based UI framework integratio
 
 ## Tools
 
-Run `npm run start:web` to run the test app and debug the code.
+### `npm run start:web`
 
-Run `npm run analyze` to visualize the bundled size as a flame chart. This is useful for understanding how different parts of @babylonjs/core and @babylonjs/loaders contribute to the bundle size, and how to optimize it.
+Runs the test app and debug the code.
 
-Run `npm run start:bundle-test` to test the bundled code in a browser. This is just here to verify that the bundled code has everything needed to actually run successfully, so we know we are not missing any code in our size analysis.
+### `npm run analyze`
+Visualizes the bundled size as a flame chart. This is useful for understanding how different parts of @babylonjs/core and @babylonjs/loaders contribute to the bundle size, and how to optimize it.
+
+Also generates a dist/analyze/stats.json file via rollup-plugin-visualizer. Use the `queryRollupStats.js` script to figure out why a particular module is not being tree shaken (e.g. the module reference stacks). For example:
+```
+node ../../../scripts/queryRollupStats.js standardmaterial dist/analyze/stats.json
+```
+
+### `npm run start:bundle-test`
+Tests the bundled code in a browser. This is just here to verify that the bundled code has everything needed to actually run successfully, so we know we are not missing any code in our size analysis.
