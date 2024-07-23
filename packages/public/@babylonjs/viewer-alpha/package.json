@@ -11,13 +11,17 @@
         "lib/**/*.js",
         "lib/**/*.d.ts",
         "lib/**/*.map",
+        "dist/**/*.js",
+        "dist/**/*.map",
         "readme.md",
         "license.md"
     ],
     "scripts": {
         "build": "npm run clean && npm run bundle",
-        "clean": "rimraf lib && rimraf src && rimraf *.tsbuildinfo",
-        "bundle": "rollup -c",
+        "clean": "rimraf lib && rimraf dist && rimraf *.tsbuildinfo",
+        "bundle": "npm run bundle:lib && npm run bundle:dist:esm",
+        "bundle:lib": "rollup -c rollup.config.lib.mjs",
+        "bundle:dist:esm": "rollup -c rollup.config.dist.esm.mjs",
         "pack": "npm run build && npm pack"
     },
     "peerDependencies": {
@@ -26,6 +30,9 @@
     },
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
+        "@rollup/plugin-alias": "^5.1.0",
+        "@rollup/plugin-commonjs": "^26.0.1",
+        "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-terser": "^0.4.4",
         "@rollup/plugin-typescript": "^11.1.6",
         "rollup": "^4.18.0",
