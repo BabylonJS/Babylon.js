@@ -3,6 +3,7 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import terser from "@rollup/plugin-terser";
+import { visualizer } from "rollup-plugin-visualizer";
 
 const source = "dev";
 
@@ -31,5 +32,6 @@ export default {
         nodeResolve({ mainFields: ["browser", "module", "main"] }),
         commonjs(),
         terser(),
+        visualizer({ filename: "dist/analyze/stats.json", template: "raw-data" }),
     ],
 };
