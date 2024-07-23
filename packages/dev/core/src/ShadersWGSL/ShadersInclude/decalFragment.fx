@@ -5,5 +5,5 @@
     #ifdef DECAL_SMOOTHALPHA
         decalColor.a *= decalColor.a;
     #endif
-    surfaceAlbedo.rgb = mix(surfaceAlbedo.rgb, decalColor.rgb, decalColor.a);
+    surfaceAlbedo = mix(surfaceAlbedo.rgb, decalColor.rgb, decalColor.a);
 #endif

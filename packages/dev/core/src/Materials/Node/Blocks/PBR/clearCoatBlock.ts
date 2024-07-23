@@ -285,13 +285,13 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const intensity = ccBlock?.intensity.isConnected ? ccBlock.intensity.associatedVariableName : "1.";
         const roughness = ccBlock?.roughness.isConnected ? ccBlock.roughness.associatedVariableName : "0.";
-        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : "vec3(0.)";
-        const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : "vec2(0.)";
+        const normalMapColor = ccBlock?.normalMapColor.isConnected ? ccBlock.normalMapColor.associatedVariableName : `vec3${state.fSuffix}(0.)`;
+        const uv = ccBlock?.uv.isConnected ? ccBlock.uv.associatedVariableName : `vec2${state.fSuffix}(0.)`;
 
-        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : "vec3(1.)";
+        const tintColor = ccBlock?.tintColor.isConnected ? ccBlock.tintColor.associatedVariableName : `vec3${state.fSuffix}(1.)`;
         const tintThickness = ccBlock?.tintThickness.isConnected ? ccBlock.tintThickness.associatedVariableName : "1.";
         const tintAtDistance = ccBlock?.tintAtDistance.isConnected ? ccBlock.tintAtDistance.associatedVariableName : "1.";
-        const tintTexture = "vec4(0.)";
+        const tintTexture = `vec4${state.fSuffix}(0.)`;
 
         if (ccBlock) {
             state._emitUniformFromString("vClearCoatRefractionParams", NodeMaterialBlockConnectionPointTypes.Vector4);
@@ -312,8 +312,8 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         code += `${isWebGPU ? "var clearcoatOut: clearcoatOutParams" : "clearcoatOutParams clearcoatOut"};
 
         #ifdef CLEARCOAT
-            vec2 vClearCoatParams = vec2(${intensity}, ${roughness});
-            vec4 vClearCoatTintParams = vec4(${tintColor}, ${tintThickness});
+            ${state._declareLocalVar("vClearCoatParams", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(${intensity}, ${roughness});
+            ${state._declareLocalVar("vClearCoatTintParams", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${tintThickness});
 
             clearcoatOut = clearcoatBlock(
                 ${worldPosVarName}.xyz
@@ -327,7 +327,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
             #ifdef CLEARCOAT_TINT
                 , vClearCoatTintParams
                 , ${tintAtDistance}
-                , vClearCoatRefractionParams
+                , ${isWebGPU ? "uniforms." : ""}vClearCoatRefractionParams
                 #ifdef CLEARCOAT_TINT_TEXTURE
                     , ${tintTexture}
                 #endif
@@ -339,7 +339,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #if defined(${vTBNAvailable ? "TANGENT" : "IGNORE"}) && defined(NORMAL)
                     , vTBN
                 #else
-                    , vClearCoatTangentSpaceParams
+                    , ${isWebGPU ? "uniforms." : ""}vClearCoatTangentSpaceParams
                 #endif
                 #ifdef OBJECTSPACE_NORMALMAP
                     , normalMatrix
@@ -349,22 +349,28 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 , faceNormal
             #endif
             #ifdef REFLECTION
-                , ${reflectionBlock?._vReflectionMicrosurfaceInfosName}
+                , ${isWebGPU ? "uniforms." : ""}${reflectionBlock?._vReflectionMicrosurfaceInfosName}
                 , ${reflectionBlock?._vReflectionInfosName}
                 , ${reflectionBlock?.reflectionColor}
-                , vLightingIntensity
+                , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef ${reflectionBlock?._define3DName}
-                    , ${reflectionBlock?._cubeSamplerName}
+                    , ${reflectionBlock?._cubeSamplerName}       
+                    ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                 #else
-                    , ${reflectionBlock?._2DSamplerName}
+                    , ${reflectionBlock?._2DSamplerName}       
+                    ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                 #endif
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${reflectionBlock?._define3DName}
+                        , ${reflectionBlock?._cubeSamplerName}       
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._cubeSamplerName}
-                        , ${reflectionBlock?._cubeSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                     #else
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}
                         , ${reflectionBlock?._2DSamplerName}
+                        ${isWebGPU ? `, ${reflectionBlock?._2DSamplerName}Sampler` : ""}                        
                     #endif
                 #endif
             #endif
@@ -374,7 +380,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 #endif
             #endif
             #if defined(CLEARCOAT_BUMP) || defined(TWOSIDEDLIGHTING)
-                , (${isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing"} ? 1. : -1.)
+                , (${state._generateTernary("1.", "-1.", isWebGPU ? "fragmentInputs.frontFacing" : "gl_FrontFacing")})
             #endif
             );
         #else

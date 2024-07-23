@@ -79,6 +79,7 @@ import "../../ShadersWGSL/ShadersInclude/pbrBlockReflectivity";
 import "../../ShadersWGSL/ShadersInclude/pbrBlockAmbientOcclusion";
 import "../../ShadersWGSL/ShadersInclude/pbrBlockAlphaFresnel";
 import "../../ShadersWGSL/ShadersInclude/pbrBlockAnisotropic";
+import "../../ShadersWGSL/ShadersInclude/harmonicsFunctions";
 import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";

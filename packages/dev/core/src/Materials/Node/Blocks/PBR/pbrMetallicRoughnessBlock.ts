@@ -59,6 +59,7 @@ const mapOutputToVariable: { [name: string]: [string, string] } = {
 
 /**
  * Block used to implement the PBR metallic/roughness model
+ * #D8AK3Z#80
  */
 export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     /**
@@ -981,17 +982,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         this._vMetallicReflectanceFactorsName = state._getFreeVariableName("vMetallicReflectanceFactors");
         state._emitUniformFromString(this._vMetallicReflectanceFactorsName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
-        if (isWebGPU) {
-            this._vMetallicReflectanceFactorsName = "uniforms." + this._vMetallicReflectanceFactorsName;
-        }
-
         code += `${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector3)} = surfaceAlbedo;
 
             reflectivityOut = reflectivityBlock(
                 vec4${state.fSuffix}(${this.metallic.associatedVariableName}, ${this.roughness.associatedVariableName}, 0., 0.)
             #ifdef METALLICWORKFLOW
                 , surfaceAlbedo
-                , ${this._vMetallicReflectanceFactorsName}
+                , ${(isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName}
             #endif
             #ifdef REFLECTIVITY
                 , vec3${state.fSuffix}(0., 0., ${aoIntensity})
@@ -1236,13 +1233,13 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         // ___________________ Compute Reflectance aka R0 F0 info _________________________
         state.compilationString += state._emitCodeFromInclude("pbrBlockReflectance0", comments, {
-            replaceStrings: [{ search: /metallicReflectanceFactors/g, replace: this._vMetallicReflectanceFactorsName }],
+            replaceStrings: [{ search: /metallicReflectanceFactors/g, replace: (isWebGPU ? "uniforms." : "") + this._vMetallicReflectanceFactorsName }],
         });
         // ________________________________ Sheen ______________________________
         const sheenBlock = this.sheen.isConnected ? (this.sheen.connectedPoint?.ownerBlock as SheenBlock) : null;
 
         if (sheenBlock) {
-            state.compilationString += sheenBlock.getCode(reflectionBlock);
+            state.compilationString += sheenBlock.getCode(reflectionBlock, state);
         }
 
         state._emitFunctionFromInclude("pbrBlockSheen", comments, {

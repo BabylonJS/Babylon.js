@@ -137,7 +137,7 @@ fn fresnelSchlickGGX(VdotH: f32, reflectance0: f32, reflectance90: f32) -> f32
             #endif
         #else
             var s: vec3f = sqrt(f0);
-            var t: vec3f = (vClearCoatRefractionParams.z + vClearCoatRefractionParams.w * s) / (vClearCoatRefractionParams.w + vClearCoatRefractionParams.z * s);
+            var t: vec3f = (uniforms.vClearCoatRefractionParams.z + uniforms.vClearCoatRefractionParams.w * s) / (uniforms.vClearCoatRefractionParams.w + uniforms.vClearCoatRefractionParams.z * s);
             return square(t);
         #endif
     }
@@ -278,7 +278,7 @@ fn normalDistributionFunction_TrowbridgeReitzGGX(NdotH: f32, alphaG: f32) -> f32
 #ifdef ANISOTROPIC
     // GGX Distribution Anisotropic
     // https://blog.selfshadow.com/publications/s2012-shading-course/burley/s2012_pbs_disney_brdf_notes_v3.pdf Addenda
-    fn normalDistributionFunction_BurleyGGX_Anisotropic(NdotH: f32, TdotH: f32, BdotH: f32, const alphaTB: vec2f) -> f32 {
+    fn normalDistributionFunction_BurleyGGX_Anisotropic(NdotH: f32, TdotH: f32, BdotH: f32, alphaTB: vec2f) -> f32 {
         var a2: f32 = alphaTB.x * alphaTB.y;
         var v: vec3f =  vec3f(alphaTB.y * TdotH, alphaTB.x  * BdotH, a2 * NdotH);
         var v2: f32 = dot(v, v);
@@ -321,7 +321,7 @@ fn normalDistributionFunction_TrowbridgeReitzGGX(NdotH: f32, alphaG: f32) -> f32
     // fn smithVisibility_TrowbridgeReitzGGX_Walter(NdotL: f32, NdotV: f32, alphaG: f32) -> f32
     // {
     //     var visibility: f32 = smithVisibilityG1_TrowbridgeReitzGGX(NdotL, alphaG) * smithVisibilityG1_TrowbridgeReitzGGX(NdotV, alphaG);
-    //     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integrated in visibility to avar issues: voidnull when visibility function changes.
+    //     visibility /= (4.0 * NdotL * NdotV); // Cook Torance Denominator  integrated in visibility to avoid issues when visibility function changes.
     //     return visibility;
     // }
 
@@ -349,7 +349,7 @@ fn normalDistributionFunction_TrowbridgeReitzGGX(NdotH: f32, alphaG: f32) -> f32
 #ifdef ANISOTROPIC
     // GGX Mask/Shadowing Anisotropic 
     // Heitz http://jcgt.org/published/0003/02/03/paper.pdf
-    fn smithVisibility_GGXCorrelated_Anisotropic(NdotL: f32, NdotV: f32, TdotV: f32, BdotV: f32, TdotL: f32, BdotL: f32, const alphaTB: vec2f) -> f32 {
+    fn smithVisibility_GGXCorrelated_Anisotropic(NdotL: f32, NdotV: f32, TdotV: f32, BdotV: f32, TdotL: f32, BdotL: f32, alphaTB: vec2f) -> f32 {
         var lambdaV: f32 = NdotL * length( vec3f(alphaTB.x * TdotV, alphaTB.y * BdotV, NdotV));
         var lambdaL: f32 = NdotV * length( vec3f(alphaTB.x * TdotL, alphaTB.y * BdotL, NdotL));
         var v: f32 = 0.5 / (lambdaV + lambdaL);
@@ -427,8 +427,8 @@ fn diffuseBRDF_Burley(NdotL: f32, NdotV: f32, VdotH: f32, roughness: f32) -> f32
 #ifdef SS_TRANSLUCENCY
     // Pixar diffusion profile
     // http://graphics.pixar.com/library/ApproxBSSRDF/paper.pdf
-    fn transmittanceBRDF_Burley(const tintColor: vec3f, const diffusionDistance: vec3f, thickness: f32) -> vec3f {
-        var S: vec3f = 1. / maxEps(diffusionDistance);
+    fn transmittanceBRDF_Burley(tintColor: vec3f, diffusionDistance: vec3f, thickness: f32) -> vec3f {
+        var S: vec3f = 1. / maxEpsVec3(diffusionDistance);
         var temp: vec3f = exp((-0.333333333 * thickness) * S);
         return tintColor.rgb * 0.25 * (temp * temp * temp + 3.0 * temp);
     }
@@ -437,7 +437,7 @@ fn diffuseBRDF_Burley(NdotL: f32, NdotV: f32, VdotH: f32, roughness: f32) -> f32
     // Keep it energy conserving by using McCauley solution: https://blog.selfshadow.com/2011/12/31/righting-wrap-part-1/
     fn computeWrappedDiffuseNdotL(NdotL: f32, w: f32) -> f32 {
         var t: f32 = 1.0 + w;
-        var invt2: f32 = 1.0 / square(t);
+        var invt2: f32 = 1.0 / (t * t);
         return saturate((NdotL + w) * invt2);
     }
 #endif

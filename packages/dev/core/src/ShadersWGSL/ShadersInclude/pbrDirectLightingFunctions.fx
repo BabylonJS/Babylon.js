@@ -98,7 +98,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var BdotL: f32 = dot(B, info.L);
         var alphaG: f32 = convertRoughnessToAverageSlope(info.roughness);
         var alphaTB: vec2f = getAnisotropicRoughness(alphaG, anisotropy);
-        alphaTB = max(alphaTB, square(geometricRoughnessFactor));
+        alphaTB = max(alphaTB, vec2f(geometricRoughnessFactor * geometricRoughnessFactor));
 
         var fresnel: vec3f = fresnelSchlickGGXVec3(info.VdotH, reflectance0, reflectance90);
 
@@ -121,7 +121,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
         var clearCoatRoughness: f32 = max(info.roughness, geometricRoughnessFactor);
         var alphaG: f32 = convertRoughnessToAverageSlope(clearCoatRoughness);
 
-        var fresnel: f32 = fresnelSchlickGGX(info.VdotH, vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
+        var fresnel: f32 = fresnelSchlickGGX(info.VdotH, uniforms.vClearCoatRefractionParams.x, CLEARCOATREFLECTANCE90);
         fresnel *= clearCoatIntensity;
         var distribution: f32 = normalDistributionFunction_TrowbridgeReitzGGX(NccdotH, alphaG);
         var kelemenVisibility: f32 = visibility_Kelemen(info.VdotH);
@@ -135,7 +135,7 @@ fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f3
     }
 
     fn computeClearCoatLightingAbsorption(NdotVRefract: f32, L: vec3f, Ncc: vec3f, clearCoatColor: vec3f, clearCoatThickness: f32, clearCoatIntensity: f32) -> vec3f {
-        var LRefract: vec3f = -refract(L, Ncc, vClearCoatRefractionParams.y);
+        var LRefract: vec3f = -refract(L, Ncc, uniforms.vClearCoatRefractionParams.y);
         var NdotLRefract: f32 = saturateEps(dot(Ncc, LRefract));
 
         var absorption: vec3f = computeClearCoatAbsorption(NdotVRefract, NdotLRefract, clearCoatColor, clearCoatThickness, clearCoatIntensity);

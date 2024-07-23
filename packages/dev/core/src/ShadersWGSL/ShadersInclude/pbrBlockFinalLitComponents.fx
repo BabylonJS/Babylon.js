@@ -12,12 +12,12 @@ aggShadow = aggShadow / numLights;
 
 #ifndef METALLICWORKFLOW
     #ifdef SPECULAR_GLOSSINESS_ENERGY_CONSERVATION
-        surfaceAlbedo.rgb = (1. - reflectance) * surfaceAlbedo.rgb;
+        surfaceAlbedo = (1. - reflectance) * surfaceAlbedo.rgb;
     #endif
 #endif
 
 #if defined(SHEEN) && defined(SHEEN_ALBEDOSCALING) && defined(ENVIRONMENTBRDF)
-    surfaceAlbedo.rgb = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
+    surfaceAlbedo = sheenOut.sheenAlbedoScaling * surfaceAlbedo.rgb;
 #endif
 
 // _____________________________ Irradiance ______________________________________
@@ -80,7 +80,7 @@ aggShadow = aggShadow / numLights;
 // ________________________________ Sheen ________________________________________
 #ifdef SHEEN
     var finalSheen: vec3f = sheenBase * sheenOut.sheenColor;
-    finalSheen = max(finalSheen, 0.0);
+    finalSheen = max(finalSheen, vec3f(0.0));
 
     var finalSheenScaled: vec3f = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
     
@@ -96,7 +96,7 @@ aggShadow = aggShadow / numLights;
 // _____________________________ Clear Coat _______________________________________
 #ifdef CLEARCOAT
     var finalClearCoat: vec3f = clearCoatBase;
-    finalClearCoat = max(finalClearCoat, 0.0);
+    finalClearCoat = max(finalClearCoat, vec3f(0.0));
 
     var finalClearCoatScaled: vec3f = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
 

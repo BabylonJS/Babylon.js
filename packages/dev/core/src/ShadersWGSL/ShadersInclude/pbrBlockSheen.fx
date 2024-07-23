@@ -1,87 +1,93 @@
 #ifdef SHEEN
     struct sheenOutParams
     {
-        sheenIntensity: f32,
-        sheenColor: vec3f,
-        sheenRoughness: f32,
+        sheenIntensity: f32
+        , sheenColor: vec3f
+        , sheenRoughness: f32
     #ifdef SHEEN_LINKWITHALBEDO
-        surfaceAlbedo: vec3f,
+        , surfaceAlbedo: vec3f
     #endif
     #if defined(ENVIRONMENTBRDF) && defined(SHEEN_ALBEDOSCALING)
-        sheenAlbedoScaling: f32,
+        , sheenAlbedoScaling: f32
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-        finalSheenRadianceScaled: vec3f,
+        , finalSheenRadianceScaled: vec3f
     #endif
     #if DEBUGMODE > 0
         #ifdef SHEEN_TEXTURE
-            sheenMapData: vec4f,
+            , sheenMapData: vec4f
         #endif
         #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-            sheenEnvironmentReflectance: vec3f
+            , sheenEnvironmentReflectance: vec3f
         #endif
     #endif
     };
 
     #define pbr_inline
-    var sheenBlock: voidnull(
-        in var vSheenColor: vec4f,
+    fn sheenBlock(
+        vSheenColor: vec4f
     #ifdef SHEEN_ROUGHNESS
-        in var vSheenRoughness: f32,
+        , vSheenRoughness: f32
         #if defined(SHEEN_TEXTURE_ROUGHNESS) && !defined(SHEEN_USE_ROUGHNESS_FROM_MAINTEXTURE)
-            in var sheenMapRoughnessData: vec4f,
+            , sheenMapRoughnessData: vec4f
         #endif
     #endif
-        in var roughness: f32,
+        , roughness: f32
     #ifdef SHEEN_TEXTURE
-        in var sheenMapData: vec4f,
-        in var sheenMapLevel: f32,
+        , sheenMapData: vec4f
+        , sheenMapLevel: f32
     #endif
-        in var reflectance: f32,
+        , reflectance: f32
     #ifdef SHEEN_LINKWITHALBEDO
-        in var baseColor: vec3f,
-        in var surfaceAlbedo: vec3f,
+        , baseColor: vec3f
+        , surfaceAlbedo: vec3f
     #endif
     #ifdef ENVIRONMENTBRDF
-        in var NdotV: f32,
-        in var environmentBrdf: vec3f,
+        , NdotV: f32
+        , environmentBrdf: vec3f
     #endif
     #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
-        in var AARoughnessFactors: vec2f,
-        in var vReflectionMicrosurfaceInfos: vec3f,
-        in var vReflectionInfos: vec2f,
-        in var vReflectionColor: vec3f,
-        in var vLightingIntensity: vec4f,
+        , AARoughnessFactors: vec2f
+        , vReflectionMicrosurfaceInfos: vec3f
+        , vReflectionInfos: vec2f
+        , vReflectionColor: vec3f
+        , vLightingIntensity: vec4f
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSampler,
-            in var reflectionCoords: vec3f,
+            , reflectionSampler: texture_cube<f32>
+            , reflectionSamplerSampler: sampler
+            , reflectionCoords: vec3f
         #else
-            in sampler2D reflectionSampler,
-            in var reflectionCoords: vec2f,
+            , reflectionSampler: texture_2d<f32>
+            , reflectionSamplerSampler: sampler
+            , reflectionCoords: vec2f
         #endif
-        in var NdotVUnclamped: f32,
+        , NdotVUnclamped: f32
         #ifndef LODBASEDMICROSFURACE
             #ifdef REFLECTIONMAP_3D
-                in samplerCube reflectionSamplerLow,
-                in samplerCube reflectionSamplerHigh,
+                , reflectionLowSampler: texture_cube<f32>
+                , reflectionLowSamplerSampler: sampler            
+                , reflectionHighSampler: texture_cube<f32>
+                , reflectionHighSamplerSampler: sampler   
             #else
-                in sampler2D reflectionSamplerLow,
-                in sampler2D reflectionSamplerHigh,
+                , reflectionLowSampler: texture_2d<f32>
+                , reflectionLowSamplerSampler: sampler            
+                , reflectionHighSampler: texture_2d<f32>
+                , reflectionHighSamplerSampler: sampler    
             #endif
         #endif
         #ifdef REALTIME_FILTERING
-            in var vReflectionFilteringInfo: vec2f,
+            , vReflectionFilteringInfo: vec2f
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(RADIANCEOCCLUSION)
-            in var seo: f32,
+            , seo: f32
         #endif
         #if !defined(REFLECTIONMAP_SKYBOX) && defined(HORIZONOCCLUSION) && defined(BUMP) && defined(REFLECTIONMAP_3D)
-            in var eho: f32,
+            , eho: f32
         #endif
     #endif
-        out sheenOutParams outParams
-    )
+    ) -> sheenOutParams
     {
+        var outParams: sheenOutParams;
         var sheenIntensity: f32 = vSheenColor.a;
 
         #ifdef SHEEN_TEXTURE
@@ -158,27 +164,29 @@
 
             var environmentSheenRadiance: vec4f =  vec4f(0., 0., 0., 0.);
 
-            sampleReflectionTexture(
-                sheenAlphaG,
-                vReflectionMicrosurfaceInfos,
-                vReflectionInfos,
-                vReflectionColor,
+            environmentSheenRadiance = sampleReflectionTexture(
+                sheenAlphaG
+                , vReflectionMicrosurfaceInfos
+                , vReflectionInfos
+                , vReflectionColor
             #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-                NdotVUnclamped,
+                , NdotVUnclamped
             #endif
             #ifdef LINEARSPECULARREFLECTION
-                sheenRoughness,
+                , sheenRoughness
             #endif
-                reflectionSampler,
-                reflectionCoords,
+                , reflectionSampler
+                , reflectionSamplerSampler
+                , reflectionCoords
             #ifndef LODBASEDMICROSFURACE
-                reflectionSamplerLow,
-                reflectionSamplerHigh,
+                , reflectionLowSampler
+                , reflectionLowSamplerSampler
+                , reflectionHighSampler
+                , reflectionHighSamplerSampler
             #endif
             #ifdef REALTIME_FILTERING
-                vReflectionFilteringInfo,
+                , vReflectionFilteringInfo
             #endif
-                environmentSheenRadiance
             );
 
             var sheenEnvironmentReflectance: vec3f = getSheenReflectanceFromBRDFLookup(sheenColor, environmentSheenBrdf);
@@ -217,5 +225,7 @@
         outParams.sheenIntensity = sheenIntensity;
         outParams.sheenColor = sheenColor;
         outParams.sheenRoughness = sheenRoughness;
+
+        return outParams;
     }
 #endif

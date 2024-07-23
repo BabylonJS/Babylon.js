@@ -291,9 +291,9 @@ export class RefractionBlock extends NodeMaterialBlock {
         this._define3DName = state._getFreeDefineName("SS_REFRACTIONMAP_3D");
 
         state._samplerDeclaration += `#ifdef ${this._define3DName}\n`;
-        state._samplerDeclaration += `uniform samplerCube ${this._cubeSamplerName};\n`;
+        state._emitCubeSampler(this._cubeSamplerName, undefined, true);
         state._samplerDeclaration += `#else\n`;
-        state._samplerDeclaration += `uniform sampler2D ${this._2DSamplerName};\n`;
+        state._emit2DSampler(this._2DSamplerName, undefined, true);
         state._samplerDeclaration += `#endif\n`;
 
         // Fragment

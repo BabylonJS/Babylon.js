@@ -45,20 +45,26 @@ struct subSurfaceOutParams
             , vRefractionMicrosurfaceInfos: vec4f
             , alphaG: f32
             #ifdef SS_REFRACTIONMAP_3D
-                , in samplerCube refractionSampler
+                , refractionSampler: texture_cube<f32>
+                , refractionSamplerSampler: sampler
                 #ifndef LODBASEDMICROSFURACE
-                    , in samplerCube refractionSamplerLow
-                    , in samplerCube refractionSamplerHigh
+                    , refractionLowSampler: texture_cube<f32>
+                    , refractionLowSamplerSampler: sampler
+                    , refractionHighSampler: texture_cube<f32>
+                    , refractionHighSamplerSampler: sampler                    
                 #endif
             #else
-                , in sampler2D refractionSampler
+                , refractionSampler: texture_2d<f32>
+                , refractionSamplerSampler: sampler
                 #ifndef LODBASEDMICROSFURACE
-                    , in sampler2D refractionSamplerLow
-                    , in sampler2D refractionSamplerHigh
+                    , refractionLowSampler: texture_2d<f32>
+                    , refractionLowSamplerSampler: sampler
+                    , refractionHighSampler: texture_2d<f32>
+                    , refractionHighSamplerSampler: sampler   
                 #endif
             #endif
             #ifdef ANISOTROPIC
-                , in anisotropicOutParams anisotropicOut
+                , anisotropicOut: anisotropicOutParams
             #endif
             #ifdef REALTIME_FILTERING
                 , vRefractionFilteringInfo: vec2f
@@ -86,12 +92,12 @@ struct subSurfaceOutParams
                 #endif
                 refractionVector.y = refractionVector.y * vRefractionInfos.w;
                 var refractionCoords: vec3f = refractionVector;
-                refractionCoords =  vec3f(refractionMatrix *  vec4f(refractionCoords, 0));
+                refractionCoords =  (refractionMatrix *  vec4f(refractionCoords, 0)).xyz;
             #else
                 #ifdef SS_USE_THICKNESS_AS_DEPTH
-                    var vRefractionUVW: vec3f =  vec3f(refractionMatrix * (view *  vec4f(vPositionW + refractionVector * thickness, 1.0)));
+                    var vRefractionUVW: vec3f =  (refractionMatrix * (view *  vec4f(vPositionW + refractionVector * thickness, 1.0))).xyz;
                 #else
-                    var vRefractionUVW: vec3f =  vec3f(refractionMatrix * (view *  vec4f(vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+                    var vRefractionUVW: vec3f =  (refractionMatrix * (view *  vec4f(vPositionW + refractionVector * vRefractionInfos.z, 1.0))).xyz;
                 #endif
                 var refractionCoords: vec2f = vRefractionUVW.xy / vRefractionUVW.z;
                 refractionCoords.y = 1.0 - refractionCoords.y;
@@ -99,7 +105,7 @@ struct subSurfaceOutParams
             
             #ifdef LODBASEDMICROSFURACE
                 // Apply environment convolution scale/offset filter tuning parameters to the mipmap LOD selection
-                refractionLOD = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
+                var lod = refractionLOD * vRefractionMicrosurfaceInfos.y + vRefractionMicrosurfaceInfos.z;
 
                 #ifdef SS_LODINREFRACTIONALPHA
                     // Automatic LOD adjustment to ensure that the smoothness-based environment LOD selection
@@ -112,44 +118,48 @@ struct subSurfaceOutParams
                     // Note: Shader Model 4.1 or higher can provide this directly via CalculateLevelOfDetail(), and
                     // manual calculation via derivatives is also possible, but for simplicity we use the 
                     // hardware LOD calculation with the alpha channel containing the LOD for each mipmap.
-                    var automaticRefractionLOD: f32 = UNPACK_LOD(sampleRefraction(refractionSampler, refractionCoords).a);
-                    var requestedRefractionLOD: f32 = max(automaticRefractionLOD, refractionLOD);
+                    var automaticRefractionLOD: f32 = UNPACK_LOD(textureSample(refractionSampler, refractionSamplerSampler, refractionCoords).a);
+                    var requestedRefractionLOD: f32 = max(automaticRefractionLOD, lod);
                 #else
-                    var requestedRefractionLOD: f32 = refractionLOD;
+                    var requestedRefractionLOD: f32 = lod;
                 #endif
 
                 #if defined(REALTIME_FILTERING) && defined(SS_REFRACTIONMAP_3D)
-                    environmentRefraction =  vec4f(radiance(alphaG, refractionSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
+                    environmentRefraction =  vec4f(radiance(alphaG, refractionSampler, refractionSamplerSampler, refractionCoords, vRefractionFilteringInfo), 1.0);
                 #else
-                    environmentRefraction = sampleRefractionLod(refractionSampler, refractionCoords, requestedRefractionLOD);
+                    environmentRefraction = textureSampleLevel(refractionSampler, refractionSamplerSampler, refractionCoords, requestedRefractionLOD);
                 #endif
             #else
                 var lodRefractionNormalized: f32 = saturate(refractionLOD / log2(vRefractionMicrosurfaceInfos.x));
                 var lodRefractionNormalizedDoubled: f32 = lodRefractionNormalized * 2.0;
 
-                var environmentRefractionMid: vec4f = sampleRefraction(refractionSampler, refractionCoords);
+                var environmentRefractionMid: vec4f = textureSample(refractionSampler, refractionSamplerSampler, refractionCoords);
                 if (lodRefractionNormalizedDoubled < 1.0){
                     environmentRefraction = mix(
-                        sampleRefraction(refractionSamplerHigh, refractionCoords),
+                        textureSample(refractionHighSampler, refractionHighSamplerSampler, refractionCoords),
                         environmentRefractionMid,
                         lodRefractionNormalizedDoubled
                     );
                 } else {
                     environmentRefraction = mix(
                         environmentRefractionMid,
-                        sampleRefraction(refractionSamplerLow, refractionCoords),
+                        textureSample(refractionLowSampler, refractionLowSamplerSampler, refractionCoords),
                         lodRefractionNormalizedDoubled - 1.0
                     );
                 }
             #endif
+
+            var refraction = environmentRefraction.rgb;
+
             #ifdef SS_RGBDREFRACTION
-                environmentRefraction.rgb = fromRGBD(environmentRefraction);
+                refraction = fromRGBD(environmentRefraction);
             #endif
 
             #ifdef SS_GAMMAREFRACTION
-                environmentRefraction.rgb = toLinearSpace(environmentRefraction.rgb);
+                refraction = toLinearSpaceVec3(environmentRefraction.rgb);
             #endif
-            return environmentRefraction;
+
+            return vec4f(refraction, environmentRefraction.a);
         }
     #endif
     #define pbr_inline
@@ -176,15 +186,18 @@ struct subSurfaceOutParams
                     , irradianceVector_: vec3f
                 #endif
                 #if defined(REALTIME_FILTERING)
-                    , samplerCube reflectionSampler
+                    , reflectionSampler: texture_cube<f32>
+                    , reflectionSamplerSampler: sampler
                     , vReflectionFilteringInfo: vec2f
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
-                    , samplerCube irradianceSampler
+                    , irradianceSampler: texture_cube<f32>
+                    , irradianceSamplerSampler: sampler
                 #else
-                    , sampler2D irradianceSampler
+                    , irradianceSampler: texture_2d<f32>
+                    , irradianceSamplerSampler: sampler
                 #endif
             #endif
         #endif
@@ -211,16 +224,22 @@ struct subSurfaceOutParams
         #endif
         , alphaG: f32
         #ifdef SS_REFRACTIONMAP_3D
-            , samplerCube refractionSampler
+            , refractionSampler: texture_cube<f32>
+            , refractionSamplerSampler: sampler
             #ifndef LODBASEDMICROSFURACE
-                , samplerCube refractionSamplerLow
-                , samplerCube refractionSamplerHigh
+                , refractionLowSampler: texture_cube<f32>
+                , refractionLowSamplerSampler: sampler
+                , refractionHighSampler: texture_cube<f32>
+                , refractionHighSamplerSampler: sampler  
             #endif
         #else
-            , sampler2D refractionSampler
+            , refractionSampler: texture_2d<f32>
+            , refractionSamplerSampler: sampler
             #ifndef LODBASEDMICROSFURACE
-                , sampler2D refractionSamplerLow
-                , sampler2D refractionSamplerHigh
+                , refractionLowSampler: texture_2d<f32>
+                , refractionLowSamplerSampler: sampler
+                , refractionHighSampler: texture_2d<f32>
+                , refractionHighSamplerSampler: sampler  
             #endif
         #endif
         #ifdef ANISOTROPIC
@@ -368,15 +387,21 @@ struct subSurfaceOutParams
                 var envSample: vec4f = sampleEnvironmentRefraction(refraction_ior, thickness, refractionLOD, normalW, vPositionW, viewDirectionW, view, vRefractionInfos, refractionMatrix, vRefractionMicrosurfaceInfos, alphaG
                 #ifdef SS_REFRACTIONMAP_3D
                     , refractionSampler
+                    , refractionSamplerSampler
                     #ifndef LODBASEDMICROSFURACE
-                        , refractionSamplerLow
-                        , refractionSamplerHigh
+                        , refractionLowSampler
+                        , refractionLowSamplerSampler
+                        , refractionHighSampler
+                        , refractionHighSamplerSampler
                     #endif
                 #else
                     , refractionSampler
+                    , refractionSamplerSampler
                     #ifndef LODBASEDMICROSFURACE
-                        , refractionSamplerLow
-                        , refractionSamplerHigh
+                        , refractionLowSampler
+                        , refractionLowSamplerSampler
+                        , refractionHighSampler
+                        , refractionHighSamplerSampler
                     #endif
                 #endif
                 #ifdef ANISOTROPIC
@@ -399,7 +424,7 @@ struct subSurfaceOutParams
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRefraction.rgb *= vRefractionInfos.x;
+        environmentRefraction = vec4f(environmentRefraction.rgb * vRefractionInfos.x, environmentRefraction.a);
     #endif
 
     // _______________________________________________________________________________
@@ -417,7 +442,7 @@ struct subSurfaceOutParams
             // var NdotRefract: f32 = dot(normalW, refractionVector);
             // thickness *= -NdotRefract;
 
-            refractionTransmittance *= cocaLambert(volumeAlbedo, thickness);
+            refractionTransmittance *= cocaLambertVec3(volumeAlbedo, thickness);
         #elif defined(SS_LINKREFRACTIONTOTRANSPARENCY)
             // Tvar the: i32 material with albedo.
             var maxChannel: f32 = max(max(surfaceAlbedo.r, surfaceAlbedo.g), surfaceAlbedo.b);
@@ -428,7 +453,7 @@ struct subSurfaceOutParams
         #else
             // Compute tvar from: i32 min distance only.
             var volumeAlbedo: vec3f = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
-            refractionTransmittance *= cocaLambert(volumeAlbedo, vThicknessParam.y);
+            refractionTransmittance *= cocaLambertVec3(volumeAlbedo, vThicknessParam.y);
         #endif
 
         #ifdef SS_ALBEDOFORREFRACTIONTINT
@@ -475,7 +500,7 @@ struct subSurfaceOutParams
     // __________________________________________________________________________________
     #if defined(REFLECTION) && defined(SS_TRANSLUCENCY)
         #if defined(NORMAL) && defined(USESPHERICALINVERTEX) || !defined(USESPHERICALFROMREFLECTIONMAP)
-            var irradianceVector: vec3f =  vec3f(reflectionMatrix *  vec4f(normalW, 0)).xyz;
+            var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
             #ifdef REFLECTIONMAP_OPPOSITEZ
                 irradianceVector.z *= -1.0;
             #endif
@@ -488,7 +513,7 @@ struct subSurfaceOutParams
 
         #if defined(USESPHERICALFROMREFLECTIONMAP)
             #if defined(REALTIME_FILTERING)
-                var refractionIrradiance: vec3f = irradiance(reflectionSampler, -irradianceVector, vReflectionFilteringInfo);
+                var refractionIrradiance: vec3f = irradiance(reflectionSampler, reflectionSamplerSampler, -irradianceVector, vReflectionFilteringInfo);
             #else
                 var refractionIrradiance: vec3f = computeEnvironmentIrradiance(-irradianceVector);
             #endif
@@ -503,26 +528,28 @@ struct subSurfaceOutParams
                 irradianceCoords.y = 1.0 - irradianceCoords.y;
             #endif
 
-            var refractionIrradiance: vec4f = sampleReflection(irradianceSampler, -irradianceCoords);
+            var temp: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, -irradianceCoords);
+            var refractionIrradiance = temp.rgb;
+            
             #ifdef RGBDREFLECTION
-                refractionIrradiance.rgb = fromRGBD(refractionIrradiance);
+                refractionIrradiance = fromRGBD(temp).rgb;
             #endif
 
             #ifdef GAMMAREFLECTION
-                refractionIrradiance.rgb = toLinearSpace(refractionIrradiance.rgb);
+                refractionIrradiance = toLinearSpaceVec3(refractionIrradiance);
             #endif
         #else
-            var refractionIrradiance: vec4f =  vec4f(0.);
+            var refractionIrradiance: vec3f =  vec3f(0.);
         #endif
 
-        refractionIrradiance.rgb *= transmittance;
+        refractionIrradiance *= transmittance;
 
         #ifdef SS_ALBEDOFORTRANSLUCENCYTINT
             // Tvar the: i32 transmission with albedo.
-            refractionIrradiance.rgb *= surfaceAlbedo.rgb;
+            refractionIrradiance *= surfaceAlbedo.rgb;
         #endif
 
-        outParams.refractionIrradiance = refractionIrradiance.rgb;
+        outParams.refractionIrradiance = refractionIrradiance;
     #endif
 
         return outParams;

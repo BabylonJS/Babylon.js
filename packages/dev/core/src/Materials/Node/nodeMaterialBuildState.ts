@@ -550,7 +550,7 @@ export class NodeMaterialBuildState {
             return `select(${falseStatement}, ${trueStatement}, ${condition})`;
         }
 
-        return `${condition} ? ${trueStatement} : ${falseStatement}`;
+        return `(${condition}) ? ${trueStatement} : ${falseStatement}`;
     }
 
     /**
@@ -610,6 +610,17 @@ export class NodeMaterialBuildState {
             return "textureSampleLevel";
         }
         return "texture2DLodEXT";
+    }
+
+    public _toLinearSpace(output: NodeMaterialConnectionPoint) {
+        if (this.shaderLanguage === ShaderLanguage.WGSL) {
+            if (output.type === NodeMaterialBlockConnectionPointTypes.Color3 || output.type === NodeMaterialBlockConnectionPointTypes.Vector3) {
+                return `toLinearSpaceVec3(${output.associatedVariableName})`;
+            }
+
+            return `toLinearSpace(${output.associatedVariableName})`;
+        }
+        return `toLinearSpace(${output.associatedVariableName})`;
     }
 
     /**

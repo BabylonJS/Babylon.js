@@ -170,10 +170,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
         code += `${isWebGPU ? "var subSurfaceOut: subSurfaceOutParams" : "subSurfaceOutParams subSurfaceOut"};
 
         #ifdef SUBSURFACE
-            vec2 vThicknessParam = vec2(0., ${thickness});
-            vec4 vTintColor = vec4(${tintColor}, ${refractionTintAtDistance});
-            vec3 vSubSurfaceIntensity = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
-            float dispersion = ${dispersion};
+            ${state._declareLocalVar("vThicknessParam", NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(0., ${thickness});
+            ${state._declareLocalVar("vTintColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = vec4${state.fSuffix}(${tintColor}, ${refractionTintAtDistance});
+            ${state._declareLocalVar("vSubSurfaceIntensity", NodeMaterialBlockConnectionPointTypes.Vector3)} = vec3(${refractionIntensity}, ${translucencyIntensity}, 0.);
+            ${state._declareLocalVar("dispersion", NodeMaterialBlockConnectionPointTypes.Float)} = ${dispersion};
             subSurfaceOut = subSurfaceBlock(
                 vSubSurfaceIntensity
                 , vThicknessParam
@@ -185,18 +185,20 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef REFLECTION
                 #ifdef SS_TRANSLUCENCY
-                    , ${reflectionBlock?._reflectionMatrixName}
+                    , ${(isWebGPU ? "uniforms." : "") + reflectionBlock?._reflectionMatrixName}
                     #ifdef USESPHERICALFROMREFLECTIONMAP
                         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                             , reflectionOut.irradianceVector
                         #endif
                         #if defined(REALTIME_FILTERING)
                             , ${reflectionBlock?._cubeSamplerName}
+                            ${isWebGPU ? `, ${reflectionBlock?._cubeSamplerName}Sampler` : ""}
                             , ${reflectionBlock?._vReflectionFilteringInfoName}
                         #endif
                         #endif
                     #ifdef USEIRRADIANCEMAP
                         , irradianceSampler
+                        ${isWebGPU ? `, irradianceSamplerSampler` : ""}
                     #endif
                 #endif
             #endif
@@ -207,10 +209,10 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , ${worldPosVarName}.xyz
                 , viewDirectionW
                 , ${refractionView}
-                , ${refractionBlock?._vRefractionInfosName ?? ""}
-                , ${refractionBlock?._refractionMatrixName ?? ""}
-                , ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
-                , vLightingIntensity
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionInfosName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._refractionMatrixName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
+                , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     , alpha
                 #endif
@@ -223,16 +225,22 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , alphaG
                 #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
                     , ${refractionBlock?._cubeSamplerName ?? ""}
+                    ${isWebGPU ? `, ${refractionBlock?._cubeSamplerName}Sampler` : ""}
                 #else
                     , ${refractionBlock?._2DSamplerName ?? ""}
+                    ${isWebGPU ? `, ${refractionBlock?._2DSamplerName}Sampler` : ""}
                 #endif
                 #ifndef LODBASEDMICROSFURACE
                     #ifdef ${refractionBlock?._define3DName ?? "IGNORE"}
-                        , ${refractionBlock?._cubeSamplerName ?? ""}
-                        , ${refractionBlock?._cubeSamplerName ?? ""}
+                        , ${refractionBlock?._cubeSamplerName ?? ""}                        
+                        ${isWebGPU ? `, ${refractionBlock?._cubeSamplerName}Sampler` : ""}
+                        , ${refractionBlock?._cubeSamplerName ?? ""}                        
+                        ${isWebGPU ? `, ${refractionBlock?._cubeSamplerName}Sampler` : ""}
                     #else
                         , ${refractionBlock?._2DSamplerName ?? ""}
+                        ${isWebGPU ? `, ${refractionBlock?._2DSamplerName}Sampler` : ""}
                         , ${refractionBlock?._2DSamplerName ?? ""}
+                        ${isWebGPU ? `, ${refractionBlock?._2DSamplerName}Sampler` : ""}
                     #endif
                 #endif
                 #ifdef ANISOTROPIC

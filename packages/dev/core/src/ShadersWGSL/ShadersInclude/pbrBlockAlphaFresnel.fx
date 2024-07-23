@@ -2,18 +2,18 @@
 #if defined(ALPHATEST) || defined(ALPHABLEND)
     struct alphaFresnelOutParams
     {
-        var alpha: f32;
+        alpha: f32
     };
 
     #define pbr_inline
-    var alphaFresnelBlock: voidnull(
+    fn alphaFresnelBlock(
         in var normalW: vec3f,
         in var viewDirectionW: vec3f,
         in var alpha: f32,
-        in var microSurface: f32,
-        out alphaFresnelOutParams outParams
-    )
+        in var microSurface: f32
+    ) -> alphaFresnelOutParams
     {
+        var outParams: alphaFresnelOutParams;
         // Convert approximate perceptual opacity (gamma-encoded opacity) to linear opacity (absorptance, or inverse transmission)
         // for use with the linear HDR render target. The final composition will be converted back to gamma encoded values for eventual display.
         // Uses power 2.0 rather than 2.2 for simplicity/efficiency, and because the mapping does not need to map the gamma applied to RGB.
@@ -40,6 +40,8 @@
                 outParams.alpha = 1.0;
             #endif
         #endif
+
+        return outParams;
     }
 #endif
 #endif

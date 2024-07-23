@@ -1,36 +1,44 @@
 #ifdef REFLECTION
     struct reflectionOutParams
     {
-        var environmentRadiance: vec4f;
-        var environmentIrradiance: vec3f;
+        environmentRadiance: vec4f
+        , environmentIrradiance: vec3f
     #ifdef REFLECTIONMAP_3D
-        var reflectionCoords: vec3f;
+        , reflectionCoords: vec3f
     #else
-        var reflectionCoords: vec2f;
+        , reflectionCoords: vec2f
     #endif
     #ifdef SS_TRANSLUCENCY
         #ifdef USESPHERICALFROMREFLECTIONMAP
             #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                var irradianceVector: vec3f;
+                , irradianceVector: vec3f
             #endif
         #endif
     #endif
     };
 
     #define pbr_inline
-    var createReflectionCoords: voidnull(
-        in var vPositionW: vec3f,
-        in var normalW: vec3f,
-    #ifdef ANISOTROPIC
-        in anisotropicOutParams anisotropicOut,
-    #endif
     #ifdef REFLECTIONMAP_3D
-        reflectionCoords: ptr<function, vec3f>
+        fn createReflectionCoords(
+            vPositionW: vec3f,
+            normalW: vec3f,
+        #ifdef ANISOTROPIC
+            anisotropicOut: anisotropicOutParams,
+        #endif
+        ) -> vec3f
+        {
+            var reflectionCoords: vec3f;
     #else
-        reflectionCoords: ptr<function, vec2f>
+        fn createReflectionCoords(
+            vPositionW: vec3f,
+            normalW: vec3f,
+        #ifdef ANISOTROPIC
+            anisotropicOut: anisotropicOutParams,
+        #endif
+        ) -> vec2f
+        {    
+            var reflectionCoords: vec2f;
     #endif
-    )
-    {
         #ifdef ANISOTROPIC
             var reflectionVector: vec3f = computeReflectionCoords( vec4f(vPositionW, 1.0), anisotropicOut.anisotropicNormal);
         #else
@@ -51,43 +59,50 @@
             #endif
             reflectionCoords.y = 1.0 - reflectionCoords.y;
         #endif
+
+        return reflectionCoords;
     }
 
     #define pbr_inline
-    #define inline
-    var sampleReflectionTexture: voidnull(
-        in var alphaG: f32,
-        in var vReflectionMicrosurfaceInfos: vec3f,
-        in var vReflectionInfos: vec2f,
-        in var vReflectionColor: vec3f,
+    fn sampleReflectionTexture(
+        alphaG: f32
+        , vReflectionMicrosurfaceInfos: vec3f
+        , vReflectionInfos: vec2f
+        , vReflectionColor: vec3f
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        in var NdotVUnclamped: f32,
+        , NdotVUnclamped: f32
     #endif
     #ifdef LINEARSPECULARREFLECTION
-        in var roughness: f32,
+        , roughness: f32
     #endif
     #ifdef REFLECTIONMAP_3D
-        in samplerCube reflectionSampler,
-        const reflectionCoords: vec3f,
+        , reflectionSampler: texture_cube<f32>
+        , reflectionSamplerSampler: sampler
+        , reflectionCoords: vec3f
     #else
-        in sampler2D reflectionSampler,
-        const reflectionCoords: vec2f,
+        , reflectionSampler: texture_2d<f32>
+        , reflectionSamplerSampler: sampler
+        , reflectionCoords: vec2f
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSamplerLow,
-            in samplerCube reflectionSamplerHigh,
+            , reflectionLowSampler: texture_cube<f32>
+            , reflectionLowSamplerSampler: sampler
+            , reflectionHighSampler: texture_cube<f32>
+            , reflectionHighSamplerSampler: sampler
         #else
-            in sampler2D reflectionSamplerLow,
-            in sampler2D reflectionSamplerHigh,
+            , reflectionLowSampler: texture_2d<f32>
+            , reflectionLowSamplerSampler: sampler
+            , reflectionHighSampler: texture_2d<f32>
+            , reflectionHighSamplerSampler: sampler
         #endif
     #endif
     #ifdef REALTIME_FILTERING
-        in var vReflectionFilteringInfo: vec2f,
-    #endif
-        environmentRadiance: ptr<function, vec4f>
-    )
+        , vReflectionFilteringInfo: vec2f
+    #endif        
+    ) -> vec4f
     {
+        var environmentRadiance: vec4f;
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
             var reflectionLOD: f32 = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
@@ -112,102 +127,113 @@
                 // Note: Shader Model 4.1 or higher can provide this directly via CalculateLevelOfDetail(), and
                 // manual calculation via derivatives is also possible, but for simplicity we use the
                 // hardware LOD calculation with the alpha channel containing the LOD for each mipmap.
-                var automaticReflectionLOD: f32 = UNPACK_LOD(sampleReflection(reflectionSampler, reflectionCoords).a);
+                var automaticReflectionLOD: f32 = UNPACK_LOD(textureSample(reflectionSampler, reflectionSamplerSampler, reflectionCoords).a);
                 var requestedReflectionLOD: f32 = max(automaticReflectionLOD, reflectionLOD);
             #else
                 var requestedReflectionLOD: f32 = reflectionLOD;
             #endif
             #ifdef REALTIME_FILTERING
-                environmentRadiance =  vec4f(radiance(alphaG, reflectionSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
+                environmentRadiance =  vec4f(radiance(alphaG, reflectionSampler, reflectionSamplerSampler, reflectionCoords, vReflectionFilteringInfo), 1.0);
             #else
-                environmentRadiance = sampleReflectionLod(reflectionSampler, reflectionCoords, reflectionLOD);
+                environmentRadiance = textureSampleLevel(reflectionSampler, reflectionSamplerSampler, reflectionCoords, reflectionLOD);
             #endif
         #else
             var lodReflectionNormalized: f32 = saturate(reflectionLOD / log2(vReflectionMicrosurfaceInfos.x));
             var lodReflectionNormalizedDoubled: f32 = lodReflectionNormalized * 2.0;
 
-            var environmentMid: vec4f = sampleReflection(reflectionSampler, reflectionCoords);
+            var environmentMid: vec4f = textureSample(reflectionSampler, reflectionSamplerSampler, reflectionCoords);
             if (lodReflectionNormalizedDoubled < 1.0){
                 environmentRadiance = mix(
-                    sampleReflection(reflectionSamplerHigh, reflectionCoords),
+                    textureSample(reflectionHighSampler, reflectionHighSamplerSampler, reflectionCoords),
                     environmentMid,
                     lodReflectionNormalizedDoubled
                 );
             } else {
                 environmentRadiance = mix(
                     environmentMid,
-                    sampleReflection(reflectionSamplerLow, reflectionCoords),
+                    textureSample(reflectionLowSampler, reflectionLowSamplerSampler, reflectionCoords),
                     lodReflectionNormalizedDoubled - 1.0
                 );
             }
         #endif
 
+        var envRadiance = environmentRadiance.rgb;
+
         #ifdef RGBDREFLECTION
-            environmentRadiance.rgb = fromRGBD(environmentRadiance);
+            envRadiance = fromRGBD(environmentRadiance);
         #endif
 
         #ifdef GAMMAREFLECTION
-            environmentRadiance.rgb = toLinearSpace(environmentRadiance.rgb);
+            envRadiance = toLinearSpaceVec3(environmentRadiance.rgb);
         #endif
 
         // _____________________________ Levels _____________________________________
-        environmentRadiance.rgb *= vReflectionInfos.x;
-        environmentRadiance.rgb *= vReflectionColor.rgb;
+        envRadiance *= vReflectionInfos.x;
+        envRadiance *= vReflectionColor.rgb;
+
+        return vec4f(envRadiance, environmentRadiance.a);
     }
 
     #define pbr_inline
-    #define inline
-    var reflectionBlock: voidnull(
-        in var vPositionW: vec3f,
-        in var normalW: vec3f,
-        in var alphaG: f32,
-        in var vReflectionMicrosurfaceInfos: vec3f,
-        in var vReflectionInfos: vec2f,
-        in var vReflectionColor: vec3f,
+    fn reflectionBlock(
+        vPositionW: vec3f
+        , normalW: vec3f
+        , alphaG: f32
+        , vReflectionMicrosurfaceInfos: vec3f
+        , vReflectionInfos: vec2f
+        , vReflectionColor: vec3f
     #ifdef ANISOTROPIC
-        in anisotropicOutParams anisotropicOut,
+        , anisotropicOut: anisotropicOutParams
     #endif
     #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-        in var NdotVUnclamped: f32,
+        , NdotVUnclamped: f32
     #endif
     #ifdef LINEARSPECULARREFLECTION
-        in var roughness: f32,
+        , roughness: f32
     #endif
     #ifdef REFLECTIONMAP_3D
-        in samplerCube reflectionSampler,
+        , reflectionSampler: texture_cube<f32>
+        , reflectionSamplerSampler: sampler
     #else
-        in sampler2D reflectionSampler,
+        , reflectionSampler: texture_2d<f32>
+        , reflectionSamplerSampler: sampler
     #endif
     #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-        in var vEnvironmentIrradiance: vec3f,
+        , vEnvironmentIrradiance: vec3f
     #endif
     #ifdef USESPHERICALFROMREFLECTIONMAP
         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-            in var reflectionMatrix: mat4x4f,
+            , reflectionMatrix: mat4x4f
         #endif
     #endif
     #ifdef USEIRRADIANCEMAP
         #ifdef REFLECTIONMAP_3D
-            in samplerCube irradianceSampler,
+            , irradianceSampler: texture_cube<f32>
+            , irradianceSamplerSampler: sampler        
         #else
-            in sampler2D irradianceSampler,
+            , irradianceSampler: texture_2d<f32>
+            , irradianceSamplerSampler: sampler        
         #endif
     #endif
     #ifndef LODBASEDMICROSFURACE
         #ifdef REFLECTIONMAP_3D
-            in samplerCube reflectionSamplerLow,
-            in samplerCube reflectionSamplerHigh,
+            , reflectionLowSampler: texture_cube<f32>
+            , reflectionLowSamplerSampler: sampler            
+            , reflectionHighSampler: texture_cube<f32>
+            , reflectionHighSamplerSampler: sampler   
         #else
-            in sampler2D reflectionSamplerLow,
-            in sampler2D reflectionSamplerHigh,
+            , reflectionLowSampler: texture_2d<f32>
+            , reflectionLowSamplerSampler: sampler            
+            , reflectionHighSampler: texture_2d<f32>
+            , reflectionHighSamplerSampler: sampler   
         #endif
     #endif
     #ifdef REALTIME_FILTERING
-        in var vReflectionFilteringInfo: vec2f,
+        , vReflectionFilteringInfo: vec2f
     #endif
-        out reflectionOutParams outParams
-    )
+    ) -> reflectionOutParams
     {
+        var outParams: reflectionOutParams;
         // _____________________________ Radiance ________________________________
         var environmentRadiance: vec4f =  vec4f(0., 0., 0., 0.);
 
@@ -217,41 +243,43 @@
             var reflectionCoords: vec2f =  vec2f(0.);
         #endif
 
-        createReflectionCoords(
+        reflectionCoords = createReflectionCoords(
             vPositionW,
             normalW,
         #ifdef ANISOTROPIC
             anisotropicOut,
-        #endif
-            reflectionCoords
+        #endif            
         );
 
-        sampleReflectionTexture(
-            alphaG,
-            vReflectionMicrosurfaceInfos,
-            vReflectionInfos,
-            vReflectionColor,
+        environmentRadiance = sampleReflectionTexture(
+            alphaG
+            , vReflectionMicrosurfaceInfos
+            , vReflectionInfos
+            , vReflectionColor
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            NdotVUnclamped,
+            , NdotVUnclamped
         #endif
         #ifdef LINEARSPECULARREFLECTION
-            roughness,
+            , roughness
         #endif
         #ifdef REFLECTIONMAP_3D
-            reflectionSampler,
-            reflectionCoords,
+            , reflectionSampler
+            , reflectionSamplerSampler
+            , reflectionCoords
         #else
-            reflectionSampler,
-            reflectionCoords,
+            , reflectionSampler
+            , reflectionSamplerSampler
+            , reflectionCoords
         #endif
         #ifndef LODBASEDMICROSFURACE
-            reflectionSamplerLow,
-            reflectionSamplerHigh,
+            , reflectionLowSampler
+            , reflectionLowSamplerSampler
+            , reflectionHighSampler
+            , reflectionHighSamplerSampler
         #endif
         #ifdef REALTIME_FILTERING
-            vReflectionFilteringInfo,
-        #endif
-            environmentRadiance
+            , vReflectionFilteringInfo
+        #endif            
         );
 
         // _____________________________ Irradiance ________________________________
@@ -276,7 +304,7 @@
                 #endif
 
                 #if defined(REALTIME_FILTERING)
-                    environmentIrradiance = irradiance(reflectionSampler, irradianceVector, vReflectionFilteringInfo);
+                    environmentIrradiance = irradiance(reflectionSampler, reflectionSamplerSampler, irradianceVector, vReflectionFilteringInfo);
                 #else
                     environmentIrradiance = computeEnvironmentIrradiance(irradianceVector);
                 #endif
@@ -286,7 +314,7 @@
                 #endif
             #endif
         #elif defined(USEIRRADIANCEMAP)
-            var environmentIrradiance4: vec4f = sampleReflection(irradianceSampler, reflectionCoords);
+            var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
             environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
                 environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
@@ -301,5 +329,7 @@
         outParams.environmentRadiance = environmentRadiance;
         outParams.environmentIrradiance = environmentIrradiance;
         outParams.reflectionCoords = reflectionCoords;
+
+        return outParams;
     }
 #endif

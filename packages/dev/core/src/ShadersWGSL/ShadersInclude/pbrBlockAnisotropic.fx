@@ -1,28 +1,28 @@
 #ifdef ANISOTROPIC
     struct anisotropicOutParams
     {
-        var anisotropy: f32;
-        var anisotropicTangent: vec3f;
-        var anisotropicBitangent: vec3f;
-        var anisotropicNormal: vec3f;
+        anisotropy: f32,
+        anisotropicTangent: vec3f,
+        anisotropicBitangent: vec3f,
+        anisotropicNormal: vec3f,
     #if DEBUGMODE > 0 && defined(ANISOTROPIC_TEXTURE)
-        var anisotropyMapData: vec3f;
+        anisotropyMapData: vec3f
     #endif
     };
 
     #define pbr_inline
-    var anisotropicBlock: voidnull(
-        in var vAnisotropy: vec3f,
-        in var roughness: f32,
+    fn anisotropicBlock(
+        vAnisotropy: vec3f,
+        roughness: f32,
     #ifdef ANISOTROPIC_TEXTURE
-        in var anisotropyMapData: vec3f,
+        anisotropyMapData: vec3f,
     #endif
-        in var TBN: mat3x3f,
-        in var normalW: vec3f,
-        in var viewDirectionW: vec3f,
-        out anisotropicOutParams outParams
-    )
-    {
+        TBN: mat3x3f,
+        normalW: vec3f,
+        viewDirectionW: vec3f
+    ) -> anisotropicOutParams
+    {        
+        var outParams: anisotropicOutParams;
         var anisotropy: f32 = vAnisotropy.b;
         var anisotropyDirection: vec3f =  vec3f(vAnisotropy.xy, 0.);
 
@@ -50,5 +50,7 @@
         outParams.anisotropicTangent = anisotropicTangent;
         outParams.anisotropicBitangent = anisotropicBitangent;
         outParams.anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy, roughness);
+
+        return outParams;
     }
 #endif
