@@ -310,10 +310,6 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._refractionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
-        if (isWebGPU) {
-            this._refractionMatrixName = "uniforms." + this._refractionMatrixName;
-        }
-
         state._emitFunction(
             "sampleRefraction",
             `
@@ -340,17 +336,9 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._vRefractionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
 
-        if (isWebGPU) {
-            this._vRefractionMicrosurfaceInfosName = "uniforms." + this._vRefractionMicrosurfaceInfosName;
-        }
-
         this._vRefractionInfosName = state._getFreeVariableName("vRefractionInfos");
 
         state._emitUniformFromString(this._vRefractionInfosName, NodeMaterialBlockConnectionPointTypes.Vector4);
-
-        if (isWebGPU) {
-            this._vRefractionInfosName = "uniforms." + this._vRefractionInfosName;
-        }
 
         this._vRefractionFilteringInfoName = state._getFreeVariableName("vRefractionFilteringInfo");
 

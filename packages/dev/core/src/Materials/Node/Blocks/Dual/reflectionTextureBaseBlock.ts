@@ -293,10 +293,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._reflectionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
-        if (isWebGPU) {
-            this._reflectionMatrixName = "uniforms." + this._reflectionMatrixName;
-        }
-
         let code = "";
 
         this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
@@ -411,7 +407,8 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (!worldPos) {
             worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `v_${this.worldPosition.associatedVariableName}`;
         }
-        const reflectionMatrix = this._reflectionMatrixName;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        const reflectionMatrix = (isWebGPU ? "uniforms." : "") + this._reflectionMatrixName;
         const direction = `normalize(${this._directionWName})`;
         const positionUVW = `${this._positionUVWName}`;
         const vEyePosition = `${this.cameraPosition.associatedVariableName}`;

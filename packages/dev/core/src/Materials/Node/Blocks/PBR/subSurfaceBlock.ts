@@ -185,7 +185,7 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
             #endif
             #ifdef REFLECTION
                 #ifdef SS_TRANSLUCENCY
-                    , ${reflectionBlock?._reflectionMatrixName}
+                    , ${(isWebGPU ? "uniforms." : "") + reflectionBlock?._reflectionMatrixName}
                     #ifdef USESPHERICALFROMREFLECTIONMAP
                         #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
                             , reflectionOut.irradianceVector
@@ -209,9 +209,9 @@ export class SubSurfaceBlock extends NodeMaterialBlock {
                 , ${worldPosVarName}.xyz
                 , viewDirectionW
                 , ${refractionView}
-                , ${refractionBlock?._vRefractionInfosName ?? ""}
-                , ${refractionBlock?._refractionMatrixName ?? ""}
-                , ${refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionInfosName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._refractionMatrixName ?? ""}
+                , ${(isWebGPU ? "uniforms." : "") + refractionBlock?._vRefractionMicrosurfaceInfosName ?? ""}
                 , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
                 #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
                     , alpha

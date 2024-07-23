@@ -152,7 +152,7 @@ export class SheenBlock extends NodeMaterialBlock {
             #endif
             #if defined(REFLECTION) && defined(ENVIRONMENTBRDF)
                 , AARoughnessFactors
-                , ${reflectionBlock?._vReflectionMicrosurfaceInfosName}
+                , ${isWebGPU ? "uniforms." : ""}${reflectionBlock?._vReflectionMicrosurfaceInfosName}
                 , ${reflectionBlock?._vReflectionInfosName}
                 , ${reflectionBlock?.reflectionColor}
                 , ${isWebGPU ? "uniforms." : ""}vLightingIntensity

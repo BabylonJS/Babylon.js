@@ -325,7 +325,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString("vSphericalZX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
 
         code += `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-                ${state._declareLocalVar(reflectionVectorName, NodeMaterialBlockConnectionPointTypes.Vector3)} = (${this._reflectionMatrixName} * vec4${state.fSuffix}(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
+                ${state._declareLocalVar(reflectionVectorName, NodeMaterialBlockConnectionPointTypes.Vector3)} = (${(isWebGPU ? "uniforms." : "") + this._reflectionMatrixName} * vec4${state.fSuffix}(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
                 #ifdef ${this._defineOppositeZ}
                     ${reflectionVectorName}.z *= -1.0;
                 #endif
@@ -396,10 +396,6 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
 
         state._emitUniformFromString(this._vReflectionMicrosurfaceInfosName, NodeMaterialBlockConnectionPointTypes.Vector3);
 
-        if (isWebGPU) {
-            this._vReflectionMicrosurfaceInfosName = "uniforms." + this._vReflectionMicrosurfaceInfosName;
-        }
-
         this._vReflectionInfosName = state._getFreeVariableName("vReflectionInfos");
 
         this._vReflectionFilteringInfoName = state._getFreeVariableName("vReflectionFilteringInfo");
@@ -415,7 +411,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
                 ${this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : (isWebGPU ? "input." : "") + "v_" + this.worldPosition.associatedVariableName}.xyz
                 , ${normalVarName}
                 , alphaG
-                , ${this._vReflectionMicrosurfaceInfosName}
+                , ${(isWebGPU ? "uniforms." : "") + this._vReflectionMicrosurfaceInfosName}
                 , ${this._vReflectionInfosName}
                 , ${this.reflectionColor}
             #ifdef ANISOTROPIC

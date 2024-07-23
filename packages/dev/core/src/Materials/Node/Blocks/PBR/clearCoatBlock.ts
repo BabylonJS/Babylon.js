@@ -349,7 +349,7 @@ export class ClearCoatBlock extends NodeMaterialBlock {
                 , faceNormal
             #endif
             #ifdef REFLECTION
-                , ${reflectionBlock?._vReflectionMicrosurfaceInfosName}
+                , ${isWebGPU ? "uniforms." : ""}${reflectionBlock?._vReflectionMicrosurfaceInfosName}
                 , ${reflectionBlock?._vReflectionInfosName}
                 , ${reflectionBlock?.reflectionColor}
                 , ${isWebGPU ? "uniforms." : ""}vLightingIntensity
