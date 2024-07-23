@@ -19,7 +19,6 @@ import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Scalar } from "../../../../Maths/math.scalar";
-import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -278,7 +277,6 @@ export class RefractionBlock extends NodeMaterialBlock {
      */
     public getCode(state: NodeMaterialBuildState): string {
         const code = "";
-        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state.sharedData.blockingBlocks.push(this);
         state.sharedData.textureBlocks.push(this);
