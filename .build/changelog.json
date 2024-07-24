@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.15.2",
+    "fromTag": "7.16.0",
     "changelog": {
         "7.16.0": [
             {
@@ -17,6 +17,431 @@
                     "bug",
                     "texture"
                 ]
+            }
+        ],
+        "7.16.1": [
+            {
+                "pr": "15324",
+                "title": "Expose node geometry vertex data",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Node/nodeGeometry.ts"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15322",
+                "title": "feat: Add support for GPU picker for vertex animation textures.",
+                "description": "https://forum.babylonjs.com/t/new-feature-gpu-picking/51106/42?u=zhangyahan",
+                "author": {
+                    "name": "zhangyahan",
+                    "url": "https://github.com/zhangyahan"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15314",
+                "title": "filling the gaps",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/reflectionTextureBaseBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/textureBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/anisotropyBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/reflectionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/sheenBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlphaFresnel.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSheen.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/decalFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/harmonicsFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/imageProcessingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlphaFresnel.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSheen.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrHelperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrIBLFunctions.fx",
+                    "packages/tools/tests/test/visualization/ReferenceImages/node-material-pbr-2.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15319",
+                "title": "Add viewer alpha tooling for tree shaking analysis",
+                "description": "This PR adds two things:\r\n1. Uses `rollup-plugin-visualizer` to generate a stats json file that has a lot of raw data, including references between all modules.\r\n1. A script that takes a module path substring and the status json file and prints out all reference paths so you can immediately identify why a module was not tree shaken.\r\n\r\nSo with the [initial size analysis tooling](https://github.com/BabylonJS/Babylon.js/pull/15298) changes you can find what is contributing to the size, and with this tooling you can figure out why that thing contributing to the size wasn't tree shaken.\r\n\r\nFor example, with the size analysis tooling I could see that `nodeMaterial.js` was included, which clearly is unnecessary. With the tooling in this PR, I was able to run the `npm run analyze` command followed by the script `node ../../../scripts/queryRollupStats.js nodeMaterial.js ./dist/analyze/stats.json` and see this output:\r\n\r\n![image](https://github.com/user-attachments/assets/4f840520-4cdc-4bf0-92e9-d2df578f4713)\r\n\r\nThis made it immediately obvious that `sceneHelpers.js` is pulling in a lot of other stuff. Having identified this, I factored out the one thing we were using from it (`scene.createDefaultSkybox`) and removed the reference to `sceneHelpers` (this will be coming in a separate PR). This alone brought the package size down from ~2.3mb to ~1.8mb. In a separate PR yet, I will be adding a bit more tooling to diff two flame charts so you can also easily understand why removing `sceneHelpers` has such a dramatic impact on package size.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/viewer-alpha/README.md",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/rollup.config.analyze.mjs",
+                    "scripts/queryRollupStats.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15317",
+                "title": "Add minified and non-minified esm bundles to viewer alpha package",
+                "description": "This PR updates the @babylonjs/viewer ***alpha*** package to include `dist/babylon-viewer.esm.js` and `dist/babylon-viewer.esm.min.js` files. These are the alpha viewer with @babylonjs dependencies bundled in. These are **not** UMD bundles, they are ESM bundles. I tested these out directly in the browser via `<script type=\"module\" src=\"babylon-viewer.esm.min.js\">` and everything worked as expected. Currently we don't plan to create UMD bundles unless a real need surfaces.\r\n\r\nI was planning on creating these ESM bundles later, but I basically did this same thing last week when working on the size analysis tooling, so I just decided to do it now because it would be fast while it is still very fresh in my mind.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/public/@babylonjs/viewer-alpha/package.json",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.lib.mjs",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.dist.json",
+                    "packages/public/@babylonjs/viewer-alpha/tsconfig.build.lib.json"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15318",
+                "title": "Fix resuming animation after pause",
+                "description": "This playground should display diamonds during the animation: https://playground.babylonjs.com/#9CLJEF\r\n\r\n[This fix](https://github.com/BabylonJS/Babylon.js/pull/15267) introduced a regression as when the animatable counts changes (e.g.) one anim is done but not all of them, we simply resume, but when new target animations have been added, we end up in a similar situation.\r\n\r\nAdding a dirty mecanism prevents the misdetection of simply running animation groups.",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "animations"
+                ]
+            },
+            {
+                "pr": "15316",
+                "title": "Always display Build Execution Time on nodes for NGE",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.ts",
+                    "packages/tools/nodeGeometryEditor/src/graphSystem/properties/genericNodePropertyComponent.tsx"
+                ],
+                "tags": [
+                    "new feature"
+                ]
+            },
+            {
+                "pr": "15298",
+                "title": "Initial size analysis tooling for alpha viewer",
+                "description": "This PR primarily adds an `npm run analyze` command to the viewer alpha. This tree shakes and minifies the code (including the @babylonjs/core and @babylonjs/loaders), but does not bundle it, and then it runs a script that generates a flame chart to visualize the breakdown of file/folder sizes. The flame chart is an SVG that is interactive when opened in a browser (e.g. you can drill into the flame chart or search for file/folder names), and can also just be opened as an image.\r\n\r\nThis PR also adds an `npm run start:bundle-test` that can be used to verify that all the right code is being included and that it actually executes correctly. ~The bundle-test also bundles into a single file just to simplify the test app and double check the overall size.~ I decided to get rid of this and just directly test the loose files. We will add a single file bundle to the public package later, so I don't really want to duplicate it here.\r\n\r\nThe minified bundle is about 2.3mb currently.\r\n\r\nThe flame chart looks like this:\r\n![FoldersSizes](https://github.com/user-attachments/assets/9832e1c3-bc44-496a-900f-ff9bd06842cf)\r\n\r\nAnd then drilling into materials for example looks like this:\r\n<img width=\"1622\" alt=\"image\" src=\"https://github.com/user-attachments/assets/e1a5990b-7e06-435c-a3b8-3bac05b3bd56\">\r\n\r\nOther notes on this PR:\r\n- Set sideEffects to true in dev/core/package.json and dev/loaders/package.json (these were incorrectly set to false which messed up the bundling)\r\n- Added a short README with some notes on the new viewer package\r\n- Changed line endings in the package.json to CRLF (which unfortunately messes up the diff for this file in this PR)\r\n- Added various Rollup plugins and a Rollup config to transpile, tree shake, minify, but not bundle (for the size analysis flame chart input)\r\n- Added a Rollup config that does almost the same as above but bundles into a single file\r\n- Added a test html page that consumes the single bundle (to verify the tree shaked code)\r\n- Added a small script that gets file sizes and then uses an OSS flame chart generating perl script to create the flame chart\r\n\r\nFor the flame chart script, it just downloads the inner flame chart Perl script on demand. We could check it in, but I kind of like the node script being self contained and it makes it clear where the Perl script is coming from. Open to other perspectives on this.\r\n",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "package.json",
+                    "packages/dev/buildTools/src/copyAssets.ts",
+                    "packages/dev/core/package.json",
+                    "packages/dev/loaders/package.json",
+                    "packages/tools/viewer-alpha/README.md",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/rollup.config.analyze.mjs",
+                    "packages/tools/viewer-alpha/test/apps/web/bundle-test.html",
+                    "packages/tools/viewer-alpha/tsconfig.build.json",
+                    "packages/tools/viewer-alpha/vite.config.mjs",
+                    "scripts/folderSizeFlameChart.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15302",
+                "title": "Nme webgpu 14 - The long awaited PBR block :)",
+                "description": "Bear with me, it will be long and painful",
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/WebGPU/webgpuShaderProcessorsWGSL.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/clearCoatBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/iridescenceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/pbrMetallicRoughnessBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/subSurfaceBlock.ts",
+                    "packages/dev/core/src/Materials/Node/nodeMaterialBuildState.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockAmbientOcclusion.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockIridescence.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/Shaders/pbr.fragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/decalFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/depthPrePass.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/hdrFilteringFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/helperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/importanceSampling.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightFragment.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/lightsFragmentFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBRDFFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAlphaFresnel.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAmbientOcclusion.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockAnisotropic.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockClearcoat.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockDirectLighting.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalColorComposition.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockGeometryInfo.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockImageProcessing.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockIridescence.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockLightmapInit.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockNormalFinal.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectance0.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflection.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockReflectivity.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSheen.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrBlockSubSurface.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDebug.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFalloffFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrHelperFunctions.fx",
+                    "packages/dev/core/src/ShadersWGSL/ShadersInclude/pbrIBLFunctions.fx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15309",
+                "title": "Fix copy paste caret positioning",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15310",
+                "title": "Fix text highlight breaking cursor movements",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15311",
+                "title": "Fixed Viewer Source Code Links (documentation changes only)",
+                "description": "Fixed up the link to the viewer source code in two readme.md files.",
+                "author": {
+                    "name": "talanc",
+                    "url": "https://github.com/talanc"
+                },
+                "files": [
+                    "packages/public/babylonjs-viewer-assets/readme.md",
+                    "packages/public/umd/babylonjs-viewer/readme.md"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15308",
+                "title": "Fix blinking caret",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/controls/inputTextArea.ts"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15307",
+                "title": "Some fixes for Tab control",
+                "description": "The current behavior locks Tab control within the ADT and doesn't let it escape.\n\nThese changes make the elements of the GUI merge with the browser's elements. Tab and Shift-Tab will work correctly, and will let the focus escape the ADT if at the end of the list.\n\nTest with #BCU1XR#7421",
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/dev/gui/src/2D/advancedDynamicTexture.ts",
+                    "packages/dev/gui/src/2D/controls/control.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15306",
+                "title": "Avoid warnings due to version bump of scss",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "packages/tools/playground/src/scss/examples.scss",
+                    "packages/tools/playground/src/scss/hamburgerMenu.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15292",
+                "title": "Gaussian Splatting clones",
+                "description": "Follow up https://forum.babylonjs.com/t/mouse-hover-splat-model-dot-operation-model-will-blink/52092/2\r\n\r\n",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/GaussianSplatting/gaussianSplattingMesh.ts",
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": [
+                    "enhancement"
+                ]
+            },
+            {
+                "pr": "15303",
+                "title": "Fix race condition",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/tools/playground/src/components/rendererComponent.tsx"
+                ],
+                "tags": [
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15300",
+                "title": "Warning for non supported fill modes",
+                "description": "fixes https://github.com/BabylonJS/BabylonNative/issues/1216",
+                "author": {
+                    "name": "CedricGuillemet",
+                    "url": "https://github.com/CedricGuillemet"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/nativeEngine.ts"
+                ],
+                "tags": [
+                    "native"
+                ]
+            },
+            {
+                "pr": "15301",
+                "title": "Update dependencies (Re-Resizable and others)",
+                "description": null,
+                "author": {
+                    "name": "RaananW",
+                    "url": "https://github.com/RaananW"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/dev/core/src/Compute/computeEffect.ts",
+                    "packages/dev/core/src/Engines/nativeEngine.ts",
+                    "packages/dev/core/src/Engines/thinEngine.ts",
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Dual/clipPlanesBlock.ts",
+                    "packages/dev/core/src/Materials/effect.ts",
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts",
+                    "packages/dev/core/src/Meshes/subMesh.ts",
+                    "packages/dev/core/src/Misc/khronosTextureContainer2.ts",
+                    "packages/dev/core/src/Rendering/GlobalIllumination/giRSMManager.ts",
+                    "packages/dev/core/src/Rendering/edgesRenderer.ts",
+                    "packages/dev/core/src/Rendering/fluidRenderer/fluidRenderingTargetRenderer.ts",
+                    "packages/dev/inspector/package.json",
+                    "packages/dev/inspector/src/components/actionTabs/actionTabsComponent.tsx",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/animations/curveEditor/scss/canvas.scss",
+                    "packages/dev/inspector/src/components/actionTabs/tabs/propertyGrids/materials/textures/textureEditor.scss",
+                    "packages/dev/inspector/src/components/embedHost/embedHostComponent.tsx",
+                    "packages/dev/inspector/src/components/sceneExplorer/sceneExplorerComponent.tsx",
+                    "packages/dev/sharedUiComponents/src/nodeGraphSystem/graphNode.modules.scss",
+                    "packages/tools/guiEditor/src/components/propertyTab/propertyTab.scss",
+                    "packages/tools/guiEditor/src/scss/commandBar.scss"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15269",
+                "title": "Playground code generator : from Destructive to Additive - Inserting Code Snippets at cursor position\"",
+                "description": "Following discussions on the [Code Generator Topic](https://forum.babylonjs.com/t/edit-released-what-about-a-code-generator-for-the-playground/50396/45), the drop down menu is now only additive and no longer destructive.\r\n\r\n- Checkboxes replaced by buttons\r\n- Removed onUpdateGenerator && onGenerate\r\n- Added onInsertSnippet\r\n- Fixing indentation based on cursor position\r\n- Fixed some old dead urls in snippet docs links (`/babylon101/`)\r\n- Added new snippets : Skybox, Lens Flares, Audio, Sprites",
+                "author": {
+                    "name": "Tricotou",
+                    "url": "https://github.com/Tricotou"
+                },
+                "files": [
+                    "packages/tools/playground/public/procedural.json",
+                    "packages/tools/playground/public/templates.json",
+                    "packages/tools/playground/src/components/commandBarComponent.tsx",
+                    "packages/tools/playground/src/components/commandDropdownComponent.tsx",
+                    "packages/tools/playground/src/globalState.ts",
+                    "packages/tools/playground/src/tools/monacoManager.ts"
+                ],
+                "tags": []
             }
         ],
         "7.15.2": [
