@@ -576,13 +576,11 @@ export class InputBlock extends NodeMaterialBlock {
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
-                    this._prefix = ``;
                     state._emitUniformFromString(this.declarationVariableName, this.type, define);
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `uniforms.`;
                     }
                 } else {
-                    this._prefix = ``;
                     state._emitVaryingFromString(this.declarationVariableName, this.type, define);
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `fragmentInputs.`;
@@ -593,7 +591,6 @@ export class InputBlock extends NodeMaterialBlock {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    this._prefix = ``;
                     state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
                     this._prefix = `vertexInputs.`;
                 } else {
