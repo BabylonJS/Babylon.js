@@ -510,10 +510,16 @@ export class FrameGraph {
         }
 
         // Generate
-        let codeString = `let frameGraph = new BABYLON.FrameGraph("${this.name || "frame graph"}");\n`;
+        const options = JSON.stringify(this._options, (key, value) => {
+            if (key === "scene") {
+                return "#scene#";
+            }
+            return value;
+        });
+        let codeString = `let frameGraph = new BABYLON.FrameGraph("${this.name || "frame graph"}", engine, ${options.replace('"#scene#"', "scene")});\n`;
         for (const node of blocks) {
             if (node.isInput && alreadyDumped.indexOf(node) === -1) {
-                codeString += node._dumpCode(uniqueNames, alreadyDumped);
+                codeString += node._dumpCode(uniqueNames, alreadyDumped) + "\n";
             }
         }
 
@@ -660,10 +666,11 @@ export class FrameGraph {
      * Creates a new frame graph set to default basic configuration
      * @param name defines the name of the frame graph
      * @param engine defines the engine to use
+     * @param frameGraphOptions defines options to use when creating the frame graph
      * @returns a new FrameGraph
      */
-    public static CreateDefault(name: string, engine: AbstractEngine): FrameGraph {
-        const frameGraph = new FrameGraph(name, engine);
+    public static CreateDefault(name: string, engine: AbstractEngine, frameGraphOptions?: IFrameGraphCreateOptions): FrameGraph {
+        const frameGraph = new FrameGraph(name, engine, frameGraphOptions);
 
         frameGraph.setToDefault();
         frameGraph.build();
@@ -675,13 +682,17 @@ export class FrameGraph {
      * Creates a frame graph from parsed graph data
      * @param source defines the JSON representation of the frame graph
      * @param engine defines the engine to use
+     * @param frameGraphOptions defines options to use when creating the frame graph
+     * @param skipBuild defines whether to skip building the frame graph (default is true)
      * @returns a new frame graph
      */
-    public static Parse(source: any, engine: AbstractEngine): FrameGraph {
-        const frameGraph = SerializationHelper.Parse(() => new FrameGraph(source.name, engine), source, null);
+    public static Parse(source: any, engine: AbstractEngine, frameGraphOptions?: IFrameGraphCreateOptions, skipBuild: boolean = true): FrameGraph {
+        const frameGraph = SerializationHelper.Parse(() => new FrameGraph(source.name, engine, frameGraphOptions), source, null);
 
         frameGraph.parseSerializedObject(source);
-        frameGraph.build();
+        if (!skipBuild) {
+            frameGraph.build();
+        }
 
         return frameGraph;
     }
@@ -690,13 +701,20 @@ export class FrameGraph {
      * Creates a frame graph from a snippet saved by the frame graph editor
      * @param snippetId defines the snippet to load
      * @param engine defines the engine to use
+     * @param frameGraphOptions defines options to use when creating the frame graph
      * @param frameGraph defines a frame graph to update (instead of creating a new one)
-     * @param skipBuild defines whether to build the frame graph
+     * @param skipBuild defines whether to skip building the frame graph (default is true)
      * @returns a promise that will resolve to the new frame graph
      */
-    public static ParseFromSnippetAsync(snippetId: string, engine: AbstractEngine, frameGraph?: FrameGraph, skipBuild: boolean = false): Promise<FrameGraph> {
+    public static ParseFromSnippetAsync(
+        snippetId: string,
+        engine: AbstractEngine,
+        frameGraphOptions?: IFrameGraphCreateOptions,
+        frameGraph?: FrameGraph,
+        skipBuild: boolean = true
+    ): Promise<FrameGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(FrameGraph.CreateDefault("blank", engine));
+            return Promise.resolve(FrameGraph.CreateDefault("blank", engine, frameGraphOptions));
         }
 
         return new Promise((resolve, reject) => {
@@ -708,7 +726,7 @@ export class FrameGraph {
                         const serializationObject = JSON.parse(snippet.FrameGraph);
 
                         if (!frameGraph) {
-                            frameGraph = SerializationHelper.Parse(() => new FrameGraph(snippetId, engine), serializationObject, null);
+                            frameGraph = SerializationHelper.Parse(() => new FrameGraph(snippetId, engine, frameGraphOptions), serializationObject, null);
                         }
 
                         frameGraph.parseSerializedObject(serializationObject);

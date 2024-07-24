@@ -139,15 +139,17 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
 
     /**
      * Gets a boolean indicating that the connection point is the back buffer texture
+     * @returns true if the connection point is the back buffer texture
      */
-    public get isBackBuffer() {
+    public isBackBuffer() {
         return (this.type & FrameGraphBlockConnectionPointTypes.TextureBackBuffer) !== 0;
     }
 
     /**
      * Gets a boolean indicating that the connection point is a depth/stencil attachment texture
+     * @returns true if the connection point is a depth/stencil attachment texture
      */
-    public get isBackBufferDepthStencilAttachment() {
+    public isBackBufferDepthStencilAttachment() {
         return (this.type & FrameGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment) !== 0;
     }
 
@@ -209,18 +211,34 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
 
     protected override _dumpPropertiesCode() {
         const codes: string[] = [];
-        return super._dumpPropertiesCode() + codes.join(";\n");
+        if (this.isAnyTexture()) {
+            codes.push(`${this._codeVariableName}.isExternal = ${this.isExternal};`);
+            if (!this.isExternal) {
+                codes.push(`${this._codeVariableName}.creationOptions = ${JSON.stringify(this.creationOptions)};`);
+            } else {
+                codes.push(`${this._codeVariableName}.value = external_texture; // TODO: set the external texture`);
+            }
+        }
+        return super._dumpPropertiesCode() + codes.join("\n");
     }
 
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.type = this.type;
+        serializationObject.isExternal = this.isExternal;
+        if (this.creationOptions) {
+            serializationObject.creationOptions = this.creationOptions;
+        }
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this._type = serializationObject.type;
+        this.isExternal = serializationObject.isExternal;
+        if (serializationObject.creationOptions) {
+            this.creationOptions = serializationObject.creationOptions;
+        }
     }
 }
 

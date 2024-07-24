@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { FrameGraphBuilder } from "core/FrameGraph/frameGraphBuilder";
+import type { FrameGraphBuilder } from "../FrameGraph/frameGraphBuilder";
 
 declare module "../Engines/abstractEngine" {
     export interface AbstractEngine {
@@ -1099,7 +1099,7 @@ export class PostProcess {
         return this._drawWrapper.effect;
     }
 
-    public directRender(frameGraphBuilder: FrameGraphBuilder) {
+    public renderToFrameGraph(frameGraphBuilder: FrameGraphBuilder) {
         frameGraphBuilder.applyFullScreenEffect(this._drawWrapper, () => this._bind());
     }
 

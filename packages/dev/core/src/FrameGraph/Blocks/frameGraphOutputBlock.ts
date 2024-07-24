@@ -64,13 +64,30 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
         }
 
         const internalTexture = inputTexture.getInternalTextureFromValue();
-        if (this.disableBackBufferCopy || inputTexture.isBackBuffer || !internalTexture) {
+        if (this.disableBackBufferCopy || inputTexture.isBackBuffer() || !internalTexture) {
             return;
         }
 
         builder.addExecuteFunction(() => {
             this._copyTexture!.copy(internalTexture, null);
         });
+    }
+
+    protected override _dumpPropertiesCode() {
+        const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.disableBackBufferCopy = ${this.disableBackBufferCopy};`);
+        return super._dumpPropertiesCode() + codes.join("\n");
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.disableBackBufferCopy = this.disableBackBufferCopy;
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+        this.disableBackBufferCopy = serializationObject.disableBackBufferCopy;
     }
 }
 

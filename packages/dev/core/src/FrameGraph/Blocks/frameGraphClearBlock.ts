@@ -55,12 +55,12 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
         this._propagateInputValueToOutput(this.texture, this.output);
 
         const inputTexture = this.texture.connectedPoint?.value;
-        if (!inputTexture || !inputTexture.isAnyTexture) {
+        if (!inputTexture || !inputTexture.isAnyTexture()) {
             return;
         }
 
-        const isBackBuffer = inputTexture.isBackBuffer;
-        const isBackBufferDepthStencilAttachment = inputTexture.isBackBufferDepthStencilAttachment;
+        const isBackBuffer = inputTexture.isBackBuffer();
+        const isBackBufferDepthStencilAttachment = inputTexture.isBackBufferDepthStencilAttachment();
         const isDepthStencilAttachment = inputTexture.type === FrameGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
 
         if (isBackBuffer || isBackBufferDepthStencilAttachment) {
@@ -77,6 +77,23 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
                 });
             }
         }
+    }
+
+    protected override _dumpPropertiesCode() {
+        const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.color = new Color4(${this.color.r}, ${this.color.g}, ${this.color.b}, ${this.color.a});`);
+        return super._dumpPropertiesCode() + codes.join("\n");
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.color = this.color.asArray();
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+        this.color = Color4.FromArray(serializationObject.color);
     }
 }
 

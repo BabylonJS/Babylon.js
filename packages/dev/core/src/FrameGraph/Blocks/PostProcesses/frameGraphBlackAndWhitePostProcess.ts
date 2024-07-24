@@ -116,11 +116,28 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
             builder.addExecuteFunction(() => {
                 builder.bindRenderTargetWrapper(rtWrapper);
 
-                this._postProcess!.directRender(builder);
+                this._postProcess!.renderToFrameGraph(builder);
 
                 builder.bindRenderTargetWrapper(null);
             });
         }
+    }
+
+    protected override _dumpPropertiesCode() {
+        const codes: string[] = [];
+        codes.push(`${this._codeVariableName}.degree = ${this.degree};`);
+        return super._dumpPropertiesCode() + codes.join("\n");
+    }
+
+    public override serialize(): any {
+        const serializationObject = super.serialize();
+        serializationObject.degree = this.degree;
+        return serializationObject;
+    }
+
+    public override _deserialize(serializationObject: any) {
+        super._deserialize(serializationObject);
+        this.degree = serializationObject.degree;
     }
 }
 

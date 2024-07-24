@@ -1,7 +1,7 @@
 import { GetClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
 import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
-import type { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
+import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
 import type { FrameGraphBuilder } from "./frameGraphBuilder";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
@@ -523,13 +523,13 @@ export class FrameGraphBlock {
             const block = this as unknown as FrameGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.FrameGraphInputBlock("${this.name}", ${blockType});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.FrameGraphInputBlock("${this.name}", BABYLON.FrameGraphBlockConnectionPointTypes.${FrameGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}");\n`;
         }
 
         // Properties
-        codeString += this._dumpPropertiesCode();
+        codeString += this._dumpPropertiesCode() + "\n";
 
         // Inputs
         for (const input of this.inputs) {
