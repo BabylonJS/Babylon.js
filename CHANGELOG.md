@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.17.1
+
+### Core
+
+- Fix ReferenceError: Property 'name' doesn't exist at _copySource - by [stetbern](https://github.com/stetbern) ([#15326](https://github.com/BabylonJS/Babylon.js/pull/15326))
+
 ## 7.17.0
 
 ### Core

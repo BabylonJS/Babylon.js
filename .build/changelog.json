@@ -1,6 +1,21 @@
 {
-    "fromTag": "7.16.1",
+    "fromTag": "7.17.0",
     "changelog": {
+        "7.17.1": [
+            {
+                "pr": "15326",
+                "title": "Fix ReferenceError: Property 'name' doesn't exist at _copySource",
+                "description": "When cloning a Mesh with the current version 7.17 I get a ReferenceError in the _copySource method of the Mesh object. The error was caused by accessing \"name\" without this. Prefixed \"name\" with this in _copySource.\r\n",
+                "author": {
+                    "name": "stetbern",
+                    "url": "https://github.com/stetbern"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/mesh.ts"
+                ],
+                "tags": []
+            }
+        ],
         "7.17.0": [
             {
                 "pr": "15325",
