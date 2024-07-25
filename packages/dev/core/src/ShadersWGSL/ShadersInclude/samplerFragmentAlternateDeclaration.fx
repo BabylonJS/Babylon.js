@@ -14,6 +14,4 @@
 	#else
 		varying v_VARYINGNAME_UV: vec2f;
 	#endif
-	var _SAMPLERNAME_SamplerSampler: sampler;
-	var _SAMPLERNAME_Sampler: texture_2d<f32>;
 #endif

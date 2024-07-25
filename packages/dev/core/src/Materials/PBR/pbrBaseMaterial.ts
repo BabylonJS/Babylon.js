@@ -36,8 +36,6 @@ import { Constants } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
-import "../../Shaders/pbr.fragment";
-import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
@@ -69,6 +67,7 @@ import {
     PrepareDefinesForPrePass,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
+import { ShaderLanguage } from "../shaderLanguage";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -299,6 +298,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
  * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * #CGHTSM#1 : WebGL
+ * #CGHTSM#2 : WebGPU
  */
 export abstract class PBRBaseMaterial extends PushMaterial {
     /**
@@ -846,6 +847,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _applyDecalMapAfterDetailMap = false;
 
     private _debugMode = 0;
+
+    private _shadersLoaded = false;
+    private _shaderLanguage = ShaderLanguage.GLSL;
+
     /**
      * @internal
      * This is reserved for the inspector.
@@ -932,6 +937,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
 
+        this._initShaderSourceAsync();
+
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
 
@@ -950,6 +957,21 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
+    }
+
+    private async _initShaderSourceAsync() {
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU) {
+            await import("../../ShadersWGSL/pbr.vertex");
+            await import("../../ShadersWGSL/pbr.fragment");
+            this._shaderLanguage = ShaderLanguage.WGSL;
+        } else {
+            await import("../../Shaders/pbr.vertex");
+            await import("../../Shaders/pbr.fragment");
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -1043,6 +1065,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1521,6 +1547,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 processFinalCode: csnrOptions.processFinalCode,
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
+                shaderLanguage: this._shaderLanguage,
             },
             engine
         );
