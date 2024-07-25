@@ -1,21 +1,37 @@
 {
-    "fromTag": "7.16.0",
+    "fromTag": "7.16.1",
     "changelog": {
-        "7.16.0": [
+        "7.17.0": [
             {
-                "pr": "15299",
-                "title": "Fix raw texture clone by leveraging a shared internal texture",
-                "description": null,
+                "pr": "15325",
+                "title": "Fix issue where the attribute names where polluted on rebuild with a …",
+                "description": "…\"vertexInputs.\"",
                 "author": {
-                    "name": "sebavan",
-                    "url": "https://github.com/sebavan"
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
                 },
                 "files": [
-                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                    "packages/dev/core/src/Engines/webgpuEngine.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/Input/inputBlock.ts",
+                    "packages/dev/core/src/Materials/Node/Blocks/PBR/refractionBlock.ts"
                 ],
                 "tags": [
-                    "bug",
-                    "texture"
+                    "skip changelog"
+                ]
+            },
+            {
+                "pr": "15323",
+                "title": "Fix decal",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/Builders/decalBuilder.ts"
+                ],
+                "tags": [
+                    "bug"
                 ]
             }
         ],
@@ -442,6 +458,24 @@
                     "packages/tools/playground/src/tools/monacoManager.ts"
                 ],
                 "tags": []
+            }
+        ],
+        "7.16.0": [
+            {
+                "pr": "15299",
+                "title": "Fix raw texture clone by leveraging a shared internal texture",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Textures/rawTexture.ts"
+                ],
+                "tags": [
+                    "bug",
+                    "texture"
+                ]
             }
         ],
         "7.15.2": [

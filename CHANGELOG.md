@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.17.0
+
+### Core
+
+- Fix decal - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15323](https://github.com/BabylonJS/Babylon.js/pull/15323))
+
 ## 7.16.1
 
 ### Core
