@@ -68,11 +68,12 @@
 
 	fn perturbNormalBase(cotangentFrame: mat3x3f, normal: vec3f, scale: f32) -> vec3f
 	{
+		var output = normal;
 		#ifdef NORMALXYSCALE
-			normal = normalize(normal *  vec3f(scale, scale, 1.0));
+			output = normalize(output *  vec3f(scale, scale, 1.0));
 		#endif
 
-		return normalize(cotangentFrame * normal);
+		return normalize(cotangentFrame * output);
 	}
 
 	fn perturbNormal(cotangentFrame: mat3x3f, textureSample: vec3f, scale: f32) -> vec3f

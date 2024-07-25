@@ -66,7 +66,7 @@ export class GPUPicker {
 
         const defines: string[] = [];
         const options = {
-            attributes: [VertexBuffer.PositionKind, this._attributeName],
+            attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
             uniforms: ["world", "viewProjection", "meshID"],
             needAlphaBlending: false,
             defines: defines,

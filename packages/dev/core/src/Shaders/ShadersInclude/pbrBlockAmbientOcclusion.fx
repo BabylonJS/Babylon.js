@@ -7,14 +7,14 @@ struct ambientOcclusionOutParams
 };
 
 #define pbr_inline
-void ambientOcclusionBlock(
+ambientOcclusionOutParams ambientOcclusionBlock(
 #ifdef AMBIENT
     in vec3 ambientOcclusionColorMap_,
-    in vec4 vAmbientInfos,
+    in vec4 vAmbientInfos
 #endif
-    out ambientOcclusionOutParams outParams
 )
 {
+    ambientOcclusionOutParams outParams;
     vec3 ambientOcclusionColor = vec3(1., 1., 1.);
 
     #ifdef AMBIENT
@@ -30,4 +30,6 @@ void ambientOcclusionBlock(
     #endif
 
     outParams.ambientOcclusionColor = ambientOcclusionColor;
+
+    return outParams;
 }

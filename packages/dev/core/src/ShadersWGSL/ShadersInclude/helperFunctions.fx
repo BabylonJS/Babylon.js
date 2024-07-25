@@ -10,7 +10,30 @@ const GammaEncodePowerApprox: f32 = 1.0 / LinearEncodePowerApprox;
 const LuminanceEncodeApprox: vec3<f32> = vec3<f32> (0.2126, 0.7152, 0.0722);
 
 const Epsilon:f32 = 0.0000001;
-#define saturate(x)         clamp(x, 0.0, 1.0)
+
+fn saturate(x: f32) -> f32 {
+    return clamp(x, 0.0, 1.0);
+}
+
+fn saturateVec3(x: vec3f) -> vec3f {
+    return clamp(x, vec3f(0.0), vec3f(1.0));
+}
+
+fn saturateEps(x: f32) -> f32 {
+    return clamp(x, Epsilon, 1.0);
+}      
+
+fn maxEps(x: f32) -> f32 {
+    return max(x, Epsilon);
+}
+
+fn maxEpsVec3(x: vec3f) -> vec3f {
+    return max(x, vec3f(Epsilon));
+}
+
+fn absEps(x: f32) -> f32 {
+    return abs(x) + Epsilon;
+}
 
 fn transposeMat3(inMatrix: mat3x3f) -> mat3x3f {
     let i0: vec3<f32> = inMatrix[0];

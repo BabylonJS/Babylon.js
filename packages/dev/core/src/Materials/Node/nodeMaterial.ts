@@ -305,9 +305,13 @@ export class NodeMaterial extends PushMaterial {
         return undefined;
     }
 
-    /** Get the active shader language */
+    /** Gets or sets the active shader language */
     public get shaderLanguage(): ShaderLanguage {
         return this._options.shaderLanguage;
+    }
+
+    public set shaderLanguage(value: ShaderLanguage) {
+        this._options.shaderLanguage = value;
     }
 
     /**

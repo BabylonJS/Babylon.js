@@ -40,8 +40,8 @@ vec3 computeDiffuseLighting(preLightingInfo info, vec3 lightColor) {
 }
 
 #define inline
-vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix){
-    vec4 strq = textureProjectionMatrix * vec4(vPositionW, 1.0);
+vec3 computeProjectionTextureDiffuseLighting(sampler2D projectionLightSampler, mat4 textureProjectionMatrix, vec3 posW){
+    vec4 strq = textureProjectionMatrix * vec4(posW, 1.0);
     strq /= strq.w;
     vec3 textureColor = texture2D(projectionLightSampler, strq.xy).rgb;
     return toLinearSpace(textureColor);

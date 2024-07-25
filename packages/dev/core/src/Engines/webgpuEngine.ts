@@ -368,7 +368,7 @@ export class WebGPUEngine extends AbstractEngine {
 
     // TODO WEBGPU remove those variables when code stabilized
     /** @internal */
-    public dbgShowShaderCode = false;
+    public dbgShowShaderCode = true;
     /** @internal */
     public dbgSanityChecks = true;
     /** @internal */
@@ -1994,12 +1994,14 @@ export class WebGPUEngine extends AbstractEngine {
         return {
             vertexStage: {
                 module: this._device.createShaderModule({
+                    label: "vertex",
                     code: vertexShader,
                 }),
                 entryPoint: "main",
             },
             fragmentStage: {
                 module: this._device.createShaderModule({
+                    label: "fragment",
                     code: fragmentShader,
                 }),
                 entryPoint: "main",
