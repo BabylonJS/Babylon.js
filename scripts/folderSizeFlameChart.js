@@ -4,7 +4,7 @@
 
 // This script generates an interactive flame chart for file/folder sizes.
 // node folderSizeFlameChart.js [pattern=**/*] [outputFile=FoldersSizes]
-// Example: node folderSizeFlameChart.js **/*.ts,!**/*.d.ts,!**/test/**
+// Example: node folderSizeFlameChart.js . "**/*.ts,!**/*.d.ts,!**/test/**"
 
 const child_process = require("child_process");
 const fs = require("fs");

@@ -7,6 +7,7 @@
     "scripts": {
         "start:web": "npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/index.html",
         "start:bundle-test": "npm run bundle && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/bundle-test.html",
+        "start:coverage": "npm run coverage && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/coverage.html",
         "preserve": "npm run build",
         "serve": "vite",
         "build": "npm run compile",
@@ -14,7 +15,8 @@
         "compile": "tsc -b tsconfig.build.json",
         "bundle": "rollup -c rollup.config.analyze.mjs",
         "test": "echo \"Error: no test specified\" && exit 1",
-        "analyze": "npm run clean && npm run bundle && node ../../../scripts/folderSizeFlameChart dist/analyze **/*.js dist/analyze/flameChart"
+        "analyze": "rimraf dist/analyze && npm run bundle && node ../../../scripts/folderSizeFlameChart dist/analyze \"**/*.js\" dist/analyze/flameChart",
+        "coverage": "rimraf dist/coverage && rollup -c rollup.config.instrument.mjs && nyc --exclude-node-modules=false instrument dist/coverage/original dist/coverage/instrumented"
     },
     "dependencies": {
         "@dev/core": "1.0.0",
@@ -28,6 +30,8 @@
         "@rollup/plugin-typescript": "^11.1.6",
         "chalk": "^5.3.0",
         "commondir": "^1.0.1",
+        "nyc": "^17.0.0",
+        "open": "^10.1.0",
         "rollup-plugin-visualizer": "^5.12.0",
         "vite": "^5.3.3"
     }
