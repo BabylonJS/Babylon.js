@@ -4,10 +4,10 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     var color: vec3f;
 // Geometry
     #if   DEBUGMODE == 1
-        color = vPositionW.rgb;
+        color = fragmentInputs.vPositionW.rgb;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 2 && defined(NORMAL)
-        color = vNormalW.rgb;
+        color = fragmentInputs.vNormalW.rgb;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 3 && defined(BUMP) || DEBUGMODE == 3 && defined(PARALLAX) || DEBUGMODE == 3 && defined(ANISOTROPIC)
         // Tangents
@@ -197,7 +197,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
 
     fragmentOutputs.color = vec4f(color, 1.0);
     #ifdef PREPASS
-        fragmentOutputs.fragData0 = toLinearSpace(color); // linear to cancel gamma transform in prepass
+        fragmentOutputs.fragData0 = toLinearSpaceVec3(color); // linear to cancel gamma transform in prepass
         fragmentOutputs.fragData1 = vec4f(0., 0., 0., 0.); // tag as no SSS
     #endif
 

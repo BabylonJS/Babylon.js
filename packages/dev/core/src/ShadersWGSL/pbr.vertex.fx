@@ -135,7 +135,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
-    vertexOutputs.vCurrentPosition = viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
     vertexOutputs.vPreviousPosition = previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
 #endif
 
@@ -148,7 +148,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #include<prePassVertex>
 
 #ifdef NORMAL
-    var normalWorld: mat3x3f =  mat3x3f(finalWorld);
+    var normalWorld: mat3x3f =  mat3x3f(finalWorld[0].xyz, finalWorld[1].xyz, finalWorld[2].xyz);
 
     #if defined(INSTANCES) && defined(THIN_INSTANCES)
         vertexOutputs.vNormalW = normalUpdated /  vec3f(dot(normalWorld[0], normalWorld[0]), dot(normalWorld[1], normalWorld[1]), dot(normalWorld[2], normalWorld[2]));
@@ -162,7 +162,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
     #endif
 
     #if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-        var reflectionVector: vec3f =  vec3f(reflectionMatrix *  vec4f(vNormalW, 0)).xyz;
+        var reflectionVector: vec3f =  (uniforms.reflectionMatrix *  vec4f(vertexOutputs.vNormalW, 0)).xyz;
         #ifdef REFLECTIONMAP_OPPOSITEZ
             reflectionVector.z *= -1.0;
         #endif
@@ -174,12 +174,12 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #ifdef MULTIVIEW
 	if (gl_ViewID_OVR == 0u) {
-		vertexOutputs.position = viewProjection * worldPos;
+		vertexOutputs.position = scene.viewProjection * worldPos;
 	} else {
-		vertexOutputs.position = viewProjectionR * worldPos;
+		vertexOutputs.position = scene.viewProjectionR * worldPos;
 	}
 #else
-	vertexOutputs.position = viewProjection * worldPos;
+	vertexOutputs.position = scene.viewProjection * worldPos;
 #endif
 
 #if DEBUGMODE > 0

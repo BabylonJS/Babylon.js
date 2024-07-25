@@ -39,13 +39,10 @@
 // Reflection
 #ifdef REFLECTION
     #ifdef REFLECTIONMAP_3D
-        #define sampleReflection(s, c) textureCube(s, c)
-
         var reflectionSamplerSampler: sampler;
         var reflectionSampler: texture_cube<f32>;
         
         #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
         #else
             var reflectionLowSamplerSampler: sampler;
             var reflectionLowSampler: texture_cube<f32>;
@@ -58,13 +55,11 @@
             var irradianceSampler: texture_cube<f32>;
         #endif
     #else
-        #define sampleReflection(s, c) texture2D(s, c)
 
         var reflectionSamplerSampler: sampler;
         var reflectionSampler: texture_2d<f32>;
 
         #ifdef LODBASEDMICROSFURACE
-            #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
         #else
             var reflectionLowSamplerSampler: sampler;
             var reflectionLowSampler: texture_2d<f32>;
@@ -89,7 +84,7 @@
 
 #ifdef ENVIRONMENTBRDF
     var environmentBrdfSamplerSampler: sampler;
-    var environmentBrdfSampler: texture_cube<f32>;
+    var environmentBrdfSampler: texture_2d<f32>;
 #endif
 
 // SUBSURFACE
@@ -98,30 +93,30 @@
         #ifdef SS_REFRACTIONMAP_3D
             #define sampleRefraction(s, c) textureCube(s, c)
             
-            var reflectionSamplerSampler: sampler;
-            var reflectionSampler: texture_cube<f32>;
+            var refractionSamplerSampler: sampler;
+            var refractionSampler: texture_cube<f32>;
 
             #ifdef LODBASEDMICROSFURACE
                 #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
             #else
-                var reflectionLowSamplerSampler: sampler;
-                var reflectionLowSampler: texture_cube<f32>;
-                var reflectionHighSamplerSampler: sampler;
-                var reflectionHighSampler: texture_cube<f32>;
+                var refractionLowSamplerSampler: sampler;
+                var refractionLowSampler: texture_cube<f32>;
+                var refractionHighSamplerSampler: sampler;
+                var refractionHighSampler: texture_cube<f32>;
             #endif
         #else
             #define sampleRefraction(s, c) texture2D(s, c)
             
-            var reflectionSamplerSampler: sampler;
-            var reflectionSampler: texture_2d<f32>;
+            var refractionSamplerSampler: sampler;
+            var refractionSampler: texture_2d<f32>;
 
             #ifdef LODBASEDMICROSFURACE
                 #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
             #else
-                var reflectionLowSamplerSampler: sampler;
-                var reflectionLowSampler: texture_2d<f32>;
-                var reflectionHighSamplerSampler: sampler;
-                var reflectionHighSampler: texture_2d<f32>;
+                var refractionLowSamplerSampler: sampler;
+                var refractionLowSampler: texture_2d<f32>;
+                var refractionHighSamplerSampler: sampler;
+                var refractionHighSampler: texture_2d<f32>;
             #endif
         #endif
     #endif

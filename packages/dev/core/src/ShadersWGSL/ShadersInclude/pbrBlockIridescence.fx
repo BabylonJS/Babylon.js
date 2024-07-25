@@ -56,7 +56,7 @@ struct iridescenceOutParams
 
             topIor = mix(1.0, vClearCoatRefractionParams.w - 1., clearCoatIntensity);
             // Infer new NdotV from NdotVUnclamped...
-            viewAngle = sqrt(1.0 + square(1.0 / topIor) * (square(NdotVUnclamped) - 1.0));
+            viewAngle = sqrt(1.0 + ((1.0 / topIor) * (1.0 / topIor)) * ((NdotVUnclamped * NdotVUnclamped) - 1.0));
         #endif
 
         var iridescenceFresnel: vec3f = evalIridescence(topIor, iridescenceIOR, viewAngle, iridescenceThickness, specularEnvironmentR0);

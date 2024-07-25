@@ -142,7 +142,7 @@ struct clearcoatOutParams
 
             #ifdef CLEARCOAT_TINT_TEXTURE
                 #ifdef CLEARCOAT_TINT_GAMMATEXTURE
-                    clearCoatColor *= toLinearSpace(clearCoatTintMapData.rgb);
+                    clearCoatColor *= toLinearSpaceVec3(clearCoatTintMapData.rgb);
                 #else
                     clearCoatColor *= clearCoatTintMapData.rgb;
                 #endif

@@ -318,17 +318,18 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         return texture;
     }
 
-    // Ignore for now as we inject const for numeric defines
-    // public postProcessor(code: string, defines: string[]) {
-    //     const defineToValue: { [key: string]: string } = {};
-    //     for (const define of defines) {
-    //         const parts = define.split(/ +/);
-    //         defineToValue[parts[1]] = parts.length > 2 ? parts[2] : "";
-    //     }
-    //     return code.replace(/\$(\w+)\$/g, (_, p1) => {
-    //         return defineToValue[p1] ?? p1;
-    //     });
-    // }
+    // We need to process defines which are directly in the files themselves
+    public postProcessor(code: string) {
+        const definePattern = /#define (.+?) (.+?)$/gm;
+
+        let match: RegExpExecArray | null;
+
+        while ((match = definePattern.exec(code)) !== null) {
+            code = code.replace(new RegExp(match[1], "g"), match[2]);
+        }
+
+        return code;
+    }
 
     public finalizeShaders(vertexCode: string, fragmentCode: string): { vertexCode: string; fragmentCode: string } {
         const fragCoordCode =

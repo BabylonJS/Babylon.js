@@ -13,12 +13,12 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		var TBN: mat3x3f = vTBN;
 	#elif defined(BUMP)
 		// flip the uv for the backface
-		var TBNUV: vec2f = select(-vBumpUV, vBumpUV, fragmentInputs.frontFacing);
-		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, vPositionW, TBNUV, vTangentSpaceParams);
+		var TBNUV: vec2f = select(-fragmentInputs.vBumpUV, fragmentInputs.vBumpUV, fragmentInputs.frontFacing);
+		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV, uniforms.vTangentSpaceParams);
 	#else
 		// flip the uv for the backface
 		var TBNUV: vec2f = select(-vDetailUV, vDetailUV, fragmentInputs.frontFacing);
-		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, vPositionW, TBNUV,  vec2f(1., 1.));
+		var TBN: mat3x3f = cotangent_frame(normalW * normalScale, input.vPositionW, TBNUV,  vec2f(1., 1.));
 	#endif
 #elif defined(ANISOTROPIC)
 	#if defined(TANGENT) && defined(NORMAL)
@@ -26,7 +26,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	#else
 		// flip the uv for the backface
 		var TBNUV: vec2f = select( -vMainUV1, vMainUV1, fragmentInputs.frontFacing);
-		var TBN: mat3x3f = cotangent_frame(normalW, vPositionW, TBNUV,  vec2f(1., 1.));
+		var TBN: mat3x3f = cotangent_frame(normalW, input.vPositionW, TBNUV,  vec2f(1., 1.));
 	#endif
 #endif
 
@@ -34,14 +34,14 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	var invTBN: mat3x3f = transposeMat3(TBN);
 
 	#ifdef PARALLAXOCCLUSION
-		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, vBumpUV, vBumpInfos.z);
+		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, fragmentInputs.vBumpUV, uniforms.vBumpInfos.z);
 	#else
 		uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
 	#endif
 #endif
 
 #ifdef DETAIL
-	var detailColor: vec4f = textureSample(detail, detailSampler, vDetailUV + uvOffset);
+	var detailColor: vec4f = textureSample(detailSampler, detailSamplerSampler, vDetailUV + uvOffset);
     var detailNormalRG: vec2f = detailColor.wy * 2.0 - 1.0;
     var detailNormalB: f32 = sqrt(1. - saturate(dot(detailNormalRG, detailNormalRG)));
     var detailNormal: vec3f =  vec3f(detailNormalRG, detailNormalB);
@@ -52,25 +52,25 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(textureSample(bump, bumpSampler, vBumpUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(textureSample(bumpSampler, bumpSamplerSampler, vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize( mat3x3f(normalMatrix) * normalW);
 	#elif !defined(DETAIL)
-		normalW = perturbNormal(TBN, textureSample(bump, bumpSampler, vBumpUV + uvOffset).xyz, vBumpInfos.y);
+		normalW = perturbNormal(TBN, textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz, uniforms.vBumpInfos.y);
     #else
-        var bumpNormal: vec3f = textureSample(bump, bumpSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
+        var bumpNormal: vec3f = textureSample(bumpSampler, bumpSamplerSampler, vBumpUV + uvOffset).xyz * 2.0 - 1.0;
         // Reference for normal blending: https://blog.selfshadow.com/publications/blending-in-detail/
         #if DETAIL_NORMALBLENDMETHOD == 0 // whiteout
-            detailNormal.xy *= vDetailInfos.z;
+            detailNormal.xy *= uniforms.vDetailInfos.z;
             var blendedNormal: vec3f = normalize( vec3f(bumpNormal.xy + detailNormal.xy, bumpNormal.z * detailNormal.z));
         #elif DETAIL_NORMALBLENDMETHOD == 1 // RNM
-            detailNormal.xy *= vDetailInfos.z;
+            detailNormal.xy *= uniforms.vDetailInfos.z;
             bumpNormal +=  vec3f(0.0, 0.0, 1.0);
             detailNormal *=  vec3f(-1.0, -1.0, 1.0);
             var blendedNormal: vec3f = bumpNormal * dot(bumpNormal, detailNormal) / bumpNormal.z - detailNormal;
         #endif
-        normalW = perturbNormalBase(TBN, blendedNormal, vBumpInfos.y);
+        normalW = perturbNormalBase(TBN, blendedNormal, uniforms.vBumpInfos.y);
 	#endif
 #elif defined(DETAIL)
         detailNormal.xy *= vDetailInfos.z;
-		normalW = perturbNormalBase(TBN, detailNormal, vDetailInfos.z);
+		normalW = perturbNormalBase(TBN, detailNormal, uniforms.vDetailInfos.z);
 #endif

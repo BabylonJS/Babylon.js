@@ -41,7 +41,7 @@ aggShadow = aggShadow / numLights;
     #endif
 
     finalIrradiance *= surfaceAlbedo.rgb;
-    finalIrradiance *= vLightingIntensity.z;
+    finalIrradiance *= uniforms.vLightingIntensity.z;
     finalIrradiance *= aoOut.ambientOcclusionColor;
 #endif
 
@@ -50,7 +50,7 @@ aggShadow = aggShadow / numLights;
     var finalSpecular: vec3f = specularBase;
     finalSpecular = max(finalSpecular, vec3f(0.0));
 
-    var finalSpecularScaled: vec3f = finalSpecular * vLightingIntensity.x * vLightingIntensity.w;
+    var finalSpecularScaled: vec3f = finalSpecular * uniforms.vLightingIntensity.x * uniforms.vLightingIntensity.w;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
         finalSpecularScaled *= energyConservationFactor;
@@ -66,7 +66,7 @@ aggShadow = aggShadow / numLights;
     var finalRadiance: vec3f = reflectionOut.environmentRadiance.rgb;
     finalRadiance *= subSurfaceOut.specularEnvironmentReflectance;
 
-    var finalRadianceScaled: vec3f = finalRadiance * vLightingIntensity.z;
+    var finalRadianceScaled: vec3f = finalRadiance * uniforms.vLightingIntensity.z;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
         finalRadianceScaled *= energyConservationFactor;
@@ -82,7 +82,7 @@ aggShadow = aggShadow / numLights;
     var finalSheen: vec3f = sheenBase * sheenOut.sheenColor;
     finalSheen = max(finalSheen, vec3f(0.0));
 
-    var finalSheenScaled: vec3f = finalSheen * vLightingIntensity.x * vLightingIntensity.w;
+    var finalSheenScaled: vec3f = finalSheen * uniforms.vLightingIntensity.x * uniforms.vLightingIntensity.w;
     
     #if defined(CLEARCOAT) && defined(REFLECTION) && defined(ENVIRONMENTBRDF)
         sheenOut.finalSheenRadianceScaled *= clearcoatOut.conservationFactor;
@@ -98,7 +98,7 @@ aggShadow = aggShadow / numLights;
     var finalClearCoat: vec3f = clearCoatBase;
     finalClearCoat = max(finalClearCoat, vec3f(0.0));
 
-    var finalClearCoatScaled: vec3f = finalClearCoat * vLightingIntensity.x * vLightingIntensity.w;
+    var finalClearCoatScaled: vec3f = finalClearCoat * uniforms.vLightingIntensity.x * uniforms.vLightingIntensity.w;
 
     #if defined(ENVIRONMENTBRDF) && defined(MS_BRDF_ENERGY_CONSERVATION)
         finalClearCoatScaled *= clearcoatOut.energyConservationFactorClearCoat;

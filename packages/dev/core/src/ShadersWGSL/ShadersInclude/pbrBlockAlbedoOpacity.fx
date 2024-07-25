@@ -36,7 +36,7 @@ fn albedoOpacityBlock(
         #endif
 
         #ifdef GAMMAALBEDO
-            surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
+            surfaceAlbedo *= toLinearSpaceVec3(albedoTexture.rgb);
         #else
             surfaceAlbedo *= albedoTexture.rgb;
         #endif

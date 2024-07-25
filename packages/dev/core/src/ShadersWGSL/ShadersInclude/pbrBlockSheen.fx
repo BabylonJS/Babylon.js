@@ -109,11 +109,11 @@
             var sheenColor: vec3f = vSheenColor.rgb;
             #ifdef SHEEN_TEXTURE
                 #ifdef SHEEN_GAMMATEXTURE
-                    sheenColor.rgb *= toLinearSpace(sheenMapData.rgb);
+                    sheenColor *= toLinearSpaceVec3(sheenMapData.rgb);
                 #else
-                    sheenColor.rgb *= sheenMapData.rgb;
+                    sheenColor *= sheenMapData.rgb;
                 #endif
-                sheenColor.rgb *= sheenMapLevel;
+                sheenColor *= sheenMapLevel;
             #endif
             
             #ifdef SHEEN_ROUGHNESS

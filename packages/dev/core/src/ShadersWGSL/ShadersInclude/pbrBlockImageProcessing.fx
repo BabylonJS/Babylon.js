@@ -11,7 +11,7 @@
     finalColor = applyImageProcessing(finalColor);
 #endif
 
-    finalColor.a *= visibility;
+    finalColor.a *= mesh.visibility;
 
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.

@@ -114,7 +114,7 @@ fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 #endif
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR
-	return computeEquirectangularCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+	return computeEquirectangularCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
@@ -122,23 +122,23 @@ fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
-	return computePlanarCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+	return computePlanarCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_CUBIC
 	#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-    	return computeCubicLocalCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix, vReflectionSize, vReflectionPosition);
+    	return computeCubicLocalCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix, vReflectionSize, vReflectionPosition);
 	#else
-    	return computeCubicCoords(worldPos, worldNormal, vEyePosition.xyz, reflectionMatrix);
+    	return computeCubicCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 	#endif
 #endif
 
 #ifdef REFLECTIONMAP_PROJECTION
-	return computeProjectionCoords(worldPos, view, reflectionMatrix);
+	return computeProjectionCoords(worldPos, view, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_SKYBOX
-	return computeSkyBoxCoords(vPositionUVW, reflectionMatrix);
+	return computeSkyBoxCoords(vPositionUVW, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_EXPLICIT

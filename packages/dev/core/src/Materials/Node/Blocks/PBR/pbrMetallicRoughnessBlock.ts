@@ -1173,7 +1173,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         state.compilationString += state._emitCodeFromInclude("pbrBlockNormalFinal", comments, {
             replaceStrings: [
                 { search: /vPositionW/g, replace: worldPosVarName + ".xyz" },
-                { search: /vEyePosition.w/g, replace: (isWebGPU ? "uniforms." : "") + this._invertNormalName },
+                { search: /vEyePosition.w/g, replace: this._invertNormalName },
             ],
         });
 
@@ -1367,13 +1367,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         let replaceStrings = [
             { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
-            { search: /vAmbientColor/g, replace: aoColor + ` * ${isWebGPU ? "uniforms." : ""}ambientFromScene` },
-            { search: /vAmbientInfos\.w/g, replace: aoDirectLightIntensity },
+            { search: /vAmbientColor/g, replace: aoColor + ` * ambientFromScene` },
         ];
 
         if (isWebGPU) {
-            replaceStrings[0] = { search: /var finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" };
-            replaceStrings.push({ search: /vLightingIntensity/g, replace: "uniforms.vLightingIntensity" });
+            replaceStrings[0] = { search: /var finalEmissive[\s\S]*?finalEmissive\*=uniforms.vLightingIntensity\.y;/g, replace: "" };
+            replaceStrings.push({ search: /uniforms.vAmbientInfos/g, replace: aoDirectLightIntensity });
+        } else {
+            replaceStrings.push({ search: /vAmbientInfos/g, replace: aoDirectLightIntensity });
         }
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments, {
@@ -1386,8 +1387,14 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         });
 
         // _____________________________ Apply image processing ________________________
+        if (isWebGPU) {
+            replaceStrings = [{ search: /mesh.visibility/g, replace: "1." }];
+        } else {
+            replaceStrings = [{ search: /visibility/g, replace: "1." }];
+        }
+
         state.compilationString += state._emitCodeFromInclude("pbrBlockImageProcessing", comments, {
-            replaceStrings: [{ search: /visibility/g, replace: "1." }],
+            replaceStrings: replaceStrings,
         });
 
         // _____________________________ Generate debug code ________________________
