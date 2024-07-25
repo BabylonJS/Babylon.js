@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
 
     const port = env.VIEWER_PORT ?? 1342;
     console.log(`${chalk.bold(`Web Test App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/index.html`)}`);
-    console.log(`${chalk.bold(`Bundle Test App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/bundle-test.html`)}`);
+    console.log(`${chalk.bold(`Analyze Verification App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/analyze.html`)}`);
     console.log(`${chalk.bold(`Coverage App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/coverage.html`)}`);
 
     return {
