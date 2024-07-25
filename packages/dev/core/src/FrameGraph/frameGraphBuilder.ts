@@ -1,11 +1,15 @@
 import type { FrameGraphConnectionPoint } from "./frameGraphBlockConnectionPoint";
-import type { Scene } from "core/scene";
-import { EffectRenderer } from "core/Materials/effectRenderer";
-import type { DrawWrapper } from "core/Materials/drawWrapper";
-import type { Nullable } from "core/types";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { Constants } from "core/Engines/constants";
+import type { Scene } from "../scene";
+import { EffectRenderer } from "../Materials/effectRenderer";
+import type { DrawWrapper } from "../Materials/drawWrapper";
+import type { Nullable } from "../types";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+import type { IRenderTargetTexture, RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { Constants } from "../Engines/constants";
+import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
+import type { RenderTargetCreationOptions, TextureSize } from "../Materials/Textures/textureCreationOptions";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
 
 interface FrameGraphExecute {
     condition: (() => boolean) | undefined;
@@ -16,8 +20,8 @@ interface FrameGraphExecute {
  * Class used to implement the frame graph builder
  */
 export class FrameGraphBuilder {
-    /** Engine used by the frame graph */
-    public engine: AbstractEngine;
+    private _engine: AbstractEngine;
+    private _copyTexture: CopyTextureToTexture;
 
     /** Gets or sets the list of non connected mandatory inputs */
     public notConnectedNonOptionalInputs: FrameGraphConnectionPoint[] = [];
@@ -40,11 +44,12 @@ export class FrameGraphBuilder {
     private _effectRenderer: EffectRenderer;
 
     constructor(engine: AbstractEngine) {
-        this.engine = engine;
+        this._engine = engine;
         this.buildId = 0;
         this.verbose = false;
         this.debugTextures = false;
         this._effectRenderer = new EffectRenderer(engine);
+        this._copyTexture = new CopyTextureToTexture(engine);
     }
 
     public addExecuteFunction(func: () => void) {
@@ -53,9 +58,9 @@ export class FrameGraphBuilder {
 
     public bindRenderTargetWrapper(wrapper: Nullable<RenderTargetWrapper>) {
         if (!wrapper) {
-            this.engine.restoreDefaultFramebuffer();
+            this._engine.restoreDefaultFramebuffer();
         } else {
-            this.engine.bindFramebuffer(wrapper);
+            this._engine.bindFramebuffer(wrapper);
         }
     }
 
@@ -67,18 +72,26 @@ export class FrameGraphBuilder {
         this._effectRenderer.saveStates();
         this._effectRenderer.setViewport();
 
-        this.engine.enableEffect(drawWrapper);
-        this.engine.setState(false);
-        this.engine.setDepthBuffer(false);
-        this.engine.setDepthWrite(false);
+        this._engine.enableEffect(drawWrapper);
+        this._engine.setState(false);
+        this._engine.setDepthBuffer(false);
+        this._engine.setDepthWrite(false);
 
         this._effectRenderer.bindBuffers(drawWrapper.effect);
         customBindings?.();
         this._effectRenderer.draw();
         this._effectRenderer.restoreStates();
-        this.engine.setAlphaMode(Constants.ALPHA_DISABLE);
+        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
 
         return true;
+    }
+
+    public createRenderTargetTexture(size: TextureSize, options: RenderTargetCreationOptions) {
+        return this._engine.createRenderTargetTexture(size, options);
+    }
+
+    public copyTextureToTexture(sourceTexture: InternalTexture | ThinTexture, destinationTexture: Nullable<RenderTargetWrapper | IRenderTargetTexture>) {
+        this._copyTexture.copy(sourceTexture, destinationTexture);
     }
 
     /**
@@ -86,6 +99,7 @@ export class FrameGraphBuilder {
      */
     public _dispose() {
         this._effectRenderer.dispose();
+        this._copyTexture.dispose();
     }
 
     /**

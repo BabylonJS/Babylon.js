@@ -18,7 +18,7 @@ import type { Color4 } from "../Maths/math.color";
 import { Engine } from "../Engines/engine";
 import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
 import { FrameGraphClearBlock } from "./Blocks/frameGraphClearBlock";
-import type { AbstractEngine } from "core/Engines/abstractEngine";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 // declare FRAMEGRAPHEDITOR namespace for compilation issue
 declare let FRAMEGRAPHEDITOR: any;
@@ -390,7 +390,7 @@ export class FrameGraph {
         for (const parsedBlock of source.blocks) {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
-                const block: FrameGraphBlock = new blockType();
+                const block: FrameGraphBlock = new blockType("", this._engine);
                 block._deserialize(parsedBlock);
                 map[parsedBlock.id] = block;
 
@@ -572,15 +572,15 @@ export class FrameGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new FrameGraphInputBlock("BackBuffer", FrameGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new FrameGraphInputBlock("BackBuffer", this._engine, FrameGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new FrameGraphClearBlock("Clear");
+        const clear = new FrameGraphClearBlock("Clear", this._engine);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new FrameGraphOutputBlock("Frame graph Output");
+        const output = new FrameGraphOutputBlock("Frame graph Output", this._engine);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;

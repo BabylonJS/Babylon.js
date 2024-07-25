@@ -6,13 +6,14 @@ import { RegisterClass } from "../../Misc/typeStore";
 import type { FrameGraphBuilder } from "../frameGraphBuilder";
 import type { Camera } from "../../Cameras/camera";
 import type { ThinTexture } from "../../Materials/Textures/thinTexture";
-import type { RenderTargetCreationOptions, TextureSize } from "core/Materials/Textures/textureCreationOptions";
+import type { RenderTargetCreationOptions, TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
-import type { Vector3 } from "core/Maths/math.vector";
-import type { RenderTargetWrapper } from "core/Engines/renderTargetWrapper";
-import { Texture } from "core/Materials/Textures/texture";
-import type { InternalTexture } from "core/Materials/Textures/internalTexture";
-import type { Nullable } from "core/types";
+import type { Vector3 } from "../../Maths/math.vector";
+import type { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
+import { Texture } from "../../Materials/Textures/texture";
+import type { InternalTexture } from "../../Materials/Textures/internalTexture";
+import type { Nullable } from "../../types";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 export type FrameGraphInputType = ThinTexture | RenderTargetWrapper | Camera;
 
@@ -60,10 +61,11 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
     /**
      * Creates a new FrameGraphInputBlock
      * @param name defines the block name
+     * @param engine defines the hosting engine
      * @param type defines the type of the input (can be set to FrameGraphBlockConnectionPointTypes.Undefined)
      */
-    public constructor(name: string, type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.Undefined) {
-        super(name);
+    public constructor(name: string, engine: AbstractEngine, type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.Undefined) {
+        super(name, engine);
         this._type = type;
         this._isInput = true;
         this.registerOutput("output", type);
@@ -164,22 +166,22 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
         }
 
         if ((this.type & FrameGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-            const options = this.creationOptions as FrameGraphInputTextureCreationOptions;
+            const textureCreateOptions = this.creationOptions as FrameGraphInputTextureCreationOptions;
 
-            if (!options) {
+            if (!textureCreateOptions) {
                 throw new Error(`FrameGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
             this._releaseTexture();
 
-            const size = options.sizeIsPercentage
+            const size = textureCreateOptions.sizeIsPercentage
                 ? {
-                      width: (builder.engine.getRenderWidth() * (options.size as { width: number }).width) / 100,
-                      height: (builder.engine.getRenderHeight() * (options.size as { height: number }).height) / 100,
+                      width: (this._engine.getRenderWidth() * (textureCreateOptions.size as { width: number }).width) / 100,
+                      height: (this._engine.getRenderHeight() * (textureCreateOptions.size as { height: number }).height) / 100,
                   }
-                : options.size;
+                : textureCreateOptions.size;
 
-            this.value = builder.engine.createRenderTargetTexture(size, options.options);
+            this.value = builder.createRenderTargetTexture(size, textureCreateOptions.options);
 
             if (builder.debugTextures && builder.scene) {
                 this._textureDebug = new Texture(null, builder.scene);

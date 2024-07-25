@@ -4,23 +4,27 @@ import { RegisterClass } from "../../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
 import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import type { PostProcess } from "core/PostProcesses/postProcess";
-import { BlackAndWhitePostProcess } from "core/PostProcesses/blackAndWhitePostProcess";
-import type { Nullable } from "core/types";
-import { Constants } from "core/Engines";
+import { BlackAndWhitePostProcess } from "../../../PostProcesses/blackAndWhitePostProcess";
+import type { Nullable } from "../../../types";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import { Constants } from "../../../Engines/constants";
+import type { Observer } from "../../../Misc/observable";
+import type { Effect } from "../../../Materials/effect";
 
 /**
  * Block that implements the black and white post process
  */
 export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
-    private _postProcess: Nullable<PostProcess> = null;
+    private _postProcess: BlackAndWhitePostProcess;
+    private _ppObserver: Nullable<Observer<Effect>> = null;
 
     /**
      * Create a new FrameGraphBlackAndWhitePostProcess
      * @param name defines the block name
+     * @param engine defines the hosting engine
      */
-    public constructor(name: string) {
-        super(name);
+    public constructor(name: string, engine: AbstractEngine) {
+        super(name, engine);
 
         this.registerInput("source", FrameGraphBlockConnectionPointTypes.Texture);
         this.registerInput("destination", FrameGraphBlockConnectionPointTypes.Texture);
@@ -29,28 +33,23 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
         this.source.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
         this.destination.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.destination;
-    }
 
-    private _degree = 1;
+        this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, undefined, engine);
+        this._postProcess.externalTextureSamplerBinding = true;
+    }
 
     /** Degree of conversion to black and white (default: 1 - full b&w conversion) */
     @editableInPropertyPage("Degree", PropertyTypeForEdition.Float, "PROPERTIES")
     public get degree(): number {
-        return this._degree;
+        return this._postProcess.degree;
     }
 
     public set degree(value: number) {
-        if (this._degree === value) {
-            return;
-        }
-
-        this._degree = value;
-        if (this._postProcess) {
-            (this._postProcess as BlackAndWhitePostProcess).degree = value;
-        }
+        this._postProcess.degree = value;
     }
 
     /** Sampling mode used to sample from the source texture */
+    @editableInPropertyPage("Source sampling mode", PropertyTypeForEdition.Int, "PROPERTIES")
     public sourceSamplingMode = Constants.TEXTURE_NEAREST_SAMPLINGMODE;
 
     /**
@@ -82,13 +81,11 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
     }
 
     public override isReady(): boolean {
-        return this._postProcess?.isReady() ?? true;
+        return this._postProcess.isReady();
     }
 
     public override dispose() {
-        this._postProcess?.dispose();
-        this._postProcess = null;
-
+        this._postProcess.dispose();
         super.dispose();
     }
 
@@ -103,10 +100,8 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
             throw new Error("FrameGraphBlackAndWhitePostProcess: Source is not connected or is not a texture");
         }
 
-        this._postProcess?.dispose();
-        this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, this.sourceSamplingMode, builder.engine);
-        this._postProcess.externalTextureSamplerBinding = true;
-        this._postProcess.onApplyObservable.add((effect) => {
+        this._postProcess.onApplyObservable.remove(this._ppObserver);
+        this._ppObserver = this._postProcess.onApplyObservable.add((effect) => {
             effect._bindTexture("textureSampler", sourceTexture);
         });
 
@@ -114,9 +109,13 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
         const rtWrapper = destination?.getValueAsRenderTargetWrapper();
         if (rtWrapper) {
             builder.addExecuteFunction(() => {
+                if (sourceTexture.samplingMode !== this.sourceSamplingMode) {
+                    this._engine.updateTextureSamplingMode(this.sourceSamplingMode, sourceTexture);
+                }
+
                 builder.bindRenderTargetWrapper(rtWrapper);
 
-                this._postProcess!.renderToFrameGraph(builder);
+                this._postProcess.renderToFrameGraph(builder);
 
                 builder.bindRenderTargetWrapper(null);
             });
@@ -132,12 +131,14 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
     public override serialize(): any {
         const serializationObject = super.serialize();
         serializationObject.degree = this.degree;
+        serializationObject.sourceSamplingMode = this.sourceSamplingMode;
         return serializationObject;
     }
 
     public override _deserialize(serializationObject: any) {
         super._deserialize(serializationObject);
         this.degree = serializationObject.degree;
+        this.sourceSamplingMode = serializationObject.sourceSamplingMode;
     }
 }
 

@@ -4,20 +4,19 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
 import type { FrameGraphBuilder } from "../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
-import { CopyTextureToTexture } from "core/Misc";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Block used to generate the final graph
  */
 export class FrameGraphOutputBlock extends FrameGraphBlock {
-    private _copyTexture: CopyTextureToTexture | undefined;
-
     /**
      * Create a new FrameGraphOutputBlock
      * @param name defines the block name
+     * @param engine defines the hosting engine
      */
-    public constructor(name: string) {
-        super(name);
+    public constructor(name: string, engine: AbstractEngine) {
+        super(name, engine);
 
         this._isUnique = true;
 
@@ -44,19 +43,8 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
         return this._inputs[0];
     }
 
-    public override dispose() {
-        this._copyTexture?.dispose();
-        this._copyTexture = undefined;
-
-        super.dispose();
-    }
-
     protected override _buildBlock(builder: FrameGraphBuilder) {
         super._buildBlock(builder);
-
-        if (!this._copyTexture) {
-            this._copyTexture = new CopyTextureToTexture(builder.engine);
-        }
 
         const inputTexture = this.texture.connectedPoint?.value;
         if (!inputTexture || !inputTexture.value) {
@@ -69,7 +57,7 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
         }
 
         builder.addExecuteFunction(() => {
-            this._copyTexture!.copy(internalTexture, null);
+            builder.copyTextureToTexture(internalTexture, null);
         });
     }
 

@@ -6,8 +6,9 @@ import type { FrameGraphBuilder } from "./frameGraphBuilder";
 import { Observable } from "../Misc/observable";
 import type { Nullable } from "../types";
 import type { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
-import { Logger } from "core/Misc/logger";
+import { Logger } from "../Misc/logger";
 import { FrameGraphConnectionPoint, FrameGraphConnectionPointDirection } from "./frameGraphBlockConnectionPoint";
+import type { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Defines a block that can be used inside a frame graph
@@ -20,6 +21,7 @@ export class FrameGraphBlock {
     protected _isTeleportIn = false;
     protected _isDebug = false;
     protected _isUnique = false;
+    protected _engine: AbstractEngine;
 
     /**
      * Gets an observable raised when the block is built
@@ -216,9 +218,11 @@ export class FrameGraphBlock {
     /**
      * Creates a new FrameGraphBlock
      * @param name defines the block name
+     * @param engine defines the hosting engine
      */
-    public constructor(name: string) {
+    public constructor(name: string, engine: AbstractEngine) {
         this._name = name;
+        this._engine = engine;
         this.uniqueId = UniqueIdGenerator.UniqueId;
     }
 
