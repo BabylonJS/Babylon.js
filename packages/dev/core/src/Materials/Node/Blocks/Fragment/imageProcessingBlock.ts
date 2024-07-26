@@ -94,13 +94,31 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
-            await import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration");
-            await import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions");
+            await import(
+                /* webpackChunkName: "helperFunctions.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/helperFunctions"
+            );
+            await import(
+                /* webpackChunkName: "imageProcessingDeclaration.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"
+            );
+            await import(
+                /* webpackChunkName: "imageProcessingFunctions.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"
+            );
         } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
-            await import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration");
-            await import("../../../../Shaders/ShadersInclude/imageProcessingFunctions");
+            await import(
+                /* webpackChunkName: "helperFunctions.glsl" */
+                "../../../../Shaders/ShadersInclude/helperFunctions"
+            );
+            await import(
+                /* webpackChunkName: "imageProcessingDeclaration.glsl" */
+                "../../../../Shaders/ShadersInclude/imageProcessingDeclaration"
+            );
+            await import(
+                /* webpackChunkName: "imageProcessingFunctions.glsl" */
+                "../../../../Shaders/ShadersInclude/imageProcessingFunctions"
+            );
         }
 
         this._codeIsReady = true;

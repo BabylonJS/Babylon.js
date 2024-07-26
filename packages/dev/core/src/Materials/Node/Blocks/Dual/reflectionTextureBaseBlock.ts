@@ -178,9 +178,15 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction");
+            await import(
+                /* webpackChunkName: "reflectionFunction.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/reflectionFunction"
+            );
         } else {
-            await import("../../../../Shaders/ShadersInclude/reflectionFunction");
+            await import(
+                /* webpackChunkName: "reflectionFunction.glsl" */
+                "../../../../Shaders/ShadersInclude/reflectionFunction"
+            );
         }
 
         this._codeIsReady = true;

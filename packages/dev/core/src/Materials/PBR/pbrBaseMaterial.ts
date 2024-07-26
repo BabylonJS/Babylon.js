@@ -970,12 +970,24 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             }
             this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
 
-            await import("../../ShadersWGSL/pbr.vertex");
-            await import("../../ShadersWGSL/pbr.fragment");
+            await import(
+                /* webpackChunkName: "pbr.vertex.wgsl" */
+                "../../ShadersWGSL/pbr.vertex"
+            );
+            await import(
+                /* webpackChunkName: "pbr.fragment.wgsl" */
+                "../../ShadersWGSL/pbr.fragment"
+            );
             this._shaderLanguage = ShaderLanguage.WGSL;
         } else {
-            await import("../../Shaders/pbr.vertex");
-            await import("../../Shaders/pbr.fragment");
+            await import(
+                /* webpackChunkName: "pbr.vertex.glsl" */
+                "../../Shaders/pbr.vertex"
+            );
+            await import(
+                /* webpackChunkName: "pbr.fragment.glsl" */
+                "../../Shaders/pbr.fragment"
+            );
         }
 
         this._shadersLoaded = true;

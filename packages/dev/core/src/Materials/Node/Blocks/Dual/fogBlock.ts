@@ -97,9 +97,15 @@ export class FogBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration");
+            await import(
+                /* webpackChunkName: "fogFragmentDeclaration.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration"
+            );
         } else {
-            await import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration");
+            await import(
+                /* webpackChunkName: "fogFragmentDeclaration.glsl" */
+                "../../../../Shaders/ShadersInclude/fogFragmentDeclaration"
+            );
         }
 
         this._codeIsReady = true;

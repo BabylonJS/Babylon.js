@@ -54,13 +54,31 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric");
-            await import("../../../../ShadersWGSL/ShadersInclude/packingFunctions");
-            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment");
+            await import(
+                /* webpackChunkName: "shadowMapVertexMetric.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric"
+            );
+            await import(
+                /* webpackChunkName: "packingFunctions.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/packingFunctions"
+            );
+            await import(
+                /* webpackChunkName: "shadowMapFragment.wgsl" */
+                "../../../../ShadersWGSL/ShadersInclude/shadowMapFragment"
+            );
         } else {
-            await import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric");
-            await import("../../../../Shaders/ShadersInclude/packingFunctions");
-            await import("../../../../Shaders/ShadersInclude/shadowMapFragment");
+            await import(
+                /* webpackChunkName: "shadowMapVertexMetric.glsl" */
+                "../../../../Shaders/ShadersInclude/shadowMapVertexMetric"
+            );
+            await import(
+                /* webpackChunkName: "packingFunctions.glsl" */
+                "../../../../Shaders/ShadersInclude/packingFunctions"
+            );
+            await import(
+                /* webpackChunkName: "shadowMapFragment.glsl" */
+                "../../../../Shaders/ShadersInclude/shadowMapFragment"
+            );
         }
 
         this._codeIsReady = true;
