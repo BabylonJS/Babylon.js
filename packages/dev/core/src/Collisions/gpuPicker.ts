@@ -115,6 +115,25 @@ export class GPUPicker {
         return colorData;
     }
 
+    private _generateThinInstanceColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+        const colorData = new Float32Array(4 * instanceCount);
+
+        for (let i = 0; i < instanceCount; i++) {
+            const r = (id & 0xff0000) >> 16;
+            const g = (id & 0x00ff00) >> 8;
+            const b = (id & 0x0000ff) >> 0;
+            onInstance(i, id);
+
+            colorData[i * 4] = r / 255.0;
+            colorData[i * 4 + 1] = g / 255.0;
+            colorData[i * 4 + 2] = b / 255.0;
+            colorData[i * 4 + 3] = 1.0;
+            id++;
+        }
+
+        return colorData;
+    }
+
     /**
      * Set the list of meshes to pick from
      * Set that value to null to clear the list (and avoid leaks)
@@ -185,28 +204,31 @@ export class GPUPicker {
             const r = (id & 0xff0000) >> 16;
             const g = (id & 0x00ff00) >> 8;
             const b = (id & 0x0000ff) >> 0;
-            this._idMap[id] = index;
-            id++;
 
             if (mesh.hasThinInstances) {
-                const colorData = this._generateColorData((mesh as Mesh).thinInstanceCount, id, index, r, g, b, (i, id) => {
+                const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, index, r, g, b, (i, id) => {
                     this._thinIdMap[id] = { meshId: index, thinId: i };
                 });
                 id += (mesh as Mesh).thinInstanceCount;
                 (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
-            } else if (mesh.hasInstances) {
-                const instances = (mesh as Mesh).instances;
-                const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
-                    const instance = instances[i];
-                    this._idMap[id] = this._pickableMeshes.indexOf(instance);
-                });
-                id += instances.length;
-                const engine = mesh.getEngine();
-
-                const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
-                (mesh as Mesh).setVerticesBuffer(buffer, true);
             } else {
-                this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+                this._idMap[id] = index;
+                id++;
+
+                if (mesh.hasInstances) {
+                    const instances = (mesh as Mesh).instances;
+                    const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
+                        const instance = instances[i];
+                        this._idMap[id] = this._pickableMeshes.indexOf(instance);
+                    });
+                    id += instances.length;
+                    const engine = mesh.getEngine();
+
+                    const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
+                    (mesh as Mesh).setVerticesBuffer(buffer, true);
+                } else {
+                    this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+                }
             }
         }
     }
@@ -223,10 +245,9 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
-        const scene = this._cachedScene!;
-        const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
+        const devicePixelRatio = 1 / engine._hardwareScalingLevel;
 
         if (!this._readbuffer) {
             this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4); // Because of block alignment in WebGPU
@@ -248,8 +269,8 @@ export class GPUPicker {
 
         this._meshRenderingCount = 0;
         // Ensure ints and adapt to screen resolution
-        x = (window.devicePixelRatio * x) >> 0;
-        y = (window.devicePixelRatio * y) >> 0;
+        x = (devicePixelRatio * x) >> 0;
+        y = (devicePixelRatio * y) >> 0;
 
         if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
             return Promise.resolve(null);
