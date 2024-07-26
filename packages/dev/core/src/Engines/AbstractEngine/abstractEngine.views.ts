@@ -183,8 +183,6 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
         previewCamera = scene.activeCamera;
         previewCameras = scene.activeCameras;
 
-        this.activeView = view;
-
         if (Array.isArray(camera)) {
             scene.activeCameras = camera;
         } else {
@@ -192,6 +190,7 @@ AbstractEngine.prototype._renderViewStep = function (view: EngineView): boolean 
             scene.activeCameras = null;
         }
     }
+    this.activeView = view;
 
     if (view.customResize) {
         view.customResize(canvas);
