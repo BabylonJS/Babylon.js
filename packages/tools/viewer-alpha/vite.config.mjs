@@ -28,8 +28,7 @@ export default defineConfig(({ mode }) => {
                 configureServer(server) {
                     server.middlewares.use("/api", (req, res, next) => {
                         if (req.url === "/saveCoverage") {
-                            const coverageDirectory = "dist/coverage";
-                            const rawDirectory = path.join(coverageDirectory, "raw");
+                            const rawDirectory = "dist/coverage/raw";
                             mkdirSync(rawDirectory, { recursive: true });
                             const writeStream = createWriteStream(path.join(rawDirectory, "coverage.json"));
                             req.pipe(writeStream);
