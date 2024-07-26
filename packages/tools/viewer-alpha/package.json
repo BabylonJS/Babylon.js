@@ -7,7 +7,7 @@
     "scripts": {
         "start:web": "npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/index.html",
         "start:analyze": "npm run bundle:analyze && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/analyze.html",
-        "start:coverage": "npm run instrument && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/coverage.html",
+        "start:coverage": "npm run bundle:analyze && npm run instrument && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/coverage.html",
         "serve": "vite",
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",

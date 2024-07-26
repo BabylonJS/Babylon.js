@@ -1,9 +1,12 @@
+"use strict";
+
+/* eslint-disable no-console */
+
 import { defineConfig, loadEnv } from "vite";
 import chalk from "chalk";
 import { mkdirSync, createWriteStream } from "fs";
-import { exec, execSync } from "child_process";
+import { execSync } from "child_process";
 import path from "path";
-import open from "open";
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd());
@@ -27,15 +30,15 @@ export default defineConfig(({ mode }) => {
                         if (req.url === "/saveCoverage") {
                             const coverageDirectory = "dist/coverage";
                             const rawDirectory = path.join(coverageDirectory, "raw");
-                            const reportsDirectory = path.join(coverageDirectory, "reports");
                             mkdirSync(rawDirectory, { recursive: true });
                             const writeStream = createWriteStream(path.join(rawDirectory, "coverage.json"));
                             req.pipe(writeStream);
                             req.on("end", () => {
                                 try {
-                                    execSync(`npx nyc report --reporter html --reporter json-summary -t ${rawDirectory} --report-dir ${reportsDirectory}`);
-                                    open(`${path.join(reportsDirectory, "index.html")}`);
+                                    execSync(`node generateCoverageReports.js`);
+                                    res.statusCode = 200;
                                 } catch (e) {
+                                    res.statusCode = 500;
                                     console.error(e);
                                 } finally {
                                     res.end();
