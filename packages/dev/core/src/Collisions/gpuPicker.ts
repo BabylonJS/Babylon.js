@@ -245,6 +245,8 @@ export class GPUPicker {
             return Promise.resolve(null);
         }
 
+        const scene = this._cachedScene!;
+        const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
         const devicePixelRatio = 1 / engine._hardwareScalingLevel;
