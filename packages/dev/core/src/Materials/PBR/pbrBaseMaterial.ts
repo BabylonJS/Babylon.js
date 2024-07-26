@@ -963,7 +963,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getScene().getEngine();
 
-        if (engine.isWebGPU && forceGLSL) {
+        if (engine.isWebGPU && !forceGLSL) {
             // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
             if (this._uniformBuffer) {
                 this._uniformBuffer.dispose();
