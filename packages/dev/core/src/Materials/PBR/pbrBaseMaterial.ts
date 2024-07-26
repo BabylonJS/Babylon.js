@@ -68,6 +68,7 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { ShaderLanguage } from "../shaderLanguage";
+import { UniformBuffer } from "../uniformBuffer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -849,7 +850,6 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _debugMode = 0;
 
     private _shadersLoaded = false;
-    private _shaderLanguage = ShaderLanguage.GLSL;
 
     /**
      * @internal
@@ -963,7 +963,13 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getScene().getEngine();
 
-        if (engine.isWebGPU && !forceGLSL) {
+        if (engine.isWebGPU && forceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+
             await import("../../ShadersWGSL/pbr.vertex");
             await import("../../ShadersWGSL/pbr.fragment");
             this._shaderLanguage = ShaderLanguage.WGSL;

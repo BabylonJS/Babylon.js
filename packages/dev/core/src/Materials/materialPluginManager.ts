@@ -291,7 +291,7 @@ export class MaterialPluginManager {
                 this._uniformList = [];
                 this._samplerList = [];
                 this._uboList = [];
-                const isWebGPU = this._scene.getEngine().isWebGPU;
+                const isWebGPU = this._material.shaderLanguage === ShaderLanguage.WGSL;
                 for (const plugin of this._plugins) {
                     const uniforms = plugin.getUniforms();
                     if (uniforms) {
