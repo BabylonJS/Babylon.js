@@ -721,7 +721,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #if !defined(PREPASS)
-    fragmentOutputs.color = vec4f(finalColor.rgb , 1.0);
+    fragmentOutputs.color = finalColor.rgb;
 #endif
 
     #include<oitFragment>
