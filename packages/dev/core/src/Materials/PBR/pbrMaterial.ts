@@ -755,9 +755,10 @@ export class PBRMaterial extends PBRBaseMaterial {
      *
      * @param name The material name
      * @param scene The scene the material will be use in.
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
+        super(name, scene, forceGLSL);
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
     }

@@ -925,8 +925,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      *
      * @param name The material name
      * @param scene The scene the material will be use in.
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
 
         this.brdf = new PBRBRDFConfiguration(this);
@@ -937,7 +938,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
 
-        this._initShaderSourceAsync();
+        this._initShaderSourceAsync(forceGLSL);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -959,10 +960,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.prePassConfiguration = new PrePassConfiguration();
     }
 
-    private async _initShaderSourceAsync() {
+    private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getScene().getEngine();
 
-        if (engine.isWebGPU) {
+        if (engine.isWebGPU && !forceGLSL) {
             await import("../../ShadersWGSL/pbr.vertex");
             await import("../../ShadersWGSL/pbr.fragment");
             this._shaderLanguage = ShaderLanguage.WGSL;
