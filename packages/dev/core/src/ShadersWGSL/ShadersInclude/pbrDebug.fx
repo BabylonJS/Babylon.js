@@ -22,9 +22,9 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
         color = normalW;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 6 && defined(MAINUV1)
-        color =  vec3f(vMainUV1, 0.0);
+        color =  vec3f(input.vMainUV1, 0.0);
     #elif DEBUGMODE == 7 && defined(MAINUV2)
-        color =  vec3f(vMainUV2, 0.0);
+        color =  vec3f(input.vMainUV2, 0.0);
     #elif DEBUGMODE == 8 && defined(CLEARCOAT) && defined(CLEARCOAT_BUMP)
         // ClearCoat Tangents
         color = clearcoatOut.TBNClearCoat[0];

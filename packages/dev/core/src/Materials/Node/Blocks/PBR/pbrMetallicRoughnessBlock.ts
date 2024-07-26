@@ -41,6 +41,9 @@ import {
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
+import "../../../../Shaders/pbr.vertex";
+import "../../../../Shaders/pbr.fragment";
+
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
     diffuseDir: ["finalDiffuse", ""],
@@ -1393,8 +1396,8 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         const colorOutput = isWebGPU ? "fragmentOutputs.color" : "gl_FragColor";
         replaceStrings = [
-            { search: /vNormalW/g, replace: this._vNormalWName },
-            { search: /vPositionW/g, replace: worldPosVarName },
+            { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vNormalW`, "g"), replace: this._vNormalWName },
+            { search: new RegExp(`${isWebGPU ? "fragmentInputs." : ""}vPositionW`, "g"), replace: worldPosVarName },
             {
                 search: /albedoTexture\.rgb;/g,
                 replace: `vec3${state.fSuffix}(1.);\n${colorOutput}.rgb = toGammaSpace(${colorOutput}.rgb);\n`,
