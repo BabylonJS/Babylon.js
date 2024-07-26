@@ -4,6 +4,7 @@ import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlock
 import { FrameGraphBlock } from "../../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
 import type { FrameGraphTeleportOutBlock } from "./frameGraphTeleportOutBlock";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 
 /**
  * Defines a block used to teleport a value to an endpoint
@@ -19,9 +20,11 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
     /**
      * Create a new FrameGraphTeleportInBlock
      * @param name defines the block name
+     * @param engine defines the hosting engine
      */
-    public constructor(name: string) {
-        super(name);
+    public constructor(name: string, engine: AbstractEngine) {
+        super(name, engine);
+
         this._isTeleportIn = true;
 
         this.registerInput("input", FrameGraphBlockConnectionPointTypes.AutoDetect);

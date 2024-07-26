@@ -5,6 +5,7 @@ import { FrameGraphBlock } from "../../frameGraphBlock";
 import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
 import type { FrameGraphTeleportInBlock } from "./frameGraphTeleportInBlock";
 import type { FrameGraphBuilder } from "../../frameGraphBuilder";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -18,9 +19,10 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
     /**
      * Create a new FrameGraphTeleportOutBlock
      * @param name defines the block name
+     * @param engine defines the hosting engine
      */
-    public constructor(name: string) {
-        super(name);
+    public constructor(name: string, engine: AbstractEngine) {
+        super(name, engine);
 
         this._isTeleportOut = true;
 
