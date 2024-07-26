@@ -12,6 +12,7 @@ const commonConfig = {
         sourcemap: true,
         format: "es",
         exports: "named",
+        inlineDynamicImports: true,
     },
     plugins: [
         typescript({ tsconfig: "tsconfig.build.dist.json" }),
@@ -31,7 +32,7 @@ const maxConfig = {
     output: {
         ...commonConfig.output,
         file: "dist/babylon-viewer.esm.js",
-    }
+    },
 };
 
 const minConfig = {
@@ -40,10 +41,7 @@ const minConfig = {
         ...commonConfig.output,
         file: "dist/babylon-viewer.esm.min.js",
     },
-    plugins: [
-        ...commonConfig.plugins,
-        terser(),
-    ]
+    plugins: [...commonConfig.plugins, terser()],
 };
 
 export default [maxConfig, minConfig];
