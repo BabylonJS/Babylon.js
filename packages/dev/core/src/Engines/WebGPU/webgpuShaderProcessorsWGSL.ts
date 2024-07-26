@@ -45,6 +45,41 @@ import "../../ShadersWGSL/ShadersInclude/samplerFragmentDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration";
 import "../../ShadersWGSL/ShadersInclude/imageProcessingFunctions";
 import "../../ShadersWGSL/ShadersInclude/reflectionFunction";
+import "../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric";
+import "../../ShadersWGSL/ShadersInclude/packingFunctions";
+import "../../ShadersWGSL/ShadersInclude/shadowMapFragment";
+import "../../ShadersWGSL/ShadersInclude/decalFragment";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockClearcoat";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockIridescence";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockReflection";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockSheen";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockSubSurface";
+import "../../ShadersWGSL/ShadersInclude/pbrBRDFFunctions";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockDirectLighting";
+import "../../ShadersWGSL/ShadersInclude/pbrDirectLightingFunctions";
+import "../../ShadersWGSL/ShadersInclude/pbrDirectLightingSetupFunctions";
+import "../../ShadersWGSL/ShadersInclude/depthPrePass";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockFinalColorComposition";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockFinalLitComponents";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockFinalUnlitComponents";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockGeometryInfo";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockImageProcessing";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockLightmapInit";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockNormalFinal";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockReflectance";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockReflectance0";
+import "../../ShadersWGSL/ShadersInclude/pbrDebug";
+import "../../ShadersWGSL/ShadersInclude/pbrDirectLightingFalloffFunctions";
+import "../../ShadersWGSL/ShadersInclude/hdrFilteringFunctions";
+import "../../ShadersWGSL/ShadersInclude/importanceSampling";
+import "../../ShadersWGSL/ShadersInclude/pbrHelperFunctions";
+import "../../ShadersWGSL/ShadersInclude/pbrIBLFunctions";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockAlbedoOpacity";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockReflectivity";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockAmbientOcclusion";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockAlphaFresnel";
+import "../../ShadersWGSL/ShadersInclude/pbrBlockAnisotropic";
+import "../../ShadersWGSL/ShadersInclude/harmonicsFunctions";
 import "../../ShadersWGSL/particles.vertex";
 
 const builtInName_frag_depth = "fragmentOutputs.fragDepth";
@@ -368,7 +403,25 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         }
         fragmentInputs += "\n};\nvar<private> fragmentInputs : FragmentInputs;\n";
 
-        let fragmentOutputs = "struct FragmentOutputs {\n  @location(0) color : vec4<f32>,\n";
+        let fragmentOutputs = "struct FragmentOutputs {\n";
+
+        const regex = /const SCENE_MRT_COUNT = (\d+);/;
+        const match = fragmentCode.match(regex);
+        let mrt = false;
+
+        if (match) {
+            const number = parseInt(match[1]);
+            if (number > 0) {
+                mrt = true;
+                for (let index = 0; index < number; index++) {
+                    fragmentOutputs += ` @location(${index}) fragData${index} : vec4<f32>,\n`;
+                }
+            }
+        }
+
+        if (!mrt) {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+        }
 
         let hasFragDepth = false;
         let idx = 0;

@@ -5,27 +5,27 @@ struct albedoOpacityOutParams
 };
 
 #define pbr_inline
-void albedoOpacityBlock(
-    in vec4 vAlbedoColor,
+albedoOpacityOutParams albedoOpacityBlock(
+    in vec4 vAlbedoColor
 #ifdef ALBEDO
-    in vec4 albedoTexture,
-    in vec2 albedoInfos,
+    ,in vec4 albedoTexture
+    ,in vec2 albedoInfos
 #endif
 #ifdef OPACITY
-    in vec4 opacityMap,
-    in vec2 vOpacityInfos,
+    ,in vec4 opacityMap
+    ,in vec2 vOpacityInfos
 #endif
 #ifdef DETAIL
-    in vec4 detailColor,
-    in vec4 vDetailInfos,
+    ,in vec4 detailColor
+    ,in vec4 vDetailInfos
 #endif
 #ifdef DECAL
-    in vec4 decalColor,
-    in vec4 vDecalInfos,
-#endif
-    out albedoOpacityOutParams outParams
+    ,in vec4 decalColor
+    ,in vec4 vDecalInfos
+#endif 
 )
 {
+    albedoOpacityOutParams outParams;
     // _____________________________ Albedo Information ______________________________
     vec3 surfaceAlbedo = vAlbedoColor.rgb;
     float alpha = vAlbedoColor.a;
@@ -94,4 +94,6 @@ void albedoOpacityBlock(
 
     outParams.surfaceAlbedo = surfaceAlbedo;
     outParams.alpha = alpha;
+
+    return outParams;
 }

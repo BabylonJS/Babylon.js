@@ -109,8 +109,8 @@ fn computeHemisphericLighting(viewDirectionW: vec3f, vNormal: vec3f, lightData: 
 		return result;
 }
 
-fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f32>, projectionLightSampler: sampler, textureProjectionMatrix: mat4x4f) -> vec3f {
-	var strq: vec4f = textureProjectionMatrix * vec4f(vPositionW, 1.0);
+fn computeProjectionTextureDiffuseLighting(projectionLightTexture: texture_2d<f32>, projectionLightSampler: sampler, textureProjectionMatrix: mat4x4f, posW: vec3f) -> vec3f {
+	var strq: vec4f = textureProjectionMatrix * vec4f(posW, 1.0);
 	strq /= strq.w;
 	var textureColor: vec3f = textureSample(projectionLightTexture, projectionLightSampler, strq.xy).rgb;
 	return textureColor;

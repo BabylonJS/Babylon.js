@@ -575,6 +575,168 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         this._instanceDataStorage.forceMatrixUpdates = value;
     }
 
+    protected _copySource(source: Mesh, doNotCloneChildren?: boolean, clonePhysicsImpostor: boolean = true) {
+        const scene = this.getScene();
+        // Geometry
+        if (source._geometry) {
+            source._geometry.applyToMesh(this);
+        }
+
+        // Deep copy
+        DeepCopier.DeepCopy(
+            source,
+            this,
+            [
+                "name",
+                "material",
+                "skeleton",
+                "instances",
+                "parent",
+                "uniqueId",
+                "source",
+                "metadata",
+                "morphTargetManager",
+                "hasInstances",
+                "worldMatrixInstancedBuffer",
+                "previousWorldMatrixInstancedBuffer",
+                "hasLODLevels",
+                "geometry",
+                "isBlocked",
+                "areNormalsFrozen",
+                "facetNb",
+                "isFacetDataEnabled",
+                "lightSources",
+                "useBones",
+                "isAnInstance",
+                "collider",
+                "edgesRenderer",
+                "forward",
+                "up",
+                "right",
+                "absolutePosition",
+                "absoluteScaling",
+                "absoluteRotationQuaternion",
+                "isWorldMatrixFrozen",
+                "nonUniformScaling",
+                "behaviors",
+                "worldMatrixFromCache",
+                "hasThinInstances",
+                "cloneMeshMap",
+                "hasBoundingInfo",
+                "physicsBody",
+                "physicsImpostor",
+            ],
+            ["_poseMatrix"]
+        );
+
+        // Source mesh
+        this._internalMeshDataInfo._source = source;
+        if (scene.useClonedMeshMap) {
+            if (!source._internalMeshDataInfo.meshMap) {
+                source._internalMeshDataInfo.meshMap = {};
+            }
+            source._internalMeshDataInfo.meshMap[this.uniqueId] = this;
+        }
+
+        // Construction Params
+        // Clone parameters allowing mesh to be updated in case of parametric shapes.
+        this._originalBuilderSideOrientation = source._originalBuilderSideOrientation;
+        this._creationDataStorage = source._creationDataStorage;
+
+        // Animation ranges
+        if (source._ranges) {
+            const ranges = source._ranges;
+            for (const name in ranges) {
+                if (!Object.prototype.hasOwnProperty.call(ranges, name)) {
+                    continue;
+                }
+
+                if (!ranges[name]) {
+                    continue;
+                }
+
+                this.createAnimationRange(name, ranges[name]!.from, ranges[name]!.to);
+            }
+        }
+
+        // Metadata
+        if (source.metadata && source.metadata.clone) {
+            this.metadata = source.metadata.clone();
+        } else {
+            this.metadata = source.metadata;
+        }
+        this._internalMetadata = source._internalMetadata;
+
+        // Tags
+        if (Tags && Tags.HasTags(source)) {
+            Tags.AddTagsTo(this, Tags.GetTags(source, true));
+        }
+
+        // Enabled. We shouldn't need to check the source's ancestors, as this mesh
+        // will have the same ones.
+        this.setEnabled(source.isEnabled(false));
+
+        // Parent
+        this.parent = source.parent;
+
+        // Pivot
+        this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
+
+        this.id = this.name + "." + source.id;
+
+        // Material
+        this.material = source.material;
+
+        if (!doNotCloneChildren) {
+            // Children
+            const directDescendants = source.getDescendants(true);
+            for (let index = 0; index < directDescendants.length; index++) {
+                const child = directDescendants[index];
+
+                if ((<any>child).clone) {
+                    (<any>child).clone(this.name + "." + child.name, this);
+                }
+            }
+        }
+
+        // Morphs
+        if (source.morphTargetManager) {
+            this.morphTargetManager = source.morphTargetManager;
+        }
+
+        // Physics clone
+        if (scene.getPhysicsEngine) {
+            const physicsEngine = scene.getPhysicsEngine();
+            if (clonePhysicsImpostor && physicsEngine) {
+                if (physicsEngine.getPluginVersion() === 1) {
+                    const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
+                    if (impostor) {
+                        this.physicsImpostor = impostor.clone(this);
+                    }
+                } else if (physicsEngine.getPluginVersion() === 2) {
+                    if (source.physicsBody) {
+                        source.physicsBody.clone(this);
+                    }
+                }
+            }
+        }
+
+        // Particles
+        for (let index = 0; index < scene.particleSystems.length; index++) {
+            const system = scene.particleSystems[index];
+
+            if (system.emitter === source) {
+                system.clone(system.name, this);
+            }
+        }
+
+        // Skeleton
+        this.skeleton = source.skeleton;
+
+        this.refreshBoundingInfo(true, true);
+        this.computeWorldMatrix(true);
+    }
+
     /**
      * Constructor
      * @param name The value used by scene.getMeshByName() to do a lookup.
@@ -615,164 +777,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         };
 
         if (source) {
-            // Geometry
-            if (source._geometry) {
-                source._geometry.applyToMesh(this);
-            }
-
-            // Deep copy
-            DeepCopier.DeepCopy(
-                source,
-                this,
-                [
-                    "name",
-                    "material",
-                    "skeleton",
-                    "instances",
-                    "parent",
-                    "uniqueId",
-                    "source",
-                    "metadata",
-                    "morphTargetManager",
-                    "hasInstances",
-                    "worldMatrixInstancedBuffer",
-                    "previousWorldMatrixInstancedBuffer",
-                    "hasLODLevels",
-                    "geometry",
-                    "isBlocked",
-                    "areNormalsFrozen",
-                    "facetNb",
-                    "isFacetDataEnabled",
-                    "lightSources",
-                    "useBones",
-                    "isAnInstance",
-                    "collider",
-                    "edgesRenderer",
-                    "forward",
-                    "up",
-                    "right",
-                    "absolutePosition",
-                    "absoluteScaling",
-                    "absoluteRotationQuaternion",
-                    "isWorldMatrixFrozen",
-                    "nonUniformScaling",
-                    "behaviors",
-                    "worldMatrixFromCache",
-                    "hasThinInstances",
-                    "cloneMeshMap",
-                    "hasBoundingInfo",
-                    "physicsBody",
-                    "physicsImpostor",
-                ],
-                ["_poseMatrix"]
-            );
-
-            // Source mesh
-            this._internalMeshDataInfo._source = source;
-            if (scene.useClonedMeshMap) {
-                if (!source._internalMeshDataInfo.meshMap) {
-                    source._internalMeshDataInfo.meshMap = {};
-                }
-                source._internalMeshDataInfo.meshMap[this.uniqueId] = this;
-            }
-
-            // Construction Params
-            // Clone parameters allowing mesh to be updated in case of parametric shapes.
-            this._originalBuilderSideOrientation = source._originalBuilderSideOrientation;
-            this._creationDataStorage = source._creationDataStorage;
-
-            // Animation ranges
-            if (source._ranges) {
-                const ranges = source._ranges;
-                for (const name in ranges) {
-                    if (!Object.prototype.hasOwnProperty.call(ranges, name)) {
-                        continue;
-                    }
-
-                    if (!ranges[name]) {
-                        continue;
-                    }
-
-                    this.createAnimationRange(name, ranges[name]!.from, ranges[name]!.to);
-                }
-            }
-
-            // Metadata
-            if (source.metadata && source.metadata.clone) {
-                this.metadata = source.metadata.clone();
-            } else {
-                this.metadata = source.metadata;
-            }
-            this._internalMetadata = source._internalMetadata;
-
-            // Tags
-            if (Tags && Tags.HasTags(source)) {
-                Tags.AddTagsTo(this, Tags.GetTags(source, true));
-            }
-
-            // Enabled. We shouldn't need to check the source's ancestors, as this mesh
-            // will have the same ones.
-            this.setEnabled(source.isEnabled(false));
-
-            // Parent
-            this.parent = source.parent;
-
-            // Pivot
-            this.setPivotMatrix(source.getPivotMatrix(), this._postMultiplyPivotMatrix);
-
-            this.id = name + "." + source.id;
-
-            // Material
-            this.material = source.material;
-
-            if (!doNotCloneChildren) {
-                // Children
-                const directDescendants = source.getDescendants(true);
-                for (let index = 0; index < directDescendants.length; index++) {
-                    const child = directDescendants[index];
-
-                    if ((<any>child).clone) {
-                        (<any>child).clone(name + "." + child.name, this);
-                    }
-                }
-            }
-
-            // Morphs
-            if (source.morphTargetManager) {
-                this.morphTargetManager = source.morphTargetManager;
-            }
-
-            // Physics clone
-            if (scene.getPhysicsEngine) {
-                const physicsEngine = scene.getPhysicsEngine();
-                if (clonePhysicsImpostor && physicsEngine) {
-                    if (physicsEngine.getPluginVersion() === 1) {
-                        const impostor = (physicsEngine as PhysicsEngineV1).getImpostorForPhysicsObject(source);
-                        if (impostor) {
-                            this.physicsImpostor = impostor.clone(this);
-                        }
-                    } else if (physicsEngine.getPluginVersion() === 2) {
-                        if (source.physicsBody) {
-                            source.physicsBody.clone(this);
-                        }
-                    }
-                }
-            }
-
-            // Particles
-            for (let index = 0; index < scene.particleSystems.length; index++) {
-                const system = scene.particleSystems[index];
-
-                if (system.emitter === source) {
-                    system.clone(system.name, this);
-                }
-            }
-
-            // Skeleton
-            this.skeleton = source.skeleton;
-
-            this.refreshBoundingInfo(true, true);
-            this.computeWorldMatrix(true);
+            this._copySource(source, doNotCloneChildren, clonePhysicsImpostor);
         }
 
         // Parent

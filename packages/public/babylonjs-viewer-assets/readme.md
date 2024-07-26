@@ -6,7 +6,7 @@ This package is only needed when installing the viewer's npm package and it is i
 
 For basic and advanced viewer usage instructions please read the doc at https://doc.babylonjs.com/features/featuresDeepDive/babylonViewer/viewerExamples
 
-The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/Viewer
+The source code can be found at https://github.com/BabylonJS/Babylon.js/tree/master/packages/tools/viewer
 
 ## Overriding the package
 

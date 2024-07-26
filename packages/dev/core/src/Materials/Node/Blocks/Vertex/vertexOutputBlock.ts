@@ -55,6 +55,7 @@ export class VertexOutputBlock extends NodeMaterialBlock {
         super._buildBlock(state);
 
         const input = this.vector;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         if (state.shaderLanguage === ShaderLanguage.WGSL) {
             state.compilationString += `vertexOutputs.position = ${input.associatedVariableName};\n`;
@@ -67,8 +68,12 @@ export class VertexOutputBlock extends NodeMaterialBlock {
             state._emitUniformFromString("logarithmicDepthConstant", NodeMaterialBlockConnectionPointTypes.Float);
             state._emitVaryingFromString("vFragmentDepth", NodeMaterialBlockConnectionPointTypes.Float);
 
-            state.compilationString += `vFragmentDepth = 1.0 + gl_Position.w;\n`;
-            state.compilationString += `gl_Position.z = log2(max(0.000001, vFragmentDepth)) * logarithmicDepthConstant;\n`;
+            const fragDepth = isWebGPU ? "vertexOutputs.vFragmentDepth" : "vFragmentDepth";
+            const uniformP = isWebGPU ? "uniforms." : "";
+            const position = isWebGPU ? "vertexOutputs.position" : "gl_Position";
+
+            state.compilationString += `${fragDepth} = 1.0 + ${position}.w;\n`;
+            state.compilationString += `${position}.z = log2(max(0.000001, ${fragDepth})) * ${uniformP}logarithmicDepthConstant;\n`;
         }
 
         return this;

@@ -365,7 +365,7 @@ export class ComputeEffect {
      * Gets the compute shader source code of this effect
      */
     public get computeSourceCode(): string {
-        return this._computeSourceCodeOverride ? this._computeSourceCodeOverride : this._pipelineContext?._getComputeShaderCode() ?? this._computeSourceCode;
+        return this._computeSourceCodeOverride ? this._computeSourceCodeOverride : (this._pipelineContext?._getComputeShaderCode() ?? this._computeSourceCode);
     }
 
     /**

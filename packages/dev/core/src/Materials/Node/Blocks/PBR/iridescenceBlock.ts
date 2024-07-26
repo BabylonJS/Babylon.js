@@ -12,6 +12,7 @@ import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import type { Scene } from "../../../../scene";
 import type { Nullable } from "../../../../types";
 import { PBRIridescenceConfiguration } from "../../../../Materials/PBR/pbrIridescenceConfiguration";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the iridescence module of the PBR material
@@ -110,9 +111,10 @@ export class IridescenceBlock extends NodeMaterialBlock {
     /**
      * Gets the main code of the block (fragment side)
      * @param iridescenceBlock instance of a IridescenceBlock or null if the code must be generated without an active iridescence module
+     * @param state defines the build state
      * @returns the shader code
      */
-    public static GetCode(iridescenceBlock: Nullable<IridescenceBlock>): string {
+    public static GetCode(iridescenceBlock: Nullable<IridescenceBlock>, state: NodeMaterialBuildState): string {
         let code = "";
 
         const intensityName = iridescenceBlock?.intensity.isConnected ? iridescenceBlock.intensity.associatedVariableName : "1.";
@@ -121,17 +123,18 @@ export class IridescenceBlock extends NodeMaterialBlock {
             : PBRIridescenceConfiguration._DefaultIndexOfRefraction;
         const thickness = iridescenceBlock?.thickness.isConnected ? iridescenceBlock.thickness.associatedVariableName : PBRIridescenceConfiguration._DefaultMaximumThickness;
 
-        code += `iridescenceOutParams iridescenceOut;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+
+        code += `${isWebGPU ? "var iridescenceOut: iridescenceOutParams" : "iridescenceOutParams iridescenceOut"};
 
         #ifdef IRIDESCENCE
-            iridescenceBlock(
-                vec4(${intensityName}, ${indexOfRefraction}, 1., ${thickness}),
-                NdotV,
-                specularEnvironmentR0,
+            iridescenceOut = iridescenceBlock(
+                vec4(${intensityName}, ${indexOfRefraction}, 1., ${thickness})
+                , NdotV
+                , specularEnvironmentR0
                 #ifdef CLEARCOAT
-                    NdotVUnclamped,
-                #endif
-                iridescenceOut
+                    , NdotVUnclamped
+                #endif                
             );
 
             float iridescenceIntensity = iridescenceOut.iridescenceIntensity;

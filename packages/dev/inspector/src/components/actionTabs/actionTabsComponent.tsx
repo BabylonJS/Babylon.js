@@ -7,7 +7,7 @@ import { TabsComponent } from "./tabsComponent";
 import { faFileAlt, faWrench, faBug, faChartBar, faCog } from "@fortawesome/free-solid-svg-icons";
 import { StatisticsTabComponent } from "./tabs/statisticsTabComponent";
 import { DebugTabComponent } from "./tabs/debugTabComponent";
-import Resizable from "re-resizable";
+import { Resizable } from "re-resizable";
 import { PropertyGridTabComponent } from "./tabs/propertyGridTabComponent";
 import { HeaderComponent } from "../headerComponent";
 import { ToolsTabComponent } from "./tabs/toolsTabComponent";
@@ -15,6 +15,8 @@ import type { GlobalState } from "../../components/globalState";
 import { SettingsTabComponent } from "./tabs/settingsTabComponent";
 
 import "./actionTabs.scss";
+
+const ResizableCasted = Resizable as any as React.ComponentClass<any>;
 
 interface IActionTabsComponentProps {
     scene?: Scene;
@@ -153,7 +155,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
         }
 
         return (
-            <Resizable
+            <ResizableCasted
                 id="actionTabs"
                 minWidth={300}
                 maxWidth={600}
@@ -174,7 +176,7 @@ export class ActionTabsComponent extends React.Component<IActionTabsComponentPro
                     />
                 )}
                 {this.renderContent()}
-            </Resizable>
+            </ResizableCasted>
         );
     }
 }

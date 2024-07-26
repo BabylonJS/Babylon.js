@@ -555,12 +555,12 @@ export class InputBlock extends NodeMaterialBlock {
                 // Attribute for fragment need to be carried over by varyings
                 if (attributeInFragmentOnly[this.name]) {
                     if (attributeAsUniform[this.name]) {
-                        state._emitUniformFromString(this.associatedVariableName, this.type, define);
+                        state._emitUniformFromString(this.declarationVariableName, this.type, define);
                         if (state.shaderLanguage === ShaderLanguage.WGSL) {
                             this._prefix = `vertexInputs.`;
                         }
                     } else {
-                        state._emitVaryingFromString(this.associatedVariableName, this.type, define);
+                        state._emitVaryingFromString(this.declarationVariableName, this.type, define);
                     }
                 } else {
                     this._emit(state._vertexState, define);
@@ -568,22 +568,20 @@ export class InputBlock extends NodeMaterialBlock {
                 return;
             }
 
-            if (state.attributes.indexOf(this.associatedVariableName) !== -1) {
+            if (state.attributes.indexOf(this.declarationVariableName) !== -1) {
                 return;
             }
 
-            state.attributes.push(this.associatedVariableName);
+            state.attributes.push(this.declarationVariableName);
 
             if (attributeInFragmentOnly[this.name]) {
                 if (attributeAsUniform[this.name]) {
-                    this._prefix = ``;
-                    state._emitUniformFromString(this.associatedVariableName, this.type, define);
+                    state._emitUniformFromString(this.declarationVariableName, this.type, define);
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `uniforms.`;
                     }
                 } else {
-                    this._prefix = ``;
-                    state._emitVaryingFromString(this.associatedVariableName, this.type, define);
+                    state._emitVaryingFromString(this.declarationVariableName, this.type, define);
                     if (state.shaderLanguage === ShaderLanguage.WGSL) {
                         this._prefix = `fragmentInputs.`;
                     }
@@ -593,11 +591,10 @@ export class InputBlock extends NodeMaterialBlock {
                     state._attributeDeclaration += this._emitDefine(define);
                 }
                 if (state.shaderLanguage === ShaderLanguage.WGSL) {
-                    this._prefix = ``;
-                    state._attributeDeclaration += `attribute ${this.associatedVariableName}: ${state._getShaderType(this.type)};\n`;
+                    state._attributeDeclaration += `attribute ${this.declarationVariableName}: ${state._getShaderType(this.type)};\n`;
                     this._prefix = `vertexInputs.`;
                 } else {
-                    state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.associatedVariableName};\n`;
+                    state._attributeDeclaration += `attribute ${state._getShaderType(this.type)} ${this.declarationVariableName};\n`;
                 }
                 if (define) {
                     state._attributeDeclaration += `#endif\n`;

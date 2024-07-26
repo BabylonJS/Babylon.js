@@ -1994,12 +1994,14 @@ export class WebGPUEngine extends AbstractEngine {
         return {
             vertexStage: {
                 module: this._device.createShaderModule({
+                    label: "vertex",
                     code: vertexShader,
                 }),
                 entryPoint: "main",
             },
             fragmentStage: {
                 module: this._device.createShaderModule({
+                    label: "fragment",
                     code: fragmentShader,
                 }),
                 entryPoint: "main",
@@ -2434,7 +2436,7 @@ export class WebGPUEngine extends AbstractEngine {
                 texture.baseHeight = imageBitmap.height;
                 texture.width = imageBitmap.width;
                 texture.height = imageBitmap.height;
-                texture.format = texture.format !== -1 ? texture.format : format ?? Constants.TEXTUREFORMAT_RGBA;
+                texture.format = texture.format !== -1 ? texture.format : (format ?? Constants.TEXTUREFORMAT_RGBA);
                 texture.type = texture.type !== -1 ? texture.type : Constants.TEXTURETYPE_UNSIGNED_BYTE;
                 texture._creationFlags = creationFlags ?? 0;
 
@@ -3632,7 +3634,7 @@ export class WebGPUEngine extends AbstractEngine {
         }
 
         // Cull face
-        const cullFace = this.cullBackFaces ?? cullBackFaces ?? true ? 1 : 2;
+        const cullFace = (this.cullBackFaces ?? cullBackFaces ?? true) ? 1 : 2;
         if (this._depthCullingState.cullFace !== cullFace || force) {
             this._depthCullingState.cullFace = cullFace;
         }

@@ -16,6 +16,7 @@ interface ICommandDropdownComponentProps {
         tooltip?: string;
         onClick?: () => void;
         onCheck?: (value: boolean) => void;
+        onInsert?: (value: string) => void;
         storeKey?: string;
         isActive?: boolean;
         defaultValue?: boolean | string;
@@ -94,7 +95,6 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                             if (m.validate && !m.validate()) {
                                                 return;
                                             }
-
                                             if (!m.onClick) {
                                                 const newValue = !Utilities.ReadBoolFromStore(m.storeKey!, (m.defaultValue as boolean) || false);
                                                 Utilities.StoreBoolToStore(m.storeKey!, newValue);
@@ -153,6 +153,9 @@ export class CommandDropdownComponent extends React.Component<ICommandDropdownCo
                                                                 }
                                                                 if (m.storeKey) {
                                                                     Utilities.StoreStringToStore(m.storeKey, s, this.props.useSessionStorage);
+                                                                }
+                                                                if (m.onInsert) {
+                                                                    m.onInsert(s);
                                                                 }
                                                                 m.onClick!();
                                                                 this.setState({ isExpanded: m.keepExpanded || false });

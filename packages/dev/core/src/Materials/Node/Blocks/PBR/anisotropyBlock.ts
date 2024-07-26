@@ -12,6 +12,7 @@ import type { Mesh } from "../../../../Meshes/mesh";
 import type { Effect } from "../../../effect";
 import { Logger } from "core/Misc/logger";
 import type { NodeMaterialBuildState } from "../../nodeMaterialBuildState";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the anisotropy module of the PBR material
@@ -189,13 +190,14 @@ export class AnisotropyBlock extends NodeMaterialBlock {
         if (generateTBNSpace) {
             code += this._generateTBNSpace(state);
         }
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         const intensity = this.intensity.isConnected ? this.intensity.associatedVariableName : "1.0";
         const direction = this.direction.isConnected ? this.direction.associatedVariableName : "vec2(1., 0.)";
         const roughness = this.roughness.isConnected ? this.roughness.associatedVariableName : "0.";
 
-        code += `anisotropicOutParams anisotropicOut;
-            anisotropicBlock(
+        code += `${isWebGPU ? "var anisotropicOut: anisotropicOutParams" : "anisotropicOutParams anisotropicOut"};
+            anisotropicOut = anisotropicBlock(
                 vec3(${direction}, ${intensity}),
                 ${roughness},
             #ifdef ANISOTROPIC_TEXTURE
@@ -203,8 +205,7 @@ export class AnisotropyBlock extends NodeMaterialBlock {
             #endif
                 TBN,
                 normalW,
-                viewDirectionW,
-                anisotropicOut
+                viewDirectionW
             );\n`;
 
         return code;
