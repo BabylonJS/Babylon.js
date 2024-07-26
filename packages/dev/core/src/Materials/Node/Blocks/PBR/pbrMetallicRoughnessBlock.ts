@@ -1345,13 +1345,7 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
         }
 
         // _____________________________ Compute Final Lit Components ________________________
-        if (isWebGPU) {
-            state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments, {
-                replaceStrings: [{ search: /vLightingIntensity/g, replace: "uniforms.vLightingIntensity" }],
-            });
-        } else {
-            state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
-        }
+        state.compilationString += state._emitCodeFromInclude("pbrBlockFinalLitComponents", comments);
 
         // _____________________________ UNLIT (2) ________________________
         state.compilationString += `#endif\n`; // UNLIT
@@ -1367,14 +1361,12 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         let replaceStrings = [
             { search: /vec3 finalEmissive[\s\S]*?finalEmissive\*=vLightingIntensity\.y;/g, replace: "" },
-            { search: /vAmbientColor/g, replace: aoColor + ` * ambientFromScene` },
+            { search: new RegExp(`${isWebGPU ? "uniforms." : ""}vAmbientColor`, "g"), replace: aoColor + ` * ${isWebGPU ? "uniforms." : ""}ambientFromScene` },
+            { search: new RegExp(`${isWebGPU ? "uniforms." : ""}vAmbientInfos.w`, "g"), replace: aoDirectLightIntensity },
         ];
 
         if (isWebGPU) {
             replaceStrings[0] = { search: /var finalEmissive[\s\S]*?finalEmissive\*=uniforms.vLightingIntensity\.y;/g, replace: "" };
-            replaceStrings.push({ search: /uniforms.vAmbientInfos/g, replace: aoDirectLightIntensity });
-        } else {
-            replaceStrings.push({ search: /vAmbientInfos/g, replace: aoDirectLightIntensity });
         }
 
         state.compilationString += state._emitCodeFromInclude("pbrBlockFinalUnlitComponents", comments, {

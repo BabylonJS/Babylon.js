@@ -52,7 +52,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
-		normalW = normalize(textureSample(bumpSampler, bumpSamplerSampler, vBumpUV).xyz  * 2.0 - 1.0);
+		normalW = normalize(textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).xyz  * 2.0 - 1.0);
 		normalW = normalize( mat3x3f(normalMatrix) * normalW);
 	#elif !defined(DETAIL)
 		normalW = perturbNormal(TBN, textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz, uniforms.vBumpInfos.y);
