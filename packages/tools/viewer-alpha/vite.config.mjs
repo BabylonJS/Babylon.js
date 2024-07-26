@@ -11,6 +11,7 @@ import path from "path";
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd());
     const source = env.source ?? "dev";
+    const rawCoverageDirectory = process.env.COVERAGE_DIR;
 
     const port = env.VIEWER_PORT ?? 1342;
     console.log(`${chalk.bold(`Web Test App`)}: ${chalk.cyan(`http://localhost:${port}/packages/tools/viewer-alpha/test/apps/web/index.html`)}`);
@@ -28,13 +29,12 @@ export default defineConfig(({ mode }) => {
                 configureServer(server) {
                     server.middlewares.use("/api", (req, res, next) => {
                         if (req.url === "/saveCoverage") {
-                            const rawDirectory = "dist/coverage/raw";
-                            mkdirSync(rawDirectory, { recursive: true });
-                            const writeStream = createWriteStream(path.join(rawDirectory, "coverage.json"));
+                            mkdirSync(rawCoverageDirectory, { recursive: true });
+                            const writeStream = createWriteStream(path.join(rawCoverageDirectory, "coverage.json"));
                             req.pipe(writeStream);
                             req.on("end", () => {
                                 try {
-                                    execSync(`node generateCoverageReports.js`);
+                                    execSync(`npm run reportCoverage`);
                                     res.statusCode = 200;
                                 } catch (e) {
                                     res.statusCode = 500;

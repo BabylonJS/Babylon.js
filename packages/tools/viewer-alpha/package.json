@@ -8,7 +8,7 @@
         "start:web": "npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/index.html",
         "start:analyze": "npm run bundle:analyze && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/analyze.html",
         "start:coverage": "npm run bundle:analyze && npm run instrument && npm run serve -- --open packages/tools/viewer-alpha/test/apps/web/coverage.html",
-        "serve": "vite",
+        "serve": "COVERAGE_DIR=dist/coverage/raw vite",
         "build": "npm run compile",
         "clean": "rimraf dist && rimraf *.tsbuildinfo",
         "compile": "tsc -b tsconfig.build.json",
@@ -16,6 +16,7 @@
         "bundle:coverage": "rimraf dist/coverage && rollup -c rollup.config.coverage.mjs",
         "analyze": "npm run bundle:analyze && node ../../../scripts/folderSizeFlameChart dist/analyze \"**/*.js\" dist/analyze/flameChart",
         "instrument": "npm run bundle:coverage && nyc --exclude-node-modules=false instrument dist/coverage/original dist/coverage/instrumented",
+        "reportCoverage": "node generateCoverageReports.mjs dist/analyze dist/coverage dist/coverage/original dist/coverage/raw",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "dependencies": {
