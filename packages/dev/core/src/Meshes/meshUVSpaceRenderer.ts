@@ -166,6 +166,8 @@ export class MeshUVSpaceRenderer {
             uvEdgeBlending: false,
             ...options,
         };
+
+        this._createDiffuseRTT();
     }
 
     /**
