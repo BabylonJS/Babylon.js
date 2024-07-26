@@ -9,6 +9,7 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import type { Mesh } from "../../../../Meshes/mesh";
 import type { AbstractMesh } from "../../../../Meshes/abstractMesh";
 import { bindClipPlane } from "../../../../Materials/clipPlaneMaterialHelper";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 /**
  * Block used to implement clip planes
  */
@@ -48,6 +49,27 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         state._excludeVariableName("fClipDistance5");
         state._excludeVariableName("vClipPlane6");
         state._excludeVariableName("fClipDistance6");
+
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/clipPlaneFragment");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneVertex");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

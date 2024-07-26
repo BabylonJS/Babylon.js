@@ -11,8 +11,6 @@ import { VertexBuffer } from "../../../../Buffers/buffer";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
-import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -108,6 +106,27 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
+
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertex");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {

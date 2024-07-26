@@ -47,6 +47,24 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         state._excludeVariableName("clipPos");
         state._excludeVariableName("worldPos");
         state._excludeVariableName("zSM");
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric");
+            await import("../../../../ShadersWGSL/ShadersInclude/packingFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric");
+            await import("../../../../Shaders/ShadersInclude/packingFunctions");
+            await import("../../../../Shaders/ShadersInclude/shadowMapFragment");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

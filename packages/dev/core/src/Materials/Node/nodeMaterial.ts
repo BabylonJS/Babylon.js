@@ -855,6 +855,28 @@ export class NodeMaterial extends PushMaterial {
             this._initializeBlock(fragmentOutputNode, this._fragmentCompilationState, vertexNodes, autoConfigure);
         }
 
+        // Are blocks code ready?
+        let waitingNodeCount = 0;
+        for (const node of this.attachedBlocks) {
+            if (!node.codeIsReady) {
+                waitingNodeCount++;
+                node.onCodeIsReadyObservable.addOnce(() => {
+                    waitingNodeCount--;
+                    if (waitingNodeCount === 0) {
+                        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
+                    }
+                });
+            }
+        }
+
+        if (waitingNodeCount !== 0) {
+            return;
+        }
+
+        this._finishBuildProcess(verbose, updateBuildId, vertexNodes, fragmentNodes);
+    }
+
+    private _finishBuildProcess(verbose: boolean = false, updateBuildId = true, vertexNodes: NodeMaterialBlock[], fragmentNodes: NodeMaterialBlock[]) {
         // Optimize
         this.optimize();
 

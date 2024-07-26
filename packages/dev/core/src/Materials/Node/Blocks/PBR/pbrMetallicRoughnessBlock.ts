@@ -41,9 +41,6 @@ import {
 } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
-import "../../../../Shaders/pbr.vertex";
-import "../../../../Shaders/pbr.fragment";
-
 const mapOutputToVariable: { [name: string]: [string, string] } = {
     ambientClr: ["finalAmbient", ""],
     diffuseDir: ["finalDiffuse", ""],
@@ -438,6 +435,22 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
 
         state._excludeVariableName("vClipSpacePosition");
         state._excludeVariableName("vDebugMode");
+
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/pbr.vertex");
+            await import("../../../../ShadersWGSL/pbr.fragment");
+        } else {
+            await import("../../../../Shaders/pbr.vertex");
+            await import("../../../../Shaders/pbr.fragment");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

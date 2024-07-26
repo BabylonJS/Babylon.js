@@ -16,9 +16,6 @@ import type { TextureBlock } from "../Dual/textureBlock";
 import { NodeMaterialConnectionPointCustomObject } from "../../nodeMaterialConnectionPointCustomObject";
 import { TBNBlock } from "./TBNBlock";
 
-import "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions";
-import "../../../../Shaders/ShadersInclude/bumpFragmentFunctions";
-import "../../../../Shaders/ShadersInclude/bumpFragment";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
 import { Constants } from "../../../../Engines/constants";
 
@@ -174,6 +171,27 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
      */
     public get uvOffset(): NodeMaterialConnectionPoint {
         return this._outputs[1];
+    }
+
+    public override initialize(state: NodeMaterialBuildState) {
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragment");
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/bumpFragment");
+            await import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions");
+            await import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
