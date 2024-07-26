@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
                             req.pipe(writeStream);
                             req.on("end", () => {
                                 try {
-                                    execSync(`npm run reportCoverage`);
+                                    execSync(`npm run report-coverage`);
                                     res.statusCode = 200;
                                 } catch (e) {
                                     res.statusCode = 500;
