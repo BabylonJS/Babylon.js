@@ -18,6 +18,7 @@ import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Deco
 import type { Scene } from "../../../../scene";
 import { Scalar } from "../../../../Maths/math.scalar";
 import { Logger } from "core/Misc/logger";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the reflection module of the PBR material
@@ -284,6 +285,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
      */
     public override handleVertexSide(state: NodeMaterialBuildState): string {
         let code = super.handleVertexSide(state);
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
             replaceStrings: [
@@ -323,11 +325,11 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString("vSphericalZX", NodeMaterialBlockConnectionPointTypes.Vector3, "SPHERICAL_HARMONICS", true);
 
         code += `#if defined(USESPHERICALFROMREFLECTIONMAP) && defined(USESPHERICALINVERTEX)
-                vec3 ${reflectionVectorName} = vec3(${this._reflectionMatrixName} * vec4(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
+                ${state._declareLocalVar(reflectionVectorName, NodeMaterialBlockConnectionPointTypes.Vector3)} = (${(isWebGPU ? "uniforms." : "") + this._reflectionMatrixName} * vec4${state.fSuffix}(normalize(${this.worldNormal.associatedVariableName}).xyz, 0)).xyz;
                 #ifdef ${this._defineOppositeZ}
                     ${reflectionVectorName}.z *= -1.0;
                 #endif
-                ${this._vEnvironmentIrradianceName} = computeEnvironmentIrradiance(${reflectionVectorName});
+                ${isWebGPU ? "vertexOutputs." : ""}${this._vEnvironmentIrradianceName} = computeEnvironmentIrradiance(${reflectionVectorName});
             #endif\n`;
 
         return code;
@@ -343,6 +345,7 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         let code = "";
 
         this.handleFragmentSideInits(state);
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         state._emitFunctionFromInclude("harmonicsFunctions", `//${this.name}`, {
             replaceStrings: [
@@ -351,29 +354,37 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
             ],
         });
 
-        state._emitFunction(
-            "sampleReflection",
-            `
-            #ifdef ${this._define3DName}
-                #define sampleReflection(s, c) textureCube(s, c)
-            #else
-                #define sampleReflection(s, c) texture2D(s, c)
-            #endif\n`,
-            `//${this.name}`
-        );
+        if (!isWebGPU) {
+            state._emitFunction(
+                "sampleReflection",
+                `
+                #ifdef ${this._define3DName}
+                    #define sampleReflection(s, c) textureCube(s, c)
+                #else
+                    #define sampleReflection(s, c) texture2D(s, c)
+                #endif\n`,
+                `//${this.name}`
+            );
 
-        state._emitFunction(
-            "sampleReflectionLod",
-            `
-            #ifdef ${this._define3DName}
-                #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
-            #else
-                #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\n`,
-            `//${this.name}`
-        );
+            state._emitFunction(
+                "sampleReflectionLod",
+                `
+                #ifdef ${this._define3DName}
+                    #define sampleReflectionLod(s, c, l) textureCubeLodEXT(s, c, l)
+                #else
+                    #define sampleReflectionLod(s, c, l) texture2DLodEXT(s, c, l)
+                #endif\n`,
+                `//${this.name}`
+            );
+        }
 
-        const computeReflectionCoordsFunc = `
+        const computeReflectionCoordsFunc = isWebGPU
+            ? `
+            fn computeReflectionCoordsPBR(worldPos: vec4f, worldNormal: vec3f) -> vec3f {
+                ${this.handleFragmentSideCodeReflectionCoords(state, "worldNormal", "worldPos", true, true)}
+                return ${this._reflectionVectorName};
+            }\n`
+            : `
             vec3 computeReflectionCoordsPBR(vec4 worldPos, vec3 worldNormal) {
                 ${this.handleFragmentSideCodeReflectionCoords(state, "worldNormal", "worldPos", true, true)}
                 return ${this._reflectionVectorName};
@@ -392,55 +403,61 @@ export class ReflectionBlock extends ReflectionTextureBaseBlock {
         state._emitUniformFromString(this._vReflectionFilteringInfoName, NodeMaterialBlockConnectionPointTypes.Vector2);
 
         code += `#ifdef REFLECTION
-            vec2 ${this._vReflectionInfosName} = vec2(1., 0.);
+            ${state._declareLocalVar(this._vReflectionInfosName, NodeMaterialBlockConnectionPointTypes.Vector2)} = vec2${state.fSuffix}(1., 0.);
 
-            reflectionOutParams reflectionOut;
+            ${isWebGPU ? "var reflectionOut: reflectionOutParams" : "reflectionOutParams reflectionOut"};
 
-            reflectionBlock(
-                ${this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : "v_" + this.worldPosition.associatedVariableName}.xyz,
-                ${normalVarName},
-                alphaG,
-                ${this._vReflectionMicrosurfaceInfosName},
-                ${this._vReflectionInfosName},
-                ${this.reflectionColor},
+            reflectionOut = reflectionBlock(
+                ${this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : (isWebGPU ? "input." : "") + "v_" + this.worldPosition.associatedVariableName}.xyz
+                , ${normalVarName}
+                , alphaG
+                , ${(isWebGPU ? "uniforms." : "") + this._vReflectionMicrosurfaceInfosName}
+                , ${this._vReflectionInfosName}
+                , ${this.reflectionColor}
             #ifdef ANISOTROPIC
-                anisotropicOut,
+                ,anisotropicOut
             #endif
             #if defined(${this._defineLODReflectionAlpha}) && !defined(${this._defineSkyboxName})
-                NdotVUnclamped,
+                ,NdotVUnclamped
             #endif
             #ifdef ${this._defineLinearSpecularReflection}
-                roughness,
+                , roughness
             #endif
             #ifdef ${this._define3DName}
-                ${this._cubeSamplerName},
+                , ${this._cubeSamplerName}
+                ${isWebGPU ? `, ${this._cubeSamplerName}Sampler` : ""}
             #else
-                ${this._2DSamplerName},
+                , ${this._2DSamplerName}
+                ${isWebGPU ? `, ${this._2DSamplerName}Sampler` : ""}
             #endif
             #if defined(NORMAL) && defined(USESPHERICALINVERTEX)
-                ${this._vEnvironmentIrradianceName},
+                , ${isWebGPU ? "input." : ""}${this._vEnvironmentIrradianceName}
             #endif
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    ${this._reflectionMatrixName},
+                    , ${this._reflectionMatrixName}
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
-                irradianceSampler, // ** not handled **
+                , irradianceSampler         // ** not handled **
+                ${isWebGPU ? `, irradianceSamplerSampler` : ""}
             #endif
             #ifndef LODBASEDMICROSFURACE
                 #ifdef ${this._define3DName}
-                    ${this._cubeSamplerName},
-                    ${this._cubeSamplerName},
+                    , ${this._cubeSamplerName}
+                    ${isWebGPU ? `, ${this._cubeSamplerName}Sampler` : ""}
+                    , ${this._cubeSamplerName}
+                    ${isWebGPU ? `, ${this._cubeSamplerName}Sampler` : ""}
                 #else
-                    ${this._2DSamplerName},
-                    ${this._2DSamplerName},
+                    , ${this._2DSamplerName}
+                    ${isWebGPU ? `, ${this._2DSamplerName}Sampler` : ""}
+                    , ${this._2DSamplerName}                    
+                    ${isWebGPU ? `, ${this._2DSamplerName}Sampler` : ""}
                 #endif
             #endif
             #ifdef REALTIME_FILTERING
-                ${this._vReflectionFilteringInfoName},
+                , ${this._vReflectionFilteringInfoName}
             #endif
-                reflectionOut
             );
         #endif\n`;
 

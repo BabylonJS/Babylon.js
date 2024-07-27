@@ -155,100 +155,100 @@ struct subSurfaceOutParams
     #endif
     #define pbr_inline
     #define inline
-    void subSurfaceBlock(
-        in vec3 vSubSurfaceIntensity,
-        in vec2 vThicknessParam,
-        in vec4 vTintColor,
-        in vec3 normalW,
-        in vec3 specularEnvironmentReflectance,
+    subSurfaceOutParams subSurfaceBlock(
+        in vec3 vSubSurfaceIntensity
+        , in vec2 vThicknessParam
+        , in vec4 vTintColor
+        , in vec3 normalW
+        , in vec3 specularEnvironmentReflectance
     #ifdef SS_THICKNESSANDMASK_TEXTURE
-        in vec4 thicknessMap,
+        , in vec4 thicknessMap
     #endif
     #ifdef SS_REFRACTIONINTENSITY_TEXTURE
-        in vec4 refractionIntensityMap,
+        , in vec4 refractionIntensityMap
     #endif
     #ifdef SS_TRANSLUCENCYINTENSITY_TEXTURE
-        in vec4 translucencyIntensityMap,
+        , in vec4 translucencyIntensityMap
     #endif
     #ifdef REFLECTION
         #ifdef SS_TRANSLUCENCY
-            in mat4 reflectionMatrix,
+            , in mat4 reflectionMatrix
             #ifdef USESPHERICALFROMREFLECTIONMAP
                 #if !defined(NORMAL) || !defined(USESPHERICALINVERTEX)
-                    in vec3 irradianceVector_,
+                    , in vec3 irradianceVector_
                 #endif
                 #if defined(REALTIME_FILTERING)
-                    in samplerCube reflectionSampler,
-                    in vec2 vReflectionFilteringInfo,
+                    , in samplerCube reflectionSampler
+                    , in vec2 vReflectionFilteringInfo
                 #endif
             #endif
             #ifdef USEIRRADIANCEMAP
                 #ifdef REFLECTIONMAP_3D
-                    in samplerCube irradianceSampler,
+                    , in samplerCube irradianceSampler
                 #else
-                    in sampler2D irradianceSampler,
+                    , in sampler2D irradianceSampler
                 #endif
             #endif
         #endif
     #endif
     #if defined(SS_REFRACTION) || defined(SS_TRANSLUCENCY)
-        in vec3 surfaceAlbedo,
+        , in vec3 surfaceAlbedo
     #endif
     #ifdef SS_REFRACTION
-        in vec3 vPositionW,
-        in vec3 viewDirectionW,
-        in mat4 view,
-        in vec4 vRefractionInfos,
-        in mat4 refractionMatrix,
-        in vec4 vRefractionMicrosurfaceInfos,
-        in vec4 vLightingIntensity,
+        , in vec3 vPositionW
+        , in vec3 viewDirectionW
+        , in mat4 view
+        , in vec4 vRefractionInfos
+        , in mat4 refractionMatrix
+        , in vec4 vRefractionMicrosurfaceInfos
+        , in vec4 vLightingIntensity
         #ifdef SS_LINKREFRACTIONTOTRANSPARENCY
-            in float alpha,
+            , in float alpha
         #endif
         #ifdef SS_LODINREFRACTIONALPHA
-            in float NdotVUnclamped,
+            , in float NdotVUnclamped
         #endif
         #ifdef SS_LINEARSPECULARREFRACTION
-            in float roughness,
+            , in float roughness
         #endif
-        in float alphaG,
+        , in float alphaG
         #ifdef SS_REFRACTIONMAP_3D
-            in samplerCube refractionSampler,
+            , in samplerCube refractionSampler
             #ifndef LODBASEDMICROSFURACE
-                in samplerCube refractionSamplerLow,
-                in samplerCube refractionSamplerHigh,
+                , in samplerCube refractionSamplerLow
+                , in samplerCube refractionSamplerHigh
             #endif
         #else
-            in sampler2D refractionSampler,
+            , in sampler2D refractionSampler
             #ifndef LODBASEDMICROSFURACE
-                in sampler2D refractionSamplerLow,
-                in sampler2D refractionSamplerHigh,
+                , in sampler2D refractionSamplerLow
+                , in sampler2D refractionSamplerHigh
             #endif
         #endif
         #ifdef ANISOTROPIC
-            in anisotropicOutParams anisotropicOut,
+            , in anisotropicOutParams anisotropicOut
         #endif
         #ifdef REALTIME_FILTERING
-            in vec2 vRefractionFilteringInfo,
+            , in vec2 vRefractionFilteringInfo
         #endif
         #ifdef SS_USE_LOCAL_REFRACTIONMAP_CUBIC
-            in vec3 refractionPosition,
-            in vec3 refractionSize,
+            , in vec3 refractionPosition
+            , in vec3 refractionSize
         #endif
         #ifdef SS_DISPERSION
-            in float dispersion,
+            , in float dispersion
         #endif
     #endif
     #ifdef SS_TRANSLUCENCY
-        in vec3 vDiffusionDistance,
-        in vec4 vTranslucencyColor,
+        , in vec3 vDiffusionDistance
+        , in vec4 vTranslucencyColor
         #ifdef SS_TRANSLUCENCYCOLOR_TEXTURE
-            in vec4 translucencyColorMap,
+            , in vec4 translucencyColorMap
         #endif
     #endif
-        out subSurfaceOutParams outParams
     )
     {
+        subSurfaceOutParams outParams;
         outParams.specularEnvironmentReflectance = specularEnvironmentReflectance;
 
     // ______________________________________________________________________________________
@@ -526,6 +526,7 @@ struct subSurfaceOutParams
 
         outParams.refractionIrradiance = refractionIrradiance.rgb;
     #endif
+        return outParams;
     }
 #endif
 

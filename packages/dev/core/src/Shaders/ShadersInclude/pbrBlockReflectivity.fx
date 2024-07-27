@@ -27,29 +27,29 @@ struct reflectivityOutParams
 };
 
 #define pbr_inline
-void reflectivityBlock(
-    in vec4 vReflectivityColor,
+reflectivityOutParams reflectivityBlock(
+    in vec4 vReflectivityColor
 #ifdef METALLICWORKFLOW
-    in vec3 surfaceAlbedo,
-    in vec4 metallicReflectanceFactors,
+    , in vec3 surfaceAlbedo
+    , in vec4 metallicReflectanceFactors
 #endif
 #ifdef REFLECTIVITY
-    in vec3 reflectivityInfos,
-    in vec4 surfaceMetallicOrReflectivityColorMap,
+    , in vec3 reflectivityInfos
+    , in vec4 surfaceMetallicOrReflectivityColorMap
 #endif
 #if defined(METALLICWORKFLOW) && defined(REFLECTIVITY)  && defined(AOSTOREINMETALMAPRED)
-    in vec3 ambientOcclusionColorIn,
+    , in vec3 ambientOcclusionColorIn
 #endif
 #ifdef MICROSURFACEMAP
-    in vec4 microSurfaceTexel,
+    , in vec4 microSurfaceTexel
 #endif
 #ifdef DETAIL
-    in vec4 detailColor,
-    in vec4 vDetailInfos,
+    , in vec4 detailColor
+    , in vec4 vDetailInfos
 #endif
-    out reflectivityOutParams outParams
 )
 {
+    reflectivityOutParams outParams;
     float microSurface = vReflectivityColor.a;
     vec3 surfaceReflectivityColor = vReflectivityColor.rgb;
 
@@ -163,4 +163,6 @@ void reflectivityBlock(
     outParams.microSurface = microSurface;
     outParams.roughness = roughness;
     outParams.surfaceReflectivityColor = surfaceReflectivityColor;
+
+    return outParams;
 }

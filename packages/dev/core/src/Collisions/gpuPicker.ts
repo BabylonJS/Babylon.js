@@ -66,7 +66,7 @@ export class GPUPicker {
 
         const defines: string[] = [];
         const options = {
-            attributes: [VertexBuffer.PositionKind, this._attributeName],
+            attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
             uniforms: ["world", "viewProjection", "meshID"],
             needAlphaBlending: false,
             defines: defines,
@@ -247,9 +247,9 @@ export class GPUPicker {
         }
 
         this._meshRenderingCount = 0;
-        // Ensure ints
-        x = x >> 0;
-        y = y >> 0;
+        // Ensure ints and adapt to screen resolution
+        x = (window.devicePixelRatio * x) >> 0;
+        y = (window.devicePixelRatio * y) >> 0;
 
         if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
             return Promise.resolve(null);

@@ -25,7 +25,7 @@
         "watch:source": "tsc -b tsconfig.build.json -w",
         "watch": "build-tools -c dev-watch --packages \"core\" -wa"
     },
-    "sideEffects": false,
+    "sideEffects": true,
     "devDependencies": {
         "@dev/build-tools": "^1.0.0",
         "@types/draco3d": "^1.4.3",

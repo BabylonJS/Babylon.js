@@ -80,6 +80,7 @@ export class AnimationGroup implements IDisposable {
     private _enableBlending: Nullable<boolean> = null;
     private _blendingSpeed: Nullable<number> = null;
     private _numActiveAnimatables = 0;
+    private _shouldStart = true;
 
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
@@ -543,6 +544,7 @@ export class AnimationGroup implements IDisposable {
         }
 
         this._targetedAnimations.push(targetedAnimation);
+        this._shouldStart = true;
 
         return targetedAnimation;
     }
@@ -648,6 +650,7 @@ export class AnimationGroup implements IDisposable {
 
         this._loopAnimation = loop;
 
+        this._shouldStart = false;
         this._animationLoopCount = 0;
         this._animationLoopFlags.length = 0;
 
@@ -718,7 +721,7 @@ export class AnimationGroup implements IDisposable {
      */
     public play(loop?: boolean): AnimationGroup {
         // only if there are animatable available
-        if (this.isStarted && this._animatables.length) {
+        if (this.isStarted && this._animatables.length && !this._shouldStart) {
             if (loop !== undefined) {
                 this.loopAnimation = loop;
             }

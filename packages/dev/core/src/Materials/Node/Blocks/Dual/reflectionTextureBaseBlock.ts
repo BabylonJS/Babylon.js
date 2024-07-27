@@ -275,6 +275,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
             return "";
         }
 
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
         this._define3DName = state._getFreeDefineName("REFLECTIONMAP_3D");
         this._defineCubicName = state._getFreeDefineName("REFLECTIONMAP_CUBIC");
         this._defineSphericalName = state._getFreeDefineName("REFLECTIONMAP_SPHERICAL");
@@ -293,7 +294,6 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         state._emitUniformFromString(this._reflectionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
         let code = "";
-        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
         this._worldPositionNameInFragmentOnlyMode = state._getFreeVariableName("worldPosition");
 
@@ -373,7 +373,7 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         state._emitFunctionFromInclude("reflectionFunction", comments, {
             replaceStrings: [
                 { search: /vec3 computeReflectionCoords/g, replace: "void DUMMYFUNC" },
-                { search: /fn computeReflectionCoords/g, replace: "void DUMMYFUNC" },
+                { search: /fn computeReflectionCoords\(worldPos: vec4f,worldNormal: vec3f\)->vec3f/g, replace: "fn DUMMYFUNC()" },
             ],
         });
 
@@ -407,19 +407,14 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
         if (!worldPos) {
             worldPos = this.generateOnlyFragmentCode ? this._worldPositionNameInFragmentOnlyMode : `v_${this.worldPosition.associatedVariableName}`;
         }
-        let reflectionMatrix = this._reflectionMatrixName;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+        const reflectionMatrix = (isWebGPU ? "uniforms." : "") + this._reflectionMatrixName;
         const direction = `normalize(${this._directionWName})`;
         const positionUVW = `${this._positionUVWName}`;
         const vEyePosition = `${this.cameraPosition.associatedVariableName}`;
         const view = `${this.view.associatedVariableName}`;
 
         worldNormalVarName += ".xyz";
-
-        if (state.shaderLanguage === ShaderLanguage.WGSL && !this.generateOnlyFragmentCode) {
-            worldPos = "fragmentInputs." + worldPos;
-
-            reflectionMatrix = "uniforms." + reflectionMatrix;
-        }
 
         let code = `
             #ifdef ${this._defineMirroredEquirectangularFixedName}

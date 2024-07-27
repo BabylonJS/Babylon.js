@@ -110,7 +110,7 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 
 	// Going back to gamma space
 	rgb = toGammaSpaceVec3(rgb);
-	rgb = saturate(rgb);
+	rgb = saturateVec3(rgb);
 
 #ifdef CONTRAST
 	// Contrast EaseInOut
@@ -150,7 +150,7 @@ fn applyImageProcessing(result: vec4f) -> vec4f {
 #ifdef DITHER
 	var rand: f32 = getRand(fragmentInputs.position.xy * uniforms.vInverseScreenSize);
 	var dither: f32 = mix(-uniforms.ditherIntensity, uniforms.ditherIntensity, rand);
-	rgb = saturate(rgb +  vec3f(dither));
+	rgb = saturateVec3(rgb +  vec3f(dither));
 #endif
 
 	#define CUSTOM_IMAGEPROCESSINGFUNCTIONS_UPDATERESULT_ATEND

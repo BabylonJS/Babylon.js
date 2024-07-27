@@ -381,13 +381,8 @@ export function CreateDecal(
             let faceVertices: Nullable<DecalVertex[]> = oneFaceVertices;
 
             faceVertices[0] = extractDecalVector3(index, transformMatrix);
-            if (useLocalComputation) {
-                faceVertices[1] = extractDecalVector3(index + 2, transformMatrix);
-                faceVertices[2] = extractDecalVector3(index + 1, transformMatrix);
-            } else {
-                faceVertices[1] = extractDecalVector3(index + 1, transformMatrix);
-                faceVertices[2] = extractDecalVector3(index + 2, transformMatrix);
-            }
+            faceVertices[1] = extractDecalVector3(index + 1, transformMatrix);
+            faceVertices[2] = extractDecalVector3(index + 2, transformMatrix);
 
             if (options.cullBackFaces) {
                 // If all the normals of the vertices of the face are pointing away from the view direction we discard the face.

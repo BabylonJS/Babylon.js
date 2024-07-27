@@ -133,6 +133,14 @@ export class NodeGeometry {
     }
 
     /**
+     * Gets the vertex data. This needs to be done after build() was called.
+     * This is used to access vertexData when creating a mesh is not required.
+     */
+    public get vertexData() {
+        return this._vertexData;
+    }
+
+    /**
      * Get a block by its name
      * @param name defines the name of the block to retrieve
      * @returns the required block or null if not found

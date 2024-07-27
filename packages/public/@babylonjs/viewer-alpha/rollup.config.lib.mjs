@@ -1,9 +1,9 @@
 import typescript from "@rollup/plugin-typescript";
-//import terser from "@rollup/plugin-terser";
 import { dts } from "rollup-plugin-dts";
 
 const commonConfig = {
     input: "../../../tools/viewer-alpha/src/index.ts",
+    external: (id) => /^@babylonjs\/(core|loaders)(\/|$)/.test(id),
 };
 
 const jsConfig = {
@@ -14,7 +14,7 @@ const jsConfig = {
         format: "es",
         exports: "named",
     },
-    plugins: [typescript({ tsconfig: "tsconfig.build.json" })],
+    plugins: [typescript({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
 const dtsConfig = {
@@ -23,7 +23,7 @@ const dtsConfig = {
         file: "lib/index.d.ts",
         format: "es",
     },
-    plugins: [dts({ tsconfig: "tsconfig.build.json" })],
+    plugins: [dts({ tsconfig: "tsconfig.build.lib.json" })],
 };
 
 export default [jsConfig, dtsConfig];

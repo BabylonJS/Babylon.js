@@ -11,7 +11,7 @@
     };
 
     #define pbr_inline
-    void anisotropicBlock(
+    anisotropicOutParams anisotropicBlock(
         in vec3 vAnisotropy,
         in float roughness,
     #ifdef ANISOTROPIC_TEXTURE
@@ -19,10 +19,10 @@
     #endif
         in mat3 TBN,
         in vec3 normalW,
-        in vec3 viewDirectionW,
-        out anisotropicOutParams outParams
+        in vec3 viewDirectionW
     )
     {
+        anisotropicOutParams outParams;
         float anisotropy = vAnisotropy.b;
         vec3 anisotropyDirection = vec3(vAnisotropy.xy, 0.);
 
@@ -50,5 +50,6 @@
         outParams.anisotropicTangent = anisotropicTangent;
         outParams.anisotropicBitangent = anisotropicBitangent;
         outParams.anisotropicNormal = getAnisotropicBentNormals(anisotropicTangent, anisotropicBitangent, normalW, viewDirectionW, anisotropy, roughness);
+        return outParams;
     }
 #endif

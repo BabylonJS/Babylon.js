@@ -535,7 +535,7 @@ export class TextureBlock extends NodeMaterialBlock {
             }
 
             state.compilationString += `#ifdef ${this._gammaDefineName}
-                ${output.associatedVariableName} = toLinearSpace(${output.associatedVariableName});
+                ${output.associatedVariableName} = ${state._toLinearSpace(output)};
                 #endif
             `;
         }
