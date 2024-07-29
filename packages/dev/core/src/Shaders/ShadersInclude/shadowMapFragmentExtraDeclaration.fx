@@ -5,7 +5,7 @@
 #if SM_SOFTTRANSPARENTSHADOW == 1
 	#include<bayerDitherFunctions>
 
-    uniform float softTransparentShadowSM;
+    uniform vec2 softTransparentShadowSM;
 #endif
 
 varying float vDepthMetricSM;
