@@ -49,7 +49,7 @@ fn albedoOpacityBlock(
     #endif
 
     #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-        surfaceAlbedo *= vColor.rgb;
+        surfaceAlbedo *= fragmentInputs.vColor.rgb;
     #endif
 
     #ifdef DETAIL

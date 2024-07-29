@@ -1,6 +1,7 @@
 var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX) || defined(DETAIL)
+	var vTBN = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
 	#ifdef NORMALXYSCALE
 		var normalScale: f32 = 1.0;
 	#elif defined(BUMP)

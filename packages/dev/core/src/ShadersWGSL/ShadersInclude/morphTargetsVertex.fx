@@ -21,7 +21,7 @@
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
-				tangentUpdated.xyz = tangentUpdated.xyz + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
+				tangentUpdated = vec4f(tangentUpdated.xyz + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}], tangentUpdated.a);
 			#endif
 		}
 		#endif

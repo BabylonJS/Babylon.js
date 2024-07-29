@@ -1,14 +1,14 @@
 #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-    vColor =  vec4f(1.0);
+    vertexOutputs.vColor = vec4f(1.0);
     #ifdef VERTEXCOLOR
         #ifdef VERTEXALPHA
-            vColor *= color;
+            vertexOutputs.vColor *= vertexInputs.color;
         #else
-            vColor.rgb *= color.rgb;
+            vertexOutputs.vColor = vec4f(vertexOutputs.vColor.rgb * vertexInputs.color.rgb, vertexOutputs.vColor.a);
         #endif
     #endif
 
     #ifdef INSTANCESCOLOR
-        vColor *= instanceColor;
+        rtexOutputs.vColor = vec4f(vertexOutputs.vColor.rgb * vertexInputs.instanceColor, vertexOutputs.vColor.a);
     #endif
 #endif
