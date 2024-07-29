@@ -28,9 +28,6 @@ function stringToColorHash(str) {
 }
 
 function queryRollupStats(filter, statsFilePath) {
-    console.log(`filter: ${filter}`);
-    console.log(`statsFilePath: ${statsFilePath}`);
-
     const { nodeMetas } = JSON.parse(fs.readFileSync(statsFilePath, "utf8"));
     const referenceStack = [];
 
