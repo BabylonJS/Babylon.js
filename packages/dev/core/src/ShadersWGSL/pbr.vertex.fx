@@ -1,4 +1,4 @@
-#include<__decl__pbrVertex>
+#include<pbrUboDeclaration>
 
 #define CUSTOM_VERTEX_BEGIN
 
@@ -88,7 +88,7 @@ varying vColor: vec4f;
 #include<bumpVertexDeclaration>
 #include<clipPlaneVertexDeclaration>
 #include<fogVertexDeclaration>
-#include<__decl__lightVxFragment>[0..maxSimultaneousLights]
+#include<lightVxUboDeclaration>[0..maxSimultaneousLights]
 
 #include<morphTargetsVertexGlobalDeclaration>
 #include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]

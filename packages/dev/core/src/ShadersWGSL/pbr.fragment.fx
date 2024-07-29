@@ -9,10 +9,10 @@
 #endif
 
 // Declaration
-#include<__decl__pbrFragment>
+#include<pbrUboDeclaration>
 
 #include<pbrFragmentExtraDeclaration>
-#include<__decl__lightFragment>[0..maxSimultaneousLights]
+#include<lightUboDeclaration>[0..maxSimultaneousLights]
 #include<pbrFragmentSamplersDeclaration>
 #include<imageProcessingDeclaration>
 #include<clipPlaneFragmentDeclaration>
