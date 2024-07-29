@@ -1,7 +1,6 @@
 var uvOffset: vec2f =  vec2f(0.0, 0.0);
 
 #if defined(BUMP) || defined(PARALLAX) || defined(DETAIL)
-	var vTBN = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
 	#ifdef NORMALXYSCALE
 		var normalScale: f32 = 1.0;
 	#elif defined(BUMP)
@@ -11,7 +10,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	#endif
 
 	#if defined(TANGENT) && defined(NORMAL)
-		var TBN: mat3x3f = vTBN;
+		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
 	#elif defined(BUMP)
 		// flip the uv for the backface
 		var TBNUV: vec2f = select(-fragmentInputs.vBumpUV, fragmentInputs.vBumpUV, fragmentInputs.frontFacing);
@@ -23,7 +22,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	#endif
 #elif defined(ANISOTROPIC)
 	#if defined(TANGENT) && defined(NORMAL)
-		var TBN: mat3x3f = vTBN;
+		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
 	#else
 		// flip the uv for the backface
 		var TBNUV: vec2f = select( -vMainUV1, vMainUV1, fragmentInputs.frontFacing);
