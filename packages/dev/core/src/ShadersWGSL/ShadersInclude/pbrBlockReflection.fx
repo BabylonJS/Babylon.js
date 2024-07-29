@@ -290,9 +290,9 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #ifdef ANISOTROPIC
-                    var irradianceVector: vec3f =  vec3f(reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
                 #else
-                    var irradianceVector: vec3f =  vec3f(reflectionMatrix *  vec4f(normalW, 0)).xyz;
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
                 #endif
 
                 #ifdef REFLECTIONMAP_OPPOSITEZ

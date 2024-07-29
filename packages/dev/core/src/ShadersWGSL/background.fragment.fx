@@ -220,7 +220,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef REFLECTION
         #ifdef PROJECTED_GROUND
             var reflectionVector: vec3f = project(viewDirectionW, scene.vEyePosition.xyz);
-            reflectionVector =  vec3f(reflectionMatrix *  vec4f(reflectionVector, 1.));
+            reflectionVector =  (reflectionMatrix *  vec4f(reflectionVector, 1.)).xyz;
         #else
             var reflectionVector: vec3f = computeReflectionCoords( vec4f(fragmentInputs.vPositionW, 1.0), normalW);
         #endif
