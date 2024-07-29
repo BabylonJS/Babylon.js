@@ -744,7 +744,7 @@ export class AnimationGroup implements IDisposable {
         if (!this._isStarted) {
             this.play();
             this.goToFrame(0);
-            this.stop();
+            this.stop(true);
             return this;
         }
 
@@ -779,16 +779,17 @@ export class AnimationGroup implements IDisposable {
 
     /**
      * Stop all animations
+     * @param skipOnAnimationEnd defines if the system should not raise onAnimationEnd. Default is false
      * @returns the animation group
      */
-    public stop(): AnimationGroup {
+    public stop(skipOnAnimationEnd = false): AnimationGroup {
         if (!this._isStarted) {
             return this;
         }
 
         const list = this._animatables.slice();
         for (let index = 0; index < list.length; index++) {
-            list[index].stop(undefined, undefined, true, true);
+            list[index].stop(undefined, undefined, true, skipOnAnimationEnd);
         }
 
         // We will take care of removing all stopped animatables
