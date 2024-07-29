@@ -87,10 +87,10 @@ export class HTML3DElement extends HTMLElement {
     public attributeChangedCallback(name: (typeof HTML3DElement.observedAttributes)[number], oldValue: string, newValue: string) {
         switch (name) {
             case "src":
-                this._viewer.loadModelAsync(newValue).catch(Logger.Log);
+                this._viewer.loadModelAsync(new URL(newValue)).catch(Logger.Log);
                 break;
             case "env":
-                this._viewer.loadEnvironmentAsync(newValue).catch(Logger.Log);
+                this._viewer.loadEnvironmentAsync(new URL(newValue)).catch(Logger.Log);
                 break;
         }
     }

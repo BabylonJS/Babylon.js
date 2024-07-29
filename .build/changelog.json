@@ -1,6 +1,62 @@
 {
-    "fromTag": "7.17.0",
+    "fromTag": "7.17.1",
     "changelog": {
+        "7.17.2": [
+            {
+                "pr": "15331",
+                "title": "set activeView regardless of view.camera",
+                "description": "fixes where `engine.activeView` was always null if no camera is set\r\n\r\naddresses https://forum.babylonjs.com/t/activeview-for-multi-canvas-should-be-set-regardless-of-camera/52329",
+                "author": {
+                    "name": "zb-sj",
+                    "url": "https://github.com/zb-sj"
+                },
+                "files": [
+                    "packages/dev/core/src/Engines/AbstractEngine/abstractEngine.views.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15330",
+                "title": "gpuPicker adapt to screen resolution",
+                "description": "Fix the position of xy screen coordinates on devices with different pixel ratios.",
+                "author": {
+                    "name": "zhangyahan",
+                    "url": "https://github.com/zhangyahan"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15329",
+                "title": "Fix Texture Decals shader recompilation",
+                "description": null,
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Meshes/meshUVSpaceRenderer.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15328",
+                "title": "Move playground qr code position",
+                "description": "Move to bottom left to be less obstructive.",
+                "author": {
+                    "name": "bghgary",
+                    "url": "https://github.com/bghgary"
+                },
+                "files": [
+                    "packages/tools/playground/src/scss/qrCode.scss"
+                ],
+                "tags": []
+            }
+        ],
         "7.17.1": [
             {
                 "pr": "15326",

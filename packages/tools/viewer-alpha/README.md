@@ -20,10 +20,16 @@ Runs the test app and debug the code.
 ### `npm run analyze`
 Visualizes the bundled size as a flame chart. This is useful for understanding how different parts of @babylonjs/core and @babylonjs/loaders contribute to the bundle size, and how to optimize it.
 
-Also generates a dist/analyze/stats.json file via rollup-plugin-visualizer. Use the `queryRollupStats.js` script to figure out why a particular module is not being tree shaken (e.g. the module reference stacks). For example:
+### `npm run import-chains -- <partial file path>`
+NOTE: `npm run analyze` must be run first.
+
+Prints out all the import chains that lead to a particular module. This is useful for understanding why a particular module is not being tree shaken. For example:
 ```
-node ../../../scripts/queryRollupStats.js standardmaterial dist/analyze/stats.json
+npm run import-chains -- standardmaterial
 ```
 
-### `npm run start:bundle-test`
-Tests the bundled code in a browser. This is just here to verify that the bundled code has everything needed to actually run successfully, so we know we are not missing any code in our size analysis.
+### `npm run start:analyze`
+Tests the analyze bundled code in a browser. This is just here to verify that the bundled code has everything needed to actually run successfully, so we know we are not missing any code in our size analysis.
+
+### `npm run start:coverage`
+Creates a non-minified bundle, instruments it with nyc/istanbul, and launches the result in the browser. At this point, the web app can be interacted with manually to generate coverage data. Pressing the "Collect Coverage" button will generate and visualize a coverage report as well as an unused bytes flame chart.
