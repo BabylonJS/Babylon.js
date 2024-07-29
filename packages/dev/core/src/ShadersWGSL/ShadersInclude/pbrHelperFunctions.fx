@@ -67,7 +67,7 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
             bentNormal = normalize(cross(bentNormal, B));
             // This heuristic can probably be improved upon
             var sq = 1.0 - anisotropy * (1.0 - roughness);
-            var a: f32 = sq * sq;
+            var a: f32 = sq * sq * sq * sq;
             bentNormal = normalize(mix(bentNormal, N, a));
             return bentNormal;
         }

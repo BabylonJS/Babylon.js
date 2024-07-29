@@ -172,16 +172,8 @@ export class LightBlock extends NodeMaterialBlock {
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
             await import(
-                /* webpackChunkName: "lightFragmentDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightFragmentDeclaration"
-            );
-            await import(
                 /* webpackChunkName: "lightFragment.wgsl" */
                 "../../../../ShadersWGSL/ShadersInclude/lightFragment"
-            );
-            await import(
-                /* webpackChunkName: "lightFragmentDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightFragmentDeclaration"
             );
             await import(
                 /* webpackChunkName: "lightUboDeclaration.wgsl" */
@@ -190,14 +182,6 @@ export class LightBlock extends NodeMaterialBlock {
             await import(
                 /* webpackChunkName: "lightVxUboDeclaration.wgsl" */
                 "../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightFragmentDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightFragmentDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightVxFragmentDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightVxFragmentDeclaration"
             );
             await import(
                 /* webpackChunkName: "helperFunctions.wgsl" */
@@ -225,20 +209,12 @@ export class LightBlock extends NodeMaterialBlock {
                 "../../../../Shaders/ShadersInclude/lightFragment"
             );
             await import(
-                /* webpackChunkName: "lightFragmentDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightFragmentDeclaration"
-            );
-            await import(
                 /* webpackChunkName: "lightUboDeclaration.glsl" */
                 "../../../../Shaders/ShadersInclude/lightUboDeclaration"
             );
             await import(
                 /* webpackChunkName: "lightVxUboDeclaration.glsl" */
                 "../../../../Shaders/ShadersInclude/lightVxUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightFragmentDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightFragmentDeclaration"
             );
             await import(
                 /* webpackChunkName: "lightVxFragmentDeclaration.glsl" */
