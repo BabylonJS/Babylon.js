@@ -175,9 +175,9 @@ fn evalSensitivity(opd: f32, shift: vec3f) -> vec3f {
 
     const val: vec3f =  vec3f(5.4856e-13, 4.4201e-13, 5.2481e-13);
     const pos: vec3f =  vec3f(1.6810e+06, 1.7953e+06, 2.2084e+06);
-    const var: vec3f =  vec3f(4.3278e+09, 9.3046e+09, 6.6121e+09);
+    const vr: vec3f =  vec3f(4.3278e+09, 9.3046e+09, 6.6121e+09);
 
-    var xyz: vec3f = val * sqrt(2.0 * PI * var) * cos(pos * phase + shift) * exp(-square(phase) * var);
+    var xyz: vec3f = val * sqrt(2.0 * PI * vr) * cos(pos * phase + shift) * exp(-square(phase) * vr);
     xyz.x += 9.7470e-14 * sqrt(2.0 * PI * 4.5282e+09) * cos(2.2399e+06 * phase + shift[0]) * exp(-4.5282e+09 * square(phase));
     xyz /= 1.0685e-7;
 
@@ -207,7 +207,9 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     var R21: f32 = R12;
     var T121: f32 = 1.0 - R12;
     var phi12: f32 = 0.0;
-    if (iridescenceIOR < outsideIOR) phi12 = PI;
+    if (iridescenceIOR < outsideIOR) {
+        phi12 = PI;
+    }
     var phi21: f32 = PI - phi12;
 
     // Second interface
@@ -215,9 +217,15 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     var R1: vec3f = getR0fromIORs(baseIOR, iridescenceIOR);
     var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
     var phi23: vec3f =  vec3f(0.0);
-    if (baseIOR[0] < iridescenceIOR) phi23[0] = PI;
-    if (baseIOR[1] < iridescenceIOR) phi23[1] = PI;
-    if (baseIOR[2] < iridescenceIOR) phi23[2] = PI;
+    if (baseIOR[0] < iridescenceIOR) {
+        phi23[0] = PI;
+    }
+    if (baseIOR[1] < iridescenceIOR) {
+        phi23[1] = PI;
+    }
+    if (baseIOR[2] < iridescenceIOR) {
+        phi23[2] = PI;
+    }
 
     // Phase shift
     var opd: f32 = 2.0 * iridescenceIOR * thinFilmThickness * cosTheta2;

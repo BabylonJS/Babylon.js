@@ -1,3 +1,3 @@
 #ifdef UV{X}
-attribute uv: vec2f{X};
+attribute uv{X}: vec2f;
 #endif

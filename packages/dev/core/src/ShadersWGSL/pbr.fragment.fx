@@ -160,7 +160,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
             reflectanceFactorsMap = toLinearSpaceVec3(reflectanceFactorsMap);
         #endif
 
-        metallicReflectanceFactors.rgb *= reflectanceFactorsMap.rgb;
+        metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
     #endif
     #ifdef METALLIC_REFLECTANCE
         var metallicReflectanceFactorsMap: vec4f = textureSample(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
@@ -169,7 +169,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
-            metallicReflectanceFactors.rgb *= metallicReflectanceFactorsMap.rgb;
+            metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
         #endif
         metallicReflectanceFactors *= metallicReflectanceFactorsMap.a;
     #endif

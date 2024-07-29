@@ -1,35 +1,35 @@
 #ifdef LIGHT{X}
-	uniform vLightData: vec4f{X};
-	uniform vLightDiffuse: vec4f{X};
+	uniform vLightData{X}: vec4f;
+	uniform vLightDiffuse{X}: vec4f;
 
 	#ifdef SPECULARTERM
-		uniform vLightSpecular: vec4f{X};
+		uniform vLightSpecular{X}: vec4f;
 	#else
-		var vLightSpecular: vec4f{X} =  vec4f(0.);
+		var vLightSpecular{X}: vec4f =  vec4f(0.);
 	#endif
 	#ifdef SHADOW{X}
         #ifdef SHADOWCSM{X}
-            uniform lightMatrix: mat4x4f{X}[SHADOWCSMNUM_CASCADES{X}];
+            uniform lightMatrix{X}: mat4x4f[SHADOWCSMNUM_CASCADES{X}];
 
-            varying var vPositionFromLight: vec4f{X}[SHADOWCSMNUM_CASCADES{X}];
-            varying var vDepthMetric: f32{X}[SHADOWCSMNUM_CASCADES{X}];
-            varying var vPositionFromCamera: vec4f{X};
+            varying var vPositionFromLight{X}: vec4f[SHADOWCSMNUM_CASCADES{X}];
+            varying var vDepthMetric{X}: f32[SHADOWCSMNUM_CASCADES{X}];
+            varying var vPositionFromCamera{X}: vec4f;
         #elif defined(SHADOWCUBE{X})
 		#else
-			varying var vPositionFromLight: vec4f{X};
-			varying var vDepthMetric: f32{X};
+			varying var vPositionFromLight{X}: vec4f;
+			varying var vDepthMetric{X}: f32;
 
-			uniform lightMatrix: mat4x4f{X};
+			uniform lightMatrix{X}: mat4x4f;
 		#endif
-		uniform shadowsInfo: vec4f{X};
-		uniform depthValues: vec2f{X};
+		uniform shadowsInfo{X}: vec4f;
+		uniform depthValues{X}: vec2f;
 	#endif
 	#ifdef SPOTLIGHT{X}
-		uniform vLightDirection: vec4f{X};
-		uniform vLightFalloff: vec4f{X};
+		uniform vLightDirection{X}: vec4f;
+		uniform vLightFalloff{X}: vec4f;
 	#elif defined(POINTLIGHT{X})
-		uniform vLightFalloff: vec4f{X};
+		uniform vLightFalloff{X}: vec4f;
 	#elif defined(HEMILIGHT{X})
-		uniform vLightGround: vec3f{X};
+		uniform vLightGround{X}: vec3f;
 	#endif
 #endif
