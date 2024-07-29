@@ -122,7 +122,7 @@ varying vPositionW: vec3f;
         var o: vec3f = ro - c;
         var t: f32 = -o.y / d;
         var q: vec3f = o + rd * t;
-        return (dot(q, q) < r * r) ? t : 1e6;
+        return select(1e6, t, (dot(q, q) < r * r));
     }
 
     // From: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
@@ -150,8 +150,8 @@ varying vPositionW: vec3f;
     }
 
     fn project(viewDirectionW: vec3f, eyePosition: vec3f) -> vec3f {
-        var radius: f32 = projectedGroundInfos.x;
-        var height: f32 = projectedGroundInfos.y;
+        var radius: f32 = uniforms.projectedGroundInfos.x;
+        var height: f32 = uniforms.projectedGroundInfos.y;
 
         // reproject the cube ground to a sky sphere
         // to help with shadows
@@ -161,7 +161,7 @@ varying vPositionW: vec3f;
         var skySpherePositionW: vec3f = eyePosition + camDir * skySphereDistance;
 
         var p: vec3f = normalize(skySpherePositionW);
-        eyePosition.y -= height;
+        var upEyePosition = vec3f(eyePosition.x, eyePosition.y - height, eyePosition.z);
 
         // Let s remove extra conditions in the following block
         // var intersection: f32 = sphereIntersect(eyePosition, p, radius);
@@ -173,10 +173,10 @@ varying vPositionW: vec3f;
         //     p =  vec3f(0.0, 1.0, 0.0);
         // }
 
-        var sIntersection: f32 = sphereIntersect(eyePosition, p, radius);
+        var sIntersection: f32 = sphereIntersect(upEyePosition, p, radius);
         var h: vec3f =  vec3f(0.0, -height, 0.0);
-        var dIntersection: f32 = diskIntersectWithBackFaceCulling(eyePosition, p, h, radius);
-        p = (eyePosition + min(sIntersection, dIntersection) * p);
+        var dIntersection: f32 = diskIntersectWithBackFaceCulling(upEyePosition, p, h, radius);
+        p = (upEyePosition + min(sIntersection, dIntersection) * p);
 
         return p;
     }
@@ -220,7 +220,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef REFLECTION
         #ifdef PROJECTED_GROUND
             var reflectionVector: vec3f = project(viewDirectionW, scene.vEyePosition.xyz);
-            reflectionVector =  (reflectionMatrix *  vec4f(reflectionVector, 1.)).xyz;
+            reflectionVector =  (uniforms.reflectionMatrix * vec4f(reflectionVector, 1.)).xyz;
         #else
             var reflectionVector: vec3f = computeReflectionCoords( vec4f(fragmentInputs.vPositionW, 1.0), normalW);
         #endif
