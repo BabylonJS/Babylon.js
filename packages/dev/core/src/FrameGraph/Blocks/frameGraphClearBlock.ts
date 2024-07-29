@@ -67,15 +67,15 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
 
         if (isBackBuffer || isBackBufferDepthStencilAttachment) {
             builder.addExecuteFunction(() => {
-                this._engine.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+                builder.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
             });
         } else {
             const rtWrapper = inputTexture.getValueAsRenderTargetWrapper();
             if (rtWrapper) {
                 builder.addExecuteFunction(() => {
-                    builder.bindRenderTargetWrapper(rtWrapper);
-                    this._engine.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
-                    builder.bindRenderTargetWrapper(null);
+                    builder.bindRenderTarget(rtWrapper);
+                    builder.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+                    builder.bindRenderTarget(null);
                 });
             }
         }

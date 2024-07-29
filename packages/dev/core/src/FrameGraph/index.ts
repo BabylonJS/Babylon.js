@@ -2,6 +2,7 @@
 export * from "./frameGraph";
 export * from "./frameGraphBlock";
 export * from "./frameGraphBlockConnectionPoint";
+export * from "./IFrameGraphSupport";
 export * from "./frameGraphBuilder";
 export * from "./Enums/frameGraphBlockConnectionPointTypes";
 export * from "./Blocks/index";

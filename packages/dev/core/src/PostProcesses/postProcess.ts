@@ -28,6 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
+import type { IFrameGraphSupport } from "../FrameGraph/IFrameGraphSupport";
 import type { FrameGraphBuilder } from "../FrameGraph/frameGraphBuilder";
 
 declare module "../Engines/abstractEngine" {
@@ -215,7 +216,7 @@ type TextureCache = { texture: RenderTargetWrapper; postProcessChannel: number; 
  * PostProcess can be used to apply a shader to a texture after it has been rendered
  * See https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses
  */
-export class PostProcess {
+export class PostProcess implements IFrameGraphSupport {
     /** @internal */
     public _parentContainer: Nullable<AbstractScene> = null;
 
@@ -1099,7 +1100,9 @@ export class PostProcess {
         return this._drawWrapper.effect;
     }
 
-    public renderToFrameGraph(frameGraphBuilder: FrameGraphBuilder) {
+    public frameGraphBuild(_builder: FrameGraphBuilder, _buildData?: unknown): void {}
+
+    public frameGraphRender(frameGraphBuilder: FrameGraphBuilder) {
         frameGraphBuilder.applyFullScreenEffect(this._drawWrapper, () => this._bind());
     }
 

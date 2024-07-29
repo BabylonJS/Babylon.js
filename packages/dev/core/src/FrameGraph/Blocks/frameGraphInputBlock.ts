@@ -10,7 +10,6 @@ import type { RenderTargetCreationOptions, TextureSize } from "../../Materials/T
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
 import type { Vector3 } from "../../Maths/math.vector";
 import type { RenderTargetWrapper } from "../../Engines/renderTargetWrapper";
-import { Texture } from "../../Materials/Textures/texture";
 import type { InternalTexture } from "../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../types";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
@@ -38,7 +37,6 @@ export type FrameGraphInputCreationOptions = FrameGraphInputTextureCreationOptio
  */
 export class FrameGraphInputBlock extends FrameGraphBlock {
     private _storedValue: Nullable<FrameGraphInputType> = null;
-    private _textureDebug: Nullable<Texture>;
     private _type: FrameGraphBlockConnectionPointTypes = FrameGraphBlockConnectionPointTypes.Undefined;
 
     /** Gets an observable raised when the value is changed */
@@ -172,8 +170,6 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
                 throw new Error(`FrameGraphInputBlock: Creation options are missing for texture "${this.name}"`);
             }
 
-            this._releaseTexture();
-
             const size = textureCreateOptions.sizeIsPercentage
                 ? {
                       width: (this._engine.getRenderWidth() * (textureCreateOptions.size as { width: number }).width) / 100,
@@ -181,31 +177,11 @@ export class FrameGraphInputBlock extends FrameGraphBlock {
                   }
                 : textureCreateOptions.size;
 
-            this.value = builder.createRenderTargetTexture(size, textureCreateOptions.options);
-
-            if (builder.debugTextures && builder.scene) {
-                this._textureDebug = new Texture(null, builder.scene);
-                this._textureDebug.name = this.name;
-                this._textureDebug._texture = this.value.texture!;
-                this._textureDebug._texture.incrementReferences();
-            }
+            this.value = builder.createRenderTargetTexture(this.name, size, textureCreateOptions.options);
         }
-    }
-
-    private _releaseTexture() {
-        if (!this.isExternal) {
-            if ((this.type & FrameGraphBlockConnectionPointTypes.TextureAllButBackBuffer) !== 0) {
-                this.getTypedValue<RenderTargetWrapper>()?.dispose();
-                this._storedValue = null;
-            }
-        }
-
-        this._textureDebug?.dispose();
-        this._textureDebug = null;
     }
 
     public override dispose() {
-        this._releaseTexture();
         this._storedValue = null;
         this.onValueChangedObservable.clear();
         super.dispose();

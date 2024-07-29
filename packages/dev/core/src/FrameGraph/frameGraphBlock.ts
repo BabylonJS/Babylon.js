@@ -52,6 +52,9 @@ export class FrameGraphBlock {
     /** @internal */
     public _codeVariableName = "";
 
+    /** @internal */
+    public _additionalConstructionParameters: Nullable<unknown[]> = null;
+
     /**
      * Gets the list of input points
      */
@@ -277,14 +280,15 @@ export class FrameGraphBlock {
     /**
      * Build the current node and generate the vertex data
      * @param builder defines the current generation builder
+     * @param removeFalseBlocks if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false)
      * @returns true if already built
      */
-    public build(builder: FrameGraphBuilder): boolean {
+    public build(builder: FrameGraphBuilder, removeFalseBlocks: boolean): boolean {
         if (this._buildId === builder.buildId) {
             return true;
         }
 
-        if (builder.removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
+        if (removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
             return false;
         }
 
@@ -295,14 +299,14 @@ export class FrameGraphBlock {
             if (!input.connectedPoint) {
                 if (!input.isOptional) {
                     // Emit a warning
-                    builder.notConnectedNonOptionalInputs.push(input);
+                    builder._notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
             }
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                block.build(builder);
+                block.build(builder, removeFalseBlocks);
             }
         }
 
@@ -322,7 +326,7 @@ export class FrameGraphBlock {
             for (const endpoint of output.endpoints) {
                 const block = endpoint.ownerBlock;
                 if (block) {
-                    block.build(builder);
+                    block.build(builder, removeFalseBlocks);
                 }
             }
         }
@@ -405,6 +409,9 @@ export class FrameGraphBlock {
         serializationObject.id = this.uniqueId;
         serializationObject.name = this.name;
         serializationObject.visibleOnFrame = this.visibleOnFrame;
+        if (this._additionalConstructionParameters) {
+            serializationObject.additionalConstructionParameters = this._additionalConstructionParameters;
+        }
 
         serializationObject.inputs = [];
         serializationObject.outputs = [];
@@ -527,9 +534,13 @@ export class FrameGraphBlock {
             const block = this as unknown as FrameGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.FrameGraphInputBlock("${this.name}", BABYLON.FrameGraphBlockConnectionPointTypes.${FrameGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.FrameGraphInputBlock("${this.name}", engine, BABYLON.FrameGraphBlockConnectionPointTypes.${FrameGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
-            codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}");\n`;
+            if (this._additionalConstructionParameters) {
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
+            } else {
+                codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine);\n`;
+            }
         }
 
         // Properties
@@ -575,7 +586,10 @@ export class FrameGraphBlock {
         const blockType = GetClass(serializationObject.customType);
 
         if (blockType) {
-            const block: FrameGraphBlock = new blockType();
+            const additionalConstructionParameters = serializationObject.additionalConstructionParameters;
+            const block: FrameGraphBlock = additionalConstructionParameters
+                ? new blockType("", this._engine, ...additionalConstructionParameters)
+                : new blockType("", this._engine);
             block._deserialize(serializationObject);
             return block;
         }

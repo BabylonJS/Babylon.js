@@ -41,8 +41,6 @@ export interface IFrameGraphEditorOptions {
  * Options that can be passed to the frame graph build method
  */
 export interface IFrameGraphCreateOptions {
-    /** if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false) */
-    removeFalseBlocks?: boolean;
     /** if true, textures created by the frame graph will be visible in the inspector, for easier debugging (default: false) */
     debugTextures?: boolean;
     /** Scene in which debugging textures are to be created */
@@ -140,10 +138,8 @@ export class FrameGraph {
     public constructor(name: string, engine: AbstractEngine, options?: IFrameGraphCreateOptions) {
         this.name = name;
         this._engine = engine;
-        this._frameGraphBuilder = new FrameGraphBuilder(engine);
 
         options = {
-            removeFalseBlocks: false,
             debugTextures: false,
             scene: undefined,
             autoConfigure: false,
@@ -154,16 +150,13 @@ export class FrameGraph {
 
         this._options = options;
 
+        this._frameGraphBuilder = new FrameGraphBuilder(engine, options.debugTextures, options.scene, options.verbose);
+
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(() => {
                 this.build();
             });
         }
-
-        this._frameGraphBuilder.verbose = !!options.verbose;
-        this._frameGraphBuilder.debugTextures = !!options.debugTextures;
-        this._frameGraphBuilder.scene = options.scene;
-        this._frameGraphBuilder.removeFalseBlocks = !!options.removeFalseBlocks;
     }
 
     /**
@@ -264,19 +257,20 @@ export class FrameGraph {
 
     /**
      * Build the final list of blocks that will be executed by the "execute" method
+     * @param removeFalseBlocks if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false)
      */
-    public build() {
+    public build(removeFalseBlocks = false) {
         if (!this.outputBlock) {
             throw new Error("You must define the outputBlock property before building the frame graph");
         }
 
-        this._initializeBlock(this.outputBlock);
+        this._initializeBlock(this.outputBlock, removeFalseBlocks);
 
         this._frameGraphBuilder.buildId = this._buildId;
 
-        this._frameGraphBuilder._start();
-        this.outputBlock.build(this._frameGraphBuilder);
-        this._frameGraphBuilder._end();
+        this._frameGraphBuilder._startBuild();
+        this.outputBlock.build(this._frameGraphBuilder, removeFalseBlocks);
+        this._frameGraphBuilder._endBuild();
 
         if (this._options.updateBuildId) {
             this._buildId = FrameGraph._BuildIdGenerator++;
@@ -317,7 +311,7 @@ export class FrameGraph {
         this._frameGraphBuilder._execute();
     }
 
-    private _initializeBlock(node: FrameGraphBlock) {
+    private _initializeBlock(node: FrameGraphBlock, removeFalseBlocks: boolean) {
         node.initialize();
         if (this._options.autoConfigure) {
             node.autoConfigure();
@@ -332,15 +326,12 @@ export class FrameGraph {
             if (connectedPoint) {
                 const block = connectedPoint.ownerBlock;
                 if (block !== node) {
-                    this._initializeBlock(block);
+                    this._initializeBlock(block, removeFalseBlocks);
                 }
             }
         }
 
-        if (
-            !this._options.removeFalseBlocks ||
-            (this._executedBlocks.indexOf(node) === -1 && this._options.removeFalseBlocks && (!node.executeCondition || node.executeCondition()))
-        ) {
+        if (!removeFalseBlocks || (this._executedBlocks.indexOf(node) === -1 && removeFalseBlocks && (!node.executeCondition || node.executeCondition()))) {
             this._executedBlocks.push(node);
         }
     }
@@ -390,7 +381,10 @@ export class FrameGraph {
         for (const parsedBlock of source.blocks) {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
-                const block: FrameGraphBlock = new blockType("", this._engine);
+                const additionalConstructionParameters = parsedBlock.additionalConstructionParameters;
+                const block: FrameGraphBlock = additionalConstructionParameters
+                    ? new blockType("", this._engine, ...additionalConstructionParameters)
+                    : new blockType("", this._engine);
                 block._deserialize(parsedBlock);
                 map[parsedBlock.id] = block;
 
