@@ -257,11 +257,6 @@ fn main(input : VertexInputs) -> FragmentInputs {
     // Vertex color
 #include<vertexColorMixing>
 
-    // Povar size: i32
-#if defined(POINTSIZE) && !defined(WEBGPU)
-    gl_PointSize = pointSize;
-#endif
-
     // Log. depth
 #include<logDepthVertex>
 
