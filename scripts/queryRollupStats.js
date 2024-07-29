@@ -10,15 +10,6 @@ const fs = require("fs");
 const path = require("path");
 const chalk = require("chalk");
 
-let [scriptPath, filter, statsFilePath = "stats.json"] = process.argv.slice(1);
-
-const { nodeMetas } = JSON.parse(fs.readFileSync(statsFilePath, "utf8"));
-const referenceStack = [];
-
-const matches = Object.entries(nodeMetas)
-    .filter(([key, value]) => value.id.toLowerCase().includes(filter.toLocaleLowerCase()))
-    .map(([key, value]) => key);
-
 function stringToColorHash(str) {
     // Simple hash function
     let hash = 0;
@@ -36,25 +27,46 @@ function stringToColorHash(str) {
     return color;
 }
 
-function traverse(uid) {
-    const node = nodeMetas[uid];
-    referenceStack.push(node.id);
+function queryRollupStats(filter, statsFilePath) {
+    console.log(`filter: ${filter}`);
+    console.log(`statsFilePath: ${statsFilePath}`);
 
-    if (node.importedBy.length === 0) {
-        for (let reference of referenceStack) {
-            const folder = path.dirname(reference);
-            const file = path.basename(reference);
-            reference = chalk.hex(stringToColorHash(reference))(`${folder}/${chalk.bold(file)}`);
-            console.log(reference);
+    const { nodeMetas } = JSON.parse(fs.readFileSync(statsFilePath, "utf8"));
+    const referenceStack = [];
+
+    function traverse(uid) {
+        const node = nodeMetas[uid];
+        referenceStack.push(node.id);
+
+        if (node.importedBy.length === 0) {
+            for (let reference of referenceStack) {
+                const folder = path.dirname(reference);
+                const file = path.basename(reference);
+                reference = chalk.hex(stringToColorHash(reference))(`${folder}/${chalk.bold(file)}`);
+                console.log(reference);
+            }
+            console.log();
+        } else {
+            for (const importedBy of node.importedBy) {
+                traverse(importedBy.uid);
+            }
         }
-        console.log();
-    } else {
-        for (const importedBy of node.importedBy) {
-            traverse(importedBy.uid);
-        }
+
+        referenceStack.pop();
     }
 
-    referenceStack.pop();
+    const matches = Object.entries(nodeMetas)
+        .filter(([key, value]) => value.id.toLowerCase().includes(filter.toLocaleLowerCase()))
+        .map(([key, value]) => key);
+
+    matches.forEach(traverse);
 }
 
-matches.forEach(traverse);
+if (require.main === module) {
+    const [scriptPath, filter, statsFilePath = "stats.json"] = process.argv.slice(1);
+    queryRollupStats(filter, statsFilePath);
+}
+
+module.exports = {
+    queryRollupStats,
+};
