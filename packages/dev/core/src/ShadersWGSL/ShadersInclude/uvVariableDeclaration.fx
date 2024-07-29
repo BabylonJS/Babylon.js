@@ -2,5 +2,5 @@
 	var uv{X}: vec2f =  vec2f(0., 0.);
 #endif
 #ifdef MAINUV{X}
-	vMainUV{X} = uv{X};
+	vertexOutputs.vMainUV{X} = vertexInputs.uv{X};
 #endif
