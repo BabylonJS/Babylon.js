@@ -52,7 +52,7 @@ struct iridescenceOutParams
                 clearCoatIntensity *= clearCoatMapData.x;
             #endif
 
-            topIor = mix(1.0, vClearCoatRefractionParams.w - 1., clearCoatIntensity);
+            topIor = mix(1.0, uniforms.vClearCoatRefractionParams.w - 1., clearCoatIntensity);
             // Infer new NdotV from NdotVUnclamped...
             viewAngle = sqrt(1.0 + ((1.0 / topIor) * (1.0 / topIor)) * ((NdotVUnclamped * NdotVUnclamped) - 1.0));
         #endif

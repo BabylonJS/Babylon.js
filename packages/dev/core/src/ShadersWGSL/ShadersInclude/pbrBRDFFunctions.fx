@@ -131,9 +131,9 @@ fn fresnelSchlickGGX(VdotH: f32, reflectance0: f32, reflectance90: f32) -> f32
     fn getR0RemappedForClearCoat(f0: vec3f) -> vec3f {
         #ifdef CLEARCOAT_DEFAULTIOR
             #ifdef MOBILE
-                return saturate(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256);
+                return saturateVec3(f0 * (f0 * 0.526868 + 0.529324) - 0.0482256);
             #else
-                return saturate(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998);
+                return saturateVec3(f0 * (f0 * (0.941892 - 0.263008 * f0) + 0.346479) - 0.0285998);
             #endif
         #else
             var s: vec3f = sqrt(f0);

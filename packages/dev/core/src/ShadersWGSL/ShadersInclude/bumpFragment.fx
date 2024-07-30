@@ -25,7 +25,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		var TBN: mat3x3f = mat3x3<f32>(input.vTBN0, input.vTBN1, input.vTBN2);	
 	#else
 		// flip the uv for the backface
-		var TBNUV: vec2f = select( -vMainUV1, vMainUV1, fragmentInputs.frontFacing);
+		var TBNUV: vec2f = select( -fragmentInputs.vMainUV1, fragmentInputs.vMainUV1, fragmentInputs.frontFacing);
 		var TBN: mat3x3f = cotangent_frame(normalW, input.vPositionW, TBNUV,  vec2f(1., 1.));
 	#endif
 #endif
