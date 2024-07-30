@@ -384,7 +384,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
         #endif
 
         iridescenceOut = iridescenceBlock(
-            vIridescenceParams
+            uniforms.vIridescenceParams
             , NdotV
             , specularEnvironmentR0
             #ifdef IRIDESCENCE_TEXTURE

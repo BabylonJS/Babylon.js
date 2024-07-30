@@ -159,8 +159,8 @@ fn getIORTfromAirToSurfaceR0(f0: vec3f) -> vec3f {
 }
 
 // Conversion FO/IOR
-fn getR0fromIORs(iorT: vec3f, iorI: f32) -> vec3f {
-    return square((iorT -  vec3f(iorI)) / (iorT +  vec3f(iorI)));
+fn getR0fromIORsVec3(iorT: vec3f, iorI: f32) -> vec3f {
+    return squareVec3((iorT -  vec3f(iorI)) / (iorT +  vec3f(iorI)));
 }
 
 fn getR0fromIORs(iorT: f32, iorI: f32) -> f32 {
@@ -213,8 +213,8 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     var phi21: f32 = PI - phi12;
 
     // Second interface
-    var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, 0.0, 0.9999)); // guard against 1.0
-    var R1: vec3f = getR0fromIORs(baseIOR, iridescenceIOR);
+    var baseIOR: vec3f = getIORTfromAirToSurfaceR0(clamp(baseF0, vec3f(0.0), vec3f(0.9999))); // guard against 1.0
+    var R1: vec3f = getR0fromIORsVec3(baseIOR, iridescenceIOR);
     var R23: vec3f = fresnelSchlickGGXVec3(cosTheta2, R1,  vec3f(1.));
     var phi23: vec3f =  vec3f(0.0);
     if (baseIOR[0] < iridescenceIOR) {
@@ -232,9 +232,9 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
     var phi: vec3f =  vec3f(phi21) + phi23;
 
     // Compound terms
-    var R123: vec3f = clamp(R12 * R23, 1e-5, 0.9999);
+    var R123: vec3f = clamp(R12 * R23, vec3f(1e-5), vec3f(0.9999));
     var r123: vec3f = sqrt(R123);
-    var Rs: vec3f = square(T121) * R23 / ( vec3f(1.0) - R123);
+    var Rs: vec3f = (T121 * T121) * R23 / ( vec3f(1.0) - R123);
 
     // Reflectance term for m = 0 (DC term amplitude)
     var C0: vec3f = R12 + Rs;
@@ -242,7 +242,7 @@ fn evalIridescence(outsideIOR: f32, eta2: f32, cosTheta1: f32, thinFilmThickness
 
     // Reflectance term for m > 0 (pairs of diracs)
     var Cm: vec3f = Rs - T121;
-    for (var m: i32 = 1; m <= 2; ++m)
+    for (var m: i32 = 1; m <= 2; m++)
     {
         Cm *= r123;
         var Sm: vec3f = 2.0 * evalSensitivity( f32(m) * opd,  f32(m) * phi);

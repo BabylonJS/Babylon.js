@@ -7,11 +7,9 @@ struct iridescenceOutParams
 };
 
 #ifdef IRIDESCENCE
-    #define pbr_inline
-    #define inline
     fn iridescenceBlock(
         vIridescenceParams: vec4f
-        , viewAngle: f32,
+        , viewAngle: f32
         , specularEnvironmentR0: vec3f
         #ifdef IRIDESCENCE_TEXTURE
             , iridescenceMapData: vec2f
