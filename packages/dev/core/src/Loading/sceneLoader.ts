@@ -559,7 +559,7 @@ export class SceneLoader {
               ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
-        // TODO: Check if the extension is disabled
+        // TODO: Check if the plugin is disabled?
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             // eslint-disable-next-line no-throw-literal

@@ -568,6 +568,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadExtensions(): void {
         for (const name in GLTFLoader._RegisteredExtensions) {
+            // TODO: Check if the extension is disabled?
             const extension = GLTFLoader._RegisteredExtensions[name].factory(this, this.options.extensionOptions);
             if (extension.name !== name) {
                 Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
