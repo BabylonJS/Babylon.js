@@ -87,13 +87,6 @@ fn toLinearSpaceExact(color: vec3<f32>) -> vec3<f32>
     return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec3<f32>(0.04045)));
 }
 
-fn toLinearSpaceExactVec4(color: vec4<f32>) -> vec4<f32>
-{
-    let nearZeroSection: vec4<f32> = 0.0773993808 * color;
-    let remainingSection: vec4<f32> = pow(0.947867299 * (color + vec4<f32>(0.055)), vec4<f32>(2.4));
-    return mix(remainingSection, nearZeroSection, lessThanEqual(color, vec4<f32>(0.04045)));
-}
-
 fn toGammaSpaceExact(color: vec3<f32>) -> vec3<f32>
 {
     let nearZeroSection: vec3<f32> = 12.92 * color;
@@ -123,9 +116,9 @@ fn toLinearSpaceVec3(color: vec3<f32>) -> vec3<f32>
 fn toLinearSpaceVec4(color: vec4<f32>) -> vec4<f32>
 {
     #if USE_EXACT_SRGB_CONVERSIONS
-        return toLinearSpaceExactVec4(color);
+        return vec4f(toLinearSpaceExact(color.rgb), color.a);
     #else
-        return pow(color, vec4<f32>(LinearEncodePowerApprox));
+        return vec4f(pow(color.rgb, vec3f(LinearEncodePowerApprox)), color.a);
     #endif
 }
 
