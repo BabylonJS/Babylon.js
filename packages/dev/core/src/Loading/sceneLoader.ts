@@ -244,7 +244,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      * @param onError The callback when import fails
      * @returns The loaded asset container
      */
-    loadAssetContainer(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
+    loadAssetContainer(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void, options?: SceneLoaderPluginOptions): AssetContainer;
 }
 
 /**
@@ -290,7 +290,14 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param fileName Defines the name of the file to load
      * @returns The loaded asset container
      */
-    loadAssetContainerAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
+    loadAssetContainerAsync(
+        scene: Scene,
+        data: unknown,
+        rootUrl: string,
+        onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        fileName?: string,
+        options?: SceneLoaderPluginOptions
+    ): Promise<AssetContainer>;
 }
 
 /**
@@ -367,6 +374,16 @@ interface IFileInfo {
      * Gets raw binary data.
      */
     rawData: Nullable<ArrayBufferView>;
+}
+
+export interface SceneLoaderPluginOptions extends Record<string, ({ enabled?: boolean } & Record<string, unknown>) | undefined> {}
+
+export interface SceneLoaderOptions {
+    rootUrl?: string;
+    scene?: Scene;
+    onProgress?: (event: ISceneLoaderProgressEvent) => void;
+    pluginExtension?: string;
+    pluginOptions?: SceneLoaderPluginOptions;
 }
 
 /**
@@ -542,6 +559,8 @@ export class SceneLoader {
               ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
+        // TODO: Check if the extension is disabled
+
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             // eslint-disable-next-line no-throw-literal
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
@@ -713,13 +732,13 @@ export class SceneLoader {
      */
     public static RegisterPlugin(plugin: ISceneLoaderPlugin | ISceneLoaderPluginAsync): void {
         if (typeof plugin.extensions === "string") {
-            const extension = <string>plugin.extensions;
+            const extension = plugin.extensions;
             SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                 plugin: plugin,
                 isBinary: false,
             };
         } else {
-            const extensions = <ISceneLoaderPluginExtensions>plugin.extensions;
+            const extensions = plugin.extensions;
             Object.keys(extensions).forEach((extension) => {
                 SceneLoader._RegisteredPlugins[extension.toLowerCase()] = {
                     plugin: plugin,
@@ -1137,13 +1156,27 @@ export class SceneLoader {
      */
     public static LoadAssetContainer(
         rootUrl: string,
+        sceneFilename?: string | File | ArrayBufferView,
+        scene?: Nullable<Scene>,
+        onSuccess?: Nullable<(assets: AssetContainer) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
+    ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
+        return SceneLoader._LoadAssetContainerCore(rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name, {});
+    }
+
+    private static _LoadAssetContainerCore(
+        rootUrl: string,
         sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(assets: AssetContainer) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = ""
+        name: string = "",
+        pluginOptions: SceneLoaderPluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to load asset container to");
@@ -1203,7 +1236,7 @@ export class SceneLoader {
             (plugin, data) => {
                 if ((plugin as ISceneLoaderPlugin).loadAssetContainer) {
                     const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    const assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler);
+                    const assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler, pluginOptions);
                     if (!assetContainer) {
                         return;
                     }
@@ -1213,7 +1246,7 @@ export class SceneLoader {
                 } else if ((plugin as ISceneLoaderPluginAsync).loadAssetContainerAsync) {
                     const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin
-                        .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
+                        .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name, pluginOptions)
                         .then((assetContainer) => {
                             assetContainer.populateRootNodes();
                             scene.loadingPluginName = plugin.name;
@@ -1236,6 +1269,14 @@ export class SceneLoader {
 
     /**
      * Load a scene into an asset container
+     * @param source The concatenation of rootURL and filename (e.g. http://example.com/test.glb) or a File object
+     * @param options Options to configure aspects of how the scene is loaded
+     * @returns The loaded asset container
+     */
+    public static LoadAssetContainerAsync(source: string | File, options?: SceneLoaderOptions): Promise<AssetContainer>;
+
+    /**
+     * Load a scene into an asset container
      * @param rootUrl a string that defines the root url for the scene and resources or the concatenation of rootURL and filename (e.g. http://example.com/test.glb)
      * @param sceneFilename a string that defines the name of the scene file or starts with "data:" following by the stringified version of the scene (default: empty string)
      * @param scene is the instance of Scene to append to
@@ -1245,13 +1286,43 @@ export class SceneLoader {
      */
     public static LoadAssetContainerAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        pluginExtension: Nullable<string> = null
+        sceneFilename?: string | File,
+        scene?: Nullable<Scene>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        pluginExtension?: Nullable<string>
+    ): Promise<AssetContainer>;
+
+    public static LoadAssetContainerAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: string | File,
+                  scene?: Nullable<Scene>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  pluginExtension?: Nullable<string>,
+              ]
+            | [source: string | File, options?: SceneLoaderOptions]
     ): Promise<AssetContainer> {
+        let rootUrl: string;
+        let sceneFilename: string | File | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let pluginOptions: SceneLoaderPluginOptions | undefined;
+
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File, options?: SceneLoaderOptions] => {
+            return maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File);
+        };
+
+        if (isOptionsArgs(args)) {
+            sceneFilename = args[0];
+            ({ rootUrl = "", scene, onProgress, pluginExtension, pluginOptions } = args[1] ?? {});
+        } else {
+            [rootUrl, sceneFilename, scene, onProgress, pluginExtension] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.LoadAssetContainer(
+            SceneLoader._LoadAssetContainerCore(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1262,7 +1333,9 @@ export class SceneLoader {
                 (scene, message, exception) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                undefined,
+                pluginOptions
             );
         });
     }

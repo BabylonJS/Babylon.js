@@ -17,6 +17,7 @@ import type {
     ISceneLoaderAsyncResult,
 } from "core/Loading/sceneLoader";
 import { SceneLoader } from "core/Loading/sceneLoader";
+import type { SceneLoaderPluginOptions } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene, IDisposable } from "core/scene";
 import type { WebRequest } from "core/Misc/webRequest";
@@ -30,6 +31,25 @@ import { DecodeBase64UrlToBinary } from "core/Misc/fileTools";
 import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
+
+const NAME = "gltf";
+
+export interface GLTFLoaderExtensionOptions extends Record<string, ({ enabled?: boolean } & Record<string, unknown>) | undefined> {}
+
+export type GLTFLoaderOptions = {
+    loadOnlyMaterials: boolean;
+    skipMaterials: boolean;
+    coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
+    extensionOptions: GLTFLoaderExtensionOptions;
+};
+
+declare module "core/Loading/sceneLoader" {
+    export interface SceneLoaderPluginOptions {
+        [NAME]?: Partial<GLTFLoaderOptions> & {
+            enabled?: boolean;
+        };
+    }
+}
 
 interface IFileRequestInfo extends IFileRequest {
     _lengthComputable?: boolean;
@@ -171,10 +191,10 @@ export interface IGLTFLoader extends IDisposable {
  */
 export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /** @internal */
-    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
 
     /** @internal */
-    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
+    public static _CreateGLTF2Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
 
     // --------------
     // Common options
@@ -540,7 +560,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * Name of the loader ("gltf")
      */
-    public name = "gltf";
+    public name = NAME;
 
     /** @internal */
     public extensions: ISceneLoaderPluginExtensions = {
@@ -723,7 +743,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data);
+            this._loader = this._getLoader(data, null!);
             return this._loader.importMeshAsync(meshesNames, scene, null, data, rootUrl, onProgress, fileName);
         });
     }
@@ -737,7 +757,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data);
+            this._loader = this._getLoader(data, null!);
             return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
         });
     }
@@ -750,14 +770,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string
+        fileName?: string,
+        options?: SceneLoaderPluginOptions
     ): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data);
+            this._loader = this._getLoader(data, this._resolveOptions(options));
 
             // Prepare the asset container.
             const container = new AssetContainer(scene);
@@ -922,6 +943,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         return request;
     }
 
+    private _resolveOptions(options?: SceneLoaderPluginOptions): GLTFLoaderOptions {
+        return {
+            loadOnlyMaterials: options?.[NAME]?.loadOnlyMaterials ?? this.loadOnlyMaterials,
+            skipMaterials: options?.[NAME]?.skipMaterials ?? this.skipMaterials,
+            coordinateSystemMode: options?.[NAME]?.coordinateSystemMode ?? this.coordinateSystemMode,
+            extensionOptions: options?.[NAME]?.extensionOptions ?? {},
+        };
+    }
+
     private _onProgress(event: ProgressEvent, request: IFileRequestInfo): void {
         if (!this._progressCallback) {
             return;
@@ -977,7 +1007,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         );
     }
 
-    private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
+    private _getLoader(loaderData: IGLTFLoaderData, options: GLTFLoaderOptions): IGLTFLoader {
         const asset = (<any>loaderData.json).asset || {};
 
         this._log(`Asset version: ${asset.version}`);
@@ -1000,7 +1030,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             }
         }
 
-        const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
+        const createLoaders: { [key: number]: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader } = {
             1: GLTFFileLoader._CreateGLTF1Loader,
             2: GLTFFileLoader._CreateGLTF2Loader,
         };
@@ -1010,7 +1040,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
             throw new Error("Unsupported version: " + asset.version);
         }
 
-        return createLoader(this);
+        return createLoader(this, options);
     }
 
     private _parseJson(json: string): Object {

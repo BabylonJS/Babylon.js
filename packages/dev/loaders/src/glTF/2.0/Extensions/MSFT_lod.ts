@@ -8,9 +8,23 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
+import type { GLTFLoaderExtensionOptions } from "../../glTFFileLoader";
 import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_lod";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type MSFT_lodOptions = {
+    maxLODsToLoad: number;
+};
+
+declare module "../../glTFFileLoader" {
+    export interface GLTFLoaderExtensionOptions {
+        [NAME]?: Partial<MSFT_lodOptions> & {
+            enabled?: boolean;
+        };
+    }
+}
 
 interface IBufferInfo {
     start: number;
@@ -74,7 +88,10 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
-    constructor(loader: GLTFLoader) {
+    constructor(
+        loader: GLTFLoader,
+        private readonly _options: GLTFLoaderExtensionOptions
+    ) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -354,7 +371,11 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      * @param ids
      */
     private _getLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
-        if (this.maxLODsToLoad <= 0) {
+        // Options takes precedence. The maxLODsToLoad extension property is retained for back compat.
+        // For new extensions, they should only use options.
+        const maxLODsToLoad = this._options.MSFT_lod?.maxLODsToLoad ?? this.maxLODsToLoad;
+
+        if (maxLODsToLoad <= 0) {
             throw new Error("maxLODsToLoad must be greater than zero");
         }
 
@@ -362,7 +383,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
         for (let i = ids.length - 1; i >= 0; i--) {
             properties.push(ArrayItem.Get(`${context}/ids/${ids[i]}`, array, ids[i]));
-            if (properties.length === this.maxLODsToLoad) {
+            if (properties.length === maxLODsToLoad) {
                 return properties;
             }
         }
@@ -414,4 +435,4 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
+GLTFLoader.RegisterExtension(NAME, (loader, options) => new MSFT_lod(loader, options));

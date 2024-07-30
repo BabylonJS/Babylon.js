@@ -65,7 +65,7 @@ import type {
     _IAnimationSamplerData,
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
+import type { GLTFLoaderOptions, GLTFLoaderExtensionOptions, IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
@@ -94,7 +94,7 @@ interface ILoaderProperty extends IProperty {
 }
 
 interface IRegisteredExtension {
-    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
+    factory: (loader: GLTFLoader, options: GLTFLoaderExtensionOptions) => IGLTFLoaderExtension;
 }
 
 interface IWithMetadata {
@@ -223,7 +223,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
      */
-    public static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void {
+    public static RegisterExtension(name: string, factory: (loader: GLTFLoader, options: GLTFLoaderExtensionOptions) => IGLTFLoaderExtension): void {
         if (GLTFLoader.UnregisterExtension(name)) {
             Logger.Warn(`Extension with the name '${name}' already exists`);
         }
@@ -300,7 +300,10 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    constructor(parent: GLTFFileLoader) {
+    constructor(
+        parent: GLTFFileLoader,
+        private readonly options: GLTFLoaderOptions
+    ) {
         this._parent = parent;
     }
 
@@ -419,7 +422,7 @@ export class GLTFLoader implements IGLTFLoader {
                 const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
                 this._babylonScene.blockMaterialDirtyMechanism = true;
 
-                if (!this.parent.loadOnlyMaterials) {
+                if (!this.options.loadOnlyMaterials) {
                     if (nodes) {
                         promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
                     } else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
@@ -428,7 +431,7 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                 }
 
-                if (!this.parent.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
+                if (!this.options.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
                     for (let m = 0; m < this._gltf.materials.length; ++m) {
                         const material = this._gltf.materials[m];
                         const context = "/materials/" + m;
@@ -565,7 +568,7 @@ export class GLTFLoader implements IGLTFLoader {
 
     private _loadExtensions(): void {
         for (const name in GLTFLoader._RegisteredExtensions) {
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
+            const extension = GLTFLoader._RegisteredExtensions[name].factory(this, this.options.extensionOptions);
             if (extension.name !== name) {
                 Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
             }
@@ -1037,7 +1040,7 @@ export class GLTFLoader implements IGLTFLoader {
                     this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
                 }
                 babylonMesh.material = babylonMaterial;
-            } else if (!this.parent.skipMaterials) {
+            } else if (!this.options.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(
                     this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
@@ -2968,4 +2971,4 @@ export class GLTFLoader implements IGLTFLoader {
     }
 }
 
-GLTFFileLoader._CreateGLTF2Loader = (parent) => new GLTFLoader(parent);
+GLTFFileLoader._CreateGLTF2Loader = (parent, options) => new GLTFLoader(parent, options);
