@@ -1,36 +1,36 @@
 #if defined(_DEFINENAME_) && _DEFINENAME_DIRECTUV == 0
-	if (v_INFONAME_ == 0.)
+	if (uniforms.v_INFONAME_ == 0.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uvUpdated, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 	}
 #ifdef UV2
-	else if (v_INFONAME_ == 1.)
+	else if (uniforms.v_INFONAME_ == 1.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uv2, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uv2, 1.0, 0.0)).xy;
 	}
 #endif
 #ifdef UV3
-	else if (v_INFONAME_ == 2.)
+	else if (uniforms.v_INFONAME_ == 2.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uv3, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uv3, 1.0, 0.0)).xy;
 	}
 #endif
 #ifdef UV4
-	else if (v_INFONAME_ == 3.)
+	else if (uniforms.v_INFONAME_ == 3.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uv4, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uv4, 1.0, 0.0)).xy;
 	}
 #endif
 #ifdef UV5
-	else if (v_INFONAME_ == 4.)
+	else if (uniforms.v_INFONAME_ == 4.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uv5, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uv5, 1.0, 0.0)).xy;
 	}
 #endif
 #ifdef UV6
-	else if (v_INFONAME_ == 5.)
+	else if (uniforms.v_INFONAME_ == 5.)
 	{
-		v_VARYINGNAME_UV =  vec2f(_MATRIXNAME_Matrix *  vec4f(uv6, 1.0, 0.0));
+		vertexOutputs.v_VARYINGNAME_UV =  (uniforms._MATRIXNAME_Matrix *  vec4f(uv6, 1.0, 0.0)).xy;
 	}
 #endif
 #endif
