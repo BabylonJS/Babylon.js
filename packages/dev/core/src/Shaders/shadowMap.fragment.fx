@@ -17,13 +17,14 @@ void main(void)
 #ifdef ALPHATEXTURE
     vec4 opacityMap = texture2D(diffuseSampler, vUV);
     
-    float alphaFromAlphaTexture = 1.;
-    if (softTransparentShadowSM.y == 1.0) {
-        opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
-        alphaFromAlphaTexture = opacityMap.x + opacityMap.y + opacityMap.z;
-    } else {
-        alphaFromAlphaTexture = opacityMap.a;
-    }
+    float alphaFromAlphaTexture = opacityMap.a;
+
+    #if SM_SOFTTRANSPARENTSHADOW == 1
+        if (softTransparentShadowSM.y == 1.0) {
+            opacityMap.rgb = opacityMap.rgb * vec3(0.3, 0.59, 0.11);
+            alphaFromAlphaTexture = opacityMap.x + opacityMap.y + opacityMap.z;
+        }
+    #endif
 
     #ifdef ALPHATESTVALUE
         if (alphaFromAlphaTexture < ALPHATESTVALUE)
