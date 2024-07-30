@@ -81,8 +81,9 @@ fn albedoOpacityBlock(
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
         #ifdef ALPHATEST 
             #if DEBUGMODE != 88
-                if (alpha < ALPHATESTVALUE)
+                if (alpha < ALPHATESTVALUE) {
                     discard;
+                }
             #endif
 
             #ifndef ALPHABLEND
