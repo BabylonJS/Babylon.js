@@ -694,6 +694,7 @@ export class BackgroundMaterial extends PushMaterial {
             }
             this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
 
+            this._shaderLanguage = ShaderLanguage.WGSL;
             await import(
                 /* webpackChunkName: "background.vertex.wgsl" */
                 "../../ShadersWGSL/background.vertex"
@@ -702,7 +703,6 @@ export class BackgroundMaterial extends PushMaterial {
                 /* webpackChunkName: "background.fragment.wgsl" */
                 "../../ShadersWGSL/background.fragment"
             );
-            this._shaderLanguage = ShaderLanguage.WGSL;
         } else {
             await import(
                 /* webpackChunkName: "background.vertex.glsl" */
