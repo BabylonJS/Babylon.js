@@ -138,7 +138,7 @@ fn fresnelSchlickGGX(VdotH: f32, reflectance0: f32, reflectance90: f32) -> f32
         #else
             var s: vec3f = sqrt(f0);
             var t: vec3f = (uniforms.vClearCoatRefractionParams.z + uniforms.vClearCoatRefractionParams.w * s) / (uniforms.vClearCoatRefractionParams.w + uniforms.vClearCoatRefractionParams.z * s);
-            return square(t);
+            return squareVec3(t);
         #endif
     }
 #endif

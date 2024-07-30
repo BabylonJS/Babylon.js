@@ -149,7 +149,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #endif
 
 #if defined(MICROSURFACEMAP)
-    var microSurfaceTexel: vec4f = textureSample(microSurfaceSampler, vMicroSurfaceSamplerUV + uvOffset) * vMicroSurfaceSamplerInfos.y;
+    var microSurfaceTexel: vec4f = textureSample(microSurfaceSampler, microSurfaceSamplerSampler, fragmentInputs.vMicroSurfaceSamplerUV + uvOffset) * uniforms.vMicroSurfaceSamplerInfos.y;
 #endif
 
 #ifdef METALLICWORKFLOW
@@ -157,7 +157,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef REFLECTANCE
         var reflectanceFactorsMap: vec4f = textureSample(reflectanceSampler, reflectanceSamplerSampler, fragmentInputs.vReflectanceUV + uvOffset);
         #ifdef REFLECTANCE_GAMMA
-            reflectanceFactorsMap = toLinearSpaceVec3(reflectanceFactorsMap);
+            reflectanceFactorsMap = toLinearSpaceVec4(reflectanceFactorsMap);
         #endif
 
         metallicReflectanceFactors = vec4f(metallicReflectanceFactors.rgb * reflectanceFactorsMap.rgb, metallicReflectanceFactors.a);
@@ -165,7 +165,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #ifdef METALLIC_REFLECTANCE
         var metallicReflectanceFactorsMap: vec4f = textureSample(metallicReflectanceSampler, metallicReflectanceSamplerSampler, fragmentInputs.vMetallicReflectanceUV + uvOffset);
         #ifdef METALLIC_REFLECTANCE_GAMMA
-            metallicReflectanceFactorsMap = toLinearSpaceVec3(metallicReflectanceFactorsMap);
+            metallicReflectanceFactorsMap = toLinearSpaceVec4(metallicReflectanceFactorsMap);
         #endif
 
         #ifndef METALLIC_REFLECTANCE_USE_ALPHA_ONLY
@@ -451,7 +451,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
                 , uniforms.vClearCoatTangentSpaceParams
             #endif
             #ifdef OBJECTSPACE_NORMALMAP
-                , normalMatrix
+                , uniforms.normalMatrix
             #endif
         #endif
         #if defined(FORCENORMALFORWARD) && defined(NORMAL)
@@ -628,7 +628,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 
 #ifdef PREPASS
-    var writeGeometryInfo: f32 = finalColor.a > 0.4 ? 1.0 : 0.0;
+    var writeGeometryInfo: f32 = select(0.0, 1.0, finalColor.a > 0.4);
     var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
     #ifdef PREPASS_POSITION
@@ -636,8 +636,8 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #ifdef PREPASS_VELOCITY
-    var a: vec2f = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
-    var b: vec2f = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+    var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
+    var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
 
     var velocity: vec2f = abs(a - b);
     velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
@@ -695,7 +695,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #if SCENE_MRT_COUNT > 0
-        fragmentOutputs.fragData0= fragData[1];
+        fragmentOutputs.fragData0= fragData[0];
     #endif
     #if SCENE_MRT_COUNT > 1
         fragmentOutputs.fragData1= fragData[1];

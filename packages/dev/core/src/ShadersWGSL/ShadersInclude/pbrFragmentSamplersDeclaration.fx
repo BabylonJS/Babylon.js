@@ -13,7 +13,8 @@
     #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE,_VARYINGNAME_,ClearCoat,_SAMPLERNAME_,clearCoat)
     #include<samplerFragmentAlternateDeclaration>(_DEFINENAME_,CLEARCOAT_TEXTURE_ROUGHNESS,_VARYINGNAME_,ClearCoatRoughness)
     #if defined(CLEARCOAT_TEXTURE_ROUGHNESS)
-        uniform sampler2D clearCoatRoughnessSampler;
+        var clearCoatRoughnessSamplerSampler: sampler;
+        var clearCoatRoughnessSampler: texture_2d<f32>;
     #endif
     #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_BUMP,_VARYINGNAME_,ClearCoatBump,_SAMPLERNAME_,clearCoatBump)
     #include<samplerFragmentDeclaration>(_DEFINENAME_,CLEARCOAT_TINT_TEXTURE,_VARYINGNAME_,ClearCoatTint,_SAMPLERNAME_,clearCoatTint)
@@ -28,7 +29,8 @@
     #include<samplerFragmentDeclaration>(_DEFINENAME_,SHEEN_TEXTURE,_VARYINGNAME_,Sheen,_SAMPLERNAME_,sheen)
     #include<samplerFragmentAlternateDeclaration>(_DEFINENAME_,SHEEN_TEXTURE_ROUGHNESS,_VARYINGNAME_,SheenRoughness)
     #if defined(SHEEN_ROUGHNESS) && defined(SHEEN_TEXTURE_ROUGHNESS)
-        uniform sampler2D sheenRoughnessSampler;
+        var sheenRoughnessSamplerSampler: sampler;
+        var sheenRoughnessSampler: texture_2d<f32>;
     #endif
 #endif
 

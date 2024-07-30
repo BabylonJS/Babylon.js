@@ -3,5 +3,5 @@
 	#ifdef PBR
 		fog = toLinearSpace(fog);
 	#endif
-	color.rgb = mix(vFogColor, color.rgb, fog);
+	color= vec4f(mix(uniforms.vFogColor, color.rgb, fog), color.a);
 #endif

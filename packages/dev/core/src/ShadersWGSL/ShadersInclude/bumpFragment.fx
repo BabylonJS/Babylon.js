@@ -4,7 +4,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	#ifdef NORMALXYSCALE
 		var normalScale: f32 = 1.0;
 	#elif defined(BUMP)
-		var normalScale: f32 = vBumpInfos.y;
+		var normalScale: f32 = uniforms.vBumpInfos.y;
 	#else
 		var normalScale: f32 = 1.0;
 	#endif
@@ -36,7 +36,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 	#ifdef PARALLAXOCCLUSION
 		uvOffset = parallaxOcclusion(invTBN * -viewDirectionW, invTBN * normalW, fragmentInputs.vBumpUV, uniforms.vBumpInfos.z);
 	#else
-		uvOffset = parallaxOffset(invTBN * viewDirectionW, vBumpInfos.z);
+		uvOffset = parallaxOffset(invTBN * viewDirectionW, uniforms.vBumpInfos.z);
 	#endif
 #endif
 
@@ -53,7 +53,7 @@ var uvOffset: vec2f =  vec2f(0.0, 0.0);
 		#define CUSTOM_FRAGMENT_BUMP_FRAGMENT
 
 		normalW = normalize(textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).xyz  * 2.0 - 1.0);
-		normalW = normalize( mat3x3f(normalMatrix) * normalW);
+		normalW = normalize(mat3x3f(uniforms.normalMatrix[0].xyz, uniforms.normalMatrix[1].xyz, uniforms.normalMatrix[2].xyz) * normalW);
 	#elif !defined(DETAIL)
 		normalW = perturbNormal(TBN, textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV + uvOffset).xyz, uniforms.vBumpInfos.y);
     #else

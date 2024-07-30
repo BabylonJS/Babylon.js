@@ -109,15 +109,15 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 	#define CUSTOM_VERTEX_MAIN_BEGIN
 
-    var positionUpdated: vec3f = input.position;
+    var positionUpdated: vec3f = vertexInputs.position;
 #ifdef NORMAL
-    var normalUpdated: vec3f = input.normal;
+    var normalUpdated: vec3f = vertexInputs.normal;
 #endif
 #ifdef TANGENT
-    var tangentUpdated: vec4f = input.tangent;
+    var tangentUpdated: vec4f = vertexInputs.tangent;
 #endif
 #ifdef UV1
-    var uvUpdated: vec2f = input.uv;
+    var uvUpdated: vec2f = vertexInputs.uv;
 #endif
 
 #include<morphTargetsVertexGlobal>
@@ -136,7 +136,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
     vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
-    vertexOutputs.vPreviousPosition = previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -187,7 +187,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-    vertexOutputs.vDirectionW = normalize( vec3f(finalWorld *  vec4f(positionUpdated, 0.0)));
+    vertexOutputs.vDirectionW = normalize((finalWorld * vec4f(positionUpdated, 0.0)).xyz);
 #endif
 
     // Texture coordinates

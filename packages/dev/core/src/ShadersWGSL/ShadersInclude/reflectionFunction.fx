@@ -104,12 +104,12 @@ fn computeSkyBoxCoords(positionW: vec3f, reflectionMatrix: mat4x4f) -> vec3f
 fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 {
 #ifdef REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED
-	var direction: vec3f = normalize(vDirectionW);
+	var direction: vec3f = normalize(fragmentInputs.vDirectionW);
 	return computeMirroredFixedEquirectangularCoords(worldPos, worldNormal, direction);
 #endif
 
 #ifdef REFLECTIONMAP_EQUIRECTANGULAR_FIXED
-	var direction: vec3f = normalize(vDirectionW);
+	var direction: vec3f = normalize(fragmentInputs.vDirectionW);
 	return computeFixedEquirectangularCoords(worldPos, worldNormal, direction);
 #endif
 

@@ -192,7 +192,7 @@ struct clearcoatOutParams
 
             #ifdef OBJECTSPACE_NORMALMAP
                 clearCoatNormalW = normalize(clearCoatBumpMapData.xyz  * 2.0 - 1.0);
-                clearCoatNormalW = normalize( mat3x3f(normalMatrix) * clearCoatNormalW);
+                clearCoatNormalW = normalize( mat3x3f(normalMatrix[0].xyz, normalMatrix[1].xyz, normalMatrix[2].xyz) * clearCoatNormalW);
             #else
                 clearCoatNormalW = perturbNormal(TBNClearCoat, clearCoatBumpMapData.xyz, vClearCoatBumpInfos.y);
             #endif

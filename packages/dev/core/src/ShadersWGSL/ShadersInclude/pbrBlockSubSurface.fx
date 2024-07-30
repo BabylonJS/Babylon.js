@@ -364,7 +364,7 @@ struct subSurfaceOutParams
         #ifdef SS_LODINREFRACTIONALPHA
             var refractionAlphaG: f32 = alphaG;
             refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
-            var refractionLOD: f32 = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
+            var refractionLOD: f32 = getLodFromAlphaGNdotV(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
         #elif defined(SS_LINEARSPECULARREFRACTION)
             var refractionRoughness: f32 = alphaG;
             refractionRoughness = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));

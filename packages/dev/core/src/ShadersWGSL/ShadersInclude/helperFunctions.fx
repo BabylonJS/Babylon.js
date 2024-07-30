@@ -95,12 +95,14 @@ fn toGammaSpaceExact(color: vec3<f32>) -> vec3<f32>
 }
 #endif
 
-fn toLinearSpace(color: vec4<f32>) -> vec4<f32>
+fn toLinearSpace(color: f32) -> f32
 {
     #if USE_EXACT_SRGB_CONVERSIONS
-        return vec4<f32>(toLinearSpaceExact(color.rgb), color.a);
+        var nearZeroSection = 0.0773993808 * color;
+        var remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
+        return select(remainingSection, nearZeroSection, color <= 0.04045);
     #else
-        return vec4<f32>(pow(color.rgb, vec3<f32>(LinearEncodePowerApprox)), color.a);
+        return pow(color, LinearEncodePowerApprox);
     #endif
 }
 

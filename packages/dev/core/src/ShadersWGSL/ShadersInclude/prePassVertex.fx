@@ -3,7 +3,7 @@
 #endif
 
 #if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED)
-    vCurrentPosition = viewProjection * worldPos;
+    vertexOutputs.vCurrentPosition = scene.viewProjection * worldPos;
 
 #if NUM_BONE_INFLUENCERS > 0
     var previousInfluence: mat4x4f;
@@ -30,8 +30,8 @@
         previousInfluence += mPreviousBones[ i32(matricesIndicesExtra[3])] * matricesWeightsExtra[3];
     #endif
 
-    vPreviousPosition = previousViewProjection * finalPreviousWorld * previousInfluence *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld * previousInfluence *  vec4f(positionUpdated, 1.0);
 #else
-    vPreviousPosition = previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
 #endif
 #endif

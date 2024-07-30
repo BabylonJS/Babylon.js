@@ -112,8 +112,8 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
 
         var reflectivityLuminance: f32 = getLuminance(reflectivityColor);
         var reflectivityLuma: f32 = sqrt(reflectivityLuminance);
-        microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
+        var resultMicroSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
 
-        return microSurface;
+        return resultMicroSurface;
     }
 #endif

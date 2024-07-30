@@ -1,5 +1,5 @@
 #if defined(FORCENORMALFORWARD) && defined(NORMAL)
-    var faceNormal: vec3f = normalize(cross(dpdx(vPositionW), dpdy(vPositionW))) * vEyePosition.w;
+    var faceNormal: vec3f = normalize(cross(dpdx(fragmentInputs.vPositionW), dpdy(fragmentInputs.vPositionW))) * scene.vEyePosition.w;
     #if defined(TWOSIDEDLIGHTING)
         faceNormal = select(-faceNormal, faceNormal, fragmentInputs.frontFacing);
     #endif

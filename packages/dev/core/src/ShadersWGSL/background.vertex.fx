@@ -90,7 +90,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 #endif
 
 #if defined(REFLECTIONMAP_EQUIRECTANGULAR_FIXED) || defined(REFLECTIONMAP_MIRROREDEQUIRECTANGULAR_FIXED)
-    vertexOutputs.vDirectionW = normalize( vec3f(finalWorld *  vec4f(input.position, 0.0)));
+    vertexOutputs.vDirectionW = normalize((finalWorld * vec4f(input.position, 0.0)).xyz);
 
 
     #ifdef EQUIRECTANGULAR_RELFECTION_FOV
