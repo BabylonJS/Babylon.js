@@ -145,13 +145,13 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     #elif DEBUGMODE == 72
         color =  vec3f(microSurface);
     #elif DEBUGMODE == 73
-        color = vAlbedoColor;
+        color = uniforms.vAlbedoColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 74 && !defined(METALLICWORKFLOW)
-        color = vReflectivityColor;
+        color = uniforms.vReflectivityColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 75
-        color = vEmissiveColor;
+        color = uniforms.vEmissiveColor;
         #define DEBUGMODE_GAMMA
 // Misc
     #elif DEBUGMODE == 80 && defined(RADIANCEOCCLUSION)

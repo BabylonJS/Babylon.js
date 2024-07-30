@@ -348,6 +348,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     public static readonly LIGHTFALLOFF_STANDARD = 2;
 
     /**
+     * Force all the PBR materials to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
+
+    /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
      * This impacts both the direct diffuse and specular highlights.
      * @internal
@@ -963,7 +969,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private async _initShaderSourceAsync(forceGLSL = false) {
         const engine = this.getScene().getEngine();
 
-        if (engine.isWebGPU && !forceGLSL) {
+        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
             // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
             if (this._uniformBuffer) {
                 this._uniformBuffer.dispose();

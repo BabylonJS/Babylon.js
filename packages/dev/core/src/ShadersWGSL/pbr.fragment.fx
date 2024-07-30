@@ -671,14 +671,14 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 
     #ifdef PREPASS_DEPTH
-        fragData[PREPASS_DEPTH_INDEX] =  vec4f(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+        fragData[PREPASS_DEPTH_INDEX] =  vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
     #ifdef PREPASS_NORMAL
         #ifdef PREPASS_NORMAL_WORLDSPACE
             fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalW, writeGeometryInfo); // Normal
         #else
-            fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalize((view *  vec4f(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+            fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalize((scene.view *  vec4f(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
         #endif
     #endif
 

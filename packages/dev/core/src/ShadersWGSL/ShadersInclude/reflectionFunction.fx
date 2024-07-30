@@ -127,7 +127,7 @@ fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 
 #ifdef REFLECTIONMAP_CUBIC
 	#ifdef USE_LOCAL_REFLECTIONMAP_CUBIC
-    	return computeCubicLocalCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix, vReflectionSize, vReflectionPosition);
+    	return computeCubicLocalCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix, uniforms.vReflectionSize, uniforms.vReflectionPosition);
 	#else
     	return computeCubicCoords(worldPos, worldNormal, scene.vEyePosition.xyz, uniforms.reflectionMatrix);
 	#endif

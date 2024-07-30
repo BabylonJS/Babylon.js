@@ -1,5 +1,5 @@
 #ifdef PREPASS_DEPTH
-    vViewPos = (view * worldPos).rgb;
+    vertexOutputs.vViewPos = (scene.view * worldPos).rgb;
 #endif
 
 #if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED)
