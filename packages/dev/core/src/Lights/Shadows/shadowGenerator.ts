@@ -1244,7 +1244,7 @@ export class ShadowGenerator implements IShadowGenerator {
             }
 
             if (isTransparent && this.enableSoftTransparentShadow) {
-                effect.setFloat("softTransparentShadowSM", effectiveMesh.visibility * material.alpha);
+                effect.setFloat2("softTransparentShadowSM", effectiveMesh.visibility * material.alpha, this._opacityTexture?.getAlphaFromRGB ? 1 : 0);
             }
 
             if (shadowDepthWrapper) {
