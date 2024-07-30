@@ -115,7 +115,7 @@ export class GPUPicker {
         return colorData;
     }
 
-    private _generateThinInstanceColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+    private _generateThinInstanceColorData(instanceCount: number, id: number, onInstance: (i: number, id: number) => void) {
         const colorData = new Float32Array(4 * instanceCount);
 
         for (let i = 0; i < instanceCount; i++) {
@@ -206,7 +206,7 @@ export class GPUPicker {
             const b = (id & 0x0000ff) >> 0;
 
             if (mesh.hasThinInstances) {
-                const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, index, r, g, b, (i, id) => {
+                const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
                     this._thinIdMap[id] = { meshId: index, thinId: i };
                 });
                 id += (mesh as Mesh).thinInstanceCount;
