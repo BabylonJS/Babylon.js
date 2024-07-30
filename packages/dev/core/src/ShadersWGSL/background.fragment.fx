@@ -375,7 +375,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     // Sanitize output incase invalid normals or tangents have caused div by 0 or undefined behavior
     // this also limits the brightness which helpfully reduces over-sparkling in bloom (native handles this in the bloom blur shader)
 #if !defined(SKIPFINALCOLORCLAMP)
-    color.rgb = clamp(color.rgb, 0., 30.0);
+    color = vec4f(clamp(color.rgb, 0., 30.0), color.a);
 #endif
 #else
     // Alway run even to ensure going back to gamma space.
@@ -384,12 +384,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #ifdef PREMULTIPLYALPHA
     // Convert to associative (premultiplied) format if needed.
-    color.rgb *= color.a;
+    color = vec4f(color.rgb *color.a, color.a);
 #endif
 
 #ifdef NOISE
-    color.rgb += dither(vPositionW.xy, 0.5);
-    color = max(color, 0.0);
+    color = vec4f(color.rgb + dither(fragmentInputs.vPositionW.xy, 0.5), color.a);
+    color = max(color, vec4f(0.0));
 #endif
 
     fragmentOutputs.color = color;
