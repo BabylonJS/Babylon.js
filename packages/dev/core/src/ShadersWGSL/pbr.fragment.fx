@@ -142,9 +142,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var baseReflectivity: vec4f = surfaceMetallicOrReflectivityColorMap;
     #ifndef METALLICWORKFLOW
         #ifdef REFLECTIVITY_GAMMA
-            surfaceMetallicOrReflectivityColorMap = toLinearSpaceVec3(surfaceMetallicOrReflectivityColorMap);
+            surfaceMetallicOrReflectivityColorMap = toLinearSpaceVec4(surfaceMetallicOrReflectivityColorMap);
         #endif
-        surfaceMetallicOrReflectivityColorMap.rgb *= vReflectivityInfos.y;
+        surfaceMetallicOrReflectivityColorMap = vec4f(surfaceMetallicOrReflectivityColorMap.rgb * uniforms.vReflectivityInfos.y, surfaceMetallicOrReflectivityColorMap.a);
     #endif
 #endif
 
