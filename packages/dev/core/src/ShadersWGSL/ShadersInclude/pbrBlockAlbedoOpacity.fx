@@ -75,7 +75,7 @@ fn albedoOpacityBlock(
     #endif
 
     #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-        alpha *= vColor.a;
+        alpha *= fragmentInputs.vColor.a;
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
