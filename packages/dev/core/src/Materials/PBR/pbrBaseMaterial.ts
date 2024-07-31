@@ -978,11 +978,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
             this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
             this._shaderLanguage = ShaderLanguage.WGSL;
 
-            await import("../../ShadersWGSL/pbr.vertex");
-            await import("../../ShadersWGSL/pbr.fragment");
+            await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
         } else {
-            await import("../../Shaders/pbr.vertex");
-            await import("../../Shaders/pbr.fragment");
+            await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
         }
 
         this._shadersLoaded = true;

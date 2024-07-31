@@ -57,15 +57,19 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment");
-            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration");
-            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex");
-            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration");
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment"),
+                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex"),
+                import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"),
+            ]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/clipPlaneFragment");
-            await import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration");
-            await import("../../../../Shaders/ShadersInclude/clipPlaneVertex");
-            await import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration");
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/clipPlaneFragment"),
+                import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"),
+                import("../../../../Shaders/ShadersInclude/clipPlaneVertex"),
+                import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration"),
+            ]);
         }
 
         this._codeIsReady = true;

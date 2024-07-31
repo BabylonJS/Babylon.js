@@ -114,15 +114,19 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex");
-            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration");
-            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal");
-            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration");
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            ]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/morphTargetsVertex");
-            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration");
-            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal");
-            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration");
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertex"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            ]);
         }
 
         this._codeIsReady = true;

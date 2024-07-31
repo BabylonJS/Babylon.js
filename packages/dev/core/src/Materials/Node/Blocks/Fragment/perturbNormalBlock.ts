@@ -181,13 +181,17 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragment");
-            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions");
-            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions");
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragment"),
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions"),
+            ]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/bumpFragment");
-            await import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions");
-            await import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions");
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/bumpFragment"),
+                import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions"),
+                import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions"),
+            ]);
         }
 
         this._codeIsReady = true;

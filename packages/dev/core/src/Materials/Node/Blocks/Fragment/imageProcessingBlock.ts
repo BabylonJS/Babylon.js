@@ -94,13 +94,17 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
-            await import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration");
-            await import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions");
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
+            ]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/helperFunctions");
-            await import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration");
-            await import("../../../../Shaders/ShadersInclude/imageProcessingFunctions");
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/helperFunctions"),
+                import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
+                import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
+            ]);
         }
 
         this._codeIsReady = true;

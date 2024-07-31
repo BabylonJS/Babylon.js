@@ -54,13 +54,17 @@ export class ShadowMapBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric");
-            await import("../../../../ShadersWGSL/ShadersInclude/packingFunctions");
-            await import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment");
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/shadowMapVertexMetric"),
+                import("../../../../ShadersWGSL/ShadersInclude/packingFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/shadowMapFragment"),
+            ]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric");
-            await import("../../../../Shaders/ShadersInclude/packingFunctions");
-            await import("../../../../Shaders/ShadersInclude/shadowMapFragment");
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/shadowMapVertexMetric"),
+                import("../../../../Shaders/ShadersInclude/packingFunctions"),
+                import("../../../../Shaders/ShadersInclude/shadowMapFragment"),
+            ]);
         }
 
         this._codeIsReady = true;

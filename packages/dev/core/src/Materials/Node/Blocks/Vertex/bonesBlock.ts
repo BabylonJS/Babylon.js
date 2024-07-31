@@ -51,11 +51,9 @@ export class BonesBlock extends NodeMaterialBlock {
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import("../../../../ShadersWGSL/ShadersInclude/bonesDeclaration");
-            await import("../../../../ShadersWGSL/ShadersInclude/bonesVertex");
+            await Promise.all([import("../../../../ShadersWGSL/ShadersInclude/bonesDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/bonesVertex")]);
         } else {
-            await import("../../../../Shaders/ShadersInclude/bonesDeclaration");
-            await import("../../../../Shaders/ShadersInclude/bonesVertex");
+            await Promise.all([import("../../../../Shaders/ShadersInclude/bonesDeclaration"), import("../../../../Shaders/ShadersInclude/bonesVertex")]);
         }
 
         this._codeIsReady = true;
