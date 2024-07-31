@@ -232,7 +232,7 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
 
     /**
      * Defines if the loader should load node animations. Defaults to true.
-     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `animationLoadSkins` is true.
+     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
      */
     public loadNodeAnimations = true;
 
