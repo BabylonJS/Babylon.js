@@ -1,23 +1,23 @@
-import type { Nullable } from "../../../types";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
-import { FrameGraphBlock } from "../../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
-import type { FrameGraphTeleportInBlock } from "./frameGraphTeleportInBlock";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { Nullable } from "../../../../types";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import type { NodeRenderGraphTeleportInBlock } from "./teleportInBlock";
+import type { FrameGraphBuilder } from "../../../frameGraphBuilder";
+import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
  */
-export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
+export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
     /** @internal */
-    public _entryPoint: Nullable<FrameGraphTeleportInBlock> = null;
+    public _entryPoint: Nullable<NodeRenderGraphTeleportInBlock> = null;
     /** @internal */
     public _tempEntryPointUniqueId: Nullable<number> = null;
 
     /**
-     * Create a new FrameGraphTeleportOutBlock
+     * Create a new NodeRenderGraphTeleportOutBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -26,7 +26,7 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
 
         this._isTeleportOut = true;
 
-        this.registerOutput("output", FrameGraphBlockConnectionPointTypes.BasedOnInput);
+        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
     }
 
     /**
@@ -41,13 +41,13 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphTeleportOutBlock";
+        return "NodeRenderGraphTeleportOutBlock";
     }
 
     /**
      * Gets the output component
      */
-    public get output(): FrameGraphConnectionPoint {
+    public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
 
@@ -70,7 +70,7 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
         }
     }
 
-    public override _dumpCode(uniqueNames: string[], alreadyDumped: FrameGraphBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeRenderGraphBlock[]) {
         let codeString: string = "";
         if (this.entryPoint) {
             if (alreadyDumped.indexOf(this.entryPoint) === -1) {
@@ -81,7 +81,7 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
         return codeString + super._dumpCode(uniqueNames, alreadyDumped);
     }
 
-    public override _dumpCodeForOutputConnections(alreadyDumped: FrameGraphBlock[]) {
+    public override _dumpCodeForOutputConnections(alreadyDumped: NodeRenderGraphBlock[]) {
         let codeString = super._dumpCodeForOutputConnections(alreadyDumped);
 
         if (this.entryPoint) {
@@ -99,7 +99,7 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
         const clone = super.clone();
 
         if (this.entryPoint) {
-            this.entryPoint.attachToEndpoint(clone as FrameGraphTeleportOutBlock);
+            this.entryPoint.attachToEndpoint(clone as NodeRenderGraphTeleportOutBlock);
         }
 
         return clone;
@@ -132,4 +132,4 @@ export class FrameGraphTeleportOutBlock extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphTeleportOutBlock", FrameGraphTeleportOutBlock);
+RegisterClass("BABYLON.NodeRenderGraphTeleportOutBlock", NodeRenderGraphTeleportOutBlock);

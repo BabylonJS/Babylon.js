@@ -1,7 +1,7 @@
 /**
  * Defines the kind of connection point for frame graph node
  */
-export enum FrameGraphBlockConnectionPointTypes {
+export enum NodeRenderGraphBlockConnectionPointTypes {
     /** General purpose texture */
     Texture = 0x00000001,
     /** Depth stencil attachment texture */

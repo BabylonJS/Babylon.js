@@ -1,37 +1,37 @@
-import { Observable } from "../Misc/observable";
-import type { Observer } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { Scene } from "../scene";
-import { FrameGraphOutputBlock } from "./Blocks/frameGraphOutputBlock";
-import type { FrameGraphBlock } from "./frameGraphBlock";
-import { FrameGraphBuilder } from "./frameGraphBuilder";
-import { GetClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
-import { SerializationHelper } from "../Misc/decorators.serialization";
-import { Constants } from "../Engines/constants";
-import { WebRequest } from "../Misc/webRequest";
-import { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
-import type { FrameGraphTeleportOutBlock } from "./Blocks/Teleport/frameGraphTeleportOutBlock";
-import type { FrameGraphTeleportInBlock } from "./Blocks/Teleport/frameGraphTeleportInBlock";
-import { Tools } from "../Misc/tools";
-import type { Color4 } from "../Maths/math.color";
-import { Engine } from "../Engines/engine";
-import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
-import { FrameGraphClearBlock } from "./Blocks/frameGraphClearBlock";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { Observable } from "../../Misc/observable";
+import type { Observer } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { Scene } from "../../scene";
+import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
+import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
+import { FrameGraphBuilder } from "../frameGraphBuilder";
+import { GetClass } from "../../Misc/typeStore";
+import { serialize } from "../../Misc/decorators";
+import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { Constants } from "../../Engines/constants";
+import { WebRequest } from "../../Misc/webRequest";
+import { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import type { NodeRenderGraphTeleportOutBlock } from "./Blocks/Teleport/teleportOutBlock";
+import type { NodeRenderGraphTeleportInBlock } from "./Blocks/Teleport/teleportInBlock";
+import { Tools } from "../../Misc/tools";
+import type { Color4 } from "../../Maths/math.color";
+import { Engine } from "../../Engines/engine";
+import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { ClearBlock } from "./Blocks/clearBlock";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
-// declare FRAMEGRAPHEDITOR namespace for compilation issue
-declare let FRAMEGRAPHEDITOR: any;
+// declare NODERENDERGRAPHEDITOR namespace for compilation issue
+declare let NODERENDERGRAPHEDITOR: any;
 declare let BABYLON: any;
 
 /**
  * Interface used to configure the frame graph editor
  */
-export interface IFrameGraphEditorOptions {
+export interface INodeRenderGraphEditorOptions {
     /** Define the URL to load node editor script from */
     editorURL?: string;
     /** Additional configuration for the FGE */
-    frameGraphEditorConfig?: {
+    nodeRenderGraphEditorConfig?: {
         backgroundColor?: Color4;
         hostScene?: Scene;
     };
@@ -40,7 +40,7 @@ export interface IFrameGraphEditorOptions {
 /**
  * Options that can be passed to the frame graph build method
  */
-export interface IFrameGraphCreateOptions {
+export interface INodeRenderGraphCreateOptions {
     /** if true, textures created by the frame graph will be visible in the inspector, for easier debugging (default: false) */
     debugTextures?: boolean;
     /** Scene in which debugging textures are to be created */
@@ -56,31 +56,31 @@ export interface IFrameGraphCreateOptions {
 }
 
 /**
- * Defines a frame graph
+ * Defines a node render graph
  */
-export class FrameGraph {
+export class NodeRenderGraph {
     private static _BuildIdGenerator: number = 0;
 
-    private _buildId: number = FrameGraph._BuildIdGenerator++;
+    private _buildId: number = NodeRenderGraph._BuildIdGenerator++;
 
     /** Define the Url to load node editor script */
-    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/FrameGraphEditor/babylon.FrameGraphEditor.js`;
+    public static EditorURL = `${Tools._DefaultCdnUrl}/v${Engine.Version}/NodeRenderGraph/babylon.nodeRenderGraph.js`;
 
     /** Define the Url to load snippets */
     public static SnippetUrl = Constants.SnippetUrl;
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    private BJSFRAMEGRAPHEDITOR = this._getGlobalFrameGraphEditor();
+    private BJSNODERENDERGRAPHEDITOR = this._getGlobalNodeRenderGraphEditor();
 
     /** @returns the inspector from bundle or global */
-    private _getGlobalFrameGraphEditor(): any {
+    private _getGlobalNodeRenderGraphEditor(): any {
         // UMD Global name detection from Webpack Bundle UMD Name.
-        if (typeof FRAMEGRAPHEDITOR !== "undefined") {
-            return FRAMEGRAPHEDITOR;
+        if (typeof NODERENDERGRAPHEDITOR !== "undefined") {
+            return NODERENDERGRAPHEDITOR;
         }
 
         // In case of module let's check the global emitted from the editor entry point.
-        if (typeof BABYLON !== "undefined" && typeof BABYLON.FrameGraphEditor !== "undefined") {
+        if (typeof BABYLON !== "undefined" && typeof BABYLON.NodeRenderGraphEditor !== "undefined") {
             return BABYLON;
         }
 
@@ -96,15 +96,15 @@ export class FrameGraph {
     /**
      * Gets an array of blocks that needs to be serialized even if they are not yet connected
      */
-    public attachedBlocks: FrameGraphBlock[] = [];
+    public attachedBlocks: NodeRenderGraphBlock[] = [];
 
     /**
      * Observable raised when the frame graph is built
      */
-    public onBuildObservable = new Observable<FrameGraph>();
+    public onBuildObservable = new Observable<NodeRenderGraph>();
 
     /** Gets or sets the FrameGraphOutputBlock used to gather the final frame graph data */
-    public outputBlock: Nullable<FrameGraphOutputBlock> = null;
+    public outputBlock: Nullable<NodeRenderGraphOutputBlock> = null;
 
     /**
      * Snippet ID if the graph was created from the snippet server
@@ -123,11 +123,11 @@ export class FrameGraph {
     @serialize("comment")
     public comment: string;
 
-    private _executedBlocks: FrameGraphBlock[] = [];
+    private _executedBlocks: NodeRenderGraphBlock[] = [];
     private _engine: AbstractEngine;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
     private _frameGraphBuilder: FrameGraphBuilder;
-    private _options: IFrameGraphCreateOptions;
+    private _options: INodeRenderGraphCreateOptions;
 
     /**
      * Creates a new frame graph
@@ -135,7 +135,7 @@ export class FrameGraph {
      * @param engine defines the engine to use to execute the graph
      * @param options defines the options to use when creating the graph
      */
-    public constructor(name: string, engine: AbstractEngine, options?: IFrameGraphCreateOptions) {
+    public constructor(name: string, engine: AbstractEngine, options?: INodeRenderGraphCreateOptions) {
         this.name = name;
         this._engine = engine;
 
@@ -160,11 +160,11 @@ export class FrameGraph {
     }
 
     /**
-     * Gets the current class name ("FrameGraph")
+     * Gets the current class name ("NodeRenderGraph")
      * @returns the class name
      */
     public getClassName(): string {
-        return "FrameGraph";
+        return "NodeRenderGraph";
     }
 
     /**
@@ -193,7 +193,7 @@ export class FrameGraph {
      * @param predicate defines the predicate used to find the good candidate
      * @returns the required block or null if not found
      */
-    public getBlockByPredicate(predicate: (block: FrameGraphBlock) => boolean) {
+    public getBlockByPredicate(predicate: (block: NodeRenderGraphBlock) => boolean) {
         for (const block of this.attachedBlocks) {
             if (predicate(block)) {
                 return block;
@@ -208,10 +208,10 @@ export class FrameGraph {
      * @returns an array of InputBlocks
      */
     public getInputBlocks() {
-        const blocks: FrameGraphInputBlock[] = [];
+        const blocks: NodeRenderGraphInputBlock[] = [];
         for (const block of this.attachedBlocks) {
             if (block.isInput) {
-                blocks.push(block as FrameGraphInputBlock);
+                blocks.push(block as NodeRenderGraphInputBlock);
             }
         }
 
@@ -223,21 +223,21 @@ export class FrameGraph {
      * @param config Define the configuration of the editor
      * @returns a promise fulfilled when the node editor is visible
      */
-    public edit(config?: IFrameGraphEditorOptions): Promise<void> {
+    public edit(config?: INodeRenderGraphEditorOptions): Promise<void> {
         return new Promise((resolve) => {
-            this.BJSFRAMEGRAPHEDITOR = this.BJSFRAMEGRAPHEDITOR || this._getGlobalFrameGraphEditor();
-            if (typeof this.BJSFRAMEGRAPHEDITOR == "undefined") {
-                const editorUrl = config && config.editorURL ? config.editorURL : FrameGraph.EditorURL;
+            this.BJSNODERENDERGRAPHEDITOR = this.BJSNODERENDERGRAPHEDITOR || this._getGlobalNodeRenderGraphEditor();
+            if (typeof this.BJSNODERENDERGRAPHEDITOR == "undefined") {
+                const editorUrl = config && config.editorURL ? config.editorURL : NodeRenderGraph.EditorURL;
 
                 // Load editor and add it to the DOM
                 Tools.LoadBabylonScript(editorUrl, () => {
-                    this.BJSFRAMEGRAPHEDITOR = this.BJSFRAMEGRAPHEDITOR || this._getGlobalFrameGraphEditor();
-                    this._createNodeEditor(config?.frameGraphEditorConfig);
+                    this.BJSNODERENDERGRAPHEDITOR = this.BJSNODERENDERGRAPHEDITOR || this._getGlobalNodeRenderGraphEditor();
+                    this._createNodeEditor(config?.nodeRenderGraphEditorConfig);
                     resolve();
                 });
             } else {
                 // Otherwise creates the editor
-                this._createNodeEditor(config?.frameGraphEditorConfig);
+                this._createNodeEditor(config?.nodeRenderGraphEditorConfig);
                 resolve();
             }
         });
@@ -252,7 +252,7 @@ export class FrameGraph {
             frameGraph: this,
             ...additionalConfig,
         };
-        this.BJSFRAMEGRAPHEDITOR.FrameGraphEditor.Show(nodeEditorConfig);
+        this.BJSNODERENDERGRAPHEDITOR.FrameGraphEditor.Show(nodeEditorConfig);
     }
 
     /**
@@ -273,7 +273,7 @@ export class FrameGraph {
         this._frameGraphBuilder._endBuild();
 
         if (this._options.updateBuildId) {
-            this._buildId = FrameGraph._BuildIdGenerator++;
+            this._buildId = NodeRenderGraph._BuildIdGenerator++;
         }
 
         this.onBuildObservable.notifyObservers(this);
@@ -311,7 +311,7 @@ export class FrameGraph {
         this._frameGraphBuilder._execute();
     }
 
-    private _initializeBlock(node: FrameGraphBlock, removeFalseBlocks: boolean) {
+    private _initializeBlock(node: NodeRenderGraphBlock, removeFalseBlocks: boolean) {
         node.initialize();
         if (this._options.autoConfigure) {
             node.autoConfigure();
@@ -349,7 +349,7 @@ export class FrameGraph {
      * Remove a block from the current graph
      * @param block defines the block to remove
      */
-    public removeBlock(block: FrameGraphBlock) {
+    public removeBlock(block: NodeRenderGraphBlock) {
         const attachedBlockIndex = this.attachedBlocks.indexOf(block);
         if (attachedBlockIndex > -1) {
             this.attachedBlocks.splice(attachedBlockIndex, 1);
@@ -375,14 +375,14 @@ export class FrameGraph {
             this.clear();
         }
 
-        const map: { [key: number]: FrameGraphBlock } = {};
+        const map: { [key: number]: NodeRenderGraphBlock } = {};
 
         // Create blocks
         for (const parsedBlock of source.blocks) {
             const blockType = GetClass(parsedBlock.customType);
             if (blockType) {
                 const additionalConstructionParameters = parsedBlock.additionalConstructionParameters;
-                const block: FrameGraphBlock = additionalConstructionParameters
+                const block: NodeRenderGraphBlock = additionalConstructionParameters
                     ? new blockType("", this._engine, ...additionalConstructionParameters)
                     : new blockType("", this._engine);
                 block._deserialize(parsedBlock);
@@ -395,10 +395,10 @@ export class FrameGraph {
         // Reconnect teleportation
         for (const block of this.attachedBlocks) {
             if (block.isTeleportOut) {
-                const teleportOut = block as FrameGraphTeleportOutBlock;
+                const teleportOut = block as NodeRenderGraphTeleportOutBlock;
                 const id = teleportOut._tempEntryPointUniqueId;
                 if (id) {
-                    const source = map[id] as FrameGraphTeleportInBlock;
+                    const source = map[id] as NodeRenderGraphTeleportInBlock;
                     if (source) {
                         source.attachToEndpoint(teleportOut);
                     }
@@ -423,7 +423,7 @@ export class FrameGraph {
 
         // Outputs
         if (source.outputNodeId) {
-            this.outputBlock = map[source.outputNodeId] as FrameGraphOutputBlock;
+            this.outputBlock = map[source.outputNodeId] as NodeRenderGraphOutputBlock;
         }
 
         // UI related info
@@ -465,7 +465,7 @@ export class FrameGraph {
         this.comment = source.comment;
     }
 
-    private _restoreConnections(block: FrameGraphBlock, source: any, map: { [key: number]: FrameGraphBlock }) {
+    private _restoreConnections(block: NodeRenderGraphBlock, source: any, map: { [key: number]: NodeRenderGraphBlock }) {
         for (const outputPoint of block.outputs) {
             for (const candidate of source.blocks) {
                 const target = map[candidate.id];
@@ -495,8 +495,8 @@ export class FrameGraph {
      * @returns a string
      */
     public generateCode() {
-        let alreadyDumped: FrameGraphBlock[] = [];
-        const blocks: FrameGraphBlock[] = [];
+        let alreadyDumped: NodeRenderGraphBlock[] = [];
+        const blocks: NodeRenderGraphBlock[] = [];
         const uniqueNames: string[] = ["const", "var", "let"];
         // Gets active blocks
         if (this.outputBlock) {
@@ -532,7 +532,7 @@ export class FrameGraph {
         return codeString;
     }
 
-    private _gatherBlocks(rootNode: FrameGraphBlock, list: FrameGraphBlock[]) {
+    private _gatherBlocks(rootNode: NodeRenderGraphBlock, list: NodeRenderGraphBlock[]) {
         if (list.indexOf(rootNode) !== -1) {
             return;
         }
@@ -550,7 +550,7 @@ export class FrameGraph {
 
         // Teleportation
         if (rootNode.isTeleportOut) {
-            const block = rootNode as FrameGraphTeleportOutBlock;
+            const block = rootNode as NodeRenderGraphTeleportOutBlock;
             if (block.entryPoint) {
                 this._gatherBlocks(block.entryPoint, list);
             }
@@ -566,15 +566,15 @@ export class FrameGraph {
         this.editorData = null;
 
         // Source
-        const backBuffer = new FrameGraphInputBlock("BackBuffer", this._engine, FrameGraphBlockConnectionPointTypes.TextureBackBuffer);
+        const backBuffer = new NodeRenderGraphInputBlock("BackBuffer", this._engine, NodeRenderGraphBlockConnectionPointTypes.TextureBackBuffer);
 
         // Clear texture
-        const clear = new FrameGraphClearBlock("Clear", this._engine);
+        const clear = new ClearBlock("Clear", this._engine);
 
         backBuffer.output.connectTo(clear.texture);
 
         // Final output
-        const output = new FrameGraphOutputBlock("Frame graph Output", this._engine);
+        const output = new NodeRenderGraphOutputBlock("Frame graph Output", this._engine);
         clear.output.connectTo(output.texture);
 
         this.outputBlock = output;
@@ -585,10 +585,10 @@ export class FrameGraph {
      * @param name defines the name to use for the new frame graph
      * @returns the new frame graph
      */
-    public clone(name: string): FrameGraph {
+    public clone(name: string): NodeRenderGraph {
         const serializationObject = this.serialize();
 
-        const clone = SerializationHelper.Clone(() => new FrameGraph(name, this._engine), this);
+        const clone = SerializationHelper.Clone(() => new NodeRenderGraph(name, this._engine), this);
         clone.name = name;
 
         clone.parseSerializedObject(serializationObject);
@@ -603,11 +603,11 @@ export class FrameGraph {
      * @param selectedBlocks defines the list of blocks to save (if null the whole frame graph will be saved)
      * @returns the serialized frame graph object
      */
-    public serialize(selectedBlocks?: FrameGraphBlock[]): any {
+    public serialize(selectedBlocks?: NodeRenderGraphBlock[]): any {
         const serializationObject = selectedBlocks ? {} : SerializationHelper.Serialize(this);
         serializationObject.editorData = JSON.parse(JSON.stringify(this.editorData)); // Copy
 
-        let blocks: FrameGraphBlock[] = [];
+        let blocks: NodeRenderGraphBlock[] = [];
 
         if (selectedBlocks) {
             blocks = selectedBlocks;
@@ -663,8 +663,8 @@ export class FrameGraph {
      * @param frameGraphOptions defines options to use when creating the frame graph
      * @returns a new FrameGraph
      */
-    public static CreateDefault(name: string, engine: AbstractEngine, frameGraphOptions?: IFrameGraphCreateOptions): FrameGraph {
-        const frameGraph = new FrameGraph(name, engine, frameGraphOptions);
+    public static CreateDefault(name: string, engine: AbstractEngine, frameGraphOptions?: INodeRenderGraphCreateOptions): NodeRenderGraph {
+        const frameGraph = new NodeRenderGraph(name, engine, frameGraphOptions);
 
         frameGraph.setToDefault();
         frameGraph.build();
@@ -680,8 +680,8 @@ export class FrameGraph {
      * @param skipBuild defines whether to skip building the frame graph (default is true)
      * @returns a new frame graph
      */
-    public static Parse(source: any, engine: AbstractEngine, frameGraphOptions?: IFrameGraphCreateOptions, skipBuild: boolean = true): FrameGraph {
-        const frameGraph = SerializationHelper.Parse(() => new FrameGraph(source.name, engine, frameGraphOptions), source, null);
+    public static Parse(source: any, engine: AbstractEngine, frameGraphOptions?: INodeRenderGraphCreateOptions, skipBuild: boolean = true): NodeRenderGraph {
+        const frameGraph = SerializationHelper.Parse(() => new NodeRenderGraph(source.name, engine, frameGraphOptions), source, null);
 
         frameGraph.parseSerializedObject(source);
         if (!skipBuild) {
@@ -703,12 +703,12 @@ export class FrameGraph {
     public static ParseFromSnippetAsync(
         snippetId: string,
         engine: AbstractEngine,
-        frameGraphOptions?: IFrameGraphCreateOptions,
-        frameGraph?: FrameGraph,
+        frameGraphOptions?: INodeRenderGraphCreateOptions,
+        frameGraph?: NodeRenderGraph,
         skipBuild: boolean = true
-    ): Promise<FrameGraph> {
+    ): Promise<NodeRenderGraph> {
         if (snippetId === "_BLANK") {
-            return Promise.resolve(FrameGraph.CreateDefault("blank", engine, frameGraphOptions));
+            return Promise.resolve(NodeRenderGraph.CreateDefault("blank", engine, frameGraphOptions));
         }
 
         return new Promise((resolve, reject) => {
@@ -720,7 +720,7 @@ export class FrameGraph {
                         const serializationObject = JSON.parse(snippet.FrameGraph);
 
                         if (!frameGraph) {
-                            frameGraph = SerializationHelper.Parse(() => new FrameGraph(snippetId, engine, frameGraphOptions), serializationObject, null);
+                            frameGraph = SerializationHelper.Parse(() => new NodeRenderGraph(snippetId, engine, frameGraphOptions), serializationObject, null);
                         }
 
                         frameGraph.parseSerializedObject(serializationObject);

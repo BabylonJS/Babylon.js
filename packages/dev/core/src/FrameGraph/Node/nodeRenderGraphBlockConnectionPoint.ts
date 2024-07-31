@@ -1,13 +1,13 @@
-import type { Nullable } from "../types";
-import type { FrameGraphBlock } from "./frameGraphBlock";
-import { Observable } from "../Misc/observable";
-import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
+import type { Nullable } from "../../types";
+import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
+import { Observable } from "../../Misc/observable";
+import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
 
 /**
  * Enum used to define the compatibility state between two connection points
  */
-export const enum FrameGraphConnectionPointCompatibilityStates {
+export const enum NodeRenderGraphConnectionPointCompatibilityStates {
     /** Points are compatibles */
     Compatible,
     /** Points are incompatible because of their types */
@@ -19,7 +19,7 @@ export const enum FrameGraphConnectionPointCompatibilityStates {
 /**
  * Defines the direction of a connection point
  */
-export const enum FrameGraphConnectionPointDirection {
+export const enum NodeRenderGraphConnectionPointDirection {
     /** Input */
     Input,
     /** Output */
@@ -29,27 +29,27 @@ export const enum FrameGraphConnectionPointDirection {
 /**
  * Defines a connection point for a block
  */
-export class FrameGraphConnectionPoint {
+export class NodeRenderGraphConnectionPoint {
     /** @internal */
-    public _ownerBlock: FrameGraphBlock;
+    public _ownerBlock: NodeRenderGraphBlock;
     /** @internal */
-    public _connectedPoint: Nullable<FrameGraphConnectionPoint> = null;
+    public _connectedPoint: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
-    public _acceptedConnectionPointType: Nullable<FrameGraphConnectionPoint> = null;
+    public _acceptedConnectionPointType: Nullable<NodeRenderGraphConnectionPoint> = null;
 
-    private _endpoints = new Array<FrameGraphConnectionPoint>();
-    private _direction: FrameGraphConnectionPointDirection;
-    private _type = FrameGraphBlockConnectionPointTypes.Undefined;
-
-    /** @internal */
-    public _linkedConnectionSource: Nullable<FrameGraphConnectionPoint> = null;
+    private _endpoints = new Array<NodeRenderGraphConnectionPoint>();
+    private _direction: NodeRenderGraphConnectionPointDirection;
+    private _type = NodeRenderGraphBlockConnectionPointTypes.Undefined;
 
     /** @internal */
-    public _typeConnectionSource: Nullable<FrameGraphConnectionPoint> = null;
+    public _linkedConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
 
     /** @internal */
-    public _defaultConnectionPointType: Nullable<FrameGraphBlockConnectionPointTypes> = null;
+    public _typeConnectionSource: Nullable<NodeRenderGraphConnectionPoint> = null;
+
+    /** @internal */
+    public _defaultConnectionPointType: Nullable<NodeRenderGraphBlockConnectionPointTypes> = null;
 
     /** Gets the direction of the point */
     public get direction() {
@@ -59,27 +59,27 @@ export class FrameGraphConnectionPoint {
     /**
      * The value stored in this connection point
      */
-    public value: FrameGraphInputBlock;
+    public value: NodeRenderGraphInputBlock;
 
     /**
      * Gets or sets the additional types supported by this connection point
      */
-    public acceptedConnectionPointTypes: FrameGraphBlockConnectionPointTypes[] = [];
+    public acceptedConnectionPointTypes: NodeRenderGraphBlockConnectionPointTypes[] = [];
 
     /**
      * Gets or sets the additional types excluded by this connection point
      */
-    public excludedConnectionPointTypes: FrameGraphBlockConnectionPointTypes[] = [];
+    public excludedConnectionPointTypes: NodeRenderGraphBlockConnectionPointTypes[] = [];
 
     /**
      * Observable triggered when this point is connected
      */
-    public onConnectionObservable = new Observable<FrameGraphConnectionPoint>();
+    public onConnectionObservable = new Observable<NodeRenderGraphConnectionPoint>();
 
     /**
      * Observable triggered when this point is disconnected
      */
-    public onDisconnectionObservable = new Observable<FrameGraphConnectionPoint>();
+    public onDisconnectionObservable = new Observable<NodeRenderGraphConnectionPoint>();
 
     /**
      * Gets or sets a boolean indicating that this connection point is exposed on a frame
@@ -94,10 +94,10 @@ export class FrameGraphConnectionPoint {
     /**
      * Gets or sets the connection point type (default is Undefined)
      */
-    public get type(): FrameGraphBlockConnectionPointTypes {
-        if (this._type === FrameGraphBlockConnectionPointTypes.AutoDetect) {
+    public get type(): NodeRenderGraphBlockConnectionPointTypes {
+        if (this._type === NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             if (this._ownerBlock.isInput) {
-                return (this._ownerBlock as FrameGraphInputBlock).type;
+                return (this._ownerBlock as NodeRenderGraphInputBlock).type;
             }
 
             if (this._connectedPoint) {
@@ -109,7 +109,7 @@ export class FrameGraphConnectionPoint {
             }
         }
 
-        if (this._type === FrameGraphBlockConnectionPointTypes.BasedOnInput) {
+        if (this._type === NodeRenderGraphBlockConnectionPointTypes.BasedOnInput) {
             if (this._typeConnectionSource) {
                 if (!this._typeConnectionSource.isConnected) {
                     return this._defaultConnectionPointType ?? this._typeConnectionSource.type;
@@ -123,7 +123,7 @@ export class FrameGraphConnectionPoint {
         return this._type;
     }
 
-    public set type(value: FrameGraphBlockConnectionPointTypes) {
+    public set type(value: NodeRenderGraphBlockConnectionPointTypes) {
         this._type = value;
     }
 
@@ -143,24 +143,24 @@ export class FrameGraphConnectionPoint {
     public isOptional: boolean;
 
     /**
-     * Gets a boolean indicating that the current point is connected to another FrameGraphlBlock
+     * Gets a boolean indicating that the current point is connected to another NodeRenderGraphBlock
      */
     public get isConnected(): boolean {
         return this.connectedPoint !== null || this.hasEndpoints;
     }
 
     /** Get the other side of the connection (if any) */
-    public get connectedPoint(): Nullable<FrameGraphConnectionPoint> {
+    public get connectedPoint(): Nullable<NodeRenderGraphConnectionPoint> {
         return this._connectedPoint;
     }
 
     /** Get the block that owns this connection point */
-    public get ownerBlock(): FrameGraphBlock {
+    public get ownerBlock(): NodeRenderGraphBlock {
         return this._ownerBlock;
     }
 
     /** Get the block connected on the other side of this connection (if any) */
-    public get sourceBlock(): Nullable<FrameGraphBlock> {
+    public get sourceBlock(): Nullable<NodeRenderGraphBlock> {
         if (!this._connectedPoint) {
             return null;
         }
@@ -169,7 +169,7 @@ export class FrameGraphConnectionPoint {
     }
 
     /** Get the block connected on the endpoints of this connection (if any) */
-    public get connectedBlocks(): Array<FrameGraphBlock> {
+    public get connectedBlocks(): Array<NodeRenderGraphBlock> {
         if (this._endpoints.length === 0) {
             return [];
         }
@@ -201,18 +201,18 @@ export class FrameGraphConnectionPoint {
      * @param ownerBlock defines the block hosting this connection point
      * @param direction defines the direction of the connection point
      */
-    public constructor(name: string, ownerBlock: FrameGraphBlock, direction: FrameGraphConnectionPointDirection) {
+    public constructor(name: string, ownerBlock: NodeRenderGraphBlock, direction: NodeRenderGraphConnectionPointDirection) {
         this._ownerBlock = ownerBlock;
         this.name = name;
         this._direction = direction;
     }
 
     /**
-     * Gets the current class name e.g. "FrameGraphConnectionPoint"
+     * Gets the current class name e.g. "NodeRenderGraphConnectionPoint"
      * @returns the class name
      */
     public getClassName(): string {
-        return "FrameGraphConnectionPoint";
+        return "NodeRenderGraphConnectionPoint";
     }
 
     /**
@@ -220,8 +220,8 @@ export class FrameGraphConnectionPoint {
      * @param connectionPoint defines the other connection point
      * @returns a boolean
      */
-    public canConnectTo(connectionPoint: FrameGraphConnectionPoint) {
-        return this.checkCompatibilityState(connectionPoint) === FrameGraphConnectionPointCompatibilityStates.Compatible;
+    public canConnectTo(connectionPoint: NodeRenderGraphConnectionPoint) {
+        return this.checkCompatibilityState(connectionPoint) === NodeRenderGraphConnectionPointCompatibilityStates.Compatible;
     }
 
     /**
@@ -229,37 +229,37 @@ export class FrameGraphConnectionPoint {
      * @param connectionPoint defines the other connection point
      * @returns a number defining the compatibility state
      */
-    public checkCompatibilityState(connectionPoint: FrameGraphConnectionPoint): FrameGraphConnectionPointCompatibilityStates {
+    public checkCompatibilityState(connectionPoint: NodeRenderGraphConnectionPoint): NodeRenderGraphConnectionPointCompatibilityStates {
         const ownerBlock = this._ownerBlock;
         const otherBlock = connectionPoint.ownerBlock;
 
-        if (this.type !== connectionPoint.type && connectionPoint.innerType !== FrameGraphBlockConnectionPointTypes.AutoDetect) {
+        if (this.type !== connectionPoint.type && connectionPoint.innerType !== NodeRenderGraphBlockConnectionPointTypes.AutoDetect) {
             // Accepted types
             if (connectionPoint.acceptedConnectionPointTypes && connectionPoint.acceptedConnectionPointTypes.indexOf(this.type) !== -1) {
-                return FrameGraphConnectionPointCompatibilityStates.Compatible;
+                return NodeRenderGraphConnectionPointCompatibilityStates.Compatible;
             } else {
-                return FrameGraphConnectionPointCompatibilityStates.TypeIncompatible;
+                return NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible;
             }
         }
 
         // Excluded
         if (connectionPoint.excludedConnectionPointTypes && connectionPoint.excludedConnectionPointTypes.indexOf(this.type) !== -1) {
-            return FrameGraphConnectionPointCompatibilityStates.TypeIncompatible;
+            return NodeRenderGraphConnectionPointCompatibilityStates.TypeIncompatible;
         }
 
         // Check hierarchy
         let targetBlock = otherBlock;
         let sourceBlock = ownerBlock;
-        if (this.direction === FrameGraphConnectionPointDirection.Input) {
+        if (this.direction === NodeRenderGraphConnectionPointDirection.Input) {
             targetBlock = ownerBlock;
             sourceBlock = otherBlock;
         }
 
         if (targetBlock.isAnAncestorOf(sourceBlock)) {
-            return FrameGraphConnectionPointCompatibilityStates.HierarchyIssue;
+            return NodeRenderGraphConnectionPointCompatibilityStates.HierarchyIssue;
         }
 
-        return FrameGraphConnectionPointCompatibilityStates.Compatible;
+        return NodeRenderGraphConnectionPointCompatibilityStates.Compatible;
     }
 
     /**
@@ -268,7 +268,7 @@ export class FrameGraphConnectionPoint {
      * @param ignoreConstraints defines if the system will ignore connection type constraints (default is false)
      * @returns the current connection point
      */
-    public connectTo(connectionPoint: FrameGraphConnectionPoint, ignoreConstraints = false): FrameGraphConnectionPoint {
+    public connectTo(connectionPoint: NodeRenderGraphConnectionPoint, ignoreConstraints = false): NodeRenderGraphConnectionPoint {
         if (!ignoreConstraints && !this.canConnectTo(connectionPoint)) {
             // eslint-disable-next-line no-throw-literal
             throw "Cannot connect these two connectors.";
@@ -288,7 +288,7 @@ export class FrameGraphConnectionPoint {
      * @param endpoint defines the other connection point
      * @returns the current connection point
      */
-    public disconnectFrom(endpoint: FrameGraphConnectionPoint): FrameGraphConnectionPoint {
+    public disconnectFrom(endpoint: NodeRenderGraphConnectionPoint): NodeRenderGraphConnectionPoint {
         const index = this._endpoints.indexOf(endpoint);
 
         if (index === -1) {
@@ -306,11 +306,11 @@ export class FrameGraphConnectionPoint {
 
     /**
      * Fills the list of excluded connection point types with all types other than those passed in the parameter
-     * @param mask Types (ORed values of FrameGraphBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
+     * @param mask Types (ORed values of NodeRenderGraphBlockConnectionPointTypes) that are allowed, and thus will not be pushed to the excluded list
      */
     public addExcludedConnectionPointFromAllowedTypes(mask: number): void {
         let bitmask = 1;
-        while (bitmask < FrameGraphBlockConnectionPointTypes.All) {
+        while (bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
             if (!(mask & bitmask)) {
                 this.excludedConnectionPointTypes.push(bitmask);
             }
@@ -320,11 +320,11 @@ export class FrameGraphConnectionPoint {
 
     /**
      * Adds accepted connection point types
-     * @param mask Types (ORed values of FrameGraphBlockConnectionPointTypes) that are allowed to connect to this point
+     * @param mask Types (ORed values of NodeRenderGraphBlockConnectionPointTypes) that are allowed to connect to this point
      */
     public addAcceptedConnectionPointTypes(mask: number): void {
         let bitmask = 1;
-        while (bitmask < FrameGraphBlockConnectionPointTypes.All) {
+        while (bitmask < NodeRenderGraphBlockConnectionPointTypes.All) {
             if (mask & bitmask && this.acceptedConnectionPointTypes.indexOf(bitmask) === -1) {
                 this.acceptedConnectionPointTypes.push(bitmask);
             }

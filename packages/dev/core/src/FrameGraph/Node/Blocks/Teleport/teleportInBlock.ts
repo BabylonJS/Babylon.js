@@ -1,16 +1,16 @@
 import type { Nullable } from "core/types";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
-import { FrameGraphBlock } from "../../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
-import type { FrameGraphTeleportOutBlock } from "./frameGraphTeleportOutBlock";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import type { NodeRenderGraphTeleportOutBlock } from "./teleportOutBlock";
+import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 
 /**
  * Defines a block used to teleport a value to an endpoint
  */
-export class FrameGraphTeleportInBlock extends FrameGraphBlock {
-    private _endpoints: FrameGraphTeleportOutBlock[] = [];
+export class NodeRenderGraphTeleportInBlock extends NodeRenderGraphBlock {
+    private _endpoints: NodeRenderGraphTeleportOutBlock[] = [];
 
     /** Gets the list of attached endpoints */
     public get endpoints() {
@@ -18,7 +18,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
     }
 
     /**
-     * Create a new FrameGraphTeleportInBlock
+     * Create a new NodeRenderGraphTeleportInBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -27,7 +27,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
 
         this._isTeleportIn = true;
 
-        this.registerInput("input", FrameGraphBlockConnectionPointTypes.AutoDetect);
+        this.registerInput("input", NodeRenderGraphBlockConnectionPointTypes.AutoDetect);
     }
 
     /**
@@ -35,17 +35,17 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphTeleportInBlock";
+        return "NodeRenderGraphTeleportInBlock";
     }
 
     /**
      * Gets the input component
      */
-    public get input(): FrameGraphConnectionPoint {
+    public get input(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
-    public override _dumpCode(uniqueNames: string[], alreadyDumped: FrameGraphBlock[]) {
+    public override _dumpCode(uniqueNames: string[], alreadyDumped: NodeRenderGraphBlock[]) {
         let codeString = super._dumpCode(uniqueNames, alreadyDumped);
 
         for (const endpoint of this.endpoints) {
@@ -81,7 +81,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
      * @param block defines the potential descendant block to check
      * @returns true if block is a descendant
      */
-    public override isAnAncestorOf(block: FrameGraphBlock): boolean {
+    public override isAnAncestorOf(block: NodeRenderGraphBlock): boolean {
         for (const endpoint of this.endpoints) {
             if (endpoint === block) {
                 return true;
@@ -100,7 +100,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
      * @param predicate defines the predicate to check
      * @returns descendant or null if none found
      */
-    public override getDescendantOfPredicate(predicate: (block: FrameGraphBlock) => boolean): Nullable<FrameGraphBlock> {
+    public override getDescendantOfPredicate(predicate: (block: NodeRenderGraphBlock) => boolean): Nullable<NodeRenderGraphBlock> {
         if (predicate(this)) {
             return this;
         }
@@ -120,7 +120,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
      * Add an enpoint to this block
      * @param endpoint define the endpoint to attach to
      */
-    public attachToEndpoint(endpoint: FrameGraphTeleportOutBlock) {
+    public attachToEndpoint(endpoint: NodeRenderGraphTeleportOutBlock) {
         endpoint.detach();
 
         this._endpoints.push(endpoint);
@@ -134,7 +134,7 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
      * Remove enpoint from this block
      * @param endpoint define the endpoint to remove
      */
-    public detachFromEndpoint(endpoint: FrameGraphTeleportOutBlock) {
+    public detachFromEndpoint(endpoint: NodeRenderGraphTeleportOutBlock) {
         const index = this._endpoints.indexOf(endpoint);
 
         if (index !== -1) {
@@ -158,4 +158,4 @@ export class FrameGraphTeleportInBlock extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphTeleportInBlock", FrameGraphTeleportInBlock);
+RegisterClass("BABYLON.NodeRenderGraphTeleportInBlock", NodeRenderGraphTeleportInBlock);

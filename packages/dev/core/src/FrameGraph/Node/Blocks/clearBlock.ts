@@ -1,28 +1,28 @@
-import { FrameGraphBlock } from "../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
-import { RegisterClass } from "../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../frameGraphBuilder";
-import { Color4 } from "../../Maths/math.color";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { FrameGraphBuilder } from "../../frameGraphBuilder";
+import { Color4 } from "../../../Maths/math.color";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 
 /**
  * Block used to clear a texture
  */
-export class FrameGraphClearBlock extends FrameGraphBlock {
+export class ClearBlock extends NodeRenderGraphBlock {
     /**
-     * Create a new FrameGraphClearBlock
+     * Create a new NodeRenderGraphClearBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
     public constructor(name: string, engine: AbstractEngine) {
         super(name, engine);
 
-        this.registerInput("texture", FrameGraphBlockConnectionPointTypes.Texture);
-        this.registerOutput("output", FrameGraphBlockConnectionPointTypes.BasedOnInput);
+        this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.texture.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
+        this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.texture;
     }
 
@@ -35,19 +35,19 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphClearBlock";
+        return "ClearBlock";
     }
     /**
      * Gets the texture input component
      */
-    public get texture(): FrameGraphConnectionPoint {
+    public get texture(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
     /**
      * Gets the output component
      */
-    public get output(): FrameGraphConnectionPoint {
+    public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
 
@@ -63,7 +63,7 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
 
         const isBackBuffer = inputTexture.isBackBuffer();
         const isBackBufferDepthStencilAttachment = inputTexture.isBackBufferDepthStencilAttachment();
-        const isDepthStencilAttachment = inputTexture.type === FrameGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
+        const isDepthStencilAttachment = inputTexture.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
 
         if (isBackBuffer || isBackBufferDepthStencilAttachment) {
             builder.addExecuteFunction(() => {
@@ -99,4 +99,4 @@ export class FrameGraphClearBlock extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphClearBlock", FrameGraphClearBlock);
+RegisterClass("BABYLON.ClearBlock", ClearBlock);

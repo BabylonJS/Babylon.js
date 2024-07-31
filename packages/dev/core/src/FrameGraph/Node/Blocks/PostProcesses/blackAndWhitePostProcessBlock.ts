@@ -1,37 +1,37 @@
-import { FrameGraphBlock } from "../../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import { BlackAndWhitePostProcess } from "../../../PostProcesses/blackAndWhitePostProcess";
-import type { Nullable } from "../../../types";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
-import { Constants } from "../../../Engines/constants";
-import type { Observer } from "../../../Misc/observable";
-import type { Effect } from "../../../Materials/effect";
+import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { FrameGraphBuilder } from "../../../frameGraphBuilder";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
+import type { Nullable } from "../../../../types";
+import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import { Constants } from "../../../../Engines/constants";
+import type { Observer } from "../../../../Misc/observable";
+import type { Effect } from "../../../../Materials/effect";
 
 /**
  * Block that implements the black and white post process
  */
-export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
+export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
     private _postProcess: BlackAndWhitePostProcess;
     private _ppObserver: Nullable<Observer<Effect>> = null;
 
     /**
-     * Create a new FrameGraphBlackAndWhitePostProcess
+     * Create a new BlackAndWhitePostProcessBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
     public constructor(name: string, engine: AbstractEngine) {
         super(name, engine);
 
-        this.registerInput("source", FrameGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", FrameGraphBlockConnectionPointTypes.Texture);
-        this.registerOutput("output", FrameGraphBlockConnectionPointTypes.BasedOnInput);
+        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.source.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
+        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.destination;
 
         this._postProcess = new BlackAndWhitePostProcess(this.name, 1, null, undefined, engine);
@@ -57,26 +57,26 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphBlackAndWhitePostProcess";
+        return "BlackAndWhitePostProcessBlock";
     }
     /**
      * Gets the source input component
      */
-    public get source(): FrameGraphConnectionPoint {
+    public get source(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
     /**
      * Gets the destination input component
      */
-    public get destination(): FrameGraphConnectionPoint {
+    public get destination(): NodeRenderGraphConnectionPoint {
         return this._inputs[1];
     }
 
     /**
      * Gets the output component
      */
-    public get output(): FrameGraphConnectionPoint {
+    public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
 
@@ -97,7 +97,7 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
         const source = this.source.connectedPoint?.value;
         const sourceTexture = source?.getInternalTextureFromValue();
         if (!sourceTexture) {
-            throw new Error("FrameGraphBlackAndWhitePostProcess: Source is not connected or is not a texture");
+            throw new Error("BlackAndWhitePostProcessBlock: Source is not connected or is not a texture");
         }
 
         this._postProcess.frameGraphBuild(builder);
@@ -145,4 +145,4 @@ export class FrameGraphBlackAndWhitePostProcess extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphBlackAndWhitePostProcess", FrameGraphBlackAndWhitePostProcess);
+RegisterClass("BABYLON.BlackAndWhitePostProcessBlock", BlackAndWhitePostProcessBlock);

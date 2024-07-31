@@ -1,21 +1,21 @@
-import { FrameGraphBlock } from "../../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../../frameGraphBlockConnectionPoint";
-import { RegisterClass } from "../../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
-import type { AbstractEngine } from "../../../Engines/abstractEngine";
-import { Constants } from "../../../Engines/constants";
-import { BloomEffect } from "../../../PostProcesses/bloomEffect";
+import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
+import { RegisterClass } from "../../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { FrameGraphBuilder } from "../../../frameGraphBuilder";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
+import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import { Constants } from "../../../../Engines/constants";
+import { BloomEffect } from "../../../../PostProcesses/bloomEffect";
 
 /**
  * Block that implements the bloom post process
  */
-export class FrameGraphBloomPostProcess extends FrameGraphBlock {
+export class BloomPostProcessBlock extends NodeRenderGraphBlock {
     private _postProcess: BloomEffect;
 
     /**
-     * Create a new FrameGraphBlackAndWhitePostProcess
+     * Create a new BloomPostProcessBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      * @param hdr If high dynamic range textures should be used (default: false)
@@ -25,12 +25,12 @@ export class FrameGraphBloomPostProcess extends FrameGraphBlock {
 
         this._additionalConstructionParameters = [hdr];
 
-        this.registerInput("source", FrameGraphBlockConnectionPointTypes.Texture);
-        this.registerInput("destination", FrameGraphBlockConnectionPointTypes.Texture);
-        this.registerOutput("output", FrameGraphBlockConnectionPointTypes.BasedOnInput);
+        this.registerInput("source", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("destination", NodeRenderGraphBlockConnectionPointTypes.Texture);
+        this.registerOutput("output", NodeRenderGraphBlockConnectionPointTypes.BasedOnInput);
 
-        this.source.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
-        this.destination.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
+        this.source.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAllButBackBuffer);
+        this.destination.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
         this.output._typeConnectionSource = this.destination;
 
         let defaultPipelineTextureType = Constants.TEXTURETYPE_UNSIGNED_BYTE;
@@ -85,26 +85,26 @@ export class FrameGraphBloomPostProcess extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphBloomPostProcess";
+        return "BloomPostProcessBlock";
     }
     /**
      * Gets the source input component
      */
-    public get source(): FrameGraphConnectionPoint {
+    public get source(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
     /**
      * Gets the destination input component
      */
-    public get destination(): FrameGraphConnectionPoint {
+    public get destination(): NodeRenderGraphConnectionPoint {
         return this._inputs[1];
     }
 
     /**
      * Gets the output component
      */
-    public get output(): FrameGraphConnectionPoint {
+    public get output(): NodeRenderGraphConnectionPoint {
         return this._outputs[0];
     }
 
@@ -125,7 +125,7 @@ export class FrameGraphBloomPostProcess extends FrameGraphBlock {
         const source = this.source.connectedPoint?.value;
         const sourceTexture = source?.getInternalTextureFromValue();
         if (!sourceTexture) {
-            throw new Error("FrameGraphBloomPostProcess: Source is not connected or is not a texture");
+            throw new Error("BloomPostProcessBlock: Source is not connected or is not a texture");
         }
 
         this._postProcess.frameGraphBuild(builder, { sourceTexture });
@@ -174,4 +174,4 @@ export class FrameGraphBloomPostProcess extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphBloomPostProcess", FrameGraphBloomPostProcess);
+RegisterClass("BABYLON.BloomPostProcessBlock", BloomPostProcessBlock);

@@ -1,7 +1,7 @@
 /**
  * Defines the type of a texture
  */
-export const enum FrameGraphTextureType {
+export const enum NodeRenderGraphTextureType {
     /** No specific type */
     Untyped = 0,
     /** Geometry Buffer: Position */

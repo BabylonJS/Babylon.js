@@ -1,19 +1,19 @@
-import { GetClass } from "../Misc/typeStore";
-import { serialize } from "../Misc/decorators";
-import { UniqueIdGenerator } from "../Misc/uniqueIdGenerator";
-import { FrameGraphBlockConnectionPointTypes } from "./Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "./frameGraphBuilder";
-import { Observable } from "../Misc/observable";
-import type { Nullable } from "../types";
-import type { FrameGraphInputBlock } from "./Blocks/frameGraphInputBlock";
-import { Logger } from "../Misc/logger";
-import { FrameGraphConnectionPoint, FrameGraphConnectionPointDirection } from "./frameGraphBlockConnectionPoint";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { GetClass } from "../../Misc/typeStore";
+import { serialize } from "../../Misc/decorators";
+import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
+import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { FrameGraphBuilder } from "../frameGraphBuilder";
+import { Observable } from "../../Misc/observable";
+import type { Nullable } from "../../types";
+import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
+import { Logger } from "../../Misc/logger";
+import { NodeRenderGraphConnectionPoint, NodeRenderGraphConnectionPointDirection } from "./nodeRenderGraphBlockConnectionPoint";
+import type { AbstractEngine } from "../../Engines/abstractEngine";
 
 /**
  * Defines a block that can be used inside a frame graph
  */
-export class FrameGraphBlock {
+export class NodeRenderGraphBlock {
     private _name = "";
     private _buildId: number;
     protected _isInput = false;
@@ -26,17 +26,17 @@ export class FrameGraphBlock {
     /**
      * Gets an observable raised when the block is built
      */
-    public onBuildObservable = new Observable<FrameGraphBlock>();
+    public onBuildObservable = new Observable<NodeRenderGraphBlock>();
 
     /**
      * Gets an observable raised before the block is executed
      */
-    public onBeforeExecuteObservable = new Observable<FrameGraphBlock>();
+    public onBeforeExecuteObservable = new Observable<NodeRenderGraphBlock>();
 
     /**
      * Gets an observable raised after the block is executed
      */
-    public onAfterExecuteObservable = new Observable<FrameGraphBlock>();
+    public onAfterExecuteObservable = new Observable<NodeRenderGraphBlock>();
 
     /**
      * Condition to execute the block (default: undefined - block always executed)
@@ -44,10 +44,10 @@ export class FrameGraphBlock {
     public executeCondition: (() => boolean) | undefined = undefined;
 
     /** @internal */
-    public _inputs = new Array<FrameGraphConnectionPoint>();
+    public _inputs = new Array<NodeRenderGraphConnectionPoint>();
 
     /** @internal */
-    public _outputs = new Array<FrameGraphConnectionPoint>();
+    public _outputs = new Array<NodeRenderGraphConnectionPoint>();
 
     /** @internal */
     public _codeVariableName = "";
@@ -58,12 +58,12 @@ export class FrameGraphBlock {
     /**
      * Gets the list of input points
      */
-    public get inputs(): FrameGraphConnectionPoint[] {
+    public get inputs(): NodeRenderGraphConnectionPoint[] {
         return this._inputs;
     }
 
     /** Gets the list of output points */
-    public get outputs(): FrameGraphConnectionPoint[] {
+    public get outputs(): NodeRenderGraphConnectionPoint[] {
         return this._outputs;
     }
 
@@ -128,11 +128,11 @@ export class FrameGraphBlock {
     public visibleOnFrame = false;
 
     /**
-     * Gets the current class name e.g. "FrameGraphBlock"
+     * Gets the current class name e.g. "NodeRenderGraphBlock"
      * @returns the class name
      */
     public getClassName() {
-        return "FrameGraphBlock";
+        return "NodeRenderGraphBlock";
     }
 
     protected _inputRename(name: string) {
@@ -148,7 +148,7 @@ export class FrameGraphBlock {
      * @param block defines the potential descendant block to check
      * @returns true if block is a descendant
      */
-    public isAnAncestorOf(block: FrameGraphBlock): boolean {
+    public isAnAncestorOf(block: NodeRenderGraphBlock): boolean {
         for (const output of this._outputs) {
             if (!output.hasEndpoints) {
                 continue;
@@ -197,7 +197,7 @@ export class FrameGraphBlock {
      * @param predicate defines the predicate to check
      * @returns descendant or null if none found
      */
-    public getDescendantOfPredicate(predicate: (block: FrameGraphBlock) => boolean): Nullable<FrameGraphBlock> {
+    public getDescendantOfPredicate(predicate: (block: NodeRenderGraphBlock) => boolean): Nullable<NodeRenderGraphBlock> {
         if (predicate(this)) {
             return this;
         }
@@ -219,7 +219,7 @@ export class FrameGraphBlock {
     }
 
     /**
-     * Creates a new FrameGraphBlock
+     * Creates a new NodeRenderGraphBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -237,8 +237,8 @@ export class FrameGraphBlock {
      * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerInput(name: string, type: FrameGraphBlockConnectionPointTypes, isOptional: boolean = false, point?: FrameGraphConnectionPoint) {
-        point = point ?? new FrameGraphConnectionPoint(name, this, FrameGraphConnectionPointDirection.Input);
+    public registerInput(name: string, type: NodeRenderGraphBlockConnectionPointTypes, isOptional: boolean = false, point?: NodeRenderGraphConnectionPoint) {
+        point = point ?? new NodeRenderGraphConnectionPoint(name, this, NodeRenderGraphConnectionPointDirection.Input);
         point.type = type;
         point.isOptional = isOptional;
 
@@ -254,8 +254,8 @@ export class FrameGraphBlock {
      * @param point an already created connection point. If not provided, create a new one
      * @returns the current block
      */
-    public registerOutput(name: string, type: FrameGraphBlockConnectionPointTypes, point?: FrameGraphConnectionPoint) {
-        point = point ?? new FrameGraphConnectionPoint(name, this, FrameGraphConnectionPointDirection.Output);
+    public registerOutput(name: string, type: NodeRenderGraphBlockConnectionPointTypes, point?: NodeRenderGraphConnectionPoint) {
+        point = point ?? new NodeRenderGraphConnectionPoint(name, this, NodeRenderGraphConnectionPointDirection.Output);
         point.type = type;
 
         this._outputs.push(point);
@@ -271,7 +271,7 @@ export class FrameGraphBlock {
         // Must be implemented by children
     }
 
-    protected _propagateInputValueToOutput(inputConnectionPoint: FrameGraphConnectionPoint, outputConnectionPoint: FrameGraphConnectionPoint) {
+    protected _propagateInputValueToOutput(inputConnectionPoint: NodeRenderGraphConnectionPoint, outputConnectionPoint: NodeRenderGraphConnectionPoint) {
         if (inputConnectionPoint.connectedPoint) {
             outputConnectionPoint.value = inputConnectionPoint.connectedPoint.value;
         }
@@ -283,7 +283,7 @@ export class FrameGraphBlock {
      * @param removeFalseBlocks if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false)
      * @returns true if already built
      */
-    public build(builder: FrameGraphBuilder, removeFalseBlocks: boolean): boolean {
+    public build(builder: FrameGraphBuilder, removeFalseBlocks = false): boolean {
         if (this._buildId === builder.buildId) {
             return true;
         }
@@ -478,7 +478,7 @@ export class FrameGraphBlock {
     /**
      * @internal
      */
-    public _dumpCodeForOutputConnections(alreadyDumped: FrameGraphBlock[]) {
+    public _dumpCodeForOutputConnections(alreadyDumped: NodeRenderGraphBlock[]) {
         let codeString = "";
 
         if (alreadyDumped.indexOf(this) !== -1) {
@@ -507,7 +507,7 @@ export class FrameGraphBlock {
     /**
      * @internal
      */
-    public _dumpCode(uniqueNames: string[], alreadyDumped: FrameGraphBlock[]) {
+    public _dumpCode(uniqueNames: string[], alreadyDumped: NodeRenderGraphBlock[]) {
         alreadyDumped.push(this);
 
         // Get unique name
@@ -530,11 +530,11 @@ export class FrameGraphBlock {
             codeString += `// ${this.comments}\n`;
         }
         const className = this.getClassName();
-        if (className === "FrameGraphInputBlock") {
-            const block = this as unknown as FrameGraphInputBlock;
+        if (className === "NodeRenderGraphInputBlock") {
+            const block = this as unknown as NodeRenderGraphInputBlock;
             const blockType = block.type;
 
-            codeString += `var ${this._codeVariableName} = new BABYLON.FrameGraphInputBlock("${this.name}", engine, BABYLON.FrameGraphBlockConnectionPointTypes.${FrameGraphBlockConnectionPointTypes[blockType]});\n`;
+            codeString += `var ${this._codeVariableName} = new BABYLON.NodeRenderGraphInputBlock("${this.name}", engine, BABYLON.NodeRenderGraphBlockConnectionPointTypes.${NodeRenderGraphBlockConnectionPointTypes[blockType]});\n`;
         } else {
             if (this._additionalConstructionParameters) {
                 codeString += `var ${this._codeVariableName} = new BABYLON.${className}("${this.name}", engine, ...${JSON.stringify(this._additionalConstructionParameters)});\n`;
@@ -587,7 +587,7 @@ export class FrameGraphBlock {
 
         if (blockType) {
             const additionalConstructionParameters = serializationObject.additionalConstructionParameters;
-            const block: FrameGraphBlock = additionalConstructionParameters
+            const block: NodeRenderGraphBlock = additionalConstructionParameters
                 ? new blockType("", this._engine, ...additionalConstructionParameters)
                 : new blockType("", this._engine);
             block._deserialize(serializationObject);

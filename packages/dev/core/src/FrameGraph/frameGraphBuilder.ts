@@ -1,4 +1,4 @@
-import type { FrameGraphConnectionPoint } from "./frameGraphBlockConnectionPoint";
+import type { NodeRenderGraphConnectionPoint } from "./Node/nodeRenderGraphBlockConnectionPoint";
 import type { Scene } from "../scene";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { DrawWrapper } from "../Materials/drawWrapper";
@@ -32,7 +32,7 @@ export class FrameGraphBuilder {
      * Gets or sets the list of non connected mandatory inputs
      * @internal
      */
-    public _notConnectedNonOptionalInputs: FrameGraphConnectionPoint[] = [];
+    public _notConnectedNonOptionalInputs: NodeRenderGraphConnectionPoint[] = [];
 
     private _executeFunctions: FrameGraphExecute[] = [];
     private _effectRenderer: EffectRenderer;

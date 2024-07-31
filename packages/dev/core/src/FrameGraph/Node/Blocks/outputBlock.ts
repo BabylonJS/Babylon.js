@@ -1,17 +1,17 @@
-import { FrameGraphBlock } from "../frameGraphBlock";
-import type { FrameGraphConnectionPoint } from "../frameGraphBlockConnectionPoint";
-import { RegisterClass } from "../../Misc/typeStore";
-import { FrameGraphBlockConnectionPointTypes } from "../Enums/frameGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../frameGraphBuilder";
-import { editableInPropertyPage, PropertyTypeForEdition } from "../../Decorators/nodeDecorator";
-import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
+import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
+import { RegisterClass } from "../../../Misc/typeStore";
+import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
+import type { FrameGraphBuilder } from "../../frameGraphBuilder";
+import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
+import type { AbstractEngine } from "../../../Engines/abstractEngine";
 
 /**
  * Block used to generate the final graph
  */
-export class FrameGraphOutputBlock extends FrameGraphBlock {
+export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
     /**
-     * Create a new FrameGraphOutputBlock
+     * Create a new NodeRenderGraphOutputBlock
      * @param name defines the block name
      * @param engine defines the hosting engine
      */
@@ -20,9 +20,9 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
 
         this._isUnique = true;
 
-        this.registerInput("texture", FrameGraphBlockConnectionPointTypes.Texture);
+        this.registerInput("texture", NodeRenderGraphBlockConnectionPointTypes.Texture);
 
-        this.texture.addAcceptedConnectionPointTypes(FrameGraphBlockConnectionPointTypes.TextureAll);
+        this.texture.addAcceptedConnectionPointTypes(NodeRenderGraphBlockConnectionPointTypes.TextureAll);
     }
 
     /** Disables the copy of the input texture to the back buffer in case the input texture is not already the back buffer texture */
@@ -34,12 +34,12 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
      * @returns the class name
      */
     public override getClassName() {
-        return "FrameGraphOutputBlock";
+        return "NodeRenderGraphOutputBlock";
     }
     /**
      * Gets the texture input component
      */
-    public get texture(): FrameGraphConnectionPoint {
+    public get texture(): NodeRenderGraphConnectionPoint {
         return this._inputs[0];
     }
 
@@ -79,4 +79,4 @@ export class FrameGraphOutputBlock extends FrameGraphBlock {
     }
 }
 
-RegisterClass("BABYLON.FrameGraphOutputBlock", FrameGraphOutputBlock);
+RegisterClass("BABYLON.NodeRenderGraphOutputBlock", NodeRenderGraphOutputBlock);
