@@ -33,21 +33,11 @@ export async function generatePipelineContext(
     if (!processor) {
         switch (platformName) {
             case "WEBGL1":
-                processor = new (
-                    await import(
-                        /* webpackChunkName: "webGLShaderProcessors" */
-                        "core/Engines/WebGL/webGLShaderProcessors"
-                    )
-                ).WebGLShaderProcessor();
+                processor = new (await import("core/Engines/WebGL/webGLShaderProcessors")).WebGLShaderProcessor();
                 break;
             case "WEBGL2":
             default:
-                processor = new (
-                    await import(
-                        /* webpackChunkName: "webGL2ShaderProcessors" */
-                        "core/Engines/WebGL/webGL2ShaderProcessors"
-                    )
-                ).WebGL2ShaderProcessor();
+                processor = new (await import("core/Engines/WebGL/webGL2ShaderProcessors")).WebGL2ShaderProcessor();
                 break;
         }
     }

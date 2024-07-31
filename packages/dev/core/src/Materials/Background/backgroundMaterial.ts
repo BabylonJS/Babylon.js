@@ -695,23 +695,11 @@ export class BackgroundMaterial extends PushMaterial {
             this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
 
             this._shaderLanguage = ShaderLanguage.WGSL;
-            await import(
-                /* webpackChunkName: "background.vertex.wgsl" */
-                "../../ShadersWGSL/background.vertex"
-            );
-            await import(
-                /* webpackChunkName: "background.fragment.wgsl" */
-                "../../ShadersWGSL/background.fragment"
-            );
+            await import("../../ShadersWGSL/background.vertex");
+            await import("../../ShadersWGSL/background.fragment");
         } else {
-            await import(
-                /* webpackChunkName: "background.vertex.glsl" */
-                "../../Shaders/background.vertex"
-            );
-            await import(
-                /* webpackChunkName: "background.fragment.glsl" */
-                "../../Shaders/background.fragment"
-            );
+            await import("../../Shaders/background.vertex");
+            await import("../../Shaders/background.fragment");
         }
 
         this._shadersLoaded = true;

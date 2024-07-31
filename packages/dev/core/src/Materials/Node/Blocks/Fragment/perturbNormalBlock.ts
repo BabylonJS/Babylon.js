@@ -181,31 +181,13 @@ export class PerturbNormalBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import(
-                /* webpackChunkName: "bumpFragment.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/bumpFragment"
-            );
-            await import(
-                /* webpackChunkName: "bumpFragmentMainFunctions.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions"
-            );
-            await import(
-                /* webpackChunkName: "bumpFragmentFunctions.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions"
-            );
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragment");
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentMainFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/bumpFragmentFunctions");
         } else {
-            await import(
-                /* webpackChunkName: "bumpFragment.glsl" */
-                "../../../../Shaders/ShadersInclude/bumpFragment"
-            );
-            await import(
-                /* webpackChunkName: "bumpFragmentMainFunctions.glsl" */
-                "../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions"
-            );
-            await import(
-                /* webpackChunkName: "bumpFragmentFunctions.glsl" */
-                "../../../../Shaders/ShadersInclude/bumpFragmentFunctions"
-            );
+            await import("../../../../Shaders/ShadersInclude/bumpFragment");
+            await import("../../../../Shaders/ShadersInclude/bumpFragmentMainFunctions");
+            await import("../../../../Shaders/ShadersInclude/bumpFragmentFunctions");
         }
 
         this._codeIsReady = true;

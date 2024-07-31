@@ -57,39 +57,15 @@ export class ClipPlanesBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import(
-                /* webpackChunkName: "clipPlaneFragment.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneFragmentDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneVertex.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneVertexDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration"
-            );
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragment");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneFragmentDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertex");
+            await import("../../../../ShadersWGSL/ShadersInclude/clipPlaneVertexDeclaration");
         } else {
-            await import(
-                /* webpackChunkName: "clipPlaneFragment.glsl" */
-                "../../../../Shaders/ShadersInclude/clipPlaneFragment"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneFragmentDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneVertex.glsl" */
-                "../../../../Shaders/ShadersInclude/clipPlaneVertex"
-            );
-            await import(
-                /* webpackChunkName: "clipPlaneVertexDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration"
-            );
+            await import("../../../../Shaders/ShadersInclude/clipPlaneFragment");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneFragmentDeclaration");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneVertex");
+            await import("../../../../Shaders/ShadersInclude/clipPlaneVertexDeclaration");
         }
 
         this._codeIsReady = true;

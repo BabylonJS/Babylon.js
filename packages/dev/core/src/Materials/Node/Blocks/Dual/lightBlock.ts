@@ -171,71 +171,23 @@ export class LightBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import(
-                /* webpackChunkName: "lightFragment.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightFragment"
-            );
-            await import(
-                /* webpackChunkName: "lightUboDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightVxUboDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "helperFunctions.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/helperFunctions"
-            );
-            await import(
-                /* webpackChunkName: "lightsFragmentFunctions.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions"
-            );
-            await import(
-                /* webpackChunkName: "shadowsFragmentFunctions.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions"
-            );
-            await import(
-                /* webpackChunkName: "shadowsVertex.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/shadowsVertex"
-            );
+            await import("../../../../ShadersWGSL/ShadersInclude/lightFragment");
+            await import("../../../../ShadersWGSL/ShadersInclude/lightUboDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/helperFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions");
+            await import("../../../../ShadersWGSL/ShadersInclude/shadowsVertex");
         } else {
-            await import(
-                /* webpackChunkName: "lightFragmentDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightFragmentDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightFragment.glsl" */
-                "../../../../Shaders/ShadersInclude/lightFragment"
-            );
-            await import(
-                /* webpackChunkName: "lightUboDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightVxUboDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightVxUboDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "lightVxFragmentDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "helperFunctions.glsl" */
-                "../../../../Shaders/ShadersInclude/helperFunctions"
-            );
-            await import(
-                /* webpackChunkName: "lightsFragmentFunctions.glsl" */
-                "../../../../Shaders/ShadersInclude/lightsFragmentFunctions"
-            );
-            await import(
-                /* webpackChunkName: "shadowsFragmentFunctions.glsl" */
-                "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions"
-            );
-            await import(
-                /* webpackChunkName: "shadowsVertex.glsl" */
-                "../../../../Shaders/ShadersInclude/shadowsVertex"
-            );
+            await import("../../../../Shaders/ShadersInclude/lightFragmentDeclaration");
+            await import("../../../../Shaders/ShadersInclude/lightFragment");
+            await import("../../../../Shaders/ShadersInclude/lightUboDeclaration");
+            await import("../../../../Shaders/ShadersInclude/lightVxUboDeclaration");
+            await import("../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration");
+            await import("../../../../Shaders/ShadersInclude/helperFunctions");
+            await import("../../../../Shaders/ShadersInclude/lightsFragmentFunctions");
+            await import("../../../../Shaders/ShadersInclude/shadowsFragmentFunctions");
+            await import("../../../../Shaders/ShadersInclude/shadowsVertex");
         }
 
         this._codeIsReady = true;

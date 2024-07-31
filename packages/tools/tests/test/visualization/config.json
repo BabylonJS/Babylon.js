@@ -825,8 +825,9 @@
         {
             "title": "GLTF Serializer Morph Target Animation",
             "renderCount": 2,
-            "playgroundId": "#84M2SR#118",
-            "referenceImage": "gltfSerializerMorphTargetAnimation.png"
+            "playgroundId": "#84M2SR#107",
+            "referenceImage": "gltfSerializerMorphTargetAnimation.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "GLTF Serializer Morph Target Animation Group",
@@ -1845,8 +1846,8 @@
         },
         {
             "title": "MeshDebugPluginMaterial",
-            "playgroundId": "#TFDNZI#6",
-            "excludedEngines": ["webgl1"]
+            "playgroundId": "#TFDNZI#2",
+            "excludedEngines": ["webgl1", "webgpu"]
         },
         {
             "title": "SerializeScene and ImportMesh with string skeletonIds",

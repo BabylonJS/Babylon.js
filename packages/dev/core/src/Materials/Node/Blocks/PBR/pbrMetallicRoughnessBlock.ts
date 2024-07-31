@@ -442,23 +442,11 @@ export class PBRMetallicRoughnessBlock extends NodeMaterialBlock {
     private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
         this._codeIsReady = false;
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import(
-                /* webpackChunkName: "pbr.vertex.wgsl" */
-                "../../../../ShadersWGSL/pbr.vertex"
-            );
-            await import(
-                /* webpackChunkName: "pbr.fragment.wgsl" */
-                "../../../../ShadersWGSL/pbr.fragment"
-            );
+            await import("../../../../ShadersWGSL/pbr.vertex");
+            await import("../../../../ShadersWGSL/pbr.fragment");
         } else {
-            await import(
-                /* webpackChunkName: "pbr.vertex.glsl" */
-                "../../../../Shaders/pbr.vertex"
-            );
-            await import(
-                /* webpackChunkName: "pbr.vertex.glsl" */
-                "../../../../Shaders/pbr.fragment"
-            );
+            await import("../../../../Shaders/pbr.vertex");
+            await import("../../../../Shaders/pbr.fragment");
         }
 
         this._codeIsReady = true;

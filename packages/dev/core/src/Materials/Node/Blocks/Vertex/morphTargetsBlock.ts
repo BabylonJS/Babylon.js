@@ -114,39 +114,15 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
         this._codeIsReady = false;
 
         if (shaderLanguage === ShaderLanguage.WGSL) {
-            await import(
-                /* webpackChunkName: "morphTargetsVertex.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexGlobal.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexGlobalDeclaration.wgsl" */
-                "../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"
-            );
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal");
+            await import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration");
         } else {
-            await import(
-                /* webpackChunkName: "morphTargetsVertex.glsl" */
-                "../../../../Shaders/ShadersInclude/morphTargetsVertex"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexGlobal.glsl" */
-                "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"
-            );
-            await import(
-                /* webpackChunkName: "morphTargetsVertexGlobalDeclaration.glsl" */
-                "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"
-            );
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertex");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal");
+            await import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration");
         }
 
         this._codeIsReady = true;

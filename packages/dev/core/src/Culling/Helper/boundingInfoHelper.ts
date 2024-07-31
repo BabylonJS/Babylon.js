@@ -33,16 +33,10 @@ export class BoundingInfoHelper {
     private async _initializePlatform() {
         if (!this._platform) {
             if (this._engine.getCaps().supportComputeShaders) {
-                const module = await import(
-                    /* webpackChunkName: "computeShaderBoundingHelper" */
-                    "./computeShaderBoundingHelper"
-                );
+                const module = await import("./computeShaderBoundingHelper");
                 this._platform = new module.ComputeShaderBoundingHelper(this._engine);
             } else if (this._engine.getCaps().supportTransformFeedbacks) {
-                const module = await import(
-                    /* webpackChunkName: "transformFeedbackBoundingHelper" */
-                    "./transformFeedbackBoundingHelper"
-                );
+                const module = await import("./transformFeedbackBoundingHelper");
                 this._platform = new module.TransformFeedbackBoundingHelper(this._engine as ThinEngine);
             } else {
                 throw new Error("Your engine does not support Compute Shaders or Transform Feedbacks");
