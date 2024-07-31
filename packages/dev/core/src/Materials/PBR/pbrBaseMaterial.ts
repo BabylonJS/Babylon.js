@@ -856,6 +856,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _debugMode = 0;
 
     private _shadersLoaded = false;
+    private _breakShaderLoadedCheck = false;
 
     /**
      * @internal
@@ -1935,24 +1936,34 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-        const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
-        if (this._onEffectCreatedObservable) {
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = null;
-            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-        }
-        if (effect.isReady()) {
-            if (onCompiled) {
-                onCompiled(this);
+        const checkReady = () => {
+            if (this._breakShaderLoadedCheck) {
+                return;
             }
-        } else {
-            effect.onCompileObservable.add(() => {
-                if (onCompiled) {
-                    onCompiled(this);
+            if (this._shadersLoaded) {
+                const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
+                const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = null;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
                 }
-            });
-        }
+                if (effect.isReady()) {
+                    if (onCompiled) {
+                        onCompiled(this);
+                    }
+                } else {
+                    effect.onCompileObservable.add(() => {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
+                    });
+                }
+            } else {
+                setTimeout(checkReady, 16);
+            }
+        };
+        checkReady();
     }
 
     /**
@@ -2598,6 +2609,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param forceDisposeTextures - Forces the disposal of all textures.
      */
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        this._breakShaderLoadedCheck = true;
         if (forceDisposeTextures) {
             if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();
