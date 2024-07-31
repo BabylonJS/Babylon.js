@@ -1174,7 +1174,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createMorphTargets(context: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, babylonMesh: Mesh): void {
-        if (!primitive.targets) {
+        if (!primitive.targets || !this._parent.loadMorphTargets) {
             return;
         }
 
@@ -1202,7 +1202,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
-        if (!primitive.targets) {
+        if (!primitive.targets || !this._parent.loadMorphTargets) {
             return Promise.resolve();
         }
 
@@ -1308,6 +1308,10 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadSkinAsync(context: string, node: INode, skin: ISkin, assign: (babylonSkeleton: Skeleton) => void): Promise<void> {
+        if (!this._parent.loadSkins) {
+            return Promise.resolve();
+        }
+
         const extensionPromise = this._extensionsLoadSkinAsync(context, node, skin);
         if (extensionPromise) {
             return extensionPromise;
@@ -1410,6 +1414,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadBone(node: INode, skin: ISkin, babylonSkeleton: Skeleton, babylonBones: { [index: number]: Bone }): Bone {
+        node._isJoint = true;
+
         let babylonBone = babylonBones[node.index];
         if (babylonBone) {
             return babylonBone;
@@ -1634,17 +1640,21 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
+        const channelTargetPath = channel.target.path;
+        const pathIsWeights = channelTargetPath === AnimationChannelTargetPath.WEIGHTS;
 
         // Ignore animations that have no animation targets.
-        if (
-            (channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-            (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonTransformNode)
-        ) {
+        if ((pathIsWeights && !targetNode._numMorphTargets) || (!pathIsWeights && !targetNode._babylonTransformNode)) {
+            return Promise.resolve();
+        }
+
+        // Don't load node animations if disabled.
+        if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
             return Promise.resolve();
         }
 
         let properties: Array<AnimationPropertyInfo>;
-        switch (channel.target.path) {
+        switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
                 properties = nodeAnimationData.translation;
                 break;
