@@ -1,10 +1,11 @@
 "use strict";
 
+/* eslint-disable babylonjs/syntax */
 /* eslint-disable no-console */
 
 // This script generates an interactive flame chart for file/folder sizes.
 // node folderSizeFlameChart.js [pattern=**/*] [outputFile=FoldersSizes]
-// Example: node folderSizeFlameChart.js **/*.ts,!**/*.d.ts,!**/test/**
+// Example: node folderSizeFlameChart.js . "**/*.ts,!**/*.d.ts,!**/test/**"
 
 const child_process = require("child_process");
 const fs = require("fs");
@@ -13,38 +14,54 @@ const os = require("os");
 const https = require("https");
 const glob = require("glob");
 const chalk = require("chalk");
+const open = require("open");
 
-let [scriptPath, folder = ".", pattern = "**", outputFile = "FoldersSizes"] = process.argv.slice(1);
+async function downloadFlameGraphScript() {
+    // This is the temp path where the flamegraph.pl script will be downloaded
+    const flameGraphScriptPath = path.join(os.tmpdir(), "flamegraph.pl");
 
-console.log(chalk.bold(`${path.basename(scriptPath)} ${folder} ${pattern} ${outputFile}`));
-
-// Resolve to an absolute path
-folder = path.resolve(folder);
-
-// This is the temp path where the flamegraph.pl script will be downloaded
-const flameGraphScriptPath = path.join(os.tmpdir(), "flamegraph.pl");
-
-// If the flamegraph.pl script does not exist, download it
-if (!fs.existsSync(flameGraphScriptPath)) {
-    const downloadUrl = "https://raw.githubusercontent.com/brendangregg/FlameGraph/cd9ee4c4449775a2f867acf31c84b7fe4b132ad5/flamegraph.pl";
-    console.log(`Downloading flamegraph.pl from ${downloadUrl}`);
-    https.get(downloadUrl, (response) => {
-        const file = fs.createWriteStream(flameGraphScriptPath);
-        response.pipe(file);
-        file.on("finish", () => {
-            file.close();
-            fs.chmodSync(flameGraphScriptPath, "755");
-
-            // Now generate the flame chart
-            generateFlameChart();
-        });
+    return new Promise((resolve, reject) => {
+        // If the flamegraph.pl script does not exist, download it
+        if (!fs.existsSync(flameGraphScriptPath)) {
+            const downloadUrl = "https://raw.githubusercontent.com/brendangregg/FlameGraph/cd9ee4c4449775a2f867acf31c84b7fe4b132ad5/flamegraph.pl";
+            console.log(`Downloading flamegraph.pl from ${downloadUrl}`);
+            https.get(downloadUrl, (response) => {
+                if (response.statusCode !== 200) {
+                    reject(`Failed to download flamegraph.pl script. Status code: ${response.statusCode}`);
+                } else {
+                    const file = fs.createWriteStream(flameGraphScriptPath);
+                    response.pipe(file);
+                    file.on("finish", () => {
+                        file.close();
+                        fs.chmodSync(flameGraphScriptPath, "755");
+                        resolve(flameGraphScriptPath);
+                    }).on("error", (err) => {
+                        fs.unlinkSync(flameGraphScriptPath);
+                        reject(err);
+                    });
+                }
+            });
+        } else {
+            resolve(flameGraphScriptPath);
+        }
     });
-} else {
-    // Flamegraph.pl script already exists, generate the flame chart
-    generateFlameChart();
 }
 
-function generateFlameChart() {
+/**
+ * Generates a flame chart for file/folder sizes.
+ * @param {string} folder The folder to search for files in.
+ * @param {string} pattern The glob pattern to match files against.
+ * @param {string} outputFile The name of the output file (without extension).
+ * @param {string} chartSubtitle The subtitle of the flame chart.
+ * @param {function} coerceSize A function to coerce the size of a file. If not provided, the actual size is used.
+ * @returns {Promise<void>} A promise that resolves when the flame chart has been generated.
+ */
+async function generateFlameChart(folder, pattern, outputFile, chartSubtitle, coerceSize) {
+    const flameGraphScriptPath = await downloadFlameGraphScript();
+
+    // Resolve to an absolute path
+    folder = path.resolve(folder);
+
     // patterns is a comma separated list
     const patterns = pattern.split(",");
 
@@ -59,12 +76,18 @@ function generateFlameChart() {
         cwd: folder,
     })) {
         // Get file stats given the absolute file path
-        const stats = fs.statSync(path.resolve(folder, filePath));
+        const absolutePath = path.resolve(folder, filePath);
+        const stats = fs.statSync(absolutePath);
 
         // Only process files (folder info is implicit in the flame chart)
         if (stats.isFile()) {
+            let size = stats.size;
+            if (coerceSize) {
+                size = coerceSize(absolutePath, size);
+            }
+
             // The format of each stack is "path/to/file; size"
-            stacks.push(`${filePath.replace(/[\/]/g, ";")} ${stats.size}`);
+            stacks.push(`${filePath.replace(/[\/]/g, ";")} ${size}`);
         }
     }
 
@@ -73,12 +96,24 @@ function generateFlameChart() {
     fs.writeFileSync(tempFilePath, stacks.join("\n"));
 
     // Construct the flamegraph command
-    const flameGraphCommand = `${flameGraphScriptPath} --title "File &amp; Folder Sizes" --subtitle "Sizes of files and folders matching glob '${pattern}' under '${folder}'" --width 1800 --height 32 --countname "bytes" --nametype Folder/File ${tempFilePath} > ${outputFile}.svg`;
+    const flameGraphCommand = `${flameGraphScriptPath} --title "File &amp; Folder Sizes" --subtitle "${chartSubtitle}" --width 1800 --height 32 --countname "bytes" --nametype Folder/File ${tempFilePath} > ${outputFile}.svg`;
     console.log(`${chalk.bold(chalk.italic(`Running command`))}: ${chalk.italic(flameGraphCommand)}`);
 
     // Execute the flamegraph command, waiting for it to finish
     child_process.execSync(flameGraphCommand);
-
-    // Open the svg (will generally open in the default browser, where it can be interacted with)
-    child_process.exec(`open ${outputFile}.svg`);
 }
+
+if (require.main === module) {
+    const [scriptPath, folder = ".", pattern = "**", outputFile = "FoldersSizes"] = process.argv.slice(1);
+
+    console.log(chalk.bold(`${path.basename(scriptPath)} ${folder} ${pattern} ${outputFile}`));
+
+    generateFlameChart(folder, pattern, outputFile, `Sizes of files and folders matching glob '${pattern}' under '${folder}'`).then(() => {
+        // Open the svg (will generally open in the default browser, where it can be interacted with)
+        open(`${outputFile}.svg`);
+    });
+}
+
+module.exports = {
+    generateFlameChart,
+};
