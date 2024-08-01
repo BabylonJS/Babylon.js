@@ -487,7 +487,7 @@ export interface ImportAnimationsOptions extends SceneLoaderOptions {
     /**
      * defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
      */
-    targetConverter: Nullable<(target: unknown) => unknown>;
+    targetConverter?: Nullable<(target: unknown) => unknown>;
 }
 
 /**
