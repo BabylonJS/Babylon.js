@@ -1,4 +1,3 @@
-import type { NodeRenderGraphConnectionPoint } from "./Node/nodeRenderGraphBlockConnectionPoint";
 import type { Scene } from "../scene";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { DrawWrapper } from "../Materials/drawWrapper";
@@ -19,20 +18,11 @@ interface FrameGraphExecute {
 }
 
 /**
- * Class used to implement the frame graph builder
+ * Class used to implement the frame graph
  */
-export class FrameGraphBuilder {
+export class FrameGraph {
     private _engine: AbstractEngine;
     private _copyTexture: CopyTextureToTexture;
-
-    /** Gets or sets the build identifier */
-    public buildId: number;
-
-    /**
-     * Gets or sets the list of non connected mandatory inputs
-     * @internal
-     */
-    public _notConnectedNonOptionalInputs: NodeRenderGraphConnectionPoint[] = [];
 
     private _executeFunctions: FrameGraphExecute[] = [];
     private _effectRenderer: EffectRenderer;
@@ -49,23 +39,19 @@ export class FrameGraphBuilder {
     }
 
     /**
-     * Constructs the frame graph builder
+     * Constructs the frame graph
      * @param engine defines the hosting engine
      * @param _debugTextures defines a boolean indicating that textures created by the frame graph should be visible in the inspector
      * @param _scene defines the scene in which debugging textures are to be created
-     * @param verbose defines a boolean indicating that verbose mode is on
      */
     constructor(
         engine: AbstractEngine,
         private _debugTextures = false,
-        private _scene?: Scene,
-        public verbose = false
+        private _scene?: Scene
     ) {
         this._engine = engine;
         this._effectRenderer = new EffectRenderer(engine);
         this._copyTexture = new CopyTextureToTexture(engine);
-
-        this.buildId = 0;
     }
 
     /**
@@ -182,12 +168,11 @@ export class FrameGraphBuilder {
      * @internal
      */
     public _startBuild() {
-        this._notConnectedNonOptionalInputs = [];
         this._executeFunctions = [];
         this._releaseTextures();
     }
 
-    public _endBuild(emitErrors = true) {
+    public _endBuild() {
         const executeFunctions: FrameGraphExecute[] = [];
         for (const execute of this._executeFunctions) {
             if (execute.functions.length > 0) {
@@ -195,10 +180,6 @@ export class FrameGraphBuilder {
             }
         }
         this._executeFunctions = executeFunctions;
-
-        if (emitErrors) {
-            this._emitErrors();
-        }
     }
 
     /**
@@ -250,17 +231,5 @@ export class FrameGraphBuilder {
         }
 
         this._renderTargetIsBound = true;
-    }
-
-    private _emitErrors() {
-        let errorMessage = "";
-        for (const notConnectedInput of this._notConnectedNonOptionalInputs) {
-            errorMessage += `input "${notConnectedInput.name}" from block "${
-                notConnectedInput.ownerBlock.name
-            }"[${notConnectedInput.ownerBlock.getClassName()}] is not connected and is not optional.\n`;
-        }
-        if (errorMessage) {
-            throw new Error("Build of frame graph failed:\n" + errorMessage);
-        }
     }
 }

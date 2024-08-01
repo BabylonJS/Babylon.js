@@ -2,10 +2,10 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 import { Color4 } from "../../../Maths/math.color";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 
 /**
  * Block used to clear a texture
@@ -51,8 +51,8 @@ export class ClearBlock extends NodeRenderGraphBlock {
         return this._outputs[0];
     }
 
-    protected override _buildBlock(builder: FrameGraphBuilder) {
-        super._buildBlock(builder);
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
 
         this._propagateInputValueToOutput(this.texture, this.output);
 
@@ -66,16 +66,16 @@ export class ClearBlock extends NodeRenderGraphBlock {
         const isDepthStencilAttachment = inputTexture.type === NodeRenderGraphBlockConnectionPointTypes.TextureDepthStencilAttachment || isBackBufferDepthStencilAttachment;
 
         if (isBackBuffer || isBackBufferDepthStencilAttachment) {
-            builder.addExecuteFunction(() => {
-                builder.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+            state.frameGraph.addExecuteFunction(() => {
+                state.frameGraph.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
             });
         } else {
             const rtWrapper = inputTexture.getValueAsRenderTargetWrapper();
             if (rtWrapper) {
-                builder.addExecuteFunction(() => {
-                    builder.bindRenderTarget(rtWrapper);
-                    builder.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
-                    builder.bindRenderTarget(null);
+                state.frameGraph.addExecuteFunction(() => {
+                    state.frameGraph.bindRenderTarget(rtWrapper);
+                    state.frameGraph.clear(this.color, !isDepthStencilAttachment, isDepthStencilAttachment, isDepthStencilAttachment);
+                    state.frameGraph.bindRenderTarget(null);
                 });
             }
         }

@@ -2,9 +2,9 @@ import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../Decorators/nodeDecorator";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 
 /**
  * Block used to generate the final graph
@@ -43,8 +43,8 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
         return this._inputs[0];
     }
 
-    protected override _buildBlock(builder: FrameGraphBuilder) {
-        super._buildBlock(builder);
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
 
         const inputTexture = this.texture.connectedPoint?.value;
         if (!inputTexture || !inputTexture.value) {
@@ -56,8 +56,8 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
             return;
         }
 
-        builder.addExecuteFunction(() => {
-            builder.copyTextureToTexture(internalTexture, null);
+        state.frameGraph.addExecuteFunction(() => {
+            state.frameGraph.copyTextureToTexture(internalTexture, null);
         });
     }
 

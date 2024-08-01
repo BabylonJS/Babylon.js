@@ -8,8 +8,8 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { IFrameGraphSupport } from "../FrameGraph/IFrameGraphSupport";
-import type { FrameGraphBuilder } from "../FrameGraph/frameGraphBuilder";
+import type { IFrameGraphPass } from "../FrameGraph/IFrameGraphPass";
+import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { Observer } from "../Misc/observable";
 import type { Effect } from "../Materials/effect";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
@@ -29,7 +29,7 @@ export interface IBloomEffectFrameGraphBuildData {
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
  */
-export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphSupport {
+export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphPass {
     /**
      * @internal Internal
      */
@@ -168,7 +168,7 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphS
         this._effects.push(this._merge);
     }
 
-    public frameGraphBuild(builder: FrameGraphBuilder, buildData: IBloomEffectFrameGraphBuildData) {
+    public addToFrameGraph(builder: FrameGraph, buildData: IBloomEffectFrameGraphBuildData) {
         const sourceTexture = buildData.sourceTexture;
 
         this._downscale.onApplyObservable.remove(this._downscaleObserver);
@@ -220,20 +220,20 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphS
         });
     }
 
-    public frameGraphRender(builder: FrameGraphBuilder) {
+    public executeFrameGraphPass(builder: FrameGraph) {
         const finalRenderTarget = builder.currentRenderTarget;
 
         builder.bindRenderTarget(this._downscaleOutput);
-        this._downscale.frameGraphRender(builder);
+        this._downscale.executeFrameGraphPass(builder);
 
         builder.bindRenderTarget(this._blurXOutput);
-        this._blurX.frameGraphRender(builder);
+        this._blurX.executeFrameGraphPass(builder);
 
         builder.bindRenderTarget(this._blurYOutput);
-        this._blurY.frameGraphRender(builder);
+        this._blurY.executeFrameGraphPass(builder);
 
         builder.bindRenderTarget(finalRenderTarget);
-        this._merge.frameGraphRender(builder);
+        this._merge.executeFrameGraphPass(builder);
     }
 
     /**

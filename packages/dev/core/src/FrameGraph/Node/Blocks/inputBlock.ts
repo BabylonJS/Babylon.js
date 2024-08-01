@@ -3,7 +3,6 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../Enums/nodeRenderGra
 import { NodeRenderGraphBlock } from "../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../Misc/typeStore";
-import type { FrameGraphBuilder } from "../../frameGraphBuilder";
 import type { Camera } from "../../../Cameras/camera";
 import type { ThinTexture } from "../../../Materials/Textures/thinTexture";
 import type { RenderTargetCreationOptions, TextureSize } from "../../../Materials/Textures/textureCreationOptions";
@@ -13,6 +12,7 @@ import type { RenderTargetWrapper } from "../../../Engines/renderTargetWrapper";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { Nullable } from "../../../types";
 import type { AbstractEngine } from "../../../Engines/abstractEngine";
+import type { NodeRenderGraphBuildState } from "../nodeRenderGraphBuildState";
 
 export type NodeRenderGraphInputType = ThinTexture | RenderTargetWrapper | Camera;
 
@@ -153,8 +153,8 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
         return (this.type & NodeRenderGraphBlockConnectionPointTypes.TextureBackBufferDepthStencilAttachment) !== 0;
     }
 
-    protected override _buildBlock(builder: FrameGraphBuilder) {
-        super._buildBlock(builder);
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
 
         if (this.isExternal) {
             if (this._storedValue === undefined || this._storedValue === null) {
@@ -177,7 +177,7 @@ export class NodeRenderGraphInputBlock extends NodeRenderGraphBlock {
                   }
                 : textureCreateOptions.size;
 
-            this.value = builder.createRenderTargetTexture(this.name, size, textureCreateOptions.options);
+            this.value = state.frameGraph.createRenderTargetTexture(this.name, size, textureCreateOptions.options);
         }
     }
 

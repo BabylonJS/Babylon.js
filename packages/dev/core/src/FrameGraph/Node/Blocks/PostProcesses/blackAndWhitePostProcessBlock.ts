@@ -2,7 +2,6 @@ import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import { RegisterClass } from "../../../../Misc/typeStore";
 import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRenderGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../../../frameGraphBuilder";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 import { BlackAndWhitePostProcess } from "../../../../PostProcesses/blackAndWhitePostProcess";
 import type { Nullable } from "../../../../types";
@@ -10,6 +9,7 @@ import type { AbstractEngine } from "../../../../Engines/abstractEngine";
 import { Constants } from "../../../../Engines/constants";
 import type { Observer } from "../../../../Misc/observable";
 import type { Effect } from "../../../../Materials/effect";
+import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
 /**
  * Block that implements the black and white post process
@@ -89,8 +89,8 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         super.dispose();
     }
 
-    protected override _buildBlock(builder: FrameGraphBuilder) {
-        super._buildBlock(builder);
+    protected override _buildBlock(state: NodeRenderGraphBuildState) {
+        super._buildBlock(state);
 
         this._propagateInputValueToOutput(this.destination, this.output);
 
@@ -100,7 +100,7 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
             throw new Error("BlackAndWhitePostProcessBlock: Source is not connected or is not a texture");
         }
 
-        this._postProcess.frameGraphBuild(builder);
+        this._postProcess.addToFrameGraph(state.frameGraph);
 
         this._postProcess.onApplyObservable.remove(this._ppObserver);
         this._ppObserver = this._postProcess.onApplyObservable.add((effect) => {
@@ -110,16 +110,16 @@ export class BlackAndWhitePostProcessBlock extends NodeRenderGraphBlock {
         const destination = this.destination.connectedPoint?.value;
         const rtWrapper = destination?.getValueAsRenderTargetWrapper();
         if (rtWrapper) {
-            builder.addExecuteFunction(() => {
+            state.frameGraph.addExecuteFunction(() => {
                 if (sourceTexture.samplingMode !== this.sourceSamplingMode) {
                     this._engine.updateTextureSamplingMode(this.sourceSamplingMode, sourceTexture);
                 }
 
-                builder.bindRenderTarget(rtWrapper);
+                state.frameGraph.bindRenderTarget(rtWrapper);
 
-                this._postProcess.frameGraphRender(builder);
+                this._postProcess.executeFrameGraphPass(state.frameGraph);
 
-                builder.bindRenderTarget(null);
+                state.frameGraph.bindRenderTarget(null);
             });
         }
     }

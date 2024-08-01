@@ -4,8 +4,8 @@ import { NodeRenderGraphBlockConnectionPointTypes } from "../../Enums/nodeRender
 import { NodeRenderGraphBlock } from "../../nodeRenderGraphBlock";
 import type { NodeRenderGraphConnectionPoint } from "../../nodeRenderGraphBlockConnectionPoint";
 import type { NodeRenderGraphTeleportInBlock } from "./teleportInBlock";
-import type { FrameGraphBuilder } from "../../../frameGraphBuilder";
 import type { AbstractEngine } from "../../../../Engines/abstractEngine";
+import type { NodeRenderGraphBuildState } from "../../nodeRenderGraphBuildState";
 
 /**
  * Defines a block used to receive a value from a teleport entry point
@@ -64,7 +64,7 @@ export class NodeRenderGraphTeleportOutBlock extends NodeRenderGraphBlock {
         // All work done by the emitter
     }
 
-    protected override _customBuildStep(state: FrameGraphBuilder): void {
+    protected override _customBuildStep(state: NodeRenderGraphBuildState): void {
         if (this.entryPoint) {
             this.entryPoint.build(state);
         }

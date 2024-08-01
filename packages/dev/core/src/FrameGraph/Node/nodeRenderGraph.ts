@@ -4,7 +4,7 @@ import type { Nullable } from "../../types";
 import type { Scene } from "../../scene";
 import { NodeRenderGraphOutputBlock } from "./Blocks/outputBlock";
 import type { NodeRenderGraphBlock } from "./nodeRenderGraphBlock";
-import { FrameGraphBuilder } from "../frameGraphBuilder";
+import { FrameGraph } from "../frameGraph";
 import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
@@ -19,6 +19,7 @@ import { Engine } from "../../Engines/engine";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
 import { ClearBlock } from "./Blocks/clearBlock";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
+import { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 
 // declare NODERENDERGRAPHEDITOR namespace for compilation issue
 declare let NODERENDERGRAPHEDITOR: any;
@@ -49,8 +50,6 @@ export interface INodeRenderGraphCreateOptions {
     rebuildGraphOnEngineResize?: boolean;
     /** defines if the build should log activity (default: false) */
     verbose?: boolean;
-    /** defines if the internal build Id should be updated (default: true) */
-    updateBuildId?: boolean;
     /** defines if the autoConfigure method should be called when initializing blocks (default: false) */
     autoConfigure?: boolean;
 }
@@ -126,7 +125,7 @@ export class NodeRenderGraph {
     private _executedBlocks: NodeRenderGraphBlock[] = [];
     private _engine: AbstractEngine;
     private _resizeObserver: Nullable<Observer<AbstractEngine>> = null;
-    private _frameGraphBuilder: FrameGraphBuilder;
+    private _frameGraph: FrameGraph;
     private _options: INodeRenderGraphCreateOptions;
 
     /**
@@ -144,13 +143,12 @@ export class NodeRenderGraph {
             scene: undefined,
             autoConfigure: false,
             verbose: false,
-            updateBuildId: true,
             ...options,
         };
 
         this._options = options;
 
-        this._frameGraphBuilder = new FrameGraphBuilder(engine, options.debugTextures, options.scene, options.verbose);
+        this._frameGraph = new FrameGraph(engine, options.debugTextures, options.scene);
 
         if (options.rebuildGraphOnEngineResize) {
             this._resizeObserver = this._engine.onResizeObservable.add(() => {
@@ -266,15 +264,20 @@ export class NodeRenderGraph {
 
         this._initializeBlock(this.outputBlock, removeFalseBlocks);
 
-        this._frameGraphBuilder.buildId = this._buildId;
+        const state = new NodeRenderGraphBuildState();
 
-        this._frameGraphBuilder._startBuild();
-        this.outputBlock.build(this._frameGraphBuilder, removeFalseBlocks);
-        this._frameGraphBuilder._endBuild();
+        state.buildId = this._buildId;
+        state.verbose = this._options.verbose!;
+        state.removeFalseBlocks = removeFalseBlocks;
+        state.frameGraph = this._frameGraph;
 
-        if (this._options.updateBuildId) {
-            this._buildId = NodeRenderGraph._BuildIdGenerator++;
-        }
+        this._frameGraph._startBuild();
+        this.outputBlock.build(state);
+        this._frameGraph._endBuild();
+
+        this._buildId = NodeRenderGraph._BuildIdGenerator++;
+
+        state.emitErrors();
 
         this.onBuildObservable.notifyObservers(this);
     }
@@ -308,7 +311,7 @@ export class NodeRenderGraph {
      * Execute the graph (the graph must have been built before!)
      */
     public execute() {
-        this._frameGraphBuilder._execute();
+        this._frameGraph._execute();
     }
 
     private _initializeBlock(node: NodeRenderGraphBlock, removeFalseBlocks: boolean) {
@@ -645,8 +648,8 @@ export class NodeRenderGraph {
             block.dispose();
         }
 
-        this._frameGraphBuilder._dispose();
-        this._frameGraphBuilder = undefined as any;
+        this._frameGraph._dispose();
+        this._frameGraph = undefined as any;
 
         this._engine.onResizeObservable.remove(this._resizeObserver);
         this._resizeObserver = null;

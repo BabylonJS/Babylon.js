@@ -2,7 +2,7 @@ import { GetClass } from "../../Misc/typeStore";
 import { serialize } from "../../Misc/decorators";
 import { UniqueIdGenerator } from "../../Misc/uniqueIdGenerator";
 import { NodeRenderGraphBlockConnectionPointTypes } from "./Enums/nodeRenderGraphBlockConnectionPointTypes";
-import type { FrameGraphBuilder } from "../frameGraphBuilder";
+import type { NodeRenderGraphBuildState } from "./nodeRenderGraphBuildState";
 import { Observable } from "../../Misc/observable";
 import type { Nullable } from "../../types";
 import type { NodeRenderGraphInputBlock } from "./Blocks/inputBlock";
@@ -263,11 +263,11 @@ export class NodeRenderGraphBlock {
         return this;
     }
 
-    protected _buildBlock(_builder: FrameGraphBuilder) {
+    protected _buildBlock(_state: NodeRenderGraphBuildState) {
         // Empty. Must be defined by child nodes
     }
 
-    protected _customBuildStep(_builder: FrameGraphBuilder): void {
+    protected _customBuildStep(_state: NodeRenderGraphBuildState): void {
         // Must be implemented by children
     }
 
@@ -279,54 +279,53 @@ export class NodeRenderGraphBlock {
 
     /**
      * Build the current node and generate the vertex data
-     * @param builder defines the current generation builder
-     * @param removeFalseBlocks if true, the blocks whose executeCondition evaluates to false at build time will be removed from the execution list (default: false)
+     * @param state defines the current generation state
      * @returns true if already built
      */
-    public build(builder: FrameGraphBuilder, removeFalseBlocks = false): boolean {
-        if (this._buildId === builder.buildId) {
+    public build(state: NodeRenderGraphBuildState): boolean {
+        if (this._buildId === state.buildId) {
             return true;
         }
 
-        if (removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
+        if (state.removeFalseBlocks && this.executeCondition && !this.executeCondition()) {
             return false;
         }
 
-        this._buildId = builder.buildId;
+        this._buildId = state.buildId;
 
         // Check if "parent" blocks are compiled
         for (const input of this._inputs) {
             if (!input.connectedPoint) {
                 if (!input.isOptional) {
                     // Emit a warning
-                    builder._notConnectedNonOptionalInputs.push(input);
+                    state._notConnectedNonOptionalInputs.push(input);
                 }
                 continue;
             }
 
             const block = input.connectedPoint.ownerBlock;
             if (block && block !== this) {
-                block.build(builder, removeFalseBlocks);
+                block.build(state);
             }
         }
 
-        this._customBuildStep(builder);
+        this._customBuildStep(state);
 
         // Logs
-        if (builder.verbose) {
+        if (state.verbose) {
             Logger.Log(`Building ${this.name} [${this.getClassName()}]`);
         }
 
-        builder._addCondition(this.executeCondition);
+        state.frameGraph._addCondition(this.executeCondition);
 
-        this._buildBlock(builder);
+        this._buildBlock(state);
 
         // Compile connected blocks
         for (const output of this._outputs) {
             for (const endpoint of output.endpoints) {
                 const block = endpoint.ownerBlock;
                 if (block) {
-                    block.build(builder, removeFalseBlocks);
+                    block.build(state);
                 }
             }
         }
