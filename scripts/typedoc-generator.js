@@ -81,7 +81,7 @@ async function main() {
     const packages = process.argv.includes("--packages") ? process.argv[process.argv.indexOf("--packages") + 1].split(",") : ["core", "loaders", "materials", "gui", "serializers"];
     const full = process.argv.includes("--full");
     const filesChanged = (await runCommand(process.env.GIT_CHANGES_COMMAND || "git diff --name-only master")).split("\n");
-    const files = glob.sync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
+    const files = glob.globSync(`packages/dev/@(${packages.join("|")})/src/index.ts`).filter((f) => /*!f.endsWith("index.ts") && */ !f.endsWith(".d.ts"));
     console.log(files);
     const dirList = files.filter((file) => {
         return file.endsWith(".ts");
