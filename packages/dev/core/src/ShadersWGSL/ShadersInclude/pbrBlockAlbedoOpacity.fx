@@ -36,7 +36,7 @@ fn albedoOpacityBlock(
         #endif
 
         #ifdef GAMMAALBEDO
-            surfaceAlbedo *= toLinearSpace(albedoTexture.rgb);
+            surfaceAlbedo *= toLinearSpaceVec3(albedoTexture.rgb);
         #else
             surfaceAlbedo *= albedoTexture.rgb;
         #endif
@@ -49,7 +49,7 @@ fn albedoOpacityBlock(
     #endif
 
     #if defined(VERTEXCOLOR) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-        surfaceAlbedo *= vColor.rgb;
+        surfaceAlbedo *= fragmentInputs.vColor.rgb;
     #endif
 
     #ifdef DETAIL
@@ -75,14 +75,15 @@ fn albedoOpacityBlock(
     #endif
 
     #if defined(VERTEXALPHA) || defined(INSTANCESCOLOR) && defined(INSTANCES)
-        alpha *= vColor.a;
+        alpha *= fragmentInputs.vColor.a;
     #endif
 
     #if !defined(SS_LINKREFRACTIONTOTRANSPARENCY) && !defined(ALPHAFRESNEL)
         #ifdef ALPHATEST 
             #if DEBUGMODE != 88
-                if (alpha < ALPHATESTVALUE)
+                if (alpha < ALPHATESTVALUE) {
                     discard;
+                }
             #endif
 
             #ifndef ALPHABLEND

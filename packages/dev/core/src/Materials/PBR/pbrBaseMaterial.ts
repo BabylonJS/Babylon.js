@@ -36,8 +36,6 @@ import { Constants } from "../../Engines/constants";
 import type { IAnimatable } from "../../Animations/animatable.interface";
 
 import "../../Materials/Textures/baseTexture.polynomial";
-import "../../Shaders/pbr.fragment";
-import "../../Shaders/pbr.vertex";
 
 import { EffectFallbacks } from "../effectFallbacks";
 import { PBRClearCoatConfiguration } from "./pbrClearCoatConfiguration";
@@ -69,6 +67,8 @@ import {
     PrepareDefinesForPrePass,
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
+import { ShaderLanguage } from "../shaderLanguage";
+import { UniformBuffer } from "../uniformBuffer";
 
 const onCreatedEffectParameters = { effect: null as unknown as Effect, subMesh: null as unknown as Nullable<SubMesh> };
 
@@ -299,6 +299,8 @@ export class PBRMaterialDefines extends MaterialDefines implements IImageProcess
  * This offers the main features of a standard PBR material.
  * For more information, please refer to the documentation :
  * https://doc.babylonjs.com/features/featuresDeepDive/materials/using/introToPBR
+ * #CGHTSM#1 : WebGL
+ * #CGHTSM#2 : WebGPU
  */
 export abstract class PBRBaseMaterial extends PushMaterial {
     /**
@@ -344,6 +346,12 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * to enhance interoperability with other materials.
      */
     public static readonly LIGHTFALLOFF_STANDARD = 2;
+
+    /**
+     * Force all the PBR materials to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
 
     /**
      * Intensity of the direct lights e.g. the four lights available in your scene.
@@ -846,6 +854,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
     private _applyDecalMapAfterDetailMap = false;
 
     private _debugMode = 0;
+
+    private _shadersLoaded = false;
+    private _breakShaderLoadedCheck = false;
+
     /**
      * @internal
      * This is reserved for the inspector.
@@ -920,8 +932,9 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      *
      * @param name The material name
      * @param scene The scene the material will be use in.
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
 
         this.brdf = new PBRBRDFConfiguration(this);
@@ -931,6 +944,8 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         this.sheen = new PBRSheenConfiguration(this);
         this.subSurface = new PBRSubSurfaceConfiguration(this);
         this.detailMap = new DetailMapConfiguration(this);
+
+        this._initShaderSourceAsync(forceGLSL);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -950,6 +965,25 @@ export abstract class PBRBaseMaterial extends PushMaterial {
 
         this._environmentBRDFTexture = GetEnvironmentBRDFTexture(this.getScene());
         this.prePassConfiguration = new PrePassConfiguration();
+    }
+
+    private async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !PBRBaseMaterial.ForceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../../ShadersWGSL/pbr.vertex"), import("../../ShadersWGSL/pbr.fragment")]);
+        } else {
+            await Promise.all([import("../../Shaders/pbr.vertex"), import("../../Shaders/pbr.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -1043,6 +1077,10 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @returns - boolean indicating that the submesh is ready or not.
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         if (!this._uniformBufferLayoutBuilt) {
             this.buildUniformLayout();
         }
@@ -1521,6 +1559,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
                 processFinalCode: csnrOptions.processFinalCode,
                 processCodeAfterIncludes: this._eventInfo.customCode,
                 multiTarget: defines.PREPASS,
+                shaderLanguage: this._shaderLanguage,
             },
             engine
         );
@@ -1895,24 +1934,34 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         }
 
         this._callbackPluginEventGeneric(MaterialPluginEvent.GetDefineNames, this._eventInfo);
-        const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
-        const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
-        if (this._onEffectCreatedObservable) {
-            onCreatedEffectParameters.effect = effect;
-            onCreatedEffectParameters.subMesh = null;
-            this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
-        }
-        if (effect.isReady()) {
-            if (onCompiled) {
-                onCompiled(this);
+        const checkReady = () => {
+            if (this._breakShaderLoadedCheck) {
+                return;
             }
-        } else {
-            effect.onCompileObservable.add(() => {
-                if (onCompiled) {
-                    onCompiled(this);
+            if (this._shadersLoaded) {
+                const defines = new PBRMaterialDefines(this._eventInfo.defineNames);
+                const effect = this._prepareEffect(mesh, defines, undefined, undefined, localOptions.useInstances, localOptions.clipPlane, mesh.hasThinInstances)!;
+                if (this._onEffectCreatedObservable) {
+                    onCreatedEffectParameters.effect = effect;
+                    onCreatedEffectParameters.subMesh = null;
+                    this._onEffectCreatedObservable.notifyObservers(onCreatedEffectParameters);
                 }
-            });
-        }
+                if (effect.isReady()) {
+                    if (onCompiled) {
+                        onCompiled(this);
+                    }
+                } else {
+                    effect.onCompileObservable.add(() => {
+                        if (onCompiled) {
+                            onCompiled(this);
+                        }
+                    });
+                }
+            } else {
+                setTimeout(checkReady, 16);
+            }
+        };
+        checkReady();
     }
 
     /**
@@ -2558,6 +2607,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
      * @param forceDisposeTextures - Forces the disposal of all textures.
      */
     public override dispose(forceDisposeEffect?: boolean, forceDisposeTextures?: boolean): void {
+        this._breakShaderLoadedCheck = true;
         if (forceDisposeTextures) {
             if (this._environmentBRDFTexture && this.getScene().environmentBRDFTexture !== this._environmentBRDFTexture) {
                 this._environmentBRDFTexture.dispose();

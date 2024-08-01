@@ -11,9 +11,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
-import "../../../../Shaders/ShadersInclude/helperFunctions";
-import "../../../../Shaders/ShadersInclude/imageProcessingDeclaration";
-import "../../../../Shaders/ShadersInclude/imageProcessingFunctions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
@@ -90,6 +87,28 @@ export class ImageProcessingBlock extends NodeMaterialBlock {
         state._excludeVariableName("txColorTransform");
         state._excludeVariableName("colorTransformSettings");
         state._excludeVariableName("ditherIntensity");
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/helperFunctions"),
+                import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
+                import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {

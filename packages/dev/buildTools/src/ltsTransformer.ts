@@ -2,7 +2,7 @@
 import * as path from "path";
 import * as ts from "typescript";
 import * as fs from "fs";
-import * as glob from "glob";
+import { globSync } from "glob";
 import * as chokidar from "chokidar";
 
 import { removeDir, checkDirectorySync, checkArgs, copyFile } from "./utils.js";
@@ -200,9 +200,9 @@ export const transformLtsCommand = () => {
     const sourceBaseDir = `./../../dev/${baseDir}/src`;
 
     // all LTS source files
-    const sourceFiles = glob.sync("./src/**/*.ts");
+    const sourceFiles = globSync("./src/**/*.ts");
     // all original sources
-    const baseSources = glob.sync(`${sourceBaseDir}/**/*.ts`);
+    const baseSources = globSync(`${sourceBaseDir}/**/*.ts`);
     const sourceToGenerated = (filePath: any, silent?: boolean) => {
         // check if not in base sources
         const relative = path.relative(sourceBaseDir, filePath);

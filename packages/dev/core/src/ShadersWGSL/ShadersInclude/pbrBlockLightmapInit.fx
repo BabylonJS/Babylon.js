@@ -1,12 +1,12 @@
 #ifdef LIGHTMAP
-    var lightmapColor: vec4f = texture2D(lightmapSampler, vLightmapUV + uvOffset);
+    var lightmapColor: vec4f = textureSample(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
 
     #ifdef RGBDLIGHTMAP
-        lightmapColor.rgb = fromRGBD(lightmapColor);
+        lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);
     #endif
 
     #ifdef GAMMALIGHTMAP
-        lightmapColor.rgb = toLinearSpace(lightmapColor.rgb);
+        lightmapColor = vec4f(toLinearSpaceVec3(lightmapColor.rgb), lightmapColor.a);
     #endif
-    lightmapColor.rgb *= vLightmapInfos.y;
+    lightmapColor = vec4f(lightmapColor.rgb * uniforms.vLightmapInfos.y, lightmapColor.a);
 #endif

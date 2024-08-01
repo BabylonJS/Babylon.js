@@ -3,7 +3,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
 import * as crypto from "crypto";
-import { glob } from "glob";
+import { globSync } from "glob";
 
 export function populateEnvironment() {
     dotenv.config({ path: path.resolve(findRootDirectory(), "./.env") });
@@ -110,7 +110,11 @@ export function copyFolder(from: string, to: string, silent?: boolean) {
     try {
         isDirectory = fs.lstatSync(from).isDirectory();
     } catch (e) {}
-    const files = isDirectory ? fs.readdirSync(from) : glob.sync(from);
+    const files = isDirectory
+        ? fs.readdirSync(from)
+        : globSync(from, {
+              windowsPathsNoEscape: true,
+          });
     const baseDir = isDirectory ? from : "";
     for (const file of files) {
         const basename = isDirectory ? file : path.basename(file);

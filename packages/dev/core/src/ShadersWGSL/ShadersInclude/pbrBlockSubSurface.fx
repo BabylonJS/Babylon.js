@@ -364,7 +364,7 @@ struct subSurfaceOutParams
         #ifdef SS_LODINREFRACTIONALPHA
             var refractionAlphaG: f32 = alphaG;
             refractionAlphaG = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
-            var refractionLOD: f32 = getLodFromAlphaG(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
+            var refractionLOD: f32 = getLodFromAlphaGNdotV(vRefractionMicrosurfaceInfos.x, refractionAlphaG, NdotVUnclamped);
         #elif defined(SS_LINEARSPECULARREFRACTION)
             var refractionRoughness: f32 = alphaG;
             refractionRoughness = mix(alphaG, 0.0, clamp(ior * 3.0 - 2.0, 0.0, 1.0));
@@ -446,10 +446,10 @@ struct subSurfaceOutParams
         #elif defined(SS_LINKREFRACTIONTOTRANSPARENCY)
             // Tvar the: i32 material with albedo.
             var maxChannel: f32 = max(max(surfaceAlbedo.r, surfaceAlbedo.g), surfaceAlbedo.b);
-            var volumeAlbedo: vec3f = saturate(maxChannel * surfaceAlbedo);
+            var volumeAlbedo: vec3f = saturateVec3(maxChannel * surfaceAlbedo);
 
             // Tvar reflectance: i32
-            environmentRefraction.rgb *= volumeAlbedo;
+            environmentRefraction = vec4f(environmentRefraction.rgb * volumeAlbedo, environmentRefraction.a);
         #else
             // Compute tvar from: i32 min distance only.
             var volumeAlbedo: vec3f = computeColorAtDistanceInMedia(vTintColor.rgb, vTintColor.w);
@@ -458,7 +458,7 @@ struct subSurfaceOutParams
 
         #ifdef SS_ALBEDOFORREFRACTIONTINT
             // Tvar the: i32 transmission with albedo.
-            environmentRefraction.rgb *= surfaceAlbedo.rgb;
+            environmentRefraction = vec4f(environmentRefraction.rgb * surfaceAlbedo.rgb, environmentRefraction.a);
         #endif
 
         // Decrease Albedo Contribution

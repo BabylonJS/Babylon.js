@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import * as glob from "glob";
+import { globSync } from "glob";
 import * as fs from "fs";
 import * as path from "path";
 import * as chokidar from "chokidar";
@@ -530,9 +530,21 @@ export function generateDeclaration() {
 
         const debounced = debounce(() => {
             const { output, namespaceDeclaration, looseDeclarationsString } = generateCombinedDeclaration(
-                directoriesToWatch.map((dir) => glob.sync(dir)).flat(),
+                directoriesToWatch
+                    .map((dir) =>
+                        globSync(dir, {
+                            windowsPathsNoEscape: true,
+                        })
+                    )
+                    .flat(),
                 config,
-                looseDeclarations.map((dir) => glob.sync(dir)).flat(),
+                looseDeclarations
+                    .map((dir) =>
+                        globSync(dir, {
+                            windowsPathsNoEscape: true,
+                        })
+                    )
+                    .flat(),
                 config.buildType
             );
             const filename = `${outputDir}/${config.filename || "index.d.ts"}`;

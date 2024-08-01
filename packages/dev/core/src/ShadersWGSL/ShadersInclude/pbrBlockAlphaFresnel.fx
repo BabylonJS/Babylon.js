@@ -5,12 +5,16 @@
         alpha: f32
     };
 
+    fn faceforward(N: vec3<f32>, I: vec3<f32>, Nref: vec3<f32>) -> vec3<f32> {
+        return select(N, -N, dot(Nref, I) > 0.0);
+    }
+
     #define pbr_inline
     fn alphaFresnelBlock(
-        in var normalW: vec3f,
-        in var viewDirectionW: vec3f,
-        in var alpha: f32,
-        in var microSurface: f32
+        normalW: vec3f,
+        viewDirectionW: vec3f,
+        alpha: f32,
+        microSurface: f32
     ) -> alphaFresnelOutParams
     {
         var outParams: alphaFresnelOutParams;
@@ -32,8 +36,9 @@
         outParams.alpha = getReflectanceFromAnalyticalBRDFLookup_Jones(saturate(dot(viewDirectionW, normalForward)),  vec3f(opacity0),  vec3f(opacity90), sqrt(microSurface)).x;
 
         #ifdef ALPHATEST
-            if (outParams.alpha < ALPHATESTVALUE)
+            if (outParams.alpha < ALPHATESTVALUE) {
                 discard;
+            }
 
             #ifndef ALPHABLEND
                 // Prevent to blend with the canvas.

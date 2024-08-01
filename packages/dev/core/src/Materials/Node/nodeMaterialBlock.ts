@@ -15,6 +15,7 @@ import { GetClass } from "../../Misc/typeStore";
 import type { EffectFallbacks } from "../effectFallbacks";
 import { Logger } from "core/Misc/logger";
 import { ShaderLanguage } from "../shaderLanguage";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Defines a block that can be used inside a node based material
@@ -29,6 +30,12 @@ export class NodeMaterialBlock {
     private _isTeleportIn = false;
     private _name = "";
     protected _isUnique = false;
+    protected _codeIsReady = true;
+
+    /**
+     * Observable raised when the block code is ready (if the code loading is async)
+     */
+    public onCodeIsReadyObservable = new Observable<NodeMaterialBlock>();
 
     /** Gets or sets a boolean indicating that only one input can be connected at a time */
     public inputsAreExclusive = false;
@@ -52,6 +59,13 @@ export class NodeMaterialBlock {
      */
     public get name(): string {
         return this._name;
+    }
+
+    /**
+     * Gets a boolean indicating that this block has is code ready to be used
+     */
+    public get codeIsReady() {
+        return this._codeIsReady;
     }
 
     /**
@@ -898,6 +912,8 @@ export class NodeMaterialBlock {
      * Release resources
      */
     public dispose() {
+        this.onCodeIsReadyObservable.clear();
+
         for (const input of this.inputs) {
             input.dispose();
         }

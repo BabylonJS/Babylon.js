@@ -11,10 +11,9 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import "../../../../Shaders/ShadersInclude/bonesDeclaration";
-import "../../../../Shaders/ShadersInclude/bonesVertex";
 import type { EffectFallbacks } from "../../../effectFallbacks";
 import { BindBonesParameters, PrepareDefinesForBones } from "../../../materialHelper.functions";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to add support for vertex skinning (bones)
@@ -45,6 +44,20 @@ export class BonesBlock extends NodeMaterialBlock {
         state._excludeVariableName("boneTextureWidth");
         state._excludeVariableName("mBones");
         state._excludeVariableName("BonesPerMesh");
+
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([import("../../../../ShadersWGSL/ShadersInclude/bonesDeclaration"), import("../../../../ShadersWGSL/ShadersInclude/bonesVertex")]);
+        } else {
+            await Promise.all([import("../../../../Shaders/ShadersInclude/bonesDeclaration"), import("../../../../Shaders/ShadersInclude/bonesVertex")]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

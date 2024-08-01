@@ -11,6 +11,10 @@ const LuminanceEncodeApprox: vec3<f32> = vec3<f32> (0.2126, 0.7152, 0.0722);
 
 const Epsilon:f32 = 0.0000001;
 
+fn square(x: f32) -> f32 {
+    return x * x;
+}
+
 fn saturate(x: f32) -> f32 {
     return clamp(x, 0.0, 1.0);
 }
@@ -91,12 +95,14 @@ fn toGammaSpaceExact(color: vec3<f32>) -> vec3<f32>
 }
 #endif
 
-fn toLinearSpace(color: vec4<f32>) -> vec4<f32>
+fn toLinearSpace(color: f32) -> f32
 {
     #if USE_EXACT_SRGB_CONVERSIONS
-        return vec4<f32>(toLinearSpaceExact(color.rgb), color.a);
+        var nearZeroSection = 0.0773993808 * color;
+        var remainingSection = pow(0.947867299 * (color + 0.055), 2.4);
+        return select(remainingSection, nearZeroSection, color <= 0.04045);
     #else
-        return vec4<f32>(pow(color.rgb, vec3<f32>(LinearEncodePowerApprox)), color.a);
+        return pow(color, LinearEncodePowerApprox);
     #endif
 }
 
@@ -106,6 +112,15 @@ fn toLinearSpaceVec3(color: vec3<f32>) -> vec3<f32>
         return toLinearSpaceExact(color);
     #else
         return pow(color, vec3<f32>(LinearEncodePowerApprox));
+    #endif
+}
+
+fn toLinearSpaceVec4(color: vec4<f32>) -> vec4<f32>
+{
+    #if USE_EXACT_SRGB_CONVERSIONS
+        return vec4f(toLinearSpaceExact(color.rgb), color.a);
+    #else
+        return vec4f(pow(color.rgb, vec3f(LinearEncodePowerApprox)), color.a);
     #endif
 }
 
@@ -127,7 +142,7 @@ fn toGammaSpaceVec3(color: vec3<f32>) -> vec3<f32>
     #endif
 }
 
-fn square(value: vec3<f32>) -> vec3<f32>
+fn squareVec3(value: vec3<f32>) -> vec3<f32>
 {
     return value * value;
 }

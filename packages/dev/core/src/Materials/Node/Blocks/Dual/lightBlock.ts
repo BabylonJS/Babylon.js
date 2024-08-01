@@ -15,15 +15,6 @@ import { RegisterClass } from "../../../../Misc/typeStore";
 import type { Scene } from "../../../../scene";
 import { editableInPropertyPage, PropertyTypeForEdition } from "../../../../Decorators/nodeDecorator";
 
-import "../../../../Shaders/ShadersInclude/lightFragmentDeclaration";
-import "../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration";
-import "../../../../Shaders/ShadersInclude/lightUboDeclaration";
-import "../../../../Shaders/ShadersInclude/lightVxUboDeclaration";
-import "../../../../Shaders/ShadersInclude/lightFragment";
-import "../../../../Shaders/ShadersInclude/helperFunctions";
-import "../../../../Shaders/ShadersInclude/lightsFragmentFunctions";
-import "../../../../Shaders/ShadersInclude/shadowsFragmentFunctions";
-import "../../../../Shaders/ShadersInclude/shadowsVertex";
 import { Logger } from "../../../../Misc/logger";
 import { BindLight, BindLights, PrepareDefinesForLight, PrepareDefinesForLights, PrepareUniformsAndSamplersForLight } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "../../../../Materials/shaderLanguage";
@@ -170,6 +161,41 @@ export class LightBlock extends NodeMaterialBlock {
      */
     public get shadow(): NodeMaterialConnectionPoint {
         return this._outputs[2];
+    }
+
+    public override initialize(state: NodeMaterialBuildState) {
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/lightFragment"),
+                import("../../../../ShadersWGSL/ShadersInclude/lightUboDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/lightVxUboDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/lightsFragmentFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/shadowsFragmentFunctions"),
+                import("../../../../ShadersWGSL/ShadersInclude/shadowsVertex"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/lightFragmentDeclaration"),
+                import("../../../../Shaders/ShadersInclude/lightFragment"),
+                import("../../../../Shaders/ShadersInclude/lightUboDeclaration"),
+                import("../../../../Shaders/ShadersInclude/lightVxUboDeclaration"),
+                import("../../../../Shaders/ShadersInclude/lightVxFragmentDeclaration"),
+                import("../../../../Shaders/ShadersInclude/helperFunctions"),
+                import("../../../../Shaders/ShadersInclude/lightsFragmentFunctions"),
+                import("../../../../Shaders/ShadersInclude/shadowsFragmentFunctions"),
+                import("../../../../Shaders/ShadersInclude/shadowsVertex"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {
