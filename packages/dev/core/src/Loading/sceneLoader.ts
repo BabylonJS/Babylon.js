@@ -1187,13 +1187,12 @@ export class SceneLoader {
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
         const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: LoadOptions] => {
-            // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
+            // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
+            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBuffer, then it must be the options overload.
             return (
-                maybeOptionsArgs[0] instanceof File ||
-                ArrayBuffer.isView(maybeOptionsArgs[0]) ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File))
+                !(typeof maybeOptionsArgs[0] === "string") ||
+                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
             );
         };
 
@@ -1622,13 +1621,12 @@ export class SceneLoader {
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
         const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions] => {
-            // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
+            // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
+            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
             return (
-                maybeOptionsArgs[0] instanceof File ||
-                ArrayBuffer.isView(args[0]) ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File))
+                !(typeof maybeOptionsArgs[0] === "string") ||
+                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
             );
         };
 
@@ -1841,13 +1839,12 @@ export class SceneLoader {
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
         const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions] => {
-            // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
+            // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
+            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
             return (
-                maybeOptionsArgs[0] instanceof File ||
-                ArrayBuffer.isView(args[0]) ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File))
+                !(typeof maybeOptionsArgs[0] === "string") ||
+                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
             );
         };
 
