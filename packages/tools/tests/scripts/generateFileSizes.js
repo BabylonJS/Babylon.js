@@ -3,7 +3,7 @@ const glob = require("glob");
 const path = require("path");
 
 const sizes = {};
-glob.sync("./dist/**/*.js").forEach((file) => {
+glob.globSync("./dist/**/*.js").forEach((file) => {
     const stats = statSync(file);
     console.log(`${file} - ${stats.size}`);
     const filename = path.basename(file);

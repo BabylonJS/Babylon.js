@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 const exec = require("child_process").exec;
 const path = require("path");
 const fs = require("fs");
@@ -49,7 +50,7 @@ const updateEngineVersion = async (version) => {
 
 const updateSinceTag = (version) => {
     // get all typescript files in the dev folder
-    const files = glob.sync(path.join(baseDirectory, "packages", "dev", "**", "*.ts"));
+    const files = glob.globSync(path.join(baseDirectory, "packages", "dev", "**", "*.ts"));
     files.forEach((file) => {
         try {
             // check if file contains @since\n
@@ -76,7 +77,7 @@ const updateSinceTag = (version) => {
 
 const updatePeerDependencies = async (version) => {
     // get all package.json files in the dev folder
-    const files = glob.sync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
+    const files = glob.globSync(path.join(baseDirectory, "packages", "public", "**", "package.json"));
     files.forEach((file) => {
         try {
             // check if file contains @since\n
