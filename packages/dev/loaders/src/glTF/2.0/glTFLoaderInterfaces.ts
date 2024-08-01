@@ -190,6 +190,9 @@ export interface INode extends GLTF2.INode, IArrayItem {
 
     /** @internal */
     _numMorphTargets?: number;
+
+    /** @internal */
+    _isJoint?: boolean;
 }
 
 /** @internal */
