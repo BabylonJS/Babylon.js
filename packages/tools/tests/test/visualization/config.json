@@ -2153,6 +2153,11 @@
             "playgroundId": "#M2H33B",
             "replace": "//options//, modelIndex = 5;",
             "referenceImage": "computeMaxExtents-MorphStressTest.png"
+        },
+        {
+            "title": "glTF Loader Capabilities",
+            "playgroundId": "#EBO3J1#10",
+            "referenceImage": "glTFLoaderCapabilities.png"
         }
     ]
 }

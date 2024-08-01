@@ -840,7 +840,10 @@ export class GLTFLoader implements IGLTFLoader {
             assign(babylonTransformNode);
         };
 
-        if (node.mesh == undefined || node.skin != undefined) {
+        const hasMesh = node.mesh != undefined;
+        const hasSkin = this._parent.loadSkins && node.skin != undefined;
+
+        if (!hasMesh || hasSkin) {
             const nodeName = node.name || `node${node.index}`;
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             const transformNode = new TransformNode(nodeName, this._babylonScene);
@@ -854,11 +857,8 @@ export class GLTFLoader implements IGLTFLoader {
             loadNode(transformNode);
         }
 
-        if (node.mesh != undefined) {
-            if (node.skin == undefined) {
-                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
-                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
-            } else {
+        if (hasMesh) {
+            if (hasSkin) {
                 // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
                 // This code path will place the skinned mesh as a sibling of the skeleton root node without loading the
                 // transform, which effectively ignores the transform of the skinned mesh, as per spec.
@@ -899,6 +899,9 @@ export class GLTFLoader implements IGLTFLoader {
                         );
                     })
                 );
+            } else {
+                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
+                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
             }
         }
 
@@ -1174,7 +1177,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _createMorphTargets(context: string, node: INode, mesh: IMesh, primitive: IMeshPrimitive, babylonMesh: Mesh): void {
-        if (!primitive.targets) {
+        if (!primitive.targets || !this._parent.loadMorphTargets) {
             return;
         }
 
@@ -1202,7 +1205,7 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadMorphTargetsAsync(context: string, primitive: IMeshPrimitive, babylonMesh: Mesh, babylonGeometry: Geometry): Promise<void> {
-        if (!primitive.targets) {
+        if (!primitive.targets || !this._parent.loadMorphTargets) {
             return Promise.resolve();
         }
 
@@ -1308,6 +1311,10 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadSkinAsync(context: string, node: INode, skin: ISkin, assign: (babylonSkeleton: Skeleton) => void): Promise<void> {
+        if (!this._parent.loadSkins) {
+            return Promise.resolve();
+        }
+
         const extensionPromise = this._extensionsLoadSkinAsync(context, node, skin);
         if (extensionPromise) {
             return extensionPromise;
@@ -1410,6 +1417,8 @@ export class GLTFLoader implements IGLTFLoader {
     }
 
     private _loadBone(node: INode, skin: ISkin, babylonSkeleton: Skeleton, babylonBones: { [index: number]: Bone }): Bone {
+        node._isJoint = true;
+
         let babylonBone = babylonBones[node.index];
         if (babylonBone) {
             return babylonBone;
@@ -1634,17 +1643,21 @@ export class GLTFLoader implements IGLTFLoader {
         }
 
         const targetNode = ArrayItem.Get(`${context}/target/node`, this._gltf.nodes, channel.target.node);
+        const channelTargetPath = channel.target.path;
+        const pathIsWeights = channelTargetPath === AnimationChannelTargetPath.WEIGHTS;
 
         // Ignore animations that have no animation targets.
-        if (
-            (channel.target.path === AnimationChannelTargetPath.WEIGHTS && !targetNode._numMorphTargets) ||
-            (channel.target.path !== AnimationChannelTargetPath.WEIGHTS && !targetNode._babylonTransformNode)
-        ) {
+        if ((pathIsWeights && !targetNode._numMorphTargets) || (!pathIsWeights && !targetNode._babylonTransformNode)) {
+            return Promise.resolve();
+        }
+
+        // Don't load node animations if disabled.
+        if (!this._parent.loadNodeAnimations && !pathIsWeights && !targetNode._isJoint) {
             return Promise.resolve();
         }
 
         let properties: Array<AnimationPropertyInfo>;
-        switch (channel.target.path) {
+        switch (channelTargetPath) {
             case AnimationChannelTargetPath.TRANSLATION: {
                 properties = nodeAnimationData.translation;
                 break;
