@@ -281,24 +281,24 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 	#endif
 	reflectionColor = vec4f(reflectionColor.rgb * uniforms.vReflectionInfos.x, reflectionColor.a);
 	#ifdef REFLECTIONFRESNEL
-		var reflectionFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, reflectionRightColor.a, reflectionLeftColor.a);
+		var reflectionFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.reflectionRightColor.a, uniforms.reflectionLeftColor.a);
 
 		#ifdef REFLECTIONFRESNELFROMSPECULAR
 			#ifdef SPECULARTERM
-				reflectionColor = vec4f(reflectionColor.rgb * specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb, reflectionColor.a);
+				reflectionColor = vec4f(reflectionColor.rgb * specularColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
 			#else
-				reflectionColor = vec4f(reflectionColor.rgb * reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb, reflectionColor.a);
+				reflectionColor = vec4f(reflectionColor.rgb * uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
 			#endif
 		#else
-			reflectionColor = vec4f(reflectionColor.rgb * reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * reflectionRightColor.rgb, reflectionColor.a);
+			reflectionColor = vec4f(reflectionColor.rgb * uniforms.reflectionLeftColor.rgb * (1.0 - reflectionFresnelTerm) + reflectionFresnelTerm * uniforms.reflectionRightColor.rgb, reflectionColor.a);
 		#endif
 	#endif
 #endif
 
 #ifdef REFRACTIONFRESNEL
-	var refractionFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, refractionRightColor.a, refractionLeftColor.a);
+	var refractionFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.refractionRightColor.a, uniforms.refractionLeftColor.a);
 
-	refractionColor = vec4f(refractionColor.rgb * refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * refractionRightColor.rgb, refractionColor.a);
+	refractionColor = vec4f(refractionColor.rgb * uniforms.refractionLeftColor.rgb * (1.0 - refractionFresnelTerm) + refractionFresnelTerm * uniforms.refractionRightColor.rgb, refractionColor.a);
 #endif
 
 #ifdef OPACITY
