@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import * as fs from "fs";
-import * as glob from "glob";
+import { globSync } from "glob";
 import * as path from "path";
 import { checkArgs } from "./utils.js";
 
@@ -47,6 +47,6 @@ export const addJsExtensionsToCompiledFilesCommand = () => {
     }
     if (typeof pathForFiles === "string") {
         console.log(`Adding .js extensions to files in ${pathForFiles}`);
-        addJsExtensionsToCompiledFiles(glob.sync(pathForFiles), forceMJS);
+        addJsExtensionsToCompiledFiles(globSync(pathForFiles), forceMJS);
     }
 };
