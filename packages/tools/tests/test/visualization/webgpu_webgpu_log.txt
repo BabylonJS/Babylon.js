@@ -1,0 +1,2529 @@
+preparing page
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading disabled, Progress disabled, Overlay enabled.
+INF %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold
+page ready
+LOG BJS - [10:59:24]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - edge-renderer-and-zOffset
+LOG BJS - [10:59:26]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - cube-with-holes-using-stencil-buffer
+LOG BJS - [10:59:27]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - water-material
+ERR Failed to load resource: the server responded with a status of 404 (Not Found)
+LOG BJS - [11:02:27]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - show-bounding-box
+LOG BJS - [11:02:28]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - cube-reflection-with-probe-and-mirrors
+WAR Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (3): [object GPUValidationError] - Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (4): [object GPUValidationError] - Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (5): [object GPUValidationError] - Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (6): [object GPUValidationError] - Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice4"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice4"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:29]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:02:30]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - sphere-with-custom-shader-to-display-wireframe-using-glow-layer
+LOG BJS - [11:02:31]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - blur-cube-with-the-effect-renderer
+LOG BJS - [11:02:32]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - simple-render-target-with-blue-spheres
+WAR Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice7"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:02:33]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice7"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice7"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice7"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:02:33]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice7"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:02:33]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice7"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:02:33]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:02:33]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:02:33]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - neon-pipe-with-glow-layer
+LOG BJS - [11:02:36]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - pillars-sphere-and-torus-with-PCSS-shadows
+LOG BJS - [11:02:38]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - soft-transparent-shadows
+LOG BJS - [11:02:39]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - default-render-pipeline
+WAR Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice11"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:02:41]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice11"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice11"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:02:41]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice11"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+LOG BJS - [11:05:40]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - torus-knot-mirror
+WAR Error while parsing WGSL: :479:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice12"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:479:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR BJS - [11:05:40]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :479:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice12"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice12"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:41]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice12"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:41]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:41]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:05:41]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - simple-sphere-in-4-mirrors
+WAR Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice13"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR BJS - [11:05:42]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice13"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice13"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:42]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice13"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:42]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:42]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:05:42]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - procedural-texture-with-node-material
+WAR Error while parsing WGSL: :386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice14"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice14"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice14"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice14"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (6): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:43]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+LOG BJS - [11:05:44]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - apply-all-post-processes
+LOG BJS - [11:05:46]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - simple-custom-shader
+LOG BJS - [11:05:47]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - show-multiple-guis
+LOG BJS - [11:05:48]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - skybox-with-boombox
+LOG BJS - [11:05:50]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - show-all-procedural-textures
+WAR Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice19"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice19"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice19"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice19"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (6): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:05:51]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:05:52]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - custom-handling-of-materials-for-render-target-pass
+LOG BJS - [11:05:55]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - dissolve-effect-with-node-material-and-glow-layer
+LOG BJS - [11:05:56]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - cascaded-shadow-maps-and-flying-saucers
+WAR Error while parsing WGSL: :364:36 error: unresolved value 'view'
+vertexOutputs.vPositionFromCamera0=view*worldPos;
+                                   ^^^^
+
+
+ - While validating [ShaderModuleDescriptor "vertex"]
+ - While calling [Device "BabylonWebGPUDevice22"].CreateShaderModule([ShaderModuleDescriptor "vertex"]).
+
+WAR Compilation log for [Invalid ShaderModule "vertex"]:
+1 error(s) generated while compiling the shader:
+:364:36 error: unresolved value 'view'
+vertexOutputs.vPositionFromCamera0=view*worldPos;
+                                   ^^^^
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :364:36 error: unresolved value 'view'
+vertexOutputs.vPositionFromCamera0=view*worldPos;
+                                   ^^^^
+
+
+ - While validating [ShaderModuleDescriptor "vertex"]
+ - While calling [Device "BabylonWebGPUDevice22"].CreateShaderModule([ShaderModuleDescriptor "vertex"]).
+
+WAR [Invalid ShaderModule "vertex"] is invalid.
+ - While validating vertex stage ([Invalid ShaderModule "vertex"], entryPoint: main).
+ - While validating vertex state.
+ - While calling [Device "BabylonWebGPUDevice22"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "vertex"] is invalid.
+ - While validating vertex stage ([Invalid ShaderModule "vertex"], entryPoint: main).
+ - While validating vertex state.
+ - While calling [Device "BabylonWebGPUDevice22"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (6): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState3"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:05:57]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+LOG BJS - [11:05:58]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - halo-particle-system
+LOG BJS - [11:06:00]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - depth-renderer
+WAR Error while parsing WGSL: :386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice24"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :386:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice24"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :387:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice24"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:387:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :387:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice24"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice24"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice24"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (6): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "PostProcessRTT-depth_displayRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:01]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:02]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - particle-system-with-custom-nme-shader
+LOG BJS - [11:06:03]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - create-environment-texture
+LOG BJS - [11:06:03]: Babylon.js v7.18.0 - WebGL2 - Parallel shader compilation
+LOG 92586 44 128
+LOG 82789 38 149
+LOG 145843 13 68
+LOG 241975 147 232
+LOG 81413 205 155
+LOG 184058 136 51
+LOG 163716 115 162
+LOG 231259 8 185
+LOG 12758 224 240
+LOG 266517 146 0
+LOG 237036 49 9
+LOG 248633 171 138
+LOG 47154 173 198
+LOG 56007 241 190
+LOG 248123 187 223
+LOG 38421 117 202
+LOG 55267 172 246
+LOG 156738 248 58
+LOG 137617 133 254
+LOG 225061 242 222
+LOG 194528 145 164
+LOG 220332 69 240
+LOG 173452 118 109
+LOG 259001 229 139
+LOG 189168 74 36
+LOG 109100 4 162
+LOG 204895 35 253
+LOG 187207 204 217
+LOG 143788 138 191
+LOG 239995 243 68
+LOG 111356 123 50
+LOG 173943 218 99
+LOG 109104 75 223
+LOG 137850 95 0
+LOG 209590 117 248
+LOG 191619 4 174
+LOG 138727 73 79
+LOG 79795 8 234
+LOG 117914 174 222
+LOG 198703 153 77
+LOG 8692 136 68
+LOG 63076 254 44
+LOG 91525 95 218
+LOG 58619 234 143
+LOG 225517 152 147
+LOG 140332 92 59
+LOG 71412 26 136
+LOG 100431 74 104
+LOG 138262 107 57
+LOG BJS - [11:06:05]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - particle-system-matrix-like
+LOG BJS - [11:06:10]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - lens-flare
+ERR Failed to load resource: the server responded with a status of 404 ()
+ERR Failed to load resource: the server responded with a status of 404 ()
+LOG BJS - [11:06:12]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - update-sampler-info
+LOG BJS - [11:06:13]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - wgsl-in-shadermaterial
+WAR Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice30"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice30"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice30"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (2): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice30"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (6): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:15]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:16]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - terrain-erosion
+LOG BJS - [11:06:17]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - change-texture-of-material
+LOG BJS - [11:06:19]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - screen-space-curvature
+LOG BJS - [11:06:26]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - digital-rain
+LOG BJS - [11:06:27]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - ascii-art
+LOG BJS - [11:06:29]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - water-material
+LOG BJS - [11:06:30]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - cube-reflection-with-probe-and-mirrors
+WAR Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (3): [object GPUValidationError] - Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (4): [object GPUValidationError] - Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (5): [object GPUValidationError] - Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (6): [object GPUValidationError] - Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice37"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice37"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:30]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:31]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - cube-reflection-with-probe-and-mirrors
+WAR Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :458:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :458:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (3): [object GPUValidationError] - Error while parsing WGSL: :449:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (4): [object GPUValidationError] - Error while parsing WGSL: :466:74 error: unresolved value 'reflectionRightColor'
+var reflectionFresnelTerm: f32=computeFresnelTerm(viewDirectionW,normalW,reflectionRightColor.a,reflectionLeftColor.a);
+                                                                         ^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (5): [object GPUValidationError] - Error while parsing WGSL: :457:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (6): [object GPUValidationError] - Error while parsing WGSL: :466:17 error: unresolved call target 'texture2D'
+reflectionColor=texture2D(reflection2DSampler,coords);
+                ^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice38"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (7): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (8): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (9): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (10): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (11): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (12): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (13): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (14): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice38"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (15): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (16): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (17): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (18): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (19): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error (20): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:32]: WebGPU uncaptured error: too many warnings (20), no more warnings will be reported to the console for this engine.
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR [Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "mirrorRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_rgba8unorm_depth32float_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:33]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - simple-render-target-with-blue-spheres
+WAR Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice39"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:06:33]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice39"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice39"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice39"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:33]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice39"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:33]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice39"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:33]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:33]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:34]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - simple-render-target-with-blue-spheres
+WAR Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice40"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR BJS - [11:06:34]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :350:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice40"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice40"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+WAR [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice40"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+WAR BJS - [11:06:34]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :351:69 error: unresolved value 'vMainUV1'
+emissiveColor+=textureSample(emissiveSampler,emissiveSamplerSampler,vMainUV1+uvOffset).rgb*vEmissiveInfos.y;
+                                                                    ^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice40"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR BJS - [11:06:34]: WebGPU uncaptured error (3): [object GPUValidationError] - [Invalid ShaderModule "fragment"] is invalid.
+ - While validating fragment stage ([Invalid ShaderModule "fragment"], entryPoint: main).
+ - While validating fragment state.
+ - While calling [Device "BabylonWebGPUDevice40"].CreateRenderPipeline([RenderPipelineDescriptor "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:34]: WebGPU uncaptured error (4): [object GPUValidationError] - [Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"] is invalid.
+ - While encoding [RenderPassEncoder "MainRenderPass"].SetPipeline([Invalid RenderPipeline "RenderPipeline_bgra8unorm_depth24plus-stencil8_samples1_textureState0"]).
+
+WAR BJS - [11:06:34]: WebGPU uncaptured error (5): [object GPUValidationError] - [Invalid CommandBuffer from CommandEncoder "render"] is invalid.
+ - While calling [Queue].Submit([[CommandBuffer from CommandEncoder "upload"], [Invalid CommandBuffer from CommandEncoder "render"]])
+
+LOG BJS - [11:06:35]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - default-render-pipeline
+WAR Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice41"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:35]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice41"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice41"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:06:35]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice41"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+LOG BJS - [11:09:35]: Babylon.js v7.18.0 - WebGPU1 engine
+engine ready
+Running - default-render-pipeline
+WAR Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice42"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:09:35]: WebGPU uncaptured error (1): [object GPUValidationError] - Error while parsing WGSL: :328:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice42"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice42"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
+WAR Compilation log for [Invalid ShaderModule "fragment"]:
+1 error(s) generated while compiling the shader:
+:270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+WAR BJS - [11:09:36]: WebGPU uncaptured error (2): [object GPUValidationError] - Error while parsing WGSL: :270:13 error: no matching call to 'clamp(vec3<f32>, abstract-float, abstract-float)'
+
+2 candidate functions:
+ • 'clamp(vecN<T>  ✓ , vecN<T>  ✗ , vecN<T>  ✗ ) -> vecN<T>' where:
+      ✓  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+ • 'clamp(T  ✗ , T  ✗ , T  ✗ ) -> T' where:
+      ✗  'T' is 'abstract-float', 'abstract-int', 'f32', 'i32', 'u32' or 'f16'
+
+color=vec4f(clamp(color.rgb,0.,30.0),color.a);
+            ^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+ - While validating [ShaderModuleDescriptor "fragment"]
+ - While calling [Device "BabylonWebGPUDevice42"].CreateShaderModule([ShaderModuleDescriptor "fragment"]).
+
