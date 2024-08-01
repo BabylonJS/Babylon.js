@@ -7,8 +7,8 @@ import { checkArgs } from "./utils.js";
 function processSource(sourceCode: string, forceMJS: boolean) {
     const extension = forceMJS ? ".mjs" : ".js";
     return sourceCode
-        .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*)("|');/g, `$1${extension}$5;`)
-        .replace(/((import|export)\(["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*))(["'])\)/g, `$1${extension}$6)`)
+        .replace(/((import|export).*["'](@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?)("|');/g, `$1${extension}$5;`)
+        .replace(/((import|export)\(["']((@babylonjs\/.*\/|\.{1,2}\/)((?!\.scss|\.svg|\.png|\.jpg).)*?))(["'])\)/g, `$1${extension}$6)`)
         .replace(new RegExp(`(${extension}){2,}`, "g"), extension);
 }
 
@@ -27,7 +27,7 @@ export function addJsExtensionsToCompiledFiles(files: string[], forceMJS: boolea
                 throw new Error(`File ${match[1]} does not exist. Are you importing from an index/directory?`);
             }
         }
-        const dynamicRegex = /import\("(\..*)"\)/g;
+        const dynamicRegex = /import\("(\..*?)"\)/g;
         while ((match = dynamicRegex.exec(processed)) !== null) {
             if (!fs.existsSync(path.resolve(path.dirname(file), match[1]))) {
                 console.log(file, path.resolve(path.dirname(file), match[1]));

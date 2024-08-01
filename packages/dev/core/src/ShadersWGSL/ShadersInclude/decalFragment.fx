@@ -1,9 +1,11 @@
 #ifdef DECAL
+    var decalTempColor = decalColor.rgb;
+    var decalTempAlpha = decalColor.a;
     #ifdef GAMMADECAL
-        decalColor.rgb = toLinearSpace(decalColor.rgb);
+        decalTempColor = toLinearSpaceVec3(decalColor.rgb);
     #endif
     #ifdef DECAL_SMOOTHALPHA
-        decalColor.a *= decalColor.a;
+        decalTempAlpha = decalColor.a * decalColor.a;
     #endif
-    surfaceAlbedo = mix(surfaceAlbedo.rgb, decalColor.rgb, decalColor.a);
+    surfaceAlbedo = mix(surfaceAlbedo.rgb, decalTempColor, decalTempAlpha);
 #endif

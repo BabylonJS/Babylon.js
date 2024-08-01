@@ -26,8 +26,6 @@ import { RegisterClass } from "../../Misc/typeStore";
 import { MaterialFlags } from "../materialFlags";
 import { Color3 } from "../../Maths/math.color";
 
-import "../../Shaders/background.fragment";
-import "../../Shaders/background.vertex";
 import { EffectFallbacks } from "../effectFallbacks";
 import { addClipPlaneUniforms, bindClipPlane } from "../clipPlaneMaterialHelper";
 import {
@@ -48,6 +46,8 @@ import {
     PrepareUniformsAndSamplersList,
 } from "../materialHelper.functions";
 import { SerializationHelper } from "../../Misc/decorators.serialization";
+import { ShaderLanguage } from "../shaderLanguage";
+import { UniformBuffer } from "../uniformBuffer";
 
 /**
  * Background material defines definition.
@@ -205,6 +205,7 @@ class BackgroundMaterialDefines extends MaterialDefines implements IImageProcess
 
 /**
  * Background material used to create an efficient environment around your scene.
+ * #157MGZ: simple test
  */
 export class BackgroundMaterial extends PushMaterial {
     /**
@@ -652,13 +653,18 @@ export class BackgroundMaterial extends PushMaterial {
     private _primaryShadowColor = Color3.Black();
     private _primaryHighlightColor = Color3.Black();
 
+    private _shadersLoaded = false;
+
     /**
      * Instantiates a Background Material in the given scene
      * @param name The friendly name of the material
      * @param scene The scene to add the material to
+     * @param forceGLSL Use the GLSL code generation for the shader (even on WebGPU). Default is false
      */
-    constructor(name: string, scene?: Scene) {
+    constructor(name: string, scene?: Scene, forceGLSL = false) {
         super(name, scene);
+
+        this._initShaderSourceAsync(forceGLSL);
 
         // Setup the default processing configuration to the scene.
         this._attachImageProcessingConfiguration(null);
@@ -676,6 +682,25 @@ export class BackgroundMaterial extends PushMaterial {
 
             return this._renderTargets;
         };
+    }
+
+    private async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getScene().getEngine();
+
+        if (engine.isWebGPU && !forceGLSL) {
+            // Switch main UBO to non UBO to connect to leftovers UBO in webgpu
+            if (this._uniformBuffer) {
+                this._uniformBuffer.dispose();
+            }
+            this._uniformBuffer = new UniformBuffer(engine, undefined, undefined, this.name, true);
+
+            this._shaderLanguage = ShaderLanguage.WGSL;
+            await Promise.all([import("../../ShadersWGSL/background.vertex"), import("../../ShadersWGSL/background.fragment")]);
+        } else {
+            await Promise.all([import("../../Shaders/background.vertex"), import("../../Shaders/background.fragment")]);
+        }
+
+        this._shadersLoaded = true;
     }
 
     /**
@@ -717,6 +742,10 @@ export class BackgroundMaterial extends PushMaterial {
      * @returns true if all the dependencies are ready (Textures, Effects...)
      */
     public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances: boolean = false): boolean {
+        if (!this._shadersLoaded) {
+            return false;
+        }
+
         const drawWrapper = subMesh._drawWrapper;
 
         if (drawWrapper.effect && this.isFrozen) {
@@ -1001,6 +1030,7 @@ export class BackgroundMaterial extends PushMaterial {
                     onCompiled: this.onCompiled,
                     onError: this.onError,
                     indexParameters: { maxSimultaneousLights: this._maxSimultaneousLights },
+                    shaderLanguage: this._shaderLanguage,
                 },
                 engine
             );

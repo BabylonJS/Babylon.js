@@ -27,18 +27,19 @@
         var anisotropyDirection: vec3f =  vec3f(vAnisotropy.xy, 0.);
 
         #ifdef ANISOTROPIC_TEXTURE
+            var amd = anisotropyMapData.rg;
             anisotropy *= anisotropyMapData.b;
 
             #if DEBUGMODE > 0
                 outParams.anisotropyMapData = anisotropyMapData;
             #endif
 
-            anisotropyMapData.rg = anisotropyMapData.rg * 2.0 - 1.0;
+            amd = amd * 2.0 - 1.0;
 
             #ifdef ANISOTROPIC_LEGACY
-                anisotropyDirection.rg *= anisotropyMapData.rg;
+                anisotropyDirection = vec3f(anisotropyDirection.xy * amd, anisotropyDirection.z);
             #else
-                anisotropyDirection.xy =  mat2x2f(anisotropyDirection.x, anisotropyDirection.y, -anisotropyDirection.y, anisotropyDirection.x) * normalize(anisotropyMapData.rg);
+                anisotropyDirection = vec3f(mat2x2f(anisotropyDirection.x, anisotropyDirection.y, -anisotropyDirection.y, anisotropyDirection.x) * normalize(amd), anisotropyDirection.z);
             #endif
         #endif
 

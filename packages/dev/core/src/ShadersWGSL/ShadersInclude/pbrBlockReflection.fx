@@ -105,7 +105,7 @@
         var environmentRadiance: vec4f;
         // _____________________________ 2D vs 3D Maps ________________________________
         #if defined(LODINREFLECTIONALPHA) && !defined(REFLECTIONMAP_SKYBOX)
-            var reflectionLOD: f32 = getLodFromAlphaG(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
+            var reflectionLOD: f32 = getLodFromAlphaGNdotV(vReflectionMicrosurfaceInfos.x, alphaG, NdotVUnclamped);
         #elif defined(LINEARSPECULARREFLECTION)
             var reflectionLOD: f32 = getLinearLodFromRoughness(vReflectionMicrosurfaceInfos.x, roughness);
         #else
@@ -290,9 +290,9 @@
                 environmentIrradiance = vEnvironmentIrradiance;
             #else
                 #ifdef ANISOTROPIC
-                    var irradianceVector: vec3f =  vec3f(reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(anisotropicOut.anisotropicNormal, 0)).xyz;
                 #else
-                    var irradianceVector: vec3f =  vec3f(reflectionMatrix *  vec4f(normalW, 0)).xyz;
+                    var irradianceVector: vec3f =  (reflectionMatrix *  vec4f(normalW, 0)).xyz;
                 #endif
 
                 #ifdef REFLECTIONMAP_OPPOSITEZ
@@ -317,11 +317,11 @@
             var environmentIrradiance4: vec4f = textureSample(irradianceSampler, irradianceSamplerSampler, reflectionCoords);
             environmentIrradiance = environmentIrradiance4.rgb;
             #ifdef RGBDREFLECTION
-                environmentIrradiance.rgb = fromRGBD(environmentIrradiance4);
+                environmentIrradiance = fromRGBD(environmentIrradiance4);
             #endif
 
             #ifdef GAMMAREFLECTION
-                environmentIrradiance.rgb = toLinearSpace(environmentIrradiance.rgb);
+                environmentIrradiance = toLinearSpaceVec3(environmentIrradiance.rgb);
             #endif
         #endif
 

@@ -4,10 +4,10 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     var color: vec3f;
 // Geometry
     #if   DEBUGMODE == 1
-        color = vPositionW.rgb;
+        color = fragmentInputs.vPositionW.rgb;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 2 && defined(NORMAL)
-        color = vNormalW.rgb;
+        color = fragmentInputs.vNormalW.rgb;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 3 && defined(BUMP) || DEBUGMODE == 3 && defined(PARALLAX) || DEBUGMODE == 3 && defined(ANISOTROPIC)
         // Tangents
@@ -22,9 +22,9 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
         color = normalW;
         #define DEBUGMODE_NORMALIZE
     #elif DEBUGMODE == 6 && defined(MAINUV1)
-        color =  vec3f(vMainUV1, 0.0);
+        color =  vec3f(input.vMainUV1, 0.0);
     #elif DEBUGMODE == 7 && defined(MAINUV2)
-        color =  vec3f(vMainUV2, 0.0);
+        color =  vec3f(input.vMainUV2, 0.0);
     #elif DEBUGMODE == 8 && defined(CLEARCOAT) && defined(CLEARCOAT_BUMP)
         // ClearCoat Tangents
         color = clearcoatOut.TBNClearCoat[0];
@@ -145,13 +145,13 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     #elif DEBUGMODE == 72
         color =  vec3f(microSurface);
     #elif DEBUGMODE == 73
-        color = vAlbedoColor;
+        color = uniforms.vAlbedoColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 74 && !defined(METALLICWORKFLOW)
-        color = vReflectivityColor;
+        color = uniforms.vReflectivityColor.rgb;
         #define DEBUGMODE_GAMMA
     #elif DEBUGMODE == 75
-        color = vEmissiveColor;
+        color = uniforms.vEmissiveColor;
         #define DEBUGMODE_GAMMA
 // Misc
     #elif DEBUGMODE == 80 && defined(RADIANCEOCCLUSION)
@@ -197,7 +197,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
 
     fragmentOutputs.color = vec4f(color, 1.0);
     #ifdef PREPASS
-        fragmentOutputs.fragData0 = toLinearSpace(color); // linear to cancel gamma transform in prepass
+        fragmentOutputs.fragData0 = toLinearSpaceVec3(color); // linear to cancel gamma transform in prepass
         fragmentOutputs.fragData1 = vec4f(0., 0., 0., 0.); // tag as no SSS
     #endif
 

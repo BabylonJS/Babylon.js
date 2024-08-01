@@ -11,8 +11,6 @@ import { VertexBuffer } from "../../../../Buffers/buffer";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import "../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration";
-import "../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration";
 import { BindMorphTargetParameters, PrepareDefinesForMorphTargets } from "../../../materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -108,6 +106,31 @@ export class MorphTargetsBlock extends NodeMaterialBlock {
 
     public override initialize(state: NodeMaterialBuildState) {
         state._excludeVariableName("morphTargetInfluences");
+
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await Promise.all([
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertex"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexDeclaration"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobal"),
+                import("../../../../ShadersWGSL/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            ]);
+        } else {
+            await Promise.all([
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertex"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexDeclaration"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobal"),
+                import("../../../../Shaders/ShadersInclude/morphTargetsVertexGlobalDeclaration"),
+            ]);
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {

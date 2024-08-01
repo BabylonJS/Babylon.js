@@ -66,7 +66,8 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
             var bentNormal: vec3f = cross(B, V);
             bentNormal = normalize(cross(bentNormal, B));
             // This heuristic can probably be improved upon
-            var a: f32 = square(square(1.0 - anisotropy * (1.0 - roughness)));
+            var sq = 1.0 - anisotropy * (1.0 - roughness);
+            var a: f32 = sq * sq * sq * sq;
             bentNormal = normalize(mix(bentNormal, N, a));
             return bentNormal;
         }
@@ -111,8 +112,8 @@ fn getAARoughnessFactors(normalVector: vec3f) -> vec2f {
 
         var reflectivityLuminance: f32 = getLuminance(reflectivityColor);
         var reflectivityLuma: f32 = sqrt(reflectivityLuminance);
-        microSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
+        var resultMicroSurface = reflectivityLuma * kReflectivityNoAlphaWorkflow_SmoothnessMax;
 
-        return microSurface;
+        return resultMicroSurface;
     }
 #endif

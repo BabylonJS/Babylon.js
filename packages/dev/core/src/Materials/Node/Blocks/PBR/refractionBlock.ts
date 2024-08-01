@@ -19,6 +19,7 @@ import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Scalar } from "../../../../Maths/math.scalar";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * Block used to implement the refraction part of the sub surface module of the PBR material
@@ -311,27 +312,29 @@ export class RefractionBlock extends NodeMaterialBlock {
 
         state._emitUniformFromString(this._refractionMatrixName, NodeMaterialBlockConnectionPointTypes.Matrix);
 
-        state._emitFunction(
-            "sampleRefraction",
-            `
-            #ifdef ${this._define3DName}
-                #define sampleRefraction(s, c) textureCube(s, c)
-            #else
-                #define sampleRefraction(s, c) texture2D(s, c)
-            #endif\n`,
-            `//${this.name}`
-        );
+        if (state.shaderLanguage !== ShaderLanguage.WGSL) {
+            state._emitFunction(
+                "sampleRefraction",
+                `
+                #ifdef ${this._define3DName}
+                    #define sampleRefraction(s, c) textureCube(s, c)
+                #else
+                    #define sampleRefraction(s, c) texture2D(s, c)
+                #endif\n`,
+                `//${this.name}`
+            );
 
-        state._emitFunction(
-            "sampleRefractionLod",
-            `
-            #ifdef ${this._define3DName}
-                #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
-            #else
-                #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
-            #endif\n`,
-            `//${this.name}`
-        );
+            state._emitFunction(
+                "sampleRefractionLod",
+                `
+                #ifdef ${this._define3DName}
+                    #define sampleRefractionLod(s, c, l) textureCubeLodEXT(s, c, l)
+                #else
+                    #define sampleRefractionLod(s, c, l) texture2DLodEXT(s, c, l)
+                #endif\n`,
+                `//${this.name}`
+            );
+        }
 
         this._vRefractionMicrosurfaceInfosName = state._getFreeVariableName("vRefractionMicrosurfaceInfos");
 

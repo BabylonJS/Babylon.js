@@ -21,23 +21,23 @@
 			#endif
 
 			#ifdef MORPHTARGETS_TANGENT
-				tangentUpdated.xyz = tangentUpdated.xyz + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
+				tangentUpdated = vec4f(tangentUpdated.xyz + (readVector3FromRawSampler({X}, vertexID)  - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}], tangentUpdated.a);
 			#endif
 		}
 		#endif
 	#else
-		positionUpdated = positionUpdated + (position{X} - vertexInputs.position) * uniforms.morphTargetInfluences[{X}];
+		positionUpdated = positionUpdated + (vertexInputs.position{X} - vertexInputs.position) * uniforms.morphTargetInfluences[{X}];
 		
 		#ifdef MORPHTARGETS_NORMAL
-		    normalUpdated += (normal{X} - vertexInputs.normal) * uniforms.morphTargetInfluences[{X}];
+		    normalUpdated += (vertexInputs.normal{X} - vertexInputs.normal) * uniforms.morphTargetInfluences[{X}];
 		#endif
 
 		#ifdef MORPHTARGETS_TANGENT
-		    tangentUpdated.xyz = tangentUpdated.xyz + (tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
+		    tangentUpdated.xyz = tangentUpdated.xyz + (vertexInputs.tangent{X} - vertexInputs.tangent.xyz) * uniforms.morphTargetInfluences[{X}];
 		#endif
 
 		#ifdef MORPHTARGETS_UV
-		    uvUpdated = uvUpdated + (uv_{X} - vertexInputs.uv) * uniforms.morphTargetInfluences[{X}];
+		    uvUpdated = uvUpdated + (vertexInputs.uv_{X} - vertexInputs.uv) * uniforms.morphTargetInfluences[{X}];
 		#endif
 	#endif
 #endif

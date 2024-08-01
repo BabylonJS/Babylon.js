@@ -235,8 +235,11 @@ export class ClearCoatBlock extends NodeMaterialBlock {
 
         const comments = `//${this.name}`;
         const worldTangent = this.worldTangent;
+        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
 
-        state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+        if (!isWebGPU) {
+            state._emitExtension("derivatives", "#extension GL_OES_standard_derivatives : enable");
+        }
 
         const tangentReplaceString = { search: /defined\(TANGENT\)/g, replace: worldTangent.isConnected ? "defined(TANGENT)" : "defined(IGNORE)" };
 
@@ -244,14 +247,14 @@ export class ClearCoatBlock extends NodeMaterialBlock {
         if (TBN.isConnected) {
             state.compilationString += `
             #ifdef TBNBLOCK
-            mat3 vTBN = ${TBN.associatedVariableName};
+                ${isWebGPU ? "var TBN" : "mat3 TBN"} = ${TBN.associatedVariableName};
             #endif
             `;
         } else if (worldTangent.isConnected) {
-            code += `vec3 tbnNormal = normalize(${worldNormalVarName}.xyz);\n`;
-            code += `vec3 tbnTangent = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
-            code += `vec3 tbnBitangent = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
-            code += `mat3 vTBN = mat3(tbnTangent, tbnBitangent, tbnNormal);\n`;
+            code += `${state._declareLocalVar("tbnNormal", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldNormalVarName}.xyz);\n`;
+            code += `${state._declareLocalVar("tbnTangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = normalize(${worldTangent.associatedVariableName}.xyz);\n`;
+            code += `${state._declareLocalVar("tbnBitangent", NodeMaterialBlockConnectionPointTypes.Vector3)} = cross(tbnNormal, tbnTangent) * ${this._tangentCorrectionFactorName};\n`;
+            code += `${isWebGPU ? "var vTBN" : "mat3 vTBN"} = ${isWebGPU ? "mat3x3f" : "mat3"}(tbnTangent, tbnBitangent, tbnNormal);\n`;
         }
 
         state._emitFunctionFromInclude("bumpFragmentMainFunctions", comments, {
