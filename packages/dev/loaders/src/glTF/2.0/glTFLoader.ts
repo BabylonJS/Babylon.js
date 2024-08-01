@@ -840,7 +840,10 @@ export class GLTFLoader implements IGLTFLoader {
             assign(babylonTransformNode);
         };
 
-        if (node.mesh == undefined || node.skin != undefined) {
+        const hasMesh = node.mesh != undefined;
+        const hasSkin = this._parent.loadSkins && node.skin != undefined;
+
+        if (!hasMesh || hasSkin) {
             const nodeName = node.name || `node${node.index}`;
             this._babylonScene._blockEntityCollection = !!this._assetContainer;
             const transformNode = new TransformNode(nodeName, this._babylonScene);
@@ -854,11 +857,8 @@ export class GLTFLoader implements IGLTFLoader {
             loadNode(transformNode);
         }
 
-        if (node.mesh != undefined) {
-            if (node.skin == undefined) {
-                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
-                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
-            } else {
+        if (hasMesh) {
+            if (hasSkin) {
                 // See https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#skins (second implementation note)
                 // This code path will place the skinned mesh as a sibling of the skeleton root node without loading the
                 // transform, which effectively ignores the transform of the skinned mesh, as per spec.
@@ -899,6 +899,9 @@ export class GLTFLoader implements IGLTFLoader {
                         );
                     })
                 );
+            } else {
+                const mesh = ArrayItem.Get(`${context}/mesh`, this._gltf.meshes, node.mesh);
+                promises.push(this._loadMeshAsync(`/meshes/${mesh.index}`, node, mesh, loadNode));
             }
         }
 
