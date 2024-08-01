@@ -648,7 +648,8 @@ export class SceneLoader {
         onError: (message?: string, exception?: any) => void,
         onDispose: () => void,
         pluginExtension: Nullable<string>,
-        name: string
+        name: string,
+        pluginOptions: SceneLoaderPluginOptions
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
@@ -663,7 +664,9 @@ export class SceneLoader {
               ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
-        // TODO: Check if the plugin is disabled?
+        if (pluginOptions[registeredPlugin.plugin.name]?.enabled === false) {
+            throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
+        }
 
         if (fileInfo.rawData && !registeredPlugin.isBinary) {
             // eslint-disable-next-line no-throw-literal
@@ -673,7 +676,7 @@ export class SceneLoader {
         const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.() ?? registeredPlugin.plugin;
         if (!plugin) {
             // eslint-disable-next-line no-throw-literal
-            throw "The loader plugin corresponding to the file type you are trying to load has not been found. If using es6, please import the plugin you wish to use before.";
+            throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
         }
 
         SceneLoader.OnPluginActivatedObservable.notifyObservers(plugin);
@@ -991,7 +994,8 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
 
@@ -1351,7 +1355,8 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
 
@@ -1565,7 +1570,8 @@ export class SceneLoader {
             errorHandler,
             disposeHandler,
             pluginExtension,
-            name
+            name,
+            pluginOptions
         );
     }
 
