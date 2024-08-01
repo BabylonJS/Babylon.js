@@ -1,5 +1,5 @@
 {
-    "fromTag": "7.17.1",
+    "fromTag": "7.17.2",
     "changelog": {
         "7.17.2": [
             {
@@ -53,6 +53,122 @@
                 },
                 "files": [
                     "packages/tools/playground/src/scss/qrCode.scss"
+                ],
+                "tags": []
+            }
+        ],
+        "7.18.0": [
+            {
+                "pr": "15342",
+                "title": "Support getAlphaFromRGB in transparent shadow maps",
+                "description": "https://forum.babylonjs.com/t/the-shadow-is-not-in-transparency-if-opacity-texture-gets-alpha-from-rgb/52392/2",
+                "author": {
+                    "name": "sebavan",
+                    "url": "https://github.com/sebavan"
+                },
+                "files": [
+                    "packages/dev/core/src/Lights/Shadows/shadowGenerator.ts",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowMapFragmentExtraDeclaration.fx",
+                    "packages/dev/core/src/Shaders/ShadersInclude/shadowMapFragmentSoftTransparentShadow.fx",
+                    "packages/dev/core/src/Shaders/shadowMap.fragment.fx"
+                ],
+                "tags": [
+                    "enhancement",
+                    "shadows"
+                ]
+            },
+            {
+                "pr": "15332",
+                "title": "fix: change devicePixelRatio to hardwareScalingLevel and fix thinInstance pick index",
+                "description": null,
+                "author": {
+                    "name": "zhangyahan",
+                    "url": "https://github.com/zhangyahan"
+                },
+                "files": [
+                    "packages/dev/core/src/Collisions/gpuPicker.ts"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15341",
+                "title": "Lint config fixes",
+                "description": "Two small changes:\r\n1. Put quotes around the file pattern in the eslint command. Without this, the command does not work on Mac. With it, it works on both Mac and Windows.\r\n2. Update the prettier config to allow LF or CRLF line endings. Right now we have a mix (e.g. some files are LF and some are CRLF). When I run the linter, I get like 15K warnings because of LF line endings. I would think everyone else would be hitting this as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    ".prettierrc",
+                    "packages/dev/core/package.json"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15340",
+                "title": "Remove viewer-alpha dependency on sceneHelpers",
+                "description": "`sceneHelpers` pulls in a ton of stuff, which we knew, but I was waiting to make this change until getting some of the size analysis tooling in place. Removing this dependency reduces the package size by about 560kb.\r\n\r\nAlso included in this PR are a couple other small changes:\r\n- Switch from `string` to `URL` for model/env source. I don't think we want to support anything other than valid URLs for the viewer.\r\n- Also accept `File` for the model. It would make sense to do this for env as well, but this isn't currently supported in Babylon, so I'll revisit it later.\r\n- Remove a couple `console.log` statements that were added for debugging and accidentally left in with a previous PR.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/tools/viewer-alpha/src/viewer.ts",
+                    "packages/tools/viewer-alpha/src/viewerElement.ts",
+                    "scripts/queryRollupStats.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15339",
+                "title": "Fix animationGrup.reset endless loop",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Animations/animatable.ts",
+                    "packages/dev/core/src/Animations/animationGroup.ts"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            },
+            {
+                "pr": "15334",
+                "title": "Add viewer alpha tooling for code coverage and used bytes flame chart",
+                "description": "This PR adds the last piece of planned local dev tooling for package size analysis for the new alpha viewer (building on top of the previous PR: https://github.com/BabylonJS/Babylon.js/pull/15319).\r\n\r\nThe primary change is the introduction of nyc/istanbul (nyc is the command line interface for the istanbul code coverage library) for code coverage so you can easily see what code is actually executed when the viewer runs. This is done by:\r\n1. Running `npm run start:coverage`, which launches a test app (will add more functionality later exercises more Babylon code for expected scenarios) that looks like this:\r\n![image](https://github.com/user-attachments/assets/6d1ab5bc-f940-4a5a-9d18-59f25e9c5bf9)\r\n1. Clicking the \"Collect Coverage\" button, which collects the istanbul coverage data and generates and opens two reports that look like this:\r\n![image](https://github.com/user-attachments/assets/6b30cae8-763d-4dfe-bce0-20fdada2529e)\r\nThe left report is the standard nyc html report. The right flame chart is a variation of the file/folder size flame chart where it specifically shows the approximate unused bytes per file/folder (e.g. `(1-coverage)*size`).\r\nThe goal is to make it easy to see where there might be opportunity to reduce the package size.\r\n\r\nTo make this work, the following is what happens under the hood:\r\n1. The code is tree shaken but not bundled into a single file, nor is it minified (to make line number status useful)\r\n1. The resulting code is then instrumented with the `nyc` command line\r\n1. The vite local server is started and the test web page is launched\r\n1. The vite local server uses middleware to expose an api that the page can send coverage information to\r\n1. The vite middleware saves the coverage data locally and invokes a report generation script\r\n1. The report generation script reads the coverage data and uses `nyc` to generate the html coverage report as well as a json summary, then uses the file/folder size flame chart generation script plus the json coverage summary to create a flame chart of unused bytes\r\n\r\nAnother change in this PR makes it easier to find import chains by just running an npm command like: `npm run import-chains -- standardmaterial`",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "package-lock.json",
+                    "packages/tools/viewer-alpha/README.md",
+                    "packages/tools/viewer-alpha/generateCoverageReports.mjs",
+                    "packages/tools/viewer-alpha/package.json",
+                    "packages/tools/viewer-alpha/rollup.config.analyze.mjs",
+                    "packages/tools/viewer-alpha/rollup.config.common.mjs",
+                    "packages/tools/viewer-alpha/rollup.config.coverage.mjs",
+                    "packages/tools/viewer-alpha/test/apps/web/analyze.html",
+                    "packages/tools/viewer-alpha/test/apps/web/coverage.html",
+                    "packages/tools/viewer-alpha/vite.config.mjs",
+                    "scripts/folderSizeFlameChart.js",
+                    "scripts/queryRollupStats.js"
+                ],
+                "tags": []
+            },
+            {
+                "pr": "15336",
+                "title": "Viewer alpha inline dynamic imports",
+                "description": "To unblock the build, I am just explicitly configuring inline dynamic imports. This just embeds dynamic imports directly in the single file bundle, and retains the asynchrony so it behaves the same.\r\n\r\nIn a later PR, I will take a bit more time and update the rollup config to actually respect the dynamic imports and test it all out.\r\n\r\nNOTE: For some reason this file was not correctly formatted. I guess my format on save must have stopped working in a previous VSCode session. So there are a few small formatting changes included as well.",
+                "author": {
+                    "name": "ryantrem",
+                    "url": "https://github.com/ryantrem"
+                },
+                "files": [
+                    "packages/public/@babylonjs/viewer-alpha/rollup.config.dist.esm.mjs"
                 ],
                 "tags": []
             }
