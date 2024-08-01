@@ -466,6 +466,31 @@ export interface LoadAssetContainerOptions extends SceneLoaderOptions {
 }
 
 /**
+ * Defines options for ImportAnimationsAsync.
+ */
+export interface ImportAnimationsOptions extends SceneLoaderOptions {
+    /**
+     * The instance of BABYLON.Scene to append to
+     */
+    scene?: Scene;
+
+    /**
+     * When true, animations are cleaned before importing new ones. Animations are appended otherwise
+     */
+    overwriteAnimations?: boolean;
+
+    /**
+     * Defines how to handle old animations groups before importing new ones
+     */
+    animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode;
+
+    /**
+     * defines a function used to convert animation targets from loaded scene to current scene (default: search node by name)
+     */
+    targetConverter: Nullable<(target: unknown) => unknown>;
+}
+
+/**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
  */
@@ -1652,7 +1677,33 @@ export class SceneLoader {
      */
     public static ImportAnimations(
         rootUrl: string,
-        sceneFilename: string | File = "",
+        sceneFilename?: string | File,
+        scene?: Nullable<Scene>,
+        overwriteAnimations?: boolean,
+        animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+        targetConverter?: Nullable<(target: any) => any>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>
+    ): void {
+        SceneLoader._ImportAnimations(
+            rootUrl,
+            sceneFilename,
+            scene,
+            overwriteAnimations,
+            animationGroupLoadingMode,
+            targetConverter,
+            onSuccess,
+            onProgress,
+            onError,
+            pluginExtension
+        );
+    }
+
+    private static _ImportAnimations(
+        rootUrl: string,
+        sceneFilename: string | File | ArrayBufferView = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         overwriteAnimations = true,
         animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
@@ -1660,7 +1711,8 @@ export class SceneLoader {
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        pluginExtension: Nullable<string> = null,
+        pluginOptions: SceneLoaderPluginOptions = {}
     ): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
@@ -1723,8 +1775,16 @@ export class SceneLoader {
             }
         };
 
-        this.LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension);
+        this._LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, undefined, pluginOptions);
     }
+
+    /**
+     * Import animations from a file into a scene
+     * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param options an object that configures aspects of how the scene is loaded
+     * @returns The loaded asset container
+     */
+    public static ImportAnimationsAsync(source: string | File | ArrayBufferView, options?: ImportAnimationsOptions): Promise<Scene>;
 
     /**
      * Import animations from a file into a scene
@@ -1742,20 +1802,68 @@ export class SceneLoader {
      */
     public static ImportAnimationsAsync(
         rootUrl: string,
-        sceneFilename: string | File = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        overwriteAnimations = true,
-        animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
-        targetConverter: Nullable<(target: any) => any> = null,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onSuccess: Nullable<(scene: Scene) => void> = null,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null
+        sceneFilename?: string | File | ArrayBufferView,
+        scene?: Nullable<Scene>,
+        overwriteAnimations?: boolean,
+        animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+        targetConverter?: Nullable<(target: any) => any>,
+        onSuccess?: Nullable<(scene: Scene) => void>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>
+    ): Promise<Scene>;
+
+    public static ImportAnimationsAsync(
+        ...args:
+            | [
+                  rootUrl: string,
+                  sceneFilename?: string | File | ArrayBufferView,
+                  scene?: Nullable<Scene>,
+                  overwriteAnimations?: boolean,
+                  animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
+                  targetConverter?: Nullable<(target: any) => any>,
+                  onSuccess?: Nullable<(scene: Scene) => void>,
+                  onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+                  onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+                  pluginExtension?: Nullable<string>,
+              ]
+            | [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions]
     ): Promise<Scene> {
+        let rootUrl: string;
+        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let scene: Nullable<Scene> | undefined;
+        let overwriteAnimations: boolean | undefined;
+        let animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode | undefined;
+        let targetConverter: Nullable<(target: any) => any> | undefined;
+        let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
+        let pluginExtension: Nullable<string> | undefined;
+        let pluginOptions: SceneLoaderPluginOptions | undefined;
+
+        // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
+        // This is the most type safe way to distinguish between the two possible argument arrays.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions] => {
+            // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
+            // If there is only a single string argument, then we should use the legacy overload for back compat.
+            // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
+            return (
+                maybeOptionsArgs[0] instanceof File ||
+                ArrayBuffer.isView(args[0]) ||
+                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File))
+            );
+        };
+
+        if (isOptionsArgs(args)) {
+            // Source is mapped to sceneFileName
+            sceneFilename = args[0];
+            // Options determine the rest of the arguments
+            ({ rootUrl = "", scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, pluginOptions } = args[1] ?? {});
+        } else {
+            // For the legacy signature, we just directly map each argument
+            [rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, , onProgress, , pluginExtension] = args;
+        }
+
         return new Promise((resolve, reject) => {
-            SceneLoader.ImportAnimations(
+            SceneLoader._ImportAnimations(
                 rootUrl,
                 sceneFilename,
                 scene,
@@ -1769,7 +1877,8 @@ export class SceneLoader {
                 (_scene: Scene, message: string, exception: any) => {
                     reject(exception || new Error(message));
                 },
-                pluginExtension
+                pluginExtension,
+                pluginOptions
             );
         });
     }
