@@ -12,7 +12,9 @@ export const prepareES6Build = async () => {
             const constantsContent = fs.readFileSync(path.resolve(baseDir, constFile as string), "utf8").replace("export class Constants", "const Constants = ");
             // eslint-disable-next-line @typescript-eslint/naming-convention
             const Constants = eval(constantsContent + "\nConstants;");
-            const allSourceFiles = globSync(path.resolve(baseDir, "**", "*.js"));
+            const allSourceFiles = globSync(path.resolve(baseDir, "**", "*.js"), {
+                windowsPathsNoEscape: true,
+            });
             allSourceFiles.forEach((file) => {
                 if (file.endsWith(constFile as string)) {
                     return;
