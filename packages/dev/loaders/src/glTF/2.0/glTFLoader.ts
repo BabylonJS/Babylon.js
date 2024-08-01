@@ -302,7 +302,7 @@ export class GLTFLoader implements IGLTFLoader {
      */
     constructor(
         parent: GLTFFileLoader,
-        private readonly options: GLTFLoaderOptions
+        private readonly _options: GLTFLoaderOptions
     ) {
         this._parent = parent;
     }
@@ -422,7 +422,7 @@ export class GLTFLoader implements IGLTFLoader {
                 const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
                 this._babylonScene.blockMaterialDirtyMechanism = true;
 
-                if (!this.options.loadOnlyMaterials) {
+                if (!this._options.loadOnlyMaterials) {
                     if (nodes) {
                         promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
                     } else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
@@ -431,7 +431,7 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                 }
 
-                if (!this.options.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
+                if (!this._options.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
                     for (let m = 0; m < this._gltf.materials.length; ++m) {
                         const material = this._gltf.materials[m];
                         const context = "/materials/" + m;
@@ -569,7 +569,7 @@ export class GLTFLoader implements IGLTFLoader {
     private _loadExtensions(): void {
         for (const name in GLTFLoader._RegisteredExtensions) {
             // TODO: Check if the extension is disabled?
-            const extension = GLTFLoader._RegisteredExtensions[name].factory(this, this.options.extensionOptions);
+            const extension = GLTFLoader._RegisteredExtensions[name].factory(this, this._options.extensionOptions);
             if (extension.name !== name) {
                 Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
             }
@@ -1041,7 +1041,7 @@ export class GLTFLoader implements IGLTFLoader {
                     this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
                 }
                 babylonMesh.material = babylonMaterial;
-            } else if (!this.options.skipMaterials) {
+            } else if (!this._options.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(
                     this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {

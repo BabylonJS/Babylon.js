@@ -34,20 +34,24 @@ import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
 const NAME = "gltf";
 
-export interface GLTFLoaderExtensionOptions extends Record<string, ({ enabled?: boolean } & Record<string, unknown>) | undefined> {}
+/**
+ * Defines options for glTF loader extensions. This interface is extended by specific extensions.
+ */
+export interface GLTFLoaderExtensionOptions extends Record<string, Record<string, unknown> | undefined> {}
 
+/**
+ * Defines options for the glTF loader.
+ */
 export type GLTFLoaderOptions = {
     loadOnlyMaterials: boolean;
     skipMaterials: boolean;
     coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
-    extensionOptions: GLTFLoaderExtensionOptions;
+    extensionOptions: { [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & { enabled?: boolean } };
 };
 
 declare module "core/Loading/sceneLoader" {
     export interface SceneLoaderPluginOptions {
-        [NAME]?: Partial<GLTFLoaderOptions> & {
-            enabled?: boolean;
-        };
+        [NAME]?: Partial<GLTFLoaderOptions>;
     }
 }
 
@@ -736,14 +740,15 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
         data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string
+        fileName?: string,
+        options?: SceneLoaderPluginOptions
     ): Promise<ISceneLoaderAsyncResult> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data, null!);
+            this._loader = this._getLoader(data, this._resolveOptions(options));
             return this._loader.importMeshAsync(meshesNames, scene, null, data, rootUrl, onProgress, fileName);
         });
     }
@@ -751,13 +756,20 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     /**
      * @internal
      */
-    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
+    public loadAsync(
+        scene: Scene,
+        data: IGLTFLoaderData,
+        rootUrl: string,
+        onProgress?: (event: ISceneLoaderProgressEvent) => void,
+        fileName?: string,
+        options?: SceneLoaderPluginOptions
+    ): Promise<void> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data, null!);
+            this._loader = this._getLoader(data, this._resolveOptions(options));
             return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
         });
     }
