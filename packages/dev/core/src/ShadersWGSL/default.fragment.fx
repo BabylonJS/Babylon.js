@@ -162,7 +162,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var baseAmbientColor: vec3f =  vec3f(1., 1., 1.);
 
 #ifdef AMBIENT
-	baseAmbientColor = textureSample(ambientSampler, ambientSamplerSampler, vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	baseAmbientColor = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
@@ -173,7 +173,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var specularColor: vec3f = uniforms.vSpecularColor.rgb;
 
 #ifdef SPECULAR
-	var specularMapColor: vec4f = textureSample(specularSampler, specularSamplerSampler, vSpecularUV + uvOffset);
+	var specularMapColor: vec4f = textureSample(specularSampler, specularSamplerSampler, fragmentInputs.vSpecularUV + uvOffset);
 	specularColor = specularMapColor.rgb;
 #ifdef GLOSSINESS
 	glossiness = glossiness * specularMapColor.a;
@@ -194,7 +194,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var numLights: f32 = 0.;
 
 #ifdef LIGHTMAP
-	var lightmapColor: vec4f = textureSample(lightmapSampler, lightmapSamplerSampler, vLightmapUV + uvOffset);
+	var lightmapColor: vec4f = textureSample(lightmapSampler, lightmapSamplerSampler, fragmentInputs.vLightmapUV + uvOffset);
     #ifdef RGBDLIGHTMAP
         lightmapColor = vec4f(fromRGBD(lightmapColor), lightmapColor.a);
     #endif
@@ -209,19 +209,19 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var refractionColor: vec4f =  vec4f(0., 0., 0., 1.);
 
 #ifdef REFRACTION
-	var refractionVector: vec3f = normalize(refract(-viewDirectionW, normalW, vRefractionInfos.y));
+	var refractionVector: vec3f = normalize(refract(-viewDirectionW, normalW, uniforms.vRefractionInfos.y));
 	#ifdef REFRACTIONMAP_3D
         #ifdef USE_LOCAL_REFRACTIONMAP_CUBIC
-            refractionVector = parallaxCorrectNormal(fragmentInputs.vPositionW, refractionVector, vRefractionSize, vRefractionPosition);
+            refractionVector = parallaxCorrectNormal(fragmentInputs.vPositionW, refractionVector, vRefractionSize, uniforms.vRefractionPosition);
         #endif
-		refractionVector.y = refractionVector.y * vRefractionInfos.w;
+		refractionVector.y = refractionVector.y * uniforms.vRefractionInfos.w;
 
 		var refractionLookup: vec4f = textureSample(refractionCubeSampler, refractionCubeSamplerSampler, refractionVector);
 		if (dot(refractionVector, viewDirectionW) < 1.0) {
 			refractionColor = refractionLookup;
 		}
 	#else
-		var vRefractionUVW: vec3f =  vec3f(refractionMatrix * (view *  vec4f(fragmentInputs.vPositionW + refractionVector * vRefractionInfos.z, 1.0)));
+		var vRefractionUVW: vec3f =  vec3f(refractionMatrix * (view *  vec4f(fragmentInputs.vPositionW + refractionVector * uniforms.vRefractionInfos.z, 1.0)));
 
 		var refractionCoords: vec2f = vRefractionUVW.xy / vRefractionUVW.z;
 
@@ -235,7 +235,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	#ifdef IS_REFRACTION_LINEAR
 		refractionColor.rgb = toGammaSpace(refractionColor.rgb);
 	#endif
-	refractionColor.rgb *= vRefractionInfos.x;
+	refractionColor.rgb *= uniforms.vRefractionInfos.x;
 #endif
 
 // Reflection
@@ -271,7 +271,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 		#endif
 
 		coords.y = 1.0 - coords.y;
-		reflectionColor = textureSampler(reflection2DSampler, reflection2DSamplerSampler, coords);
+		reflectionColor = textureSample(reflection2DSampler, reflection2DSamplerSampler, coords);
 	#endif
     #ifdef RGBDREFLECTION
         reflectionColor = vec4f(fromRGBD(reflectionColor), reflectionColor.a);
@@ -318,9 +318,9 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 #endif
 
 #ifdef OPACITYFRESNEL
-	var opacityFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, opacityParts.z, opacityParts.w);
+	var opacityFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.opacityParts.z, uniforms.opacityParts.w);
 
-	alpha += opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * opacityParts.y;
+	alpha += uniforms.opacityParts.x * (1.0 - opacityFresnelTerm) + opacityFresnelTerm * uniforms.opacityParts.y;
 #endif
 
 #ifdef ALPHATEST
@@ -342,16 +342,16 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 #endif
 
 #ifdef EMISSIVEFRESNEL
-	var emissiveFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, emissiveRightColor.a, emissiveLeftColor.a);
+	var emissiveFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.emissiveRightColor.a, uniforms.emissiveLeftColor.a);
 
-	emissiveColor *= emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * emissiveRightColor.rgb;
+	emissiveColor *= uniforms.emissiveLeftColor.rgb * (1.0 - emissiveFresnelTerm) + emissiveFresnelTerm * uniforms.emissiveRightColor.rgb;
 #endif
 
 	// Fresnel
 #ifdef DIFFUSEFRESNEL
-	var diffuseFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, diffuseRightColor.a, diffuseLeftColor.a);
+	var diffuseFresnelTerm: f32 = computeFresnelTerm(viewDirectionW, normalW, uniforms.diffuseRightColor.a, uniforms.diffuseLeftColor.a);
 
-	diffuseBase *= diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * diffuseRightColor.rgb;
+	diffuseBase *= uniforms.diffuseLeftColor.rgb * (1.0 - diffuseFresnelTerm) + diffuseFresnelTerm * uniforms.diffuseRightColor.rgb;
 #endif
 
 	// Composition
@@ -421,7 +421,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #define CUSTOM_FRAGMENT_BEFORE_FRAGCOLOR
 #ifdef PREPASS
-	var writeGeometryInfo: f32 = color.a > 0.4 ? 1.0 : 0.0;
+	var writeGeometryInfo: f32 = select(0.0, 1.0, color.a > 0.4);
 	var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;
 
     fragData[0] = color; // We can't split irradiance on std material
@@ -445,14 +445,14 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
     #endif
 
     #ifdef PREPASS_DEPTH
-        fragData[PREPASS_DEPTH_INDEX] =  vec4f(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+        fragData[PREPASS_DEPTH_INDEX] =  vec4f(fragmentInputs.vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
     #ifdef PREPASS_NORMAL
         #ifdef PREPASS_NORMAL_WORLDSPACE
             fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalW, writeGeometryInfo); // Normal
         #else
-            fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalize((view *  vec4f(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
+            fragData[PREPASS_NORMAL_INDEX] =  vec4f(normalize((scene.view *  vec4f(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
         #endif
     #endif
 
