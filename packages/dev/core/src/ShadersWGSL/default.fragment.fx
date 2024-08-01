@@ -462,9 +462,9 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
     #ifdef PREPASS_REFLECTIVITY
 		#if defined(SPECULARTERM)
 			#if defined(SPECULAR)
-				fragData[PREPASS_REFLECTIVITY_INDEX] =  vec4f(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
+				fragData[PREPASS_REFLECTIVITY_INDEX] =  vec4f(toLinearSpaceVec4(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
 			#else
-				fragData[PREPASS_REFLECTIVITY_INDEX] =  vec4f(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
+				fragData[PREPASS_REFLECTIVITY_INDEX] =  vec4f(toLinearSpaceVec3(specularColor), 1.0) * writeGeometryInfo;
 			#endif
 		#else
 			fragData[PREPASS_REFLECTIVITY_INDEX] =  vec4f(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;
