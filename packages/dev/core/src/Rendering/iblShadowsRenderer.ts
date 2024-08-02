@@ -39,11 +39,13 @@ class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
      * Textures that should be present in the MRT for this effect to work
      */
     public readonly texturesRequired: number[] = [
-        Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE, 
+        // Spatial blur will need *linear* depth
         Constants.PREPASS_DEPTH_TEXTURE_TYPE, 
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
+
         Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-        Constants.PREPASS_POSITION_TEXTURE_TYPE
+        // Local positions used for shadow accumulation pass
+        Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE
     ];
 }
 
@@ -351,7 +353,7 @@ export class IblShadowsRenderer {
             fragmentShader: "iblShadowDebug",
             useShaderStore: true,
             engine: this._engine,
-            samplerNames: ["worldNormalSampler", "worldPositionSampler", "velocitySampler", "depthSampler"],
+            samplerNames: ["worldNormalSampler", "localPositionSampler", "velocitySampler", "depthSampler"],
             uniformNames: [],
         });
 
@@ -442,11 +444,11 @@ export class IblShadowsRenderer {
 
         // Retrieve opaque color texture
         const normalTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-        const positionTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
+        const positionTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
         const velocityTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
         const depthTextureIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
         this._finalEffectWrapper.effect.setTexture("worldNormalSampler", this._thinTextures[normalTextureIndex]);
-        this._finalEffectWrapper.effect.setTexture("worldPositionSampler", this._thinTextures[positionTextureIndex]);
+        this._finalEffectWrapper.effect.setTexture("localPositionSampler", this._thinTextures[positionTextureIndex]);
         this._finalEffectWrapper.effect.setTexture("velocitySampler", this._thinTextures[velocityTextureIndex]);
         this._finalEffectWrapper.effect.setTexture("depthSampler", this._thinTextures[depthTextureIndex]);
         this._effectRenderer.render(this._finalEffectWrapper);
