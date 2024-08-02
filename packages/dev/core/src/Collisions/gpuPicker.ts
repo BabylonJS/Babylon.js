@@ -37,7 +37,7 @@ export class GPUPicker {
     private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
     private _idColors: Array<Color3> = [];
     private _cachedScene: Nullable<Scene>;
-    private _renderMaterial: Nullable<ShaderMaterial>;
+    private _defaultRenderMaterial: Nullable<ShaderMaterial>;
     private _pickableMeshes: Array<AbstractMesh>;
     private _meshMaterialMap: Map<AbstractMesh, ShaderMaterial> = new Map();
     private _readbuffer: Uint8Array;
@@ -61,8 +61,8 @@ export class GPUPicker {
     }
 
     private _createColorMaterial(scene: Scene) {
-        if (this._renderMaterial) {
-            this._renderMaterial.dispose();
+        if (this._defaultRenderMaterial) {
+            this._defaultRenderMaterial.dispose();
         }
 
         const defines: string[] = [];
@@ -74,9 +74,9 @@ export class GPUPicker {
             useClipPlane: null,
         };
 
-        this._renderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
+        this._defaultRenderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
-        this._renderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+        this._defaultRenderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
     }
 
     private _materialBindCallback(mesh: AbstractMesh | undefined) {
@@ -158,7 +158,7 @@ export class GPUPicker {
                 }
 
                 const material = this._meshMaterialMap.get(mesh)!;
-                if (material !== this._renderMaterial) {
+                if (material !== this._defaultRenderMaterial) {
                     material.onBindObservable.removeCallback(this._materialBindCallback);
                 }
             }
@@ -200,7 +200,7 @@ export class GPUPicker {
                 this._meshMaterialMap.set(item.mesh, item.material);
                 list[i] = item.mesh;
             } else {
-                this._meshMaterialMap.set(item, this._renderMaterial!);
+                this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
             }
         }
         this._pickableMeshes = list as Array<AbstractMesh>;
@@ -214,7 +214,7 @@ export class GPUPicker {
             const mesh = this._pickableMeshes[index];
             const material = this._meshMaterialMap.get(mesh)!;
 
-            if (material !== this._renderMaterial) {
+            if (material !== this._defaultRenderMaterial) {
                 material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
             }
             this._pickingTexure!.setMaterialForRendering(mesh, material);
@@ -389,7 +389,7 @@ export class GPUPicker {
         // Cleaning up
         this._pickingTexure?.dispose();
         this._pickingTexure = null;
-        this._renderMaterial?.dispose();
-        this._renderMaterial = null;
+        this._defaultRenderMaterial?.dispose();
+        this._defaultRenderMaterial = null;
     }
 }
