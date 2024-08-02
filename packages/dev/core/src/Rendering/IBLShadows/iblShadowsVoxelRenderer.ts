@@ -30,8 +30,9 @@ import type { IblShadowsRenderPipeline } from "./iblShadowsRenderPipeline";
 /**
  * Voxel-based shadow rendering for IBL's.
  * This should not be instanciated directly, as it is part of a scene component
+ * @internal
  */
-export class IblShadowsVoxelRenderer {
+export class _IblShadowsVoxelRenderer {
     private _scene: Scene;
     private _engine: Engine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -419,6 +420,25 @@ export class IblShadowsVoxelRenderer {
      * @returns true if the voxel renderer is ready to voxelize scene
      */
     public isReady() {
+        if (this._triPlanarVoxelization) {
+            if (!this._voxelMrtsXaxis.every((rt) => rt.isReadyForRendering())) {
+                return false;
+            }
+            if (!this._voxelMrtsYaxis.every((rt) => rt.isReadyForRendering())) {
+                return false;
+            }
+            if (!this._voxelMrtsZaxis.every((rt) => rt.isReadyForRendering())) {
+                return false;
+            }
+            if (!this._voxelGridRT.isReady()) {
+                return false;
+            }
+        } else {
+            if (!this._voxelMrtsZaxis.every((rt) => rt.isReadyForRendering())) {
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -471,11 +491,12 @@ export class IblShadowsVoxelRenderer {
 
         // Add the slab debug RT if needed.
         if (this._voxelDebugEnabled) {
+            this._removeVoxelRTs([this._voxelSlabDebugRT]);
             this._addRTsForRender([this._voxelSlabDebugRT], [], this._voxelDebugAxis, 1, true);
         }
 
-        (this as any).poop = this._renderVoxelGrid.bind(this);
-        this._scene.onAfterRenderTargetsRenderObservable.add((this as any).poop);
+        (this as any).boundVoxelGridRenderFn = this._renderVoxelGrid.bind(this);
+        this._scene.onAfterRenderTargetsRenderObservable.add((this as any).boundVoxelGridRenderFn);
     }
 
     private _renderVoxelGrid() {
@@ -495,7 +516,7 @@ export class IblShadowsVoxelRenderer {
                 this._generateMipMaps();
 
                 this._voxelizationInProgress = false;
-                this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).poop);
+                this._scene.onAfterRenderTargetsRenderObservable.removeCallback((this as any).boundVoxelGridRenderFn);
             }
         }
     }

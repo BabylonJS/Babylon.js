@@ -13,8 +13,9 @@ import type { RenderTargetCreationOptions } from "../../Materials/Textures/textu
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
+ * @internal
  */
-export class IblShadowsAccumulationPass {
+export class _IblShadowsAccumulationPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
@@ -39,10 +40,10 @@ export class IblShadowsAccumulationPass {
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             this._createDebugPass();
         }
-        return this._debugPass;
+        return this._debugPassPP;
     }
 
     private _debugPassName: string = "Shadow Accumulation Debug Pass";
@@ -65,7 +66,7 @@ export class IblShadowsAccumulationPass {
         this._reset = value;
     }
 
-    private _debugPass: PostProcess;
+    private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
@@ -75,7 +76,7 @@ export class IblShadowsAccumulationPass {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
@@ -87,9 +88,9 @@ export class IblShadowsAccumulationPass {
                 engine: this._engine,
                 reusable: false,
             };
-            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
-            this._debugPass.autoClear = false;
-            this._debugPass.onApply = (effect) => {
+            this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
+            this._debugPassPP.autoClear = false;
+            this._debugPassPP.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
@@ -238,7 +239,14 @@ export class IblShadowsAccumulationPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPP.isReady();
+        return (
+            this._oldAccumulationRT &&
+            this._oldAccumulationRT.isReadyForRendering() &&
+            this._oldLocalPositionRT &&
+            this._oldLocalPositionRT.isReadyForRendering() &&
+            this._outputPP.isReady() &&
+            !(this._debugPassPP && !this._debugPassPP.isReady())
+        );
     }
 
     /**
@@ -247,8 +255,8 @@ export class IblShadowsAccumulationPass {
     public dispose() {
         this._disposeTextures();
         this._outputPP.dispose();
-        if (this._debugPass) {
-            this._debugPass.dispose();
+        if (this._debugPassPP) {
+            this._debugPassPP.dispose();
         }
     }
 }

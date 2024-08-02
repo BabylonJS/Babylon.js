@@ -11,8 +11,9 @@ import type { Effect } from "../../Materials/effect";
 
 /**
  * This should not be instanciated directly, as it is part of a scene component
+ * @internal
  */
-export class IblShadowsSpatialBlurPass {
+export class _IblShadowsSpatialBlurPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
     // private _renderPipeline: IblShadowsRenderPipeline;
@@ -32,10 +33,10 @@ export class IblShadowsSpatialBlurPass {
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             this._createDebugPass();
         }
-        return this._debugPass;
+        return this._debugPassPP;
     }
     private _debugPassName: string = "Spatial Blur Debug Pass";
     public get debugPassName(): string {
@@ -48,7 +49,7 @@ export class IblShadowsSpatialBlurPass {
 
     /** Enable the debug view for this pass */
     public debugEnabled: boolean = false;
-    private _debugPass: PostProcess;
+    private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
@@ -58,7 +59,7 @@ export class IblShadowsSpatialBlurPass {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
@@ -70,9 +71,9 @@ export class IblShadowsSpatialBlurPass {
                 engine: this._engine,
                 reusable: false,
             };
-            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
-            this._debugPass.autoClear = false;
-            this._debugPass.onApply = (effect) => {
+            this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
+            this._debugPassPP.autoClear = false;
+            this._debugPassPP.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
@@ -127,7 +128,7 @@ export class IblShadowsSpatialBlurPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPP.isReady();
+        return this._outputPP.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
     }
 
     /**
@@ -135,8 +136,8 @@ export class IblShadowsSpatialBlurPass {
      */
     public dispose() {
         this._outputPP.dispose();
-        if (this._debugPass) {
-            this._debugPass.dispose();
+        if (this._debugPassPP) {
+            this._debugPassPP.dispose();
         }
     }
 }
