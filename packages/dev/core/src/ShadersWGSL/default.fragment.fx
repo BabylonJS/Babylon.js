@@ -505,8 +505,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
-		//fragmentOutputs.frontColor = vec4f(fragmentOutputs.frontColor.rgb + color.rgb * color.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - color.a));
-		fragmentOutputs.frontColor = vec4f(1.0);
+		fragmentOutputs.frontColor = vec4f(fragmentOutputs.frontColor.rgb + color.rgb * color.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - color.a));
 	} else {
 		fragmentOutputs.backColor += color;
 	}
