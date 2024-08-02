@@ -39,20 +39,6 @@ const NAME = "gltf";
  */
 export interface GLTFLoaderExtensionOptions extends Record<string, Record<string, unknown> | undefined> {}
 
-/**
- * Defines options for the glTF loader.
- */
-export type GLTFLoaderOptions = GLTFFileLoaderBaseOptions & {
-    extensionOptions: {
-        [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & {
-            /**
-             * Defines if the extension is enabled
-             */
-            enabled?: boolean;
-        };
-    };
-};
-
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface SceneLoaderPluginOptions {
@@ -198,7 +184,17 @@ export interface IGLTFLoader extends IDisposable {
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
-class GLTFFileLoaderBaseOptions {
+class GLTFLoaderOptions {
+    // eslint-disable-next-line babylonjs/available
+    constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
+        if (options) {
+            for (const key in this) {
+                const typedKey = key as keyof GLTFLoaderOptions;
+                (this as Record<keyof GLTFLoaderOptions, unknown>)[typedKey] = options[typedKey] ?? this[typedKey];
+            }
+        }
+    }
+
     // ----------
     // V2 options
     // ----------
@@ -233,7 +229,7 @@ class GLTFFileLoaderBaseOptions {
      * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
      * If true, no extra effects are applied to transparent pixels.
      */
-    public transparencyAsCoverage = false;
+    public transparencyAsCoverage = false; // TODO: Need to pass the full gltf options to extensions so they can access this
 
     /**
      * Defines if the loader should use range requests when load binary glTF files from HTTP.
@@ -295,17 +291,29 @@ class GLTFFileLoaderBaseOptions {
      * You can also pass null if you don't want a root node to be created.
      */
     public customRootNode?: Nullable<TransformNode>;
+
+    /**
+     * Defines options for glTF extensions.
+     */
+    extensionOptions: {
+        [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & {
+            /**
+             * Defines if the extension is enabled
+             */
+            enabled?: boolean;
+        };
+    } = {};
 }
 
 /**
  * File loader for loading glTF files into a scene.
  */
-export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
     /** @internal */
-    public static _CreateGLTF1Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
     /** @internal */
-    public static _CreateGLTF2Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
+    public static _CreateGLTF2Loader: (parent: GLTFFileLoader) => IGLTFLoader;
 
     // --------------
     // Common options
@@ -750,15 +758,14 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
         data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
+        fileName?: string
     ): Promise<ISceneLoaderAsyncResult> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data, this._resolveOptions(options));
+            this._loader = this._getLoader(data);
             return this._loader.importMeshAsync(meshesNames, scene, null, data, rootUrl, onProgress, fileName);
         });
     }
@@ -766,20 +773,13 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
     /**
      * @internal
      */
-    public loadAsync(
-        scene: Scene,
-        data: IGLTFLoaderData,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
-    ): Promise<void> {
+    public loadAsync(scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data, this._resolveOptions(options));
+            this._loader = this._getLoader(data);
             return this._loader.loadAsync(scene, data, rootUrl, onProgress, fileName);
         });
     }
@@ -792,15 +792,14 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
         data: IGLTFLoaderData,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
+        fileName?: string
     ): Promise<AssetContainer> {
         return Promise.resolve().then(() => {
             this.onParsedObservable.notifyObservers(data);
             this.onParsedObservable.clear();
 
             this._log(`Loading ${fileName || ""}`);
-            this._loader = this._getLoader(data, this._resolveOptions(options));
+            this._loader = this._getLoader(data);
 
             // Prepare the asset container.
             const container = new AssetContainer(scene);
@@ -890,8 +889,8 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
     /** @internal */
-    public createPlugin(): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader();
+    public createPlugin(options?: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
+        return new GLTFFileLoader(options?.[NAME]);
     }
 
     /**
@@ -965,23 +964,6 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
         return request;
     }
 
-    private _resolveOptions(options?: SceneLoaderPluginOptions): GLTFLoaderOptions {
-        // Start with a GLTFFileLoaderBaseOptions so we can easily iterate over its properties to merge options.
-        const resolvedOptions = new GLTFFileLoaderBaseOptions();
-
-        // Loop over options that exist on the class first. Passed in options take precedence over options on the instance.
-        for (const key in resolvedOptions) {
-            const typedKey = key as keyof GLTFFileLoaderBaseOptions;
-            (resolvedOptions satisfies Partial<Record<keyof GLTFFileLoaderBaseOptions, unknown>> as Record<keyof GLTFFileLoaderBaseOptions, unknown>)[typedKey] =
-                options?.[NAME]?.[typedKey] ?? this[typedKey];
-        }
-
-        // Add on the extension options from the passed in options.
-        return Object.assign(resolvedOptions, {
-            extensionOptions: options?.[NAME]?.extensionOptions ?? {},
-        });
-    }
-
     private _onProgress(event: ProgressEvent, request: IFileRequestInfo): void {
         if (!this._progressCallback) {
             return;
@@ -1037,7 +1019,7 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
         );
     }
 
-    private _getLoader(loaderData: IGLTFLoaderData, options: GLTFLoaderOptions): IGLTFLoader {
+    private _getLoader(loaderData: IGLTFLoaderData): IGLTFLoader {
         const asset = (<any>loaderData.json).asset || {};
 
         this._log(`Asset version: ${asset.version}`);
@@ -1060,7 +1042,7 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
             }
         }
 
-        const createLoaders: { [key: number]: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader } = {
+        const createLoaders: { [key: number]: (parent: GLTFFileLoader) => IGLTFLoader } = {
             1: GLTFFileLoader._CreateGLTF1Loader,
             2: GLTFFileLoader._CreateGLTF2Loader,
         };
@@ -1070,7 +1052,7 @@ export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDispos
             throw new Error("Unsupported version: " + asset.version);
         }
 
-        return createLoader(this, options);
+        return createLoader(this);
     }
 
     private _parseJson(json: string): Object {

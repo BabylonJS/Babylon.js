@@ -65,7 +65,7 @@ import type {
     _IAnimationSamplerData,
 } from "./glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "./glTFLoaderExtension";
-import type { GLTFLoaderOptions, GLTFLoaderExtensionOptions, IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
+import type { IGLTFLoader, IGLTFLoaderData } from "../glTFFileLoader";
 import { GLTFFileLoader, GLTFLoaderState, GLTFLoaderCoordinateSystemMode, GLTFLoaderAnimationStartMode } from "../glTFFileLoader";
 import type { IDataBuffer } from "core/Misc/dataReader";
 import { DecodeBase64UrlToBinary, IsBase64DataUrl, LoadFileError } from "core/Misc/fileTools";
@@ -94,7 +94,7 @@ interface ILoaderProperty extends IProperty {
 }
 
 interface IRegisteredExtension {
-    factory: (loader: GLTFLoader, options: GLTFLoaderExtensionOptions) => IGLTFLoaderExtension;
+    factory: (loader: GLTFLoader) => IGLTFLoaderExtension;
 }
 
 interface IWithMetadata {
@@ -223,7 +223,7 @@ export class GLTFLoader implements IGLTFLoader {
      * @param name The name of the loader extension.
      * @param factory The factory function that creates the loader extension.
      */
-    public static RegisterExtension(name: string, factory: (loader: GLTFLoader, options: GLTFLoaderExtensionOptions) => IGLTFLoaderExtension): void {
+    public static RegisterExtension(name: string, factory: (loader: GLTFLoader) => IGLTFLoaderExtension): void {
         if (GLTFLoader.UnregisterExtension(name)) {
             Logger.Warn(`Extension with the name '${name}' already exists`);
         }
@@ -300,10 +300,7 @@ export class GLTFLoader implements IGLTFLoader {
     /**
      * @internal
      */
-    constructor(
-        parent: GLTFFileLoader,
-        private readonly _options: GLTFLoaderOptions
-    ) {
+    constructor(parent: GLTFFileLoader) {
         this._parent = parent;
     }
 
@@ -422,7 +419,7 @@ export class GLTFLoader implements IGLTFLoader {
                 const oldBlockMaterialDirtyMechanism = this._babylonScene.blockMaterialDirtyMechanism;
                 this._babylonScene.blockMaterialDirtyMechanism = true;
 
-                if (!this._options.loadOnlyMaterials) {
+                if (!this.parent.loadOnlyMaterials) {
                     if (nodes) {
                         promises.push(this.loadSceneAsync("/nodes", { nodes: nodes, index: -1 }));
                     } else if (this._gltf.scene != undefined || (this._gltf.scenes && this._gltf.scenes[0])) {
@@ -431,7 +428,7 @@ export class GLTFLoader implements IGLTFLoader {
                     }
                 }
 
-                if (!this._options.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
+                if (!this.parent.skipMaterials && this.parent.loadAllMaterials && this._gltf.materials) {
                     for (let m = 0; m < this._gltf.materials.length; ++m) {
                         const material = this._gltf.materials[m];
                         const context = "/materials/" + m;
@@ -569,13 +566,13 @@ export class GLTFLoader implements IGLTFLoader {
     private _loadExtensions(): void {
         for (const name in GLTFLoader._RegisteredExtensions) {
             // Don't load explicitly disabled extensions.
-            if (this._options.extensionOptions[name]?.enabled === false) {
+            if (this.parent.extensionOptions[name]?.enabled === false) {
                 // But warn if the disabled extension is used by the model.
                 if (this.isExtensionUsed(name)) {
                     Logger.Warn(`Extension ${name} is used but has been explicitly disabled.`);
                 }
             } else {
-                const extension = GLTFLoader._RegisteredExtensions[name].factory(this, this._options.extensionOptions);
+                const extension = GLTFLoader._RegisteredExtensions[name].factory(this);
                 if (extension.name !== name) {
                     Logger.Warn(`The name of the glTF loader extension instance does not match the registered name: ${extension.name} !== ${name}`);
                 }
@@ -594,7 +591,7 @@ export class GLTFLoader implements IGLTFLoader {
             for (const name of this._gltf.extensionsRequired) {
                 const available = this._extensions.some((extension) => extension.name === name && extension.enabled);
                 if (!available) {
-                    if (this._options.extensionOptions[name]?.enabled === false) {
+                    if (this.parent.extensionOptions[name]?.enabled === false) {
                         throw new Error(`Required extension ${name} is disabled`);
                     }
                     throw new Error(`Required extension ${name} is not available`);
@@ -1051,7 +1048,7 @@ export class GLTFLoader implements IGLTFLoader {
                     this._defaultBabylonMaterialData[babylonDrawMode] = babylonMaterial;
                 }
                 babylonMesh.material = babylonMaterial;
-            } else if (!this._options.skipMaterials) {
+            } else if (!this.parent.skipMaterials) {
                 const material = ArrayItem.Get(`${context}/material`, this._gltf.materials, primitive.material);
                 promises.push(
                     this._loadMaterialAsync(`/materials/${material.index}`, material, babylonMesh, babylonDrawMode, (babylonMaterial) => {
@@ -2982,4 +2979,4 @@ export class GLTFLoader implements IGLTFLoader {
     }
 }
 
-GLTFFileLoader._CreateGLTF2Loader = (parent, options) => new GLTFLoader(parent, options);
+GLTFFileLoader._CreateGLTF2Loader = (parent) => new GLTFLoader(parent);

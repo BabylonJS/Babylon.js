@@ -126,9 +126,10 @@ export interface ISceneLoaderPluginFactory {
 
     /**
      * Function called to create a new plugin
+     * @param options plugin options that were passed to the SceneLoader operation
      * @returns the new plugin
      */
-    createPlugin(): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    createPlugin(options?: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     /**
      * The callback that returns true if the data can be directly loaded.
@@ -223,8 +224,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
         meshes: AbstractMesh[],
         particleSystems: IParticleSystem[],
         skeletons: Skeleton[],
-        onError?: (message: string, exception?: any) => void,
-        options?: SceneLoaderPluginOptions
+        onError?: (message: string, exception?: any) => void
     ): boolean;
 
     /**
@@ -235,7 +235,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      * @param onError The callback when import fails
      * @returns True if successful or false otherwise
      */
-    load(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void, options?: SceneLoaderPluginOptions): boolean;
+    load(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): boolean;
 
     /**
      * Load into an asset container.
@@ -245,7 +245,7 @@ export interface ISceneLoaderPlugin extends ISceneLoaderPluginBase {
      * @param onError The callback when import fails
      * @returns The loaded asset container
      */
-    loadAssetContainer(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void, options?: SceneLoaderPluginOptions): AssetContainer;
+    loadAssetContainer(scene: Scene, data: unknown, rootUrl: string, onError?: (message: string, exception?: any) => void): AssetContainer;
 }
 
 /**
@@ -268,8 +268,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
         data: unknown,
         rootUrl: string,
         onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
+        fileName?: string
     ): Promise<ISceneLoaderAsyncResult>;
 
     /**
@@ -281,14 +280,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param fileName Defines the name of the file to load
      * @returns Nothing
      */
-    loadAsync(
-        scene: Scene,
-        data: unknown,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
-    ): Promise<void>;
+    loadAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<void>;
 
     /**
      * Load into an asset container.
@@ -299,14 +291,7 @@ export interface ISceneLoaderPluginAsync extends ISceneLoaderPluginBase {
      * @param fileName Defines the name of the file to load
      * @returns The loaded asset container
      */
-    loadAssetContainerAsync(
-        scene: Scene,
-        data: unknown,
-        rootUrl: string,
-        onProgress?: (event: ISceneLoaderProgressEvent) => void,
-        fileName?: string,
-        options?: SceneLoaderPluginOptions
-    ): Promise<AssetContainer>;
+    loadAssetContainerAsync(scene: Scene, data: unknown, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string): Promise<AssetContainer>;
 }
 
 /**
@@ -680,7 +665,10 @@ export class SceneLoader {
             throw "Loading from ArrayBufferView can not be used with plugins that don't support binary loading.";
         }
 
-        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.() ?? registeredPlugin.plugin;
+        // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
+        // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
+        // plugin call. Given this, options are only supported for plugins that provide a factory function.
+        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions) ?? registeredPlugin.plugin;
         if (!plugin) {
             // eslint-disable-next-line no-throw-literal
             throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
@@ -969,7 +957,7 @@ export class SceneLoader {
                     const particleSystems: IParticleSystem[] = [];
                     const skeletons: Skeleton[] = [];
 
-                    if (!syncedPlugin.importMesh(meshNames, scene, data, fileInfo.rootUrl, meshes, particleSystems, skeletons, errorHandler, pluginOptions)) {
+                    if (!syncedPlugin.importMesh(meshNames, scene, data, fileInfo.rootUrl, meshes, particleSystems, skeletons, errorHandler)) {
                         return;
                     }
 
@@ -978,7 +966,7 @@ export class SceneLoader {
                 } else {
                     const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin
-                        .importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name, pluginOptions)
+                        .importMeshAsync(meshNames, scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                         .then((result) => {
                             scene.loadingPluginName = plugin.name;
                             successHandler(
@@ -1339,7 +1327,7 @@ export class SceneLoader {
             (plugin, data) => {
                 if ((plugin as ISceneLoaderPlugin).load) {
                     const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    if (!syncedPlugin.load(scene, data, fileInfo.rootUrl, errorHandler, pluginOptions)) {
+                    if (!syncedPlugin.load(scene, data, fileInfo.rootUrl, errorHandler)) {
                         return;
                     }
 
@@ -1348,7 +1336,7 @@ export class SceneLoader {
                 } else {
                     const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin
-                        .loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name, pluginOptions)
+                        .loadAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                         .then(() => {
                             scene.loadingPluginName = plugin.name;
                             successHandler();
@@ -1550,7 +1538,7 @@ export class SceneLoader {
             (plugin, data) => {
                 if ((plugin as ISceneLoaderPlugin).loadAssetContainer) {
                     const syncedPlugin = <ISceneLoaderPlugin>plugin;
-                    const assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler, pluginOptions);
+                    const assetContainer = syncedPlugin.loadAssetContainer(scene, data, fileInfo.rootUrl, errorHandler);
                     if (!assetContainer) {
                         return;
                     }
@@ -1560,7 +1548,7 @@ export class SceneLoader {
                 } else if ((plugin as ISceneLoaderPluginAsync).loadAssetContainerAsync) {
                     const asyncedPlugin = <ISceneLoaderPluginAsync>plugin;
                     asyncedPlugin
-                        .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name, pluginOptions)
+                        .loadAssetContainerAsync(scene, data, fileInfo.rootUrl, progressHandler, fileInfo.name)
                         .then((assetContainer) => {
                             assetContainer.populateRootNodes();
                             scene.loadingPluginName = plugin.name;

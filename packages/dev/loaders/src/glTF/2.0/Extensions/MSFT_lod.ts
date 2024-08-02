@@ -8,7 +8,6 @@ import type { BaseTexture } from "core/Materials/Textures/baseTexture";
 import type { INode, IMaterial, IBuffer, IScene } from "../glTFLoaderInterfaces";
 import type { IGLTFLoaderExtension } from "../glTFLoaderExtension";
 import { GLTFLoader, ArrayItem } from "../glTFLoader";
-import type { GLTFLoaderExtensionOptions } from "../../glTFFileLoader";
 import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_lod";
@@ -93,10 +92,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     /**
      * @internal
      */
-    constructor(
-        loader: GLTFLoader,
-        private readonly _options: GLTFLoaderExtensionOptions
-    ) {
+    constructor(loader: GLTFLoader) {
         this._loader = loader;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
@@ -378,7 +374,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     private _getLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
         // Options takes precedence. The maxLODsToLoad extension property is retained for back compat.
         // For new extensions, they should only use options.
-        const maxLODsToLoad = this._options.MSFT_lod?.maxLODsToLoad ?? this.maxLODsToLoad;
+        const maxLODsToLoad = this._loader.parent.extensionOptions[NAME]?.maxLODsToLoad ?? this.maxLODsToLoad;
 
         if (maxLODsToLoad <= 0) {
             throw new Error("maxLODsToLoad must be greater than zero");
@@ -440,4 +436,4 @@ export class MSFT_lod implements IGLTFLoaderExtension {
     }
 }
 
-GLTFLoader.RegisterExtension(NAME, (loader, options) => new MSFT_lod(loader, options));
+GLTFLoader.RegisterExtension(NAME, (loader) => new MSFT_lod(loader));
