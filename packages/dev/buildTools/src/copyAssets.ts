@@ -22,8 +22,6 @@ const processFile = (file: string, options: { isCore?: boolean; basePackageName?
     }
 };
 
-const currentlyProcessing: string[] = [];
-
 export const processAssets = (options: { extensions: string[] } = { extensions: ["png", "jpg", "jpeg", "gif", "svg", "scss", "css", "html", "json", "fx"] }) => {
     const global = checkArgs("--global", true);
     const fileTypes = checkArgs(["--file-types", "-ft"], false, true);
@@ -57,19 +55,13 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
                 interval: 300,
                 binaryInterval: 600,
             })
-            .on("all", (_event, file) => {
+            .on("all", (event, file) => {
                 // don't track directory changes
-                if (_event === "addDir" || _event === "unlinkDir") {
+                if (event === "addDir" || event === "unlinkDir") {
                     return;
                 }
-                // be sure that no file is processed twice at the same time
-                if (currentlyProcessing.includes(file)) {
-                    verbose && console.log(`Already processing asset: ${file}, event: ${_event}`);
-                    return;
-                }
-                currentlyProcessing.push(file);
-                let verb: string = "";
-                switch (_event) {
+                let verb: string;
+                switch (event) {
                     case "add":
                         verb = "Initializing";
                         break;
@@ -82,7 +74,6 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
                 }
                 verbose && console.log(`${verb} asset: ${file}`);
                 processFile(file, processOptions);
-                currentlyProcessing.splice(currentlyProcessing.indexOf(file), 1);
             });
         console.log("watching for asset changes...");
     } else {
