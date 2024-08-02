@@ -8,7 +8,7 @@ import { Texture } from "../Materials/Textures/texture";
 import { ThinTexture } from "../Materials/Textures/thinTexture";
 import { EffectRenderer } from "../Materials/effectRenderer";
 import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
-import type { PrePassRenderer } from "./prePassRenderer";
+import { PrePassRenderer } from "./prePassRenderer";
 import { Logger } from "../Misc/logger";
 import { IblShadowsVoxelRenderer } from "../Rendering/iblShadowsVoxelRenderer";
 
@@ -34,12 +34,13 @@ class IblShadowsEffectConfiguration implements PrePassEffectConfiguration {
     public readonly texturesRequired: number[] = [
         // Spatial blur will need *linear* depth
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+        Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
-        Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-        Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+        // Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+        // Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
         // Local positions used for shadow accumulation pass
-        Constants.PREPASS_POSITION_TEXTURE_TYPE,
-        Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
+        // Constants.PREPASS_POSITION_TEXTURE_TYPE,
+        // Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
     ];
 }
 
@@ -96,11 +97,13 @@ export class IblShadowsRenderer {
                 Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
                 return;
             }
+            let samplerNames = new Array(this._prePassEffectConfiguration.texturesRequired.length).fill("");
+            samplerNames = samplerNames.map((_, i) => PrePassRenderer.TextureFormats[this._prePassEffectConfiguration.texturesRequired[i]].name);
             this._gbufferDebugPass = new PostProcess(
                 "iblShadows_GBuffer_Debug",
                 "iblShadowDebug",
                 null, // attributes
-                ["normalSampler", "worldNormalSampler", "worldPositionSampler", "localPositionSampler", "depthSampler", "velocitySampler"], // textures
+                samplerNames,
                 1.0, // options
                 this._scene._activeCamera, // camera
                 Texture.BILINEAR_SAMPLINGMODE, // sampling
@@ -108,18 +111,10 @@ export class IblShadowsRenderer {
             );
 
             this._gbufferDebugPass.onBeforeRenderObservable.add((effect) => {
-                const wnormalIndex = prePassRenderer.getIndex(Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE);
-                const normalIndex = prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE);
-                const positionIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
-                const wpositionIndex = prePassRenderer.getIndex(Constants.PREPASS_POSITION_TEXTURE_TYPE);
-                const depthIndex = prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE);
-                const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
-                if (normalIndex >= 0) effect.setTexture("normalSampler", prePassRenderer.getRenderTarget().textures[normalIndex]);
-                if (wnormalIndex >= 0) effect.setTexture("worldNormalSampler", prePassRenderer.getRenderTarget().textures[wnormalIndex]);
-                if (positionIndex >= 0) effect.setTexture("localPositionSampler", prePassRenderer.getRenderTarget().textures[positionIndex]);
-                if (wpositionIndex >= 0) effect.setTexture("worldPositionSampler", prePassRenderer.getRenderTarget().textures[wpositionIndex]);
-                if (depthIndex >= 0) effect.setTexture("depthSampler", prePassRenderer.getRenderTarget().textures[depthIndex]);
-                if (velocityIndex >= 0) effect.setTexture("velocitySampler", prePassRenderer.getRenderTarget().textures[velocityIndex]);
+                this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
+                    const index = prePassRenderer.getIndex(type);
+                    if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
+                });
             });
         } else {
             this._gbufferDebugPass.dispose();

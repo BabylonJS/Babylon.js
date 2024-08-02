@@ -18,6 +18,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     private _positionSamplerName: string;
     private _localPositionSamplerName: string;
     private _depthSamplerName: string;
+    private _clipSpaceDepthSamplerName: string;
     private _normalSamplerName: string;
     private _worldNormalSamplerName: string;
 
@@ -86,6 +87,10 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
             return this._localPositionSamplerName;
         }
 
+        if (output === this._outputs[5]) {
+            return this._clipSpaceDepthSamplerName;
+        }
+
         return "";
     }
 
@@ -125,6 +130,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the depth texture
+     */
+    public get clipSpaceDepth(): NodeMaterialConnectionPoint {
+        return this._outputs[5];
+    }
+
+    /**
      * Gets the sampler name associated with this image source
      */
     public get positionSamplerName(): string {
@@ -134,7 +146,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     /**
      * Gets the sampler name associated with this image source
      */
-     public get localPositionSamplerName(): string {
+    public get localPositionSamplerName(): string {
         return this._localPositionSamplerName;
     }
 
@@ -160,6 +172,13 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
     }
 
     /**
+     * Gets the sampler name associated with this image source
+     */
+    public get linearDepthSamplerName(): string {
+        return this._clipSpaceDepthSamplerName;
+    }
+
+    /**
      * Gets the current class name
      * @returns the class name
      */
@@ -179,12 +198,15 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         this._normalSamplerName = "prepassNormalSampler";
         this._worldNormalSamplerName = "prepassWorldNormalSampler";
         this._localPositionSamplerName = "prepassLocalPositionSampler";
+        this._clipSpaceDepthSamplerName = "prepassClipSpaceDepthSampler";
 
         // Unique sampler names for every prepasstexture block
         state.sharedData.variableNames.prepassPositionSampler = 0;
         state.sharedData.variableNames.prepassDepthSampler = 0;
         state.sharedData.variableNames.prepassNormalSampler = 0;
         state.sharedData.variableNames.prepassWorldNormalSampler = 0;
+        state.sharedData.variableNames.prepassLocalPositionSampler = 0;
+        state.sharedData.variableNames.prepassClipSpaceDepthSampler = 0;
 
         // Declarations
         state.sharedData.textureBlocks.push(this);
@@ -195,6 +217,7 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         state._emit2DSampler(this._normalSamplerName);
         state._emit2DSampler(this._worldNormalSamplerName);
         state._emit2DSampler(this._localPositionSamplerName);
+        state._emit2DSampler(this._clipSpaceDepthSamplerName);
 
         return this;
     }
@@ -220,6 +243,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         if (this.depth.isConnected) {
             effect.setTexture(this._depthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_DEPTH_TEXTURE_TYPE)]);
         }
+        if (this.clipSpaceDepth.isConnected) {
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE)]);
+        }
         if (this.normal.isConnected) {
             effect.setTexture(this._normalSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_NORMAL_TEXTURE_TYPE)]);
         }
@@ -228,6 +254,9 @@ export class PrePassTextureBlock extends NodeMaterialBlock {
         }
         if (this.localPosition.isConnected) {
             effect.setTexture(this._localPositionSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE)]);
+        }
+        if (this.clipSpaceDepth.isConnected) {
+            effect.setTexture(this._clipSpaceDepthSamplerName, sceneRT.textures[prePassRenderer.getIndex(Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE)]);
         }
     }
 }

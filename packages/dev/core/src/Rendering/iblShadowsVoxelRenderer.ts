@@ -217,13 +217,15 @@ export class IblShadowsVoxelRenderer {
         });
         const size = bounds.max.subtract(bounds.min);
         const slabSize = 1.0 / this._computeNumberOfSlabs();
-        Logger.Log("Scene size: " + size);
         const halfSize = Math.max(size.x, Math.max(size.y, size.z)) * 0.5;
-        Logger.Log("Half size: " + halfSize);
         const centre = bounds.max.add(bounds.min).multiplyByFloats(-0.5, -0.5, -0.5);
-        Logger.Log("Centre translation: " + centre);
         const invWorldScaleMatrix = Matrix.Compose(new Vector3(1.0 / halfSize, 1.0 / halfSize, 1.0 / halfSize), new Quaternion(), centre.scaleInPlace(1.0 / halfSize));
-        Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
+        if (this._voxelDebugEnabled) {
+            Logger.Log("Scene size: " + size);
+            Logger.Log("Half size: " + halfSize);
+            Logger.Log("Centre translation: " + centre);
+            Logger.Log("Inv world scale matrix: " + invWorldScaleMatrix);
+        }
 
         const meshes = this._scene.meshes;
 
@@ -266,7 +268,9 @@ export class IblShadowsVoxelRenderer {
             setTimeout(() => {
                 this._scene.customRenderTargets = this._scene.customRenderTargets.slice(0, -this._voxelMrts.length);
                 this._voxelizationInProgress = false;
-                this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
+                if (this._voxelGridRT.getInternalTexture()) {
+                    this._engine.generateMipmaps(this._voxelGridRT.getInternalTexture()!);
+                }
             }, 5000);
         });
     }
