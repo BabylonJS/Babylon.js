@@ -460,6 +460,10 @@ color.rgb = max(color.rgb, 0.);
         #endif
     #endif
 
+	#ifdef PREPASS_WORLD_NORMAL
+        gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
+    #endif
+
     #ifdef PREPASS_ALBEDO_SQRT
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
     #endif
