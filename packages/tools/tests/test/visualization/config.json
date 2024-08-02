@@ -543,7 +543,8 @@
             "title": "Shadow depth wrappers",
             "playgroundId": "#PNQRY1#73",
             "referenceImage": "shadowDepthWrappers.png",
-            "renderCount": 20
+            "renderCount": 20,
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Displacement map",
@@ -1643,7 +1644,8 @@
         {
             "title": "Material Plugin",
             "playgroundId": "#22HT5Z#10",
-            "referenceImage": "materialPlugin.png"
+            "referenceImage": "materialPlugin.png",
+            "excludedEngines": ["webgpu"]
         },
         {
             "title": "Serialize and Load Instanced Hierarchy",

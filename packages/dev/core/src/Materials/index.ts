@@ -39,3 +39,11 @@ export * from "./meshDebugPluginMaterial";
 export * from "./GaussianSplatting/gaussianSplattingMaterial";
 export * from "./materialHelper.functions";
 import "./material.decalMap";
+
+// async-loaded shaders
+
+// StandardMaterial
+export * from "../Shaders/default.fragment";
+export * from "../Shaders/default.vertex";
+export * from "../ShadersWGSL/default.fragment";
+export * from "../ShadersWGSL/default.vertex";

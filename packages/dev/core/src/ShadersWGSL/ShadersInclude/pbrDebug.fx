@@ -82,7 +82,7 @@ if (input.vClipSpacePosition.x / input.vClipSpacePosition.w >= uniforms.vDebugMo
     #elif DEBUGMODE == 31 && defined(SUBSURFACE) && defined(SS_THICKNESSANDMASK_TEXTURE)
         color = subSurfaceOut.thicknessMap.rgb;
     #elif DEBUGMODE == 32 && defined(BUMP)
-        color = texture2D(bumpSampler, vBumpUV).rgb;
+        color = textureSample(bumpSampler, bumpSamplerSampler, fragmentInputs.vBumpUV).rgb;
 // Env
     #elif DEBUGMODE == 40 && defined(SS_REFRACTION)
         // Base color.

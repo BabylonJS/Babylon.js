@@ -348,24 +348,37 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
 
         let fragmentOutputs = "struct FragmentOutputs {\n";
 
-        const regex = /const SCENE_MRT_COUNT = (\d+);/;
-        const match = fragmentCode.match(regex);
-        let mrt = false;
+        // Adding fragData output locations
+        let regex = /const SCENE_MRT_COUNT = (\d+);/;
+        let match = fragmentCode.match(regex);
+        let indexLocation = 0;
 
         if (match) {
             const number = parseInt(match[1]);
             if (number > 0) {
-                mrt = true;
                 for (let index = 0; index < number; index++) {
-                    fragmentOutputs += ` @location(${index}) fragData${index} : vec4<f32>,\n`;
+                    fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
+                    indexLocation++;
                 }
             }
         }
 
-        if (!mrt) {
-            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+        // Adding fragData output locations
+        regex = /oitDepthSampler/;
+        match = fragmentCode.match(regex);
+
+        if (match) {
+            fragmentOutputs += ` @location(${indexLocation++}) depth : vec2<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation++}) frontColor : vec4<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation++}) backColor : vec4<f32>,\n`;
         }
 
+        if (indexLocation === 0) {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+            indexLocation++;
+        }
+
+        // FragDepth
         let hasFragDepth = false;
         let idx = 0;
         while (!hasFragDepth) {
