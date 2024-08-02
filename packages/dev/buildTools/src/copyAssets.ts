@@ -19,9 +19,10 @@ const processFile = (file: string, options: { isCore?: boolean; basePackageName?
         } else {
             copyFile(file, file.replace(/src([/\\])/, `${options.outputDir}$1`), true, true);
         }
-        // support windows path with "\\" instead of "/"
     }
 };
+
+const currentlyProcessing: string[] = [];
 
 export const processAssets = (options: { extensions: string[] } = { extensions: ["png", "jpg", "jpeg", "gif", "svg", "scss", "css", "html", "json", "fx"] }) => {
     const global = checkArgs("--global", true);
@@ -31,6 +32,7 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
     const globDirectory = global ? `./packages/**/*/src/**/*.+(${extensions.join("|")})` : pathPrefix + `src/**/*.+(${extensions.join("|")})`;
     const isCore = !!checkArgs("--isCore", true);
     const outputDir = checkArgs(["--output-dir"], false, true) as string;
+    const verbose = checkArgs("--verbose", true);
     let basePackageName: DevPackageName = "core";
     if (!isCore) {
         const cliPackage = checkArgs("--package", false, true);
@@ -49,14 +51,38 @@ export const processAssets = (options: { extensions: string[] } = { extensions: 
                 ignoreInitial: false,
                 awaitWriteFinish: {
                     stabilityThreshold: 1000,
-                    pollInterval: 200,
+                    pollInterval: 300,
                 },
                 alwaysStat: true,
                 interval: 300,
                 binaryInterval: 600,
             })
             .on("all", (_event, file) => {
+                // don't track directory changes
+                if (_event === "addDir" || _event === "unlinkDir") {
+                    return;
+                }
+                // be sure that no file is processed twice at the same time
+                if (currentlyProcessing.includes(file)) {
+                    verbose && console.log(`Already processing asset: ${file}, event: ${_event}`);
+                    return;
+                }
+                currentlyProcessing.push(file);
+                let verb: string = "";
+                switch (_event) {
+                    case "add":
+                        verb = "Initializing";
+                        break;
+                    case "change":
+                        verb = "Changing";
+                        break;
+                    case "unlink":
+                        verb = "Removing";
+                        break;
+                }
+                verbose && console.log(`${verb} asset: ${file}`);
                 processFile(file, processOptions);
+                currentlyProcessing.splice(currentlyProcessing.indexOf(file), 1);
             });
         console.log("watching for asset changes...");
     } else {
