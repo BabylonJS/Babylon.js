@@ -866,13 +866,13 @@ export class SceneLoader {
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
-        scene: Nullable<Scene> = EngineStore.LastCreatedScene,
-        onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
-        onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
-        onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
-        pluginExtension: Nullable<string> = null,
-        name: string = ""
+        sceneFilename?: string | File | ArrayBufferView,
+        scene?: Nullable<Scene>,
+        onSuccess?: Nullable<SceneLoaderSuccessCallback>,
+        onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
+        onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
+        pluginExtension?: Nullable<string>,
+        name?: string
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         return SceneLoader._ImportMesh(meshNames, rootUrl, sceneFilename, scene, onSuccess, onProgress, onError, pluginExtension, name);
     }
@@ -886,7 +886,7 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = "",
+        name = "",
         pluginOptions: SceneLoaderPluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
@@ -1125,7 +1125,7 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = "",
+        name = "",
         pluginOptions: SceneLoaderPluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!engine) {
@@ -1257,7 +1257,7 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = "",
+        name = "",
         pluginOptions: SceneLoaderPluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
@@ -1477,7 +1477,7 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
-        name: string = "",
+        name = "",
         pluginOptions: SceneLoaderPluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
@@ -1672,6 +1672,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      */
     public static ImportAnimations(
         rootUrl: string,
@@ -1683,7 +1684,8 @@ export class SceneLoader {
         onSuccess?: Nullable<(scene: Scene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
-        pluginExtension?: Nullable<string>
+        pluginExtension?: Nullable<string>,
+        name?: string
     ): void {
         SceneLoader._ImportAnimations(
             rootUrl,
@@ -1695,7 +1697,8 @@ export class SceneLoader {
             onSuccess,
             onProgress,
             onError,
-            pluginExtension
+            pluginExtension,
+            name
         );
     }
 
@@ -1710,6 +1713,7 @@ export class SceneLoader {
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
+        name = "",
         pluginOptions: SceneLoaderPluginOptions = {}
     ): void {
         if (!scene) {
@@ -1773,7 +1777,7 @@ export class SceneLoader {
             }
         };
 
-        this._LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, undefined, pluginOptions);
+        this._LoadAssetContainer(rootUrl, sceneFilename, scene, onAssetContainerLoaded, onProgress, onError, pluginExtension, name, pluginOptions);
     }
 
     /**
@@ -1796,6 +1800,7 @@ export class SceneLoader {
      * @param onProgress a callback with a progress event for each file being loaded
      * @param onError a callback with the scene, a message, and possibly an exception when import fails
      * @param pluginExtension the extension used to determine the plugin
+     * @param name defines the filename, if the data is binary
      * @returns the updated scene with imported animations
      */
     public static ImportAnimationsAsync(
@@ -1808,7 +1813,8 @@ export class SceneLoader {
         onSuccess?: Nullable<(scene: Scene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
-        pluginExtension?: Nullable<string>
+        pluginExtension?: Nullable<string>,
+        name?: string
     ): Promise<Scene>;
 
     public static ImportAnimationsAsync(
@@ -1824,6 +1830,7 @@ export class SceneLoader {
                   onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
                   onError?: Nullable<(scene: Scene, message: string, exception?: any) => void>,
                   pluginExtension?: Nullable<string>,
+                  name?: string,
               ]
             | [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions]
     ): Promise<Scene> {
@@ -1835,6 +1842,7 @@ export class SceneLoader {
         let targetConverter: Nullable<(target: any) => any> | undefined;
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
+        let name: string | undefined;
         let pluginOptions: SceneLoaderPluginOptions | undefined;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
@@ -1853,10 +1861,10 @@ export class SceneLoader {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
             // Options determine the rest of the arguments
-            ({ rootUrl = "", scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, pluginOptions } = args[1] ?? {});
+            ({ rootUrl = "", scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
-            [rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, , onProgress, , pluginExtension] = args;
+            [rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, , onProgress, , pluginExtension, name] = args;
         }
 
         return new Promise((resolve, reject) => {
@@ -1875,6 +1883,7 @@ export class SceneLoader {
                     reject(exception || new Error(message));
                 },
                 pluginExtension,
+                name,
                 pluginOptions
             );
         });
