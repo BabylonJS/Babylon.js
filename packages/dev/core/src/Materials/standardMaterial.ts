@@ -180,6 +180,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS_WORLD_NORMAL_INDEX = -1;
     public PREPASS_POSITION = false;
     public PREPASS_POSITION_INDEX = -1;
+    public PREPASS_LOCAL_POSITION = false;
+    public PREPASS_LOCAL_POSITION_INDEX = -1;
     public PREPASS_VELOCITY = false;
     public PREPASS_VELOCITY_INDEX = -1;
     public PREPASS_REFLECTIVITY = false;
