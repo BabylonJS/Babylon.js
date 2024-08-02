@@ -2028,6 +2028,11 @@ export class Scene extends AbstractScene implements IAnimatable, IClipPlanesHold
             isReady &&= this.depthPeelingRenderer.isReady();
         }
 
+        // IBL shadows
+        if (this.useIblShadows && this.iblShadowsRenderer) {
+            isReady &&= this.iblShadowsRenderer.isReady();
+        }
+
         // Meshes
         if (checkRenderTargets) {
             this._processedMaterials.reset();

@@ -69,6 +69,13 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         return this._inputs[3];
     }
 
+    /**
+     * Gets the world normal component
+     */
+    public get worldNormal(): NodeMaterialConnectionPoint {
+        return this._inputs[4];
+    }
+
     private _getFragData(isWebGPU: boolean, index: number) {
         return isWebGPU ? `fragmentOutputs.fragData${index}` : `gl_FragData[${index}]`;
     }
@@ -117,6 +124,16 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         } else {
             // We have to write something on the normal output or it will raise a gl error
             state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
+        }
+        state.compilationString += `#endif\r\n`;
+        state.compilationString += `#ifdef PREPASS_WORLD_NORMAL\r\n`;
+        if (viewNormal.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(${viewNormal.associatedVariableName}.rgb, ${
+                viewNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? viewNormal.associatedVariableName + ".a" : "1.0"
+            });\r\n`;
+        } else {
+            // We have to write something on the normal output or it will raise a gl error
+            state.compilationString += ` gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;
