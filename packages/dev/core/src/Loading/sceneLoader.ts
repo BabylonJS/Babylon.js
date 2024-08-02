@@ -417,7 +417,14 @@ interface SceneLoaderOptions {
     /**
      * Defines options for the registered plugins
      */
-    pluginOptions?: { [P in keyof SceneLoaderPluginOptions]: SceneLoaderPluginOptions[P] & { enabled?: boolean } };
+    pluginOptions?: {
+        [P in keyof SceneLoaderPluginOptions]: SceneLoaderPluginOptions[P] & {
+            /**
+             * Defines if the plugin is enabled
+             */
+            enabled?: boolean;
+        };
+    };
 }
 
 /**

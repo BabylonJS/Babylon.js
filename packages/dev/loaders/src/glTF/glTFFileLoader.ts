@@ -42,15 +42,23 @@ export interface GLTFLoaderExtensionOptions extends Record<string, Record<string
 /**
  * Defines options for the glTF loader.
  */
-export type GLTFLoaderOptions = {
-    loadOnlyMaterials: boolean;
-    skipMaterials: boolean;
-    coordinateSystemMode: GLTFLoaderCoordinateSystemMode;
-    extensionOptions: { [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & { enabled?: boolean } };
+export type GLTFLoaderOptions = GLTFFileLoaderBaseOptions & {
+    extensionOptions: {
+        [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & {
+            /**
+             * Defines if the extension is enabled
+             */
+            enabled?: boolean;
+        };
+    };
 };
 
 declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
     export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the glTF loader.
+         */
         [NAME]?: Partial<GLTFLoaderOptions>;
     }
 }
@@ -190,56 +198,7 @@ export interface IGLTFLoader extends IDisposable {
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
-/**
- * File loader for loading glTF files into a scene.
- */
-export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
-    /** @internal */
-    public static _CreateGLTF1Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
-
-    /** @internal */
-    public static _CreateGLTF2Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
-
-    // --------------
-    // Common options
-    // --------------
-
-    /**
-     * Raised when the asset has been parsed
-     */
-    public onParsedObservable = new Observable<IGLTFLoaderData>();
-
-    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
-
-    /**
-     * Raised when the asset has been parsed
-     */
-    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
-        if (this._onParsedObserver) {
-            this.onParsedObservable.remove(this._onParsedObserver);
-        }
-        this._onParsedObserver = this.onParsedObservable.add(callback);
-    }
-
-    // ----------
-    // V1 options
-    // ----------
-
-    /**
-     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
-     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
-     * Defaults to true.
-     * @internal
-     */
-    public static IncrementalLoading = true;
-
-    /**
-     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
-     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
-     * @internal
-     */
-    public static HomogeneousCoordinates = false;
-
+class GLTFFileLoaderBaseOptions {
     // ----------
     // V2 options
     // ----------
@@ -336,6 +295,57 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
      * You can also pass null if you don't want a root node to be created.
      */
     public customRootNode?: Nullable<TransformNode>;
+}
+
+/**
+ * File loader for loading glTF files into a scene.
+ */
+export class GLTFFileLoader extends GLTFFileLoaderBaseOptions implements IDisposable, ISceneLoaderPluginAsync, ISceneLoaderPluginFactory {
+    /** @internal */
+    public static _CreateGLTF1Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
+
+    /** @internal */
+    public static _CreateGLTF2Loader: (parent: GLTFFileLoader, options: GLTFLoaderOptions) => IGLTFLoader;
+
+    // --------------
+    // Common options
+    // --------------
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public onParsedObservable = new Observable<IGLTFLoaderData>();
+
+    private _onParsedObserver: Nullable<Observer<IGLTFLoaderData>>;
+
+    /**
+     * Raised when the asset has been parsed
+     */
+    public set onParsed(callback: (loaderData: IGLTFLoaderData) => void) {
+        if (this._onParsedObserver) {
+            this.onParsedObservable.remove(this._onParsedObserver);
+        }
+        this._onParsedObserver = this.onParsedObservable.add(callback);
+    }
+
+    // ----------
+    // V1 options
+    // ----------
+
+    /**
+     * Set this property to false to disable incremental loading which delays the loader from calling the success callback until after loading the meshes and shaders.
+     * Textures always loads asynchronously. For example, the success callback can compute the bounding information of the loaded meshes when incremental loading is disabled.
+     * Defaults to true.
+     * @internal
+     */
+    public static IncrementalLoading = true;
+
+    /**
+     * Set this property to true in order to work with homogeneous coordinates, available with some converters and exporters.
+     * Defaults to false. See https://en.wikipedia.org/wiki/Homogeneous_coordinates.
+     * @internal
+     */
+    public static HomogeneousCoordinates = false;
 
     /**
      * Observable raised when the loader creates a mesh after parsing the glTF properties of the mesh.
@@ -956,12 +966,20 @@ export class GLTFFileLoader implements IDisposable, ISceneLoaderPluginAsync, ISc
     }
 
     private _resolveOptions(options?: SceneLoaderPluginOptions): GLTFLoaderOptions {
-        return {
-            loadOnlyMaterials: options?.[NAME]?.loadOnlyMaterials ?? this.loadOnlyMaterials,
-            skipMaterials: options?.[NAME]?.skipMaterials ?? this.skipMaterials,
-            coordinateSystemMode: options?.[NAME]?.coordinateSystemMode ?? this.coordinateSystemMode,
+        // Start with a GLTFFileLoaderBaseOptions so we can easily iterate over its properties to merge options.
+        const resolvedOptions = new GLTFFileLoaderBaseOptions();
+
+        // Loop over options that exist on the class first. Passed in options take precedence over options on the instance.
+        for (const key in resolvedOptions) {
+            const typedKey = key as keyof GLTFFileLoaderBaseOptions;
+            (resolvedOptions satisfies Partial<Record<keyof GLTFFileLoaderBaseOptions, unknown>> as Record<keyof GLTFFileLoaderBaseOptions, unknown>)[typedKey] =
+                options?.[NAME]?.[typedKey] ?? this[typedKey];
+        }
+
+        // Add on the extension options from the passed in options.
+        return Object.assign(resolvedOptions, {
             extensionOptions: options?.[NAME]?.extensionOptions ?? {},
-        };
+        });
     }
 
     private _onProgress(event: ProgressEvent, request: IFileRequestInfo): void {
