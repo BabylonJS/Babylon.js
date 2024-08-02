@@ -224,6 +224,7 @@ export class IblShadowsImportanceSamplingRenderer {
             format: Constants.TEXTUREFORMAT_R,
             type: Constants.TEXTURETYPE_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            skipJson: true,
         };
         const icdfOptions: ICustomProceduralTextureCreationOptions = {
             generateDepthBuffer: false,
@@ -231,14 +232,47 @@ export class IblShadowsImportanceSamplingRenderer {
             format: Constants.TEXTUREFORMAT_R,
             type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            skipJson: true,
         };
-        this._cdfyPT = new CustomProceduralTexture("cdfyTexture", { fragmentSource: cdfyFragment } as any, { width: size.width, height: size.height + 1 }, this._scene, cdfOptions);
+        this._cdfyPT = new CustomProceduralTexture(
+            "cdfyTexture",
+            { fragmentSource: cdfyFragment } as any,
+            { width: size.width, height: size.height + 1 },
+            this._scene,
+            cdfOptions,
+            false,
+            true
+        );
         this._cdfyPT.setTexture("iblSource", this._iblSource);
-        this._icdfyPT = new CustomProceduralTexture("icdfyTexture", { fragmentSource: icdfyFragment } as any, { width: size.width, height: size.height }, this._scene, icdfOptions);
+        this._icdfyPT = new CustomProceduralTexture(
+            "icdfyTexture",
+            { fragmentSource: icdfyFragment } as any,
+            { width: size.width, height: size.height },
+            this._scene,
+            icdfOptions,
+            false,
+            true
+        );
         this._icdfyPT.setTexture("cdfy", this._cdfyPT);
-        this._cdfxPT = new CustomProceduralTexture("cdfxTexture", { fragmentSource: cdfxFragment } as any, { width: size.width + 1, height: 1 }, this._scene, cdfOptions);
+        this._cdfxPT = new CustomProceduralTexture(
+            "cdfxTexture",
+            { fragmentSource: cdfxFragment } as any,
+            { width: size.width + 1, height: 1 },
+            this._scene,
+            cdfOptions,
+            false,
+            true
+        );
         this._cdfxPT.setTexture("cdfy", this._cdfyPT);
-        this._icdfxPT = new CustomProceduralTexture("icdfxTexture", { fragmentSource: icdfxFragment } as any, { width: size.width, height: 1 }, this._scene, icdfOptions);
+        this._icdfxPT = new CustomProceduralTexture(
+            "icdfxTexture",
+            { fragmentSource: icdfxFragment } as any,
+            { width: size.width, height: 1 },
+            this._scene,
+            icdfOptions,
+            false,
+            true
+        );
         this._icdfxPT.setTexture("cdfx", this._cdfxPT);
     }
 

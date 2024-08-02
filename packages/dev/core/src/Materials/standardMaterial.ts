@@ -173,6 +173,8 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
     public PREPASS_ALBEDO_SQRT_INDEX = -1;
     public PREPASS_DEPTH = false;
     public PREPASS_DEPTH_INDEX = -1;
+    public PREPASS_CLIPSPACE_DEPTH = false;
+    public PREPASS_CLIPSPACE_DEPTH_INDEX = -1;
     public PREPASS_NORMAL = false;
     public PREPASS_NORMAL_INDEX = -1;
     public PREPASS_NORMAL_WORLDSPACE = false;
