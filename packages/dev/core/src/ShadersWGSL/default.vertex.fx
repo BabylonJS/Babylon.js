@@ -103,8 +103,8 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
 #if defined(PREPASS) && defined(PREPASS_VELOCITY) && !defined(BONES_VELOCITY_ENABLED)
     // Compute velocity before bones computation
-    vertexOutputs.vCurrentPosition = viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
-    vertexOutputs.vPreviousPosition = previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vCurrentPosition = scene.viewProjection * finalWorld *  vec4f(positionUpdated, 1.0);
+    vertexOutputs.vPreviousPosition = uniforms.previousViewProjection * finalPreviousWorld *  vec4f(positionUpdated, 1.0);
 #endif
 
 #include<bonesVertex>
@@ -117,7 +117,7 @@ fn main(input : VertexInputs) -> FragmentInputs {
 
     #if defined(INSTANCES) && defined(THIN_INSTANCES)
         vertexOutputs.vNormalW = normalUpdated /  vec3f(dot(normalWorld[0], normalWorld[0]), dot(normalWorld[1], normalWorld[1]), dot(normalWorld[2], normalWorld[2]));
-        vertexOutputs.vNormalW = normalize(normalWorld * vNormalW);
+        vertexOutputs.vNormalW = normalize(normalWorld * vertexOutputs.vNormalW);
     #else
         #ifdef NONUNIFORMSCALING
             normalWorld = transposeMat3(inverseMat3(normalWorld));

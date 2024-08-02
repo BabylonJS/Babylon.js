@@ -728,9 +728,9 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
-		frontColor = vec4f(frontColor.rgb + finalColor.rgb * finalColor.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - finalColor.a));
+		fragmentOutputs.frontColor = vec4f(fragmentOutputs.frontColor.rgb + finalColor.rgb * finalColor.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - finalColor.a));
 	} else {
-		backColor += finalColor;
+		fragmentOutputs.backColor += finalColor;
 	}
 #endif
 

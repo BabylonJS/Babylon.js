@@ -162,7 +162,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var baseAmbientColor: vec3f =  vec3f(1., 1., 1.);
 
 #ifdef AMBIENT
-	baseAmbientColor = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb * vAmbientInfos.y;
+	baseAmbientColor = textureSample(ambientSampler, ambientSamplerSampler, fragmentInputs.vAmbientUV + uvOffset).rgb * uniforms.vAmbientInfos.y;
 #endif
 
 #define CUSTOM_FRAGMENT_BEFORE_LIGHTS
@@ -212,7 +212,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 	var refractionVector: vec3f = normalize(refract(-viewDirectionW, normalW, uniforms.vRefractionInfos.y));
 	#ifdef REFRACTIONMAP_3D
         #ifdef USE_LOCAL_REFRACTIONMAP_CUBIC
-            refractionVector = parallaxCorrectNormal(fragmentInputs.vPositionW, refractionVector, vRefractionSize, uniforms.vRefractionPosition);
+            refractionVector = parallaxCorrectNormal(fragmentInputs.vPositionW, refractionVector, uniforms.vRefractionSize, uniforms.vRefractionPosition);
         #endif
 		refractionVector.y = refractionVector.y * uniforms.vRefractionInfos.w;
 
@@ -230,12 +230,12 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 		refractionColor = textureSample(refraction2DSampler, refraction2DSamplerSampler, refractionCoords);
 	#endif
     #ifdef RGBDREFRACTION
-        refractionColor.rgb = fromRGBD(refractionColor);
+        refractionColor = vec4f(fromRGBD(refractionColor), refractionColor.a);
     #endif
 	#ifdef IS_REFRACTION_LINEAR
-		refractionColor.rgb = toGammaSpace(refractionColor.rgb);
+		refractionColor = vec4f(toGammaSpaceVec3(refractionColor.rgb), refractionColor.a);
 	#endif
-	refractionColor.rgb *= uniforms.vRefractionInfos.x;
+	refractionColor = vec4f(refractionColor.rgb * uniforms.vRefractionInfos.x, refractionColor.a);
 #endif
 
 // Reflection
@@ -277,7 +277,7 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
         reflectionColor = vec4f(fromRGBD(reflectionColor), reflectionColor.a);
     #endif
 	#ifdef IS_REFLECTION_LINEAR
-		reflectionColor = vec4f(toGammaSpace(reflectionColor.rgb), reflectionColor.a);
+		reflectionColor = vec4f(toGammaSpaceVec3(reflectionColor.rgb), reflectionColor.a);
 	#endif
 	reflectionColor = vec4f(reflectionColor.rgb * uniforms.vReflectionInfos.x, reflectionColor.a);
 	#ifdef REFLECTIONFRESNEL
@@ -431,8 +431,8 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
     #endif
 
     #ifdef PREPASS_VELOCITY
-    var a: vec2f = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
-    var b: vec2f = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
+    var a: vec2f = (fragmentInputs.vCurrentPosition.xy / fragmentInputs.vCurrentPosition.w) * 0.5 + 0.5;
+    var b: vec2f = (fragmentInputs.vPreviousPosition.xy / fragmentInputs.vPreviousPosition.w) * 0.5 + 0.5;
 
     var velocity: vec2f = abs(a - b);
     velocity =  vec2f(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
@@ -505,9 +505,10 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
 
 #if ORDER_INDEPENDENT_TRANSPARENCY
 	if (fragDepth == nearestDepth) {
-		frontColor = vec4f(frontColor.rgb + color.rgb * color.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - color.a));
+		//fragmentOutputs.frontColor = vec4f(fragmentOutputs.frontColor.rgb + color.rgb * color.a * alphaMultiplier, 1.0 - alphaMultiplier * (1.0 - color.a));
+		fragmentOutputs.frontColor = vec4f(1.0);
 	} else {
-		backColor += color;
+		fragmentOutputs.backColor += color;
 	}
 #endif
 

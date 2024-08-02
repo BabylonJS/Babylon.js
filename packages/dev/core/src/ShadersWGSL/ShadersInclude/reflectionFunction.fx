@@ -118,7 +118,7 @@ fn computeReflectionCoords(worldPos: vec4f, worldNormal: vec3f) -> vec3f
 #endif
 
 #ifdef REFLECTIONMAP_SPHERICAL
-	return computeSphericalCoords(worldPos, worldNormal, scene.view, reflectionMatrix);
+	return computeSphericalCoords(worldPos, worldNormal, scene.view, uniforms.reflectionMatrix);
 #endif
 
 #ifdef REFLECTIONMAP_PLANAR
