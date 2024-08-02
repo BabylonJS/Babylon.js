@@ -482,6 +482,8 @@ export interface ImportAnimationsOptions extends SceneLoaderOptions {
     targetConverter?: Nullable<(target: unknown) => unknown>;
 }
 
+type SceneSource = string | File | ArrayBufferView;
+
 /**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
@@ -766,7 +768,7 @@ export class SceneLoader {
         return plugin;
     }
 
-    private static _GetFileInfo(rootUrl: string, sceneFilename: string | File | ArrayBufferView): Nullable<IFileInfo> {
+    private static _GetFileInfo(rootUrl: string, sceneFilename: SceneSource): Nullable<IFileInfo> {
         let url: string;
         let name: string;
         let file: Nullable<File> = null;
@@ -866,7 +868,7 @@ export class SceneLoader {
     public static ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onSuccess?: Nullable<SceneLoaderSuccessCallback>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
@@ -880,7 +882,7 @@ export class SceneLoader {
     private static _ImportMesh(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<SceneLoaderSuccessCallback> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
@@ -1000,7 +1002,7 @@ export class SceneLoader {
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
      */
-    public static ImportMeshAsync(source: string | File | ArrayBufferView, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult>;
+    public static ImportMeshAsync(source: SceneSource, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult>;
 
     /**
      * Import meshes into a scene
@@ -1016,7 +1018,7 @@ export class SceneLoader {
     public static ImportMeshAsync(
         meshNames: string | readonly string[] | null | undefined,
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
@@ -1028,17 +1030,17 @@ export class SceneLoader {
             | [
                   meshNames: string | readonly string[] | null | undefined,
                   rootUrl: string,
-                  sceneFilename?: string | File | ArrayBufferView,
+                  sceneFilename?: SceneSource,
                   scene?: Nullable<Scene>,
                   onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: string | File | ArrayBufferView, options?: ImportMeshOptions]
+            | [source: SceneSource, options?: ImportMeshOptions]
     ): Promise<ISceneLoaderAsyncResult> {
         let meshNames: string | readonly string[] | null | undefined;
         let rootUrl: string;
-        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let sceneFilename: SceneSource | undefined;
         let scene: Nullable<Scene> | undefined;
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
@@ -1047,7 +1049,7 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: ImportMeshOptions] => {
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: ImportMeshOptions] => {
             // If there is only a single argument, then it must be the options overload.
             // If the second argument is an object, then it must be the options overload.
             return maybeOptionsArgs.length === 1 || typeof maybeOptionsArgs[1] === "object";
@@ -1106,7 +1108,7 @@ export class SceneLoader {
      */
     public static Load(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         engine?: Nullable<AbstractEngine>,
         onSuccess?: Nullable<(scene: Scene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
@@ -1119,7 +1121,7 @@ export class SceneLoader {
 
     private static _Load(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename: SceneSource = "",
         engine: Nullable<AbstractEngine> = EngineStore.LastCreatedEngine,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
@@ -1142,7 +1144,7 @@ export class SceneLoader {
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded scene
      */
-    public static LoadAsync(source: string | File | ArrayBufferView, options?: LoadOptions): Promise<Scene>;
+    public static LoadAsync(source: SceneSource, options?: LoadOptions): Promise<Scene>;
 
     /**
      * Load a scene
@@ -1156,7 +1158,7 @@ export class SceneLoader {
      */
     public static LoadAsync(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         engine?: Nullable<AbstractEngine>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
@@ -1167,16 +1169,16 @@ export class SceneLoader {
         ...args:
             | [
                   rootUrl: string,
-                  sceneFilename?: string | File | ArrayBufferView,
+                  sceneFilename?: SceneSource,
                   engine?: Nullable<AbstractEngine>,
                   onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: string | File | ArrayBufferView, options?: LoadOptions]
+            | [source: SceneSource, options?: LoadOptions]
     ): Promise<Scene> {
         let rootUrl: string;
-        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let sceneFilename: SceneSource | undefined;
         let engine: Nullable<AbstractEngine> | undefined;
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
@@ -1185,7 +1187,7 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: LoadOptions] => {
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: LoadOptions] => {
             // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
             // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBuffer, then it must be the options overload.
@@ -1238,7 +1240,7 @@ export class SceneLoader {
      */
     public static Append(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onSuccess?: Nullable<(scene: Scene) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
@@ -1251,7 +1253,7 @@ export class SceneLoader {
 
     private static _Append(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(scene: Scene) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
@@ -1361,7 +1363,7 @@ export class SceneLoader {
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The given scene
      */
-    public static AppendAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions): Promise<Scene>;
+    public static AppendAsync(source: SceneSource, options?: LoadAssetContainerOptions): Promise<Scene>;
 
     /**
      * Append a scene
@@ -1375,7 +1377,7 @@ export class SceneLoader {
      */
     public static AppendAsync(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
@@ -1386,16 +1388,16 @@ export class SceneLoader {
         ...args:
             | [
                   rootUrl: string,
-                  sceneFilename?: string | File | ArrayBufferView,
+                  sceneFilename?: SceneSource,
                   scene?: Nullable<Scene>,
                   onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: string | File | ArrayBufferView, options?: AppendOptions]
+            | [source: SceneSource, options?: AppendOptions]
     ): Promise<Scene> {
         let rootUrl: string;
-        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let sceneFilename: SceneSource | undefined;
         let scene: Nullable<Scene> | undefined;
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
@@ -1404,7 +1406,7 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: AppendOptions] => {
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: AppendOptions] => {
             // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
             // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
@@ -1458,7 +1460,7 @@ export class SceneLoader {
      */
     public static LoadAssetContainer(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onSuccess?: Nullable<(assets: AssetContainer) => void>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
@@ -1471,7 +1473,7 @@ export class SceneLoader {
 
     private static _LoadAssetContainer(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         onSuccess: Nullable<(assets: AssetContainer) => void> = null,
         onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> = null,
@@ -1576,7 +1578,7 @@ export class SceneLoader {
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded asset container
      */
-    public static LoadAssetContainerAsync(source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions): Promise<AssetContainer>;
+    public static LoadAssetContainerAsync(source: SceneSource, options?: LoadAssetContainerOptions): Promise<AssetContainer>;
 
     /**
      * Load a scene into an asset container
@@ -1590,7 +1592,7 @@ export class SceneLoader {
      */
     public static LoadAssetContainerAsync(
         rootUrl: string,
-        sceneFilename?: string | File,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
         pluginExtension?: Nullable<string>,
@@ -1603,16 +1605,16 @@ export class SceneLoader {
         ...args:
             | [
                   rootUrl: string,
-                  sceneFilename?: string | File,
+                  sceneFilename?: SceneSource,
                   scene?: Nullable<Scene>,
                   onProgress?: Nullable<(event: ISceneLoaderProgressEvent) => void>,
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions]
+            | [source: SceneSource, options?: LoadAssetContainerOptions]
     ): Promise<AssetContainer> {
         let rootUrl: string;
-        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let sceneFilename: SceneSource | undefined;
         let scene: Nullable<Scene> | undefined;
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
@@ -1621,7 +1623,7 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: LoadAssetContainerOptions] => {
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: LoadAssetContainerOptions] => {
             // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
             // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
@@ -1676,7 +1678,7 @@ export class SceneLoader {
      */
     public static ImportAnimations(
         rootUrl: string,
-        sceneFilename?: string | File,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         overwriteAnimations?: boolean,
         animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
@@ -1704,7 +1706,7 @@ export class SceneLoader {
 
     private static _ImportAnimations(
         rootUrl: string,
-        sceneFilename: string | File | ArrayBufferView = "",
+        sceneFilename: SceneSource = "",
         scene: Nullable<Scene> = EngineStore.LastCreatedScene,
         overwriteAnimations = true,
         animationGroupLoadingMode = SceneLoaderAnimationGroupLoadingMode.Clean,
@@ -1786,7 +1788,7 @@ export class SceneLoader {
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded asset container
      */
-    public static ImportAnimationsAsync(source: string | File | ArrayBufferView, options?: ImportAnimationsOptions): Promise<Scene>;
+    public static ImportAnimationsAsync(source: SceneSource, options?: ImportAnimationsOptions): Promise<Scene>;
 
     /**
      * Import animations from a file into a scene
@@ -1805,7 +1807,7 @@ export class SceneLoader {
      */
     public static ImportAnimationsAsync(
         rootUrl: string,
-        sceneFilename?: string | File | ArrayBufferView,
+        sceneFilename?: SceneSource,
         scene?: Nullable<Scene>,
         overwriteAnimations?: boolean,
         animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
@@ -1821,7 +1823,7 @@ export class SceneLoader {
         ...args:
             | [
                   rootUrl: string,
-                  sceneFilename?: string | File | ArrayBufferView,
+                  sceneFilename?: SceneSource,
                   scene?: Nullable<Scene>,
                   overwriteAnimations?: boolean,
                   animationGroupLoadingMode?: SceneLoaderAnimationGroupLoadingMode,
@@ -1832,10 +1834,10 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions]
+            | [source: SceneSource, options?: ImportAnimationsOptions]
     ): Promise<Scene> {
         let rootUrl: string;
-        let sceneFilename: string | File | ArrayBufferView | undefined;
+        let sceneFilename: SceneSource | undefined;
         let scene: Nullable<Scene> | undefined;
         let overwriteAnimations: boolean | undefined;
         let animationGroupLoadingMode: SceneLoaderAnimationGroupLoadingMode | undefined;
@@ -1847,7 +1849,7 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: string | File | ArrayBufferView, options?: ImportAnimationsOptions] => {
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: ImportAnimationsOptions] => {
             // If the first argument is not a string, then it must be the options overload.
             // If there is only a single string argument, then we should use the legacy overload for back compat.
             // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
