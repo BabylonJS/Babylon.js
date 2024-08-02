@@ -38,7 +38,7 @@ export class GPUPicker {
     private _idColors: Array<Color3> = [];
     private _cachedScene: Nullable<Scene>;
     private _renderMaterial: Nullable<ShaderMaterial>;
-    private _pickableMeshes: Array<AbstractMesh>;
+    private _pickableMeshes: Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }>;
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
@@ -75,21 +75,22 @@ export class GPUPicker {
 
         this._renderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
-        const callback = (mesh: AbstractMesh | undefined) => {
-            if (!mesh) {
-                return;
-            }
+        this._renderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+    }
 
-            const effect = this._renderMaterial!.getEffect();
+    private _materialBindCallback(mesh: AbstractMesh | undefined) {
+        if (!mesh) {
+            return;
+        }
 
-            if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
-                effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
-            }
+        const material = this._pickableMeshes.find((x) => "mesh" in x && x.mesh === mesh)?.material ?? this._renderMaterial!;
+        const effect = material.getEffect()!;
 
-            this._meshRenderingCount++;
-        };
+        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
+            effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
+        }
 
-        this._renderMaterial.onBindObservable.add(callback);
+        this._meshRenderingCount++;
     }
 
     private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
@@ -140,11 +141,13 @@ export class GPUPicker {
      * The module will read and delete from the array provided by reference. Disposing the module or setting the value to null will clear the array.
      * @param list defines the list of meshes to pick from
      */
-    public setPickingList(list: Nullable<Array<AbstractMesh>>) {
+    public setPickingList(list: Nullable<Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }>>) {
         if (this._pickableMeshes) {
             // Cleanup
             for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
+                const obj = this._pickableMeshes[index];
+                const mesh = "mesh" in obj ? obj.mesh : obj;
+
                 if (mesh.hasInstances) {
                     (mesh as Mesh).removeVerticesData(this._attributeName);
                 }
@@ -153,6 +156,10 @@ export class GPUPicker {
                 }
                 if (this._pickingTexure) {
                     this._pickingTexure.setMaterialForRendering(mesh, undefined);
+                }
+
+                if ("mesh" in obj) {
+                    obj.material.onBindObservable.removeCallback(this._materialBindCallback);
                 }
             }
             this._pickableMeshes.length = 0;
@@ -169,7 +176,7 @@ export class GPUPicker {
         this._pickableMeshes = list;
 
         // Prepare target
-        const scene = list[0].getScene();
+        const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
         const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
@@ -193,8 +200,15 @@ export class GPUPicker {
         // We will affect colors and create vertex color buffers
         let id = 1;
         for (let index = 0; index < this._pickableMeshes.length; index++) {
-            const mesh = this._pickableMeshes[index];
-            this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
+            const obj = this._pickableMeshes[index];
+            const mesh = "mesh" in obj ? obj.mesh : obj;
+
+            if ("mesh" in obj) {
+                obj.material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+                this._pickingTexure!.setMaterialForRendering(obj.mesh, obj.material);
+            } else {
+                this._pickingTexure!.setMaterialForRendering(obj, this._renderMaterial!);
+            }
             this._pickingTexure!.renderList.push(mesh);
 
             if (mesh.isAnInstance) {
@@ -219,7 +233,7 @@ export class GPUPicker {
                     const instances = (mesh as Mesh).instances;
                     const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
                         const instance = instances[i];
-                        this._idMap[id] = this._pickableMeshes.indexOf(instance);
+                        this._idMap[id] = this._pickableMeshes.findIndex((x) => ("mesh" in x ? x.mesh === instance : x === mesh));
                     });
                     id += instances.length;
                     const engine = mesh.getEngine();
@@ -263,9 +277,14 @@ export class GPUPicker {
 
             this._pickingTexure!.renderList = [];
             for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
-                this._pickingTexure!.renderList.push(mesh);
+                const obj = this._pickableMeshes[index];
+                if ("mesh" in obj) {
+                    this._pickingTexure!.setMaterialForRendering(obj.mesh, obj.material);
+                    this._pickingTexure!.renderList.push(obj.mesh);
+                } else {
+                    this._pickingTexure!.setMaterialForRendering(obj, this._renderMaterial!);
+                    this._pickingTexure!.renderList.push(obj);
+                }
             }
         }
 
@@ -322,10 +341,12 @@ export class GPUPicker {
 
                         // Thin?
                         if (this._thinIdMap[colorId]) {
-                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                            const obj = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+                            pickedMesh = "mesh" in obj ? obj.mesh : obj;
                             thinInstanceIndex = this._thinIdMap[colorId].thinId;
                         } else {
-                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+                            const obj = this._pickableMeshes[this._idMap[colorId]];
+                            if (obj) pickedMesh = "mesh" in obj ? obj.mesh : obj;
                         }
                     }
                 }
