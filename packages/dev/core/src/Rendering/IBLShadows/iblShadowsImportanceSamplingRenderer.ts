@@ -6,8 +6,6 @@ import { Texture } from "../../Materials/Textures/texture";
 import type { TextureSize } from "../../Materials/Textures/textureCreationOptions";
 import { ProceduralTexture } from "../../Materials/Textures/Procedurals/proceduralTexture";
 import type { IProceduralTextureCreationOptions } from "../../Materials/Textures/Procedurals/proceduralTexture";
-// import { EffectRenderer, EffectWrapper } from "../Materials/effectRenderer";
-// import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowsImportanceSamplingDebug.fragment";
 import "../../Shaders/iblShadowsCdfx.fragment";
 import "../../Shaders/iblShadowsIcdfx.fragment";
@@ -22,8 +20,9 @@ import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
  * This should not be instanciated directly, as it is part of a scene component
+ * @internal
  */
-export class IblShadowsImportanceSamplingRenderer {
+export class _IblShadowsImportanceSamplingRenderer {
     private _scene: Scene;
     private _engine: AbstractEngine;
 
@@ -103,7 +102,8 @@ export class IblShadowsImportanceSamplingRenderer {
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
-            (this._iblSource as RawTexture).isBlocking = true;
+            // (this._iblSource as RawTexture).isBlocking = true;
+            this._iblSource.name = "Placeholder IBL Source";
         }
 
         if (this._iblSource!.isCube) {
@@ -189,7 +189,15 @@ export class IblShadowsImportanceSamplingRenderer {
      * @returns true if the importance sampling renderer is ready
      */
     public isReady() {
-        return this._iblSource && this._iblSource.isReady() && this._cdfyPT.isReady() && this._icdfyPT.isReady() && this._cdfxPT.isReady() && this._icdfxPT.isReady();
+        return (
+            this._iblSource &&
+            this._iblSource.name !== "Placeholder IBL Source" &&
+            this._iblSource.isReady() &&
+            this._cdfyPT.isReady() &&
+            this._icdfyPT.isReady() &&
+            this._cdfxPT.isReady() &&
+            this._icdfxPT.isReady()
+        );
     }
 
     /**

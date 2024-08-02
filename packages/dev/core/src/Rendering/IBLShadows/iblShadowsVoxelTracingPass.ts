@@ -2,7 +2,6 @@ import { Constants } from "../../Engines/constants";
 import type { AbstractEngine } from "../../Engines/abstractEngine";
 import type { Scene } from "../../scene";
 import { Matrix, Vector2, Vector4 } from "../../Maths/math.vector";
-// import { Logger } from "../Misc/logger";
 import "../../Shaders/iblShadowVoxelTracing.fragment";
 import "../../Shaders/iblShadowDebug.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
@@ -14,8 +13,9 @@ import type { Camera } from "../../Cameras/camera";
 /**
  * Build cdf maps for IBL importance sampling during IBL shadow computation.
  * This should not be instanciated directly, as it is part of a scene component
+ * @internal
  */
-export class IblShadowsVoxelTracingPass {
+export class _IblShadowsVoxelTracingPass {
     private _scene: Scene;
     private _engine: AbstractEngine;
     private _renderPipeline: IblShadowsRenderPipeline;
@@ -111,10 +111,10 @@ export class IblShadowsVoxelTracingPass {
      * @returns The post process
      */
     public getDebugPassPP(): PostProcess {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             this._createDebugPass();
         }
-        return this._debugPass;
+        return this._debugPassPP;
     }
 
     private _debugPassName: string = "Voxel Tracing Debug Pass";
@@ -131,7 +131,7 @@ export class IblShadowsVoxelTracingPass {
     }
 
     private _debugVoxelMarchEnabled: boolean = false;
-    private _debugPass: PostProcess;
+    private _debugPassPP: PostProcess;
     private _debugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
     public setDebugDisplayParams(x: number, y: number, widthScale: number, heightScale: number) {
         this._debugSizeParams.set(x, y, widthScale, heightScale);
@@ -141,7 +141,7 @@ export class IblShadowsVoxelTracingPass {
      * Creates the debug post process effect for this pass
      */
     private _createDebugPass() {
-        if (!this._debugPass) {
+        if (!this._debugPassPP) {
             const debugOptions: PostProcessOptions = {
                 width: this._engine.getRenderWidth(),
                 height: this._engine.getRenderHeight(),
@@ -150,9 +150,9 @@ export class IblShadowsVoxelTracingPass {
                 engine: this._engine,
                 reusable: false,
             };
-            this._debugPass = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
-            this._debugPass.autoClear = false;
-            this._debugPass.onApply = (effect) => {
+            this._debugPassPP = new PostProcess(this.debugPassName, "iblShadowDebug", debugOptions);
+            this._debugPassPP.autoClear = false;
+            this._debugPassPP.onApply = (effect) => {
                 // update the caustic texture with what we just rendered.
                 effect.setTextureFromPostProcessOutput("debugSampler", this._outputPP);
                 effect.setVector4("sizeParams", this._debugSizeParams);
@@ -252,7 +252,7 @@ export class IblShadowsVoxelTracingPass {
      * @returns true if the pass is ready
      */
     public isReady() {
-        return this._outputPP.isReady();
+        return this._outputPP.isReady() && !(this._debugPassPP && !this._debugPassPP.isReady());
     }
 
     /**
@@ -260,8 +260,8 @@ export class IblShadowsVoxelTracingPass {
      */
     public dispose() {
         this._outputPP.dispose();
-        if (this._debugPass) {
-            this._debugPass.dispose();
+        if (this._debugPassPP) {
+            this._debugPassPP.dispose();
         }
     }
 }

@@ -9,22 +9,22 @@ import { Texture } from "../../Materials/Textures/texture";
 import type { PrePassEffectConfiguration } from "../prePassEffectConfiguration";
 import type { PrePassRenderer } from "../prePassRenderer";
 import { Logger } from "../../Misc/logger";
-import { IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
-import { IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
+import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
+import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
 
 import "../../Shaders/postprocess.vertex";
 import "../../Shaders/iblShadowGBufferDebug.fragment";
 import "../../Shaders/iblShadowsCombine.fragment";
 import { PostProcess } from "../../PostProcesses/postProcess";
 import type { PostProcessOptions } from "../../PostProcesses/postProcess";
-import { IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
-import { IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
-import { IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
+import { _IblShadowsImportanceSamplingRenderer } from "./iblShadowsImportanceSamplingRenderer";
+import { _IblShadowsSpatialBlurPass } from "./iblShadowsSpatialBlurPass";
+import { _IblShadowsAccumulationPass } from "./iblShadowsAccumulationPass";
 import { ArcRotateCamera } from "../../Cameras/arcRotateCamera";
 import { FreeCamera } from "../../Cameras/freeCamera";
 import { PostProcessRenderPipeline } from "../../PostProcesses/RenderPipeline/postProcessRenderPipeline";
 import { PostProcessRenderEffect } from "core/PostProcesses/RenderPipeline/postProcessRenderEffect";
-import type { Camera } from "core/Cameras";
+import type { Camera } from "core/Cameras/camera";
 
 class IblShadowsSettings {
     /**
@@ -114,11 +114,11 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _excludedMeshes: number[] = [];
 
-    private _voxelRenderer: IblShadowsVoxelRenderer;
-    private _importanceSamplingRenderer: IblShadowsImportanceSamplingRenderer;
-    private _voxelTracingPass: IblShadowsVoxelTracingPass;
-    private _spatialBlurPass: IblShadowsSpatialBlurPass;
-    private _accumulationPass: IblShadowsAccumulationPass;
+    private _voxelRenderer: _IblShadowsVoxelRenderer;
+    private _importanceSamplingRenderer: _IblShadowsImportanceSamplingRenderer;
+    private _voxelTracingPass: _IblShadowsVoxelTracingPass;
+    private _spatialBlurPass: _IblShadowsSpatialBlurPass;
+    private _accumulationPass: _IblShadowsAccumulationPass;
     private _noiseTexture: Texture;
     private _shadowOpacity: number = 1.0;
 
@@ -491,17 +491,17 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         this.shadowOpacity = options.shadowOpacity || 1.0;
         this._prePassEffectConfiguration = new IblShadowsPrepassConfiguration();
-        this._voxelRenderer = new IblShadowsVoxelRenderer(this.scene, this, options ? options.resolutionExp : 6, options.triplanarVoxelization || true);
-        this._importanceSamplingRenderer = new IblShadowsImportanceSamplingRenderer(this.scene);
-        this._voxelTracingPass = new IblShadowsVoxelTracingPass(this.scene, this);
+        this._voxelRenderer = new _IblShadowsVoxelRenderer(this.scene, this, options ? options.resolutionExp : 6, options.triplanarVoxelization || true);
+        this._importanceSamplingRenderer = new _IblShadowsImportanceSamplingRenderer(this.scene);
+        this._voxelTracingPass = new _IblShadowsVoxelTracingPass(this.scene, this);
         this.sampleDirections = options.sampleDirections || 1;
         this.ssShadowOpacity = options.ssShadowsEnabled === undefined || options.ssShadowsEnabled ? 1.0 : 0.0;
         this.ssShadowMaxDist = options.ssShadowMaxDist || 0.05;
         this.ssShadowSamples = options.ssShadowSampleCount || 16;
         this.ssShadowStride = options.ssShadowStride || 8;
         this.ssShadowThickness = options.ssShadowThickness || 0.01;
-        this._spatialBlurPass = new IblShadowsSpatialBlurPass(this.scene);
-        this._accumulationPass = new IblShadowsAccumulationPass(this.scene);
+        this._spatialBlurPass = new _IblShadowsSpatialBlurPass(this.scene);
+        this._accumulationPass = new _IblShadowsAccumulationPass(this.scene);
         this.shadowRemenance = options.shadowRemenance || 0.9;
         this._noiseTexture = new Texture("https://assets.babylonjs.com/textures/blue_noise/blue_noise_rgb.png", this.scene, false, true, Constants.TEXTURE_NEAREST_SAMPLINGMODE);
         if (this.scene.environmentTexture) {
@@ -545,9 +545,20 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         this._shadowCompositePP.onApply = (effect) => {
             effect.setTextureFromPostProcess("sceneTexture", this._voxelTracingPass.getPassPP());
             effect.setFloat("shadowOpacity", this._shadowOpacity);
-            this.update();
+            if (
+                this._importanceSamplingRenderer.isReady() &&
+                this._voxelRenderer.isReady() &&
+                this._voxelTracingPass.isReady() &&
+                this._spatialBlurPass.isReady() &&
+                this._accumulationPass.isReady()
+            ) {
+                this.update();
+            }
         };
         this._shadowCompositePP._prePassEffectConfiguration = this._prePassEffectConfiguration;
+        setTimeout(() => {
+            this._voxelizationDirty = true;
+        }, 500);
     }
 
     private _createEffectPasses(cameras: Camera[] | undefined) {

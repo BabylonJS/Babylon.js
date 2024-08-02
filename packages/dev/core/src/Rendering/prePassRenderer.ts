@@ -155,7 +155,7 @@ export class PrePassRenderer {
         {
             purpose: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_FLOAT,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             name: "prePass_Depth",
         },
         {
@@ -185,7 +185,7 @@ export class PrePassRenderer {
         {
             purpose: Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE,
             type: Constants.TEXTURETYPE_FLOAT,
-            format: Constants.TEXTUREFORMAT_RGBA,
+            format: Constants.TEXTUREFORMAT_R,
             name: "prePass_ClipSpaceDepth",
         },
     ];
