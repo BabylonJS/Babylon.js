@@ -229,7 +229,7 @@ class GLTFLoaderOptions {
      * If false, (default) The luminance of each pixel will reduce its opacity to simulate the behaviour of most physical materials.
      * If true, no extra effects are applied to transparent pixels.
      */
-    public transparencyAsCoverage = false; // TODO: Need to pass the full gltf options to extensions so they can access this
+    public transparencyAsCoverage = false;
 
     /**
      * Defines if the loader should use range requests when load binary glTF files from HTTP.
