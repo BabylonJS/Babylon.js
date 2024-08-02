@@ -351,13 +351,11 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
         // Adding fragData output locations
         let regex = /const SCENE_MRT_COUNT = (\d+);/;
         let match = fragmentCode.match(regex);
-        let mrt = false;
         let indexLocation = 0;
 
         if (match) {
             const number = parseInt(match[1]);
             if (number > 0) {
-                mrt = true;
                 for (let index = 0; index < number; index++) {
                     fragmentOutputs += ` @location(${indexLocation}) fragData${indexLocation} : vec4<f32>,\n`;
                     indexLocation++;
@@ -365,19 +363,19 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             }
         }
 
-        if (!mrt) {
-            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
-            indexLocation++;
-        }
-
         // Adding fragData output locations
         regex = /oitDepthSampler/;
         match = fragmentCode.match(regex);
 
         if (match) {
-            fragmentOutputs += ` @location(${indexLocation++}) depth : vec4<f32>,\n`;
+            fragmentOutputs += ` @location(${indexLocation++}) depth : vec2<f32>,\n`;
             fragmentOutputs += ` @location(${indexLocation++}) frontColor : vec4<f32>,\n`;
             fragmentOutputs += ` @location(${indexLocation++}) backColor : vec4<f32>,\n`;
+        }
+
+        if (indexLocation === 0) {
+            fragmentOutputs += "  @location(0) color : vec4<f32>,\n";
+            indexLocation++;
         }
 
         // FragDepth

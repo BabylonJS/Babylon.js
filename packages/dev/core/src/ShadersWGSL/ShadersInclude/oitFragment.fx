@@ -17,7 +17,7 @@
 
     // depth value always increases
     // so we can use MAX blend equation
-    fragmentOutputs.depth =  vec4f(-MAX_DEPTH);
+    fragmentOutputs.depth = vec2f(-MAX_DEPTH);
     // front color always increases
     // so we can use MAX blend equation
     fragmentOutputs.frontColor = lastFrontColor;
@@ -53,7 +53,7 @@
         // This needs to be peeled.
         // The ones remaining after MAX blended for
         // all need-to-peel will be peeled next pass.
-        fragmentOutputs.depth = vec4f(-fragDepth, fragDepth, 0., 0.);
+        fragmentOutputs.depth = vec2f(-fragDepth, fragDepth);
         return fragmentOutputs;
     }
 

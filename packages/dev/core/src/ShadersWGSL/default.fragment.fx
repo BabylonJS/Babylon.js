@@ -497,7 +497,7 @@ color = vec4f(max(color.rgb, vec3f(0.)), color.a);
     #endif
 #endif
 
-#if !defined(PREPASS)
+#if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)
 	fragmentOutputs.color = color;
 #endif
 

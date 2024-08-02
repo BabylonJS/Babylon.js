@@ -720,7 +720,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     #endif
 #endif
 
-#if !defined(PREPASS)
+#if !defined(PREPASS) && !defined(ORDER_INDEPENDENT_TRANSPARENCY)
     fragmentOutputs.color = finalColor;
 #endif
 
