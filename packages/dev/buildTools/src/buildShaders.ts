@@ -89,9 +89,9 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     const filename = path.basename(filePath);
     const normalized = path.normalize(filePath);
     const directory = path.dirname(normalized);
-    const isWGSL = directory.indexOf("ShadersWGSL") > -1;
-    const shaderName = getShaderName(filename) + (isWGSL ? "WGSL" : "");
     const tsFilename = filename.replace(".fx", ".ts").replace(".wgsl", ".ts");
+    const isWGSL = directory.indexOf("ShadersWGSL") > -1;
+    const shaderName = getShaderName(filename);
     const appendDirName = isWGSL ? "WGSL" : "";
     let fxData = content.toString();
 
@@ -158,7 +158,7 @@ export function buildShader(filePath: string, basePackageName: string = "core", 
     tsContent = tsContent.replace(
         "##EXPORT_PLACEHOLDER##",
         `/** @internal */
-export const ${shaderName} = { name, shader };`
+export const ${shaderName + (isWGSL ? "WGSL" : "")} = { name, shader };`
     );
 
     // Go to disk.
