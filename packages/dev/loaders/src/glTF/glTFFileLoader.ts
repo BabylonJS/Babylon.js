@@ -889,8 +889,8 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     public rewriteRootURL?(rootUrl: string, responseURL?: string): string;
 
     /** @internal */
-    public createPlugin(options?: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader(options?.[NAME]);
+    public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
+        return new GLTFFileLoader(options[NAME]);
     }
 
     /**

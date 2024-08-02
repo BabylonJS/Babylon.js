@@ -129,7 +129,7 @@ export interface ISceneLoaderPluginFactory {
      * @param options plugin options that were passed to the SceneLoader operation
      * @returns the new plugin
      */
-    createPlugin(options?: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
+    createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPlugin | ISceneLoaderPluginAsync;
 
     /**
      * The callback that returns true if the data can be directly loaded.
