@@ -185,12 +185,15 @@ export interface IGLTFLoader extends IDisposable {
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
-type WithEnabled<T> = {
+/**
+ * Adds default/implicit options to extension specific options.
+ */
+type DefaultExtensionOptions<BaseExtensionOptions> = {
     /**
      * Defines if the extension is enabled
      */
     enabled?: boolean;
-} & T;
+} & BaseExtensionOptions;
 
 class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
@@ -308,7 +311,7 @@ class GLTFLoaderOptions {
         // 1. Adding an implicit 'enabled' property to the options for each extension.
         // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.
         [Extension in keyof GLTFLoaderExtensionOptions]: {
-            [Option in keyof WithEnabled<GLTFLoaderExtensionOptions[Extension]>]: WithEnabled<GLTFLoaderExtensionOptions[Extension]>[Option];
+            [Option in keyof DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>]: DefaultExtensionOptions<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
 }

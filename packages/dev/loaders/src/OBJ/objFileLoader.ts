@@ -19,7 +19,7 @@ declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface SceneLoaderPluginOptions {
         /**
-         * Defines options for the glTF loader.
+         * Defines options for the obj loader.
          */
         [NAME]?: {};
     }

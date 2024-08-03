@@ -132,7 +132,9 @@ export class Viewer implements IDisposable {
         await this._loadModelLock.lockAsync(async () => {
             this._throwIfDisposedOrAborted(abortSignal, abortController.signal);
             this._details.model?.dispose();
-            this._details.model = await SceneLoader.LoadAssetContainerAsync("", finalSource, this._details.scene);
+            this._details.model = await SceneLoader.LoadAssetContainerAsync(finalSource, {
+                scene: this._details.scene,
+            });
             this._details.model.addAllToScene();
             this._reframeCamera();
         });
