@@ -406,6 +406,10 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
         this._voxelRenderer.voxelResolutionExp = newResolution;
         this.updateVoxelization();
+        setTimeout(() => {
+            // TODO - why do we need to run this a second time to get the voxel grid to update?
+            this.updateVoxelization();
+        }, 0);
     }
 
     /**
