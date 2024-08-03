@@ -13,7 +13,8 @@ import { SolidParser } from "./solidParser";
 import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
-const NAME = "obj";
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const PLUGIN_OBJ = "obj";
 
 declare module "core/Loading/sceneLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
@@ -21,7 +22,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the obj loader.
          */
-        [NAME]?: {};
+        [PLUGIN_OBJ]?: {};
     }
 }
 
@@ -86,11 +87,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Defines the name of the plugin.
      */
-    public name = NAME;
+    public readonly name = PLUGIN_OBJ;
     /**
      * Defines the extension the plugin is able to load.
      */
-    public extensions = ".obj";
+    public readonly extensions = ".obj";
 
     private _assetContainer: Nullable<AssetContainer> = null;
 

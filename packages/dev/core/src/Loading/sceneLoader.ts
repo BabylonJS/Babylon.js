@@ -110,7 +110,7 @@ export interface ISceneLoaderPluginExtensions {
     /**
      * Defines the list of supported extensions
      */
-    [extension: string]: {
+    readonly [extension: string]: {
         isBinary: boolean;
     };
 }
@@ -122,7 +122,7 @@ export interface ISceneLoaderPluginFactory {
     /**
      * Defines the name of the factory
      */
-    name: string;
+    readonly name: string;
 
     /**
      * Function called to create a new plugin
@@ -146,12 +146,12 @@ export interface ISceneLoaderPluginBase {
     /**
      * The friendly name of this plugin.
      */
-    name: string;
+    readonly name: string;
 
     /**
      * The file extensions supported by this plugin.
      */
-    extensions: string | ISceneLoaderPluginExtensions;
+    readonly extensions: string | ISceneLoaderPluginExtensions;
 
     /**
      * The callback called when loading from a url.

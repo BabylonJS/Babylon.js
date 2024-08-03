@@ -32,7 +32,7 @@ import { RuntimeError, ErrorCodes } from "core/Misc/error";
 import type { TransformNode } from "core/Meshes/transformNode";
 import type { MorphTargetManager } from "core/Morph/morphTargetManager";
 
-const NAME = "gltf";
+const PLUGIN_GLTF = "gltf";
 
 /**
  * Defines options for glTF loader extensions. This interface is extended by specific extensions.
@@ -46,7 +46,7 @@ declare module "core/Loading/sceneLoader" {
          * Defines options for the glTF loader.
          */
         // NOTE: This is a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
-        [NAME]?: Partial<{ [Option in keyof GLTFLoaderOptions]: GLTFLoaderOptions[Option] }>;
+        [PLUGIN_GLTF]?: Partial<{ [Option in keyof GLTFLoaderOptions]: GLTFLoaderOptions[Option] }>;
     }
 }
 
@@ -588,18 +588,18 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
     private _progressCallback?: (event: ISceneLoaderProgressEvent) => void;
     private _requests = new Array<IFileRequestInfo>();
 
-    private static _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
+    private static readonly _MagicBase64Encoded = "Z2xURg"; // "glTF" base64 encoded (without the quotes!)
 
     /**
      * Name of the loader ("gltf")
      */
-    public name = NAME;
+    public readonly name = PLUGIN_GLTF;
 
     /** @internal */
-    public extensions: ISceneLoaderPluginExtensions = {
+    public readonly extensions = {
         ".gltf": { isBinary: false },
         ".glb": { isBinary: true },
-    };
+    } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
      * Disposes the loader, releases resources during load, and cancels any outstanding requests.
@@ -901,7 +901,7 @@ export class GLTFFileLoader extends GLTFLoaderOptions implements IDisposable, IS
 
     /** @internal */
     public createPlugin(options: SceneLoaderPluginOptions): ISceneLoaderPluginAsync {
-        return new GLTFFileLoader(options[NAME]);
+        return new GLTFFileLoader(options[PLUGIN_GLTF]);
     }
 
     /**
