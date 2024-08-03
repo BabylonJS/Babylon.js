@@ -91,6 +91,9 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      */
     constructor(loader: GLTFLoader) {
         this._loader = loader;
+        // Options takes precedence. The maxLODsToLoad extension property is retained for back compat.
+        // For new extensions, they should only use options.
+        this.maxLODsToLoad = this._loader.parent.extensionOptions[NAME]?.maxLODsToLoad ?? this.maxLODsToLoad;
         this.enabled = this._loader.isExtensionUsed(NAME);
     }
 
@@ -369,11 +372,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
      * @param ids
      */
     private _getLODs<T>(context: string, property: T, array: ArrayLike<T> | undefined, ids: number[]): T[] {
-        // Options takes precedence. The maxLODsToLoad extension property is retained for back compat.
-        // For new extensions, they should only use options.
-        const maxLODsToLoad = this._loader.parent.extensionOptions[NAME]?.maxLODsToLoad ?? this.maxLODsToLoad;
-
-        if (maxLODsToLoad <= 0) {
+        if (this.maxLODsToLoad <= 0) {
             throw new Error("maxLODsToLoad must be greater than zero");
         }
 
@@ -381,7 +380,7 @@ export class MSFT_lod implements IGLTFLoaderExtension {
 
         for (let i = ids.length - 1; i >= 0; i--) {
             properties.push(ArrayItem.Get(`${context}/ids/${ids[i]}`, array, ids[i]));
-            if (properties.length === maxLODsToLoad) {
+            if (properties.length === this.maxLODsToLoad) {
                 return properties;
             }
         }
