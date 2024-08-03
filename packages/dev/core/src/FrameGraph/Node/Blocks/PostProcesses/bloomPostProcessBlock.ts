@@ -140,7 +140,7 @@ export class BloomPostProcessBlock extends NodeRenderGraphBlock {
 
                 state.frameGraph.bindRenderTarget(rtWrapper);
 
-                this._postProcess.executeFrameGraphPass(state.frameGraph);
+                this._postProcess.executeFrameGraphTask(state.frameGraph);
 
                 state.frameGraph.bindRenderTarget(null);
             });

@@ -8,7 +8,7 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { IFrameGraphPass } from "../FrameGraph/IFrameGraphPass";
+import type { IFrameGraphTask } from "../FrameGraph/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 import type { Observer } from "../Misc/observable";
 import type { Effect } from "../Materials/effect";
@@ -29,7 +29,7 @@ export interface IBloomEffectFrameGraphBuildData {
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
  */
-export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphPass {
+export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
     /**
      * @internal Internal
      */
@@ -220,20 +220,20 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphP
         });
     }
 
-    public executeFrameGraphPass(builder: FrameGraph) {
+    public executeFrameGraphTask(builder: FrameGraph) {
         const finalRenderTarget = builder.currentRenderTarget;
 
         builder.bindRenderTarget(this._downscaleOutput);
-        this._downscale.executeFrameGraphPass(builder);
+        this._downscale.executeFrameGraphTask(builder);
 
         builder.bindRenderTarget(this._blurXOutput);
-        this._blurX.executeFrameGraphPass(builder);
+        this._blurX.executeFrameGraphTask(builder);
 
         builder.bindRenderTarget(this._blurYOutput);
-        this._blurY.executeFrameGraphPass(builder);
+        this._blurY.executeFrameGraphTask(builder);
 
         builder.bindRenderTarget(finalRenderTarget);
-        this._merge.executeFrameGraphPass(builder);
+        this._merge.executeFrameGraphTask(builder);
     }
 
     /**
