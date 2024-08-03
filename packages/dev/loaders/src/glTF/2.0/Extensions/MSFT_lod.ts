@@ -12,21 +12,18 @@ import type { IProperty, IMSFTLOD } from "babylonjs-gltf2interface";
 
 const NAME = "MSFT_lod";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-export type MSFT_lodOptions = {
-    /**
-     * Maximum number of LODs to load, starting from the lowest LOD.
-     */
-    maxLODsToLoad: number;
-};
-
 declare module "../../glTFFileLoader" {
     // eslint-disable-next-line jsdoc/require-jsdoc
     export interface GLTFLoaderExtensionOptions {
         /**
          * Defines options for the MSFT_lod extension.
          */
-        [NAME]?: Partial<MSFT_lodOptions>;
+        [NAME]?: Partial<{
+            /**
+             * Maximum number of LODs to load, starting from the lowest LOD.
+             */
+            maxLODsToLoad: number;
+        }>;
     }
 }
 

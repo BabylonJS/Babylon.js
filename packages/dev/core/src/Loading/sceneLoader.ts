@@ -375,6 +375,13 @@ interface IFileInfo {
  */
 export interface SceneLoaderPluginOptions extends Record<string, Record<string, unknown> | undefined> {}
 
+type WithEnabled<T> = {
+    /**
+     * Defines if the plugin is enabled
+     */
+    enabled?: boolean;
+} & T;
+
 /**
  * Defines common options for loading operations performed by SceneLoader.
  */
@@ -403,12 +410,10 @@ interface SceneLoaderOptions {
      * Defines options for the registered plugins
      */
     pluginOptions?: {
-        [P in keyof SceneLoaderPluginOptions]: SceneLoaderPluginOptions[P] & {
-            /**
-             * Defines if the plugin is enabled
-             */
-            enabled?: boolean;
-        };
+        // NOTE: This type is doing two things:
+        // 1. Adding an implicit 'enabled' property to the options for each plugin.
+        // 2. Creating a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
+        [Plugin in keyof SceneLoaderPluginOptions]: { [Option in keyof WithEnabled<SceneLoaderPluginOptions[Plugin]>]: WithEnabled<SceneLoaderPluginOptions[Plugin]>[Option] };
     };
 }
 

@@ -13,6 +13,18 @@ import { SolidParser } from "./solidParser";
 import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
+const NAME = "obj";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the glTF loader.
+         */
+        [NAME]?: {};
+    }
+}
+
 /**
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
@@ -74,7 +86,7 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Defines the name of the plugin.
      */
-    public name = "obj";
+    public name = NAME;
     /**
      * Defines the extension the plugin is able to load.
      */

@@ -45,7 +45,8 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the glTF loader.
          */
-        [NAME]?: Partial<GLTFLoaderOptions>;
+        // NOTE: This is a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
+        [NAME]?: Partial<{ [Option in keyof GLTFLoaderOptions]: GLTFLoaderOptions[Option] }>;
     }
 }
 
@@ -184,6 +185,13 @@ export interface IGLTFLoader extends IDisposable {
     loadAsync: (scene: Scene, data: IGLTFLoaderData, rootUrl: string, onProgress?: (event: ISceneLoaderProgressEvent) => void, fileName?: string) => Promise<void>;
 }
 
+type WithEnabled<T> = {
+    /**
+     * Defines if the extension is enabled
+     */
+    enabled?: boolean;
+} & T;
+
 class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
     constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
@@ -296,11 +304,11 @@ class GLTFLoaderOptions {
      * Defines options for glTF extensions.
      */
     extensionOptions: {
-        [P in keyof GLTFLoaderExtensionOptions]: GLTFLoaderExtensionOptions[P] & {
-            /**
-             * Defines if the extension is enabled
-             */
-            enabled?: boolean;
+        // NOTE: This type is doing two things:
+        // 1. Adding an implicit 'enabled' property to the options for each extension.
+        // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.
+        [Extension in keyof GLTFLoaderExtensionOptions]: {
+            [Option in keyof WithEnabled<GLTFLoaderExtensionOptions[Extension]>]: WithEnabled<GLTFLoaderExtensionOptions[Extension]>[Option];
         };
     } = {};
 }

@@ -11,6 +11,18 @@ import { GaussianSplattingMesh } from "core/Meshes/GaussianSplatting/gaussianSpl
 import type { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 
+const NAME = "splat";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the glTF loader.
+         */
+        [NAME]?: {};
+    }
+}
+
 /**
  * @experimental
  * SPLAT file type loader.
@@ -20,7 +32,7 @@ export class SPLATFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlu
     /**
      * Defines the name of the plugin.
      */
-    public name = "splat";
+    public name = NAME;
 
     /**
      * Defines the extensions the splat loader is able to load.

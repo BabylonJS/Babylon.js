@@ -9,6 +9,18 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 
+const NAME = "stl";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the glTF loader.
+         */
+        [NAME]?: {};
+    }
+}
+
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
@@ -27,7 +39,7 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     /**
      * Defines the name of the plugin.
      */
-    public name = "stl";
+    public name = NAME;
 
     /**
      * Defines the extensions the stl loader is able to load.
