@@ -125,7 +125,9 @@ export const enum GreasedLineMeshMaterialType {
      */
     MATERIAL_TYPE_PBR = 1,
     /**
-     * Simple and fast shader material not supporting lightning nor textures
+     * Simple and fast shader material without texture, light, fog, instances, ... support.
+     * Just raw colored lines.
+     * Dashing and visibility is supported.
      */
     MATERIAL_TYPE_SIMPLE = 2,
 }
