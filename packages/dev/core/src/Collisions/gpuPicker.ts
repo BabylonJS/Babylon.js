@@ -37,8 +37,9 @@ export class GPUPicker {
     private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
     private _idColors: Array<Color3> = [];
     private _cachedScene: Nullable<Scene>;
-    private _renderMaterial: Nullable<ShaderMaterial>;
+    private _defaultRenderMaterial: Nullable<ShaderMaterial>;
     private _pickableMeshes: Array<AbstractMesh>;
+    private _meshMaterialMap: Map<AbstractMesh, ShaderMaterial> = new Map();
     private _readbuffer: Uint8Array;
     private _meshRenderingCount: number = 0;
     private readonly _attributeName = "instanceMeshID";
@@ -60,8 +61,8 @@ export class GPUPicker {
     }
 
     private _createColorMaterial(scene: Scene) {
-        if (this._renderMaterial) {
-            this._renderMaterial.dispose();
+        if (this._defaultRenderMaterial) {
+            this._defaultRenderMaterial.dispose();
         }
 
         const defines: string[] = [];
@@ -73,23 +74,24 @@ export class GPUPicker {
             useClipPlane: null,
         };
 
-        this._renderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
+        this._defaultRenderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
-        const callback = (mesh: AbstractMesh | undefined) => {
-            if (!mesh) {
-                return;
-            }
+        this._defaultRenderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+    }
 
-            const effect = this._renderMaterial!.getEffect();
+    private _materialBindCallback(mesh: AbstractMesh | undefined) {
+        if (!mesh) {
+            return;
+        }
 
-            if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
-                effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
-            }
+        const material = this._meshMaterialMap.get(mesh)!;
+        const effect = material.getEffect()!;
 
-            this._meshRenderingCount++;
-        };
+        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
+            effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
+        }
 
-        this._renderMaterial.onBindObservable.add(callback);
+        this._meshRenderingCount++;
     }
 
     private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
@@ -140,7 +142,7 @@ export class GPUPicker {
      * The module will read and delete from the array provided by reference. Disposing the module or setting the value to null will clear the array.
      * @param list defines the list of meshes to pick from
      */
-    public setPickingList(list: Nullable<Array<AbstractMesh>>) {
+    public setPickingList(list: Nullable<Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }>>) {
         if (this._pickableMeshes) {
             // Cleanup
             for (let index = 0; index < this._pickableMeshes.length; index++) {
@@ -154,8 +156,14 @@ export class GPUPicker {
                 if (this._pickingTexure) {
                     this._pickingTexure.setMaterialForRendering(mesh, undefined);
                 }
+
+                const material = this._meshMaterialMap.get(mesh)!;
+                if (material !== this._defaultRenderMaterial) {
+                    material.onBindObservable.removeCallback(this._materialBindCallback);
+                }
             }
             this._pickableMeshes.length = 0;
+            this._meshMaterialMap.clear();
             this._idMap.length = 0;
             this._thinIdMap.length = 0;
             this._idColors.length = 0;
@@ -166,10 +174,9 @@ export class GPUPicker {
         if (!list || list.length === 0) {
             return;
         }
-        this._pickableMeshes = list;
 
         // Prepare target
-        const scene = list[0].getScene();
+        const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
         const engine = scene.getEngine();
         const rttSizeW = engine.getRenderWidth();
         const rttSizeH = engine.getRenderHeight();
@@ -187,6 +194,17 @@ export class GPUPicker {
             this._createColorMaterial(scene);
         }
 
+        for (let i = 0; i < list.length; i++) {
+            const item = list[i];
+            if ("mesh" in item) {
+                this._meshMaterialMap.set(item.mesh, item.material);
+                list[i] = item.mesh;
+            } else {
+                this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
+            }
+        }
+        this._pickableMeshes = list as Array<AbstractMesh>;
+
         this._cachedScene = scene;
         this._pickingTexure!.renderList = [];
 
@@ -194,7 +212,12 @@ export class GPUPicker {
         let id = 1;
         for (let index = 0; index < this._pickableMeshes.length; index++) {
             const mesh = this._pickableMeshes[index];
-            this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
+            const material = this._meshMaterialMap.get(mesh)!;
+
+            if (material !== this._defaultRenderMaterial) {
+                material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+            }
+            this._pickingTexure!.setMaterialForRendering(mesh, material);
             this._pickingTexure!.renderList.push(mesh);
 
             if (mesh.isAnInstance) {
@@ -264,7 +287,7 @@ export class GPUPicker {
             this._pickingTexure!.renderList = [];
             for (let index = 0; index < this._pickableMeshes.length; index++) {
                 const mesh = this._pickableMeshes[index];
-                this._pickingTexure!.setMaterialForRendering(mesh, this._renderMaterial!);
+                this._pickingTexure!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
                 this._pickingTexure!.renderList.push(mesh);
             }
         }
@@ -366,7 +389,7 @@ export class GPUPicker {
         // Cleaning up
         this._pickingTexure?.dispose();
         this._pickingTexure = null;
-        this._renderMaterial?.dispose();
-        this._renderMaterial = null;
+        this._defaultRenderMaterial?.dispose();
+        this._defaultRenderMaterial = null;
     }
 }
