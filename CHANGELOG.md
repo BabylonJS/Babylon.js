@@ -1,5 +1,23 @@
 # Changelog
 
+## 7.19.0
+
+### Core
+
+- LinesMesh refreshBoundingInfo fix - by [RolandCsibrei](https://github.com/RolandCsibrei) ([#15356](https://github.com/BabylonJS/Babylon.js/pull/15356))
+- Port StandardMaterial to webgpu - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15349](https://github.com/BabylonJS/Babylon.js/pull/15349))
+- Fix AnimationGroup Animatable leak and onAnimationGroupEndObservable - by [ryantrem](https://github.com/ryantrem) ([#15353](https://github.com/BabylonJS/Babylon.js/pull/15353))
+- add dynamic imports to index.ts to avoid chunking UMD - by [RaananW](https://github.com/RaananW) ([#15352](https://github.com/BabylonJS/Babylon.js/pull/15352))
+- Port PBR and Background materials to WGSL - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15333](https://github.com/BabylonJS/Babylon.js/pull/15333))
+
+### Loaders
+
+- Add flags to control glTF loading capabilities - by [bghgary](https://github.com/bghgary) ([#15346](https://github.com/BabylonJS/Babylon.js/pull/15346))
+
+### Materials
+
+- Port PBR and Background materials to WGSL - [_New Feature_] by [deltakosh](https://github.com/deltakosh) ([#15333](https://github.com/BabylonJS/Babylon.js/pull/15333))
+
 ## 7.18.0
 
 ### Core
