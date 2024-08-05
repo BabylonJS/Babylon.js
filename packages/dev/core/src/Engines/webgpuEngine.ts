@@ -92,7 +92,6 @@ import { resetCachedPipeline } from "../Materials/effect.functions";
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
-import { Observable } from "core/Misc/observable";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -655,32 +654,27 @@ export class WebGPUEngine extends AbstractEngine {
     //------------------------------------------------------------------------------
     //                              Initialization
     //------------------------------------------------------------------------------
-    private _onGlsLangReady = new Observable<void>();
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    private _GlsLangInitInProgress = false;
-    private _prepareGlsLangAndTintAsync(): Promise<any> {
-        if (this._GlsLangInitInProgress) {
-            return new Promise<void>((resolve) => {
-                this._onGlsLangReady.addOnce(() => {
-                    resolve();
+    private _workingGlsLangAndTintPromise: Nullable<Promise<void>> = null;
+    private _prepareGlsLangAndTintAsync(): Promise<void> {
+        if (!this._workingGlsLangAndTintPromise) {
+            this._workingGlsLangAndTintPromise = new Promise<void>((resolve) => {
+                this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
+                    this._glslang = glslang;
+
+                    if (!WebGPUEngine.UseTWGSL) {
+                        resolve();
+                        return;
+                    }
+
+                    this._tintWASM = new WebGPUTintWASM();
+                    this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
+                        resolve();
+                    });
                 });
             });
         }
-        this._GlsLangInitInProgress = true;
-        return this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
-            this._glslang = glslang;
 
-            if (!WebGPUEngine.UseTWGSL) {
-                return;
-            }
-
-            this._tintWASM = new WebGPUTintWASM();
-            return this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
-                this._GlsLangInitInProgress = false;
-                this._onGlsLangReady.notifyObservers();
-                return;
-            });
-        });
+        return this._workingGlsLangAndTintPromise;
     }
 
     /**
