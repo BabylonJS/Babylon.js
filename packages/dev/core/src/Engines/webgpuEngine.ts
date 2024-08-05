@@ -769,8 +769,10 @@ export class WebGPUEngine extends AbstractEngine {
                 }
             })
             .then(() => {
+                this._initializeLimits();
+
                 this._bufferManager = new WebGPUBufferManager(this, this._device);
-                this._textureHelper = new WebGPUTextureManager(this, this._device, this._glslang, this._tintWASM, this._bufferManager, this._deviceEnabledExtensions);
+                this._textureHelper = new WebGPUTextureManager(this, this._device, this._bufferManager, this._deviceEnabledExtensions);
                 this._cacheSampler = new WebGPUCacheSampler(this._device);
                 this._cacheBindGroups = new WebGPUCacheBindGroups(this._device, this._cacheSampler, this);
                 this._timestampQuery = new WebGPUTimestampQuery(this, this._device, this._bufferManager);
@@ -798,8 +800,6 @@ export class WebGPUEngine extends AbstractEngine {
 
                 this._uploadEncoder = this._device.createCommandEncoder(this._uploadEncoderDescriptor);
                 this._renderEncoder = this._device.createCommandEncoder(this._renderEncoderDescriptor);
-
-                this._initializeLimits();
 
                 this._emptyVertexBuffer = new VertexBuffer(this, [0], "", {
                     stride: 1,
