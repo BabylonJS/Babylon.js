@@ -91,6 +91,26 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
         return hash;
     }
 
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IColor3Like {
+        return {
+            r: this.r,
+            g: this.g,
+            b: this.b,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IColor3Like>): this {
+        this.copyFrom(json);
+        return this;
+    }
+
     // Operators
 
     /**
@@ -1504,6 +1524,27 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
         hash = (hash * 397) ^ ((this.b * 255) | 0);
         hash = (hash * 397) ^ ((this.a * 255) | 0);
         return hash;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IColor4Like {
+        return {
+            r: this.r,
+            g: this.g,
+            b: this.b,
+            a: this.a,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IColor4Like>): this {
+        this.copyFrom(json);
+        return this;
     }
 
     /**

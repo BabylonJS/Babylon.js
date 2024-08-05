@@ -22,7 +22,7 @@ export type TensorLike<T> = T extends Tensor<TensorValue, infer I> ? I : never;
  * Describes a mathematical tensor.
  * @see https://wikipedia.org/wiki/Tensor
  */
-export interface Tensor<V extends TensorValue, I> {
+export interface Tensor<V extends TensorValue, I, J = I> {
     /**
      * An array of the size of each dimension.
      * For example, [3] for a Vector3 and [4,4] for a Matrix
@@ -50,6 +50,18 @@ export interface Tensor<V extends TensorValue, I> {
      * @returns the instance hash code as a number
      */
     getHashCode(): number;
+
+    /**
+     * Copy the current instance as a JSON object
+     * @returns a JSON object with the instance data.
+     */
+    toJSON(): J;
+
+    /**
+     * Update the current instance from a JSON object
+     * @returns the current instance
+     */
+    fromJSON(json: J): this;
 
     /**
      * Sets the instance coordinates in the given array from the given index.
@@ -104,7 +116,7 @@ export interface Tensor<V extends TensorValue, I> {
      * @param other defines the other instance
      * @returns a new instance set with the addition of the current instance and the given one coordinates
      */
-    add(other: DeepImmutable<I>): Tensor<V, I>;
+    add(other: DeepImmutable<I>): Tensor<V, I, J>;
 
     /**
      * Sets the "result" coordinates with the addition of the current instance and the given one coordinates
@@ -133,7 +145,7 @@ export interface Tensor<V extends TensorValue, I> {
      * @param other defines the other instance
      * @returns a new instance
      */
-    subtract(other: DeepImmutable<I>): Tensor<V, I>;
+    subtract(other: DeepImmutable<I>): Tensor<V, I, J>;
 
     /**
      * Sets the "result" coordinates with the subtraction of the other's coordinates from the current coordinates.
@@ -155,7 +167,7 @@ export interface Tensor<V extends TensorValue, I> {
      * @param floats the coordinates to subtract
      * @returns the resulting instance
      */
-    subtractFromFloats(...floats: TensorNumberArray<V>): Tensor<V, I>;
+    subtractFromFloats(...floats: TensorNumberArray<V>): Tensor<V, I, J>;
 
     /**
      * Subtracts the given floats from the current instance coordinates and set the given instance "result" with this result
@@ -170,7 +182,7 @@ export interface Tensor<V extends TensorValue, I> {
      * @param other defines the other instance
      * @returns a new instance
      */
-    multiply(other: DeepImmutable<I>): Tensor<V, I>;
+    multiply(other: DeepImmutable<I>): Tensor<V, I, J>;
 
     /**
      * Sets "result" coordinates with the multiplication of the current instance and the given one coordinates
@@ -191,14 +203,14 @@ export interface Tensor<V extends TensorValue, I> {
      * Gets a new instance set with the instance coordinates multiplied by the given floats
      * @returns a new instance
      */
-    multiplyByFloats(...floats: TensorNumberArray<V>): Tensor<V, I>;
+    multiplyByFloats(...floats: TensorNumberArray<V>): Tensor<V, I, J>;
 
     /**
      * Returns a new instance set with the instance coordinates divided by the given one coordinates
      * @param other defines the other instance
      * @returns a new instance
      */
-    divide(other: DeepImmutable<I>): Tensor<V, I>;
+    divide(other: DeepImmutable<I>): Tensor<V, I, J>;
 
     /**
      * Sets the "result" coordinates with the instance coordinates divided by the given one coordinates
@@ -247,7 +259,7 @@ export interface Tensor<V extends TensorValue, I> {
      * Gets a new instance with current instance negated coordinates
      * @returns a new instance
      */
-    negate(): Tensor<V, I>;
+    negate(): Tensor<V, I, J>;
 
     /**
      * Negate this instance in place
@@ -274,7 +286,7 @@ export interface Tensor<V extends TensorValue, I> {
      * @param scale defines the scaling factor
      * @returns a new instance
      */
-    scale(scale: number): Tensor<V, I>;
+    scale(scale: number): Tensor<V, I, J>;
 
     /**
      * Scale the current instance values by a factor to a given instance
@@ -319,7 +331,7 @@ export interface Tensor<V extends TensorValue, I> {
      * eg (1.2, 2.31) returns (1, 2)
      * @returns a new instance
      */
-    floor(): Tensor<V, I>;
+    floor(): Tensor<V, I, J>;
 
     /**
      * Gets the current instance's floored values and stores them in result
@@ -333,7 +345,7 @@ export interface Tensor<V extends TensorValue, I> {
      * eg (1.2, 2.31) returns (0.2, 0.31)
      * @returns a new instance
      */
-    fract(): Tensor<V, I>;
+    fract(): Tensor<V, I, J>;
 
     /**
      * Gets the current instance's fractional values and stores them in result
@@ -346,7 +358,7 @@ export interface Tensor<V extends TensorValue, I> {
      * Gets a new instance copied from the instance
      * @returns a new instance
      */
-    clone(): Tensor<V, I>;
+    clone(): Tensor<V, I, J>;
 }
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -354,7 +366,7 @@ export interface Tensor<V extends TensorValue, I> {
  * Static side of Tensor
  * @see Tensor
  */
-export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
+export interface TensorStatic<T extends Tensor<any[], I, _JSON>, I = TensorLike<T>, _JSON = I> {
     /**
      * Creates a new instance from the given coordinates
      */
@@ -411,7 +423,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param right defines second instance
      * @returns the dot product (float)
      */
-    Dot(left: DeepImmutable<_I>, right: DeepImmutable<_I>): number;
+    Dot(left: DeepImmutable<I>, right: DeepImmutable<I>): number;
 
     /**
      * Gets a new instance set with the minimal coordinate values from the "left" and "right" instances
@@ -419,7 +431,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param right defines 2nd instance
      * @returns a new instance
      */
-    Minimize(left: DeepImmutable<_I>, right: DeepImmutable<_I>): T;
+    Minimize(left: DeepImmutable<I>, right: DeepImmutable<I>): T;
 
     /**
      * Gets a new instance set with the maximal coordinate values from the "left" and "right" instances
@@ -427,7 +439,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param right defines 2nd instance
      * @returns a new instance
      */
-    Maximize(left: DeepImmutable<_I>, right: DeepImmutable<_I>): T;
+    Maximize(left: DeepImmutable<I>, right: DeepImmutable<I>): T;
 
     /**
      * Gets the distance between the instances "value1" and "value2"
@@ -435,7 +447,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param value2 defines second instance
      * @returns the distance between instances
      */
-    Distance(value1: DeepImmutable<_I>, value2: DeepImmutable<_I>): number;
+    Distance(value1: DeepImmutable<I>, value2: DeepImmutable<I>): number;
 
     /**
      * Returns the squared distance between the instances "value1" and "value2"
@@ -443,7 +455,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param value2 defines second instance
      * @returns the squared distance between instances
      */
-    DistanceSquared(value1: DeepImmutable<_I>, value2: DeepImmutable<_I>): number;
+    DistanceSquared(value1: DeepImmutable<I>, value2: DeepImmutable<I>): number;
 
     /**
      * Gets a new instance located at the center of the instances "value1" and "value2"
@@ -451,7 +463,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param value2 defines second instance
      * @returns a new instance
      */
-    Center(value1: DeepImmutable<_I>, value2: DeepImmutable<_I>): T;
+    Center(value1: DeepImmutable<I>, value2: DeepImmutable<I>): T;
 
     /**
      * Gets the center of the instances "value1" and "value2" and stores the result in the instance "ref"
@@ -460,7 +472,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param ref defines third instance
      * @returns ref
      */
-    CenterToRef(value1: DeepImmutable<_I>, value2: DeepImmutable<_I>, ref: T): T;
+    CenterToRef(value1: DeepImmutable<I>, value2: DeepImmutable<I>, ref: T): T;
 
     /**
      * Returns a new instance set with same the coordinates than "value" ones if the instance "value" is in the square defined by "min" and "max".
@@ -471,7 +483,7 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param max defines the upper limit
      * @returns a new instance
      */
-    Clamp(value: DeepImmutable<_I>, min: DeepImmutable<_I>, max: DeepImmutable<_I>): T;
+    Clamp(value: DeepImmutable<I>, min: DeepImmutable<I>, max: DeepImmutable<I>): T;
 
     /**
      * Returns a new instance set with same the coordinates than "value" ones if the instance "value" is in the square defined by "min" and "max".
@@ -483,6 +495,6 @@ export interface TensorStatic<T extends Tensor<any[], _I>, _I = TensorLike<T>> {
      * @param result defines the instance where to store the result
      * @returns the updated result instance
      */
-    ClampToRef(value: DeepImmutable<_I>, min: DeepImmutable<_I>, max: DeepImmutable<_I>, result: T): T;
+    ClampToRef(value: DeepImmutable<I>, min: DeepImmutable<I>, max: DeepImmutable<I>, result: T): T;
 }
 /* eslint-enable @typescript-eslint/naming-convention */

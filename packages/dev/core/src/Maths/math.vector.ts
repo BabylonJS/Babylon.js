@@ -20,7 +20,7 @@ const _ExtractAsInt = (value: number) => {
 /**
  * Represents a vector of any dimension
  */
-export interface Vector<N extends number[], I> extends Tensor<N, I> {
+export interface Vector<N extends number[], I, TJSON = I> extends Tensor<N, I, TJSON> {
     /**
      * @see Tensor.dimension
      */
@@ -61,7 +61,7 @@ export interface Vector<N extends number[], I> extends Tensor<N, I> {
      * Normalize the current Vector to a new vector
      * @returns the new Vector
      */
-    normalizeToNew(): Vector<N, I>;
+    normalizeToNew(): Vector<N, I, TJSON>;
 
     /**
      * Normalize the current Vector to the reference
@@ -74,14 +74,14 @@ export interface Vector<N extends number[], I> extends Tensor<N, I> {
 /**
  * Static side of Vector
  */
-export interface VectorStatic<T extends Vector<any[], _I>, _I = TensorLike<T>> extends TensorStatic<T, _I> {
+export interface VectorStatic<T extends Vector<any[], I, TJSON>, I = TensorLike<T>, TJSON = I> extends TensorStatic<T, I, TJSON> {
     /**
      * Checks if a given vector is inside a specific range
      * @param value defines the vector to test
      * @param min defines the minimum range
      * @param max defines the maximum range
      */
-    CheckExtends(value: _I, min: _I, max: _I): void;
+    CheckExtends(value: I, min: I, max: I): void;
 
     /**
      * Returns a new Vector equal to the normalized given vector
@@ -154,6 +154,25 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
         let hash = x;
         hash = (hash * 397) ^ y;
         return hash;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IVector2Like {
+        return {
+            x: this.x,
+            y: this.y,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IVector2Like>): this {
+        this.copyFrom(json);
+        return this;
     }
 
     // Operators
@@ -1168,7 +1187,7 @@ Object.defineProperties(Vector2.prototype, {
  * Reminder: js uses a left handed forward facing system
  * Example Playground - Overview - https://playground.babylonjs.com/#R1F8YU
  */
-export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like {
+export class Vector3 implements Vector<Tuple<number, 3>, Vector3, IVector3Like>, IVector3Like {
     private static _UpReadOnly = Vector3.Up() as DeepImmutable<Vector3>;
     private static _DownReadOnly = Vector3.Down() as DeepImmutable<Vector3>;
     private static _LeftHandedForwardReadOnly = Vector3.Forward(false) as DeepImmutable<Vector3>;
@@ -1274,6 +1293,26 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         hash = (hash * 397) ^ y;
         hash = (hash * 397) ^ z;
         return hash;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IVector3Like {
+        return {
+            x: this._x,
+            y: this._y,
+            z: this._z,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IVector3Like>): this {
+        this.set(json.x, json.y, json.z);
+        return this;
     }
 
     // Operators
@@ -3346,7 +3385,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         return ref;
     }
 }
-Vector3 satisfies VectorStatic<Vector3, Vector3>;
+Vector3 satisfies VectorStatic<Vector3, Vector3, IVector3Like>;
 Object.defineProperties(Vector3.prototype, {
     dimension: { value: [3] },
     rank: { value: 1 },
@@ -3417,6 +3456,27 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
         hash = (hash * 397) ^ z;
         hash = (hash * 397) ^ w;
         return hash;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IVector4Like {
+        return {
+            x: this.x,
+            y: this.y,
+            z: this.z,
+            w: this.w,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IVector4Like>): this {
+        this.copyFrom(json);
+        return this;
     }
 
     // Operators
@@ -4391,7 +4451,7 @@ Object.defineProperties(Vector4.prototype, {
  * @see https://en.wikipedia.org/wiki/Quaternion
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/transforms
  */
-export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuaternionLike {
+export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion, IQuaternionLike>, IQuaternionLike {
     /** @internal */
     public _x: number;
 
@@ -4502,6 +4562,27 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         hash = (hash * 397) ^ z;
         hash = (hash * 397) ^ w;
         return hash;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): IQuaternionLike {
+        return {
+            x: this._x,
+            y: this._y,
+            z: this._z,
+            w: this._w,
+        };
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: DeepImmutable<IQuaternionLike>): this {
+        this.set(json.x, json.y, json.z, json.w);
+        return this;
     }
 
     /**
@@ -5928,11 +6009,13 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
         return ref.copyFromFloats((value1.x + value2.x) / 2, (value1.y + value2.y) / 2, (value1.z + value2.z) / 2, (value1.w + value2.w) / 2);
     }
 }
-Quaternion satisfies TensorStatic<Quaternion, Quaternion>;
+Quaternion satisfies TensorStatic<Quaternion, Quaternion, IQuaternionLike>;
 Object.defineProperties(Quaternion.prototype, {
     dimension: { value: [4] },
     rank: { value: 1 },
 });
+
+type _Tuple4x4 = Tuple<Tuple<number, 4>, 4>;
 
 /**
  * Class used to store matrix data (4x4)
@@ -5956,7 +6039,7 @@ Object.defineProperties(Quaternion.prototype, {
  * Example Playground - Overview Transformation - https://playground.babylonjs.com/#AV9X17#1
  * Example Playground - Overview Projection - https://playground.babylonjs.com/#AV9X17#2
  */
-export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatrixLike {
+export class Matrix implements Tensor<_Tuple4x4, Matrix, _Tuple4x4>, IMatrixLike {
     /**
      * @see Tensor.dimension
      */
@@ -6151,6 +6234,22 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
      */
     public toString(): string {
         return `{${this.m[0]}, ${this.m[1]}, ${this.m[2]}, ${this.m[3]}\n${this.m[4]}, ${this.m[5]}, ${this.m[6]}, ${this.m[7]}\n${this.m[8]}, ${this.m[9]}, ${this.m[10]}, ${this.m[11]}\n${this.m[12]}, ${this.m[13]}, ${this.m[14]}, ${this.m[15]}}`;
+    }
+
+    /**
+     * @returns JSON object
+     */
+    public toJSON(): _Tuple4x4 {
+        return [this._m.slice(0, 4), this._m.slice(4, 8), this._m.slice(8, 12), this._m.slice(12, 16)] as _Tuple4x4;
+    }
+
+    /**
+     * @param json the JSON object to use
+     * @returns this
+     */
+    public fromJSON(json: _Tuple4x4): this {
+        this.copyFromFloats(...[...json[0], ...json[1], ...json[2], ...json[3]]);
+        return this;
     }
 
     /**
