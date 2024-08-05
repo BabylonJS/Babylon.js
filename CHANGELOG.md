@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.19.1
+
+### Core
+
+- Fix crash when multi call to build for nme - [_Bug Fix_] by [deltakosh](https://github.com/deltakosh) ([#15357](https://github.com/BabylonJS/Babylon.js/pull/15357))
+
 ## 7.19.0
 
 ### Core

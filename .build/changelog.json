@@ -1,6 +1,25 @@
 {
-    "fromTag": "7.18.0",
+    "fromTag": "7.19.0",
     "changelog": {
+        "7.19.1": [
+            {
+                "pr": "15357",
+                "title": "Fix crash when multi call to build for nme",
+                "description": null,
+                "author": {
+                    "name": "deltakosh",
+                    "url": "https://github.com/deltakosh"
+                },
+                "files": [
+                    "packages/dev/core/src/Materials/Node/nodeMaterial.ts",
+                    "packages/tools/tests/test/visualization/ReferenceImages/nme-multi-build.png",
+                    "packages/tools/tests/test/visualization/config.json"
+                ],
+                "tags": [
+                    "bug"
+                ]
+            }
+        ],
         "7.19.0": [
             {
                 "pr": "15356",
