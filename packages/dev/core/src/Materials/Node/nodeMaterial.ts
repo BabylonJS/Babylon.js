@@ -252,6 +252,7 @@ export class NodeMaterial extends PushMaterial {
     private _cachedWorldViewProjectionMatrix = new Matrix();
     private _optimizers = new Array<NodeMaterialOptimizer>();
     private _animationFrame = -1;
+    private _buildIsInProgress = false;
 
     /** Define the Url to load node editor script */
     public static EditorURL = `${Tools._DefaultCdnUrl}/v${AbstractEngine.Version}/nodeEditor/babylon.nodeEditor.js`;
@@ -801,6 +802,11 @@ export class NodeMaterial extends PushMaterial {
      * @param autoConfigure defines if the autoConfigure method should be called when initializing blocks (default is false)
      */
     public build(verbose: boolean = false, updateBuildId = true, autoConfigure = false) {
+        if (this._buildIsInProgress) {
+            Logger.Warn("Build is already in progress, You can use NodeMaterial.onBuildObservable to determine when the build is completed.");
+            return;
+        }
+        this._buildIsInProgress = true;
         // First time?
         if (!this._vertexCompilationState && !autoConfigure) {
             autoConfigure = true;
@@ -917,6 +923,7 @@ export class NodeMaterial extends PushMaterial {
             Logger.Log(this._fragmentCompilationState.compilationString);
         }
 
+        this._buildIsInProgress = false;
         this._buildWasSuccessful = true;
         this.onBuildObservable.notifyObservers(this);
 
