@@ -1,6 +1,7 @@
 {
     "trailingComma": "es5",
     "tabWidth": 4,
+    "useTabs": true,
     "printWidth": 180,
     "endOfLine": "auto"
 }
