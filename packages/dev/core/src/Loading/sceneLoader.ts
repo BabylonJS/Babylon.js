@@ -499,6 +499,10 @@ export interface ImportAnimationsOptions extends SceneLoaderOptions {
     targetConverter?: Nullable<(target: unknown) => unknown>;
 }
 
+function isFile(value: unknown): value is File {
+    return !!(value as File).name;
+}
+
 /**
  * Class used to load scene from various file formats using registered plugins
  * @see https://doc.babylonjs.com/features/featuresDeepDive/importers/loadingFileTypes
@@ -783,30 +787,29 @@ export class SceneLoader {
         return plugin;
     }
 
-    private static _GetFileInfo(rootUrl: string, sceneFilename: SceneSource): Nullable<IFileInfo> {
+    private static _GetFileInfo(rootUrl: string, sceneSource: SceneSource): Nullable<IFileInfo> {
         let url: string;
         let name: string;
         let file: Nullable<File> = null;
         let rawData: Nullable<ArrayBufferView> = null;
 
-        if (!sceneFilename) {
+        if (!sceneSource) {
             url = rootUrl;
             name = Tools.GetFilename(rootUrl);
             rootUrl = Tools.GetFolderPath(rootUrl);
-        } else if ((sceneFilename as File).name) {
-            const sceneFile = sceneFilename as File;
-            url = `file:${sceneFile.name}`;
-            name = sceneFile.name;
-            file = sceneFile;
-        } else if (ArrayBuffer.isView(sceneFilename)) {
+        } else if (isFile(sceneSource)) {
+            url = `file:${sceneSource.name}`;
+            name = sceneSource.name;
+            file = sceneSource;
+        } else if (ArrayBuffer.isView(sceneSource)) {
             url = "";
             name = RandomGUID();
-            rawData = sceneFilename as ArrayBufferView;
-        } else if (typeof sceneFilename === "string" && sceneFilename.startsWith("data:")) {
-            url = sceneFilename;
+            rawData = sceneSource;
+        } else if (sceneSource.startsWith("data:")) {
+            url = sceneSource;
             name = "";
-        } else {
-            const filename = sceneFilename as string;
+        } else if (rootUrl !== "") {
+            const filename = sceneSource;
             if (filename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
                 return null;
@@ -814,6 +817,10 @@ export class SceneLoader {
 
             url = rootUrl + filename;
             name = filename;
+        } else {
+            url = sceneSource;
+            name = Tools.GetFilename(sceneSource);
+            rootUrl = Tools.GetFolderPath(sceneSource);
         }
 
         return {
