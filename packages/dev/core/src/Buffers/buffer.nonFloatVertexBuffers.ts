@@ -73,7 +73,7 @@ export function checkNonFloatVertexBuffers(vertexBuffers: { [key: string]: Nulla
             (vertexBufferType !== undefined && vertexBufferType !== currentVertexBufferType)
         ) {
             if (!shaderProcessingContext) {
-                shaderProcessingContext = engine._getShaderProcessingContext(effect.shaderLanguage)!;
+                shaderProcessingContext = engine._getShaderProcessingContext(effect.shaderLanguage, false)!;
             }
             pipelineContext.vertexBufferKindToType[kind] = currentVertexBufferType;
             if (currentVertexBufferType !== VertexBuffer.FLOAT) {

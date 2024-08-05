@@ -377,7 +377,7 @@ export class WebGPUTextureManager {
                     includesShadersStore: {},
                     version: (this._engine.version * 100).toString(),
                     platformName: this._engine.shaderPlatformName,
-                    processingContext: this._engine._getShaderProcessingContext(ShaderLanguage.WGSL),
+                    processingContext: this._engine._getShaderProcessingContext(ShaderLanguage.WGSL, true),
                     isNDCHalfZRange: this._engine.isNDCHalfZRange,
                     useReverseDepthBuffer: this._engine.useReverseDepthBuffer,
                 };
@@ -409,6 +409,9 @@ export class WebGPUTextureManager {
 
                 const final = Finalize(vertexCode, fragmentCode, processorOptions);
 
+                // Restore
+                (processorOptions.processor as WebGPUShaderProcessorWGSL).pureMode = false;
+
                 const vertexModule = this._device.createShaderModule({
                     code: final.vertexCode,
                 });
@@ -439,7 +442,7 @@ export class WebGPUTextureManager {
                 },
             });
 
-            pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(1)];
+            pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(0)];
         }
 
         return pipelineAndBGL;
@@ -965,10 +968,6 @@ export class WebGPUTextureManager {
                     entries: [
                         {
                             binding: 0,
-                            resource: this._mipmapSampler,
-                        },
-                        {
-                            binding: 1,
                             resource: gpuTexture.createView({
                                 format,
                                 dimension: is3D ? WebGPUConstants.TextureViewDimension.E3d : WebGPUConstants.TextureViewDimension.E2d,
@@ -977,6 +976,10 @@ export class WebGPUTextureManager {
                                 arrayLayerCount: 1,
                                 baseArrayLayer: faceIndex,
                             }),
+                        },
+                        {
+                            binding: 1,
+                            resource: this._mipmapSampler,
                         },
                     ],
                 });

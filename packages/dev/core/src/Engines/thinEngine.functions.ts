@@ -254,7 +254,7 @@ export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, 
 /**
  * @internal
  */
-export function _preparePipelineContext(
+export function _preparePipelineContextAsync(
     pipelineContext: IPipelineContext,
     vertexSourceCode: string,
     fragmentSourceCode: string,
@@ -296,6 +296,8 @@ export function _preparePipelineContext(
         );
     }
     webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
+
+    return Promise.resolve();
 }
 
 function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {

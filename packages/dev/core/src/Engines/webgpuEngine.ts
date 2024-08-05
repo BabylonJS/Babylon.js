@@ -93,6 +93,7 @@ import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
 import { _WarnImport } from "core/Misc/devTools";
+import { Observable } from "core/Misc";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
@@ -655,6 +656,33 @@ export class WebGPUEngine extends AbstractEngine {
     //------------------------------------------------------------------------------
     //                              Initialization
     //------------------------------------------------------------------------------
+    private _onGlsLangReady = new Observable<void>();
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    private _GlsLangInitInProgress = false;
+    private _prepareGlsLangAsync(): Promise<any> {
+        if (this._GlsLangInitInProgress) {
+            return new Promise<void>((resolve) => {
+                this._onGlsLangReady.addOnce(() => {
+                    resolve();
+                });
+            });
+        }
+        this._GlsLangInitInProgress = true;
+        return this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
+            this._glslang = glslang;
+
+            if (!WebGPUEngine.UseTWGSL) {
+                return;
+            }
+
+            this._tintWASM = new WebGPUTintWASM();
+            return this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
+                this._GlsLangInitInProgress = false;
+                this._onGlsLangReady.notifyObservers();
+                return;
+            });
+        });
+    }
 
     /**
      * Initializes the WebGPU context and dependencies.
@@ -666,16 +694,8 @@ export class WebGPUEngine extends AbstractEngine {
         (this.uniqueId as number) = WebGPUEngine._InstanceId++;
         this._glslangOptions = glslangOptions;
         this._twgslOptions = twgslOptions;
-        return this._initGlslang(glslangOptions ?? this._options?.glslangOptions)
-            .then((glslang: any) => {
-                this._glslang = glslang;
-                this._tintWASM = WebGPUEngine.UseTWGSL ? new WebGPUTintWASM() : null;
-                return this._tintWASM
-                    ? this._tintWASM.initTwgsl(twgslOptions ?? this._options?.twgslOptions).then(() => {
-                          return navigator.gpu!.requestAdapter(this._options);
-                      })
-                    : navigator.gpu!.requestAdapter(this._options);
-            })
+        return navigator
+            .gpu!.requestAdapter(this._options)
             .then((adapter: GPUAdapter | undefined) => {
                 if (!adapter) {
                     // eslint-disable-next-line no-throw-literal
@@ -1252,8 +1272,8 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext> {
-        return new WebGPUShaderProcessingContext(shaderLanguage);
+    public _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext> {
+        return new WebGPUShaderProcessingContext(shaderLanguage, pureMode);
     }
 
     private _currentPassIsMainPass() {
@@ -2101,7 +2121,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _preparePipelineContext(
+    public async _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -2113,6 +2133,10 @@ export class WebGPUEngine extends AbstractEngine {
     ) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
+
+        if (shaderLanguage === ShaderLanguage.GLSL && !this._glslang) {
+            await this._prepareGlsLangAsync();
+        }
 
         if (this.dbgShowShaderCode) {
             Logger.Log(["defines", defines]);
@@ -2133,6 +2157,8 @@ export class WebGPUEngine extends AbstractEngine {
         } else {
             webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines, shaderLanguage);
         }
+
+        return Promise.resolve();
     }
 
     /**

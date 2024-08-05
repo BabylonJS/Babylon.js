@@ -738,7 +738,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _preparePipelineContext(
+    public override _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -753,6 +753,8 @@ export class NativeEngine extends Engine {
         } else {
             this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
+
+        return Promise.resolve();
     }
 
     /**

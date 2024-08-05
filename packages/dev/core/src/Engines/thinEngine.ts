@@ -26,7 +26,7 @@ import {
     createRawShaderProgram,
     createShaderProgram,
     _finalizePipelineContext,
-    _preparePipelineContext,
+    _preparePipelineContextAsync,
     _setProgram,
     _executeWhenRenderingStateIsCompiled,
     getStateObject,
@@ -2062,7 +2062,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _preparePipelineContext(
+    public _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -2081,7 +2081,7 @@ export class ThinEngine extends AbstractEngine {
         stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
         stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
         stateObject.loadFileInjection = this._loadFile.bind(this);
-        return _preparePipelineContext(
+        return _preparePipelineContextAsync(
             pipelineContext as WebGLPipelineContext,
             vertexSourceCode,
             fragmentSourceCode,

@@ -380,7 +380,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _preparePipelineContext(
+    public abstract _preparePipelineContextAsync(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -391,7 +391,7 @@ export abstract class AbstractEngine {
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
         key: string
-    ): void;
+    ): Promise<void>;
 
     /** @internal */
     protected _shaderPlatformName: string;
@@ -1704,7 +1704,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext>;
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext>;
 
     /**
      * Gets host document
