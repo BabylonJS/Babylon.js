@@ -37,6 +37,7 @@ import { WebGPUTextureHelper } from "./webgpuTextureHelper";
 import type { ProcessingOptions } from "../Processors/shaderProcessingOptions";
 import { ShaderLanguage } from "core/Materials";
 import { Finalize, Initialize, Process } from "../Processors/shaderProcessor";
+import type { WebGPUShaderProcessorWGSL } from "./webgpuShaderProcessorsWGSL";
 
 // TODO WEBGPU improve mipmap generation by using compute shaders
 
@@ -383,6 +384,9 @@ export class WebGPUTextureManager {
 
                 Initialize(processorOptions);
 
+                // Disable special additions not needed here
+                (processorOptions.processor as WebGPUShaderProcessorWGSL).pureMode = true;
+
                 Process(
                     vertexCode,
                     processorOptions,
@@ -404,9 +408,6 @@ export class WebGPUTextureManager {
                 );
 
                 const final = Finalize(vertexCode, fragmentCode, processorOptions);
-
-                console.log(final.vertexCode);
-                console.log(final.fragmentCode);
 
                 const vertexModule = this._device.createShaderModule({
                     code: final.vertexCode,
@@ -438,7 +439,7 @@ export class WebGPUTextureManager {
                 },
             });
 
-            pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(0)];
+            pipelineAndBGL = this._pipelines[format][index] = [pipeline, pipeline.getBindGroupLayout(1)];
         }
 
         return pipelineAndBGL;
