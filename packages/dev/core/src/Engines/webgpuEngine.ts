@@ -92,8 +92,7 @@ import { resetCachedPipeline } from "../Materials/effect.functions";
 import { WebGPUExternalTexture } from "./WebGPU/webgpuExternalTexture";
 import type { TextureSampler } from "../Materials/Textures/textureSampler";
 import type { StorageBuffer } from "../Buffers/storageBuffer";
-import { _WarnImport } from "core/Misc/devTools";
-import { Observable } from "core/Misc";
+import { Observable } from "core/Misc/observable";
 
 const viewDescriptorSwapChainAntialiasing: GPUTextureViewDescriptor = {
     label: `TextureView_SwapChain_ResolveTarget`,
