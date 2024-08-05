@@ -385,6 +385,13 @@ type DefaultPluginOptions<BasePluginOptions> = {
     enabled?: boolean;
 } & BasePluginOptions;
 
+// This captures the type defined inline for the pluginOptions property, which is just SceneLoaderPluginOptions wrapped with DefaultPluginOptions.
+// We do it this way rather than explicitly defining the type here and then using it in SceneLoaderOptions because we want the full expanded type
+// to show up in the user's intellisense to make it easier to understand what options are available.
+type PluginOptions = SceneLoaderOptions["pluginOptions"];
+
+type SceneSource = string | File | ArrayBufferView;
+
 /**
  * Defines common options for loading operations performed by SceneLoader.
  */
@@ -491,8 +498,6 @@ export interface ImportAnimationsOptions extends SceneLoaderOptions {
      */
     targetConverter?: Nullable<(target: unknown) => unknown>;
 }
-
-type SceneSource = string | File | ArrayBufferView;
 
 /**
  * Class used to load scene from various file formats using registered plugins
@@ -653,7 +658,7 @@ export class SceneLoader {
         onDispose: () => void,
         pluginExtension: Nullable<string>,
         name: string,
-        pluginOptions: SceneLoaderPluginOptions
+        pluginOptions: PluginOptions
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         const directLoad = SceneLoader._GetDirectLoad(fileInfo.url);
 
@@ -668,7 +673,7 @@ export class SceneLoader {
               ? SceneLoader._GetPluginForDirectLoad(fileInfo.url)
               : SceneLoader._GetPluginForFilename(fileInfo.url);
 
-        if (pluginOptions[registeredPlugin.plugin.name]?.enabled === false) {
+        if (pluginOptions?.[registeredPlugin.plugin.name]?.enabled === false) {
             throw new Error(`The '${registeredPlugin.plugin.name}' plugin is disabled via the loader options passed to the loading operation.`);
         }
 
@@ -680,7 +685,7 @@ export class SceneLoader {
         // For plugin factories, the plugin is instantiated on each SceneLoader operation. This makes options handling
         // much simpler as we can just pass the options to the factory, rather than passing options through to every possible
         // plugin call. Given this, options are only supported for plugins that provide a factory function.
-        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions) ?? registeredPlugin.plugin;
+        const plugin: IRegisteredPlugin["plugin"] = registeredPlugin.plugin.createPlugin?.(pluginOptions ?? {}) ?? registeredPlugin.plugin;
         if (!plugin) {
             // eslint-disable-next-line no-throw-literal
             throw `The loader plugin corresponding to the '${pluginExtension}' file type has not been found. If using es6, please import the plugin you wish to use before.`;
@@ -899,7 +904,7 @@ export class SceneLoader {
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
         name = "",
-        pluginOptions: SceneLoaderPluginOptions = {}
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to import mesh to");
@@ -1055,7 +1060,7 @@ export class SceneLoader {
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
         let name: string | undefined;
-        let pluginOptions: SceneLoaderPluginOptions | undefined;
+        let pluginOptions: PluginOptions;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
@@ -1138,7 +1143,7 @@ export class SceneLoader {
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
         name = "",
-        pluginOptions: SceneLoaderPluginOptions = {}
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!engine) {
             Tools.Error("No engine available");
@@ -1193,7 +1198,7 @@ export class SceneLoader {
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
         let name: string | undefined;
-        let pluginOptions: SceneLoaderPluginOptions | undefined;
+        let pluginOptions: PluginOptions;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
@@ -1270,7 +1275,7 @@ export class SceneLoader {
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
         name = "",
-        pluginOptions: SceneLoaderPluginOptions = {}
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to append to");
@@ -1412,7 +1417,7 @@ export class SceneLoader {
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
         let name: string | undefined;
-        let pluginOptions: SceneLoaderPluginOptions | undefined;
+        let pluginOptions: PluginOptions;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
@@ -1490,7 +1495,7 @@ export class SceneLoader {
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
         name = "",
-        pluginOptions: SceneLoaderPluginOptions = {}
+        pluginOptions: PluginOptions = {}
     ): Nullable<ISceneLoaderPlugin | ISceneLoaderPluginAsync> {
         if (!scene) {
             Logger.Error("No scene available to load asset container to");
@@ -1629,7 +1634,7 @@ export class SceneLoader {
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
         let name: string | undefined;
-        let pluginOptions: SceneLoaderPluginOptions | undefined;
+        let pluginOptions: PluginOptions;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
@@ -1726,7 +1731,7 @@ export class SceneLoader {
         onError: Nullable<(scene: Scene, message: string, exception?: any) => void> = null,
         pluginExtension: Nullable<string> = null,
         name = "",
-        pluginOptions: SceneLoaderPluginOptions = {}
+        pluginOptions: PluginOptions = {}
     ): void {
         if (!scene) {
             Logger.Error("No scene available to load animations to");
@@ -1855,7 +1860,7 @@ export class SceneLoader {
         let onProgress: Nullable<(event: ISceneLoaderProgressEvent) => void> | undefined;
         let pluginExtension: Nullable<string> | undefined;
         let name: string | undefined;
-        let pluginOptions: SceneLoaderPluginOptions | undefined;
+        let pluginOptions: PluginOptions;
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
