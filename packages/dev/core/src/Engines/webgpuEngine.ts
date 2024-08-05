@@ -658,7 +658,7 @@ export class WebGPUEngine extends AbstractEngine {
     private _onGlsLangReady = new Observable<void>();
     // eslint-disable-next-line @typescript-eslint/naming-convention
     private _GlsLangInitInProgress = false;
-    private _prepareGlsLangAsync(): Promise<any> {
+    private _prepareGlsLangAndTintAsync(): Promise<any> {
         if (this._GlsLangInitInProgress) {
             return new Promise<void>((resolve) => {
                 this._onGlsLangReady.addOnce(() => {
@@ -2134,7 +2134,7 @@ export class WebGPUEngine extends AbstractEngine {
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (shaderLanguage === ShaderLanguage.GLSL && !this._glslang) {
-            await this._prepareGlsLangAsync();
+            await this._prepareGlsLangAndTintAsync();
         }
 
         if (this.dbgShowShaderCode) {
