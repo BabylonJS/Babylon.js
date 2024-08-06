@@ -16,6 +16,7 @@ import { SerializationHelper } from "../Misc/decorators.serialization";
 
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "core/Engines/abstractEngine";
+import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
 /**
  * The Blur Post Process which blurs an image based on a kernel and direction.
@@ -28,6 +29,12 @@ export class BlurPostProcess extends PostProcess {
     @serialize("packedFloat")
     protected _packedFloat: boolean = false;
     private _staticDefines: string = "";
+
+    /**
+     * Force all the postprocess to compile to glsl even on WebGPU engines.
+     * False by default. This is mostly meant for backward compatibility.
+     */
+    public static ForceGLSL = false;
 
     /** The direction in which to blur the image. */
     @serializeAsVector2()
@@ -98,6 +105,7 @@ export class BlurPostProcess extends PostProcess {
      * @param defines
      * @param _blockCompilation If compilation of the shader should not be done in the constructor. The updateEffect method can be used to compile the shader at a later time. (default: false)
      * @param textureFormat Format of textures used when performing the post process. (default: TEXTUREFORMAT_RGBA)
+     * @param forceGLSL defines a boolean indicating if the shader must be compiled in GLSL even if we are using WebGPU
      */
     constructor(
         name: string,
@@ -111,7 +119,8 @@ export class BlurPostProcess extends PostProcess {
         textureType = Constants.TEXTURETYPE_UNSIGNED_INT,
         defines = "",
         private _blockCompilation = false,
-        textureFormat = Constants.TEXTUREFORMAT_RGBA
+        textureFormat = Constants.TEXTUREFORMAT_RGBA,
+        forceGLSL = false
     ) {
         super(
             name,
@@ -130,6 +139,7 @@ export class BlurPostProcess extends PostProcess {
             true,
             textureFormat
         );
+        this._initShaderSourceAsync(forceGLSL);
         this._staticDefines = defines;
         this.direction = direction;
         this.onApplyObservable.add((effect: Effect) => {
@@ -141,6 +151,29 @@ export class BlurPostProcess extends PostProcess {
         });
 
         this.kernel = kernel;
+    }
+
+    private _shadersLoaded = false;
+    private async _initShaderSourceAsync(forceGLSL = false) {
+        const engine = this.getEngine();
+
+        if (engine.isWebGPU && !forceGLSL && !BlurPostProcess.ForceGLSL) {
+            this._shaderLanguage = ShaderLanguage.WGSL;
+
+            await Promise.all([import("../ShadersWGSL/kernelBlur.fragment"), import("../ShadersWGSL/kernelBlur.vertex")]);
+        } else {
+            await Promise.all([import("../Shaders/kernelBlur.fragment"), import("../Shaders/kernelBlur.vertex")]);
+        }
+
+        this._shadersLoaded = true;
+    }
+
+    /**
+     * Get a value indicating if the post-process is ready to be used
+     * @returns true if the post-process is ready (shader is compiled)
+     */
+    public override isReady(): boolean {
+        return this._shadersLoaded && super.isReady();
     }
 
     /**

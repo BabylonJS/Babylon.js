@@ -46,12 +46,12 @@ attribute uv2: vec2f;
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
 
-var positionUpdated: vec3f = position;
+var positionUpdated: vec3f = input.position;
 #ifdef UV1
-    var uvUpdated: vec2f = uv;
+    var uvUpdated: vec2f = input.uv;
 #endif
 #ifdef NORMAL
-	var normalUpdated: vec3f = normal;
+	var normalUpdated: vec3f = input.normal;
 #endif
 
 #include<morphTargetsVertexGlobal>
@@ -81,7 +81,7 @@ var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
 #include<shadowMapVertexNormalBias>
 
 // Projection.
-vertexOutputs.position = viewProjection * worldPos;
+vertexOutputs.position = scene.viewProjection * worldPos;
 
 #include<shadowMapVertexMetric>
 

@@ -377,7 +377,8 @@ export class PostProcess {
     private _renderId = 0;
     private _textureType: number;
     private _textureFormat: number;
-    private _shaderLanguage: ShaderLanguage;
+    /** @internal */
+    protected _shaderLanguage: ShaderLanguage;
 
     /**
      * if externalTextureSamplerBinding is true, the "apply" method won't bind the textureSampler texture, it is expected to be done by the "outside" (by the onApplyObservable observer most probably).

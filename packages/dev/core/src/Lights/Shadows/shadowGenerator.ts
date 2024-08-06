@@ -879,15 +879,16 @@ export class ShadowGenerator implements IShadowGenerator {
      * @param usefullFloatFirst By default the generator will try to use half float textures but if you need precision (for self shadowing for instance), you can use this option to enforce full float texture.
      * @param camera Camera associated with this shadow generator (default: null). If null, takes the scene active camera at the time we need to access it
      * @param useRedTextureType Forces the generator to use a Red instead of a RGBA type for the shadow map texture format (default: false)
+     * @param forceGLSL defines a boolean indicating if the shader must be compiled in GLSL even if we are using WebGPU
      */
-    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>, useRedTextureType?: boolean) {
+    constructor(mapSize: number, light: IShadowLight, usefullFloatFirst?: boolean, camera?: Nullable<Camera>, useRedTextureType?: boolean, forceGLSL = false) {
         this._mapSize = mapSize;
         this._light = light;
         this._scene = light.getScene();
         this._camera = camera ?? null;
         this._useRedTextureType = !!useRedTextureType;
 
-        this._initShaderSourceAsync();
+        this._initShaderSourceAsync(forceGLSL);
 
         let shadowGenerators = light._shadowGenerators;
         if (!shadowGenerators) {
@@ -1730,6 +1731,7 @@ export class ShadowGenerator implements IShadowGenerator {
                         onCompiled: null,
                         onError: null,
                         indexParameters: { maxSimultaneousMorphTargets: morphInfluencers },
+                        shaderLanguage: this._shaderLanguage,
                     },
                     engine
                 );

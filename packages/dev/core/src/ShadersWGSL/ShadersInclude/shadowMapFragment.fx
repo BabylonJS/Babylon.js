@@ -1,4 +1,4 @@
-    var depthSM: f32 = vDepthMetricSM;
+    var depthSM: f32 = fragmentInputs.vDepthMetricSM;
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
     #if SM_USEDISTANCE == 1
