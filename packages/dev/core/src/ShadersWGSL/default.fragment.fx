@@ -368,14 +368,14 @@ var reflectionColor: vec4f =  vec4f(0., 0., 0., 1.);
 #ifdef SPECULARTERM
 	var finalSpecular: vec3f = specularBase * specularColor;
 	#ifdef SPECULAROVERALPHA
-		alpha = clamp(alpha + dot(finalSpecular,  vec3f(0.3, 0.59, 0.11)), vec3f(0.0), vec3f(1.0));
+		alpha = clamp(alpha + dot(finalSpecular,  vec3f(0.3, 0.59, 0.11)), 0.0, 1.0);
 	#endif
 #else
 	var finalSpecular: vec3f =  vec3f(0.0);
 #endif
 
 #ifdef REFLECTIONOVERALPHA
-	alpha = clamp(alpha + dot(reflectionColor.rgb,  vec3f(0.3, 0.59, 0.11)), vec3f(0.0), vec3f(1.0));
+	alpha = clamp(alpha + dot(reflectionColor.rgb,  vec3f(0.3, 0.59, 0.11)), 0.0, 1.0);
 #endif
 
 	// Composition
