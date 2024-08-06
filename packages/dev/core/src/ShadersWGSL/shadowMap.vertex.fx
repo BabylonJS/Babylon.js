@@ -87,10 +87,10 @@ vertexOutputs.position = scene.viewProjection * worldPos;
 
 #ifdef ALPHATEXTURE
     #ifdef UV1
-        vUV =  vec2f(diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+        vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
     #endif
     #ifdef UV2
-        vUV =  vec2f(diffuseMatrix *  vec4f(uv2, 1.0, 0.0));
+        vertexOutputs.vUV =  (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
     #endif
 #endif
 

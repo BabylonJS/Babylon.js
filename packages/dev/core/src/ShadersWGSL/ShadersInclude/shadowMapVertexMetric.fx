@@ -1,5 +1,5 @@
 #if SM_USEDISTANCE == 1
-    vPositionWSM = worldPos.xyz;
+    vertexOutputs.vPositionWSM = worldPos.xyz;
 #endif
 
 #if SM_DEPTHTEXTURE == 1
@@ -18,7 +18,7 @@
 #endif
 
 #if defined(SM_DEPTHCLAMP) &&  SM_DEPTHCLAMP == 1
-    zSM = vertexOutputs.position.z;
+    vertexOutputs.zSM = vertexOutputs.position.z;
     vertexOutputs.position.z = 0.0;
 #elif SM_USEDISTANCE == 0
     // Color Texture Linear bias.

@@ -10,7 +10,7 @@ varying sampleCenter: vec2f;
     var circleOfConfusionSamplerSampler: sampler;
     var circleOfConfusionSampler: texture_2d<f32>;
 
-    fn sampleCoC(in offset: vec2f) -> f32 {
+    fn sampleCoC(offset: vec2f) -> f32 {
         var coc: f32 = textureSample(circleOfConfusionSampler, circleOfConfusionSamplerSampler, offset).r;
         return coc; // actual distance from the lens
     }

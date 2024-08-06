@@ -16,7 +16,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 #include<clipPlaneFragment>
 
 #ifdef ALPHATEXTURE
-    var opacityMap: vec4f = textureSample(diffuseSampler, diffuseSamplerSampler, vUV);
+    var opacityMap: vec4f = textureSample(diffuseSampler, diffuseSamplerSampler, fragmentInputs.vUV);
     
     var alphaFromAlphaTexture: f32 = opacityMap.a;
 
