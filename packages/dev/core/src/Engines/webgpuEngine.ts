@@ -206,9 +206,6 @@ export class WebGPUEngine extends AbstractEngine {
 
     private static _InstanceId = 0;
 
-    /** true to enable using TintWASM to convert Spir-V to WGSL */
-    public static UseTWGSL = true;
-
     /** A unique id to identify this instance */
     public readonly uniqueId = -1;
 
@@ -665,12 +662,6 @@ export class WebGPUEngine extends AbstractEngine {
             this._workingGlsLangAndTintPromise = new Promise<void>((resolve) => {
                 this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
                     this._glslang = glslang;
-
-                    if (!WebGPUEngine.UseTWGSL) {
-                        resolve();
-                        return;
-                    }
-
                     this._tintWASM = new WebGPUTintWASM();
                     this._tintWASM.initTwgsl(this._twgslOptions ?? this._options?.twgslOptions).then(() => {
                         resolve();

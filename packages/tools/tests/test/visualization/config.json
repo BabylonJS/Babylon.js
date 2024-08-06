@@ -1256,7 +1256,7 @@
         },
         {
             "title": "Glow layer and LODs",
-            "playgroundId": "#UNS6ZV#9",
+            "playgroundId": "#UNS6ZV#4",
             "referenceImage": "glowlayerandlods.png"
         },
         {
@@ -1300,7 +1300,7 @@
         {
             "title": "Prepass SSAO + depth of field",
             "renderCount": 10,
-            "playgroundId": "#8F5HYV#65",
+            "playgroundId": "#8F5HYV#16",
             "excludedEngines": ["webgl1"],
             "referenceImage": "prepass-ssao-dof.png"
         },
@@ -1711,13 +1711,13 @@
         },
         {
             "title": "Fluid rendering particle system",
-            "playgroundId": "#544N0Q#115",
+            "playgroundId": "#544N0Q#67",
             "referenceImage": "fluidParticleSystem.png",
             "excludedEngines": ["webgl1"]
         },
         {
             "title": "Fluid rendering box sphere",
-            "playgroundId": "#PCMH7A#9",
+            "playgroundId": "#PCMH7A#2",
             "referenceImage": "fluidBoxSphere.png",
             "renderCount": 120,
             "excludedEngines": ["webgl1"]
@@ -1792,7 +1792,7 @@
         },
         {
             "title": "MultiRenderTarget with different texture types",
-            "playgroundId": "#XSNYAU#93",
+            "playgroundId": "#XSNYAU#22",
             "excludedEngines": ["webgl1"],
             "referenceImage": "MultiRenderTarget-with-different-texture-types.png"
         },
@@ -2060,7 +2060,7 @@
         {
             "title": "terrain-erosion",
             "renderCount": 15,
-            "playgroundId": "#C90R62#19",
+            "playgroundId": "#C90R62#17",
             "excludedEngines": ["webgl1", "webgl2"]
         },
         {

@@ -121,14 +121,14 @@ const invertYPreMultiplyAlphaWithOfstFragmentSource = `
 
     @fragment
     fn main(input: FragmentInputs) -> FragmentOutputs {
-        if (input.position.x < uniforms.ofstX || input.position.x >= uniforms.ofstX + width) {
+        if (input.position.x < uniforms.ofstX || input.position.x >= uniforms.ofstX + uniforms.width) {
             discard;
         }
-        if (input.position.y < uniforms.ofstY || input.position.y >= uniforms.ofstY + height) {
+        if (input.position.y < uniforms.ofstY || input.position.y >= uniforms.ofstY + uniforms.height) {
             discard;
         }
     #ifdef INVERTY
-        var color: vec4f = textureLoad(img, vec2i(input.position.x, ofstY + height - (input.position.y - uniforms.ofstY)), 0);
+        var color: vec4f = textureLoad(img, vec2i(i32(input.position.x), i32(uniforms.ofstY + uniforms.height - (input.position.y - uniforms.ofstY))), 0);
     #else
         var color: vec4f = textureLoad(img, vec2i(input.position.xy), 0);
     #endif
