@@ -258,7 +258,7 @@ export class BlurPostProcess extends PostProcess {
         weights = linearSamplingWeights;
 
         // Generate shaders
-        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors;
+        const maxVaryingRows = this.getEngine().getCaps().maxVaryingVectors - (this._shaderLanguage === ShaderLanguage.WGSL ? 1 : 0); // Because of the additional builtins
         const freeVaryingVec2 = Math.max(maxVaryingRows, 0) - 1; // Because of sampleCenter
 
         let varyingCount = Math.min(offsets.length, freeVaryingVec2);

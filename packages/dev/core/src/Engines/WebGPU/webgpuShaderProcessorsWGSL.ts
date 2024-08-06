@@ -73,7 +73,7 @@ export class WebGPUShaderProcessorWGSL extends WebGPUShaderProcessor {
             }
             const value = preProcessors[key];
             if (!isNaN(parseInt(value)) || !isNaN(parseFloat(value))) {
-                code = code.replace(new RegExp(`${key}`, "g"), value);
+                code = `const ${key} = ${value};\n` + code;
             }
         }
 

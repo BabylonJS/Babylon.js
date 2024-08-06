@@ -8,13 +8,12 @@ uniform delta: vec2f;
 varying sampleCenter: vec2f;
 #include<kernelBlurVaryingDeclaration>[0..varyingCount]
 
-const madd: vec2f =  vec2f(0.5, 0.5);
 
 #define CUSTOM_VERTEX_DEFINITIONS
 
 @vertex
 fn main(input : VertexInputs) -> FragmentInputs {
-
+	const madd: vec2f =  vec2f(0.5, 0.5);
 #define CUSTOM_VERTEX_MAIN_BEGIN
 
 	vertexOutputs.sampleCenter = (input.position * madd + madd);
