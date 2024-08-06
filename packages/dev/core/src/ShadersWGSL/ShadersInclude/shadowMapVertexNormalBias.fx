@@ -11,5 +11,5 @@
     var sinNLSM: f32 = sqrt(1.0 - ndlSM * ndlSM);
     var normalBiasSM: f32 = uniforms.biasAndScaleSM.y * sinNLSM;
 
-    worldPos.xyz -= vNormalW * normalBiasSM;
+    worldPos = vec4f(worldPos.xyz - vNormalW * normalBiasSM, worldPos.w);
 #endif

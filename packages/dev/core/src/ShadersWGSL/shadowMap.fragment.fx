@@ -21,7 +21,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
     var alphaFromAlphaTexture: f32 = opacityMap.a;
 
     #if SM_SOFTTRANSPARENTSHADOW == 1
-        if (softTransparentShadowSM.y == 1.0) {
+        if (uniforms.softTransparentShadowSM.y == 1.0) {
             opacityMap = vec4f(opacityMap.rgb *  vec3f(0.3, 0.59, 0.11), opacityMap.a);
             alphaFromAlphaTexture = opacityMap.x + opacityMap.y + opacityMap.z;
         }
@@ -36,11 +36,11 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
 #if SM_SOFTTRANSPARENTSHADOW == 1
     #ifdef ALPHATEXTURE
-        if ((bayerDither8(floor(((fragmentInputs.position.xy)%(8.0))))) / 64.0 >= softTransparentShadowSM.x * alphaFromAlphaTexture)  {
+        if ((bayerDither8(floor(((fragmentInputs.position.xy)%(8.0))))) / 64.0 >= uniforms.softTransparentShadowSM.x * alphaFromAlphaTexture)  {
             discard;
         }
     #else
-        if ((bayerDither8(floor(((fragmentInputs.position.xy)%(8.0))))) / 64.0 >= softTransparentShadowSM.x) {
+        if ((bayerDither8(floor(((fragmentInputs.position.xy)%(8.0))))) / 64.0 >= uniforms.softTransparentShadowSM.x) {
             discard;
         } 
     #endif

@@ -64,7 +64,7 @@ var positionUpdated: vec3f = input.position;
 var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
 
 #ifdef NORMAL
-    var normWorldSM: mat3x3f =  mat3x3f(finalWorld);
+    var normWorldSM: mat3x3f =  mat3x3f(finalWorld[0].xyz, finalWorld[1].xyz, finalWorld[2].xyz);
 
     #if defined(INSTANCES) && defined(THIN_INSTANCES)
         var vNormalW: vec3f = normalUpdated /  vec3f(dot(normWorldSM[0], normWorldSM[0]), dot(normWorldSM[1], normWorldSM[1]), dot(normWorldSM[2], normWorldSM[2]));
