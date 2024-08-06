@@ -2114,7 +2114,7 @@ export class WebGPUEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public async _preparePipelineContextAsync(
+    public async _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -2122,7 +2122,10 @@ export class WebGPUEngine extends AbstractEngine {
         rawVertexSourceCode: string,
         rawFragmentSourceCode: string,
         rebuildRebind: any,
-        defines: Nullable<string>
+        defines: Nullable<string>,
+        _transformFeedbackVaryings: Nullable<string[]>,
+        _key: string,
+        onReady: () => void
     ) {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
@@ -2151,7 +2154,7 @@ export class WebGPUEngine extends AbstractEngine {
             webGpuContext.stages = this._compilePipelineStageDescriptor(vertexSourceCode, fragmentSourceCode, defines, shaderLanguage);
         }
 
-        return Promise.resolve();
+        onReady();
     }
 
     /**

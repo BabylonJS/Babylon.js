@@ -254,7 +254,7 @@ export function _finalizePipelineContext(pipelineContext: WebGLPipelineContext, 
 /**
  * @internal
  */
-export function _preparePipelineContextAsync(
+export function _preparePipelineContext(
     pipelineContext: IPipelineContext,
     vertexSourceCode: string,
     fragmentSourceCode: string,
@@ -265,6 +265,7 @@ export function _preparePipelineContextAsync(
     defines: Nullable<string>,
     transformFeedbackVaryings: Nullable<string[]>,
     _key: string = "",
+    onReady: () => void,
     createRawShaderProgramInjection?: typeof createRawShaderProgram,
     createShaderProgramInjection?: typeof createShaderProgram
 ) {
@@ -297,7 +298,7 @@ export function _preparePipelineContextAsync(
     }
     webGLRenderingState.program.__SPECTOR_rebuildProgram = rebuildRebind;
 
-    return Promise.resolve();
+    onReady();
 }
 
 function _compileShader(source: string, type: string, defines: Nullable<string>, shaderVersion: string, gl: WebGLContext, _contextWasLost?: boolean): WebGLShader {

@@ -380,7 +380,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _preparePipelineContextAsync(
+    public abstract _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -390,8 +390,9 @@ export abstract class AbstractEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        key: string
-    ): Promise<void>;
+        key: string,
+        onReady: () => void
+    ): void;
 
     /** @internal */
     protected _shaderPlatformName: string;

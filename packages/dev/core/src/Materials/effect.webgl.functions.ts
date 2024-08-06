@@ -1,8 +1,8 @@
 import type { AbstractEngine } from "core/Engines/abstractEngine";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, createAndPreparePipelineContextAsync } from "./effect.functions";
+import { _processShaderCode, createAndPreparePipelineContext } from "./effect.functions";
 import type { IPipelineContext } from "core/Engines/IPipelineContext";
-import { _executeWhenRenderingStateIsCompiled, _preparePipelineContextAsync, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
+import { _executeWhenRenderingStateIsCompiled, _preparePipelineContext, createPipelineContext, getStateObject } from "core/Engines/thinEngine.functions";
 import { ShaderLanguage } from "./shaderLanguage";
 import { _getGlobalDefines } from "core/Engines/abstractEngine.functions";
 import type { ProcessingOptions } from "core/Engines/Processors/shaderProcessingOptions";
@@ -21,7 +21,7 @@ export async function generatePipelineContext(
     options: IPipelineGenerationOptions,
     context: WebGL2RenderingContext | WebGLRenderingContext,
     createPipelineContextInjection: typeof AbstractEngine.prototype.createPipelineContext = createPipelineContext.bind(null, context),
-    _preparePipelineContextInjection: typeof AbstractEngine.prototype._preparePipelineContextAsync = _preparePipelineContextAsync
+    _preparePipelineContextInjection: typeof AbstractEngine.prototype._preparePipelineContext = _preparePipelineContext
 ): Promise<IPipelineContext> {
     // make sure the state object exists
     getStateObject(context);
@@ -72,7 +72,7 @@ export async function generatePipelineContext(
                 undefined,
                 async function (vertexCode, fragmentCode) {
                     try {
-                        const pipeline = await createAndPreparePipelineContextAsync(
+                        const pipeline = createAndPreparePipelineContext(
                             {
                                 name: key,
                                 vertex: vertexCode,
@@ -84,7 +84,7 @@ export async function generatePipelineContext(
                                 ...options.extendedCreatePipelineOptions,
                             },
                             createPipelineContextInjection,
-                            _preparePipelineContextAsync,
+                            _preparePipelineContext,
                             _executeWhenRenderingStateIsCompiled
                         );
                         resolve(pipeline);

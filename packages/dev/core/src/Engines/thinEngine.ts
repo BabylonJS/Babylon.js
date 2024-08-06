@@ -26,7 +26,7 @@ import {
     createRawShaderProgram,
     createShaderProgram,
     _finalizePipelineContext,
-    _preparePipelineContextAsync,
+    _preparePipelineContext,
     _setProgram,
     _executeWhenRenderingStateIsCompiled,
     getStateObject,
@@ -2062,7 +2062,7 @@ export class ThinEngine extends AbstractEngine {
     /**
      * @internal
      */
-    public _preparePipelineContextAsync(
+    public _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -2072,7 +2072,8 @@ export class ThinEngine extends AbstractEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        _key: string
+        _key: string,
+        onReady: () => void
     ) {
         const stateObject = getStateObject(this._gl);
         stateObject._contextWasLost = this._contextWasLost;
@@ -2081,7 +2082,7 @@ export class ThinEngine extends AbstractEngine {
         stateObject.createRawShaderProgramInjection = this.createRawShaderProgram.bind(this);
         stateObject.createShaderProgramInjection = this.createShaderProgram.bind(this);
         stateObject.loadFileInjection = this._loadFile.bind(this);
-        return _preparePipelineContextAsync(
+        return _preparePipelineContext(
             pipelineContext as WebGLPipelineContext,
             vertexSourceCode,
             fragmentSourceCode,
@@ -2091,7 +2092,8 @@ export class ThinEngine extends AbstractEngine {
             rebuildRebind,
             defines,
             transformFeedbackVaryings,
-            _key
+            _key,
+            onReady
         );
     }
 

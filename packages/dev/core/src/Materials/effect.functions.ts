@@ -276,44 +276,43 @@ function _useFinalCode(migratedVertexCode: string, migratedFragmentCode: string,
  * Creates and prepares a pipeline context
  * @internal
  */
-export const createAndPreparePipelineContextAsync = (
+export const createAndPreparePipelineContext = (
     options: ICreateAndPreparePipelineContextOptions,
     createPipelineContext: typeof AbstractEngine.prototype.createPipelineContext,
-    _preparePipelineContextAsync: typeof AbstractEngine.prototype._preparePipelineContextAsync,
+    _preparePipelineContext: typeof AbstractEngine.prototype._preparePipelineContext,
     _executeWhenRenderingStateIsCompiled: typeof AbstractEngine.prototype._executeWhenRenderingStateIsCompiled
-): Promise<IPipelineContext> => {
-    return new Promise((resolve) => {
-        try {
-            const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
-            pipelineContext._name = options.name;
-            if (options.name && options.context) {
-                const stateObject = getStateObject(options.context);
-                stateObject.cachedPipelines[options.name] = pipelineContext;
-            }
+): IPipelineContext => {
+    try {
+        const pipelineContext: IPipelineContext = options.existingPipelineContext || createPipelineContext(options.shaderProcessingContext);
+        pipelineContext._name = options.name;
+        if (options.name && options.context) {
+            const stateObject = getStateObject(options.context);
+            stateObject.cachedPipelines[options.name] = pipelineContext;
+        }
 
-            // Flagged as async as we may need to delay load some processing tools
-            // This does not break anything as the execution is waiting for _executeWhenRenderingStateIsCompiled
-            _preparePipelineContextAsync(
-                pipelineContext,
-                options.vertex,
-                options.fragment,
-                !!options.createAsRaw,
-                "",
-                "",
-                options.rebuildRebind,
-                options.defines,
-                options.transformFeedbackVaryings,
-                ""
-            ).then(() => {
+        // Flagged as async as we may need to delay load some processing tools
+        // This does not break anything as the execution is waiting for _executeWhenRenderingStateIsCompiled
+        _preparePipelineContext(
+            pipelineContext,
+            options.vertex,
+            options.fragment,
+            !!options.createAsRaw,
+            "",
+            "",
+            options.rebuildRebind,
+            options.defines,
+            options.transformFeedbackVaryings,
+            "",
+            () => {
                 _executeWhenRenderingStateIsCompiled(pipelineContext, () => {
                     options.onRenderingStateCompiled?.(pipelineContext);
                 });
+            }
+        );
 
-                resolve(pipelineContext);
-            });
-        } catch (e) {
-            Logger.Error("Error compiling effect");
-            throw e;
-        }
-    });
+        return pipelineContext;
+    } catch (e) {
+        Logger.Error("Error compiling effect");
+        throw e;
+    }
 };

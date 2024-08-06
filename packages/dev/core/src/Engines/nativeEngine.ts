@@ -738,7 +738,7 @@ export class NativeEngine extends Engine {
     /**
      * @internal
      */
-    public override _preparePipelineContextAsync(
+    public override _preparePipelineContext(
         pipelineContext: IPipelineContext,
         vertexSourceCode: string,
         fragmentSourceCode: string,
@@ -746,7 +746,10 @@ export class NativeEngine extends Engine {
         _rawVertexSourceCode: string,
         _rawFragmentSourceCode: string,
         _rebuildRebind: any,
-        defines: Nullable<string>
+        defines: Nullable<string>,
+        _transformFeedbackVaryings: Nullable<string[]>,
+        key: string,
+        onReady: () => void
     ) {
         if (createAsRaw) {
             this.createRawShaderProgram();
@@ -754,7 +757,7 @@ export class NativeEngine extends Engine {
             this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
 
-        return Promise.resolve();
+        onReady();
     }
 
     /**

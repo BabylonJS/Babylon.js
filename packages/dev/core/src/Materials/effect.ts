@@ -15,7 +15,7 @@ import { ShaderLanguage } from "./shaderLanguage";
 import type { InternalTexture } from "../Materials/Textures/internalTexture";
 import type { ThinTexture } from "../Materials/Textures/thinTexture";
 import type { IPipelineGenerationOptions } from "./effect.functions";
-import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContextAsync, resetCachedPipeline } from "./effect.functions";
+import { _processShaderCode, getCachedPipeline, createAndPreparePipelineContext, resetCachedPipeline } from "./effect.functions";
 
 /**
  * Defines the route to the shader code. The priority is as follows:
@@ -746,7 +746,7 @@ export class Effect implements IDisposable {
             const vertex = overrides ? this._vertexSourceCodeOverride : this._vertexSourceCode;
             const fragment = overrides ? this._fragmentSourceCodeOverride : this._fragmentSourceCode;
             const engine = this._engine;
-            this._pipelineContext = await createAndPreparePipelineContextAsync(
+            this._pipelineContext = createAndPreparePipelineContext(
                 {
                     existingPipelineContext: keepExistingPipelineContext ? previousPipelineContext : null,
                     vertex,
@@ -774,7 +774,7 @@ export class Effect implements IDisposable {
                     },
                 },
                 this._engine.createPipelineContext.bind(this._engine),
-                this._engine._preparePipelineContextAsync.bind(this._engine),
+                this._engine._preparePipelineContext.bind(this._engine),
                 this._engine._executeWhenRenderingStateIsCompiled.bind(this._engine)
             );
 
