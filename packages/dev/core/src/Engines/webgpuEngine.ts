@@ -2121,7 +2121,7 @@ export class WebGPUEngine extends AbstractEngine {
         createAsRaw: boolean,
         rawVertexSourceCode: string,
         rawFragmentSourceCode: string,
-        rebuildRebind: any,
+        _rebuildRebind: any,
         defines: Nullable<string>,
         _transformFeedbackVaryings: Nullable<string[]>,
         _key: string,
@@ -2130,7 +2130,7 @@ export class WebGPUEngine extends AbstractEngine {
         const webGpuContext = pipelineContext as WebGPUPipelineContext;
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
-        if (shaderLanguage === ShaderLanguage.GLSL && !this._glslang) {
+        if (shaderLanguage === ShaderLanguage.GLSL && (!this._glslang || !this._tintWASM)) {
             await this._prepareGlsLangAndTintAsync();
         }
 

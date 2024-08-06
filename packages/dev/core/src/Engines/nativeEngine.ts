@@ -748,7 +748,7 @@ export class NativeEngine extends Engine {
         _rebuildRebind: any,
         defines: Nullable<string>,
         _transformFeedbackVaryings: Nullable<string[]>,
-        key: string,
+        _key: string,
         onReady: () => void
     ) {
         if (createAsRaw) {
