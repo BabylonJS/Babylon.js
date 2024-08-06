@@ -655,7 +655,12 @@ export class WebGPUEngine extends AbstractEngine {
     //                              Initialization
     //------------------------------------------------------------------------------
     private _workingGlsLangAndTintPromise: Nullable<Promise<void>> = null;
-    private _prepareGlsLangAndTintAsync(): Promise<void> {
+
+    /**
+     * Load the glslang and tintWASM libraries and prepare them for use.
+     * @returns a promise that resolves when the engine is ready to use the glslang and tintWASM
+     */
+    public prepareGlsLangAndTintAsync(): Promise<void> {
         if (!this._workingGlsLangAndTintPromise) {
             this._workingGlsLangAndTintPromise = new Promise<void>((resolve) => {
                 this._initGlslang(this._glslangOptions ?? this._options?.glslangOptions).then((glslang: any) => {
@@ -2131,7 +2136,7 @@ export class WebGPUEngine extends AbstractEngine {
         const shaderLanguage = webGpuContext.shaderProcessingContext.shaderLanguage;
 
         if (shaderLanguage === ShaderLanguage.GLSL && (!this._glslang || !this._tintWASM)) {
-            await this._prepareGlsLangAndTintAsync();
+            await this.prepareGlsLangAndTintAsync();
         }
 
         if (this.dbgShowShaderCode) {
