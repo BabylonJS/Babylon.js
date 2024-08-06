@@ -663,13 +663,7 @@ void main(void) {
   }
 
   // TODO: Move this matrix into a uniform
-  float rotAngle = envRot;
-  float cosAngle = cos(rotAngle);
-  float sinAngle = sin(rotAngle);
-  vec3 r1 = vec3(cosAngle, 0.0f, sinAngle);
-  vec3 r2 = vec3(0.0, 1.0f, 0.0f);
-  vec3 r3 = vec3(-sinAngle, 0.0f, cosAngle);
-  mat3 RotMatrix = transpose(mat3(r1, r2, r3));
+  float normalizedRotation = envRot / (2.0 * PI);
 
   float depth = texelFetch(depthSampler, PixelCoord, 0).x;
   depth = depth * 2.0 - 1.0;
@@ -697,8 +691,8 @@ void main(void) {
       vec2 T;
       T.x = textureLod(icdfxSampler, vec2(r.x, 0.0), 0.0).x;
       T.y = textureLod(icdfySampler, vec2(T.x, r.y), 0.0).x;
+      T.x -= normalizedRotation;
       L = vec4(uv_to_normal(T), 0);
-      L.xyz = RotMatrix * L.xyz;
     }
     float edge_tint_const = linearZ_alpha.y > 0.0 ? -0.001 : -0.1;
     float cosNL = dot(N, L.xyz);
