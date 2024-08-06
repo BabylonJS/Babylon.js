@@ -746,13 +746,18 @@ export class NativeEngine extends Engine {
         _rawVertexSourceCode: string,
         _rawFragmentSourceCode: string,
         _rebuildRebind: any,
-        defines: Nullable<string>
+        defines: Nullable<string>,
+        _transformFeedbackVaryings: Nullable<string[]>,
+        _key: string,
+        onReady: () => void
     ) {
         if (createAsRaw) {
             this.createRawShaderProgram();
         } else {
             this.createShaderProgram(pipelineContext, vertexSourceCode, fragmentSourceCode, defines);
         }
+
+        onReady();
     }
 
     /**

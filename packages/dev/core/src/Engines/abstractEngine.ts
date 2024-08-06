@@ -390,7 +390,8 @@ export abstract class AbstractEngine {
         rebuildRebind: any,
         defines: Nullable<string>,
         transformFeedbackVaryings: Nullable<string[]>,
-        key: string
+        key: string,
+        onReady: () => void
     ): void;
 
     /** @internal */
@@ -1704,7 +1705,7 @@ export abstract class AbstractEngine {
     /**
      * @internal
      */
-    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage): Nullable<ShaderProcessingContext>;
+    public abstract _getShaderProcessingContext(shaderLanguage: ShaderLanguage, pureMode: boolean): Nullable<ShaderProcessingContext>;
 
     /**
      * Gets host document
