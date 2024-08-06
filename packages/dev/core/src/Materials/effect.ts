@@ -735,7 +735,7 @@ export class Effect implements IDisposable {
      * Prepares the effect
      * @internal
      */
-    public async _prepareEffect(keepExistingPipelineContext = false) {
+    public _prepareEffect(keepExistingPipelineContext = false) {
         const previousPipelineContext = this._pipelineContext;
 
         this._isReady = false;
