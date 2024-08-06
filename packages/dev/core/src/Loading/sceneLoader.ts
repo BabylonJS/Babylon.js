@@ -995,6 +995,7 @@ export class SceneLoader {
 
     /**
      * Import meshes into a scene
+     * @experimental
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
      * @param scene the instance of BABYLON.Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
@@ -1138,6 +1139,7 @@ export class SceneLoader {
 
     /**
      * Load a scene
+     * @experimental
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
      * @param engine is the instance of BABYLON.Engine to use to create the scene
      * @param options an object that configures aspects of how the scene is loaded
@@ -1354,6 +1356,7 @@ export class SceneLoader {
 
     /**
      * Append a scene
+     * @experimental
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
      * @param scene is the instance of BABYLON.Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
@@ -1565,6 +1568,7 @@ export class SceneLoader {
 
     /**
      * Load a scene into an asset container
+     * @experimental
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
      * @param scene is the instance of Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
@@ -1772,6 +1776,7 @@ export class SceneLoader {
 
     /**
      * Import animations from a file into a scene
+     * @experimental
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
      * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
      * @param options an object that configures aspects of how the scene is loaded
