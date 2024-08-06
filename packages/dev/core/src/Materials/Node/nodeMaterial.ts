@@ -1255,7 +1255,7 @@ export class NodeMaterial extends PushMaterial {
         proceduralTexture._setEffect(effect);
 
         let buildId = this._buildId;
-        proceduralTexture.onBeforeGenerationObservable.add(() => {
+        const refreshEffect = () => {
             if (buildId !== this._buildId) {
                 delete Effect.ShadersStore[tempName + "VertexShader"];
                 delete Effect.ShadersStore[tempName + "PixelShader"];
@@ -1291,6 +1291,15 @@ export class NodeMaterial extends PushMaterial {
             }
 
             this._checkInternals(effect);
+        };
+
+        proceduralTexture.onBeforeGenerationObservable.add(() => {
+            refreshEffect();
+        });
+
+        // This is needed if the procedural texture is not set to refresh automatically
+        this.onBuildObservable.add(() => {
+            refreshEffect();
         });
 
         return proceduralTexture;
