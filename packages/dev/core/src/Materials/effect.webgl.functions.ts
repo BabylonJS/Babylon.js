@@ -70,7 +70,7 @@ export async function generatePipelineContext(
                 processorOptions,
                 shaderDef,
                 undefined,
-                async function (vertexCode, fragmentCode) {
+                function (vertexCode, fragmentCode) {
                     try {
                         const pipeline = createAndPreparePipelineContext(
                             {
