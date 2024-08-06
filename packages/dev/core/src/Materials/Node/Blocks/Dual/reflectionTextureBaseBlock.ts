@@ -15,7 +15,6 @@ import { InputBlock } from "../Input/inputBlock";
 import { NodeMaterialSystemValues } from "../../Enums/nodeMaterialSystemValues";
 import { Constants } from "../../../../Engines/constants";
 
-import "../../../../Shaders/ShadersInclude/reflectionFunction";
 import { CubeTexture } from "../../../Textures/cubeTexture";
 import { Texture } from "../../../Textures/texture";
 import { EngineStore } from "../../../../Engines/engineStore";
@@ -169,6 +168,23 @@ export abstract class ReflectionTextureBaseBlock extends NodeMaterialBlock {
 
     protected _getTexture(): Nullable<BaseTexture> {
         return this.texture;
+    }
+
+    public override initialize(state: NodeMaterialBuildState) {
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/reflectionFunction");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/reflectionFunction");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     /**

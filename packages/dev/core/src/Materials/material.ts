@@ -51,6 +51,7 @@ import type { Animation } from "../Animations/animation";
 import type { InstancedMesh } from "../Meshes/instancedMesh";
 import { BindSceneUniformBuffer } from "./materialHelper.functions";
 import { SerializationHelper } from "../Misc/decorators.serialization";
+import { ShaderLanguage } from "./shaderLanguage";
 
 declare let BABYLON: any;
 
@@ -227,6 +228,16 @@ export class Material implements IAnimatable, IClipPlanesHolder {
      * This is mostly used when shader parallel compilation is supported (true by default)
      */
     public allowShaderHotSwapping = true;
+
+    /** Shader language used by the material */
+    protected _shaderLanguage = ShaderLanguage.GLSL;
+
+    /**
+     * Gets the shader language used in this material.
+     */
+    public get shaderLanguage(): ShaderLanguage {
+        return this._shaderLanguage;
+    }
 
     /**
      * The ID of the material

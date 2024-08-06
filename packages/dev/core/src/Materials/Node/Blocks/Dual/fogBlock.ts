@@ -11,7 +11,6 @@ import type { NodeMaterial, NodeMaterialDefines } from "../../nodeMaterial";
 import { InputBlock } from "../Input/inputBlock";
 import { RegisterClass } from "../../../../Misc/typeStore";
 
-import "../../../../Shaders/ShadersInclude/fogFragmentDeclaration";
 import { GetFogState } from "core/Materials/materialHelper.functions";
 import { ShaderLanguage } from "core/Materials/shaderLanguage";
 
@@ -88,6 +87,23 @@ export class FogBlock extends NodeMaterialBlock {
      */
     public get output(): NodeMaterialConnectionPoint {
         return this._outputs[0];
+    }
+
+    public override initialize(state: NodeMaterialBuildState) {
+        this._initShaderSourceAsync(state.shaderLanguage);
+    }
+
+    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+        this._codeIsReady = false;
+
+        if (shaderLanguage === ShaderLanguage.WGSL) {
+            await import("../../../../ShadersWGSL/ShadersInclude/fogFragmentDeclaration");
+        } else {
+            await import("../../../../Shaders/ShadersInclude/fogFragmentDeclaration");
+        }
+
+        this._codeIsReady = true;
+        this.onCodeIsReadyObservable.notifyObservers(this);
     }
 
     public override autoConfigure(material: NodeMaterial, additionalFilteringInfo: (node: NodeMaterialBlock) => boolean = () => true) {

@@ -1,7 +1,7 @@
 ﻿#ifdef INSTANCES
 	var finalWorld = mat4x4<f32>(vertexInputs.world0, vertexInputs.world1, vertexInputs.world2, vertexInputs.world3);
 	#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
-		var finalPreviousWorld = mat4x4<f32>(previousWorld0, previousWorld1, previousWorld2, previousWorld3);
+		var finalPreviousWorld = mat4x4<f32>(vertexInputs.previousWorld0, vertexInputs.previousWorld1, vertexInputs.previousWorld2, vertexInputs.previousWorld3);
 	#endif
     #ifdef THIN_INSTANCES
         #if !defined(WORLD_UBO)
@@ -10,7 +10,7 @@
             finalWorld = mesh.world * finalWorld;
         #endif
 		#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
-			finalPreviousWorld = previousWorld * finalPreviousWorld;
+			finalPreviousWorld = uniforms.previousWorld * finalPreviousWorld;
 		#endif
     #endif
 #else
@@ -20,6 +20,6 @@
 	    var finalWorld = mesh.world;
     #endif
 	#if defined(PREPASS_VELOCITY) || defined(VELOCITY)
-        var finalPreviousWorld = previousWorld;
+        var finalPreviousWorld = uniforms.previousWorld;
     #endif
 #endif

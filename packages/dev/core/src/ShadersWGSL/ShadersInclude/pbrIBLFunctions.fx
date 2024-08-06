@@ -37,9 +37,11 @@
 #if defined(LODINREFLECTIONALPHA) || defined(SS_LODINREFRACTIONALPHA)
     // To enable 8 bit textures to be used we need to pack and unpack the LOD
     //inverse alpha is used to work around low-alpha bugs in Edge and Firefox
-    #define UNPACK_LOD(x) (1.0 - x) * 255.0
+    fn UNPACK_LOD(x: f32) -> f32 {
+        return (1.0 - x) * 255.0;
+    }
 
-    fn getLodFromAlphaG(cubeMapDimensionPixels: f32, alphaG: f32, NdotV: f32) -> f32 {
+    fn getLodFromAlphaGNdotV(cubeMapDimensionPixels: f32, alphaG: f32, NdotV: f32) -> f32 {
         var microsurfaceAverageSlope: f32 = alphaG;
 
         // Compensate for solid angle change between half-vector measure (Blinn-Phong) and reflected-vector measure (Phong):

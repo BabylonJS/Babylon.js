@@ -1,3 +1,3 @@
 #ifdef FOG
-vFogDistance = (view * worldPos).xyz;
+vertexOutputs.vFogDistance = (scene.view * worldPos).xyz;
 #endif

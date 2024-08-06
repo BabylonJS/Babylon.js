@@ -221,6 +221,22 @@ class GLTFLoaderOptions {
     public animationStartMode = GLTFLoaderAnimationStartMode.FIRST;
 
     /**
+     * Defines if the loader should load node animations. Defaults to true.
+     * NOTE: The animation of this node will still load if the node is also a joint of a skin and `loadSkins` is true.
+     */
+    public loadNodeAnimations = true;
+
+    /**
+     * Defines if the loader should load skins. Defaults to true.
+     */
+    public loadSkins = true;
+
+    /**
+     * Defines if the loader should load morph targets. Defaults to true.
+     */
+    public loadMorphTargets = true;
+
+    /**
      * Defines if the loader should compile materials before raising the success callback. Defaults to false.
      */
     public compileMaterials = false;
