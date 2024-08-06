@@ -9,74 +9,74 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * Block used for the particle blend multiply section
  */
 export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
-    /**
-     * Create a new ParticleBlendMultiplyBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+	/**
+	 * Create a new ParticleBlendMultiplyBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._isUnique = true;
+		this._isUnique = true;
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("alphaTexture", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
-        this.registerInput("alphaColor", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+		this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
+		this.registerInput("alphaTexture", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
+		this.registerInput("alphaColor", NodeMaterialBlockConnectionPointTypes.Float, false, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("blendColor", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
-    }
+		this.registerOutput("blendColor", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "ParticleBlendMultiplyBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "ParticleBlendMultiplyBlock";
+	}
 
-    /**
-     * Gets the color input component
-     */
-    public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the color input component
+	 */
+	public get color(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the alphaTexture input component
-     */
-    public get alphaTexture(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
+	/**
+	 * Gets the alphaTexture input component
+	 */
+	public get alphaTexture(): NodeMaterialConnectionPoint {
+		return this._inputs[1];
+	}
 
-    /**
-     * Gets the alphaColor input component
-     */
-    public get alphaColor(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
+	/**
+	 * Gets the alphaColor input component
+	 */
+	public get alphaColor(): NodeMaterialConnectionPoint {
+		return this._inputs[2];
+	}
 
-    /**
-     * Gets the blendColor output component
-     */
-    public get blendColor(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the blendColor output component
+	 */
+	public get blendColor(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    /**
-     * Initialize the block and prepare the context for build
-     * @param state defines the state that will be used for the build
-     */
-    public override initialize(state: NodeMaterialBuildState) {
-        state._excludeVariableName("sourceAlpha");
-    }
+	/**
+	 * Initialize the block and prepare the context for build
+	 * @param state defines the state that will be used for the build
+	 */
+	public override initialize(state: NodeMaterialBuildState) {
+		state._excludeVariableName("sourceAlpha");
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex) {
-            return;
-        }
+		if (state.target === NodeMaterialBlockTargets.Vertex) {
+			return;
+		}
 
-        state.compilationString += `
+		state.compilationString += `
             #ifdef BLENDMULTIPLYMODE
                 ${state._declareOutput(this.blendColor)};
                 ${state._declareLocalVar("sourceAlpha", NodeMaterialBlockConnectionPointTypes.Float)}  = ${this.alphaColor.associatedVariableName} * ${this.alphaTexture.associatedVariableName};
@@ -86,8 +86,8 @@ export class ParticleBlendMultiplyBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        return this;
-    }
+		return this;
+	}
 }
 
 RegisterClass("BABYLON.ParticleBlendMultiplyBlock", ParticleBlendMultiplyBlock);

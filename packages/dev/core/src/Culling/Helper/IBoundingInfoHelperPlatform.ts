@@ -5,11 +5,11 @@ import type { AbstractMesh } from "core/Meshes/abstractMesh";
  * @internal
  */
 export interface IBoundingInfoHelperPlatform {
-    processAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void>;
+	processAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void>;
 
-    registerMeshListAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void>;
-    processMeshList(): void;
-    fetchResultsForMeshListAsync(): Promise<void>;
+	registerMeshListAsync(mesh: AbstractMesh | AbstractMesh[]): Promise<void>;
+	processMeshList(): void;
+	fetchResultsForMeshListAsync(): Promise<void>;
 
-    dispose(): void;
+	dispose(): void;
 }

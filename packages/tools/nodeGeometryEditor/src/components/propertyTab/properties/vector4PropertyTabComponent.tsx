@@ -5,23 +5,23 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 
 interface IVector4PropertyTabComponentProps {
-    globalState: GlobalState;
-    inputBlock: GeometryInputBlock;
-    lockObject: LockObject;
+	globalState: GlobalState;
+	inputBlock: GeometryInputBlock;
+	lockObject: LockObject;
 }
 
 export class Vector4PropertyTabComponent extends React.Component<IVector4PropertyTabComponentProps> {
-    override render() {
-        return (
-            <Vector4LineComponent
-                lockObject={this.props.lockObject}
-                label="Value"
-                target={this.props.inputBlock}
-                propertyName="value"
-                onChange={() => {
-                    this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
-                }}
-            ></Vector4LineComponent>
-        );
-    }
+	override render() {
+		return (
+			<Vector4LineComponent
+				lockObject={this.props.lockObject}
+				label="Value"
+				target={this.props.inputBlock}
+				propertyName="value"
+				onChange={() => {
+					this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+				}}
+			></Vector4LineComponent>
+		);
+	}
 }

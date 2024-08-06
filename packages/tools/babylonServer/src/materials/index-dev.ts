@@ -9,11 +9,11 @@ import * as MatLib from "../../../../dev/materials/src/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (const mat in MatLib) {
-        (<any>globalObject).BABYLON[mat] = (<any>MatLib)[mat];
-    }
-    (<any>globalObject).MATERIALS = MatLib;
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	for (const mat in MatLib) {
+		(<any>globalObject).BABYLON[mat] = (<any>MatLib)[mat];
+	}
+	(<any>globalObject).MATERIALS = MatLib;
 }
 
 export * from "../../../../dev/materials/src/index";

@@ -9,27 +9,27 @@ import { CommonRenderingPipelinePropertyGridComponent } from "./commonRenderingP
 import type { GlobalState } from "../../../../globalState";
 
 interface IRenderingPipelinePropertyGridComponentProps {
-    globalState: GlobalState;
-    renderPipeline: PostProcessRenderPipeline;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	renderPipeline: PostProcessRenderPipeline;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class RenderingPipelinePropertyGridComponent extends React.Component<IRenderingPipelinePropertyGridComponentProps> {
-    constructor(props: IRenderingPipelinePropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IRenderingPipelinePropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const renderPipeline = this.props.renderPipeline;
+	override render() {
+		const renderPipeline = this.props.renderPipeline;
 
-        return (
-            <CommonRenderingPipelinePropertyGridComponent
-                globalState={this.props.globalState}
-                lockObject={this.props.lockObject}
-                renderPipeline={renderPipeline}
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-            />
-        );
-    }
+		return (
+			<CommonRenderingPipelinePropertyGridComponent
+				globalState={this.props.globalState}
+				lockObject={this.props.lockObject}
+				renderPipeline={renderPipeline}
+				onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+			/>
+		);
+	}
 }

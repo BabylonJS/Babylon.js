@@ -12,10 +12,10 @@ import type { Layout } from "./types";
  * Arguments for the Layout component.
  */
 export interface IFlexibleGridLayoutProps {
-    /**
-     * A definition of the layout which can be changed by the user
-     */
-    layoutDefinition: Layout;
+	/**
+	 * A definition of the layout which can be changed by the user
+	 */
+	layoutDefinition: Layout;
 }
 
 /**
@@ -25,26 +25,26 @@ export interface IFlexibleGridLayoutProps {
  * @returns layout element
  */
 export const FlexibleGridLayout: FC<IFlexibleGridLayoutProps> = (props) => {
-    const [layout, setLayout] = useState(props.layoutDefinition);
-    const containerDiv = useRef<Nullable<HTMLDivElement>>(null);
-    const containerSize = useRef({ width: 0, height: 0 });
+	const [layout, setLayout] = useState(props.layoutDefinition);
+	const containerDiv = useRef<Nullable<HTMLDivElement>>(null);
+	const containerSize = useRef({ width: 0, height: 0 });
 
-    useEffect(() => {
-        if (containerDiv.current) {
-            containerSize.current.width = containerDiv.current.clientWidth;
-            containerSize.current.height = containerDiv.current.clientHeight;
-        }
-    }, [containerDiv]);
+	useEffect(() => {
+		if (containerDiv.current) {
+			containerSize.current.width = containerDiv.current.clientWidth;
+			containerSize.current.height = containerDiv.current.clientHeight;
+		}
+	}, [containerDiv]);
 
-    return (
-        <DndProvider backend={TouchBackend} options={{ enableMouseEvents: true }}>
-            <LayoutContext.Provider value={{ layout, setLayout }}>
-                <FlexibleDragHandler containerSize={containerSize.current}>
-                    <div style={{ width: "100%", height: "100%" }} ref={containerDiv}>
-                        <FlexibleGridContainer />
-                    </div>
-                </FlexibleDragHandler>
-            </LayoutContext.Provider>
-        </DndProvider>
-    );
+	return (
+		<DndProvider backend={TouchBackend} options={{ enableMouseEvents: true }}>
+			<LayoutContext.Provider value={{ layout, setLayout }}>
+				<FlexibleDragHandler containerSize={containerSize.current}>
+					<div style={{ width: "100%", height: "100%" }} ref={containerDiv}>
+						<FlexibleGridContainer />
+					</div>
+				</FlexibleDragHandler>
+			</LayoutContext.Provider>
+		</DndProvider>
+	);
 };

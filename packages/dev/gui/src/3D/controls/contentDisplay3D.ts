@@ -8,86 +8,86 @@ import { Texture } from "core/Materials/Textures/texture";
  * The base class for controls that display content
  */
 export class ContentDisplay3D extends Control3D {
-    private _content: Control;
-    private _facadeTexture: Nullable<AdvancedDynamicTexture>;
-    protected _contentResolution = 512;
-    protected _contentScaleRatio = 2;
-    protected _contentScaleRatioY?: number;
+	private _content: Control;
+	private _facadeTexture: Nullable<AdvancedDynamicTexture>;
+	protected _contentResolution = 512;
+	protected _contentScaleRatio = 2;
+	protected _contentScaleRatioY?: number;
 
-    /**
-     * Gets or sets the GUI 2D content used to display the button's facade
-     */
-    public get content(): Control {
-        return this._content;
-    }
+	/**
+	 * Gets or sets the GUI 2D content used to display the button's facade
+	 */
+	public get content(): Control {
+		return this._content;
+	}
 
-    public set content(value: Control) {
-        this._content = value;
+	public set content(value: Control) {
+		this._content = value;
 
-        if (!value || !this._host || !this._host.utilityLayer) {
-            return;
-        }
+		if (!value || !this._host || !this._host.utilityLayer) {
+			return;
+		}
 
-        if (!this._facadeTexture) {
-            this._facadeTexture = new AdvancedDynamicTexture(
-                "Facade",
-                this._contentResolution,
-                this._contentResolution,
-                this._host.utilityLayer.utilityLayerScene,
-                true,
-                Texture.TRILINEAR_SAMPLINGMODE
-            );
-            this._setFacadeTextureScaling();
-            this._facadeTexture.premulAlpha = true;
-        } else {
-            this._facadeTexture.rootContainer.clearControls();
-        }
+		if (!this._facadeTexture) {
+			this._facadeTexture = new AdvancedDynamicTexture(
+				"Facade",
+				this._contentResolution,
+				this._contentResolution,
+				this._host.utilityLayer.utilityLayerScene,
+				true,
+				Texture.TRILINEAR_SAMPLINGMODE
+			);
+			this._setFacadeTextureScaling();
+			this._facadeTexture.premulAlpha = true;
+		} else {
+			this._facadeTexture.rootContainer.clearControls();
+		}
 
-        this._facadeTexture.addControl(value);
+		this._facadeTexture.addControl(value);
 
-        this._applyFacade(this._facadeTexture);
-    }
+		this._applyFacade(this._facadeTexture);
+	}
 
-    protected _setFacadeTextureScaling() {
-        if (this._facadeTexture) {
-            this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
-            this._facadeTexture.rootContainer.scaleY = this._contentScaleRatioY ?? this._contentScaleRatio;
-        }
-    }
+	protected _setFacadeTextureScaling() {
+		if (this._facadeTexture) {
+			this._facadeTexture.rootContainer.scaleX = this._contentScaleRatio;
+			this._facadeTexture.rootContainer.scaleY = this._contentScaleRatioY ?? this._contentScaleRatio;
+		}
+	}
 
-    /**
-     * Gets or sets the texture resolution used to render content (512 by default)
-     */
-    public get contentResolution(): number {
-        return this._contentResolution;
-    }
+	/**
+	 * Gets or sets the texture resolution used to render content (512 by default)
+	 */
+	public get contentResolution(): number {
+		return this._contentResolution;
+	}
 
-    public set contentResolution(value: number) {
-        if (this._contentResolution === value) {
-            return;
-        }
+	public set contentResolution(value: number) {
+		if (this._contentResolution === value) {
+			return;
+		}
 
-        this._contentResolution = value;
-        this._resetContent();
-    }
+		this._contentResolution = value;
+		this._resetContent();
+	}
 
-    protected _disposeFacadeTexture() {
-        if (this._facadeTexture) {
-            this._facadeTexture.dispose();
-            this._facadeTexture = null;
-        }
-    }
+	protected _disposeFacadeTexture() {
+		if (this._facadeTexture) {
+			this._facadeTexture.dispose();
+			this._facadeTexture = null;
+		}
+	}
 
-    protected _resetContent() {
-        this._disposeFacadeTexture();
-        this.content = this._content;
-    }
+	protected _resetContent() {
+		this._disposeFacadeTexture();
+		this.content = this._content;
+	}
 
-    /**
-     * Apply the facade texture (created from the content property).
-     * This function can be overloaded by child classes
-     * @param facadeTexture defines the AdvancedDynamicTexture to use
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {}
+	/**
+	 * Apply the facade texture (created from the content property).
+	 * This function can be overloaded by child classes
+	 * @param facadeTexture defines the AdvancedDynamicTexture to use
+	 */
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	protected _applyFacade(facadeTexture: AdvancedDynamicTexture) {}
 }

@@ -10,54 +10,54 @@ import { Matrix } from "../../../../Maths/math.vector";
  * Block used to get a rotation matrix on Z Axis
  */
 export class RotationZBlock extends NodeGeometryBlock {
-    /**
-     * Create a new RotationZBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name);
+	/**
+	 * Create a new RotationZBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name);
 
-        this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float, false, 0);
-        this.registerOutput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
-    }
+		this.registerInput("angle", NodeGeometryBlockConnectionPointTypes.Float, false, 0);
+		this.registerOutput("matrix", NodeGeometryBlockConnectionPointTypes.Matrix);
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "RotationZBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "RotationZBlock";
+	}
 
-    /**
-     * Gets the angle input component
-     */
-    public get angle(): NodeGeometryConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the angle input component
+	 */
+	public get angle(): NodeGeometryConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the matrix output component
-     */
-    public get matrix(): NodeGeometryConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the matrix output component
+	 */
+	public get matrix(): NodeGeometryConnectionPoint {
+		return this._outputs[0];
+	}
 
-    public override autoConfigure() {
-        if (!this.angle.isConnected) {
-            const angleInput = new GeometryInputBlock("Angle");
-            angleInput.value = 0;
-            angleInput.output.connectTo(this.angle);
-        }
-    }
+	public override autoConfigure() {
+		if (!this.angle.isConnected) {
+			const angleInput = new GeometryInputBlock("Angle");
+			angleInput.value = 0;
+			angleInput.output.connectTo(this.angle);
+		}
+	}
 
-    protected override _buildBlock(state: NodeGeometryBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeGeometryBuildState) {
+		super._buildBlock(state);
 
-        this.matrix._storedFunction = (state) => {
-            return Matrix.RotationZ(this.angle.getConnectedValue(state));
-        };
-    }
+		this.matrix._storedFunction = (state) => {
+			return Matrix.RotationZ(this.angle.getConnectedValue(state));
+		};
+	}
 }
 
 RegisterClass("BABYLON.RotationZBlock", RotationZBlock);

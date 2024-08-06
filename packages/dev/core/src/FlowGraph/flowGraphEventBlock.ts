@@ -7,11 +7,11 @@ import type { FlowGraphContext } from "./flowGraphContext";
  * its output signal when the event is triggered.
  */
 export abstract class FlowGraphEventBlock extends FlowGraphAsyncExecutionBlock {
-    /**
-     * @internal
-     */
-    public _execute(context: FlowGraphContext): void {
-        context._notifyExecuteNode(this);
-        this.out._activateSignal(context);
-    }
+	/**
+	 * @internal
+	 */
+	public _execute(context: FlowGraphContext): void {
+		context._notifyExecuteNode(this);
+		this.out._activateSignal(context);
+	}
 }

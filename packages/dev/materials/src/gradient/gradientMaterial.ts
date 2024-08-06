@@ -21,328 +21,328 @@ import "./gradient.vertex";
 import { EffectFallbacks } from "core/Materials/effectFallbacks";
 import { addClipPlaneUniforms, bindClipPlane } from "core/Materials/clipPlaneMaterialHelper";
 import {
-    BindBonesParameters,
-    BindFogParameters,
-    BindLights,
-    BindLogDepth,
-    HandleFallbacksForShadows,
-    PrepareAttributesForBones,
-    PrepareAttributesForInstances,
-    PrepareDefinesForAttributes,
-    PrepareDefinesForFrameBoundValues,
-    PrepareDefinesForLights,
-    PrepareDefinesForMisc,
-    PrepareUniformsAndSamplersList,
+	BindBonesParameters,
+	BindFogParameters,
+	BindLights,
+	BindLogDepth,
+	HandleFallbacksForShadows,
+	PrepareAttributesForBones,
+	PrepareAttributesForInstances,
+	PrepareDefinesForAttributes,
+	PrepareDefinesForFrameBoundValues,
+	PrepareDefinesForLights,
+	PrepareDefinesForMisc,
+	PrepareUniformsAndSamplersList,
 } from "core/Materials/materialHelper.functions";
 
 class GradientMaterialDefines extends MaterialDefines {
-    public EMISSIVE = false;
-    public CLIPPLANE = false;
-    public CLIPPLANE2 = false;
-    public CLIPPLANE3 = false;
-    public CLIPPLANE4 = false;
-    public CLIPPLANE5 = false;
-    public CLIPPLANE6 = false;
-    public ALPHATEST = false;
-    public DEPTHPREPASS = false;
-    public POINTSIZE = false;
-    public FOG = false;
-    public NORMAL = false;
-    public UV1 = false;
-    public UV2 = false;
-    public VERTEXCOLOR = false;
-    public VERTEXALPHA = false;
-    public NUM_BONE_INFLUENCERS = 0;
-    public BonesPerMesh = 0;
-    public INSTANCES = false;
-    public INSTANCESCOLOR = false;
-    public IMAGEPROCESSINGPOSTPROCESS = false;
-    public SKIPFINALCOLORCLAMP = false;
-    public LOGARITHMICDEPTH = false;
+	public EMISSIVE = false;
+	public CLIPPLANE = false;
+	public CLIPPLANE2 = false;
+	public CLIPPLANE3 = false;
+	public CLIPPLANE4 = false;
+	public CLIPPLANE5 = false;
+	public CLIPPLANE6 = false;
+	public ALPHATEST = false;
+	public DEPTHPREPASS = false;
+	public POINTSIZE = false;
+	public FOG = false;
+	public NORMAL = false;
+	public UV1 = false;
+	public UV2 = false;
+	public VERTEXCOLOR = false;
+	public VERTEXALPHA = false;
+	public NUM_BONE_INFLUENCERS = 0;
+	public BonesPerMesh = 0;
+	public INSTANCES = false;
+	public INSTANCESCOLOR = false;
+	public IMAGEPROCESSINGPOSTPROCESS = false;
+	public SKIPFINALCOLORCLAMP = false;
+	public LOGARITHMICDEPTH = false;
 
-    constructor() {
-        super();
-        this.rebuild();
-    }
+	constructor() {
+		super();
+		this.rebuild();
+	}
 }
 
 export class GradientMaterial extends PushMaterial {
-    @serialize("maxSimultaneousLights")
-    private _maxSimultaneousLights = 4;
-    @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public maxSimultaneousLights: number;
+	@serialize("maxSimultaneousLights")
+	private _maxSimultaneousLights = 4;
+	@expandToProperty("_markAllSubMeshesAsLightsDirty")
+	public maxSimultaneousLights: number;
 
-    // The gradient top color, red by default
-    @serializeAsColor3()
-    public topColor = new Color3(1, 0, 0);
+	// The gradient top color, red by default
+	@serializeAsColor3()
+	public topColor = new Color3(1, 0, 0);
 
-    @serialize()
-    public topColorAlpha = 1.0;
+	@serialize()
+	public topColorAlpha = 1.0;
 
-    // The gradient top color, blue by default
-    @serializeAsColor3()
-    public bottomColor = new Color3(0, 0, 1);
+	// The gradient top color, blue by default
+	@serializeAsColor3()
+	public bottomColor = new Color3(0, 0, 1);
 
-    @serialize()
-    public bottomColorAlpha = 1.0;
+	@serialize()
+	public bottomColorAlpha = 1.0;
 
-    // Gradient offset
-    @serialize()
-    public offset = 0;
+	// Gradient offset
+	@serialize()
+	public offset = 0;
 
-    @serialize()
-    public scale = 1.0;
+	@serialize()
+	public scale = 1.0;
 
-    @serialize()
-    public smoothness = 1.0;
+	@serialize()
+	public smoothness = 1.0;
 
-    @serialize("disableLighting")
-    private _disableLighting = false;
-    @expandToProperty("_markAllSubMeshesAsLightsDirty")
-    public disableLighting: boolean;
+	@serialize("disableLighting")
+	private _disableLighting = false;
+	@expandToProperty("_markAllSubMeshesAsLightsDirty")
+	public disableLighting: boolean;
 
-    constructor(name: string, scene?: Scene) {
-        super(name, scene);
-    }
+	constructor(name: string, scene?: Scene) {
+		super(name, scene);
+	}
 
-    public override needAlphaBlending(): boolean {
-        return this.alpha < 1.0 || this.topColorAlpha < 1.0 || this.bottomColorAlpha < 1.0;
-    }
+	public override needAlphaBlending(): boolean {
+		return this.alpha < 1.0 || this.topColorAlpha < 1.0 || this.bottomColorAlpha < 1.0;
+	}
 
-    public override needAlphaTesting(): boolean {
-        return true;
-    }
+	public override needAlphaTesting(): boolean {
+		return true;
+	}
 
-    public override getAlphaTestTexture(): Nullable<BaseTexture> {
-        return null;
-    }
+	public override getAlphaTestTexture(): Nullable<BaseTexture> {
+		return null;
+	}
 
-    // Methods
-    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
-        const drawWrapper = subMesh._drawWrapper;
+	// Methods
+	public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh, useInstances?: boolean): boolean {
+		const drawWrapper = subMesh._drawWrapper;
 
-        if (this.isFrozen) {
-            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
-                return true;
-            }
-        }
+		if (this.isFrozen) {
+			if (drawWrapper.effect && drawWrapper._wasPreviouslyReady && drawWrapper._wasPreviouslyUsingInstances === useInstances) {
+				return true;
+			}
+		}
 
-        if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new GradientMaterialDefines();
-        }
+		if (!subMesh.materialDefines) {
+			subMesh.materialDefines = new GradientMaterialDefines();
+		}
 
-        const defines = <GradientMaterialDefines>subMesh.materialDefines;
-        const scene = this.getScene();
+		const defines = <GradientMaterialDefines>subMesh.materialDefines;
+		const scene = this.getScene();
 
-        if (this._isReadyForSubMesh(subMesh)) {
-            return true;
-        }
+		if (this._isReadyForSubMesh(subMesh)) {
+			return true;
+		}
 
-        const engine = scene.getEngine();
+		const engine = scene.getEngine();
 
-        PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
+		PrepareDefinesForFrameBoundValues(scene, engine, this, defines, useInstances ? true : false);
 
-        PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
+		PrepareDefinesForMisc(mesh, scene, this._useLogarithmicDepth, this.pointsCloud, this.fogEnabled, this._shouldTurnAlphaTestOn(mesh), defines);
 
-        defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
+		defines._needNormals = PrepareDefinesForLights(scene, mesh, defines, false, this._maxSimultaneousLights, this._disableLighting);
 
-        defines.EMISSIVE = this._disableLighting;
+		defines.EMISSIVE = this._disableLighting;
 
-        // Attribs
-        PrepareDefinesForAttributes(mesh, defines, false, true);
+		// Attribs
+		PrepareDefinesForAttributes(mesh, defines, false, true);
 
-        // Get correct effect
-        if (defines.isDirty) {
-            defines.markAsProcessed();
+		// Get correct effect
+		if (defines.isDirty) {
+			defines.markAsProcessed();
 
-            scene.resetCachedMaterial();
+			scene.resetCachedMaterial();
 
-            // Fallbacks
-            const fallbacks = new EffectFallbacks();
-            if (defines.FOG) {
-                fallbacks.addFallback(1, "FOG");
-            }
+			// Fallbacks
+			const fallbacks = new EffectFallbacks();
+			if (defines.FOG) {
+				fallbacks.addFallback(1, "FOG");
+			}
 
-            HandleFallbacksForShadows(defines, fallbacks);
+			HandleFallbacksForShadows(defines, fallbacks);
 
-            if (defines.NUM_BONE_INFLUENCERS > 0) {
-                fallbacks.addCPUSkinningFallback(0, mesh);
-            }
+			if (defines.NUM_BONE_INFLUENCERS > 0) {
+				fallbacks.addCPUSkinningFallback(0, mesh);
+			}
 
-            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+			defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
-            //Attributes
-            const attribs = [VertexBuffer.PositionKind];
+			//Attributes
+			const attribs = [VertexBuffer.PositionKind];
 
-            if (defines.NORMAL) {
-                attribs.push(VertexBuffer.NormalKind);
-            }
+			if (defines.NORMAL) {
+				attribs.push(VertexBuffer.NormalKind);
+			}
 
-            if (defines.UV1) {
-                attribs.push(VertexBuffer.UVKind);
-            }
+			if (defines.UV1) {
+				attribs.push(VertexBuffer.UVKind);
+			}
 
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
-            }
+			if (defines.UV2) {
+				attribs.push(VertexBuffer.UV2Kind);
+			}
 
-            if (defines.VERTEXCOLOR) {
-                attribs.push(VertexBuffer.ColorKind);
-            }
+			if (defines.VERTEXCOLOR) {
+				attribs.push(VertexBuffer.ColorKind);
+			}
 
-            PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
-            PrepareAttributesForInstances(attribs, defines);
+			PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
+			PrepareAttributesForInstances(attribs, defines);
 
-            // Legacy browser patch
-            const shaderName = "gradient";
-            const join = defines.toString();
+			// Legacy browser patch
+			const shaderName = "gradient";
+			const join = defines.toString();
 
-            const uniforms = [
-                "world",
-                "view",
-                "viewProjection",
-                "vEyePosition",
-                "vLightsType",
-                "vFogInfos",
-                "vFogColor",
-                "pointSize",
-                "mBones",
-                "logarithmicDepthConstant",
-                "topColor",
-                "bottomColor",
-                "offset",
-                "smoothness",
-                "scale",
-            ];
-            addClipPlaneUniforms(uniforms);
-            const samplers: string[] = [];
-            const uniformBuffers: string[] = [];
+			const uniforms = [
+				"world",
+				"view",
+				"viewProjection",
+				"vEyePosition",
+				"vLightsType",
+				"vFogInfos",
+				"vFogColor",
+				"pointSize",
+				"mBones",
+				"logarithmicDepthConstant",
+				"topColor",
+				"bottomColor",
+				"offset",
+				"smoothness",
+				"scale",
+			];
+			addClipPlaneUniforms(uniforms);
+			const samplers: string[] = [];
+			const uniformBuffers: string[] = [];
 
-            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: defines,
-                maxSimultaneousLights: 4,
-            });
+			PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+				uniformsNames: uniforms,
+				uniformBuffersNames: uniformBuffers,
+				samplers: samplers,
+				defines: defines,
+				maxSimultaneousLights: 4,
+			});
 
-            subMesh.setEffect(
-                scene.getEngine().createEffect(
-                    shaderName,
-                    <IEffectCreationOptions>{
-                        attributes: attribs,
-                        uniformsNames: uniforms,
-                        uniformBuffersNames: uniformBuffers,
-                        samplers: samplers,
-                        defines: join,
-                        fallbacks: fallbacks,
-                        onCompiled: this.onCompiled,
-                        onError: this.onError,
-                        indexParameters: { maxSimultaneousLights: 4 },
-                    },
-                    engine
-                ),
-                defines,
-                this._materialContext
-            );
-        }
-        if (!subMesh.effect || !subMesh.effect.isReady()) {
-            return false;
-        }
+			subMesh.setEffect(
+				scene.getEngine().createEffect(
+					shaderName,
+					<IEffectCreationOptions>{
+						attributes: attribs,
+						uniformsNames: uniforms,
+						uniformBuffersNames: uniformBuffers,
+						samplers: samplers,
+						defines: join,
+						fallbacks: fallbacks,
+						onCompiled: this.onCompiled,
+						onError: this.onError,
+						indexParameters: { maxSimultaneousLights: 4 },
+					},
+					engine
+				),
+				defines,
+				this._materialContext
+			);
+		}
+		if (!subMesh.effect || !subMesh.effect.isReady()) {
+			return false;
+		}
 
-        defines._renderId = scene.getRenderId();
-        drawWrapper._wasPreviouslyReady = true;
-        drawWrapper._wasPreviouslyUsingInstances = !!useInstances;
+		defines._renderId = scene.getRenderId();
+		drawWrapper._wasPreviouslyReady = true;
+		drawWrapper._wasPreviouslyUsingInstances = !!useInstances;
 
-        return true;
-    }
+		return true;
+	}
 
-    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const scene = this.getScene();
+	public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+		const scene = this.getScene();
 
-        const defines = <GradientMaterialDefines>subMesh.materialDefines;
-        if (!defines) {
-            return;
-        }
+		const defines = <GradientMaterialDefines>subMesh.materialDefines;
+		if (!defines) {
+			return;
+		}
 
-        const effect = subMesh.effect;
-        if (!effect) {
-            return;
-        }
+		const effect = subMesh.effect;
+		if (!effect) {
+			return;
+		}
 
-        this._activeEffect = effect;
+		this._activeEffect = effect;
 
-        // Matrices
-        this.bindOnlyWorldMatrix(world);
-        this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+		// Matrices
+		this.bindOnlyWorldMatrix(world);
+		this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
 
-        // Bones
-        BindBonesParameters(mesh, effect);
+		// Bones
+		BindBonesParameters(mesh, effect);
 
-        if (this._mustRebind(scene, effect, subMesh)) {
-            // Clip plane
-            bindClipPlane(effect, this, scene);
+		if (this._mustRebind(scene, effect, subMesh)) {
+			// Clip plane
+			bindClipPlane(effect, this, scene);
 
-            // Point size
-            if (this.pointsCloud) {
-                this._activeEffect.setFloat("pointSize", this.pointSize);
-            }
+			// Point size
+			if (this.pointsCloud) {
+				this._activeEffect.setFloat("pointSize", this.pointSize);
+			}
 
-            // Log. depth
-            if (this._useLogarithmicDepth) {
-                BindLogDepth(defines, effect, scene);
-            }
+			// Log. depth
+			if (this._useLogarithmicDepth) {
+				BindLogDepth(defines, effect, scene);
+			}
 
-            scene.bindEyePosition(effect);
-        }
+			scene.bindEyePosition(effect);
+		}
 
-        if (scene.lightsEnabled && !this.disableLighting) {
-            BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
-        }
+		if (scene.lightsEnabled && !this.disableLighting) {
+			BindLights(scene, mesh, this._activeEffect, defines, this.maxSimultaneousLights);
+		}
 
-        // View
-        if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
-            this._activeEffect.setMatrix("view", scene.getViewMatrix());
-        }
+		// View
+		if (scene.fogEnabled && mesh.applyFog && scene.fogMode !== Scene.FOGMODE_NONE) {
+			this._activeEffect.setMatrix("view", scene.getViewMatrix());
+		}
 
-        // Fog
-        BindFogParameters(scene, mesh, this._activeEffect);
+		// Fog
+		BindFogParameters(scene, mesh, this._activeEffect);
 
-        this._activeEffect.setColor4("topColor", this.topColor, this.topColorAlpha);
-        this._activeEffect.setColor4("bottomColor", this.bottomColor, this.bottomColorAlpha);
-        this._activeEffect.setFloat("offset", this.offset);
-        this._activeEffect.setFloat("scale", this.scale);
-        this._activeEffect.setFloat("smoothness", this.smoothness);
+		this._activeEffect.setColor4("topColor", this.topColor, this.topColorAlpha);
+		this._activeEffect.setColor4("bottomColor", this.bottomColor, this.bottomColorAlpha);
+		this._activeEffect.setFloat("offset", this.offset);
+		this._activeEffect.setFloat("scale", this.scale);
+		this._activeEffect.setFloat("smoothness", this.smoothness);
 
-        this._afterBind(mesh, this._activeEffect, subMesh);
-    }
+		this._afterBind(mesh, this._activeEffect, subMesh);
+	}
 
-    public override getAnimatables(): IAnimatable[] {
-        return [];
-    }
+	public override getAnimatables(): IAnimatable[] {
+		return [];
+	}
 
-    public override dispose(forceDisposeEffect?: boolean): void {
-        super.dispose(forceDisposeEffect);
-    }
+	public override dispose(forceDisposeEffect?: boolean): void {
+		super.dispose(forceDisposeEffect);
+	}
 
-    public override clone(name: string): GradientMaterial {
-        return SerializationHelper.Clone(() => new GradientMaterial(name, this.getScene()), this);
-    }
+	public override clone(name: string): GradientMaterial {
+		return SerializationHelper.Clone(() => new GradientMaterial(name, this.getScene()), this);
+	}
 
-    public override serialize(): any {
-        const serializationObject = super.serialize();
-        serializationObject.customType = "BABYLON.GradientMaterial";
-        return serializationObject;
-    }
+	public override serialize(): any {
+		const serializationObject = super.serialize();
+		serializationObject.customType = "BABYLON.GradientMaterial";
+		return serializationObject;
+	}
 
-    public override getClassName(): string {
-        return "GradientMaterial";
-    }
+	public override getClassName(): string {
+		return "GradientMaterial";
+	}
 
-    // Statics
-    public static override Parse(source: any, scene: Scene, rootUrl: string): GradientMaterial {
-        return SerializationHelper.Parse(() => new GradientMaterial(source.name, scene), source, scene, rootUrl);
-    }
+	// Statics
+	public static override Parse(source: any, scene: Scene, rootUrl: string): GradientMaterial {
+		return SerializationHelper.Parse(() => new GradientMaterial(source.name, scene), source, scene, rootUrl);
+	}
 }
 
 RegisterClass("BABYLON.GradientMaterial", GradientMaterial);

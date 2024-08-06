@@ -8,32 +8,32 @@ import { SliderPropertyGridComponent } from "./sliderPropertyGridComponent";
 import type { GlobalState } from "../../../../globalState";
 
 interface ISliderGenericPropertyGridComponentProps {
-    sliders: Slider[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    onFontsParsedObservable?: Observable<void>;
-    globalState?: GlobalState;
+	sliders: Slider[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	onFontsParsedObservable?: Observable<void>;
+	globalState?: GlobalState;
 }
 
 export class SliderGenericPropertyGridComponent extends React.Component<ISliderGenericPropertyGridComponentProps> {
-    constructor(props: ISliderGenericPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ISliderGenericPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const sliders = this.props.sliders;
+	override render() {
+		const sliders = this.props.sliders;
 
-        return (
-            <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
-                    controls={sliders}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onFontsParsedObservable={this.props.onFontsParsedObservable}
-                    globalState={this.props.globalState}
-                />
-                <SliderPropertyGridComponent sliders={sliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<CommonControlPropertyGridComponent
+					lockObject={this.props.lockObject}
+					controls={sliders}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					onFontsParsedObservable={this.props.onFontsParsedObservable}
+					globalState={this.props.globalState}
+				/>
+				<SliderPropertyGridComponent sliders={sliders} lockObject={this.props.lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+			</div>
+		);
+	}
 }

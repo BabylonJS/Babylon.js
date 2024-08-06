@@ -4,33 +4,33 @@ import type { INativeEngine, NativeTexture } from "./nativeInterfaces";
 
 /** @internal */
 export class NativeHardwareTexture implements HardwareTextureWrapper {
-    private readonly _engine: INativeEngine;
-    private _nativeTexture: Nullable<NativeTexture>;
+	private readonly _engine: INativeEngine;
+	private _nativeTexture: Nullable<NativeTexture>;
 
-    public get underlyingResource(): Nullable<NativeTexture> {
-        return this._nativeTexture;
-    }
+	public get underlyingResource(): Nullable<NativeTexture> {
+		return this._nativeTexture;
+	}
 
-    constructor(existingTexture: NativeTexture, engine: INativeEngine) {
-        this._engine = engine;
-        this.set(existingTexture);
-    }
+	constructor(existingTexture: NativeTexture, engine: INativeEngine) {
+		this._engine = engine;
+		this.set(existingTexture);
+	}
 
-    public setUsage(): void {}
+	public setUsage(): void {}
 
-    public set(hardwareTexture: NativeTexture) {
-        this._nativeTexture = hardwareTexture;
-    }
+	public set(hardwareTexture: NativeTexture) {
+		this._nativeTexture = hardwareTexture;
+	}
 
-    public reset() {
-        this._nativeTexture = null;
-    }
+	public reset() {
+		this._nativeTexture = null;
+	}
 
-    public release() {
-        if (this._nativeTexture) {
-            this._engine.deleteTexture(this._nativeTexture);
-        }
+	public release() {
+		if (this._nativeTexture) {
+			this._engine.deleteTexture(this._nativeTexture);
+		}
 
-        this.reset();
-    }
+		this.reset();
+	}
 }

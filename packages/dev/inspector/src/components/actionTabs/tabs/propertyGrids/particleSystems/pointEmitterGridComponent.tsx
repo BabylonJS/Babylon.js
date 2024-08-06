@@ -8,36 +8,36 @@ import type { PointParticleEmitter } from "core/Particles/EmitterTypes/pointPart
 import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComponent";
 
 interface IPointEmitterGridComponentProps {
-    globalState: GlobalState;
-    emitter: PointParticleEmitter;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	emitter: PointParticleEmitter;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class PointEmitterGridComponent extends React.Component<IPointEmitterGridComponentProps> {
-    constructor(props: IPointEmitterGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IPointEmitterGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const emitter = this.props.emitter;
-        return (
-            <>
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Direction 1"
-                    target={emitter}
-                    propertyName="direction1"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Direction 2"
-                    target={emitter}
-                    propertyName="direction2"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </>
-        );
-    }
+	override render() {
+		const emitter = this.props.emitter;
+		return (
+			<>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Direction 1"
+					target={emitter}
+					propertyName="direction1"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Direction 2"
+					target={emitter}
+					propertyName="direction2"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+			</>
+		);
+	}
 }

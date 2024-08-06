@@ -11,43 +11,43 @@ import type { WebXRExperienceHelper } from "core/XR/webXRExperienceHelper";
  * @since 5.0.0
  */
 export class HandMenu extends TouchHolographicMenu {
-    private _handConstraintBehavior: HandConstraintBehavior;
+	private _handConstraintBehavior: HandConstraintBehavior;
 
-    /**
-     * The hand constraint behavior setting the transformation of this node
-     */
-    public get handConstraintBehavior() {
-        return this._handConstraintBehavior;
-    }
+	/**
+	 * The hand constraint behavior setting the transformation of this node
+	 */
+	public get handConstraintBehavior() {
+		return this._handConstraintBehavior;
+	}
 
-    protected override _createNode(scene: Scene): Nullable<TransformNode> {
-        const node = super._createNode(scene)! as Mesh;
+	protected override _createNode(scene: Scene): Nullable<TransformNode> {
+		const node = super._createNode(scene)! as Mesh;
 
-        this._handConstraintBehavior.attach(node);
+		this._handConstraintBehavior.attach(node);
 
-        return node;
-    }
+		return node;
+	}
 
-    /**
-     * Creates a hand menu GUI 3D control
-     * @param xr the WebXRExperienceHelper used to link this control to the enabled WebXRHandTracking feature
-     * @param name name of the hand menu
-     */
-    constructor(xr: WebXRExperienceHelper, name?: string) {
-        super(name);
+	/**
+	 * Creates a hand menu GUI 3D control
+	 * @param xr the WebXRExperienceHelper used to link this control to the enabled WebXRHandTracking feature
+	 * @param name name of the hand menu
+	 */
+	constructor(xr: WebXRExperienceHelper, name?: string) {
+		super(name);
 
-        this._handConstraintBehavior = new HandConstraintBehavior();
-        this._handConstraintBehavior.linkToXRExperience(xr);
-        this.backPlateMargin = 0.15;
-        this.rows = 3;
-    }
+		this._handConstraintBehavior = new HandConstraintBehavior();
+		this._handConstraintBehavior.linkToXRExperience(xr);
+		this.backPlateMargin = 0.15;
+		this.rows = 3;
+	}
 
-    /**
-     * Disposes the hand menu
-     */
-    public override dispose() {
-        super.dispose();
+	/**
+	 * Disposes the hand menu
+	 */
+	public override dispose() {
+		super.dispose();
 
-        this._handConstraintBehavior.detach();
-    }
+		this._handConstraintBehavior.detach();
+	}
 }

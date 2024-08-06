@@ -17,126 +17,126 @@ import type { Nullable } from "../../types";
  * @internal
  */
 export class PrePassRenderTarget extends MultiRenderTarget {
-    /**
-     * @internal
-     */
-    public _beforeCompositionPostProcesses: PostProcess[] = [];
-    /**
-     * Image processing post process for composition
-     */
-    public imageProcessingPostProcess: ImageProcessingPostProcess;
+	/**
+	 * @internal
+	 */
+	public _beforeCompositionPostProcesses: PostProcess[] = [];
+	/**
+	 * Image processing post process for composition
+	 */
+	public imageProcessingPostProcess: ImageProcessingPostProcess;
 
-    /**
-     * @internal
-     */
-    public override _engine: Engine;
+	/**
+	 * @internal
+	 */
+	public override _engine: Engine;
 
-    /**
-     * @internal
-     */
-    public override _scene: Scene;
+	/**
+	 * @internal
+	 */
+	public override _scene: Scene;
 
-    /**
-     * @internal
-     */
-    public _outputPostProcess: Nullable<PostProcess>;
+	/**
+	 * @internal
+	 */
+	public _outputPostProcess: Nullable<PostProcess>;
 
-    /**
-     * @internal
-     */
-    public _internalTextureDirty = false;
+	/**
+	 * @internal
+	 */
+	public _internalTextureDirty = false;
 
-    /**
-     * Is this render target enabled for prepass rendering
-     */
-    public enabled: boolean = false;
+	/**
+	 * Is this render target enabled for prepass rendering
+	 */
+	public enabled: boolean = false;
 
-    /**
-     * Render target associated with this prePassRenderTarget
-     * If this is `null`, it means this prePassRenderTarget is associated with the scene
-     */
-    public renderTargetTexture: Nullable<RenderTargetTexture> = null;
+	/**
+	 * Render target associated with this prePassRenderTarget
+	 * If this is `null`, it means this prePassRenderTarget is associated with the scene
+	 */
+	public renderTargetTexture: Nullable<RenderTargetTexture> = null;
 
-    public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions | undefined) {
-        super(name, size, count, scene, options);
+	public constructor(name: string, renderTargetTexture: Nullable<RenderTargetTexture>, size: any, count: number, scene?: Scene, options?: IMultiRenderTargetOptions | undefined) {
+		super(name, size, count, scene, options);
 
-        this.renderTargetTexture = renderTargetTexture;
-    }
+		this.renderTargetTexture = renderTargetTexture;
+	}
 
-    /**
-     * Creates a composition effect for this RT
-     * @internal
-     */
-    public _createCompositionEffect() {
-        this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
-        this.imageProcessingPostProcess._updateParameters();
-    }
+	/**
+	 * Creates a composition effect for this RT
+	 * @internal
+	 */
+	public _createCompositionEffect() {
+		this.imageProcessingPostProcess = new ImageProcessingPostProcess("prePassComposition", 1, null, undefined, this._engine);
+		this.imageProcessingPostProcess._updateParameters();
+	}
 
-    /**
-     * Checks that the size of this RT is still adapted to the desired render size.
-     * @internal
-     */
-    public _checkSize() {
-        const requiredWidth = this._engine.getRenderWidth(true);
-        const requiredHeight = this._engine.getRenderHeight(true);
+	/**
+	 * Checks that the size of this RT is still adapted to the desired render size.
+	 * @internal
+	 */
+	public _checkSize() {
+		const requiredWidth = this._engine.getRenderWidth(true);
+		const requiredHeight = this._engine.getRenderHeight(true);
 
-        const width = this.getRenderWidth();
-        const height = this.getRenderHeight();
+		const width = this.getRenderWidth();
+		const height = this.getRenderHeight();
 
-        if (width !== requiredWidth || height !== requiredHeight) {
-            this.resize({ width: requiredWidth, height: requiredHeight });
+		if (width !== requiredWidth || height !== requiredHeight) {
+			this.resize({ width: requiredWidth, height: requiredHeight });
 
-            this._internalTextureDirty = true;
-        }
-    }
+			this._internalTextureDirty = true;
+		}
+	}
 
-    /**
-     * Changes the number of render targets in this MRT
-     * Be careful as it will recreate all the data in the new texture.
-     * @param count new texture count
-     * @param options Specifies texture types and sampling modes for new textures
-     * @param textureNames Specifies the names of the textures (optional)
-     */
-    public override updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
-        super.updateCount(count, options, textureNames);
-        this._internalTextureDirty = true;
-    }
+	/**
+	 * Changes the number of render targets in this MRT
+	 * Be careful as it will recreate all the data in the new texture.
+	 * @param count new texture count
+	 * @param options Specifies texture types and sampling modes for new textures
+	 * @param textureNames Specifies the names of the textures (optional)
+	 */
+	public override updateCount(count: number, options?: IMultiRenderTargetOptions, textureNames?: string[]) {
+		super.updateCount(count, options, textureNames);
+		this._internalTextureDirty = true;
+	}
 
-    /**
-     * Resets the post processes chains applied to this RT.
-     * @internal
-     */
-    public _resetPostProcessChain() {
-        this._beforeCompositionPostProcesses.length = 0;
-    }
+	/**
+	 * Resets the post processes chains applied to this RT.
+	 * @internal
+	 */
+	public _resetPostProcessChain() {
+		this._beforeCompositionPostProcesses.length = 0;
+	}
 
-    /**
-     * Diposes this render target
-     */
-    public override dispose() {
-        const scene = this._scene;
+	/**
+	 * Diposes this render target
+	 */
+	public override dispose() {
+		const scene = this._scene;
 
-        super.dispose();
+		super.dispose();
 
-        if (scene && scene.prePassRenderer) {
-            const index = scene.prePassRenderer.renderTargets.indexOf(this);
+		if (scene && scene.prePassRenderer) {
+			const index = scene.prePassRenderer.renderTargets.indexOf(this);
 
-            if (index !== -1) {
-                scene.prePassRenderer.renderTargets.splice(index, 1);
-            }
-        }
+			if (index !== -1) {
+				scene.prePassRenderer.renderTargets.splice(index, 1);
+			}
+		}
 
-        if (this.imageProcessingPostProcess) {
-            this.imageProcessingPostProcess.dispose();
-        }
+		if (this.imageProcessingPostProcess) {
+			this.imageProcessingPostProcess.dispose();
+		}
 
-        if (this.renderTargetTexture) {
-            this.renderTargetTexture._prePassRenderTarget = null;
-        }
+		if (this.renderTargetTexture) {
+			this.renderTargetTexture._prePassRenderTarget = null;
+		}
 
-        if (this._outputPostProcess) {
-            this._outputPostProcess.autoClear = true;
-            this._outputPostProcess.restoreDefaultInputTexture();
-        }
-    }
+		if (this._outputPostProcess) {
+			this._outputPostProcess.autoClear = true;
+			this._outputPostProcess.restoreDefaultInputTexture();
+		}
+	}
 }

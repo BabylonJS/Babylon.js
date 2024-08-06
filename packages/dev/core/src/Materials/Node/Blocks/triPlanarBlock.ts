@@ -24,370 +24,370 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Block used to read a texture with triplanar mapping (see "boxmap" in https://iquilezles.org/articles/biplanar/)
  */
 export class TriPlanarBlock extends NodeMaterialBlock {
-    private _linearDefineName: string;
-    private _gammaDefineName: string;
-    protected _tempTextureRead: string;
-    private _samplerName: string;
-    private _textureInfoName: string;
-    private _imageSource: Nullable<ImageSourceBlock>;
+	private _linearDefineName: string;
+	private _gammaDefineName: string;
+	protected _tempTextureRead: string;
+	private _samplerName: string;
+	private _textureInfoName: string;
+	private _imageSource: Nullable<ImageSourceBlock>;
 
-    /**
-     * Project the texture(s) for a better fit to a cube
-     */
-    @editableInPropertyPage("Project as cube", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
-    public projectAsCube: boolean = false;
+	/**
+	 * Project the texture(s) for a better fit to a cube
+	 */
+	@editableInPropertyPage("Project as cube", PropertyTypeForEdition.Boolean, "ADVANCED", { notifiers: { update: true } })
+	public projectAsCube: boolean = false;
 
-    protected _texture: Nullable<Texture>;
-    /**
-     * Gets or sets the texture associated with the node
-     */
-    public get texture(): Nullable<Texture> {
-        if (this.source.isConnected) {
-            return (this.source.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
-        }
-        return this._texture;
-    }
+	protected _texture: Nullable<Texture>;
+	/**
+	 * Gets or sets the texture associated with the node
+	 */
+	public get texture(): Nullable<Texture> {
+		if (this.source.isConnected) {
+			return (this.source.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+		}
+		return this._texture;
+	}
 
-    public set texture(texture: Nullable<Texture>) {
-        if (this._texture === texture) {
-            return;
-        }
+	public set texture(texture: Nullable<Texture>) {
+		if (this._texture === texture) {
+			return;
+		}
 
-        const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
+		const scene = texture?.getScene() ?? EngineStore.LastCreatedScene;
 
-        if (!texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return mat.hasTexture(this._texture!);
-            });
-        }
+		if (!texture && scene) {
+			scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+				return mat.hasTexture(this._texture!);
+			});
+		}
 
-        this._texture = texture;
+		this._texture = texture;
 
-        if (texture && scene) {
-            scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return mat.hasTexture(texture);
-            });
-        }
-    }
+		if (texture && scene) {
+			scene.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+				return mat.hasTexture(texture);
+			});
+		}
+	}
 
-    /**
-     * Gets the textureY associated with the node
-     */
-    public get textureY(): Nullable<Texture> {
-        if (this.sourceY.isConnected) {
-            return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
-        }
-        return null;
-    }
+	/**
+	 * Gets the textureY associated with the node
+	 */
+	public get textureY(): Nullable<Texture> {
+		if (this.sourceY.isConnected) {
+			return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+		}
+		return null;
+	}
 
-    /**
-     * Gets the textureZ associated with the node
-     */
-    public get textureZ(): Nullable<Texture> {
-        if (this.sourceZ?.isConnected) {
-            return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
-        }
-        return null;
-    }
+	/**
+	 * Gets the textureZ associated with the node
+	 */
+	public get textureZ(): Nullable<Texture> {
+		if (this.sourceZ?.isConnected) {
+			return (this.sourceY.connectedPoint?.ownerBlock as ImageSourceBlock).texture;
+		}
+		return null;
+	}
 
-    protected _getImageSourceBlock(connectionPoint: Nullable<NodeMaterialConnectionPoint>): Nullable<ImageSourceBlock> {
-        return connectionPoint?.isConnected ? (connectionPoint.connectedPoint!.ownerBlock as ImageSourceBlock) : null;
-    }
+	protected _getImageSourceBlock(connectionPoint: Nullable<NodeMaterialConnectionPoint>): Nullable<ImageSourceBlock> {
+		return connectionPoint?.isConnected ? (connectionPoint.connectedPoint!.ownerBlock as ImageSourceBlock) : null;
+	}
 
-    /**
-     * Gets the sampler name associated with this texture
-     */
-    public get samplerName(): string {
-        const imageSourceBlock = this._getImageSourceBlock(this.source);
-        if (imageSourceBlock) {
-            return imageSourceBlock.samplerName;
-        }
-        return this._samplerName;
-    }
+	/**
+	 * Gets the sampler name associated with this texture
+	 */
+	public get samplerName(): string {
+		const imageSourceBlock = this._getImageSourceBlock(this.source);
+		if (imageSourceBlock) {
+			return imageSourceBlock.samplerName;
+		}
+		return this._samplerName;
+	}
 
-    /**
-     * Gets the samplerY name associated with this texture
-     */
-    public get samplerYName(): Nullable<string> {
-        return this._getImageSourceBlock(this.sourceY)?.samplerName ?? null;
-    }
+	/**
+	 * Gets the samplerY name associated with this texture
+	 */
+	public get samplerYName(): Nullable<string> {
+		return this._getImageSourceBlock(this.sourceY)?.samplerName ?? null;
+	}
 
-    /**
-     * Gets the samplerZ name associated with this texture
-     */
-    public get samplerZName(): Nullable<string> {
-        return this._getImageSourceBlock(this.sourceZ)?.samplerName ?? null;
-    }
+	/**
+	 * Gets the samplerZ name associated with this texture
+	 */
+	public get samplerZName(): Nullable<string> {
+		return this._getImageSourceBlock(this.sourceZ)?.samplerName ?? null;
+	}
 
-    /**
-     * Gets a boolean indicating that this block is linked to an ImageSourceBlock
-     */
-    public get hasImageSource(): boolean {
-        return this.source.isConnected;
-    }
+	/**
+	 * Gets a boolean indicating that this block is linked to an ImageSourceBlock
+	 */
+	public get hasImageSource(): boolean {
+		return this.source.isConnected;
+	}
 
-    private _convertToGammaSpace = false;
-    /**
-     * Gets or sets a boolean indicating if content needs to be converted to gamma space
-     */
-    public set convertToGammaSpace(value: boolean) {
-        if (value === this._convertToGammaSpace) {
-            return;
-        }
+	private _convertToGammaSpace = false;
+	/**
+	 * Gets or sets a boolean indicating if content needs to be converted to gamma space
+	 */
+	public set convertToGammaSpace(value: boolean) {
+		if (value === this._convertToGammaSpace) {
+			return;
+		}
 
-        this._convertToGammaSpace = value;
-        if (this.texture) {
-            const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return mat.hasTexture(this.texture!);
-            });
-        }
-    }
-    public get convertToGammaSpace(): boolean {
-        return this._convertToGammaSpace;
-    }
+		this._convertToGammaSpace = value;
+		if (this.texture) {
+			const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
+			scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+				return mat.hasTexture(this.texture!);
+			});
+		}
+	}
+	public get convertToGammaSpace(): boolean {
+		return this._convertToGammaSpace;
+	}
 
-    private _convertToLinearSpace = false;
-    /**
-     * Gets or sets a boolean indicating if content needs to be converted to linear space
-     */
-    public set convertToLinearSpace(value: boolean) {
-        if (value === this._convertToLinearSpace) {
-            return;
-        }
+	private _convertToLinearSpace = false;
+	/**
+	 * Gets or sets a boolean indicating if content needs to be converted to linear space
+	 */
+	public set convertToLinearSpace(value: boolean) {
+		if (value === this._convertToLinearSpace) {
+			return;
+		}
 
-        this._convertToLinearSpace = value;
-        if (this.texture) {
-            const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
-            scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
-                return mat.hasTexture(this.texture!);
-            });
-        }
-    }
-    public get convertToLinearSpace(): boolean {
-        return this._convertToLinearSpace;
-    }
+		this._convertToLinearSpace = value;
+		if (this.texture) {
+			const scene = this.texture.getScene() ?? EngineStore.LastCreatedScene;
+			scene?.markAllMaterialsAsDirty(Constants.MATERIAL_TextureDirtyFlag, (mat) => {
+				return mat.hasTexture(this.texture!);
+			});
+		}
+	}
+	public get convertToLinearSpace(): boolean {
+		return this._convertToLinearSpace;
+	}
 
-    /**
-     * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
-     */
-    public disableLevelMultiplication = false;
+	/**
+	 * Gets or sets a boolean indicating if multiplication of texture with level should be disabled
+	 */
+	public disableLevelMultiplication = false;
 
-    /**
-     * Create a new TriPlanarBlock
-     * @param name defines the block name
-     * @param hideSourceZ defines a boolean indicating that normal Z should not be used (false by default)
-     */
-    public constructor(name: string, hideSourceZ = false) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+	/**
+	 * Create a new TriPlanarBlock
+	 * @param name defines the block name
+	 * @param hideSourceZ defines a boolean indicating that normal Z should not be used (false by default)
+	 */
+	public constructor(name: string, hideSourceZ = false) {
+		super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
-        this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
-        this.registerInput("sharpness", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput(
-            "source",
-            NodeMaterialBlockConnectionPointTypes.Object,
-            true,
-            NodeMaterialBlockTargets.VertexAndFragment,
-            new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
-        );
-        this.registerInput(
-            "sourceY",
-            NodeMaterialBlockConnectionPointTypes.Object,
-            true,
-            NodeMaterialBlockTargets.VertexAndFragment,
-            new NodeMaterialConnectionPointCustomObject("sourceY", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
-        );
-        if (!hideSourceZ) {
-            this.registerInput(
-                "sourceZ",
-                NodeMaterialBlockConnectionPointTypes.Object,
-                true,
-                NodeMaterialBlockTargets.VertexAndFragment,
-                new NodeMaterialConnectionPointCustomObject("sourceZ", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
-            );
-        }
+		this.registerInput("position", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
+		this.registerInput("normal", NodeMaterialBlockConnectionPointTypes.AutoDetect, false);
+		this.registerInput("sharpness", NodeMaterialBlockConnectionPointTypes.Float, true);
+		this.registerInput(
+			"source",
+			NodeMaterialBlockConnectionPointTypes.Object,
+			true,
+			NodeMaterialBlockTargets.VertexAndFragment,
+			new NodeMaterialConnectionPointCustomObject("source", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+		);
+		this.registerInput(
+			"sourceY",
+			NodeMaterialBlockConnectionPointTypes.Object,
+			true,
+			NodeMaterialBlockTargets.VertexAndFragment,
+			new NodeMaterialConnectionPointCustomObject("sourceY", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+		);
+		if (!hideSourceZ) {
+			this.registerInput(
+				"sourceZ",
+				NodeMaterialBlockConnectionPointTypes.Object,
+				true,
+				NodeMaterialBlockTargets.VertexAndFragment,
+				new NodeMaterialConnectionPointCustomObject("sourceZ", this, NodeMaterialConnectionPointDirection.Input, ImageSourceBlock, "ImageSourceBlock")
+			);
+		}
 
-        this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
-        this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("rgba", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("r", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("g", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("b", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("a", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
-        this.registerOutput("level", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
+		this.registerOutput("level", NodeMaterialBlockConnectionPointTypes.Float, NodeMaterialBlockTargets.Neutral);
 
-        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
-        );
-        this._inputs[1].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
-        );
-    }
+		this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+			NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+		);
+		this._inputs[1].addExcludedConnectionPointFromAllowedTypes(
+			NodeMaterialBlockConnectionPointTypes.Color3 | NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4
+		);
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "TriPlanarBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "TriPlanarBlock";
+	}
 
-    /**
-     * Gets the position input component
-     */
-    public get position(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the position input component
+	 */
+	public get position(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the normal input component
-     */
-    public get normal(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
+	/**
+	 * Gets the normal input component
+	 */
+	public get normal(): NodeMaterialConnectionPoint {
+		return this._inputs[1];
+	}
 
-    /**
-     * Gets the sharpness input component
-     */
-    public get sharpness(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
+	/**
+	 * Gets the sharpness input component
+	 */
+	public get sharpness(): NodeMaterialConnectionPoint {
+		return this._inputs[2];
+	}
 
-    /**
-     * Gets the source input component
-     */
-    public get source(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
+	/**
+	 * Gets the source input component
+	 */
+	public get source(): NodeMaterialConnectionPoint {
+		return this._inputs[3];
+	}
 
-    /**
-     * Gets the sourceY input component
-     */
-    public get sourceY(): NodeMaterialConnectionPoint {
-        return this._inputs[4];
-    }
+	/**
+	 * Gets the sourceY input component
+	 */
+	public get sourceY(): NodeMaterialConnectionPoint {
+		return this._inputs[4];
+	}
 
-    /**
-     * Gets the sourceZ input component
-     */
-    public get sourceZ(): Nullable<NodeMaterialConnectionPoint> {
-        return this._inputs[5];
-    }
+	/**
+	 * Gets the sourceZ input component
+	 */
+	public get sourceZ(): Nullable<NodeMaterialConnectionPoint> {
+		return this._inputs[5];
+	}
 
-    /**
-     * Gets the rgba output component
-     */
-    public get rgba(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the rgba output component
+	 */
+	public get rgba(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    /**
-     * Gets the rgb output component
-     */
-    public get rgb(): NodeMaterialConnectionPoint {
-        return this._outputs[1];
-    }
+	/**
+	 * Gets the rgb output component
+	 */
+	public get rgb(): NodeMaterialConnectionPoint {
+		return this._outputs[1];
+	}
 
-    /**
-     * Gets the r output component
-     */
-    public get r(): NodeMaterialConnectionPoint {
-        return this._outputs[2];
-    }
+	/**
+	 * Gets the r output component
+	 */
+	public get r(): NodeMaterialConnectionPoint {
+		return this._outputs[2];
+	}
 
-    /**
-     * Gets the g output component
-     */
-    public get g(): NodeMaterialConnectionPoint {
-        return this._outputs[3];
-    }
+	/**
+	 * Gets the g output component
+	 */
+	public get g(): NodeMaterialConnectionPoint {
+		return this._outputs[3];
+	}
 
-    /**
-     * Gets the b output component
-     */
-    public get b(): NodeMaterialConnectionPoint {
-        return this._outputs[4];
-    }
+	/**
+	 * Gets the b output component
+	 */
+	public get b(): NodeMaterialConnectionPoint {
+		return this._outputs[4];
+	}
 
-    /**
-     * Gets the a output component
-     */
-    public get a(): NodeMaterialConnectionPoint {
-        return this._outputs[5];
-    }
+	/**
+	 * Gets the a output component
+	 */
+	public get a(): NodeMaterialConnectionPoint {
+		return this._outputs[5];
+	}
 
-    /**
-     * Gets the level output component
-     */
-    public get level(): NodeMaterialConnectionPoint {
-        return this._outputs[6];
-    }
+	/**
+	 * Gets the level output component
+	 */
+	public get level(): NodeMaterialConnectionPoint {
+		return this._outputs[6];
+	}
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (!defines._areTexturesDirty) {
-            return;
-        }
+	public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+		if (!defines._areTexturesDirty) {
+			return;
+		}
 
-        const toGamma = this.convertToGammaSpace && this.texture && !this.texture.gammaSpace;
-        const toLinear = this.convertToLinearSpace && this.texture && this.texture.gammaSpace;
+		const toGamma = this.convertToGammaSpace && this.texture && !this.texture.gammaSpace;
+		const toLinear = this.convertToLinearSpace && this.texture && this.texture.gammaSpace;
 
-        // Not a bug... Name defines the texture space not the required conversion
-        defines.setValue(this._linearDefineName, toGamma, true);
-        defines.setValue(this._gammaDefineName, toLinear, true);
-    }
+		// Not a bug... Name defines the texture space not the required conversion
+		defines.setValue(this._linearDefineName, toGamma, true);
+		defines.setValue(this._gammaDefineName, toLinear, true);
+	}
 
-    public override isReady() {
-        if (this.texture && !this.texture.isReadyOrNotBlocking()) {
-            return false;
-        }
+	public override isReady() {
+		if (this.texture && !this.texture.isReadyOrNotBlocking()) {
+			return false;
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    public override bind(effect: Effect) {
-        if (!this.texture) {
-            return;
-        }
+	public override bind(effect: Effect) {
+		if (!this.texture) {
+			return;
+		}
 
-        effect.setFloat(this._textureInfoName, this.texture.level);
+		effect.setFloat(this._textureInfoName, this.texture.level);
 
-        if (!this._imageSource) {
-            effect.setTexture(this._samplerName, this.texture);
-        }
-    }
+		if (!this._imageSource) {
+			effect.setTexture(this._samplerName, this.texture);
+		}
+	}
 
-    private _samplerFunc(state: NodeMaterialBuildState) {
-        if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return "textureSample";
-        }
-        return "texture2D";
-    }
+	private _samplerFunc(state: NodeMaterialBuildState) {
+		if (state.shaderLanguage === ShaderLanguage.WGSL) {
+			return "textureSample";
+		}
+		return "texture2D";
+	}
 
-    private _generateTextureSample(textureName: string, uv: string, state: NodeMaterialBuildState) {
-        if (state.shaderLanguage === ShaderLanguage.WGSL) {
-            return `${this._samplerFunc(state)}(${textureName},${textureName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
-        }
-        return `${this._samplerFunc(state)}(${textureName}, ${uv})`;
-    }
+	private _generateTextureSample(textureName: string, uv: string, state: NodeMaterialBuildState) {
+		if (state.shaderLanguage === ShaderLanguage.WGSL) {
+			return `${this._samplerFunc(state)}(${textureName},${textureName + Constants.AUTOSAMPLERSUFFIX}, ${uv})`;
+		}
+		return `${this._samplerFunc(state)}(${textureName}, ${uv})`;
+	}
 
-    protected _generateTextureLookup(state: NodeMaterialBuildState): void {
-        const samplerName = this.samplerName;
-        const samplerYName = this.samplerYName ?? samplerName;
-        const samplerZName = this.samplerZName ?? samplerName;
+	protected _generateTextureLookup(state: NodeMaterialBuildState): void {
+		const samplerName = this.samplerName;
+		const samplerYName = this.samplerYName ?? samplerName;
+		const samplerZName = this.samplerZName ?? samplerName;
 
-        const sharpness = this.sharpness.isConnected ? this.sharpness.associatedVariableName : "1.0";
+		const sharpness = this.sharpness.isConnected ? this.sharpness.associatedVariableName : "1.0";
 
-        const x = state._getFreeVariableName("x");
-        const y = state._getFreeVariableName("y");
-        const z = state._getFreeVariableName("z");
-        const w = state._getFreeVariableName("w");
-        const n = state._getFreeVariableName("n");
-        const uvx = state._getFreeVariableName("uvx");
-        const uvy = state._getFreeVariableName("uvy");
-        const uvz = state._getFreeVariableName("uvz");
+		const x = state._getFreeVariableName("x");
+		const y = state._getFreeVariableName("y");
+		const z = state._getFreeVariableName("z");
+		const w = state._getFreeVariableName("w");
+		const n = state._getFreeVariableName("n");
+		const uvx = state._getFreeVariableName("uvx");
+		const uvy = state._getFreeVariableName("uvy");
+		const uvz = state._getFreeVariableName("uvz");
 
-        state.compilationString += `
+		state.compilationString += `
             ${state._declareLocalVar(n, NodeMaterialBlockConnectionPointTypes.Vector3)} = ${this.normal.associatedVariableName}.xyz;
 
             ${state._declareLocalVar(uvx, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.position.associatedVariableName}.yz;
@@ -395,8 +395,8 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             ${state._declareLocalVar(uvz, NodeMaterialBlockConnectionPointTypes.Vector2)} = ${this.position.associatedVariableName}.xy;
         `;
 
-        if (this.projectAsCube) {
-            state.compilationString += `
+		if (this.projectAsCube) {
+			state.compilationString += `
                 ${uvx}.xy = ${uvx}.yx;
 
                 if (${n}.x >= 0.0) {
@@ -409,11 +409,11 @@ export class TriPlanarBlock extends NodeMaterialBlock {
                     ${uvz}.x = -${uvz}.x;
                 }
             `;
-        }
+		}
 
-        const suffix = state.fSuffix;
+		const suffix = state.fSuffix;
 
-        state.compilationString += `
+		state.compilationString += `
             ${state._declareLocalVar(x, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerName, uvx, state)};
             ${state._declareLocalVar(y, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerYName, uvy, state)};
             ${state._declareLocalVar(z, NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this._generateTextureSample(samplerZName, uvz, state)};
@@ -424,144 +424,144 @@ export class TriPlanarBlock extends NodeMaterialBlock {
             // blend and return
             ${state._declareLocalVar(this._tempTextureRead, NodeMaterialBlockConnectionPointTypes.Vector4)} = (${x}*${w}.x + ${y}*${w}.y + ${z}*${w}.z) / (${w}.x + ${w}.y + ${w}.z);        
         `;
-    }
+	}
 
-    private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
-        let vecSpecifier = "";
+	private _generateConversionCode(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string): void {
+		let vecSpecifier = "";
 
-        if (
-            state.shaderLanguage === ShaderLanguage.WGSL &&
-            (output.type === NodeMaterialBlockConnectionPointTypes.Vector3 || output.type === NodeMaterialBlockConnectionPointTypes.Color3)
-        ) {
-            vecSpecifier = "Vec3";
-        }
+		if (
+			state.shaderLanguage === ShaderLanguage.WGSL &&
+			(output.type === NodeMaterialBlockConnectionPointTypes.Vector3 || output.type === NodeMaterialBlockConnectionPointTypes.Color3)
+		) {
+			vecSpecifier = "Vec3";
+		}
 
-        if (swizzle !== "a") {
-            // no conversion if the output is "a" (alpha)
-            if (!this.texture || !this.texture.gammaSpace) {
-                state.compilationString += `#ifdef ${this._linearDefineName}
+		if (swizzle !== "a") {
+			// no conversion if the output is "a" (alpha)
+			if (!this.texture || !this.texture.gammaSpace) {
+				state.compilationString += `#ifdef ${this._linearDefineName}
                     ${output.associatedVariableName} = toGammaSpace${vecSpecifier}(${output.associatedVariableName});
                     #endif
                 `;
-            }
+			}
 
-            state.compilationString += `#ifdef ${this._gammaDefineName}
+			state.compilationString += `#ifdef ${this._gammaDefineName}
                 ${output.associatedVariableName} = toLinearSpace${vecSpecifier}(${output.associatedVariableName});
                 #endif
             `;
-        }
-    }
+		}
+	}
 
-    private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
-        let complement = "";
+	private _writeOutput(state: NodeMaterialBuildState, output: NodeMaterialConnectionPoint, swizzle: string) {
+		let complement = "";
 
-        if (!this.disableLevelMultiplication) {
-            complement = ` * ${state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : ""}${this._textureInfoName}`;
-        }
+		if (!this.disableLevelMultiplication) {
+			complement = ` * ${state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : ""}${this._textureInfoName}`;
+		}
 
-        state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
-        this._generateConversionCode(state, output, swizzle);
-    }
+		state.compilationString += `${state._declareOutput(output)} = ${this._tempTextureRead}.${swizzle}${complement};\n`;
+		this._generateConversionCode(state, output, swizzle);
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        if (this.source.isConnected) {
-            this._imageSource = this.source.connectedPoint!.ownerBlock as ImageSourceBlock;
-        } else {
-            this._imageSource = null;
-        }
+		if (this.source.isConnected) {
+			this._imageSource = this.source.connectedPoint!.ownerBlock as ImageSourceBlock;
+		} else {
+			this._imageSource = null;
+		}
 
-        this._textureInfoName = state._getFreeVariableName("textureInfoName");
+		this._textureInfoName = state._getFreeVariableName("textureInfoName");
 
-        this.level.associatedVariableName = (state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "") + this._textureInfoName;
+		this.level.associatedVariableName = (state.shaderLanguage === ShaderLanguage.WGSL ? "uniforms." : "") + this._textureInfoName;
 
-        this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
-        this._linearDefineName = state._getFreeDefineName("ISLINEAR");
-        this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
+		this._tempTextureRead = state._getFreeVariableName("tempTextureRead");
+		this._linearDefineName = state._getFreeDefineName("ISLINEAR");
+		this._gammaDefineName = state._getFreeDefineName("ISGAMMA");
 
-        if (!this._imageSource) {
-            this._samplerName = state._getFreeVariableName(this.name + "Texture");
+		if (!this._imageSource) {
+			this._samplerName = state._getFreeVariableName(this.name + "Texture");
 
-            state._emit2DSampler(this._samplerName);
-        }
+			state._emit2DSampler(this._samplerName);
+		}
 
-        // Declarations
-        state.sharedData.blockingBlocks.push(this);
-        state.sharedData.textureBlocks.push(this);
-        state.sharedData.blocksWithDefines.push(this);
-        state.sharedData.bindableBlocks.push(this);
+		// Declarations
+		state.sharedData.blockingBlocks.push(this);
+		state.sharedData.textureBlocks.push(this);
+		state.sharedData.blocksWithDefines.push(this);
+		state.sharedData.bindableBlocks.push(this);
 
-        const comments = `//${this.name}`;
-        state._emitFunctionFromInclude("helperFunctions", comments);
+		const comments = `//${this.name}`;
+		state._emitFunctionFromInclude("helperFunctions", comments);
 
-        state._emitUniformFromString(this._textureInfoName, NodeMaterialBlockConnectionPointTypes.Float);
+		state._emitUniformFromString(this._textureInfoName, NodeMaterialBlockConnectionPointTypes.Float);
 
-        this._generateTextureLookup(state);
+		this._generateTextureLookup(state);
 
-        for (const output of this._outputs) {
-            if (output.hasEndpoints && output.name !== "level") {
-                this._writeOutput(state, output, output.name);
-            }
-        }
+		for (const output of this._outputs) {
+			if (output.hasEndpoints && output.name !== "level") {
+				this._writeOutput(state, output, output.name);
+			}
+		}
 
-        return this;
-    }
+		return this;
+	}
 
-    protected override _dumpPropertiesCode() {
-        let codeString = super._dumpPropertiesCode();
+	protected override _dumpPropertiesCode() {
+		let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
-        codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
-        codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\n`;
-        codeString += `${this._codeVariableName}.projectAsCube = ${this.projectAsCube};\n`;
+		codeString += `${this._codeVariableName}.convertToGammaSpace = ${this.convertToGammaSpace};\n`;
+		codeString += `${this._codeVariableName}.convertToLinearSpace = ${this.convertToLinearSpace};\n`;
+		codeString += `${this._codeVariableName}.disableLevelMultiplication = ${this.disableLevelMultiplication};\n`;
+		codeString += `${this._codeVariableName}.projectAsCube = ${this.projectAsCube};\n`;
 
-        if (!this.texture) {
-            return codeString;
-        }
+		if (!this.texture) {
+			return codeString;
+		}
 
-        codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\n`;
-        codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\n`;
-        codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\n`;
-        codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\n`;
-        codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\n`;
-        codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\n`;
-        codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\n`;
-        codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\n`;
-        codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\n`;
-        codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\n`;
-        codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
+		codeString += `${this._codeVariableName}.texture = new BABYLON.Texture("${this.texture.name}", null, ${this.texture.noMipmap}, ${this.texture.invertY}, ${this.texture.samplingMode});\n`;
+		codeString += `${this._codeVariableName}.texture.wrapU = ${this.texture.wrapU};\n`;
+		codeString += `${this._codeVariableName}.texture.wrapV = ${this.texture.wrapV};\n`;
+		codeString += `${this._codeVariableName}.texture.uAng = ${this.texture.uAng};\n`;
+		codeString += `${this._codeVariableName}.texture.vAng = ${this.texture.vAng};\n`;
+		codeString += `${this._codeVariableName}.texture.wAng = ${this.texture.wAng};\n`;
+		codeString += `${this._codeVariableName}.texture.uOffset = ${this.texture.uOffset};\n`;
+		codeString += `${this._codeVariableName}.texture.vOffset = ${this.texture.vOffset};\n`;
+		codeString += `${this._codeVariableName}.texture.uScale = ${this.texture.uScale};\n`;
+		codeString += `${this._codeVariableName}.texture.vScale = ${this.texture.vScale};\n`;
+		codeString += `${this._codeVariableName}.texture.coordinatesMode = ${this.texture.coordinatesMode};\n`;
 
-        return codeString;
-    }
+		return codeString;
+	}
 
-    public override serialize(): any {
-        const serializationObject = super.serialize();
+	public override serialize(): any {
+		const serializationObject = super.serialize();
 
-        serializationObject.convertToGammaSpace = this.convertToGammaSpace;
-        serializationObject.convertToLinearSpace = this.convertToLinearSpace;
-        serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
-        serializationObject.projectAsCube = this.projectAsCube;
-        if (!this.hasImageSource && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
-            serializationObject.texture = this.texture.serialize();
-        }
+		serializationObject.convertToGammaSpace = this.convertToGammaSpace;
+		serializationObject.convertToLinearSpace = this.convertToLinearSpace;
+		serializationObject.disableLevelMultiplication = this.disableLevelMultiplication;
+		serializationObject.projectAsCube = this.projectAsCube;
+		if (!this.hasImageSource && this.texture && !this.texture.isRenderTarget && this.texture.getClassName() !== "VideoTexture") {
+			serializationObject.texture = this.texture.serialize();
+		}
 
-        return serializationObject;
-    }
+		return serializationObject;
+	}
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        super._deserialize(serializationObject, scene, rootUrl);
+	public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+		super._deserialize(serializationObject, scene, rootUrl);
 
-        this.convertToGammaSpace = serializationObject.convertToGammaSpace;
-        this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
-        this.disableLevelMultiplication = !!serializationObject.disableLevelMultiplication;
-        this.projectAsCube = !!serializationObject.projectAsCube;
+		this.convertToGammaSpace = serializationObject.convertToGammaSpace;
+		this.convertToLinearSpace = !!serializationObject.convertToLinearSpace;
+		this.disableLevelMultiplication = !!serializationObject.disableLevelMultiplication;
+		this.projectAsCube = !!serializationObject.projectAsCube;
 
-        if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
-            rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
-            this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
-        }
-    }
+		if (serializationObject.texture && !NodeMaterial.IgnoreTexturesAtLoadTime && serializationObject.texture.url !== undefined) {
+			rootUrl = serializationObject.texture.url.indexOf("data:") === 0 ? "" : rootUrl;
+			this.texture = Texture.Parse(serializationObject.texture, scene, rootUrl) as Texture;
+		}
+	}
 }
 
 RegisterClass("BABYLON.TriPlanarBlock", TriPlanarBlock);

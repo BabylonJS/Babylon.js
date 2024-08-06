@@ -8,25 +8,25 @@ const NAME = "KHR_mesh_quantization";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_mesh_quantization implements IGLTFLoaderExtension {
-    /**
-     * The name of this extension.
-     */
-    public readonly name = NAME;
+	/**
+	 * The name of this extension.
+	 */
+	public readonly name = NAME;
 
-    /**
-     * Defines whether this extension is enabled.
-     */
-    public enabled: boolean;
+	/**
+	 * Defines whether this extension is enabled.
+	 */
+	public enabled: boolean;
 
-    /**
-     * @internal
-     */
-    constructor(loader: GLTFLoader) {
-        this.enabled = loader.isExtensionUsed(NAME);
-    }
+	/**
+	 * @internal
+	 */
+	constructor(loader: GLTFLoader) {
+		this.enabled = loader.isExtensionUsed(NAME);
+	}
 
-    /** @internal */
-    public dispose() {}
+	/** @internal */
+	public dispose() {}
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_mesh_quantization(loader));

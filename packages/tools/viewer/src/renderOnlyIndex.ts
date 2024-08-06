@@ -14,7 +14,7 @@ import "core/PostProcesses/RenderPipeline/postProcessRenderPipelineManagerSceneC
 // Override default material factory to avoid the dependency on standard material
 import { Scene } from "core/scene";
 Scene.DefaultMaterialFactory = () => {
-    return null as any;
+	return null as any;
 };
 
 export { RenderOnlyViewer };

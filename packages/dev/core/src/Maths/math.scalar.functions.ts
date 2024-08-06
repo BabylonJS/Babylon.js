@@ -4,7 +4,7 @@
  * @returns int value
  */
 export function ExtractAsInt(value: number) {
-    return parseInt(value.toString().replace(/\W/g, ""));
+	return parseInt(value.toString().replace(/\W/g, ""));
 }
 
 /**
@@ -15,7 +15,7 @@ export function ExtractAsInt(value: number) {
  * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
  */
 export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-45): boolean {
-    return Math.abs(a - b) <= epsilon;
+	return Math.abs(a - b) <= epsilon;
 }
 
 /**
@@ -25,10 +25,10 @@ export function WithinEpsilon(a: number, b: number, epsilon: number = 1.401298e-
  * @returns random value
  */
 export function RandomRange(min: number, max: number): number {
-    if (min === max) {
-        return min;
-    }
-    return Math.random() * (max - min) + min;
+	if (min === max) {
+		return min;
+	}
+	return Math.random() * (max - min) + min;
 }
 
 /**
@@ -39,7 +39,7 @@ export function RandomRange(min: number, max: number): number {
  * @returns the lerped value
  */
 export function Lerp(start: number, end: number, amount: number): number {
-    return start + (end - start) * amount;
+	return start + (end - start) * amount;
 }
 
 /**
@@ -52,7 +52,7 @@ export function Lerp(start: number, end: number, amount: number): number {
  * @returns the clamped value
  */
 export function Clamp(value: number, min = 0, max = 1): number {
-    return Math.min(max, Math.max(min, value));
+	return Math.min(max, Math.max(min, value));
 }
 
 /**
@@ -61,17 +61,17 @@ export function Clamp(value: number, min = 0, max = 1): number {
  * @returns The converted angle.
  */
 export function NormalizeRadians(angle: number): number {
-    // More precise but slower version kept for reference.
-    // angle = angle % Tools.TwoPi;
-    // angle = (angle + Tools.TwoPi) % Tools.TwoPi;
+	// More precise but slower version kept for reference.
+	// angle = angle % Tools.TwoPi;
+	// angle = (angle + Tools.TwoPi) % Tools.TwoPi;
 
-    //if (angle > Math.PI) {
-    //	angle -= Tools.TwoPi;
-    //}
+	//if (angle > Math.PI) {
+	//	angle -= Tools.TwoPi;
+	//}
 
-    angle -= Math.PI * 2 * Math.floor((angle + Math.PI) / (Math.PI * 2));
+	angle -= Math.PI * 2 * Math.floor((angle + Math.PI) / (Math.PI * 2));
 
-    return angle;
+	return angle;
 }
 
 /**
@@ -80,11 +80,11 @@ export function NormalizeRadians(angle: number): number {
  * @returns the upper case translation of the number i to hexadecimal.
  */
 export function ToHex(i: number): string {
-    const str = i.toString(16);
+	const str = i.toString(16);
 
-    if (i <= 15) {
-        return ("0" + str).toUpperCase();
-    }
+	if (i <= 15) {
+		return ("0" + str).toUpperCase();
+	}
 
-    return str.toUpperCase();
+	return str.toUpperCase();
 }

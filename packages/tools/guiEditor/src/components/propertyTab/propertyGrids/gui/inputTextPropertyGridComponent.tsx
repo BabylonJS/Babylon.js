@@ -29,82 +29,82 @@ import { UnitButton } from "shared-ui-components/lines/unitButton";
 import type { GlobalState } from "../../../../globalState";
 
 interface IInputTextPropertyGridComponentProps {
-    inputTexts: InputText[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    onFontsParsedObservable?: Observable<void>;
-    globalState?: GlobalState;
+	inputTexts: InputText[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	onFontsParsedObservable?: Observable<void>;
+	globalState?: GlobalState;
 }
 
 export class InputTextPropertyGridComponent extends React.Component<IInputTextPropertyGridComponentProps> {
-    constructor(props: IInputTextPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IInputTextPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const { inputTexts, onPropertyChangedObservable, lockObject } = this.props;
-        const proxy = makeTargetsProxy(inputTexts, onPropertyChangedObservable);
+	override render() {
+		const { inputTexts, onPropertyChangedObservable, lockObject } = this.props;
+		const proxy = makeTargetsProxy(inputTexts, onPropertyChangedObservable);
 
-        return (
-            <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={lockObject}
-                    controls={inputTexts}
-                    onPropertyChangedObservable={onPropertyChangedObservable}
-                    onFontsParsedObservable={this.props.onFontsParsedObservable}
-                    globalState={this.props.globalState}
-                />
-                <hr />
-                <TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <IconComponent icon={textIcon} label="Text" />
-                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="text" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={textInputIcon} label="Prompt Text" />
-                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="promptMessage" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={widthIcon} label="Max Width" />
-                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="maxWidth" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={marginsIcon} label="Margins" />
-                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="margin" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={strokeWeightIcon} label="Border Thickness" />
-                    <FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit={<UnitButton unit="PX" locked />} arrows min={0} digits={2} />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={autoStretchWidthIcon} label="Automatically Stretch Width" />
-                    <CheckBoxLineComponent label="AUTO STRETCH" target={proxy} propertyName="autoStretchWidth" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={selectAllIcon} label="When Input is Focus, Select All" />
-                    <CheckBoxLineComponent label="ON FOCUS, SELECT ALL" target={proxy} propertyName="onFocusSelectAll" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={highlightIcon} label="Highlight Color" />
-                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="textHighlightColor" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={alphaIcon} label="Highlight Opacity" />
-                    <SliderLineComponent lockObject={lockObject} label="" minimum={0} maximum={1} step={0.01} target={proxy} propertyName="highligherOpacity" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={fillColorIcon} label="Background Color when Focused" />
-                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="focusedBackground" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={textPlaceholderIcon} label="Placeholder Text" />
-                    <TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="placeholderText" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={colorIcon} label="Placeholder Color" />
-                    <ColorLine lockObject={lockObject} label="" target={proxy} propertyName="placeholderColor" />
-                </div>
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<CommonControlPropertyGridComponent
+					lockObject={lockObject}
+					controls={inputTexts}
+					onPropertyChangedObservable={onPropertyChangedObservable}
+					onFontsParsedObservable={this.props.onFontsParsedObservable}
+					globalState={this.props.globalState}
+				/>
+				<hr />
+				<TextLineComponent label="INPUT TEXT" value=" " color="grey"></TextLineComponent>
+				<div className="ge-divider">
+					<IconComponent icon={textIcon} label="Text" />
+					<TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="text" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={textInputIcon} label="Prompt Text" />
+					<TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="promptMessage" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={widthIcon} label="Max Width" />
+					<TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="maxWidth" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={marginsIcon} label="Margins" />
+					<TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="margin" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={strokeWeightIcon} label="Border Thickness" />
+					<FloatLineComponent lockObject={lockObject} label="" target={proxy} propertyName="thickness" unit={<UnitButton unit="PX" locked />} arrows min={0} digits={2} />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={autoStretchWidthIcon} label="Automatically Stretch Width" />
+					<CheckBoxLineComponent label="AUTO STRETCH" target={proxy} propertyName="autoStretchWidth" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={selectAllIcon} label="When Input is Focus, Select All" />
+					<CheckBoxLineComponent label="ON FOCUS, SELECT ALL" target={proxy} propertyName="onFocusSelectAll" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={highlightIcon} label="Highlight Color" />
+					<ColorLine lockObject={lockObject} label="" target={proxy} propertyName="textHighlightColor" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={alphaIcon} label="Highlight Opacity" />
+					<SliderLineComponent lockObject={lockObject} label="" minimum={0} maximum={1} step={0.01} target={proxy} propertyName="highligherOpacity" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={fillColorIcon} label="Background Color when Focused" />
+					<ColorLine lockObject={lockObject} label="" target={proxy} propertyName="focusedBackground" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={textPlaceholderIcon} label="Placeholder Text" />
+					<TextInputLineComponent lockObject={lockObject} label="" target={proxy} propertyName="placeholderText" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={colorIcon} label="Placeholder Color" />
+					<ColorLine lockObject={lockObject} label="" target={proxy} propertyName="placeholderColor" />
+				</div>
+			</div>
+		);
+	}
 }

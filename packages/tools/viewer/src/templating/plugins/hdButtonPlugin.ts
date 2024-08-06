@@ -3,20 +3,20 @@ import type { DefaultViewer } from "../../viewer/defaultViewer";
 import type { EventCallback } from "../templateManager";
 
 export class HDButtonPlugin extends AbstractViewerNavbarButton {
-    constructor(private _viewer: DefaultViewer) {
-        super("hd", "hd-button", HDButtonPlugin.HtmlTemplate);
-    }
+	constructor(private _viewer: DefaultViewer) {
+		super("hd", "hd-button", HDButtonPlugin.HtmlTemplate);
+	}
 
-    onEvent(event: EventCallback): void {
-        const button = event.template.parent.querySelector(".hd-button");
-        if (button) {
-            button.classList.contains("hd-toggled") ? button.classList.remove("hd-toggled") : button.classList.add("hd-toggled");
-        }
-        this._viewer.toggleHD();
-    }
+	onEvent(event: EventCallback): void {
+		const button = event.template.parent.querySelector(".hd-button");
+		if (button) {
+			button.classList.contains("hd-toggled") ? button.classList.remove("hd-toggled") : button.classList.add("hd-toggled");
+		}
+		this._viewer.toggleHD();
+	}
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static HtmlTemplate: string = `
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	protected static HtmlTemplate: string = `
 {{#unless hideHd}}
 <style>
 .hd-icon:after {

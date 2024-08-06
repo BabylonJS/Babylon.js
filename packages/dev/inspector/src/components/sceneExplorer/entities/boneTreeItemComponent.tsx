@@ -6,23 +6,23 @@ import * as React from "react";
 import type { Bone } from "core/Bones/bone";
 
 interface IBoneTreeItemComponentProps {
-    bone: Bone;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	bone: Bone;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class BoneTreeItemComponent extends React.Component<IBoneTreeItemComponentProps> {
-    constructor(props: IBoneTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: IBoneTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const bone = this.props.bone;
-        return (
-            <div className="skeletonTools">
-                <TreeItemLabelComponent label={bone.name || "no name"} onClick={() => this.props.onClick()} icon={faBone} color="lightgray" />
-                {<ExtensionsComponent target={bone} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+	override render() {
+		const bone = this.props.bone;
+		return (
+			<div className="skeletonTools">
+				<TreeItemLabelComponent label={bone.name || "no name"} onClick={() => this.props.onClick()} icon={faBone} color="lightgray" />
+				{<ExtensionsComponent target={bone} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

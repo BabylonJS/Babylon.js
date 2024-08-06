@@ -5,20 +5,20 @@ import type { LockObject } from "../tabs/propertyGrids/lockObject";
 import { ColorLine } from "./colorLineComponent";
 
 export interface IColor3LineComponentProps {
-    label: string;
-    target: any;
-    propertyName: string;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    isLinear?: boolean;
-    icon?: string;
-    lockObject: LockObject;
-    iconLabel?: string;
-    onChange?: () => void;
+	label: string;
+	target: any;
+	propertyName: string;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	isLinear?: boolean;
+	icon?: string;
+	lockObject: LockObject;
+	iconLabel?: string;
+	onChange?: () => void;
 }
 
 export class Color3LineComponent extends React.Component<IColor3LineComponentProps> {
-    override render() {
-        const props = this.props;
-        return <ColorLine disableAlpha={true} {...props} />;
-    }
+	override render() {
+		const props = this.props;
+		return <ColorLine disableAlpha={true} {...props} />;
+	}
 }

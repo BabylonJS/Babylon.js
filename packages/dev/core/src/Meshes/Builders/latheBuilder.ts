@@ -26,65 +26,65 @@ import type { Nullable } from "../../types";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param#lathe
  */
 export function CreateLathe(
-    name: string,
-    options: {
-        shape: Vector3[];
-        radius?: number;
-        tessellation?: number;
-        clip?: number;
-        arc?: number;
-        closed?: boolean;
-        updatable?: boolean;
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-        cap?: number;
-        invertUV?: boolean;
-    },
-    scene: Nullable<Scene> = null
+	name: string,
+	options: {
+		shape: Vector3[];
+		radius?: number;
+		tessellation?: number;
+		clip?: number;
+		arc?: number;
+		closed?: boolean;
+		updatable?: boolean;
+		sideOrientation?: number;
+		frontUVs?: Vector4;
+		backUVs?: Vector4;
+		cap?: number;
+		invertUV?: boolean;
+	},
+	scene: Nullable<Scene> = null
 ): Mesh {
-    const arc: number = options.arc ? (options.arc <= 0 || options.arc > 1 ? 1.0 : options.arc) : 1.0;
-    const closed: boolean = options.closed === undefined ? true : options.closed;
-    const shape = options.shape;
-    const radius = options.radius || 1;
-    const tessellation = options.tessellation || 64;
-    const clip = options.clip || 0;
-    const updatable = options.updatable;
-    const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    const cap = options.cap || Mesh.NO_CAP;
-    const pi2 = Math.PI * 2;
-    const paths = [];
-    const invertUV = options.invertUV || false;
+	const arc: number = options.arc ? (options.arc <= 0 || options.arc > 1 ? 1.0 : options.arc) : 1.0;
+	const closed: boolean = options.closed === undefined ? true : options.closed;
+	const shape = options.shape;
+	const radius = options.radius || 1;
+	const tessellation = options.tessellation || 64;
+	const clip = options.clip || 0;
+	const updatable = options.updatable;
+	const sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+	const cap = options.cap || Mesh.NO_CAP;
+	const pi2 = Math.PI * 2;
+	const paths = [];
+	const invertUV = options.invertUV || false;
 
-    let i = 0;
-    let p = 0;
-    const step = (pi2 / tessellation) * arc;
-    let rotated;
-    let path: Array<Vector3>;
-    for (i = 0; i <= tessellation - clip; i++) {
-        path = [];
-        if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
-            path.push(new Vector3(0, shape[0].y, 0));
-            path.push(new Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));
-        }
-        for (p = 0; p < shape.length; p++) {
-            rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
-            path.push(rotated);
-        }
-        if (cap == Mesh.CAP_END || cap == Mesh.CAP_ALL) {
-            path.push(new Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
-            path.push(new Vector3(0, shape[shape.length - 1].y, 0));
-        }
-        paths.push(path);
-    }
+	let i = 0;
+	let p = 0;
+	const step = (pi2 / tessellation) * arc;
+	let rotated;
+	let path: Array<Vector3>;
+	for (i = 0; i <= tessellation - clip; i++) {
+		path = [];
+		if (cap == Mesh.CAP_START || cap == Mesh.CAP_ALL) {
+			path.push(new Vector3(0, shape[0].y, 0));
+			path.push(new Vector3(Math.cos(i * step) * shape[0].x * radius, shape[0].y, Math.sin(i * step) * shape[0].x * radius));
+		}
+		for (p = 0; p < shape.length; p++) {
+			rotated = new Vector3(Math.cos(i * step) * shape[p].x * radius, shape[p].y, Math.sin(i * step) * shape[p].x * radius);
+			path.push(rotated);
+		}
+		if (cap == Mesh.CAP_END || cap == Mesh.CAP_ALL) {
+			path.push(new Vector3(Math.cos(i * step) * shape[shape.length - 1].x * radius, shape[shape.length - 1].y, Math.sin(i * step) * shape[shape.length - 1].x * radius));
+			path.push(new Vector3(0, shape[shape.length - 1].y, 0));
+		}
+		paths.push(path);
+	}
 
-    // lathe ribbon
-    const lathe = CreateRibbon(
-        name,
-        { pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs },
-        scene
-    );
-    return lathe;
+	// lathe ribbon
+	const lathe = CreateRibbon(
+		name,
+		{ pathArray: paths, closeArray: closed, sideOrientation: sideOrientation, updatable: updatable, invertUV: invertUV, frontUVs: options.frontUVs, backUVs: options.backUVs },
+		scene
+	);
+	return lathe;
 }
 
 /**
@@ -92,18 +92,18 @@ export function CreateLathe(
  * @deprecated use the function direction from the module
  */
 export const LatheBuilder = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CreateLathe,
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	CreateLathe,
 };
 
 Mesh.CreateLathe = (name: string, shape: Vector3[], radius: number, tessellation: number, scene: Scene, updatable?: boolean, sideOrientation?: number): Mesh => {
-    const options = {
-        shape: shape,
-        radius: radius,
-        tessellation: tessellation,
-        sideOrientation: sideOrientation,
-        updatable: updatable,
-    };
+	const options = {
+		shape: shape,
+		radius: radius,
+		tessellation: tessellation,
+		sideOrientation: sideOrientation,
+		updatable: updatable,
+	};
 
-    return CreateLathe(name, options, scene);
+	return CreateLathe(name, options, scene);
 };

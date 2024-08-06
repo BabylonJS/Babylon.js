@@ -8,34 +8,34 @@ import type { IPropertyComponentProps } from "shared-ui-components/nodeGraphSyst
 import { OptionsLine } from "shared-ui-components/lines/optionsLineComponent";
 
 export class LightInformationPropertyTabComponent extends React.Component<IPropertyComponentProps> {
-    override render() {
-        const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
-        const lightOptions = scene.lights.map((l: Light) => {
-            return { label: l.name, value: l.name };
-        });
+	override render() {
+		const scene = (this.props.stateManager.data as GlobalState).nodeMaterial!.getScene();
+		const lightOptions = scene.lights.map((l: Light) => {
+			return { label: l.name, value: l.name };
+		});
 
-        const lightInformationBlock = this.props.nodeData.data as LightInformationBlock;
+		const lightInformationBlock = this.props.nodeData.data as LightInformationBlock;
 
-        return (
-            <div>
-                <GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
-                <LineContainerComponent title="PROPERTIES">
-                    <OptionsLine
-                        label="Light"
-                        noDirectUpdate={true}
-                        valuesAreStrings={true}
-                        options={lightOptions}
-                        target={lightInformationBlock}
-                        propertyName="name"
-                        extractValue={(target: LightInformationBlock) => target.light?.name ?? ""}
-                        onSelect={(name: any) => {
-                            lightInformationBlock.light = scene.getLightByName(name);
-                            this.forceUpdate();
-                            this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
-                        }}
-                    />
-                </LineContainerComponent>
-            </div>
-        );
-    }
+		return (
+			<div>
+				<GeneralPropertyTabComponent stateManager={this.props.stateManager} nodeData={this.props.nodeData} />
+				<LineContainerComponent title="PROPERTIES">
+					<OptionsLine
+						label="Light"
+						noDirectUpdate={true}
+						valuesAreStrings={true}
+						options={lightOptions}
+						target={lightInformationBlock}
+						propertyName="name"
+						extractValue={(target: LightInformationBlock) => target.light?.name ?? ""}
+						onSelect={(name: any) => {
+							lightInformationBlock.light = scene.getLightByName(name);
+							this.forceUpdate();
+							this.props.stateManager.onRebuildRequiredObservable.notifyObservers();
+						}}
+					/>
+				</LineContainerComponent>
+			</div>
+		);
+	}
 }

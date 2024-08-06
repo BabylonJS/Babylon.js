@@ -11,22 +11,22 @@ import type { IFocusableControl } from "./focusableControl";
  * @since 5.0.0
  */
 export class FocusableButton extends Button implements IFocusableControl {
-    constructor(public override name?: string) {
-        super(name);
+	constructor(public override name?: string) {
+		super(name);
 
-        this._unfocusedColor = this.color;
-    }
+		this._unfocusedColor = this.color;
+	}
 
-    /**
-     * @internal
-     */
-    public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
-        if (!this.isReadOnly) {
-            // Clicking on button should focus
-            this.focus();
-        }
+	/**
+	 * @internal
+	 */
+	public override _onPointerDown(target: Control, coordinates: Vector2, pointerId: number, buttonIndex: number, pi: PointerInfoBase): boolean {
+		if (!this.isReadOnly) {
+			// Clicking on button should focus
+			this.focus();
+		}
 
-        return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
-    }
+		return super._onPointerDown(target, coordinates, pointerId, buttonIndex, pi);
+	}
 }
 RegisterClass("BABYLON.GUI.FocusableButton", FocusableButton);

@@ -10,10 +10,10 @@ import type { IFlowGraphBlockConfiguration } from "../../flowGraphBlock";
  * The variable block configuration.
  */
 export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * The name of the variable to set.
-     */
-    variableName: string;
+	/**
+	 * The name of the variable to set.
+	 */
+	variableName: string;
 }
 
 /**
@@ -21,39 +21,39 @@ export interface IFlowGraphSetVariableBlockConfiguration extends IFlowGraphBlock
  * @experimental
  */
 export class FlowGraphSetVariableBlock<T> extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The value to set on the variable.
-     */
-    public readonly input: FlowGraphDataConnection<T>;
+	/**
+	 * Input connection: The value to set on the variable.
+	 */
+	public readonly input: FlowGraphDataConnection<T>;
 
-    constructor(
-        /**
-         * the configuration of the block
-         */
-        public override config: IFlowGraphSetVariableBlockConfiguration
-    ) {
-        super(config);
+	constructor(
+		/**
+		 * the configuration of the block
+		 */
+		public override config: IFlowGraphSetVariableBlockConfiguration
+	) {
+		super(config);
 
-        this.input = this.registerDataInput(config.variableName, RichTypeAny);
-    }
+		this.input = this.registerDataInput(config.variableName, RichTypeAny);
+	}
 
-    public _execute(context: FlowGraphContext): void {
-        const variableNameValue = this.config.variableName;
-        const inputValue = this.input.getValue(context);
-        context.setVariable(variableNameValue, inputValue);
-        this.out._activateSignal(context);
-    }
+	public _execute(context: FlowGraphContext): void {
+		const variableNameValue = this.config.variableName;
+		const inputValue = this.input.getValue(context);
+		context.setVariable(variableNameValue, inputValue);
+		this.out._activateSignal(context);
+	}
 
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName(): string {
-        return FlowGraphSetVariableBlock.ClassName;
-    }
+	/**
+	 * @returns class name of the block.
+	 */
+	public override getClassName(): string {
+		return FlowGraphSetVariableBlock.ClassName;
+	}
 
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSetVariableBlock";
+	/**
+	 * the class name of the block.
+	 */
+	public static ClassName = "FGSetVariableBlock";
 }
 RegisterClass(FlowGraphSetVariableBlock.ClassName, FlowGraphSetVariableBlock);

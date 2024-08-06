@@ -1,8 +1,8 @@
 /** @internal */
 export interface IDrawContext {
-    uniqueId: number;
-    useInstancing: boolean;
+	uniqueId: number;
+	useInstancing: boolean;
 
-    reset(): void;
-    dispose(): void;
+	reset(): void;
+	dispose(): void;
 }

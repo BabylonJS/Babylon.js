@@ -20,30 +20,30 @@ import { GreasedLineMaterialDefaults } from "../../Materials/GreasedLine/greased
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#colors-and-colordistribution}
  */
 export const enum GreasedLineMeshColorDistribution {
-    /**
-     * Do no modify the color table
-     */
-    COLOR_DISTRIBUTION_NONE = 0,
-    /**
-     * Repeat the colors until the color table is full
-     */
-    COLOR_DISTRIBUTION_REPEAT = 1,
-    /**
-     * Distribute the colors evenly through the color table
-     */
-    COLOR_DISTRIBUTION_EVEN = 2,
-    /**
-     * Put the colors to start of the color table a fill the rest with the default color
-     */
-    COLOR_DISTRIBUTION_START = 3,
-    /**
-     * Put the colors to the end of the color table and fill the rest with the default color
-     */
-    COLOR_DISTRIBUTION_END = 4,
-    /**
-     * Put the colors to start and to the end of the color table and fill the gap between with the default color
-     */
-    COLOR_DISTRIBUTION_START_END = 5,
+	/**
+	 * Do no modify the color table
+	 */
+	COLOR_DISTRIBUTION_NONE = 0,
+	/**
+	 * Repeat the colors until the color table is full
+	 */
+	COLOR_DISTRIBUTION_REPEAT = 1,
+	/**
+	 * Distribute the colors evenly through the color table
+	 */
+	COLOR_DISTRIBUTION_EVEN = 2,
+	/**
+	 * Put the colors to start of the color table a fill the rest with the default color
+	 */
+	COLOR_DISTRIBUTION_START = 3,
+	/**
+	 * Put the colors to the end of the color table and fill the rest with the default color
+	 */
+	COLOR_DISTRIBUTION_END = 4,
+	/**
+	 * Put the colors to start and to the end of the color table and fill the gap between with the default color
+	 */
+	COLOR_DISTRIBUTION_START_END = 5,
 }
 
 /**
@@ -51,58 +51,58 @@ export const enum GreasedLineMeshColorDistribution {
  * {@link https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/param/greased_line#widths-and-widthdistribution}
  */
 export const enum GreasedLineMeshWidthDistribution {
-    /**
-     * Do no modify the width table
-     */
-    WIDTH_DISTRIBUTION_NONE = 0,
-    /**
-     * Repeat the widths until the width table is full
-     */
-    WIDTH_DISTRIBUTION_REPEAT = 1,
-    /**
-     * Distribute the widths evenly through the width table
-     */
-    WIDTH_DISTRIBUTION_EVEN = 2,
-    /**
-     * Put the widths to start of the width table a fill the rest with the default width
-     */
-    WIDTH_DISTRIBUTION_START = 3,
-    /**
-     * Put the widths to the end of the width table and fill the rest with the default width
-     */
-    WIDTH_DISTRIBUTION_END = 4,
-    /**
-     * Put the widths to start and to the end of the width table and fill the gap between with the default width
-     */
-    WIDTH_DISTRIBUTION_START_END = 5,
+	/**
+	 * Do no modify the width table
+	 */
+	WIDTH_DISTRIBUTION_NONE = 0,
+	/**
+	 * Repeat the widths until the width table is full
+	 */
+	WIDTH_DISTRIBUTION_REPEAT = 1,
+	/**
+	 * Distribute the widths evenly through the width table
+	 */
+	WIDTH_DISTRIBUTION_EVEN = 2,
+	/**
+	 * Put the widths to start of the width table a fill the rest with the default width
+	 */
+	WIDTH_DISTRIBUTION_START = 3,
+	/**
+	 * Put the widths to the end of the width table and fill the rest with the default width
+	 */
+	WIDTH_DISTRIBUTION_END = 4,
+	/**
+	 * Put the widths to start and to the end of the width table and fill the gap between with the default width
+	 */
+	WIDTH_DISTRIBUTION_START_END = 5,
 }
 
 /**
  * Material options for GreasedLineBuilder
  */
 export interface GreasedLineMaterialBuilderOptions extends GreasedLineMaterialOptions {
-    /**
-     * If set to true a new material will be created and a new material plugin will be attached
-     * to the material. The material will be set on the mesh. If the instance option is specified in the mesh options,
-     * no material will be created/assigned. Defaults to true.
-     */
-    createAndAssignMaterial?: boolean;
-    /**
-     * Distribution of the colors if the color table contains fewer entries than needed. Defaults to GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START
-     * @see CompleteGreasedLineColorTable
-     */
-    colorDistribution?: GreasedLineMeshColorDistribution;
+	/**
+	 * If set to true a new material will be created and a new material plugin will be attached
+	 * to the material. The material will be set on the mesh. If the instance option is specified in the mesh options,
+	 * no material will be created/assigned. Defaults to true.
+	 */
+	createAndAssignMaterial?: boolean;
+	/**
+	 * Distribution of the colors if the color table contains fewer entries than needed. Defaults to GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START
+	 * @see CompleteGreasedLineColorTable
+	 */
+	colorDistribution?: GreasedLineMeshColorDistribution;
 }
 
 /**
  * Line mesh options for GreasedLineBuilder
  */
 export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
-    /**
-     * Distribution of the widths if the width table contains fewer entries than needed. Defaults to GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START
-     * @see CompleteGreasedLineWidthTable
-     */
-    widthDistribution?: GreasedLineMeshWidthDistribution;
+	/**
+	 * Distribution of the widths if the width table contains fewer entries than needed. Defaults to GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START
+	 * @see CompleteGreasedLineWidthTable
+	 */
+	widthDistribution?: GreasedLineMeshWidthDistribution;
 }
 
 /**
@@ -117,24 +117,24 @@ export interface GreasedLineMeshBuilderOptions extends GreasedLineMeshOptions {
  * @returns StandardMaterial or PBRMaterial with the @see GreasedLinePluginMaterial attached to it
  */
 export function CreateGreasedLineMaterial(name: string, options: GreasedLineMaterialOptions, scene: Nullable<Scene>) {
-    scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
+	scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
-    let material;
-    switch (options.materialType) {
-        case GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR:
-            material = new PBRMaterial(name, scene, true); // Forcing glsl for now
-            new GreasedLinePluginMaterial(material, scene, options);
-            break;
-        case GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE:
-            material = new GreasedLineSimpleMaterial(name, scene, options);
-            break;
-        default:
-            material = new StandardMaterial(name, scene, true); // Forcing glsl for now
-            new GreasedLinePluginMaterial(material, scene, options);
-            break;
-    }
+	let material;
+	switch (options.materialType) {
+		case GreasedLineMeshMaterialType.MATERIAL_TYPE_PBR:
+			material = new PBRMaterial(name, scene, true); // Forcing glsl for now
+			new GreasedLinePluginMaterial(material, scene, options);
+			break;
+		case GreasedLineMeshMaterialType.MATERIAL_TYPE_SIMPLE:
+			material = new GreasedLineSimpleMaterial(name, scene, options);
+			break;
+		default:
+			material = new StandardMaterial(name, scene, true); // Forcing glsl for now
+			new GreasedLinePluginMaterial(material, scene, options);
+			break;
+	}
 
-    return material;
+	return material;
 }
 
 /**
@@ -146,134 +146,134 @@ export function CreateGreasedLineMaterial(name: string, options: GreasedLineMate
  * @returns instance of GreasedLineMesh
  */
 export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderOptions, materialOptions?: Nullable<GreasedLineMaterialBuilderOptions>, scene?: Nullable<Scene>) {
-    scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
+	scene = <Scene>(scene ?? EngineStore.LastCreatedScene);
 
-    let instance;
-    const allPoints = GreasedLineTools.ConvertPoints(options.points);
+	let instance;
+	const allPoints = GreasedLineTools.ConvertPoints(options.points);
 
-    options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
-    if (options.ribbonOptions) {
-        options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING;
-        options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
-        options.ribbonOptions.directionsAutoMode =
-            options.ribbonOptions.directionsAutoMode ??
-            (options.ribbonOptions.directions ? GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE : GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_FIRST_SEGMENT);
-    }
+	options.widthDistribution = options.widthDistribution ?? GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START;
+	if (options.ribbonOptions) {
+		options.ribbonOptions.facesMode = options.ribbonOptions.facesMode ?? GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING;
+		options.ribbonOptions.pointsMode = options.ribbonOptions.pointsMode ?? GreasedLineRibbonPointsMode.POINTS_MODE_POINTS;
+		options.ribbonOptions.directionsAutoMode =
+			options.ribbonOptions.directionsAutoMode ??
+			(options.ribbonOptions.directions ? GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_NONE : GreasedLineRibbonAutoDirectionMode.AUTO_DIRECTIONS_FROM_FIRST_SEGMENT);
+	}
 
-    materialOptions = materialOptions ?? {
-        color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
-    };
-    materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
-    materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
-    materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
+	materialOptions = materialOptions ?? {
+		color: GreasedLineMaterialDefaults.DEFAULT_COLOR,
+	};
+	materialOptions.createAndAssignMaterial = materialOptions.createAndAssignMaterial ?? true;
+	materialOptions.colorDistribution = materialOptions?.colorDistribution ?? GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START;
+	materialOptions.materialType = materialOptions.materialType ?? GreasedLineMeshMaterialType.MATERIAL_TYPE_STANDARD;
 
-    const pointsCount = GetPointsCount(allPoints);
-    const widths = CompleteGreasedLineWidthTable(pointsCount, options.widths ?? [], options.widthDistribution);
+	const pointsCount = GetPointsCount(allPoints);
+	const widths = CompleteGreasedLineWidthTable(pointsCount, options.widths ?? [], options.widthDistribution);
 
-    const colors = materialOptions?.colors
-        ? CompleteGreasedLineColorTable(pointsCount, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
-        : undefined;
+	const colors = materialOptions?.colors
+		? CompleteGreasedLineColorTable(pointsCount, materialOptions.colors, materialOptions.colorDistribution, materialOptions.color ?? GreasedLineMaterialDefaults.DEFAULT_COLOR)
+		: undefined;
 
-    // create new mesh if instance is not defined
-    const initialGreasedLineOptions: GreasedLineMeshOptions = {
-        points: allPoints,
-        updatable: options.updatable,
-        widths,
-        lazy: options.lazy,
-        ribbonOptions: options.ribbonOptions,
-        uvs: options.uvs,
-        colorPointers: options.colorPointers,
-    };
+	// create new mesh if instance is not defined
+	const initialGreasedLineOptions: GreasedLineMeshOptions = {
+		points: allPoints,
+		updatable: options.updatable,
+		widths,
+		lazy: options.lazy,
+		ribbonOptions: options.ribbonOptions,
+		uvs: options.uvs,
+		colorPointers: options.colorPointers,
+	};
 
-    if (initialGreasedLineOptions.ribbonOptions) {
-        if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
-            initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineMaterialDefaults.DEFAULT_WIDTH;
-        }
-    }
+	if (initialGreasedLineOptions.ribbonOptions) {
+		if (initialGreasedLineOptions.ribbonOptions.pointsMode === GreasedLineRibbonPointsMode.POINTS_MODE_POINTS) {
+			initialGreasedLineOptions.ribbonOptions.width = materialOptions.width ?? initialGreasedLineOptions.ribbonOptions.width ?? GreasedLineMaterialDefaults.DEFAULT_WIDTH;
+		}
+	}
 
-    if (!options.instance) {
-        instance = initialGreasedLineOptions.ribbonOptions
-            ? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
-            : new GreasedLineMesh(name, scene, initialGreasedLineOptions);
+	if (!options.instance) {
+		instance = initialGreasedLineOptions.ribbonOptions
+			? new GreasedLineRibbonMesh(name, scene, initialGreasedLineOptions)
+			: new GreasedLineMesh(name, scene, initialGreasedLineOptions);
 
-        if (materialOptions) {
-            const initialMaterialOptions: GreasedLineMaterialOptions = {
-                materialType: materialOptions.materialType,
-                dashCount: materialOptions.dashCount,
-                dashOffset: materialOptions.dashOffset,
-                dashRatio: materialOptions.dashRatio,
-                resolution: materialOptions.resolution,
-                sizeAttenuation: materialOptions.sizeAttenuation,
-                useColors: materialOptions.useColors,
-                useDash: materialOptions.useDash,
-                visibility: materialOptions.visibility,
-                width: materialOptions.width,
-                color: materialOptions.color,
-                colorMode: materialOptions.colorMode,
-                colorsSampling: materialOptions.colorsSampling,
-                colorDistributionType: materialOptions.colorDistributionType,
-                colors,
-                cameraFacing: !options.ribbonOptions,
-                colorsTexture: materialOptions.colorsTexture,
-            };
+		if (materialOptions) {
+			const initialMaterialOptions: GreasedLineMaterialOptions = {
+				materialType: materialOptions.materialType,
+				dashCount: materialOptions.dashCount,
+				dashOffset: materialOptions.dashOffset,
+				dashRatio: materialOptions.dashRatio,
+				resolution: materialOptions.resolution,
+				sizeAttenuation: materialOptions.sizeAttenuation,
+				useColors: materialOptions.useColors,
+				useDash: materialOptions.useDash,
+				visibility: materialOptions.visibility,
+				width: materialOptions.width,
+				color: materialOptions.color,
+				colorMode: materialOptions.colorMode,
+				colorsSampling: materialOptions.colorsSampling,
+				colorDistributionType: materialOptions.colorDistributionType,
+				colors,
+				cameraFacing: !options.ribbonOptions,
+				colorsTexture: materialOptions.colorsTexture,
+			};
 
-            if (materialOptions.createAndAssignMaterial) {
-                const material = CreateGreasedLineMaterial(name, initialMaterialOptions, scene);
-                instance.material = material;
+			if (materialOptions.createAndAssignMaterial) {
+				const material = CreateGreasedLineMaterial(name, initialMaterialOptions, scene);
+				instance.material = material;
 
-                if (options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING) {
-                    material.backFaceCulling = false;
-                }
-            }
-        }
-    } else {
-        // update the data on the mesh instance
-        instance = options.instance;
-        if (instance instanceof GreasedLineRibbonMesh) {
-            instance.addPoints(allPoints, initialGreasedLineOptions);
-        } else {
-            // add widths
-            const currentWidths = instance.widths;
-            if (currentWidths) {
-                const newWidths = currentWidths.slice();
-                for (const w of widths) {
-                    newWidths.push(w);
-                }
-                instance.widths = newWidths;
-            } else {
-                instance.widths = widths;
-            }
+				if (options.ribbonOptions?.facesMode === GreasedLineRibbonFacesMode.FACES_MODE_SINGLE_SIDED_NO_BACKFACE_CULLING) {
+					material.backFaceCulling = false;
+				}
+			}
+		}
+	} else {
+		// update the data on the mesh instance
+		instance = options.instance;
+		if (instance instanceof GreasedLineRibbonMesh) {
+			instance.addPoints(allPoints, initialGreasedLineOptions);
+		} else {
+			// add widths
+			const currentWidths = instance.widths;
+			if (currentWidths) {
+				const newWidths = currentWidths.slice();
+				for (const w of widths) {
+					newWidths.push(w);
+				}
+				instance.widths = newWidths;
+			} else {
+				instance.widths = widths;
+			}
 
-            instance.addPoints(allPoints);
+			instance.addPoints(allPoints);
 
-            // add UVs
-            if (options.uvs) {
-                const currentUVs = instance.uvs;
-                if (currentUVs) {
-                    const newUVs = new Float32Array(currentUVs.length + options.uvs.length);
-                    newUVs.set(currentUVs, 0);
-                    newUVs.set(options.uvs, currentUVs.length);
-                    instance.uvs = newUVs;
-                } else {
-                    instance.uvs = options.uvs;
-                }
-            }
-        }
-    }
+			// add UVs
+			if (options.uvs) {
+				const currentUVs = instance.uvs;
+				if (currentUVs) {
+					const newUVs = new Float32Array(currentUVs.length + options.uvs.length);
+					newUVs.set(currentUVs, 0);
+					newUVs.set(options.uvs, currentUVs.length);
+					instance.uvs = newUVs;
+				} else {
+					instance.uvs = options.uvs;
+				}
+			}
+		}
+	}
 
-    // add colors
-    // it will merge if any colors already on the instance
-    if (colors && options.instance) {
-        if (options.instance.greasedLineMaterial) {
-            const currentColors = options.instance.greasedLineMaterial.colors;
-            if (currentColors) {
-                const newColors = currentColors.concat(colors);
-                options.instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
-            }
-        }
-    }
+	// add colors
+	// it will merge if any colors already on the instance
+	if (colors && options.instance) {
+		if (options.instance.greasedLineMaterial) {
+			const currentColors = options.instance.greasedLineMaterial.colors;
+			if (currentColors) {
+				const newColors = currentColors.concat(colors);
+				options.instance.greasedLineMaterial.setColors(newColors, instance.isLazy());
+			}
+		}
+	}
 
-    return instance;
+	return instance;
 }
 
 /**
@@ -282,11 +282,11 @@ export function CreateGreasedLine(name: string, options: GreasedLineMeshBuilderO
  * @returns total number of points
  */
 export function GetPointsCount(allPoints: number[][]) {
-    let pointCount = 0;
-    for (const points of allPoints) {
-        pointCount += (<number[]>points).length / 3;
-    }
-    return pointCount;
+	let pointCount = 0;
+	for (const points of allPoints) {
+		pointCount += (<number[]>points).length / 3;
+	}
+	return pointCount;
 }
 
 /**
@@ -307,100 +307,100 @@ export function GetPointsCount(allPoints: number[][]) {
  * @returns completed width table.
  */
 export function CompleteGreasedLineWidthTable(
-    pointCount: number,
-    widths: number[],
-    widthsDistribution: GreasedLineMeshWidthDistribution,
-    defaultWidthUpper = 1,
-    defaultWidthLower = 1
+	pointCount: number,
+	widths: number[],
+	widthsDistribution: GreasedLineMeshWidthDistribution,
+	defaultWidthUpper = 1,
+	defaultWidthLower = 1
 ): number[] {
-    const missingCount = pointCount - widths.length / 2;
+	const missingCount = pointCount - widths.length / 2;
 
-    const widthsData: number[] = [];
-    if (missingCount < 0) {
-        return widths.slice(0, pointCount * 2);
-    }
+	const widthsData: number[] = [];
+	if (missingCount < 0) {
+		return widths.slice(0, pointCount * 2);
+	}
 
-    // is the width table shorter than the point table?
-    if (missingCount > 0) {
-        if (widths.length % 2 != 0) {
-            widths.push(defaultWidthUpper);
-        }
-        // it is, fill in the missing elements
-        if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
-            const halfCount = Math.floor(widths.length / 2);
+	// is the width table shorter than the point table?
+	if (missingCount > 0) {
+		if (widths.length % 2 != 0) {
+			widths.push(defaultWidthUpper);
+		}
+		// it is, fill in the missing elements
+		if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START_END) {
+			const halfCount = Math.floor(widths.length / 2);
 
-            // start sector
-            for (let i = 0, j = 0; i < halfCount - 1; i++) {
-                widthsData.push(widths[j++]);
-                widthsData.push(widths[j++]);
-            }
+			// start sector
+			for (let i = 0, j = 0; i < halfCount - 1; i++) {
+				widthsData.push(widths[j++]);
+				widthsData.push(widths[j++]);
+			}
 
-            // middle sector
-            const widthL = widths[halfCount / 2];
-            const widthU = widths[halfCount / 2 + 1];
-            for (let i = 0; i < missingCount; i++) {
-                widthsData.push(widthU);
-                widthsData.push(widthL);
-            }
+			// middle sector
+			const widthL = widths[halfCount / 2];
+			const widthU = widths[halfCount / 2 + 1];
+			for (let i = 0; i < missingCount; i++) {
+				widthsData.push(widthU);
+				widthsData.push(widthL);
+			}
 
-            // end sector
-            for (let i = halfCount; i < widths.length; i += 2) {
-                widthsData.push(widths[i]);
-                widthsData.push(widths[i + 1]);
-            }
-        } else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START) {
-            // start sector
-            for (let i = 0; i < widths.length; i += 2) {
-                widthsData.push(widths[i]);
-                widthsData.push(widths[i + 1]);
-            }
+			// end sector
+			for (let i = halfCount; i < widths.length; i += 2) {
+				widthsData.push(widths[i]);
+				widthsData.push(widths[i + 1]);
+			}
+		} else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_START) {
+			// start sector
+			for (let i = 0; i < widths.length; i += 2) {
+				widthsData.push(widths[i]);
+				widthsData.push(widths[i + 1]);
+			}
 
-            // end sector
-            for (let i = 0; i < missingCount; i++) {
-                widthsData.push(defaultWidthUpper);
-                widthsData.push(defaultWidthLower);
-            }
-        } else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_END) {
-            // start sector
-            for (let i = 0; i < missingCount; i++) {
-                widthsData.push(defaultWidthUpper);
-                widthsData.push(defaultWidthLower);
-            }
+			// end sector
+			for (let i = 0; i < missingCount; i++) {
+				widthsData.push(defaultWidthUpper);
+				widthsData.push(defaultWidthLower);
+			}
+		} else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_END) {
+			// start sector
+			for (let i = 0; i < missingCount; i++) {
+				widthsData.push(defaultWidthUpper);
+				widthsData.push(defaultWidthLower);
+			}
 
-            // end sector
-            for (let i = 0; i < widths.length; i += 2) {
-                widthsData.push(widths[i]);
-                widthsData.push(widths[i + 1]);
-            }
-        } else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_REPEAT) {
-            let i = 0;
-            for (let x = 0; x < pointCount; x++) {
-                widthsData.push(widths[i++]);
-                widthsData.push(widths[i++]);
+			// end sector
+			for (let i = 0; i < widths.length; i += 2) {
+				widthsData.push(widths[i]);
+				widthsData.push(widths[i + 1]);
+			}
+		} else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_REPEAT) {
+			let i = 0;
+			for (let x = 0; x < pointCount; x++) {
+				widthsData.push(widths[i++]);
+				widthsData.push(widths[i++]);
 
-                if (i === widths.length) {
-                    i = 0;
-                }
-            }
-        } else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_EVEN) {
-            let j = 0;
-            const widthsectorLength = widths.length / ((pointCount - 1) * 2);
-            for (let x = 0; x < pointCount; x++) {
-                const i = Math.floor(j);
+				if (i === widths.length) {
+					i = 0;
+				}
+			}
+		} else if (widthsDistribution === GreasedLineMeshWidthDistribution.WIDTH_DISTRIBUTION_EVEN) {
+			let j = 0;
+			const widthsectorLength = widths.length / ((pointCount - 1) * 2);
+			for (let x = 0; x < pointCount; x++) {
+				const i = Math.floor(j);
 
-                widthsData.push(widths[i]);
-                widthsData.push(widths[i + 1]);
+				widthsData.push(widths[i]);
+				widthsData.push(widths[i + 1]);
 
-                j += widthsectorLength;
-            }
-        }
-    } else {
-        for (let i = 0; i < widths.length; i++) {
-            widthsData.push(widths[i]);
-        }
-    }
+				j += widthsectorLength;
+			}
+		}
+	} else {
+		for (let i = 0; i < widths.length; i++) {
+			widthsData.push(widths[i]);
+		}
+	}
 
-    return widthsData;
+	return widthsData;
 }
 
 /**
@@ -420,84 +420,84 @@ export function CompleteGreasedLineWidthTable(
  * @returns completed array of Color3s
  */
 export function CompleteGreasedLineColorTable(pointCount: number, colors: Color3[], colorDistribution: GreasedLineMeshColorDistribution, defaultColor: Color3): Color3[] {
-    pointCount = Math.max(colors.length, pointCount);
-    const missingCount = pointCount - colors.length;
-    if (missingCount < 0) {
-        return colors.slice(0, pointCount);
-    }
+	pointCount = Math.max(colors.length, pointCount);
+	const missingCount = pointCount - colors.length;
+	if (missingCount < 0) {
+		return colors.slice(0, pointCount);
+	}
 
-    const colorsData: Color3[] = [];
-    // is the color table shorter than the point table?
-    if (missingCount > 0) {
-        // it is, fill in the missing elements
-        if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START_END) {
-            const halfCount = Math.floor(colors.length / 2);
+	const colorsData: Color3[] = [];
+	// is the color table shorter than the point table?
+	if (missingCount > 0) {
+		// it is, fill in the missing elements
+		if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START_END) {
+			const halfCount = Math.floor(colors.length / 2);
 
-            // start sector
-            for (let i = 0; i < halfCount; i++) {
-                colorsData.push(colors[i]);
-            }
+			// start sector
+			for (let i = 0; i < halfCount; i++) {
+				colorsData.push(colors[i]);
+			}
 
-            // middle sector
-            for (let i = 0; i < missingCount - 1; i++) {
-                colorsData.push(defaultColor);
-            }
+			// middle sector
+			for (let i = 0; i < missingCount - 1; i++) {
+				colorsData.push(defaultColor);
+			}
 
-            // end sector
-            for (let i = halfCount; i < colors.length; i++) {
-                colorsData.push(colors[i]);
-            }
-        } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START) {
-            // start sector
-            for (let i = 0; i < colors.length; i++) {
-                colorsData.push(colors[i]);
-            }
+			// end sector
+			for (let i = halfCount; i < colors.length; i++) {
+				colorsData.push(colors[i]);
+			}
+		} else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_START) {
+			// start sector
+			for (let i = 0; i < colors.length; i++) {
+				colorsData.push(colors[i]);
+			}
 
-            // end sector
-            for (let i = 0; i < missingCount; i++) {
-                colorsData.push(defaultColor);
-            }
-        } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_END) {
-            // start sector
-            for (let i = 0; i < missingCount - 1; i++) {
-                colorsData.push(defaultColor);
-            }
+			// end sector
+			for (let i = 0; i < missingCount; i++) {
+				colorsData.push(defaultColor);
+			}
+		} else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_END) {
+			// start sector
+			for (let i = 0; i < missingCount - 1; i++) {
+				colorsData.push(defaultColor);
+			}
 
-            // end sector
-            for (let i = 0; i < colors.length; i++) {
-                colorsData.push(colors[i]);
-            }
-        } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_REPEAT) {
-            let i = 0;
-            for (let x = 0; x < pointCount; x++) {
-                colorsData.push(colors[i]);
+			// end sector
+			for (let i = 0; i < colors.length; i++) {
+				colorsData.push(colors[i]);
+			}
+		} else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_REPEAT) {
+			let i = 0;
+			for (let x = 0; x < pointCount; x++) {
+				colorsData.push(colors[i]);
 
-                i++;
+				i++;
 
-                if (i === colors.length) {
-                    i = 0;
-                }
-            }
-        } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_EVEN) {
-            let j = 0;
-            const colorSectorLength = colors.length / (pointCount - 1);
-            for (let x = 0; x < pointCount - 1; x++) {
-                const i = Math.floor(j);
+				if (i === colors.length) {
+					i = 0;
+				}
+			}
+		} else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_EVEN) {
+			let j = 0;
+			const colorSectorLength = colors.length / (pointCount - 1);
+			for (let x = 0; x < pointCount - 1; x++) {
+				const i = Math.floor(j);
 
-                colorsData.push(colors[i]);
+				colorsData.push(colors[i]);
 
-                j += colorSectorLength;
-            }
-        } else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_NONE) {
-            for (let i = 0; i < colors.length; i++) {
-                colorsData.push(colors[i]);
-            }
-        }
-    } else {
-        for (let i = 0; i < pointCount; i++) {
-            colorsData.push(colors[i]);
-        }
-    }
+				j += colorSectorLength;
+			}
+		} else if (colorDistribution === GreasedLineMeshColorDistribution.COLOR_DISTRIBUTION_NONE) {
+			for (let i = 0; i < colors.length; i++) {
+				colorsData.push(colors[i]);
+			}
+		}
+	} else {
+		for (let i = 0; i < pointCount; i++) {
+			colorsData.push(colors[i]);
+		}
+	}
 
-    return colorsData;
+	return colorsData;
 }

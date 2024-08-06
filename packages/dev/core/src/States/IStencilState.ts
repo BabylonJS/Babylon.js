@@ -1,16 +1,16 @@
 /** @internal */
 export interface IStencilState {
-    enabled: boolean;
+	enabled: boolean;
 
-    mask: number;
+	mask: number;
 
-    func: number;
-    funcRef: number;
-    funcMask: number;
+	func: number;
+	funcRef: number;
+	funcMask: number;
 
-    opStencilDepthPass: number;
-    opStencilFail: number;
-    opDepthFail: number;
+	opStencilDepthPass: number;
+	opStencilFail: number;
+	opDepthFail: number;
 
-    reset(): void;
+	reset(): void;
 }

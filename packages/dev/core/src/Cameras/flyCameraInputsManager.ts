@@ -9,29 +9,29 @@ import { FlyCameraKeyboardInput } from "../Cameras/Inputs/flyCameraKeyboardInput
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FlyCameraInputsManager extends CameraInputsManager<FlyCamera> {
-    /**
-     * Instantiates a new FlyCameraInputsManager.
-     * @param camera Defines the camera the inputs belong to.
-     */
-    constructor(camera: FlyCamera) {
-        super(camera);
-    }
+	/**
+	 * Instantiates a new FlyCameraInputsManager.
+	 * @param camera Defines the camera the inputs belong to.
+	 */
+	constructor(camera: FlyCamera) {
+		super(camera);
+	}
 
-    /**
-     * Add keyboard input support to the input manager.
-     * @returns the new FlyCameraKeyboardMoveInput().
-     */
-    addKeyboard(): FlyCameraInputsManager {
-        this.add(new FlyCameraKeyboardInput());
-        return this;
-    }
+	/**
+	 * Add keyboard input support to the input manager.
+	 * @returns the new FlyCameraKeyboardMoveInput().
+	 */
+	addKeyboard(): FlyCameraInputsManager {
+		this.add(new FlyCameraKeyboardInput());
+		return this;
+	}
 
-    /**
-     * Add mouse input support to the input manager.
-     * @returns the new FlyCameraMouseInput().
-     */
-    addMouse(): FlyCameraInputsManager {
-        this.add(new FlyCameraMouseInput());
-        return this;
-    }
+	/**
+	 * Add mouse input support to the input manager.
+	 * @returns the new FlyCameraMouseInput().
+	 */
+	addMouse(): FlyCameraInputsManager {
+		this.add(new FlyCameraMouseInput());
+		return this;
+	}
 }

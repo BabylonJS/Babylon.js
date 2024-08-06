@@ -21,88 +21,88 @@ const cliCommand = checkArgs(["-c", "--command"], false, true) as string;
 runCommand(cliCommand);
 
 function processConfigFile() {
-    const baseDir = path.resolve(".");
-    const configFile = (checkArgs(["-f", "--file"], false, true) as string) || "config.tasks.json";
-    if (configFile) {
-        console.log(`Processing config file: ${configFile}`);
-        // read the json file using fs
-        const config = JSON.parse(fs.readFileSync(path.resolve(baseDir, configFile), "utf8"));
-        if (config) {
-            if (config.commands) {
-                for (const command of config.commands as { command: string; args?: string[] }[]) {
-                    // populate the args
-                    externalArgs.length = 0;
-                    if (command.args) {
-                        externalArgs.push(...(command.args as string[]));
-                    }
-                    runCommand(command.command);
-                }
-            }
-        }
-    }
+	const baseDir = path.resolve(".");
+	const configFile = (checkArgs(["-f", "--file"], false, true) as string) || "config.tasks.json";
+	if (configFile) {
+		console.log(`Processing config file: ${configFile}`);
+		// read the json file using fs
+		const config = JSON.parse(fs.readFileSync(path.resolve(baseDir, configFile), "utf8"));
+		if (config) {
+			if (config.commands) {
+				for (const command of config.commands as { command: string; args?: string[] }[]) {
+					// populate the args
+					externalArgs.length = 0;
+					if (command.args) {
+						externalArgs.push(...(command.args as string[]));
+					}
+					runCommand(command.command);
+				}
+			}
+		}
+	}
 }
 
 function runCommand(command: string) {
-    if (command) {
-        console.log("Babylon.js build tools");
-        console.log(`Command: ${command}`);
-        switch (command) {
-            case "run-tasks":
-            case "rt":
-                processConfigFile();
-                break;
-            case "add-js-to-es6":
-            case "ajte":
-                addJsExtensionsToCompiledFilesCommand();
-                break;
-            case "process-umd-declaration":
-            case "pud":
-                generateDeclaration();
-                break;
-            case "build-shaders":
-            case "bs":
-                processAssets({ extensions: ["fx"] });
-                break;
-            case "transform-lts":
-            case "tlts":
-                transformLtsCommand();
-                break;
-            case "prepare-es6-build":
-            case "peb":
-                prepareES6Build().catch((e) => {
-                    console.error(e);
-                    process.exit(1);
-                });
-                break;
-            case "dev-watch":
-            case "dw":
-                devWatch();
-                break;
-            case "process-assets":
-            case "pa":
-                processAssets();
-                break;
-            case "prepare-snapshot":
-            case "ps":
-                prepareSnapshot();
-                break;
-            case "update-engine-version":
-            case "uev":
-                updateEngineVersion();
-                break;
-            case "declarations-es6":
-            case "des6":
-                declarationsEs6();
-                break;
-            case "copy":
-            case "cp":
-                copyFolder(checkArgs(["-f", "--from"], false, true) as string, checkArgs(["-t", "--to"], false, true) as string);
-                break;
-            default:
-                console.log(`Unknown command: ${command}`);
-                break;
-        }
-    }
+	if (command) {
+		console.log("Babylon.js build tools");
+		console.log(`Command: ${command}`);
+		switch (command) {
+			case "run-tasks":
+			case "rt":
+				processConfigFile();
+				break;
+			case "add-js-to-es6":
+			case "ajte":
+				addJsExtensionsToCompiledFilesCommand();
+				break;
+			case "process-umd-declaration":
+			case "pud":
+				generateDeclaration();
+				break;
+			case "build-shaders":
+			case "bs":
+				processAssets({ extensions: ["fx"] });
+				break;
+			case "transform-lts":
+			case "tlts":
+				transformLtsCommand();
+				break;
+			case "prepare-es6-build":
+			case "peb":
+				prepareES6Build().catch((e) => {
+					console.error(e);
+					process.exit(1);
+				});
+				break;
+			case "dev-watch":
+			case "dw":
+				devWatch();
+				break;
+			case "process-assets":
+			case "pa":
+				processAssets();
+				break;
+			case "prepare-snapshot":
+			case "ps":
+				prepareSnapshot();
+				break;
+			case "update-engine-version":
+			case "uev":
+				updateEngineVersion();
+				break;
+			case "declarations-es6":
+			case "des6":
+				declarationsEs6();
+				break;
+			case "copy":
+			case "cp":
+				copyFolder(checkArgs(["-f", "--from"], false, true) as string, checkArgs(["-t", "--to"], false, true) as string);
+				break;
+			default:
+				console.log(`Unknown command: ${command}`);
+				break;
+		}
+	}
 }
 
 export { transformer, webpackTools, checkArgs, umdPackageMapping, populateEnvironment };

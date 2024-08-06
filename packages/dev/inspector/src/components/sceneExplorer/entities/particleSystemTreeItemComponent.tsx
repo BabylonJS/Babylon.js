@@ -7,22 +7,22 @@ import * as React from "react";
 import type { IParticleSystem } from "core/Particles/IParticleSystem";
 
 interface IParticleSystemTreeItemComponentProps {
-    system: IParticleSystem;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	system: IParticleSystem;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class ParticleSystemTreeItemComponent extends React.Component<IParticleSystemTreeItemComponentProps> {
-    constructor(props: IParticleSystemTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: IParticleSystemTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <div className="particleSystemTools">
-                <TreeItemLabelComponent label={this.props.system.name || "Particle system"} onClick={() => this.props.onClick()} icon={faBraille} color="crimson" />
-                {<ExtensionsComponent target={this.props.system} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+	override render() {
+		return (
+			<div className="particleSystemTools">
+				<TreeItemLabelComponent label={this.props.system.name || "Particle system"} onClick={() => this.props.onClick()} icon={faBraille} color="crimson" />
+				{<ExtensionsComponent target={this.props.system} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

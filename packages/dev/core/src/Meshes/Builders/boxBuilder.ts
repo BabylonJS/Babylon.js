@@ -22,127 +22,127 @@ import { CreateGroundVertexData } from "./groundBuilder";
  * @returns the VertexData of the box
  */
 export function CreateBoxVertexData(options: {
-    size?: number;
-    width?: number;
-    height?: number;
-    depth?: number;
-    faceUV?: Vector4[];
-    faceColors?: Color4[];
-    sideOrientation?: number;
-    frontUVs?: Vector4;
-    backUVs?: Vector4;
-    wrap?: boolean;
-    topBaseAt?: number;
-    bottomBaseAt?: number;
+	size?: number;
+	width?: number;
+	height?: number;
+	depth?: number;
+	faceUV?: Vector4[];
+	faceColors?: Color4[];
+	sideOrientation?: number;
+	frontUVs?: Vector4;
+	backUVs?: Vector4;
+	wrap?: boolean;
+	topBaseAt?: number;
+	bottomBaseAt?: number;
 }): VertexData {
-    const nbFaces = 6;
-    let indices = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23];
-    const normals = [
-        0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0,
-        1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
-    ];
-    const uvs = [];
-    let positions = [];
-    const width = options.width || options.size || 1;
-    const height = options.height || options.size || 1;
-    const depth = options.depth || options.size || 1;
-    const wrap = options.wrap || false;
-    let topBaseAt = options.topBaseAt === void 0 ? 1 : options.topBaseAt;
-    let bottomBaseAt = options.bottomBaseAt === void 0 ? 0 : options.bottomBaseAt;
-    topBaseAt = (topBaseAt + 4) % 4; // places values as 0 to 3
-    bottomBaseAt = (bottomBaseAt + 4) % 4; // places values as 0 to 3
-    const topOrder = [2, 0, 3, 1];
-    const bottomOrder = [2, 0, 1, 3];
-    let topIndex = topOrder[topBaseAt];
-    let bottomIndex = bottomOrder[bottomBaseAt];
-    let basePositions = [
-        1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
-        1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1,
-    ];
-    if (wrap) {
-        indices = [2, 3, 0, 2, 0, 1, 4, 5, 6, 4, 6, 7, 9, 10, 11, 9, 11, 8, 12, 14, 15, 12, 13, 14];
-        basePositions = [
-            -1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1,
-        ];
-        let topFaceBase: any = [
-            [1, 1, 1],
-            [-1, 1, 1],
-            [-1, 1, -1],
-            [1, 1, -1],
-        ];
-        let bottomFaceBase: any = [
-            [-1, -1, 1],
-            [1, -1, 1],
-            [1, -1, -1],
-            [-1, -1, -1],
-        ];
-        const topFaceOrder: any = [17, 18, 19, 16];
-        const bottomFaceOrder: any = [22, 23, 20, 21];
-        while (topIndex > 0) {
-            topFaceBase.unshift(topFaceBase.pop());
-            topFaceOrder.unshift(topFaceOrder.pop());
-            topIndex--;
-        }
-        while (bottomIndex > 0) {
-            bottomFaceBase.unshift(bottomFaceBase.pop());
-            bottomFaceOrder.unshift(bottomFaceOrder.pop());
-            bottomIndex--;
-        }
-        topFaceBase = topFaceBase.flat();
-        bottomFaceBase = bottomFaceBase.flat();
-        basePositions = basePositions.concat(topFaceBase).concat(bottomFaceBase);
-        indices.push(topFaceOrder[0], topFaceOrder[2], topFaceOrder[3], topFaceOrder[0], topFaceOrder[1], topFaceOrder[2]);
-        indices.push(bottomFaceOrder[0], bottomFaceOrder[2], bottomFaceOrder[3], bottomFaceOrder[0], bottomFaceOrder[1], bottomFaceOrder[2]);
-    }
-    const scaleArray = [width / 2, height / 2, depth / 2];
-    positions = basePositions.reduce((accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]), []);
+	const nbFaces = 6;
+	let indices = [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23];
+	const normals = [
+		0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0,
+		1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0,
+	];
+	const uvs = [];
+	let positions = [];
+	const width = options.width || options.size || 1;
+	const height = options.height || options.size || 1;
+	const depth = options.depth || options.size || 1;
+	const wrap = options.wrap || false;
+	let topBaseAt = options.topBaseAt === void 0 ? 1 : options.topBaseAt;
+	let bottomBaseAt = options.bottomBaseAt === void 0 ? 0 : options.bottomBaseAt;
+	topBaseAt = (topBaseAt + 4) % 4; // places values as 0 to 3
+	bottomBaseAt = (bottomBaseAt + 4) % 4; // places values as 0 to 3
+	const topOrder = [2, 0, 3, 1];
+	const bottomOrder = [2, 0, 1, 3];
+	let topIndex = topOrder[topBaseAt];
+	let bottomIndex = bottomOrder[bottomBaseAt];
+	let basePositions = [
+		1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1,
+		1, 1, -1, 1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1, -1, -1, 1,
+	];
+	if (wrap) {
+		indices = [2, 3, 0, 2, 0, 1, 4, 5, 6, 4, 6, 7, 9, 10, 11, 9, 11, 8, 12, 14, 15, 12, 13, 14];
+		basePositions = [
+			-1, 1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 1, -1, -1, 1, -1, -1, -1,
+		];
+		let topFaceBase: any = [
+			[1, 1, 1],
+			[-1, 1, 1],
+			[-1, 1, -1],
+			[1, 1, -1],
+		];
+		let bottomFaceBase: any = [
+			[-1, -1, 1],
+			[1, -1, 1],
+			[1, -1, -1],
+			[-1, -1, -1],
+		];
+		const topFaceOrder: any = [17, 18, 19, 16];
+		const bottomFaceOrder: any = [22, 23, 20, 21];
+		while (topIndex > 0) {
+			topFaceBase.unshift(topFaceBase.pop());
+			topFaceOrder.unshift(topFaceOrder.pop());
+			topIndex--;
+		}
+		while (bottomIndex > 0) {
+			bottomFaceBase.unshift(bottomFaceBase.pop());
+			bottomFaceOrder.unshift(bottomFaceOrder.pop());
+			bottomIndex--;
+		}
+		topFaceBase = topFaceBase.flat();
+		bottomFaceBase = bottomFaceBase.flat();
+		basePositions = basePositions.concat(topFaceBase).concat(bottomFaceBase);
+		indices.push(topFaceOrder[0], topFaceOrder[2], topFaceOrder[3], topFaceOrder[0], topFaceOrder[1], topFaceOrder[2]);
+		indices.push(bottomFaceOrder[0], bottomFaceOrder[2], bottomFaceOrder[3], bottomFaceOrder[0], bottomFaceOrder[1], bottomFaceOrder[2]);
+	}
+	const scaleArray = [width / 2, height / 2, depth / 2];
+	positions = basePositions.reduce((accumulator: Array<number>, currentValue, currentIndex) => accumulator.concat(currentValue * scaleArray[currentIndex % 3]), []);
 
-    const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+	const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    const faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
-    const faceColors = options.faceColors;
-    const colors = [];
+	const faceUV: Vector4[] = options.faceUV || new Array<Vector4>(6);
+	const faceColors = options.faceColors;
+	const colors = [];
 
-    // default face colors and UV if undefined
-    for (let f = 0; f < 6; f++) {
-        if (faceUV[f] === undefined) {
-            faceUV[f] = new Vector4(0, 0, 1, 1);
-        }
-        if (faceColors && faceColors[f] === undefined) {
-            faceColors[f] = new Color4(1, 1, 1, 1);
-        }
-    }
+	// default face colors and UV if undefined
+	for (let f = 0; f < 6; f++) {
+		if (faceUV[f] === undefined) {
+			faceUV[f] = new Vector4(0, 0, 1, 1);
+		}
+		if (faceColors && faceColors[f] === undefined) {
+			faceColors[f] = new Color4(1, 1, 1, 1);
+		}
+	}
 
-    // Create each face in turn.
-    for (let index = 0; index < nbFaces; index++) {
-        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
-        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
-        uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
-        uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
-        if (faceColors) {
-            for (let c = 0; c < 4; c++) {
-                colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
-            }
-        }
-    }
+	// Create each face in turn.
+	for (let index = 0; index < nbFaces; index++) {
+		uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+		uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].w : faceUV[index].w);
+		uvs.push(faceUV[index].x, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
+		uvs.push(faceUV[index].z, CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - faceUV[index].y : faceUV[index].y);
+		if (faceColors) {
+			for (let c = 0; c < 4; c++) {
+				colors.push(faceColors[index].r, faceColors[index].g, faceColors[index].b, faceColors[index].a);
+			}
+		}
+	}
 
-    // sides
-    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+	// sides
+	VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    // Result
-    const vertexData = new VertexData();
+	// Result
+	const vertexData = new VertexData();
 
-    vertexData.indices = indices;
-    vertexData.positions = positions;
-    vertexData.normals = normals;
-    vertexData.uvs = uvs;
+	vertexData.indices = indices;
+	vertexData.positions = positions;
+	vertexData.normals = normals;
+	vertexData.uvs = uvs;
 
-    if (faceColors) {
-        const totalColors = sideOrientation === VertexData.DOUBLESIDE ? colors.concat(colors) : colors;
-        vertexData.colors = totalColors;
-    }
+	if (faceColors) {
+		const totalColors = sideOrientation === VertexData.DOUBLESIDE ? colors.concat(colors) : colors;
+		vertexData.colors = totalColors;
+	}
 
-    return vertexData;
+	return vertexData;
 }
 
 /**
@@ -159,63 +159,63 @@ export function CreateBoxVertexData(options: {
  * @returns the VertexData of the box
  */
 export function CreateSegmentedBoxVertexData(options: {
-    size?: number;
-    width?: number;
-    height?: number;
-    depth?: number;
-    segments?: number;
-    widthSegments?: number;
-    heightSegments?: number;
-    depthSegments?: number;
+	size?: number;
+	width?: number;
+	height?: number;
+	depth?: number;
+	segments?: number;
+	widthSegments?: number;
+	heightSegments?: number;
+	depthSegments?: number;
 }): VertexData {
-    const width = options.width || options.size || 1;
-    const height = options.height || options.size || 1;
-    const depth = options.depth || options.size || 1;
-    const widthSegments = (options.widthSegments || options.segments || 1) | 0;
-    const heightSegments = (options.heightSegments || options.segments || 1) | 0;
-    const depthSegments = (options.depthSegments || options.segments || 1) | 0;
-    const rotationMatrix = new Matrix();
-    const translationMatrix = new Matrix();
-    const transformMatrix = new Matrix();
+	const width = options.width || options.size || 1;
+	const height = options.height || options.size || 1;
+	const depth = options.depth || options.size || 1;
+	const widthSegments = (options.widthSegments || options.segments || 1) | 0;
+	const heightSegments = (options.heightSegments || options.segments || 1) | 0;
+	const depthSegments = (options.depthSegments || options.segments || 1) | 0;
+	const rotationMatrix = new Matrix();
+	const translationMatrix = new Matrix();
+	const transformMatrix = new Matrix();
 
-    const bottomPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(0, -height / 2, 0, translationMatrix);
-    Matrix.RotationZToRef(Math.PI, rotationMatrix);
-    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
-    bottomPlane.transform(transformMatrix);
+	const bottomPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
+	Matrix.TranslationToRef(0, -height / 2, 0, translationMatrix);
+	Matrix.RotationZToRef(Math.PI, rotationMatrix);
+	rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+	bottomPlane.transform(transformMatrix);
 
-    const topPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(0, height / 2, 0, transformMatrix);
-    topPlane.transform(transformMatrix);
+	const topPlane = CreateGroundVertexData({ width: width, height: depth, subdivisionsX: widthSegments, subdivisionsY: depthSegments });
+	Matrix.TranslationToRef(0, height / 2, 0, transformMatrix);
+	topPlane.transform(transformMatrix);
 
-    const negXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(-width / 2, 0, 0, translationMatrix);
-    Matrix.RotationZToRef(Math.PI / 2, rotationMatrix);
-    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
-    negXPlane.transform(transformMatrix);
+	const negXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
+	Matrix.TranslationToRef(-width / 2, 0, 0, translationMatrix);
+	Matrix.RotationZToRef(Math.PI / 2, rotationMatrix);
+	rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+	negXPlane.transform(transformMatrix);
 
-    const posXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
-    Matrix.TranslationToRef(width / 2, 0, 0, translationMatrix);
-    Matrix.RotationZToRef(-Math.PI / 2, rotationMatrix);
-    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
-    posXPlane.transform(transformMatrix);
+	const posXPlane = CreateGroundVertexData({ width: height, height: depth, subdivisionsX: heightSegments, subdivisionsY: depthSegments });
+	Matrix.TranslationToRef(width / 2, 0, 0, translationMatrix);
+	Matrix.RotationZToRef(-Math.PI / 2, rotationMatrix);
+	rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+	posXPlane.transform(transformMatrix);
 
-    const negZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
-    Matrix.TranslationToRef(0, 0, -depth / 2, translationMatrix);
-    Matrix.RotationXToRef(-Math.PI / 2, rotationMatrix);
-    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
-    negZPlane.transform(transformMatrix);
+	const negZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
+	Matrix.TranslationToRef(0, 0, -depth / 2, translationMatrix);
+	Matrix.RotationXToRef(-Math.PI / 2, rotationMatrix);
+	rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+	negZPlane.transform(transformMatrix);
 
-    const posZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
-    Matrix.TranslationToRef(0, 0, depth / 2, translationMatrix);
-    Matrix.RotationXToRef(Math.PI / 2, rotationMatrix);
-    rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
-    posZPlane.transform(transformMatrix);
+	const posZPlane = CreateGroundVertexData({ width: width, height: height, subdivisionsX: widthSegments, subdivisionsY: heightSegments });
+	Matrix.TranslationToRef(0, 0, depth / 2, translationMatrix);
+	Matrix.RotationXToRef(Math.PI / 2, rotationMatrix);
+	rotationMatrix.multiplyToRef(translationMatrix, transformMatrix);
+	posZPlane.transform(transformMatrix);
 
-    // Result
-    bottomPlane.merge([topPlane, posXPlane, negXPlane, negZPlane, posZPlane], true);
+	// Result
+	bottomPlane.merge([topPlane, posXPlane, negXPlane, negZPlane, posZPlane], true);
 
-    return bottomPlane;
+	return bottomPlane;
 }
 
 /**
@@ -234,34 +234,34 @@ export function CreateSegmentedBoxVertexData(options: {
  * @returns the box mesh
  */
 export function CreateBox(
-    name: string,
-    options: {
-        size?: number;
-        width?: number;
-        height?: number;
-        depth?: number;
-        faceUV?: Vector4[];
-        faceColors?: Color4[];
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-        wrap?: boolean;
-        topBaseAt?: number;
-        bottomBaseAt?: number;
-        updatable?: boolean;
-    } = {},
-    scene: Nullable<Scene> = null
+	name: string,
+	options: {
+		size?: number;
+		width?: number;
+		height?: number;
+		depth?: number;
+		faceUV?: Vector4[];
+		faceColors?: Color4[];
+		sideOrientation?: number;
+		frontUVs?: Vector4;
+		backUVs?: Vector4;
+		wrap?: boolean;
+		topBaseAt?: number;
+		bottomBaseAt?: number;
+		updatable?: boolean;
+	} = {},
+	scene: Nullable<Scene> = null
 ): Mesh {
-    const box = new Mesh(name, scene);
+	const box = new Mesh(name, scene);
 
-    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    box._originalBuilderSideOrientation = options.sideOrientation;
+	options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+	box._originalBuilderSideOrientation = options.sideOrientation;
 
-    const vertexData = CreateBoxVertexData(options);
+	const vertexData = CreateBoxVertexData(options);
 
-    vertexData.applyToMesh(box, options.updatable);
+	vertexData.applyToMesh(box, options.updatable);
 
-    return box;
+	return box;
 }
 
 /**
@@ -269,19 +269,19 @@ export function CreateBox(
  * @deprecated please use CreateBox directly
  */
 export const BoxBuilder = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CreateBox,
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	CreateBox,
 };
 
 // Side effects
 VertexData.CreateBox = CreateBoxVertexData;
 
 Mesh.CreateBox = (name: string, size: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
-    const options = {
-        size,
-        sideOrientation,
-        updatable,
-    };
+	const options = {
+		size,
+		sideOrientation,
+		updatable,
+	};
 
-    return CreateBox(name, options, scene);
+	return CreateBox(name, options, scene);
 };

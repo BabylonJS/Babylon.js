@@ -12,92 +12,92 @@ import type { Nullable } from "../types";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FreeCameraInputsManager extends CameraInputsManager<FreeCamera> {
-    /**
-     * @internal
-     */
-    public _mouseInput: Nullable<FreeCameraMouseInput> = null;
-    /**
-     * @internal
-     */
-    public _mouseWheelInput: Nullable<FreeCameraMouseWheelInput> = null;
-    /**
-     * Instantiates a new FreeCameraInputsManager.
-     * @param camera Defines the camera the inputs belong to
-     */
-    constructor(camera: FreeCamera) {
-        super(camera);
-    }
+	/**
+	 * @internal
+	 */
+	public _mouseInput: Nullable<FreeCameraMouseInput> = null;
+	/**
+	 * @internal
+	 */
+	public _mouseWheelInput: Nullable<FreeCameraMouseWheelInput> = null;
+	/**
+	 * Instantiates a new FreeCameraInputsManager.
+	 * @param camera Defines the camera the inputs belong to
+	 */
+	constructor(camera: FreeCamera) {
+		super(camera);
+	}
 
-    /**
-     * Add keyboard input support to the input manager.
-     * @returns the current input manager
-     */
-    addKeyboard(): FreeCameraInputsManager {
-        this.add(new FreeCameraKeyboardMoveInput());
-        return this;
-    }
+	/**
+	 * Add keyboard input support to the input manager.
+	 * @returns the current input manager
+	 */
+	addKeyboard(): FreeCameraInputsManager {
+		this.add(new FreeCameraKeyboardMoveInput());
+		return this;
+	}
 
-    /**
-     * Add mouse input support to the input manager.
-     * @param touchEnabled if the FreeCameraMouseInput should support touch (default: true)
-     * @returns the current input manager
-     */
-    addMouse(touchEnabled = true): FreeCameraInputsManager {
-        if (!this._mouseInput) {
-            this._mouseInput = new FreeCameraMouseInput(touchEnabled);
-            this.add(this._mouseInput);
-        }
-        return this;
-    }
+	/**
+	 * Add mouse input support to the input manager.
+	 * @param touchEnabled if the FreeCameraMouseInput should support touch (default: true)
+	 * @returns the current input manager
+	 */
+	addMouse(touchEnabled = true): FreeCameraInputsManager {
+		if (!this._mouseInput) {
+			this._mouseInput = new FreeCameraMouseInput(touchEnabled);
+			this.add(this._mouseInput);
+		}
+		return this;
+	}
 
-    /**
-     * Removes the mouse input support from the manager
-     * @returns the current input manager
-     */
-    removeMouse(): FreeCameraInputsManager {
-        if (this._mouseInput) {
-            this.remove(this._mouseInput);
-        }
-        return this;
-    }
+	/**
+	 * Removes the mouse input support from the manager
+	 * @returns the current input manager
+	 */
+	removeMouse(): FreeCameraInputsManager {
+		if (this._mouseInput) {
+			this.remove(this._mouseInput);
+		}
+		return this;
+	}
 
-    /**
-     * Add mouse wheel input support to the input manager.
-     * @returns the current input manager
-     */
-    addMouseWheel(): FreeCameraInputsManager {
-        if (!this._mouseWheelInput) {
-            this._mouseWheelInput = new FreeCameraMouseWheelInput();
-            this.add(this._mouseWheelInput);
-        }
-        return this;
-    }
+	/**
+	 * Add mouse wheel input support to the input manager.
+	 * @returns the current input manager
+	 */
+	addMouseWheel(): FreeCameraInputsManager {
+		if (!this._mouseWheelInput) {
+			this._mouseWheelInput = new FreeCameraMouseWheelInput();
+			this.add(this._mouseWheelInput);
+		}
+		return this;
+	}
 
-    /**
-     * Removes the mouse wheel input support from the manager
-     * @returns the current input manager
-     */
-    removeMouseWheel(): FreeCameraInputsManager {
-        if (this._mouseWheelInput) {
-            this.remove(this._mouseWheelInput);
-        }
-        return this;
-    }
+	/**
+	 * Removes the mouse wheel input support from the manager
+	 * @returns the current input manager
+	 */
+	removeMouseWheel(): FreeCameraInputsManager {
+		if (this._mouseWheelInput) {
+			this.remove(this._mouseWheelInput);
+		}
+		return this;
+	}
 
-    /**
-     * Add touch input support to the input manager.
-     * @returns the current input manager
-     */
-    addTouch(): FreeCameraInputsManager {
-        this.add(new FreeCameraTouchInput());
-        return this;
-    }
+	/**
+	 * Add touch input support to the input manager.
+	 * @returns the current input manager
+	 */
+	addTouch(): FreeCameraInputsManager {
+		this.add(new FreeCameraTouchInput());
+		return this;
+	}
 
-    /**
-     * Remove all attached input methods from a camera
-     */
-    public override clear(): void {
-        super.clear();
-        this._mouseInput = null;
-    }
+	/**
+	 * Remove all attached input methods from a camera
+	 */
+	public override clear(): void {
+		super.clear();
+		this._mouseInput = null;
+	}
 }

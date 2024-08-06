@@ -29,67 +29,67 @@ import type { Scene } from "../scene";
  *
  */
 export class ColorCorrectionPostProcess extends PostProcess {
-    private _colorTableTexture: Texture;
+	private _colorTableTexture: Texture;
 
-    /**
-     * Gets the color table url used to create the LUT texture
-     */
-    @serialize()
-    public colorTableUrl: string;
+	/**
+	 * Gets the color table url used to create the LUT texture
+	 */
+	@serialize()
+	public colorTableUrl: string;
 
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "ColorCorrectionPostProcess" string
-     */
-    public override getClassName(): string {
-        return "ColorCorrectionPostProcess";
-    }
+	/**
+	 * Gets a string identifying the name of the class
+	 * @returns "ColorCorrectionPostProcess" string
+	 */
+	public override getClassName(): string {
+		return "ColorCorrectionPostProcess";
+	}
 
-    constructor(
-        name: string,
-        colorTableUrl: string,
-        options: number | PostProcessOptions,
-        camera: Nullable<Camera>,
-        samplingMode?: number,
-        engine?: AbstractEngine,
-        reusable?: boolean
-    ) {
-        super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
+	constructor(
+		name: string,
+		colorTableUrl: string,
+		options: number | PostProcessOptions,
+		camera: Nullable<Camera>,
+		samplingMode?: number,
+		engine?: AbstractEngine,
+		reusable?: boolean
+	) {
+		super(name, "colorCorrection", null, ["colorTable"], options, camera, samplingMode, engine, reusable);
 
-        const scene = camera?.getScene() || null;
-        this._colorTableTexture = new Texture(colorTableUrl, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
-        this._colorTableTexture.anisotropicFilteringLevel = 1;
-        this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
-        this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
+		const scene = camera?.getScene() || null;
+		this._colorTableTexture = new Texture(colorTableUrl, scene, true, false, Texture.TRILINEAR_SAMPLINGMODE);
+		this._colorTableTexture.anisotropicFilteringLevel = 1;
+		this._colorTableTexture.wrapU = Texture.CLAMP_ADDRESSMODE;
+		this._colorTableTexture.wrapV = Texture.CLAMP_ADDRESSMODE;
 
-        this.colorTableUrl = colorTableUrl;
+		this.colorTableUrl = colorTableUrl;
 
-        this.onApply = (effect: Effect) => {
-            effect.setTexture("colorTable", this._colorTableTexture);
-        };
-    }
+		this.onApply = (effect: Effect) => {
+			effect.setTexture("colorTable", this._colorTableTexture);
+		};
+	}
 
-    /**
-     * @internal
-     */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
-        return SerializationHelper.Parse(
-            () => {
-                return new ColorCorrectionPostProcess(
-                    parsedPostProcess.name,
-                    parsedPostProcess.colorTableUrl,
-                    parsedPostProcess.options,
-                    targetCamera,
-                    parsedPostProcess.renderTargetSamplingMode,
-                    scene.getEngine(),
-                    parsedPostProcess.reusable
-                );
-            },
-            parsedPostProcess,
-            scene,
-            rootUrl
-        );
-    }
+	/**
+	 * @internal
+	 */
+	public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string): Nullable<ColorCorrectionPostProcess> {
+		return SerializationHelper.Parse(
+			() => {
+				return new ColorCorrectionPostProcess(
+					parsedPostProcess.name,
+					parsedPostProcess.colorTableUrl,
+					parsedPostProcess.options,
+					targetCamera,
+					parsedPostProcess.renderTargetSamplingMode,
+					scene.getEngine(),
+					parsedPostProcess.reusable
+				);
+			},
+			parsedPostProcess,
+			scene,
+			rootUrl
+		);
+	}
 }
 
 RegisterClass("BABYLON.ColorCorrectionPostProcess", ColorCorrectionPostProcess);

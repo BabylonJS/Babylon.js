@@ -7,14 +7,14 @@ import { ResizeDirections } from "./types";
  * Arguments for the FlexibleDropZone component.
  */
 export interface IFlexibleDropZoneProps {
-    /**
-     * The row number of the component in the layout
-     */
-    rowNumber: number;
-    /**
-     * The column number of the component in the layout
-     */
-    columnNumber: number;
+	/**
+	 * The row number of the component in the layout
+	 */
+	rowNumber: number;
+	/**
+	 * The column number of the component in the layout
+	 */
+	columnNumber: number;
 }
 
 /**
@@ -24,11 +24,11 @@ export interface IFlexibleDropZoneProps {
  * @returns drop zone element
  */
 export const FlexibleDropZone: FC<IFlexibleDropZoneProps> = (props) => {
-    return (
-        <div className={style.flexibleDropZoneContainer}>
-            {props.children}
-            <FlexibleResizeBar rowNumber={props.rowNumber} columnNumber={props.columnNumber} direction={ResizeDirections.COLUMN} />
-            <FlexibleResizeBar rowNumber={props.rowNumber} columnNumber={props.columnNumber} direction={ResizeDirections.ROW} />
-        </div>
-    );
+	return (
+		<div className={style.flexibleDropZoneContainer}>
+			{props.children}
+			<FlexibleResizeBar rowNumber={props.rowNumber} columnNumber={props.columnNumber} direction={ResizeDirections.COLUMN} />
+			<FlexibleResizeBar rowNumber={props.rowNumber} columnNumber={props.columnNumber} direction={ResizeDirections.ROW} />
+		</div>
+	);
 };

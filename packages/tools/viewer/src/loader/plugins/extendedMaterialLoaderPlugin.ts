@@ -8,8 +8,8 @@ import { Constants } from "core/Engines/constants";
  * This function will hold extra default configuration for the viewer, if not implemented in Babylon itself.
  */
 export class ExtendedMaterialLoaderPlugin implements ILoaderPlugin {
-    public onMaterialLoaded(baseMaterial: Material) {
-        const material = baseMaterial as PBRMaterial;
-        material.alphaMode = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
-    }
+	public onMaterialLoaded(baseMaterial: Material) {
+		const material = baseMaterial as PBRMaterial;
+		material.alphaMode = Constants.ALPHA_PREMULTIPLIED_PORTERDUFF;
+	}
 }

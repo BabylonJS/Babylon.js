@@ -1,6 +1,6 @@
 export const canvasShader = {
-    path: {
-        vertexSource: `
+	path: {
+		vertexSource: `
             precision highp float;
 
             attribute vec3 position;
@@ -15,7 +15,7 @@ export const canvasShader = {
                 vUV = uv;
             }
         `,
-        fragmentSource: `
+		fragmentSource: `
             precision highp float;
     
             uniform sampler2D textureSampler;
@@ -110,9 +110,9 @@ export const canvasShader = {
                     }
                 }
             }`,
-    },
-    options: {
-        attributes: ["position", "uv"],
-        uniforms: ["worldViewProjection", "textureSampler", "r", "g", "b", "a", "x1", "y1", "x2", "y2", "w", "h", "time", "showGrid"],
-    },
+	},
+	options: {
+		attributes: ["position", "uv"],
+		uniforms: ["worldViewProjection", "textureSampler", "r", "g", "b", "a", "x1", "y1", "x2", "y2", "w", "h", "time", "showGrid"],
+	},
 };

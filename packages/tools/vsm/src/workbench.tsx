@@ -25,56 +25,56 @@ export type WorkbenchProps = {};
 const INITIAL_WORKBENCH_COLOR = "#AAAAAA";
 
 export const Workbench: FC<WorkbenchProps> = () => {
-    const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
-    const [scene, setScene] = useState<Nullable<Scene>>(null);
-    const [selectedState, setSelectedState] = useState<Nullable<State>>(null);
-    const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
-    const [selectedActionWrapper, setSelectedActionWrapper] = useState<IActionSelectionContextWrapper>({ action: null, lastUpdate: Date.now() });
+	const [workAreaColor, setWorkAreaColor] = useState(INITIAL_WORKBENCH_COLOR);
+	const [scene, setScene] = useState<Nullable<Scene>>(null);
+	const [selectedState, setSelectedState] = useState<Nullable<State>>(null);
+	const [stateMachineWrapper, setStateMachineWrapper] = useState<Nullable<IStateMachineWrapper>>(null);
+	const [selectedActionWrapper, setSelectedActionWrapper] = useState<IActionSelectionContextWrapper>({ action: null, lastUpdate: Date.now() });
 
-    const startStateMachine = () => {
-        if (stateMachineWrapper) {
-            stateMachineWrapper.stateMachine.start();
-        }
-    };
+	const startStateMachine = () => {
+		if (stateMachineWrapper) {
+			stateMachineWrapper.stateMachine.start();
+		}
+	};
 
-    const pauseStateMachine = () => {
-        if (stateMachineWrapper) {
-            stateMachineWrapper.stateMachine.pause();
-        }
-    };
+	const pauseStateMachine = () => {
+		if (stateMachineWrapper) {
+			stateMachineWrapper.stateMachine.pause();
+		}
+	};
 
-    useEffect(() => {
-        if (scene) {
-            const node = scene.getMeshByName("sphere");
-            if (node) {
-                const stateMachine = new StateMachine(scene, node);
+	useEffect(() => {
+		if (scene) {
+			const node = scene.getMeshByName("sphere");
+			if (node) {
+				const stateMachine = new StateMachine(scene, node);
 
-                setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
-            }
-        }
-    }, [scene]);
+				setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
+			}
+		}
+	}, [scene]);
 
-    return (
-        <SceneContext.Provider value={{ scene, setScene }}>
-            <StateMachineContext.Provider value={{ stateMachineWrapper, setStateMachineWrapper }}>
-                <StateSelectionContext.Provider value={{ selectedState: selectedState, setSelectedState: setSelectedState }}>
-                    <ActionSelectionContext.Provider value={{ selectedActionWrapper, setSelectedActionWrapper }}>
-                        <div className={style.workbenchContainer}>
-                            <CommandBarComponent
-                                artboardColor={workAreaColor}
-                                artboardColorPickerColor={INITIAL_WORKBENCH_COLOR}
-                                onArtboardColorChanged={(newColor) => setWorkAreaColor(newColor)}
-                            >
-                                <CommandButtonComponent tooltip="Start State Machine" icon={playIcon} onClick={startStateMachine} isActive={true}></CommandButtonComponent>
-                                <CommandButtonComponent tooltip="Pause State Machine" icon={pauseIcon} onClick={pauseStateMachine} isActive={true}></CommandButtonComponent>
-                            </CommandBarComponent>
-                            <div className={style.workArea} style={{ backgroundColor: workAreaColor }}>
-                                <FlexibleGridLayout layoutDefinition={initialLayout} />
-                            </div>
-                        </div>
-                    </ActionSelectionContext.Provider>
-                </StateSelectionContext.Provider>
-            </StateMachineContext.Provider>
-        </SceneContext.Provider>
-    );
+	return (
+		<SceneContext.Provider value={{ scene, setScene }}>
+			<StateMachineContext.Provider value={{ stateMachineWrapper, setStateMachineWrapper }}>
+				<StateSelectionContext.Provider value={{ selectedState: selectedState, setSelectedState: setSelectedState }}>
+					<ActionSelectionContext.Provider value={{ selectedActionWrapper, setSelectedActionWrapper }}>
+						<div className={style.workbenchContainer}>
+							<CommandBarComponent
+								artboardColor={workAreaColor}
+								artboardColorPickerColor={INITIAL_WORKBENCH_COLOR}
+								onArtboardColorChanged={(newColor) => setWorkAreaColor(newColor)}
+							>
+								<CommandButtonComponent tooltip="Start State Machine" icon={playIcon} onClick={startStateMachine} isActive={true}></CommandButtonComponent>
+								<CommandButtonComponent tooltip="Pause State Machine" icon={pauseIcon} onClick={pauseStateMachine} isActive={true}></CommandButtonComponent>
+							</CommandBarComponent>
+							<div className={style.workArea} style={{ backgroundColor: workAreaColor }}>
+								<FlexibleGridLayout layoutDefinition={initialLayout} />
+							</div>
+						</div>
+					</ActionSelectionContext.Provider>
+				</StateSelectionContext.Provider>
+			</StateMachineContext.Provider>
+		</SceneContext.Provider>
+	);
 };

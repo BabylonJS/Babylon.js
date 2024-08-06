@@ -18,96 +18,96 @@ const NAME = "EXT_mesh_gpu_instancing";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_mesh_gpu_instancing implements IGLTFLoaderExtension {
-    /**
-     * The name of this extension.
-     */
-    public readonly name = NAME;
+	/**
+	 * The name of this extension.
+	 */
+	public readonly name = NAME;
 
-    /**
-     * Defines whether this extension is enabled.
-     */
-    public enabled: boolean;
+	/**
+	 * Defines whether this extension is enabled.
+	 */
+	public enabled: boolean;
 
-    private _loader: GLTFLoader;
+	private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
-    constructor(loader: GLTFLoader) {
-        this._loader = loader;
-        this.enabled = this._loader.isExtensionUsed(NAME);
-    }
+	/**
+	 * @internal
+	 */
+	constructor(loader: GLTFLoader) {
+		this._loader = loader;
+		this.enabled = this._loader.isExtensionUsed(NAME);
+	}
 
-    /** @internal */
-    public dispose() {
-        (this._loader as any) = null;
-    }
+	/** @internal */
+	public dispose() {
+		(this._loader as any) = null;
+	}
 
-    /**
-     * @internal
-     */
-    public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
-            this._loader._disableInstancedMesh++;
+	/**
+	 * @internal
+	 */
+	public loadNodeAsync(context: string, node: INode, assign: (babylonTransformNode: TransformNode) => void): Nullable<Promise<TransformNode>> {
+		return GLTFLoader.LoadExtensionAsync<IEXTMeshGpuInstancing, TransformNode>(context, node, this.name, (extensionContext, extension) => {
+			this._loader._disableInstancedMesh++;
 
-            const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
+			const promise = this._loader.loadNodeAsync(`/nodes/${node.index}`, node, assign);
 
-            this._loader._disableInstancedMesh--;
+			this._loader._disableInstancedMesh--;
 
-            if (!node._primitiveBabylonMeshes) {
-                return promise;
-            }
+			if (!node._primitiveBabylonMeshes) {
+				return promise;
+			}
 
-            const promises = new Array<Promise<Nullable<Float32Array>>>();
-            let instanceCount = 0;
+			const promises = new Array<Promise<Nullable<Float32Array>>>();
+			let instanceCount = 0;
 
-            const loadAttribute = (attribute: string) => {
-                if (extension.attributes[attribute] == undefined) {
-                    promises.push(Promise.resolve(null));
-                    return;
-                }
+			const loadAttribute = (attribute: string) => {
+				if (extension.attributes[attribute] == undefined) {
+					promises.push(Promise.resolve(null));
+					return;
+				}
 
-                const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
-                promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor));
+				const accessor = ArrayItem.Get(`${extensionContext}/attributes/${attribute}`, this._loader.gltf.accessors, extension.attributes[attribute]);
+				promises.push(this._loader._loadFloatAccessorAsync(`/accessors/${accessor.bufferView}`, accessor));
 
-                if (instanceCount === 0) {
-                    instanceCount = accessor.count;
-                } else if (instanceCount !== accessor.count) {
-                    throw new Error(`${extensionContext}/attributes: Instance buffer accessors do not have the same count.`);
-                }
-            };
+				if (instanceCount === 0) {
+					instanceCount = accessor.count;
+				} else if (instanceCount !== accessor.count) {
+					throw new Error(`${extensionContext}/attributes: Instance buffer accessors do not have the same count.`);
+				}
+			};
 
-            loadAttribute("TRANSLATION");
-            loadAttribute("ROTATION");
-            loadAttribute("SCALE");
+			loadAttribute("TRANSLATION");
+			loadAttribute("ROTATION");
+			loadAttribute("SCALE");
 
-            return promise.then((babylonTransformNode) => {
-                return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
-                    const matrices = new Float32Array(instanceCount * 16);
+			return promise.then((babylonTransformNode) => {
+				return Promise.all(promises).then(([translationBuffer, rotationBuffer, scaleBuffer]) => {
+					const matrices = new Float32Array(instanceCount * 16);
 
-                    TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
-                    TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
-                    TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
+					TmpVectors.Vector3[0].copyFromFloats(0, 0, 0); // translation
+					TmpVectors.Quaternion[0].copyFromFloats(0, 0, 0, 1); // rotation
+					TmpVectors.Vector3[1].copyFromFloats(1, 1, 1); // scale
 
-                    for (let i = 0; i < instanceCount; ++i) {
-                        translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
-                        rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
-                        scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
+					for (let i = 0; i < instanceCount; ++i) {
+						translationBuffer && Vector3.FromArrayToRef(translationBuffer, i * 3, TmpVectors.Vector3[0]);
+						rotationBuffer && Quaternion.FromArrayToRef(rotationBuffer, i * 4, TmpVectors.Quaternion[0]);
+						scaleBuffer && Vector3.FromArrayToRef(scaleBuffer, i * 3, TmpVectors.Vector3[1]);
 
-                        Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
+						Matrix.ComposeToRef(TmpVectors.Vector3[1], TmpVectors.Quaternion[0], TmpVectors.Vector3[0], TmpVectors.Matrix[0]);
 
-                        TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
-                    }
+						TmpVectors.Matrix[0].copyToArray(matrices, i * 16);
+					}
 
-                    for (const babylonMesh of node._primitiveBabylonMeshes!) {
-                        (babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
-                    }
+					for (const babylonMesh of node._primitiveBabylonMeshes!) {
+						(babylonMesh as Mesh).thinInstanceSetBuffer("matrix", matrices, 16, true);
+					}
 
-                    return babylonTransformNode;
-                });
-            });
-        });
-    }
+					return babylonTransformNode;
+				});
+			});
+		});
+	}
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_mesh_gpu_instancing(loader));

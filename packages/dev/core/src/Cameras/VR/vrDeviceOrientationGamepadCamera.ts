@@ -8,7 +8,7 @@ import { setVRRigMode } from "../RigModes/vrRigMode";
 import "../../Gamepads/gamepadSceneComponent";
 
 Node.AddNodeConstructor("VRDeviceOrientationGamepadCamera", (name, scene) => {
-    return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
+	return () => new VRDeviceOrientationGamepadCamera(name, Vector3.Zero(), scene);
 });
 
 /**
@@ -16,27 +16,27 @@ Node.AddNodeConstructor("VRDeviceOrientationGamepadCamera", (name, scene) => {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/camera_introduction#vr-device-orientation-cameras
  */
 export class VRDeviceOrientationGamepadCamera extends VRDeviceOrientationFreeCamera {
-    /**
-     * Creates a new VRDeviceOrientationGamepadCamera
-     * @param name defines camera name
-     * @param position defines the start position of the camera
-     * @param scene defines the scene the camera belongs to
-     * @param compensateDistortion defines if the camera needs to compensate the lens distortion
-     * @param vrCameraMetrics defines the vr metrics associated to the camera
-     */
-    constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
-        super(name, position, scene, compensateDistortion, vrCameraMetrics);
+	/**
+	 * Creates a new VRDeviceOrientationGamepadCamera
+	 * @param name defines camera name
+	 * @param position defines the start position of the camera
+	 * @param scene defines the scene the camera belongs to
+	 * @param compensateDistortion defines if the camera needs to compensate the lens distortion
+	 * @param vrCameraMetrics defines the vr metrics associated to the camera
+	 */
+	constructor(name: string, position: Vector3, scene?: Scene, compensateDistortion = true, vrCameraMetrics: VRCameraMetrics = VRCameraMetrics.GetDefault()) {
+		super(name, position, scene, compensateDistortion, vrCameraMetrics);
 
-        this.inputs.addGamepad();
-    }
+		this.inputs.addGamepad();
+	}
 
-    /**
-     * Gets camera class name
-     * @returns VRDeviceOrientationGamepadCamera
-     */
-    public override getClassName(): string {
-        return "VRDeviceOrientationGamepadCamera";
-    }
+	/**
+	 * Gets camera class name
+	 * @returns VRDeviceOrientationGamepadCamera
+	 */
+	public override getClassName(): string {
+		return "VRDeviceOrientationGamepadCamera";
+	}
 
-    protected override _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
+	protected override _setRigMode = (rigParams: any) => setVRRigMode(this, rigParams);
 }

@@ -8,5 +8,5 @@ import type { Node } from "../node";
  * @returns
  */
 export function _isADescendantOf(mesh1: Node, mesh2: Node): boolean {
-    return !!(mesh1.parent && (mesh1.parent === mesh2 || _isADescendantOf(mesh1.parent, mesh2)));
+	return !!(mesh1.parent && (mesh1.parent === mesh2 || _isADescendantOf(mesh1.parent, mesh2)));
 }

@@ -5,23 +5,23 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IVector3PropertyTabComponentProps {
-    globalState: GlobalState;
-    inputBlock: InputBlock;
-    lockObject: LockObject;
+	globalState: GlobalState;
+	inputBlock: InputBlock;
+	lockObject: LockObject;
 }
 
 export class Vector3PropertyTabComponent extends React.Component<IVector3PropertyTabComponentProps> {
-    override render() {
-        return (
-            <Vector3LineComponent
-                lockObject={this.props.lockObject}
-                label="Value"
-                target={this.props.inputBlock}
-                propertyName="value"
-                onChange={() => {
-                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
-                }}
-            ></Vector3LineComponent>
-        );
-    }
+	override render() {
+		return (
+			<Vector3LineComponent
+				lockObject={this.props.lockObject}
+				label="Value"
+				target={this.props.inputBlock}
+				propertyName="value"
+				onChange={() => {
+					this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+				}}
+			></Vector3LineComponent>
+		);
+	}
 }

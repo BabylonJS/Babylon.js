@@ -10,38 +10,38 @@ import { CameraInputsManager } from "../Cameras/cameraInputsManager";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class ArcRotateCameraInputsManager extends CameraInputsManager<ArcRotateCamera> {
-    /**
-     * Instantiates a new ArcRotateCameraInputsManager.
-     * @param camera Defines the camera the inputs belong to
-     */
-    constructor(camera: ArcRotateCamera) {
-        super(camera);
-    }
+	/**
+	 * Instantiates a new ArcRotateCameraInputsManager.
+	 * @param camera Defines the camera the inputs belong to
+	 */
+	constructor(camera: ArcRotateCamera) {
+		super(camera);
+	}
 
-    /**
-     * Add mouse wheel input support to the input manager.
-     * @returns the current input manager
-     */
-    public addMouseWheel(): ArcRotateCameraInputsManager {
-        this.add(new ArcRotateCameraMouseWheelInput());
-        return this;
-    }
+	/**
+	 * Add mouse wheel input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addMouseWheel(): ArcRotateCameraInputsManager {
+		this.add(new ArcRotateCameraMouseWheelInput());
+		return this;
+	}
 
-    /**
-     * Add pointers input support to the input manager.
-     * @returns the current input manager
-     */
-    public addPointers(): ArcRotateCameraInputsManager {
-        this.add(new ArcRotateCameraPointersInput());
-        return this;
-    }
+	/**
+	 * Add pointers input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addPointers(): ArcRotateCameraInputsManager {
+		this.add(new ArcRotateCameraPointersInput());
+		return this;
+	}
 
-    /**
-     * Add keyboard input support to the input manager.
-     * @returns the current input manager
-     */
-    public addKeyboard(): ArcRotateCameraInputsManager {
-        this.add(new ArcRotateCameraKeyboardMoveInput());
-        return this;
-    }
+	/**
+	 * Add keyboard input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addKeyboard(): ArcRotateCameraInputsManager {
+		this.add(new ArcRotateCameraKeyboardMoveInput());
+		return this;
+	}
 }

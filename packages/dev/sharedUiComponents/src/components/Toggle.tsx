@@ -7,23 +7,23 @@ import toggleOffIcon30px from "../imgs/toggleOffIcon_30px.svg";
 import { Icon } from "./Icon";
 
 const Icons = {
-    on: toggleOnIcon30px,
-    mixed: toggleMixedIcon30px,
-    off: toggleOffIcon30px,
+	on: toggleOnIcon30px,
+	mixed: toggleMixedIcon30px,
+	off: toggleOffIcon30px,
 };
 
 export type ToggleProps = {
-    toggled: "on" | "mixed" | "off";
-    onToggle?: () => void;
-    padded?: boolean;
-    color?: "dark" | "light";
+	toggled: "on" | "mixed" | "off";
+	onToggle?: () => void;
+	padded?: boolean;
+	color?: "dark" | "light";
 };
 
 export const Toggle: React.FC<ToggleProps> = ({ color = "dark", toggled = "off", padded = false, onToggle = () => {} }) => {
-    return (
-        <label className={ClassNames({ toggle: true, padded }, styles)}>
-            <input type="checkbox" style={{ display: "none" }} checked={toggled === "on"} onChange={() => onToggle()} />
-            <Icon icon={Icons[toggled]} color={color} />
-        </label>
-    );
+	return (
+		<label className={ClassNames({ toggle: true, padded }, styles)}>
+			<input type="checkbox" style={{ display: "none" }} checked={toggled === "on"} onChange={() => onToggle()} />
+			<Icon icon={Icons[toggled]} color={color} />
+		</label>
+	);
 };

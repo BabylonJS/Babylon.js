@@ -40,5 +40,5 @@ ground.material = new GridMaterial("", scene);
 sphere.material = new GridMaterial("", scene);
 
 engine.runRenderLoop(() => {
-    scene.render();
+	scene.render();
 });

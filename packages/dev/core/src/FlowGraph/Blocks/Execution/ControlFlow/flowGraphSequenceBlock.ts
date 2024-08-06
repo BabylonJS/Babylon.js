@@ -9,10 +9,10 @@ import type { FlowGraphSignalConnection } from "../../../flowGraphSignalConnecti
  * Configuration for the sequence block.
  */
 export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * The number of output flows.
-     */
-    numberOutputFlows: number;
+	/**
+	 * The number of output flows.
+	 */
+	numberOutputFlows: number;
 }
 
 /**
@@ -20,40 +20,40 @@ export interface IFlowGraphSequenceBlockConfiguration extends IFlowGraphBlockCon
  * A block that executes its output flows in sequence.
  */
 export class FlowGraphSequenceBlock extends FlowGraphExecutionBlock {
-    /**
-     * The output flows.
-     */
-    public outFlows: FlowGraphSignalConnection[];
+	/**
+	 * The output flows.
+	 */
+	public outFlows: FlowGraphSignalConnection[];
 
-    constructor(
-        /**
-         * the configuration of the block
-         */
-        public override config: IFlowGraphSequenceBlockConfiguration
-    ) {
-        super(config);
-        this.outFlows = [];
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows.push(this._registerSignalOutput(`${i}`));
-        }
-    }
+	constructor(
+		/**
+		 * the configuration of the block
+		 */
+		public override config: IFlowGraphSequenceBlockConfiguration
+	) {
+		super(config);
+		this.outFlows = [];
+		for (let i = 0; i < this.config.numberOutputFlows; i++) {
+			this.outFlows.push(this._registerSignalOutput(`${i}`));
+		}
+	}
 
-    public _execute(context: FlowGraphContext) {
-        for (let i = 0; i < this.config.numberOutputFlows; i++) {
-            this.outFlows[i]._activateSignal(context);
-        }
-    }
+	public _execute(context: FlowGraphContext) {
+		for (let i = 0; i < this.config.numberOutputFlows; i++) {
+			this.outFlows[i]._activateSignal(context);
+		}
+	}
 
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName(): string {
-        return FlowGraphSequenceBlock.ClassName;
-    }
+	/**
+	 * @returns class name of the block.
+	 */
+	public override getClassName(): string {
+		return FlowGraphSequenceBlock.ClassName;
+	}
 
-    /**
-     * the class name of the block.
-     */
-    public static ClassName = "FGSequenceBlock";
+	/**
+	 * the class name of the block.
+	 */
+	public static ClassName = "FGSequenceBlock";
 }
 RegisterClass(FlowGraphSequenceBlock.ClassName, FlowGraphSequenceBlock);

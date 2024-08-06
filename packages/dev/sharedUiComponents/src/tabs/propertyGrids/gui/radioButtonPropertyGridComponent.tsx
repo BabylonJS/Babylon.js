@@ -11,56 +11,56 @@ import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 import { makeTargetsProxy } from "../../../lines/targetsProxy";
 
 interface IRadioButtonPropertyGridComponentProps {
-    radioButtons: RadioButton[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	radioButtons: RadioButton[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class RadioButtonPropertyGridComponent extends React.Component<IRadioButtonPropertyGridComponentProps> {
-    constructor(props: IRadioButtonPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IRadioButtonPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const radioButtons = this.props.radioButtons;
+	override render() {
+		const radioButtons = this.props.radioButtons;
 
-        return (
-            <>
-                <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
-                    controls={radioButtons}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="RADIO BUTTON">
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Thickness"
-                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Check size ratio"
-                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
-                        propertyName="checkSizeRatio"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Group"
-                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
-                        propertyName="group"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <CheckBoxLineComponent
-                        label="Checked"
-                        target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
-                        propertyName="isChecked"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonControlPropertyGridComponent
+					lockObject={this.props.lockObject}
+					controls={radioButtons}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="RADIO BUTTON">
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Thickness"
+						target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
+						propertyName="thickness"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Check size ratio"
+						target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
+						propertyName="checkSizeRatio"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<TextInputLineComponent
+						lockObject={this.props.lockObject}
+						label="Group"
+						target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
+						propertyName="group"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<CheckBoxLineComponent
+						label="Checked"
+						target={makeTargetsProxy(radioButtons, this.props.onPropertyChangedObservable)}
+						propertyName="isChecked"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

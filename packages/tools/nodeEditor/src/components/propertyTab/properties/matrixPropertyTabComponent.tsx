@@ -5,27 +5,27 @@ import { MatrixLineComponent } from "shared-ui-components/lines/matrixLineCompon
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IMatrixPropertyTabComponentProps {
-    globalState: GlobalState;
-    inputBlock: InputBlock;
-    lockObject: LockObject;
+	globalState: GlobalState;
+	inputBlock: InputBlock;
+	lockObject: LockObject;
 }
 
 export class MatrixPropertyTabComponent extends React.Component<IMatrixPropertyTabComponentProps> {
-    override render() {
-        return (
-            <MatrixLineComponent
-                lockObject={this.props.lockObject}
-                label="Value"
-                target={this.props.inputBlock}
-                propertyName="value"
-                onChange={() => {
-                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
-                }}
-                mode={this.props.inputBlock.matrixMode}
-                onModeChange={(mode) => {
-                    this.props.inputBlock.matrixMode = mode;
-                }}
-            ></MatrixLineComponent>
-        );
-    }
+	override render() {
+		return (
+			<MatrixLineComponent
+				lockObject={this.props.lockObject}
+				label="Value"
+				target={this.props.inputBlock}
+				propertyName="value"
+				onChange={() => {
+					this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+				}}
+				mode={this.props.inputBlock.matrixMode}
+				onModeChange={(mode) => {
+					this.props.inputBlock.matrixMode = mode;
+				}}
+			></MatrixLineComponent>
+		);
+	}
 }

@@ -3,42 +3,42 @@ import type { DefaultViewer } from "../../viewer/defaultViewer";
 import { Tools } from "core/Misc/tools";
 
 export class PrintButtonPlugin extends AbstractViewerNavbarButton {
-    private _currentModelUrl: string;
+	private _currentModelUrl: string;
 
-    constructor(private _viewer: DefaultViewer) {
-        super("print", "print-button", PrintButtonPlugin.HtmlTemplate);
+	constructor(private _viewer: DefaultViewer) {
+		super("print", "print-button", PrintButtonPlugin.HtmlTemplate);
 
-        this._viewer.onModelLoadedObservable.add((model) => {
-            this._currentModelUrl = "";
-            if (model.configuration.url) {
-                const filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
-                const baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
+		this._viewer.onModelLoadedObservable.add((model) => {
+			this._currentModelUrl = "";
+			if (model.configuration.url) {
+				const filename = Tools.GetFilename(model.configuration.url) || model.configuration.url;
+				const baseUrl = model.configuration.root || Tools.GetFolderPath(model.configuration.url);
 
-                //gltf, obj, stl
-                const extension = model.configuration.loader || filename.split(".").pop() || "";
-                let printable = false;
-                // not using .some sue to IE11
-                ["gltf", "glb", "obj", "stl"].forEach((ext) => {
-                    if (extension.indexOf(ext) !== -1) {
-                        printable = true;
-                    }
-                });
-                if (printable) {
-                    this._currentModelUrl = baseUrl + filename;
-                }
-            }
-        });
-    }
+				//gltf, obj, stl
+				const extension = model.configuration.loader || filename.split(".").pop() || "";
+				let printable = false;
+				// not using .some sue to IE11
+				["gltf", "glb", "obj", "stl"].forEach((ext) => {
+					if (extension.indexOf(ext) !== -1) {
+						printable = true;
+					}
+				});
+				if (printable) {
+					this._currentModelUrl = baseUrl + filename;
+				}
+			}
+		});
+	}
 
-    onEvent(): void {
-        if (this._currentModelUrl) {
-            const printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
-            window.open(printUrl, "_self");
-        }
-    }
+	onEvent(): void {
+		if (this._currentModelUrl) {
+			const printUrl = this._currentModelUrl.replace(/https?:\/\//, "com.microsoft.builder3d://");
+			window.open(printUrl, "_self");
+		}
+	}
 
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    protected static HtmlTemplate: string = `
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	protected static HtmlTemplate: string = `
 {{#unless hidePrint}}
 <style>
 

@@ -7,9 +7,9 @@ import * as Serializers from "serializers/stl/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    for (const serializer in Serializers) {
-        (<any>globalObject).BABYLON[serializer] = (<any>Serializers)[serializer];
-    }
+	for (const serializer in Serializers) {
+		(<any>globalObject).BABYLON[serializer] = (<any>Serializers)[serializer];
+	}
 }
 
 export * from "serializers/stl/index";

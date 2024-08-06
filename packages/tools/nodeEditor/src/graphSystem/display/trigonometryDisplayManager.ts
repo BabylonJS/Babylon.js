@@ -6,26 +6,26 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import styles from "./trigonometryDisplayManager.modules.scss";
 
 export class TrigonometryDisplayManager implements IDisplayManager {
-    public getHeaderClass() {
-        return "";
-    }
+	public getHeaderClass() {
+		return "";
+	}
 
-    public shouldDisplayPortLabels(): boolean {
-        return false;
-    }
+	public shouldDisplayPortLabels(): boolean {
+		return false;
+	}
 
-    public getHeaderText(nodeData: INodeData): string {
-        return (nodeData.data as NodeMaterialBlock).name;
-    }
+	public getHeaderText(nodeData: INodeData): string {
+		return (nodeData.data as NodeMaterialBlock).name;
+	}
 
-    public getBackgroundColor(): string {
-        return "#405C86";
-    }
+	public getBackgroundColor(): string {
+		return "#405C86";
+	}
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        const trigonometryBlock = nodeData.data as TrigonometryBlock;
+	public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+		const trigonometryBlock = nodeData.data as TrigonometryBlock;
 
-        contentArea.classList.add(styles["trigonometry-block"]);
-        contentArea.innerHTML = TrigonometryBlockOperations[trigonometryBlock.operation];
-    }
+		contentArea.classList.add(styles["trigonometry-block"]);
+		contentArea.innerHTML = TrigonometryBlockOperations[trigonometryBlock.operation];
+	}
 }

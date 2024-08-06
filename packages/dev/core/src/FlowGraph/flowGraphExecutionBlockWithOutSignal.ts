@@ -9,13 +9,13 @@ import type { FlowGraphSignalConnection } from "./flowGraphSignalConnection";
  * (such as if blocks)
  */
 export abstract class FlowGraphExecutionBlockWithOutSignal extends FlowGraphExecutionBlock {
-    /**
-     * Output connection: The signal that is triggered when the execution of this block is done.
-     */
-    public readonly out: FlowGraphSignalConnection;
+	/**
+	 * Output connection: The signal that is triggered when the execution of this block is done.
+	 */
+	public readonly out: FlowGraphSignalConnection;
 
-    protected constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
-        this.out = this._registerSignalOutput("out");
-    }
+	protected constructor(config?: IFlowGraphBlockConfiguration) {
+		super(config);
+		this.out = this._registerSignalOutput("out");
+	}
 }

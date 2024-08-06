@@ -9,10 +9,10 @@ import * as ProceduralTexturesLib from "../../../../dev/proceduralTextures/src/i
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (const mat in ProceduralTexturesLib) {
-        (<any>globalObject).BABYLON[mat] = (<any>ProceduralTexturesLib)[mat];
-    }
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	for (const mat in ProceduralTexturesLib) {
+		(<any>globalObject).BABYLON[mat] = (<any>ProceduralTexturesLib)[mat];
+	}
 }
 
 export * from "../../../../dev/proceduralTextures/src/index";

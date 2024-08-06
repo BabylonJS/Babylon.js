@@ -6,9 +6,9 @@ import type { FlowGraphContext } from "./flowGraphContext";
  * This class is a decorator for the context which logs the nodes that were executed.
  */
 export class FlowGraphContextLogger {
-    constructor(private _context: FlowGraphContext) {
-        this._context.onNodeExecutedObservable.add((node) => {
-            Tools.Log(`Node executed: ${node.getClassName()}`);
-        });
-    }
+	constructor(private _context: FlowGraphContext) {
+		this._context.onNodeExecutedObservable.add((node) => {
+			Tools.Log(`Node executed: ${node.getClassName()}`);
+		});
+	}
 }

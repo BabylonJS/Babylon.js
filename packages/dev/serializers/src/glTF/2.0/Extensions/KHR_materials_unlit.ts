@@ -12,49 +12,49 @@ const NAME = "KHR_materials_unlit";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_unlit implements IGLTFExporterExtensionV2 {
-    /** Name of this extension */
-    public readonly name = NAME;
+	/** Name of this extension */
+	public readonly name = NAME;
 
-    /** Defines whether this extension is enabled */
-    public enabled = true;
+	/** Defines whether this extension is enabled */
+	public enabled = true;
 
-    /** Defines whether this extension is required */
-    public required = false;
+	/** Defines whether this extension is required */
+	public required = false;
 
-    private _wasUsed = false;
+	private _wasUsed = false;
 
-    constructor() {}
+	constructor() {}
 
-    /** @internal */
-    public get wasUsed() {
-        return this._wasUsed;
-    }
+	/** @internal */
+	public get wasUsed() {
+		return this._wasUsed;
+	}
 
-    public dispose() {}
+	public dispose() {}
 
-    public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve) => {
-            let unlitMaterial = false;
+	public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+		return new Promise((resolve) => {
+			let unlitMaterial = false;
 
-            if (babylonMaterial instanceof PBRMaterial) {
-                unlitMaterial = babylonMaterial.unlit;
-            } else if (babylonMaterial instanceof StandardMaterial) {
-                unlitMaterial = babylonMaterial.disableLighting;
-            }
+			if (babylonMaterial instanceof PBRMaterial) {
+				unlitMaterial = babylonMaterial.unlit;
+			} else if (babylonMaterial instanceof StandardMaterial) {
+				unlitMaterial = babylonMaterial.disableLighting;
+			}
 
-            if (unlitMaterial) {
-                this._wasUsed = true;
+			if (unlitMaterial) {
+				this._wasUsed = true;
 
-                if (node.extensions == null) {
-                    node.extensions = {};
-                }
+				if (node.extensions == null) {
+					node.extensions = {};
+				}
 
-                node.extensions[NAME] = {};
-            }
+				node.extensions[NAME] = {};
+			}
 
-            resolve(node);
-        });
-    }
+			resolve(node);
+		});
+	}
 }
 
 _Exporter.RegisterExtension(NAME, () => new KHR_materials_unlit());

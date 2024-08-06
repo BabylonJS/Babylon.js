@@ -6,18 +6,18 @@ import type { PrePassEffectConfiguration } from "./prePassEffectConfiguration";
  * motion blur
  */
 export class MotionBlurConfiguration implements PrePassEffectConfiguration {
-    /**
-     * Is motion blur enabled
-     */
-    public enabled = false;
+	/**
+	 * Is motion blur enabled
+	 */
+	public enabled = false;
 
-    /**
-     * Name of the configuration
-     */
-    public name = "motionBlur";
+	/**
+	 * Name of the configuration
+	 */
+	public name = "motionBlur";
 
-    /**
-     * Textures that should be present in the MRT for this effect to work
-     */
-    public readonly texturesRequired: number[] = [Constants.PREPASS_VELOCITY_TEXTURE_TYPE];
+	/**
+	 * Textures that should be present in the MRT for this effect to work
+	 */
+	public readonly texturesRequired: number[] = [Constants.PREPASS_VELOCITY_TEXTURE_TYPE];
 }

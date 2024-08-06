@@ -9,19 +9,19 @@ import { AdvancedDynamicTexture } from "gui/2D/advancedDynamicTexture";
 import type { IHTMLTwinRendererOptions } from "./htmlTwinRenderer";
 
 function getSceneIds(scene: Scene) {
-    const newSet = new Set<number>();
-    scene.rootNodes.forEach((node) => newSet.add(node.uniqueId));
-    return newSet;
+	const newSet = new Set<number>();
+	scene.rootNodes.forEach((node) => newSet.add(node.uniqueId));
+	return newSet;
 }
 
 function getFullscreenGuiTextures(scene: Scene) {
-    const textures = [];
-    for (const texture of scene.textures) {
-        if (texture instanceof AdvancedDynamicTexture && texture._isFullscreen) {
-            textures.push(texture);
-        }
-    }
-    return textures;
+	const textures = [];
+	for (const texture of scene.textures) {
+		if (texture instanceof AdvancedDynamicTexture && texture._isFullscreen) {
+			textures.push(texture);
+		}
+	}
+	return textures;
 }
 
 /**
@@ -30,53 +30,53 @@ function getFullscreenGuiTextures(scene: Scene) {
  * @returns
  */
 export function HTMLTwinSceneTree(props: { scene: Scene; options: IHTMLTwinRendererOptions }) {
-    const { scene, options } = props;
+	const { scene, options } = props;
 
-    const [, setMeshIds] = useState(new Set<number>());
-    const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(getFullscreenGuiTextures(scene));
-    const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
-    const sceneContext = useContext(SceneContext);
+	const [, setMeshIds] = useState(new Set<number>());
+	const [sceneGuiTextures, setSceneGuiTextures] = useState<AdvancedDynamicTexture[]>(getFullscreenGuiTextures(scene));
+	const nextFrameObserver = useRef<Nullable<Observer<Scene>>>(null);
+	const sceneContext = useContext(SceneContext);
 
-    const getChildren = useCallback(() => {
-        return (
-            <>
-                {scene.rootNodes.map((node) => (
-                    <HTMLTwinItemAdapter key={node.uniqueId} node={node} scene={scene} options={options} />
-                ))}
-                {sceneGuiTextures.map((texture) => (
-                    <HTMLTwinItemAdapter key={texture.uniqueId} node={texture.rootContainer} scene={scene} options={options} />
-                ))}
-            </>
-        );
-    }, [scene, sceneGuiTextures, options]);
+	const getChildren = useCallback(() => {
+		return (
+			<>
+				{scene.rootNodes.map((node) => (
+					<HTMLTwinItemAdapter key={node.uniqueId} node={node} scene={scene} options={options} />
+				))}
+				{sceneGuiTextures.map((texture) => (
+					<HTMLTwinItemAdapter key={texture.uniqueId} node={texture.rootContainer} scene={scene} options={options} />
+				))}
+			</>
+		);
+	}, [scene, sceneGuiTextures, options]);
 
-    useEffect(() => {
-        const newMeshAddedObserver = scene.onNewMeshAddedObservable.add(() => {
-            if (!nextFrameObserver.current) {
-                nextFrameObserver.current = props.scene.onBeforeRenderObservable.addOnce(() => {
-                    nextFrameObserver.current = null;
-                    setMeshIds(getSceneIds(props.scene));
-                });
-            }
-        });
-        const newTextureAddedObserver = scene.onNewTextureAddedObservable.add((texture: BaseTexture) => {
-            if (texture instanceof AdvancedDynamicTexture) {
-                setSceneGuiTextures((current) => [...current, texture]);
-            }
-        });
-        return () => {
-            scene.onNewMeshAddedObservable.remove(newMeshAddedObserver);
-            scene.onNewTextureAddedObservable.remove(newTextureAddedObserver);
-        };
-    }, [scene]);
+	useEffect(() => {
+		const newMeshAddedObserver = scene.onNewMeshAddedObservable.add(() => {
+			if (!nextFrameObserver.current) {
+				nextFrameObserver.current = props.scene.onBeforeRenderObservable.addOnce(() => {
+					nextFrameObserver.current = null;
+					setMeshIds(getSceneIds(props.scene));
+				});
+			}
+		});
+		const newTextureAddedObserver = scene.onNewTextureAddedObservable.add((texture: BaseTexture) => {
+			if (texture instanceof AdvancedDynamicTexture) {
+				setSceneGuiTextures((current) => [...current, texture]);
+			}
+		});
+		return () => {
+			scene.onNewMeshAddedObservable.remove(newMeshAddedObserver);
+			scene.onNewTextureAddedObservable.remove(newTextureAddedObserver);
+		};
+	}, [scene]);
 
-    useEffect(() => {
-        if (sceneContext) {
-            sceneContext.updateScene = () => {
-                setMeshIds(getSceneIds(props.scene));
-            };
-        }
-    }, [sceneContext]);
+	useEffect(() => {
+		if (sceneContext) {
+			sceneContext.updateScene = () => {
+				setMeshIds(getSceneIds(props.scene));
+			};
+		}
+	}, [sceneContext]);
 
-    return getChildren();
+	return getChildren();
 }

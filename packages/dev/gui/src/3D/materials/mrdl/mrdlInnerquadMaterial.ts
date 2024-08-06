@@ -23,264 +23,264 @@ import "./shaders/mrdlInnerquad.vertex";
 import { HandleFallbacksForShadows, PrepareAttributesForInstances, PrepareDefinesForAttributes, PrepareUniformsAndSamplersList } from "core/Materials/materialHelper.functions";
 
 class MRDLInnerquadMaterialDefines extends MaterialDefines {
-    constructor() {
-        super();
-        this._needNormals = true;
-        this._needUVs = true;
-        this.rebuild();
-    }
+	constructor() {
+		super();
+		this._needNormals = true;
+		this._needUVs = true;
+		this.rebuild();
+	}
 }
 
 export class MRDLInnerquadMaterial extends PushMaterial {
-    /**
-     * Gets or sets the color of the innerquad.
-     */
-    @serialize()
-    public color: Color4 = new Color4(1, 1, 1, 0.05);
-    /**
-     * Gets or sets the corner radius on the innerquad. If this value is changed, update the lineWidth to match.
-     */
-    @serialize()
-    public radius = 0.12;
+	/**
+	 * Gets or sets the color of the innerquad.
+	 */
+	@serialize()
+	public color: Color4 = new Color4(1, 1, 1, 0.05);
+	/**
+	 * Gets or sets the corner radius on the innerquad. If this value is changed, update the lineWidth to match.
+	 */
+	@serialize()
+	public radius = 0.12;
 
-    /**
-     * Gets or sets whether the radius of the innerquad should be fixed.
-     */
-    @serialize()
-    public fixedRadius = true;
+	/**
+	 * Gets or sets whether the radius of the innerquad should be fixed.
+	 */
+	@serialize()
+	public fixedRadius = true;
 
-    /** @hidden */
-    public _filterWidth = 1.0;
+	/** @hidden */
+	public _filterWidth = 1.0;
 
-    /**
-     * Gets or sets the glow fraction of the innerquad.
-     */
-    @serialize()
-    public glowFraction = 0.0;
+	/**
+	 * Gets or sets the glow fraction of the innerquad.
+	 */
+	@serialize()
+	public glowFraction = 0.0;
 
-    /**
-     * Gets or sets the maximum glow intensity of the innerquad.
-     */
-    @serialize()
-    public glowMax = 0.5;
+	/**
+	 * Gets or sets the maximum glow intensity of the innerquad.
+	 */
+	@serialize()
+	public glowMax = 0.5;
 
-    /**
-     * Gets or sets the glow falloff effect of the innerquad.
-     */
-    @serialize()
-    public glowFalloff = 2.0;
+	/**
+	 * Gets or sets the glow falloff effect of the innerquad.
+	 */
+	@serialize()
+	public glowFalloff = 2.0;
 
-    constructor(name: string, scene: Scene) {
-        super(name, scene);
-        this.alphaMode = Constants.ALPHA_COMBINE;
-        this.backFaceCulling = false;
-    }
+	constructor(name: string, scene: Scene) {
+		super(name, scene);
+		this.alphaMode = Constants.ALPHA_COMBINE;
+		this.backFaceCulling = false;
+	}
 
-    public override needAlphaBlending(): boolean {
-        return true;
-    }
+	public override needAlphaBlending(): boolean {
+		return true;
+	}
 
-    public override needAlphaTesting(): boolean {
-        return false;
-    }
+	public override needAlphaTesting(): boolean {
+		return false;
+	}
 
-    public override getAlphaTestTexture(): Nullable<BaseTexture> {
-        return null;
-    }
+	public override getAlphaTestTexture(): Nullable<BaseTexture> {
+		return null;
+	}
 
-    // Methods
-    public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
-        const drawWrapper = subMesh._drawWrapper;
+	// Methods
+	public override isReadyForSubMesh(mesh: AbstractMesh, subMesh: SubMesh): boolean {
+		const drawWrapper = subMesh._drawWrapper;
 
-        if (this.isFrozen) {
-            if (drawWrapper.effect && drawWrapper._wasPreviouslyReady) {
-                return true;
-            }
-        }
+		if (this.isFrozen) {
+			if (drawWrapper.effect && drawWrapper._wasPreviouslyReady) {
+				return true;
+			}
+		}
 
-        if (!subMesh.materialDefines) {
-            subMesh.materialDefines = new MRDLInnerquadMaterialDefines();
-        }
+		if (!subMesh.materialDefines) {
+			subMesh.materialDefines = new MRDLInnerquadMaterialDefines();
+		}
 
-        const defines = <MRDLInnerquadMaterialDefines>subMesh.materialDefines;
-        const scene = this.getScene();
+		const defines = <MRDLInnerquadMaterialDefines>subMesh.materialDefines;
+		const scene = this.getScene();
 
-        if (this._isReadyForSubMesh(subMesh)) {
-            return true;
-        }
+		if (this._isReadyForSubMesh(subMesh)) {
+			return true;
+		}
 
-        const engine = scene.getEngine();
+		const engine = scene.getEngine();
 
-        // Attribs
-        PrepareDefinesForAttributes(mesh, defines, true, false);
+		// Attribs
+		PrepareDefinesForAttributes(mesh, defines, true, false);
 
-        // Get correct effect
-        if (defines.isDirty) {
-            defines.markAsProcessed();
+		// Get correct effect
+		if (defines.isDirty) {
+			defines.markAsProcessed();
 
-            scene.resetCachedMaterial();
+			scene.resetCachedMaterial();
 
-            // Fallbacks
-            const fallbacks = new EffectFallbacks();
-            if (defines.FOG) {
-                fallbacks.addFallback(1, "FOG");
-            }
+			// Fallbacks
+			const fallbacks = new EffectFallbacks();
+			if (defines.FOG) {
+				fallbacks.addFallback(1, "FOG");
+			}
 
-            HandleFallbacksForShadows(defines, fallbacks);
+			HandleFallbacksForShadows(defines, fallbacks);
 
-            defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
+			defines.IMAGEPROCESSINGPOSTPROCESS = scene.imageProcessingConfiguration.applyByPostProcess;
 
-            //Attributes
-            const attribs = [VertexBuffer.PositionKind];
+			//Attributes
+			const attribs = [VertexBuffer.PositionKind];
 
-            if (defines.NORMAL) {
-                attribs.push(VertexBuffer.NormalKind);
-            }
+			if (defines.NORMAL) {
+				attribs.push(VertexBuffer.NormalKind);
+			}
 
-            if (defines.UV1) {
-                attribs.push(VertexBuffer.UVKind);
-            }
+			if (defines.UV1) {
+				attribs.push(VertexBuffer.UVKind);
+			}
 
-            if (defines.UV2) {
-                attribs.push(VertexBuffer.UV2Kind);
-            }
+			if (defines.UV2) {
+				attribs.push(VertexBuffer.UV2Kind);
+			}
 
-            if (defines.VERTEXCOLOR) {
-                attribs.push(VertexBuffer.ColorKind);
-            }
+			if (defines.VERTEXCOLOR) {
+				attribs.push(VertexBuffer.ColorKind);
+			}
 
-            if (defines.TANGENT) {
-                attribs.push(VertexBuffer.TangentKind);
-            }
+			if (defines.TANGENT) {
+				attribs.push(VertexBuffer.TangentKind);
+			}
 
-            PrepareAttributesForInstances(attribs, defines);
+			PrepareAttributesForInstances(attribs, defines);
 
-            // Legacy browser patch
-            const shaderName = "mrdlInnerquad";
-            const join = defines.toString();
+			// Legacy browser patch
+			const shaderName = "mrdlInnerquad";
+			const join = defines.toString();
 
-            const uniforms = [
-                "world",
-                "worldView",
-                "worldViewProjection",
-                "view",
-                "projection",
-                "viewProjection",
-                "cameraPosition",
-                "_Color_",
-                "_Radius_",
-                "_Fixed_Radius_",
-                "_Filter_Width_",
-                "_Glow_Fraction_",
-                "_Glow_Max_",
-                "_Glow_Falloff_",
-            ];
-            const samplers: string[] = [];
-            const uniformBuffers: string[] = [];
+			const uniforms = [
+				"world",
+				"worldView",
+				"worldViewProjection",
+				"view",
+				"projection",
+				"viewProjection",
+				"cameraPosition",
+				"_Color_",
+				"_Radius_",
+				"_Fixed_Radius_",
+				"_Filter_Width_",
+				"_Glow_Fraction_",
+				"_Glow_Max_",
+				"_Glow_Falloff_",
+			];
+			const samplers: string[] = [];
+			const uniformBuffers: string[] = [];
 
-            PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
-                uniformsNames: uniforms,
-                uniformBuffersNames: uniformBuffers,
-                samplers: samplers,
-                defines: defines,
-                maxSimultaneousLights: 4,
-            });
+			PrepareUniformsAndSamplersList(<IEffectCreationOptions>{
+				uniformsNames: uniforms,
+				uniformBuffersNames: uniformBuffers,
+				samplers: samplers,
+				defines: defines,
+				maxSimultaneousLights: 4,
+			});
 
-            subMesh.setEffect(
-                scene.getEngine().createEffect(
-                    shaderName,
-                    <IEffectCreationOptions>{
-                        attributes: attribs,
-                        uniformsNames: uniforms,
-                        uniformBuffersNames: uniformBuffers,
-                        samplers: samplers,
-                        defines: join,
-                        fallbacks: fallbacks,
-                        onCompiled: this.onCompiled,
-                        onError: this.onError,
-                        indexParameters: { maxSimultaneousLights: 4 },
-                    },
-                    engine
-                ),
-                defines
-            );
-        }
-        if (!subMesh.effect || !subMesh.effect.isReady()) {
-            return false;
-        }
+			subMesh.setEffect(
+				scene.getEngine().createEffect(
+					shaderName,
+					<IEffectCreationOptions>{
+						attributes: attribs,
+						uniformsNames: uniforms,
+						uniformBuffersNames: uniformBuffers,
+						samplers: samplers,
+						defines: join,
+						fallbacks: fallbacks,
+						onCompiled: this.onCompiled,
+						onError: this.onError,
+						indexParameters: { maxSimultaneousLights: 4 },
+					},
+					engine
+				),
+				defines
+			);
+		}
+		if (!subMesh.effect || !subMesh.effect.isReady()) {
+			return false;
+		}
 
-        defines._renderId = scene.getRenderId();
-        drawWrapper._wasPreviouslyReady = true;
+		defines._renderId = scene.getRenderId();
+		drawWrapper._wasPreviouslyReady = true;
 
-        return true;
-    }
+		return true;
+	}
 
-    public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
-        const scene = this.getScene();
+	public override bindForSubMesh(world: Matrix, mesh: Mesh, subMesh: SubMesh): void {
+		const scene = this.getScene();
 
-        const defines = <MRDLInnerquadMaterialDefines>subMesh.materialDefines;
-        if (!defines) {
-            return;
-        }
+		const defines = <MRDLInnerquadMaterialDefines>subMesh.materialDefines;
+		if (!defines) {
+			return;
+		}
 
-        const effect = subMesh.effect;
-        if (!effect) {
-            return;
-        }
+		const effect = subMesh.effect;
+		if (!effect) {
+			return;
+		}
 
-        this._activeEffect = effect;
+		this._activeEffect = effect;
 
-        // Matrices
-        this.bindOnlyWorldMatrix(world);
-        this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
-        this._activeEffect.setVector3("cameraPosition", scene.activeCamera!.position);
+		// Matrices
+		this.bindOnlyWorldMatrix(world);
+		this._activeEffect.setMatrix("viewProjection", scene.getTransformMatrix());
+		this._activeEffect.setVector3("cameraPosition", scene.activeCamera!.position);
 
-        // "Color"
-        this._activeEffect.setDirectColor4("_Color_", this.color);
+		// "Color"
+		this._activeEffect.setDirectColor4("_Color_", this.color);
 
-        // "Shape"
-        this._activeEffect.setFloat("_Radius_", this.radius);
-        this._activeEffect.setFloat("_Fixed_Radius_", this.fixedRadius ? 1.0 : 0.0);
-        this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
+		// "Shape"
+		this._activeEffect.setFloat("_Radius_", this.radius);
+		this._activeEffect.setFloat("_Fixed_Radius_", this.fixedRadius ? 1.0 : 0.0);
+		this._activeEffect.setFloat("_Filter_Width_", this._filterWidth);
 
-        // "Glow"
-        this._activeEffect.setFloat("_Glow_Fraction_", this.glowFraction);
-        this._activeEffect.setFloat("_Glow_Max_", this.glowMax);
-        this._activeEffect.setFloat("_Glow_Falloff_", this.glowFalloff);
+		// "Glow"
+		this._activeEffect.setFloat("_Glow_Fraction_", this.glowFraction);
+		this._activeEffect.setFloat("_Glow_Max_", this.glowMax);
+		this._activeEffect.setFloat("_Glow_Falloff_", this.glowFalloff);
 
-        this._afterBind(mesh, this._activeEffect, subMesh);
-    }
+		this._afterBind(mesh, this._activeEffect, subMesh);
+	}
 
-    /**
-     * Get the list of animatables in the material.
-     * @returns the list of animatables object used in the material
-     */
-    public override getAnimatables(): IAnimatable[] {
-        return [];
-    }
+	/**
+	 * Get the list of animatables in the material.
+	 * @returns the list of animatables object used in the material
+	 */
+	public override getAnimatables(): IAnimatable[] {
+		return [];
+	}
 
-    public override dispose(forceDisposeEffect?: boolean): void {
-        super.dispose(forceDisposeEffect);
-    }
+	public override dispose(forceDisposeEffect?: boolean): void {
+		super.dispose(forceDisposeEffect);
+	}
 
-    public override clone(name: string): MRDLInnerquadMaterial {
-        return SerializationHelper.Clone(() => new MRDLInnerquadMaterial(name, this.getScene()), this);
-    }
+	public override clone(name: string): MRDLInnerquadMaterial {
+		return SerializationHelper.Clone(() => new MRDLInnerquadMaterial(name, this.getScene()), this);
+	}
 
-    public override serialize(): unknown {
-        const serializationObject = SerializationHelper.Serialize(this);
-        serializationObject.customType = "BABYLON.MRDLInnerquadMaterial";
-        return serializationObject;
-    }
+	public override serialize(): unknown {
+		const serializationObject = SerializationHelper.Serialize(this);
+		serializationObject.customType = "BABYLON.MRDLInnerquadMaterial";
+		return serializationObject;
+	}
 
-    public override getClassName(): string {
-        return "MRDLInnerquadMaterial";
-    }
+	public override getClassName(): string {
+		return "MRDLInnerquadMaterial";
+	}
 
-    // Statics
-    public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLInnerquadMaterial {
-        return SerializationHelper.Parse(() => new MRDLInnerquadMaterial(source.name, scene), source, scene, rootUrl);
-    }
+	// Statics
+	public static override Parse(source: any, scene: Scene, rootUrl: string): MRDLInnerquadMaterial {
+		return SerializationHelper.Parse(() => new MRDLInnerquadMaterial(source.name, scene), source, scene, rootUrl);
+	}
 }
 
 RegisterClass("BABYLON.GUI.MRDLInnerquadMaterial", MRDLInnerquadMaterial);

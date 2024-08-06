@@ -1,6 +1,6 @@
 /** @internal */
 export interface IMaterialContext {
-    uniqueId: number;
+	uniqueId: number;
 
-    reset(): void;
+	reset(): void;
 }

@@ -3,14 +3,14 @@
  * on some other object.
  */
 export interface IObjectInfo<T> {
-    /**
-     * The original object.
-     */
-    object: any;
-    /**
-     * Information about the object.
-     */
-    info: T;
+	/**
+	 * The original object.
+	 */
+	object: any;
+	/**
+	 * Information about the object.
+	 */
+	info: T;
 }
 
 /**
@@ -18,10 +18,10 @@ export interface IObjectInfo<T> {
  * it into an ObjectAccessorContainer.
  */
 export interface IPathToObjectConverter<T> {
-    /**
-     * Convert a path to an object that can be used to access properties of a base object
-     * @param path the path to convert
-     * @returns an object that can be used to access properties of a base object
-     */
-    convert(path: string): IObjectInfo<T>;
+	/**
+	 * Convert a path to an object that can be used to access properties of a base object
+	 * @param path the path to convert
+	 * @returns an object that can be used to access properties of a base object
+	 */
+	convert(path: string): IObjectInfo<T>;
 }

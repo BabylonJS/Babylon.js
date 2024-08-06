@@ -14,56 +14,56 @@ const NAME = "KHR_materials_emissive_strength";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_emissive_strength implements IGLTFLoaderExtension {
-    /**
-     * The name of this extension.
-     */
-    public readonly name = NAME;
+	/**
+	 * The name of this extension.
+	 */
+	public readonly name = NAME;
 
-    /**
-     * Defines whether this extension is enabled.
-     */
-    public enabled: boolean;
+	/**
+	 * Defines whether this extension is enabled.
+	 */
+	public enabled: boolean;
 
-    /**
-     * Defines a number that determines the order the extensions are applied.
-     */
-    public order = 170;
+	/**
+	 * Defines a number that determines the order the extensions are applied.
+	 */
+	public order = 170;
 
-    private _loader: GLTFLoader;
+	private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
-    constructor(loader: GLTFLoader) {
-        this._loader = loader;
-        this.enabled = this._loader.isExtensionUsed(NAME);
-    }
+	/**
+	 * @internal
+	 */
+	constructor(loader: GLTFLoader) {
+		this._loader = loader;
+		this.enabled = this._loader.isExtensionUsed(NAME);
+	}
 
-    /** @internal */
-    public dispose() {
-        (this._loader as any) = null;
-    }
+	/** @internal */
+	public dispose() {
+		(this._loader as any) = null;
+	}
 
-    /**
-     * @internal
-     */
-    public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
-        return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
-            return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
-                this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
-            });
-        });
-    }
+	/**
+	 * @internal
+	 */
+	public loadMaterialPropertiesAsync(context: string, material: IMaterial, babylonMaterial: Material): Nullable<Promise<void>> {
+		return GLTFLoader.LoadExtensionAsync<IKHRMaterialsEmissiveStrength>(context, material, this.name, (extensionContext, extension) => {
+			return this._loader.loadMaterialPropertiesAsync(context, material, babylonMaterial).then(() => {
+				this._loadEmissiveProperties(extensionContext, extension, babylonMaterial);
+			});
+		});
+	}
 
-    private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
-        if (!(babylonMaterial instanceof PBRMaterial)) {
-            throw new Error(`${context}: Material type not supported`);
-        }
+	private _loadEmissiveProperties(context: string, properties: IKHRMaterialsEmissiveStrength, babylonMaterial: Material): void {
+		if (!(babylonMaterial instanceof PBRMaterial)) {
+			throw new Error(`${context}: Material type not supported`);
+		}
 
-        if (properties.emissiveStrength !== undefined) {
-            babylonMaterial.emissiveIntensity = properties.emissiveStrength;
-        }
-    }
+		if (properties.emissiveStrength !== undefined) {
+			babylonMaterial.emissiveIntensity = properties.emissiveStrength;
+		}
+	}
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_materials_emissive_strength(loader));

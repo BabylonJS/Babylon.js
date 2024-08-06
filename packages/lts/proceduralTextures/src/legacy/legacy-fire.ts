@@ -7,9 +7,9 @@ import * as proceduralTexture from "procedural-textures/fire/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    for (const key in proceduralTexture) {
-        (<any>globalObject).BABYLON[key] = (<any>proceduralTexture)[key];
-    }
+	for (const key in proceduralTexture) {
+		(<any>globalObject).BABYLON[key] = (<any>proceduralTexture)[key];
+	}
 }
 
 export * from "procedural-textures/fire/index";

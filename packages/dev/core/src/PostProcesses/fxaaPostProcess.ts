@@ -18,68 +18,68 @@ import type { Scene } from "../scene";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/postProcesses/usePostProcesses#fxaa
  */
 export class FxaaPostProcess extends PostProcess {
-    /**
-     * Gets a string identifying the name of the class
-     * @returns "FxaaPostProcess" string
-     */
-    public override getClassName(): string {
-        return "FxaaPostProcess";
-    }
+	/**
+	 * Gets a string identifying the name of the class
+	 * @returns "FxaaPostProcess" string
+	 */
+	public override getClassName(): string {
+		return "FxaaPostProcess";
+	}
 
-    constructor(
-        name: string,
-        options: number | PostProcessOptions,
-        camera: Nullable<Camera> = null,
-        samplingMode?: number,
-        engine?: AbstractEngine,
-        reusable?: boolean,
-        textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
-    ) {
-        super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
+	constructor(
+		name: string,
+		options: number | PostProcessOptions,
+		camera: Nullable<Camera> = null,
+		samplingMode?: number,
+		engine?: AbstractEngine,
+		reusable?: boolean,
+		textureType: number = Constants.TEXTURETYPE_UNSIGNED_INT
+	) {
+		super(name, "fxaa", ["texelSize"], null, options, camera, samplingMode || Texture.BILINEAR_SAMPLINGMODE, engine, reusable, null, textureType, "fxaa", undefined, true);
 
-        const defines = this._getDefines();
-        this.updateEffect(defines);
+		const defines = this._getDefines();
+		this.updateEffect(defines);
 
-        this.onApplyObservable.add((effect: Effect) => {
-            const texelSize = this.texelSize;
-            effect.setFloat2("texelSize", texelSize.x, texelSize.y);
-        });
-    }
+		this.onApplyObservable.add((effect: Effect) => {
+			const texelSize = this.texelSize;
+			effect.setFloat2("texelSize", texelSize.x, texelSize.y);
+		});
+	}
 
-    private _getDefines(): Nullable<string> {
-        const engine = this.getEngine();
-        if (!engine) {
-            return null;
-        }
+	private _getDefines(): Nullable<string> {
+		const engine = this.getEngine();
+		if (!engine) {
+			return null;
+		}
 
-        const driverInfo = engine.extractDriverInfo();
-        if (driverInfo.toLowerCase().indexOf("mali") > -1) {
-            return "#define MALI 1\n";
-        }
+		const driverInfo = engine.extractDriverInfo();
+		if (driverInfo.toLowerCase().indexOf("mali") > -1) {
+			return "#define MALI 1\n";
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    /**
-     * @internal
-     */
-    public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
-        return SerializationHelper.Parse(
-            () => {
-                return new FxaaPostProcess(
-                    parsedPostProcess.name,
-                    parsedPostProcess.options,
-                    targetCamera,
-                    parsedPostProcess.renderTargetSamplingMode,
-                    scene.getEngine(),
-                    parsedPostProcess.reusable
-                );
-            },
-            parsedPostProcess,
-            scene,
-            rootUrl
-        );
-    }
+	/**
+	 * @internal
+	 */
+	public static override _Parse(parsedPostProcess: any, targetCamera: Camera, scene: Scene, rootUrl: string) {
+		return SerializationHelper.Parse(
+			() => {
+				return new FxaaPostProcess(
+					parsedPostProcess.name,
+					parsedPostProcess.options,
+					targetCamera,
+					parsedPostProcess.renderTargetSamplingMode,
+					scene.getEngine(),
+					parsedPostProcess.reusable
+				);
+			},
+			parsedPostProcess,
+			scene,
+			rootUrl
+		);
+	}
 }
 
 RegisterClass("BABYLON.FxaaPostProcess", FxaaPostProcess);

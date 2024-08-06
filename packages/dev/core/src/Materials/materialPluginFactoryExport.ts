@@ -18,10 +18,10 @@ import type { Material } from "./material";
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRAnisotropicPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRAnisotropicConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRAnisotropicConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -30,10 +30,10 @@ export function createPBRAnisotropicPlugin(material: Material): Nullable<Materia
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRBRDFPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRBRDFConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRBRDFConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -42,10 +42,10 @@ export function createPBRBRDFPlugin(material: Material): Nullable<MaterialPlugin
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRClearCoatPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRClearCoatConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRClearCoatConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -54,10 +54,10 @@ export function createPBRClearCoatPlugin(material: Material): Nullable<MaterialP
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRIridescencePlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRIridescenceConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRIridescenceConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -66,10 +66,10 @@ export function createPBRIridescencePlugin(material: Material): Nullable<Materia
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRSheenPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRSheenConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRSheenConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -78,10 +78,10 @@ export function createPBRSheenPlugin(material: Material): Nullable<MaterialPlugi
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createPBRSubSurfacePlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial) {
-        return new PBRSubSurfaceConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial) {
+		return new PBRSubSurfaceConfiguration(material);
+	}
+	return null;
 }
 
 /**
@@ -90,8 +90,8 @@ export function createPBRSubSurfacePlugin(material: Material): Nullable<Material
  * @returns the plugin instance or null if the plugin is incompatible with material
  */
 export function createDetailMapPlugin(material: Material): Nullable<MaterialPluginBase> {
-    if (material instanceof PBRBaseMaterial || material instanceof StandardMaterial) {
-        return new DetailMapConfiguration(material);
-    }
-    return null;
+	if (material instanceof PBRBaseMaterial || material instanceof StandardMaterial) {
+		return new DetailMapConfiguration(material);
+	}
+	return null;
 }

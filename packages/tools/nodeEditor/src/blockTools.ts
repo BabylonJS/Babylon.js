@@ -103,635 +103,635 @@ import { NodeMaterialTeleportInBlock } from "core/Materials/Node/Blocks/Teleport
 import { NodeMaterialTeleportOutBlock } from "core/Materials/Node/Blocks/Teleport/teleportOutBlock";
 
 export class BlockTools {
-    public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
-        switch (data) {
-            case "TeleportInBlock":
-                return new NodeMaterialTeleportInBlock("Teleport In");
-            case "TeleportOutBlock":
-                return new NodeMaterialTeleportOutBlock("Teleport Out");
-            case "HeightToNormalBlock":
-                return new HeightToNormalBlock("HeightToNormal");
-            case "ElbowBlock":
-                return new ElbowBlock("");
-            case "TwirlBlock":
-                return new TwirlBlock("Twirl");
-            case "VoronoiNoiseBlock":
-                return new VoronoiNoiseBlock("VoronoiNoise");
-            case "ScreenSpaceBlock":
-                return new ScreenSpaceBlock("ScreenSpace");
-            case "CloudBlock":
-                return new CloudBlock("Cloud");
-            case "MatrixBuilderBlock":
-                return new MatrixBuilderBlock("MatrixBuilder");
-            case "DesaturateBlock":
-                return new DesaturateBlock("Desaturate");
-            case "RefractBlock":
-                return new RefractBlock("Refract");
-            case "ReflectBlock":
-                return new ReflectBlock("Reflect");
-            case "DerivativeBlock":
-                return new DerivativeBlock("Derivative");
-            case "Rotate2dBlock":
-                return new Rotate2dBlock("Rotate2d");
-            case "NormalBlendBlock":
-                return new NormalBlendBlock("NormalBlend");
-            case "WorleyNoise3DBlock":
-                return new WorleyNoise3DBlock("WorleyNoise3D");
-            case "SimplexPerlin3DBlock":
-                return new SimplexPerlin3DBlock("SimplexPerlin3D");
-            case "BonesBlock":
-                return new BonesBlock("Bones");
-            case "InstancesBlock":
-                return new InstancesBlock("Instances");
-            case "MorphTargetsBlock":
-                return new MorphTargetsBlock("MorphTargets");
-            case "DiscardBlock":
-                return new DiscardBlock("Discard");
-            case "PrePassTextureBlock":
-                return new PrePassTextureBlock("PrePassTexture");
-            case "ImageProcessingBlock":
-                return new ImageProcessingBlock("ImageProcessing");
-            case "ColorMergerBlock":
-                return new ColorMergerBlock("ColorMerger");
-            case "VectorMergerBlock":
-                return new VectorMergerBlock("VectorMerger");
-            case "ColorSplitterBlock":
-                return new ColorSplitterBlock("ColorSplitter");
-            case "VectorSplitterBlock":
-                return new VectorSplitterBlock("VectorSplitter");
-            case "TextureBlock":
-                return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
-            case "ReflectionTextureBlock":
-                return new ReflectionTextureBlock("Reflection texture");
-            case "LightBlock":
-                return new LightBlock("Lights");
-            case "FogBlock":
-                return new FogBlock("Fog");
-            case "VertexOutputBlock":
-                return new VertexOutputBlock("VertexOutput");
-            case "FragmentOutputBlock":
-                return new FragmentOutputBlock("FragmentOutput");
-            case "PrePassOutputBlock":
-                return new PrePassOutputBlock("PrePassOutput");
-            case "AddBlock":
-                return new AddBlock("Add");
-            case "ClampBlock":
-                return new ClampBlock("Clamp");
-            case "ScaleBlock":
-                return new ScaleBlock("Scale");
-            case "CrossBlock":
-                return new CrossBlock("Cross");
-            case "DotBlock":
-                return new DotBlock("Dot");
-            case "PowBlock":
-                return new PowBlock("Pow");
-            case "MultiplyBlock":
-                return new MultiplyBlock("Multiply");
-            case "TransformBlock":
-                return new TransformBlock("Transform");
-            case "TrigonometryBlock":
-                return new TrigonometryBlock("Trigonometry");
-            case "RemapBlock":
-                return new RemapBlock("Remap");
-            case "NormalizeBlock":
-                return new NormalizeBlock("Normalize");
-            case "FresnelBlock":
-                return new FresnelBlock("Fresnel");
-            case "LerpBlock":
-                return new LerpBlock("Lerp");
-            case "NLerpBlock":
-                return new NLerpBlock("NLerp");
-            case "DivideBlock":
-                return new DivideBlock("Divide");
-            case "SubtractBlock":
-                return new SubtractBlock("Subtract");
-            case "ModBlock":
-                return new ModBlock("Mod");
-            case "StepBlock":
-                return new StepBlock("Step");
-            case "SmoothStepBlock":
-                return new SmoothStepBlock("Smooth step");
-            case "OneMinusBlock":
-                return new OneMinusBlock("One minus");
-            case "ReciprocalBlock":
-                return new ReciprocalBlock("Reciprocal");
-            case "ViewDirectionBlock":
-                return new ViewDirectionBlock("View direction");
-            case "LightInformationBlock": {
-                const lightInformationBlock = new LightInformationBlock("Light information");
-                lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
-                return lightInformationBlock;
-            }
-            case "MaxBlock":
-                return new MaxBlock("Max");
-            case "MinBlock":
-                return new MinBlock("Min");
-            case "LengthBlock":
-                return new LengthBlock("Length");
-            case "DistanceBlock":
-                return new DistanceBlock("Distance");
-            case "NegateBlock":
-                return new NegateBlock("Negate");
-            case "PerturbNormalBlock":
-                return new PerturbNormalBlock("Perturb normal");
-            case "TBNBlock":
-                return new TBNBlock("TBN");
-            case "RandomNumberBlock":
-                return new RandomNumberBlock("Random number");
-            case "ReplaceColorBlock":
-                return new ReplaceColorBlock("Replace color");
-            case "PosterizeBlock":
-                return new PosterizeBlock("Posterize");
-            case "ArcTan2Block":
-                return new ArcTan2Block("ArcTan2");
-            case "GradientBlock":
-                return new GradientBlock("Gradient");
-            case "FrontFacingBlock":
-                return new FrontFacingBlock("Front facing");
-            case "MeshAttributeExistsBlock":
-                return new MeshAttributeExistsBlock("Attribute exists");
-            case "CosBlock": {
-                const cosBlock = new TrigonometryBlock("Cos");
-                cosBlock.operation = TrigonometryBlockOperations.Cos;
-                return cosBlock;
-            }
-            case "SinBlock": {
-                const sinBlock = new TrigonometryBlock("Sin");
-                sinBlock.operation = TrigonometryBlockOperations.Sin;
-                return sinBlock;
-            }
-            case "AbsBlock": {
-                const absBlock = new TrigonometryBlock("Abs");
-                absBlock.operation = TrigonometryBlockOperations.Abs;
-                return absBlock;
-            }
-            case "SqrtBlock": {
-                const sqrtBlock = new TrigonometryBlock("Sqrt");
-                sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
-                return sqrtBlock;
-            }
-            case "ArcCosBlock": {
-                const acosBlock = new TrigonometryBlock("ArcCos");
-                acosBlock.operation = TrigonometryBlockOperations.ArcCos;
-                return acosBlock;
-            }
-            case "ArcSinBlock": {
-                const asinBlock = new TrigonometryBlock("ArcSin");
-                asinBlock.operation = TrigonometryBlockOperations.ArcSin;
-                return asinBlock;
-            }
-            case "TanBlock": {
-                const tanBlock = new TrigonometryBlock("Tan");
-                tanBlock.operation = TrigonometryBlockOperations.Tan;
-                return tanBlock;
-            }
-            case "ArcTanBlock": {
-                const atanBlock = new TrigonometryBlock("ArcTan");
-                atanBlock.operation = TrigonometryBlockOperations.ArcTan;
-                return atanBlock;
-            }
-            case "FractBlock": {
-                const fractBlock = new TrigonometryBlock("Fract");
-                fractBlock.operation = TrigonometryBlockOperations.Fract;
-                return fractBlock;
-            }
-            case "SignBlock": {
-                const signBlock = new TrigonometryBlock("Sign");
-                signBlock.operation = TrigonometryBlockOperations.Sign;
-                return signBlock;
-            }
-            case "LogBlock": {
-                const logBlock = new TrigonometryBlock("Log");
-                logBlock.operation = TrigonometryBlockOperations.Log;
-                return logBlock;
-            }
-            case "ExpBlock": {
-                const expBlock = new TrigonometryBlock("Exp");
-                expBlock.operation = TrigonometryBlockOperations.Exp;
-                return expBlock;
-            }
-            case "Exp2Block": {
-                const exp2Block = new TrigonometryBlock("Exp2");
-                exp2Block.operation = TrigonometryBlockOperations.Exp2;
-                return exp2Block;
-            }
-            case "DegreesToRadiansBlock": {
-                const degreesToRadiansBlock = new TrigonometryBlock("Degrees to radians");
-                degreesToRadiansBlock.operation = TrigonometryBlockOperations.Radians;
-                return degreesToRadiansBlock;
-            }
-            case "RadiansToDegreesBlock": {
-                const radiansToDegreesBlock = new TrigonometryBlock("Radians to degrees");
-                radiansToDegreesBlock.operation = TrigonometryBlockOperations.Degrees;
-                return radiansToDegreesBlock;
-            }
-            case "RoundBlock": {
-                const roundBlock = new TrigonometryBlock("Round");
-                roundBlock.operation = TrigonometryBlockOperations.Round;
-                return roundBlock;
-            }
-            case "CeilingBlock": {
-                const ceilingBlock = new TrigonometryBlock("Ceiling");
-                ceilingBlock.operation = TrigonometryBlockOperations.Ceiling;
-                return ceilingBlock;
-            }
-            case "FloorBlock": {
-                const floorBlock = new TrigonometryBlock("Floor");
-                floorBlock.operation = TrigonometryBlockOperations.Floor;
-                return floorBlock;
-            }
-            case "SawToothWaveBlock": {
-                const sawToothWaveBlock = new WaveBlock("SawTooth wave");
-                sawToothWaveBlock.kind = WaveBlockKind.SawTooth;
-                return sawToothWaveBlock;
-            }
-            case "SquareWaveBlock": {
-                const squareWaveBlock = new WaveBlock("Square wave");
-                squareWaveBlock.kind = WaveBlockKind.Square;
-                return squareWaveBlock;
-            }
-            case "TriangleWaveBlock": {
-                const triangleWaveBlock = new WaveBlock("Triangle wave");
-                triangleWaveBlock.kind = WaveBlockKind.Triangle;
-                return triangleWaveBlock;
-            }
-            case "SetBlock": {
-                const cosBlock = new TrigonometryBlock("Set");
-                cosBlock.operation = TrigonometryBlockOperations.Set;
-                return cosBlock;
-            }
-            case "WorldMatrixBlock": {
-                const worldMatrixBlock = new InputBlock("World");
-                worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
-                return worldMatrixBlock;
-            }
-            case "WorldViewMatrixBlock": {
-                const worldViewMatrixBlock = new InputBlock("World x View");
-                worldViewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldView);
-                return worldViewMatrixBlock;
-            }
-            case "WorldViewProjectionMatrixBlock": {
-                const worldViewProjectionMatrixBlock = new InputBlock("World x View x Projection");
-                worldViewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldViewProjection);
-                return worldViewProjectionMatrixBlock;
-            }
-            case "ViewMatrixBlock": {
-                const viewMatrixBlock = new InputBlock("View");
-                viewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.View);
-                return viewMatrixBlock;
-            }
-            case "ViewProjectionMatrixBlock": {
-                const viewProjectionMatrixBlock = new InputBlock("View x Projection");
-                viewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
-                return viewProjectionMatrixBlock;
-            }
-            case "ProjectionMatrixBlock": {
-                const projectionMatrixBlock = new InputBlock("Projection");
-                projectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.Projection);
-                return projectionMatrixBlock;
-            }
-            case "CameraPositionBlock": {
-                const cameraPosition = new InputBlock("Camera position");
-                cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
-                return cameraPosition;
-            }
-            case "CameraParametersBlock": {
-                const cameraParameters = new InputBlock("Camera parameters");
-                cameraParameters.setAsSystemValue(NodeMaterialSystemValues.CameraParameters);
+	public static GetBlockFromString(data: string, scene: Scene, nodeMaterial: NodeMaterial) {
+		switch (data) {
+			case "TeleportInBlock":
+				return new NodeMaterialTeleportInBlock("Teleport In");
+			case "TeleportOutBlock":
+				return new NodeMaterialTeleportOutBlock("Teleport Out");
+			case "HeightToNormalBlock":
+				return new HeightToNormalBlock("HeightToNormal");
+			case "ElbowBlock":
+				return new ElbowBlock("");
+			case "TwirlBlock":
+				return new TwirlBlock("Twirl");
+			case "VoronoiNoiseBlock":
+				return new VoronoiNoiseBlock("VoronoiNoise");
+			case "ScreenSpaceBlock":
+				return new ScreenSpaceBlock("ScreenSpace");
+			case "CloudBlock":
+				return new CloudBlock("Cloud");
+			case "MatrixBuilderBlock":
+				return new MatrixBuilderBlock("MatrixBuilder");
+			case "DesaturateBlock":
+				return new DesaturateBlock("Desaturate");
+			case "RefractBlock":
+				return new RefractBlock("Refract");
+			case "ReflectBlock":
+				return new ReflectBlock("Reflect");
+			case "DerivativeBlock":
+				return new DerivativeBlock("Derivative");
+			case "Rotate2dBlock":
+				return new Rotate2dBlock("Rotate2d");
+			case "NormalBlendBlock":
+				return new NormalBlendBlock("NormalBlend");
+			case "WorleyNoise3DBlock":
+				return new WorleyNoise3DBlock("WorleyNoise3D");
+			case "SimplexPerlin3DBlock":
+				return new SimplexPerlin3DBlock("SimplexPerlin3D");
+			case "BonesBlock":
+				return new BonesBlock("Bones");
+			case "InstancesBlock":
+				return new InstancesBlock("Instances");
+			case "MorphTargetsBlock":
+				return new MorphTargetsBlock("MorphTargets");
+			case "DiscardBlock":
+				return new DiscardBlock("Discard");
+			case "PrePassTextureBlock":
+				return new PrePassTextureBlock("PrePassTexture");
+			case "ImageProcessingBlock":
+				return new ImageProcessingBlock("ImageProcessing");
+			case "ColorMergerBlock":
+				return new ColorMergerBlock("ColorMerger");
+			case "VectorMergerBlock":
+				return new VectorMergerBlock("VectorMerger");
+			case "ColorSplitterBlock":
+				return new ColorSplitterBlock("ColorSplitter");
+			case "VectorSplitterBlock":
+				return new VectorSplitterBlock("VectorSplitter");
+			case "TextureBlock":
+				return new TextureBlock("Texture", nodeMaterial.mode === NodeMaterialModes.Particle);
+			case "ReflectionTextureBlock":
+				return new ReflectionTextureBlock("Reflection texture");
+			case "LightBlock":
+				return new LightBlock("Lights");
+			case "FogBlock":
+				return new FogBlock("Fog");
+			case "VertexOutputBlock":
+				return new VertexOutputBlock("VertexOutput");
+			case "FragmentOutputBlock":
+				return new FragmentOutputBlock("FragmentOutput");
+			case "PrePassOutputBlock":
+				return new PrePassOutputBlock("PrePassOutput");
+			case "AddBlock":
+				return new AddBlock("Add");
+			case "ClampBlock":
+				return new ClampBlock("Clamp");
+			case "ScaleBlock":
+				return new ScaleBlock("Scale");
+			case "CrossBlock":
+				return new CrossBlock("Cross");
+			case "DotBlock":
+				return new DotBlock("Dot");
+			case "PowBlock":
+				return new PowBlock("Pow");
+			case "MultiplyBlock":
+				return new MultiplyBlock("Multiply");
+			case "TransformBlock":
+				return new TransformBlock("Transform");
+			case "TrigonometryBlock":
+				return new TrigonometryBlock("Trigonometry");
+			case "RemapBlock":
+				return new RemapBlock("Remap");
+			case "NormalizeBlock":
+				return new NormalizeBlock("Normalize");
+			case "FresnelBlock":
+				return new FresnelBlock("Fresnel");
+			case "LerpBlock":
+				return new LerpBlock("Lerp");
+			case "NLerpBlock":
+				return new NLerpBlock("NLerp");
+			case "DivideBlock":
+				return new DivideBlock("Divide");
+			case "SubtractBlock":
+				return new SubtractBlock("Subtract");
+			case "ModBlock":
+				return new ModBlock("Mod");
+			case "StepBlock":
+				return new StepBlock("Step");
+			case "SmoothStepBlock":
+				return new SmoothStepBlock("Smooth step");
+			case "OneMinusBlock":
+				return new OneMinusBlock("One minus");
+			case "ReciprocalBlock":
+				return new ReciprocalBlock("Reciprocal");
+			case "ViewDirectionBlock":
+				return new ViewDirectionBlock("View direction");
+			case "LightInformationBlock": {
+				const lightInformationBlock = new LightInformationBlock("Light information");
+				lightInformationBlock.light = scene.lights.length ? scene.lights[0] : null;
+				return lightInformationBlock;
+			}
+			case "MaxBlock":
+				return new MaxBlock("Max");
+			case "MinBlock":
+				return new MinBlock("Min");
+			case "LengthBlock":
+				return new LengthBlock("Length");
+			case "DistanceBlock":
+				return new DistanceBlock("Distance");
+			case "NegateBlock":
+				return new NegateBlock("Negate");
+			case "PerturbNormalBlock":
+				return new PerturbNormalBlock("Perturb normal");
+			case "TBNBlock":
+				return new TBNBlock("TBN");
+			case "RandomNumberBlock":
+				return new RandomNumberBlock("Random number");
+			case "ReplaceColorBlock":
+				return new ReplaceColorBlock("Replace color");
+			case "PosterizeBlock":
+				return new PosterizeBlock("Posterize");
+			case "ArcTan2Block":
+				return new ArcTan2Block("ArcTan2");
+			case "GradientBlock":
+				return new GradientBlock("Gradient");
+			case "FrontFacingBlock":
+				return new FrontFacingBlock("Front facing");
+			case "MeshAttributeExistsBlock":
+				return new MeshAttributeExistsBlock("Attribute exists");
+			case "CosBlock": {
+				const cosBlock = new TrigonometryBlock("Cos");
+				cosBlock.operation = TrigonometryBlockOperations.Cos;
+				return cosBlock;
+			}
+			case "SinBlock": {
+				const sinBlock = new TrigonometryBlock("Sin");
+				sinBlock.operation = TrigonometryBlockOperations.Sin;
+				return sinBlock;
+			}
+			case "AbsBlock": {
+				const absBlock = new TrigonometryBlock("Abs");
+				absBlock.operation = TrigonometryBlockOperations.Abs;
+				return absBlock;
+			}
+			case "SqrtBlock": {
+				const sqrtBlock = new TrigonometryBlock("Sqrt");
+				sqrtBlock.operation = TrigonometryBlockOperations.Sqrt;
+				return sqrtBlock;
+			}
+			case "ArcCosBlock": {
+				const acosBlock = new TrigonometryBlock("ArcCos");
+				acosBlock.operation = TrigonometryBlockOperations.ArcCos;
+				return acosBlock;
+			}
+			case "ArcSinBlock": {
+				const asinBlock = new TrigonometryBlock("ArcSin");
+				asinBlock.operation = TrigonometryBlockOperations.ArcSin;
+				return asinBlock;
+			}
+			case "TanBlock": {
+				const tanBlock = new TrigonometryBlock("Tan");
+				tanBlock.operation = TrigonometryBlockOperations.Tan;
+				return tanBlock;
+			}
+			case "ArcTanBlock": {
+				const atanBlock = new TrigonometryBlock("ArcTan");
+				atanBlock.operation = TrigonometryBlockOperations.ArcTan;
+				return atanBlock;
+			}
+			case "FractBlock": {
+				const fractBlock = new TrigonometryBlock("Fract");
+				fractBlock.operation = TrigonometryBlockOperations.Fract;
+				return fractBlock;
+			}
+			case "SignBlock": {
+				const signBlock = new TrigonometryBlock("Sign");
+				signBlock.operation = TrigonometryBlockOperations.Sign;
+				return signBlock;
+			}
+			case "LogBlock": {
+				const logBlock = new TrigonometryBlock("Log");
+				logBlock.operation = TrigonometryBlockOperations.Log;
+				return logBlock;
+			}
+			case "ExpBlock": {
+				const expBlock = new TrigonometryBlock("Exp");
+				expBlock.operation = TrigonometryBlockOperations.Exp;
+				return expBlock;
+			}
+			case "Exp2Block": {
+				const exp2Block = new TrigonometryBlock("Exp2");
+				exp2Block.operation = TrigonometryBlockOperations.Exp2;
+				return exp2Block;
+			}
+			case "DegreesToRadiansBlock": {
+				const degreesToRadiansBlock = new TrigonometryBlock("Degrees to radians");
+				degreesToRadiansBlock.operation = TrigonometryBlockOperations.Radians;
+				return degreesToRadiansBlock;
+			}
+			case "RadiansToDegreesBlock": {
+				const radiansToDegreesBlock = new TrigonometryBlock("Radians to degrees");
+				radiansToDegreesBlock.operation = TrigonometryBlockOperations.Degrees;
+				return radiansToDegreesBlock;
+			}
+			case "RoundBlock": {
+				const roundBlock = new TrigonometryBlock("Round");
+				roundBlock.operation = TrigonometryBlockOperations.Round;
+				return roundBlock;
+			}
+			case "CeilingBlock": {
+				const ceilingBlock = new TrigonometryBlock("Ceiling");
+				ceilingBlock.operation = TrigonometryBlockOperations.Ceiling;
+				return ceilingBlock;
+			}
+			case "FloorBlock": {
+				const floorBlock = new TrigonometryBlock("Floor");
+				floorBlock.operation = TrigonometryBlockOperations.Floor;
+				return floorBlock;
+			}
+			case "SawToothWaveBlock": {
+				const sawToothWaveBlock = new WaveBlock("SawTooth wave");
+				sawToothWaveBlock.kind = WaveBlockKind.SawTooth;
+				return sawToothWaveBlock;
+			}
+			case "SquareWaveBlock": {
+				const squareWaveBlock = new WaveBlock("Square wave");
+				squareWaveBlock.kind = WaveBlockKind.Square;
+				return squareWaveBlock;
+			}
+			case "TriangleWaveBlock": {
+				const triangleWaveBlock = new WaveBlock("Triangle wave");
+				triangleWaveBlock.kind = WaveBlockKind.Triangle;
+				return triangleWaveBlock;
+			}
+			case "SetBlock": {
+				const cosBlock = new TrigonometryBlock("Set");
+				cosBlock.operation = TrigonometryBlockOperations.Set;
+				return cosBlock;
+			}
+			case "WorldMatrixBlock": {
+				const worldMatrixBlock = new InputBlock("World");
+				worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+				return worldMatrixBlock;
+			}
+			case "WorldViewMatrixBlock": {
+				const worldViewMatrixBlock = new InputBlock("World x View");
+				worldViewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldView);
+				return worldViewMatrixBlock;
+			}
+			case "WorldViewProjectionMatrixBlock": {
+				const worldViewProjectionMatrixBlock = new InputBlock("World x View x Projection");
+				worldViewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.WorldViewProjection);
+				return worldViewProjectionMatrixBlock;
+			}
+			case "ViewMatrixBlock": {
+				const viewMatrixBlock = new InputBlock("View");
+				viewMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.View);
+				return viewMatrixBlock;
+			}
+			case "ViewProjectionMatrixBlock": {
+				const viewProjectionMatrixBlock = new InputBlock("View x Projection");
+				viewProjectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.ViewProjection);
+				return viewProjectionMatrixBlock;
+			}
+			case "ProjectionMatrixBlock": {
+				const projectionMatrixBlock = new InputBlock("Projection");
+				projectionMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.Projection);
+				return projectionMatrixBlock;
+			}
+			case "CameraPositionBlock": {
+				const cameraPosition = new InputBlock("Camera position");
+				cameraPosition.setAsSystemValue(NodeMaterialSystemValues.CameraPosition);
+				return cameraPosition;
+			}
+			case "CameraParametersBlock": {
+				const cameraParameters = new InputBlock("Camera parameters");
+				cameraParameters.setAsSystemValue(NodeMaterialSystemValues.CameraParameters);
 
-                const splitter = new VectorSplitterBlock("Vector splitter");
-                cameraParameters.connectTo(splitter);
-                return splitter;
-            }
-            case "FogColorBlock": {
-                const fogColor = new InputBlock("Fog color");
-                fogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
-                return fogColor;
-            }
-            case "PositionBlock": {
-                const meshPosition = new InputBlock("position");
-                meshPosition.setAsAttribute("position");
-                return meshPosition;
-            }
-            case "ScreenPositionBlock": {
-                const meshPosition = new InputBlock("position");
-                meshPosition.setAsAttribute("position2d");
-                return meshPosition;
-            }
-            case "UVBlock": {
-                const meshUV = new InputBlock("uv");
-                meshUV.setAsAttribute("uv");
-                return meshUV;
-            }
-            case "ColorBlock": {
-                const meshColor = new InputBlock("color");
-                meshColor.setAsAttribute("color");
-                return meshColor;
-            }
-            case "InstanceColorBlock": {
-                const meshColor = new InputBlock("Instance Color");
-                meshColor.setAsAttribute("instanceColor");
-                return meshColor;
-            }
-            case "NormalBlock": {
-                const meshNormal = new InputBlock("normal");
-                meshNormal.setAsAttribute("normal");
-                return meshNormal;
-            }
-            case "TangentBlock": {
-                const meshTangent = new InputBlock("tangent");
-                meshTangent.setAsAttribute("tangent");
-                return meshTangent;
-            }
-            case "MatrixIndicesBlock": {
-                const meshMatrixIndices = new InputBlock("matricesIndices");
-                meshMatrixIndices.setAsAttribute("matricesIndices");
-                return meshMatrixIndices;
-            }
-            case "MatrixWeightsBlock": {
-                const meshMatrixWeights = new InputBlock("matricesWeights");
-                meshMatrixWeights.setAsAttribute("matricesWeights");
-                return meshMatrixWeights;
-            }
-            case "MatrixIndicesExtraBlock": {
-                const meshMatrixIndices = new InputBlock("matricesIndicesExtra");
-                meshMatrixIndices.setAsAttribute("matricesIndicesExtra");
-                return meshMatrixIndices;
-            }
-            case "MatrixWeightsExtraBlock": {
-                const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
-                meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
-                return meshMatrixWeights;
-            }
+				const splitter = new VectorSplitterBlock("Vector splitter");
+				cameraParameters.connectTo(splitter);
+				return splitter;
+			}
+			case "FogColorBlock": {
+				const fogColor = new InputBlock("Fog color");
+				fogColor.setAsSystemValue(NodeMaterialSystemValues.FogColor);
+				return fogColor;
+			}
+			case "PositionBlock": {
+				const meshPosition = new InputBlock("position");
+				meshPosition.setAsAttribute("position");
+				return meshPosition;
+			}
+			case "ScreenPositionBlock": {
+				const meshPosition = new InputBlock("position");
+				meshPosition.setAsAttribute("position2d");
+				return meshPosition;
+			}
+			case "UVBlock": {
+				const meshUV = new InputBlock("uv");
+				meshUV.setAsAttribute("uv");
+				return meshUV;
+			}
+			case "ColorBlock": {
+				const meshColor = new InputBlock("color");
+				meshColor.setAsAttribute("color");
+				return meshColor;
+			}
+			case "InstanceColorBlock": {
+				const meshColor = new InputBlock("Instance Color");
+				meshColor.setAsAttribute("instanceColor");
+				return meshColor;
+			}
+			case "NormalBlock": {
+				const meshNormal = new InputBlock("normal");
+				meshNormal.setAsAttribute("normal");
+				return meshNormal;
+			}
+			case "TangentBlock": {
+				const meshTangent = new InputBlock("tangent");
+				meshTangent.setAsAttribute("tangent");
+				return meshTangent;
+			}
+			case "MatrixIndicesBlock": {
+				const meshMatrixIndices = new InputBlock("matricesIndices");
+				meshMatrixIndices.setAsAttribute("matricesIndices");
+				return meshMatrixIndices;
+			}
+			case "MatrixWeightsBlock": {
+				const meshMatrixWeights = new InputBlock("matricesWeights");
+				meshMatrixWeights.setAsAttribute("matricesWeights");
+				return meshMatrixWeights;
+			}
+			case "MatrixIndicesExtraBlock": {
+				const meshMatrixIndices = new InputBlock("matricesIndicesExtra");
+				meshMatrixIndices.setAsAttribute("matricesIndicesExtra");
+				return meshMatrixIndices;
+			}
+			case "MatrixWeightsExtraBlock": {
+				const meshMatrixWeights = new InputBlock("matricesWeightsExtra");
+				meshMatrixWeights.setAsAttribute("matricesWeightsExtra");
+				return meshMatrixWeights;
+			}
 
-            case "MouseInfoBlock": {
-                const mouseInfoBlock = new InputBlock("MouseInfo", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
-                mouseInfoBlock.animationType = AnimatedInputBlockTypes.MouseInfo;
-                return mouseInfoBlock;
-            }
-            case "TimeBlock": {
-                const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
-                timeBlock.animationType = AnimatedInputBlockTypes.Time;
-                return timeBlock;
-            }
-            case "RealTimeBlock": {
-                const realTimeBlock = new InputBlock("RealTime", undefined, NodeMaterialBlockConnectionPointTypes.Float);
-                realTimeBlock.animationType = AnimatedInputBlockTypes.RealTime;
-                return realTimeBlock;
-            }
-            case "DeltaTimeBlock": {
-                const deltaTimeBlock = new InputBlock("Delta time");
-                deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
-                return deltaTimeBlock;
-            }
-            case "MaterialAlphaBlock": {
-                const deltaTimeBlock = new InputBlock("Material alpha");
-                deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.MaterialAlpha);
-                return deltaTimeBlock;
-            }
-            case "WorldPositionBlock": {
-                let worldPositionBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
-                if (!worldPositionBlock) {
-                    worldPositionBlock = new InputBlock("position");
-                    worldPositionBlock.setAsAttribute("position");
-                }
+			case "MouseInfoBlock": {
+				const mouseInfoBlock = new InputBlock("MouseInfo", undefined, NodeMaterialBlockConnectionPointTypes.Vector4);
+				mouseInfoBlock.animationType = AnimatedInputBlockTypes.MouseInfo;
+				return mouseInfoBlock;
+			}
+			case "TimeBlock": {
+				const timeBlock = new InputBlock("Time", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+				timeBlock.animationType = AnimatedInputBlockTypes.Time;
+				return timeBlock;
+			}
+			case "RealTimeBlock": {
+				const realTimeBlock = new InputBlock("RealTime", undefined, NodeMaterialBlockConnectionPointTypes.Float);
+				realTimeBlock.animationType = AnimatedInputBlockTypes.RealTime;
+				return realTimeBlock;
+			}
+			case "DeltaTimeBlock": {
+				const deltaTimeBlock = new InputBlock("Delta time");
+				deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.DeltaTime);
+				return deltaTimeBlock;
+			}
+			case "MaterialAlphaBlock": {
+				const deltaTimeBlock = new InputBlock("Material alpha");
+				deltaTimeBlock.setAsSystemValue(NodeMaterialSystemValues.MaterialAlpha);
+				return deltaTimeBlock;
+			}
+			case "WorldPositionBlock": {
+				let worldPositionBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "position");
+				if (!worldPositionBlock) {
+					worldPositionBlock = new InputBlock("position");
+					worldPositionBlock.setAsAttribute("position");
+				}
 
-                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
+				let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
 
-                if (!worldMatrixBlock) {
-                    worldMatrixBlock = new InputBlock("World");
-                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
-                }
+				if (!worldMatrixBlock) {
+					worldMatrixBlock = new InputBlock("World");
+					worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+				}
 
-                const transformBlock = new TransformBlock("World position");
-                worldPositionBlock.connectTo(transformBlock);
-                worldMatrixBlock.connectTo(transformBlock);
+				const transformBlock = new TransformBlock("World position");
+				worldPositionBlock.connectTo(transformBlock);
+				worldMatrixBlock.connectTo(transformBlock);
 
-                return transformBlock;
-            }
-            case "WorldNormalBlock": {
-                let worldNormalBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal");
-                if (!worldNormalBlock) {
-                    worldNormalBlock = new InputBlock("normal");
-                    worldNormalBlock.setAsAttribute("normal");
-                }
+				return transformBlock;
+			}
+			case "WorldNormalBlock": {
+				let worldNormalBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "normal");
+				if (!worldNormalBlock) {
+					worldNormalBlock = new InputBlock("normal");
+					worldNormalBlock.setAsAttribute("normal");
+				}
 
-                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
+				let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
 
-                if (!worldMatrixBlock) {
-                    worldMatrixBlock = new InputBlock("World");
-                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
-                }
+				if (!worldMatrixBlock) {
+					worldMatrixBlock = new InputBlock("World");
+					worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+				}
 
-                const transformBlock = new TransformBlock("World normal");
-                worldNormalBlock.connectTo(transformBlock);
-                worldMatrixBlock.connectTo(transformBlock);
+				const transformBlock = new TransformBlock("World normal");
+				worldNormalBlock.connectTo(transformBlock);
+				worldMatrixBlock.connectTo(transformBlock);
 
-                return transformBlock;
-            }
-            case "WorldTangentBlock": {
-                let worldTangentBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent");
-                if (!worldTangentBlock) {
-                    worldTangentBlock = new InputBlock("tangent");
-                    worldTangentBlock.setAsAttribute("tangent");
-                }
+				return transformBlock;
+			}
+			case "WorldTangentBlock": {
+				let worldTangentBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isAttribute && b.name === "tangent");
+				if (!worldTangentBlock) {
+					worldTangentBlock = new InputBlock("tangent");
+					worldTangentBlock.setAsAttribute("tangent");
+				}
 
-                let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
+				let worldMatrixBlock = nodeMaterial.getInputBlockByPredicate((b) => b.isSystemValue && b.systemValue === NodeMaterialSystemValues.World);
 
-                if (!worldMatrixBlock) {
-                    worldMatrixBlock = new InputBlock("World");
-                    worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
-                }
+				if (!worldMatrixBlock) {
+					worldMatrixBlock = new InputBlock("World");
+					worldMatrixBlock.setAsSystemValue(NodeMaterialSystemValues.World);
+				}
 
-                const transformBlock = new TransformBlock("World tangent");
-                worldTangentBlock.connectTo(transformBlock);
-                worldMatrixBlock.connectTo(transformBlock);
+				const transformBlock = new TransformBlock("World tangent");
+				worldTangentBlock.connectTo(transformBlock);
+				worldMatrixBlock.connectTo(transformBlock);
 
-                return transformBlock;
-            }
-            case "PBRMetallicRoughnessBlock":
-                return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
-            case "SheenBlock":
-                return new SheenBlock("Sheen");
-            case "AnisotropyBlock":
-                return new AnisotropyBlock("Anisotropy");
-            case "ReflectionBlock":
-                return new ReflectionBlock("Reflection");
-            case "ClearCoatBlock":
-                return new ClearCoatBlock("ClearCoat");
-            case "RefractionBlock":
-                return new RefractionBlock("Refraction");
-            case "SubSurfaceBlock":
-                return new SubSurfaceBlock("SubSurface");
-            case "CurrentScreenBlock":
-                return new CurrentScreenBlock("CurrentScreen");
-            case "ParticleUVBlock": {
-                const uv = new InputBlock("uv");
-                uv.setAsAttribute("particle_uv");
-                return uv;
-            }
-            case "ParticleTextureBlock":
-                return new ParticleTextureBlock("ParticleTexture");
-            case "ParticleColorBlock": {
-                const color = new InputBlock("Color");
-                color.setAsAttribute("particle_color");
-                return color;
-            }
-            case "ParticleTextureMaskBlock": {
-                const u = new InputBlock("TextureMask");
-                u.setAsAttribute("particle_texturemask");
-                return u;
-            }
-            case "ParticlePositionWorldBlock": {
-                const pos = new InputBlock("PositionWorld");
-                pos.setAsAttribute("particle_positionw");
-                return pos;
-            }
-            case "ParticleRampGradientBlock":
-                return new ParticleRampGradientBlock("ParticleRampGradient");
-            case "ParticleBlendMultiplyBlock":
-                return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
-            case "FragCoordBlock":
-                return new FragCoordBlock("FragCoord");
-            case "ScreenSizeBlock":
-                return new ScreenSizeBlock("ScreenSize");
-            case "SceneDepthBlock":
-                return new SceneDepthBlock("SceneDepth");
-            case "EqualBlock": {
-                const equalBlock = new ConditionalBlock("Equal");
-                equalBlock.condition = ConditionalBlockConditions.Equal;
-                return equalBlock;
-            }
-            case "NotEqualBlock": {
-                const notEqualBlock = new ConditionalBlock("NotEqual");
-                notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
-                return notEqualBlock;
-            }
-            case "LessThanBlock": {
-                const lessThanBlock = new ConditionalBlock("LessThan");
-                lessThanBlock.condition = ConditionalBlockConditions.LessThan;
-                return lessThanBlock;
-            }
-            case "LessOrEqualBlock": {
-                const lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
-                lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
-                return lessOrEqualBlock;
-            }
-            case "GreaterThanBlock": {
-                const greaterThanBlock = new ConditionalBlock("GreaterThan");
-                greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
-                return greaterThanBlock;
-            }
-            case "GreaterOrEqualBlock": {
-                const greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
-                greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
-                return greaterOrEqualBlock;
-            }
-            case "XorBlock": {
-                const xorBlock = new ConditionalBlock("Xor");
-                xorBlock.condition = ConditionalBlockConditions.Xor;
-                return xorBlock;
-            }
-            case "OrBlock": {
-                const orBlock = new ConditionalBlock("Or");
-                orBlock.condition = ConditionalBlockConditions.Or;
-                return orBlock;
-            }
-            case "AndBlock": {
-                const andBlock = new ConditionalBlock("And");
-                andBlock.condition = ConditionalBlockConditions.And;
-                return andBlock;
-            }
-            case "ImageSourceBlock":
-                return new ImageSourceBlock("ImageSource");
-            case "ClipPlanesBlock":
-                return new ClipPlanesBlock("ClipPlanes");
-            case "FragDepthBlock":
-                return new FragDepthBlock("FragDepth");
-            case "ShadowMapBlock":
-                return new ShadowMapBlock("ShadowMap");
-            case "TriPlanarBlock":
-                return new TriPlanarBlock("TriPlanarTexture");
-            case "BiPlanarBlock":
-                return new BiPlanarBlock("BiPlanarTexture");
-            case "MatrixTransposeBlock":
-                return new MatrixTransposeBlock("Transpose");
-            case "MatrixDeterminantBlock":
-                return new MatrixDeterminantBlock("Determinant");
-            case "CurveBlock":
-                return new CurveBlock("Curve");
-        }
+				return transformBlock;
+			}
+			case "PBRMetallicRoughnessBlock":
+				return new PBRMetallicRoughnessBlock("PBRMetallicRoughness");
+			case "SheenBlock":
+				return new SheenBlock("Sheen");
+			case "AnisotropyBlock":
+				return new AnisotropyBlock("Anisotropy");
+			case "ReflectionBlock":
+				return new ReflectionBlock("Reflection");
+			case "ClearCoatBlock":
+				return new ClearCoatBlock("ClearCoat");
+			case "RefractionBlock":
+				return new RefractionBlock("Refraction");
+			case "SubSurfaceBlock":
+				return new SubSurfaceBlock("SubSurface");
+			case "CurrentScreenBlock":
+				return new CurrentScreenBlock("CurrentScreen");
+			case "ParticleUVBlock": {
+				const uv = new InputBlock("uv");
+				uv.setAsAttribute("particle_uv");
+				return uv;
+			}
+			case "ParticleTextureBlock":
+				return new ParticleTextureBlock("ParticleTexture");
+			case "ParticleColorBlock": {
+				const color = new InputBlock("Color");
+				color.setAsAttribute("particle_color");
+				return color;
+			}
+			case "ParticleTextureMaskBlock": {
+				const u = new InputBlock("TextureMask");
+				u.setAsAttribute("particle_texturemask");
+				return u;
+			}
+			case "ParticlePositionWorldBlock": {
+				const pos = new InputBlock("PositionWorld");
+				pos.setAsAttribute("particle_positionw");
+				return pos;
+			}
+			case "ParticleRampGradientBlock":
+				return new ParticleRampGradientBlock("ParticleRampGradient");
+			case "ParticleBlendMultiplyBlock":
+				return new ParticleBlendMultiplyBlock("ParticleBlendMultiply");
+			case "FragCoordBlock":
+				return new FragCoordBlock("FragCoord");
+			case "ScreenSizeBlock":
+				return new ScreenSizeBlock("ScreenSize");
+			case "SceneDepthBlock":
+				return new SceneDepthBlock("SceneDepth");
+			case "EqualBlock": {
+				const equalBlock = new ConditionalBlock("Equal");
+				equalBlock.condition = ConditionalBlockConditions.Equal;
+				return equalBlock;
+			}
+			case "NotEqualBlock": {
+				const notEqualBlock = new ConditionalBlock("NotEqual");
+				notEqualBlock.condition = ConditionalBlockConditions.NotEqual;
+				return notEqualBlock;
+			}
+			case "LessThanBlock": {
+				const lessThanBlock = new ConditionalBlock("LessThan");
+				lessThanBlock.condition = ConditionalBlockConditions.LessThan;
+				return lessThanBlock;
+			}
+			case "LessOrEqualBlock": {
+				const lessOrEqualBlock = new ConditionalBlock("LessOrEqual");
+				lessOrEqualBlock.condition = ConditionalBlockConditions.LessOrEqual;
+				return lessOrEqualBlock;
+			}
+			case "GreaterThanBlock": {
+				const greaterThanBlock = new ConditionalBlock("GreaterThan");
+				greaterThanBlock.condition = ConditionalBlockConditions.GreaterThan;
+				return greaterThanBlock;
+			}
+			case "GreaterOrEqualBlock": {
+				const greaterOrEqualBlock = new ConditionalBlock("GreaterOrEqual");
+				greaterOrEqualBlock.condition = ConditionalBlockConditions.GreaterOrEqual;
+				return greaterOrEqualBlock;
+			}
+			case "XorBlock": {
+				const xorBlock = new ConditionalBlock("Xor");
+				xorBlock.condition = ConditionalBlockConditions.Xor;
+				return xorBlock;
+			}
+			case "OrBlock": {
+				const orBlock = new ConditionalBlock("Or");
+				orBlock.condition = ConditionalBlockConditions.Or;
+				return orBlock;
+			}
+			case "AndBlock": {
+				const andBlock = new ConditionalBlock("And");
+				andBlock.condition = ConditionalBlockConditions.And;
+				return andBlock;
+			}
+			case "ImageSourceBlock":
+				return new ImageSourceBlock("ImageSource");
+			case "ClipPlanesBlock":
+				return new ClipPlanesBlock("ClipPlanes");
+			case "FragDepthBlock":
+				return new FragDepthBlock("FragDepth");
+			case "ShadowMapBlock":
+				return new ShadowMapBlock("ShadowMap");
+			case "TriPlanarBlock":
+				return new TriPlanarBlock("TriPlanarTexture");
+			case "BiPlanarBlock":
+				return new BiPlanarBlock("BiPlanarTexture");
+			case "MatrixTransposeBlock":
+				return new MatrixTransposeBlock("Transpose");
+			case "MatrixDeterminantBlock":
+				return new MatrixDeterminantBlock("Determinant");
+			case "CurveBlock":
+				return new CurveBlock("Curve");
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        let color = "#880000";
-        switch (type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                color = "#cb9e27";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                color = "#16bcb1";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                color = "#b786cb";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                color = "#be5126";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                color = "#591990";
-                break;
-            case NodeMaterialBlockConnectionPointTypes.Object:
-                color = "#6174FA";
-                break;
-        }
+	public static GetColorFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
+		let color = "#880000";
+		switch (type) {
+			case NodeMaterialBlockConnectionPointTypes.Float:
+				color = "#cb9e27";
+				break;
+			case NodeMaterialBlockConnectionPointTypes.Vector2:
+				color = "#16bcb1";
+				break;
+			case NodeMaterialBlockConnectionPointTypes.Vector3:
+			case NodeMaterialBlockConnectionPointTypes.Color3:
+				color = "#b786cb";
+				break;
+			case NodeMaterialBlockConnectionPointTypes.Vector4:
+			case NodeMaterialBlockConnectionPointTypes.Color4:
+				color = "#be5126";
+				break;
+			case NodeMaterialBlockConnectionPointTypes.Matrix:
+				color = "#591990";
+				break;
+			case NodeMaterialBlockConnectionPointTypes.Object:
+				color = "#6174FA";
+				break;
+		}
 
-        return color;
-    }
+		return color;
+	}
 
-    public static GetConnectionNodeTypeFromString(type: string) {
-        switch (type) {
-            case "Float":
-                return NodeMaterialBlockConnectionPointTypes.Float;
-            case "Vector2":
-                return NodeMaterialBlockConnectionPointTypes.Vector2;
-            case "Vector3":
-                return NodeMaterialBlockConnectionPointTypes.Vector3;
-            case "Vector4":
-                return NodeMaterialBlockConnectionPointTypes.Vector4;
-            case "Matrix":
-                return NodeMaterialBlockConnectionPointTypes.Matrix;
-            case "Color3":
-                return NodeMaterialBlockConnectionPointTypes.Color3;
-            case "Color4":
-                return NodeMaterialBlockConnectionPointTypes.Color4;
-        }
+	public static GetConnectionNodeTypeFromString(type: string) {
+		switch (type) {
+			case "Float":
+				return NodeMaterialBlockConnectionPointTypes.Float;
+			case "Vector2":
+				return NodeMaterialBlockConnectionPointTypes.Vector2;
+			case "Vector3":
+				return NodeMaterialBlockConnectionPointTypes.Vector3;
+			case "Vector4":
+				return NodeMaterialBlockConnectionPointTypes.Vector4;
+			case "Matrix":
+				return NodeMaterialBlockConnectionPointTypes.Matrix;
+			case "Color3":
+				return NodeMaterialBlockConnectionPointTypes.Color3;
+			case "Color4":
+				return NodeMaterialBlockConnectionPointTypes.Color4;
+		}
 
-        return NodeMaterialBlockConnectionPointTypes.AutoDetect;
-    }
+		return NodeMaterialBlockConnectionPointTypes.AutoDetect;
+	}
 
-    public static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
-        switch (type) {
-            case NodeMaterialBlockConnectionPointTypes.Float:
-                return "Float";
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return "Vector2";
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return "Vector3";
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return "Vector4";
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return "Color3";
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return "Color4";
-            case NodeMaterialBlockConnectionPointTypes.Matrix:
-                return "Matrix";
-        }
+	public static GetStringFromConnectionNodeType(type: NodeMaterialBlockConnectionPointTypes) {
+		switch (type) {
+			case NodeMaterialBlockConnectionPointTypes.Float:
+				return "Float";
+			case NodeMaterialBlockConnectionPointTypes.Vector2:
+				return "Vector2";
+			case NodeMaterialBlockConnectionPointTypes.Vector3:
+				return "Vector3";
+			case NodeMaterialBlockConnectionPointTypes.Vector4:
+				return "Vector4";
+			case NodeMaterialBlockConnectionPointTypes.Color3:
+				return "Color3";
+			case NodeMaterialBlockConnectionPointTypes.Color4:
+				return "Color4";
+			case NodeMaterialBlockConnectionPointTypes.Matrix:
+				return "Matrix";
+		}
 
-        return "";
-    }
+		return "";
+	}
 }

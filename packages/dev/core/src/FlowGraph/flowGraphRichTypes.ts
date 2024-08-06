@@ -8,34 +8,34 @@ import { FlowGraphInteger } from "./flowGraphInteger";
  * @experimental
  */
 export class RichType<T> {
-    constructor(
-        /**
-         * The name given to the type.
-         */
-        public typeName: string,
-        /**
-         * The default value of the type.
-         */
-        public defaultValue: T
-    ) {}
+	constructor(
+		/**
+		 * The name given to the type.
+		 */
+		public typeName: string,
+		/**
+		 * The default value of the type.
+		 */
+		public defaultValue: T
+	) {}
 
-    /**
-     * Serializes this rich type into a serialization object.
-     * @param serializationObject the object to serialize to
-     */
-    serialize(serializationObject: any) {
-        serializationObject.typeName = this.typeName;
-        serializationObject.defaultValue = this.defaultValue;
-    }
+	/**
+	 * Serializes this rich type into a serialization object.
+	 * @param serializationObject the object to serialize to
+	 */
+	serialize(serializationObject: any) {
+		serializationObject.typeName = this.typeName;
+		serializationObject.defaultValue = this.defaultValue;
+	}
 
-    /**
-     * Parses a rich type from a serialization object.
-     * @param serializationObject a serialization object
-     * @returns the parsed rich type
-     */
-    static Parse(serializationObject: any): RichType<any> {
-        return new RichType(serializationObject.typeName, serializationObject.defaultValue);
-    }
+	/**
+	 * Parses a rich type from a serialization object.
+	 * @param serializationObject a serialization object
+	 * @returns the parsed rich type
+	 */
+	static Parse(serializationObject: any): RichType<any> {
+		return new RichType(serializationObject.typeName, serializationObject.defaultValue);
+	}
 }
 
 export const RichTypeAny: RichType<any> = new RichType("any", undefined);
@@ -68,32 +68,32 @@ export const RichTypeFlowGraphInteger: RichType<FlowGraphInteger> = new RichType
  * @returns the value's rich type, or RichTypeAny if the type could not be deduced.
  */
 export function getRichTypeFromValue<T>(value: T): RichType<T> {
-    switch (typeof value) {
-        case "string":
-            return RichTypeString as RichType<T>;
-        case "number":
-            return RichTypeNumber as RichType<T>;
-        case "boolean":
-            return RichTypeBoolean as RichType<T>;
-        case "object":
-            if (value instanceof Vector2) {
-                return RichTypeVector2 as RichType<T>;
-            } else if (value instanceof Vector3) {
-                return RichTypeVector3 as RichType<T>;
-            } else if (value instanceof Vector4) {
-                return RichTypeVector4 as RichType<T>;
-            } else if (value instanceof Color3) {
-                return RichTypeColor3 as RichType<T>;
-            } else if (value instanceof Color4) {
-                return RichTypeColor4 as RichType<T>;
-            } else if (value instanceof Quaternion) {
-                return RichTypeQuaternion as RichType<T>;
-            } else if (value instanceof FlowGraphInteger) {
-                return RichTypeFlowGraphInteger as RichType<T>;
-            } else {
-                return RichTypeAny as RichType<T>;
-            }
-        default:
-            return RichTypeAny as RichType<T>;
-    }
+	switch (typeof value) {
+		case "string":
+			return RichTypeString as RichType<T>;
+		case "number":
+			return RichTypeNumber as RichType<T>;
+		case "boolean":
+			return RichTypeBoolean as RichType<T>;
+		case "object":
+			if (value instanceof Vector2) {
+				return RichTypeVector2 as RichType<T>;
+			} else if (value instanceof Vector3) {
+				return RichTypeVector3 as RichType<T>;
+			} else if (value instanceof Vector4) {
+				return RichTypeVector4 as RichType<T>;
+			} else if (value instanceof Color3) {
+				return RichTypeColor3 as RichType<T>;
+			} else if (value instanceof Color4) {
+				return RichTypeColor4 as RichType<T>;
+			} else if (value instanceof Quaternion) {
+				return RichTypeQuaternion as RichType<T>;
+			} else if (value instanceof FlowGraphInteger) {
+				return RichTypeFlowGraphInteger as RichType<T>;
+			} else {
+				return RichTypeAny as RichType<T>;
+			}
+		default:
+			return RichTypeAny as RichType<T>;
+	}
 }

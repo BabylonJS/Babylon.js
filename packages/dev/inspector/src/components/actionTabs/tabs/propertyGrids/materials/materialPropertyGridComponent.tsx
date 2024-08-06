@@ -9,27 +9,27 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 
 interface IMaterialPropertyGridComponentProps {
-    globalState: GlobalState;
-    material: Material;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	material: Material;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class MaterialPropertyGridComponent extends React.Component<IMaterialPropertyGridComponentProps> {
-    constructor(props: IMaterialPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IMaterialPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const material = this.props.material;
+	override render() {
+		const material = this.props.material;
 
-        return (
-            <CommonMaterialPropertyGridComponent
-                globalState={this.props.globalState}
-                lockObject={this.props.lockObject}
-                material={material}
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-            />
-        );
-    }
+		return (
+			<CommonMaterialPropertyGridComponent
+				globalState={this.props.globalState}
+				lockObject={this.props.lockObject}
+				material={material}
+				onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+			/>
+		);
+	}
 }

@@ -8,37 +8,37 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import type { NodeMaterial } from "core/Materials/Node/nodeMaterial";
 
 interface IMaterialTreeItemComponentProps {
-    material: Material | NodeMaterial;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	material: Material | NodeMaterial;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class MaterialTreeItemComponent extends React.Component<IMaterialTreeItemComponentProps> {
-    constructor(props: IMaterialTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: IMaterialTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const nmeIcon =
-            this.props.material.getClassName() === "NodeMaterial" ? (
-                <div
-                    className="icon"
-                    onClick={() => {
-                        (this.props.material as NodeMaterial).edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
-                    }}
-                    title="Node Material Editor"
-                    color="white"
-                >
-                    <FontAwesomeIcon icon={faPen} />
-                </div>
-            ) : null;
+	override render() {
+		const nmeIcon =
+			this.props.material.getClassName() === "NodeMaterial" ? (
+				<div
+					className="icon"
+					onClick={() => {
+						(this.props.material as NodeMaterial).edit({ nodeEditorConfig: { backgroundColor: this.props.material.getScene().clearColor } });
+					}}
+					title="Node Material Editor"
+					color="white"
+				>
+					<FontAwesomeIcon icon={faPen} />
+				</div>
+			) : null;
 
-        return (
-            <div className="materialTools">
-                <TreeItemLabelComponent label={this.props.material.name} onClick={() => this.props.onClick()} icon={faBrush} color="orange" />
-                {<ExtensionsComponent target={this.props.material} extensibilityGroups={this.props.extensibilityGroups} />}
-                {nmeIcon}
-            </div>
-        );
-    }
+		return (
+			<div className="materialTools">
+				<TreeItemLabelComponent label={this.props.material.name} onClick={() => this.props.onClick()} icon={faBrush} color="orange" />
+				{<ExtensionsComponent target={this.props.material} extensibilityGroups={this.props.extensibilityGroups} />}
+				{nmeIcon}
+			</div>
+		);
+	}
 }

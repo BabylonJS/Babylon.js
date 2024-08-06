@@ -14,13 +14,13 @@ import * as LOADERS from "../../../../dev/loaders/src/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    for (const key in LOADERS) {
-        (<any>globalObject).BABYLON[key] = (<any>LOADERS)[key];
-    }
-    // for (const key in Validation) {
-    //     (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
-    // }
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	for (const key in LOADERS) {
+		(<any>globalObject).BABYLON[key] = (<any>LOADERS)[key];
+	}
+	// for (const key in Validation) {
+	//     (<any>globalObject).BABYLON[key] = (<any>Validation)[key];
+	// }
 }
 
 /**
@@ -28,30 +28,30 @@ if (typeof globalObject !== "undefined") {
  * The entry point for a future ESM package should be index.ts
  */
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLON = (<any>globalObject).BABYLON;
-    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
-    BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
-    BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	const BABYLON = (<any>globalObject).BABYLON;
+	BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+	BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
+	BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
 
-    const keys = [];
-    for (const key in LOADERS.GLTF2) {
-        if (key !== "Loader") {
-            BABYLON.GLTF2.Loader.Extensions[key] = (<any>LOADERS.GLTF2)[key];
-            keys.push(key);
-        }
-    }
-    for (const key in LOADERS.GLTF2) {
-        BABYLON.GLTF2.Loader[key] = (<any>LOADERS.GLTF2)[key];
-        keys.push(key);
-    }
+	const keys = [];
+	for (const key in LOADERS.GLTF2) {
+		if (key !== "Loader") {
+			BABYLON.GLTF2.Loader.Extensions[key] = (<any>LOADERS.GLTF2)[key];
+			keys.push(key);
+		}
+	}
+	for (const key in LOADERS.GLTF2) {
+		BABYLON.GLTF2.Loader[key] = (<any>LOADERS.GLTF2)[key];
+		keys.push(key);
+	}
 
-    for (const key in LOADERS.GLTF2) {
-        // Prevent Reassignment.
-        if (keys.indexOf(key) > -1) {
-            continue;
-        }
+	for (const key in LOADERS.GLTF2) {
+		// Prevent Reassignment.
+		if (keys.indexOf(key) > -1) {
+			continue;
+		}
 
-        BABYLON.GLTF2[key] = (<any>LOADERS.GLTF2)[key];
-    }
+		BABYLON.GLTF2[key] = (<any>LOADERS.GLTF2)[key];
+	}
 }

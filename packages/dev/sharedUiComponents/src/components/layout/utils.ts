@@ -8,17 +8,17 @@ import type { Layout, LayoutColumn, LayoutTabsRow } from "./types";
  * @returns
  */
 export const getPosInLayout = (layout: Layout, column: number, row?: number): LayoutColumn | LayoutTabsRow => {
-    if (!layout.columns) {
-        throw new Error("Attempted to get position on empty layout");
-    }
-    const columnLayout = layout.columns[column];
-    if (!columnLayout) {
-        throw new Error("Attempted to get an invalid layout column");
-    }
-    if (row === undefined) {
-        return columnLayout;
-    }
-    return columnLayout.rows[row];
+	if (!layout.columns) {
+		throw new Error("Attempted to get position on empty layout");
+	}
+	const columnLayout = layout.columns[column];
+	if (!columnLayout) {
+		throw new Error("Attempted to get an invalid layout column");
+	}
+	if (row === undefined) {
+		return columnLayout;
+	}
+	return columnLayout.rows[row];
 };
 
 /**
@@ -28,29 +28,29 @@ export const getPosInLayout = (layout: Layout, column: number, row?: number): La
  * @param row
  */
 export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column: number, row: number) => {
-    if (!layout.columns) {
-        throw new Error("Attempted to get position on empty layout");
-    }
-    const columnLayout = layout.columns[column];
-    if (!columnLayout) {
-        throw new Error("Attempted to get an invalid layout column");
-    }
-    const rowLayout = columnLayout.rows[row];
-    if (!rowLayout) {
-        throw new Error("Attempted to get an invalid layout row");
-    }
-    const rowHeight = rowLayout.height;
-    if (rowHeight === undefined) {
-        throw new Error("Attempted to remove a row with no height");
-    }
-    // Remove row from layout
-    columnLayout.rows.splice(row, 1);
+	if (!layout.columns) {
+		throw new Error("Attempted to get position on empty layout");
+	}
+	const columnLayout = layout.columns[column];
+	if (!columnLayout) {
+		throw new Error("Attempted to get an invalid layout column");
+	}
+	const rowLayout = columnLayout.rows[row];
+	if (!rowLayout) {
+		throw new Error("Attempted to get an invalid layout row");
+	}
+	const rowHeight = rowLayout.height;
+	if (rowHeight === undefined) {
+		throw new Error("Attempted to remove a row with no height");
+	}
+	// Remove row from layout
+	columnLayout.rows.splice(row, 1);
 
-    // Redistribute this row's height to the remaining rows
-    const percToAdd = parsePercentage(rowHeight) / columnLayout.rows.length;
-    columnLayout.rows.forEach((row: any) => {
-        row.height = addPercentageStringToNumber(row.height, percToAdd) + "%";
-    });
+	// Redistribute this row's height to the remaining rows
+	const percToAdd = parsePercentage(rowHeight) / columnLayout.rows.length;
+	columnLayout.rows.forEach((row: any) => {
+		row.height = addPercentageStringToNumber(row.height, percToAdd) + "%";
+	});
 };
 
 /**
@@ -60,12 +60,12 @@ export const removeLayoutRowAndRedistributePercentages = (layout: Layout, column
  * @returns the sum of the percentage string and the number
  */
 export const addPercentageStringToNumber = (p1: string, p2: number): number => {
-    // Convert both values to numbers
-    const np1 = Number.parseFloat(p1.replace("%", ""));
-    const np2 = p2;
+	// Convert both values to numbers
+	const np1 = Number.parseFloat(p1.replace("%", ""));
+	const np2 = p2;
 
-    const nr = np1 + np2;
-    return nr;
+	const nr = np1 + np2;
+	return nr;
 };
 
 /**
@@ -74,5 +74,5 @@ export const addPercentageStringToNumber = (p1: string, p2: number): number => {
  * @returns the parsed number
  */
 export const parsePercentage = (p: string): number => {
-    return Number.parseFloat(p.replace("%", ""));
+	return Number.parseFloat(p.replace("%", ""));
 };

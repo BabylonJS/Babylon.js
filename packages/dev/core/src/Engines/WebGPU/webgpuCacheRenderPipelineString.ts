@@ -6,15 +6,15 @@ import { WebGPUCacheRenderPipeline } from "./webgpuCacheRenderPipeline";
  * @internal
  */
 export class WebGPUCacheRenderPipelineString extends WebGPUCacheRenderPipeline {
-    private static _Cache: { [hash: string]: GPURenderPipeline } = {};
+	private static _Cache: { [hash: string]: GPURenderPipeline } = {};
 
-    protected _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
-        const hash = this._states.join();
-        param.token = hash;
-        param.pipeline = WebGPUCacheRenderPipelineString._Cache[hash];
-    }
+	protected _getRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
+		const hash = this._states.join();
+		param.token = hash;
+		param.pipeline = WebGPUCacheRenderPipelineString._Cache[hash];
+	}
 
-    protected _setRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
-        WebGPUCacheRenderPipelineString._Cache[param.token] = param.pipeline!;
-    }
+	protected _setRenderPipeline(param: { token: any; pipeline: Nullable<GPURenderPipeline> }): void {
+		WebGPUCacheRenderPipelineString._Cache[param.token] = param.pipeline!;
+	}
 }

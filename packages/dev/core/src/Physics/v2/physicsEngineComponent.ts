@@ -8,68 +8,68 @@ import type { PhysicsBody } from "./physicsBody";
 import "../joinedPhysicsEngineComponent";
 
 declare module "../../Meshes/transformNode" {
-    /**
-     *
-     */
-    /** @internal */
-    export interface TransformNode {
-        /** @internal */
-        _physicsBody: Nullable<PhysicsBody>;
+	/**
+	 *
+	 */
+	/** @internal */
+	export interface TransformNode {
+		/** @internal */
+		_physicsBody: Nullable<PhysicsBody>;
 
-        /**
-         * @see
-         */
-        physicsBody: Nullable<PhysicsBody>;
+		/**
+		 * @see
+		 */
+		physicsBody: Nullable<PhysicsBody>;
 
-        /**
-         *
-         */
-        getPhysicsBody(): Nullable<PhysicsBody>;
+		/**
+		 *
+		 */
+		getPhysicsBody(): Nullable<PhysicsBody>;
 
-        /** Apply a physic impulse to the mesh
-         * @param force defines the force to apply
-         * @param contactPoint defines where to apply the force
-         * @returns the current mesh
-         */
-        applyImpulse(force: Vector3, contactPoint: Vector3): TransformNode;
+		/** Apply a physic impulse to the mesh
+		 * @param force defines the force to apply
+		 * @param contactPoint defines where to apply the force
+		 * @returns the current mesh
+		 */
+		applyImpulse(force: Vector3, contactPoint: Vector3): TransformNode;
 
-        /** Apply a physic angular impulse to the mesh
-         * @param angularImpulse defines the torque to apply
-         * @returns the current mesh
-         */
-        applyAngularImpulse(angularImpulse: Vector3): TransformNode;
+		/** Apply a physic angular impulse to the mesh
+		 * @param angularImpulse defines the torque to apply
+		 * @returns the current mesh
+		 */
+		applyAngularImpulse(angularImpulse: Vector3): TransformNode;
 
-        /** @internal */
-        _disposePhysicsObserver: Nullable<Observer<Node>>;
-    }
+		/** @internal */
+		_disposePhysicsObserver: Nullable<Observer<Node>>;
+	}
 }
 
 Object.defineProperty(TransformNode.prototype, "physicsBody", {
-    get: function (this: TransformNode) {
-        return this._physicsBody;
-    },
-    set: function (this: TransformNode, value: Nullable<PhysicsBody>) {
-        if (this._physicsBody === value) {
-            return;
-        }
-        if (this._disposePhysicsObserver) {
-            this.onDisposeObservable.remove(this._disposePhysicsObserver);
-        }
+	get: function (this: TransformNode) {
+		return this._physicsBody;
+	},
+	set: function (this: TransformNode, value: Nullable<PhysicsBody>) {
+		if (this._physicsBody === value) {
+			return;
+		}
+		if (this._disposePhysicsObserver) {
+			this.onDisposeObservable.remove(this._disposePhysicsObserver);
+		}
 
-        this._physicsBody = value;
+		this._physicsBody = value;
 
-        if (value) {
-            this._disposePhysicsObserver = this.onDisposeObservable.add(() => {
-                // Physics
-                if (this.physicsBody) {
-                    this.physicsBody.dispose(/*!doNotRecurse*/);
-                    this.physicsBody = null;
-                }
-            });
-        }
-    },
-    enumerable: true,
-    configurable: true,
+		if (value) {
+			this._disposePhysicsObserver = this.onDisposeObservable.add(() => {
+				// Physics
+				if (this.physicsBody) {
+					this.physicsBody.dispose(/*!doNotRecurse*/);
+					this.physicsBody = null;
+				}
+			});
+		}
+	},
+	enumerable: true,
+	configurable: true,
 });
 
 /**
@@ -77,7 +77,7 @@ Object.defineProperty(TransformNode.prototype, "physicsBody", {
  * @returns a physics body or null
  */
 TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
-    return this.physicsBody;
+	return this.physicsBody;
 };
 
 /**
@@ -88,11 +88,11 @@ TransformNode.prototype.getPhysicsBody = function (): Nullable<PhysicsBody> {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 TransformNode.prototype.applyImpulse = function (force: Vector3, contactPoint: Vector3): TransformNode {
-    if (!this.physicsBody) {
-        throw new Error("No Physics Body for TransformNode");
-    }
-    this.physicsBody.applyImpulse(force, contactPoint);
-    return this;
+	if (!this.physicsBody) {
+		throw new Error("No Physics Body for TransformNode");
+	}
+	this.physicsBody.applyImpulse(force, contactPoint);
+	return this;
 };
 
 /**
@@ -102,9 +102,9 @@ TransformNode.prototype.applyImpulse = function (force: Vector3, contactPoint: V
  * @see https://doc.babylonjs.com/features/featuresDeepDive/physics/usingPhysicsEngine
  */
 TransformNode.prototype.applyAngularImpulse = function (angularImpulse: Vector3): TransformNode {
-    if (!this.physicsBody) {
-        throw new Error("No Physics Body for TransformNode");
-    }
-    this.physicsBody.applyAngularImpulse(angularImpulse);
-    return this;
+	if (!this.physicsBody) {
+		throw new Error("No Physics Body for TransformNode");
+	}
+	this.physicsBody.applyAngularImpulse(angularImpulse);
+	return this;
 };

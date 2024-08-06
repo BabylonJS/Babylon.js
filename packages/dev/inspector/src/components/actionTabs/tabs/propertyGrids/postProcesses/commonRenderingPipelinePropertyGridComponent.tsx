@@ -12,47 +12,47 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { CustomPropertyGridComponent } from "../customPropertyGridComponent";
 
 interface ICommonRenderingPipelinePropertyGridComponentProps {
-    globalState: GlobalState;
-    renderPipeline: PostProcessRenderPipeline;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	renderPipeline: PostProcessRenderPipeline;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonRenderingPipelinePropertyGridComponent extends React.Component<ICommonRenderingPipelinePropertyGridComponentProps> {
-    constructor(props: ICommonRenderingPipelinePropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ICommonRenderingPipelinePropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const renderPipeline = this.props.renderPipeline;
-        const renderPipelineAsAny = renderPipeline as any;
+	override render() {
+		const renderPipeline = this.props.renderPipeline;
+		const renderPipelineAsAny = renderPipeline as any;
 
-        return (
-            <div>
-                <CustomPropertyGridComponent
-                    globalState={this.props.globalState}
-                    target={renderPipeline}
-                    lockObject={this.props.lockObject}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="Name" value={renderPipeline.name} />
-                    <TextLineComponent label="Class" value={renderPipeline.getClassName()} />
-                    {renderPipelineAsAny.samples !== undefined && (
-                        <SliderLineComponent
-                            lockObject={this.props.lockObject}
-                            label="Samples"
-                            minimum={1}
-                            maximum={64}
-                            step={1}
-                            decimalCount={0}
-                            target={renderPipeline}
-                            propertyName="samples"
-                            onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                        />
-                    )}
-                </LineContainerComponent>
-            </div>
-        );
-    }
+		return (
+			<div>
+				<CustomPropertyGridComponent
+					globalState={this.props.globalState}
+					target={renderPipeline}
+					lockObject={this.props.lockObject}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="GENERAL" selection={this.props.globalState}>
+					<TextLineComponent label="Name" value={renderPipeline.name} />
+					<TextLineComponent label="Class" value={renderPipeline.getClassName()} />
+					{renderPipelineAsAny.samples !== undefined && (
+						<SliderLineComponent
+							lockObject={this.props.lockObject}
+							label="Samples"
+							minimum={1}
+							maximum={64}
+							step={1}
+							decimalCount={0}
+							target={renderPipeline}
+							propertyName="samples"
+							onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+						/>
+					)}
+				</LineContainerComponent>
+			</div>
+		);
+	}
 }

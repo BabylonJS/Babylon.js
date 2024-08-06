@@ -5,10 +5,10 @@ import style from "./FlexibleColumn.modules.scss";
  * Arguments for the Column component.
  */
 export interface IFlexibleColumnProps {
-    /**
-     * Width of column
-     */
-    width: string;
+	/**
+	 * Width of column
+	 */
+	width: string;
 }
 
 /**
@@ -18,9 +18,9 @@ export interface IFlexibleColumnProps {
  * @returns
  */
 export const FlexibleColumn: FC<IFlexibleColumnProps> = (props) => {
-    return (
-        <div style={{ width: props.width }} className={style.flexibleColumn}>
-            {props.children}
-        </div>
-    );
+	return (
+		<div style={{ width: props.width }} className={style.flexibleColumn}>
+			{props.children}
+		</div>
+	);
 };

@@ -14,24 +14,24 @@ declare let global: any;
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLONGLOBAL = (<any>globalObject).BABYLON;
-    BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	const BABYLONGLOBAL = (<any>globalObject).BABYLON;
+	BABYLONGLOBAL.Debug = BABYLONGLOBAL.Debug || {};
 
-    const keys = [];
-    for (const key in DebugImport) {
-        BABYLONGLOBAL.Debug[key] = (<any>DebugImport)[key];
-        keys.push(key);
-    }
-    for (const key in BABYLON) {
-        BABYLONGLOBAL[key] = (<any>BABYLON)[key];
-    }
+	const keys = [];
+	for (const key in DebugImport) {
+		BABYLONGLOBAL.Debug[key] = (<any>DebugImport)[key];
+		keys.push(key);
+	}
+	for (const key in BABYLON) {
+		BABYLONGLOBAL[key] = (<any>BABYLON)[key];
+	}
 }
 
 export * from "../../../../dev/core/src/index";
 export const Debug = {
-    AxesViewer: BABYLON.AxesViewer,
-    BoneAxesViewer: BABYLON.BoneAxesViewer,
-    PhysicsViewer: BABYLON.PhysicsViewer,
-    SkeletonViewer: BABYLON.SkeletonViewer,
+	AxesViewer: BABYLON.AxesViewer,
+	BoneAxesViewer: BABYLON.BoneAxesViewer,
+	PhysicsViewer: BABYLON.PhysicsViewer,
+	SkeletonViewer: BABYLON.SkeletonViewer,
 };

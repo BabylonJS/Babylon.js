@@ -29,202 +29,202 @@ export type ComputeCompilationMessageType = "error" | "warning" | "info";
  * Messages generated during compilation
  */
 export interface ComputeCompilationMessages {
-    /**
-     * Number of errors generated during compilation
-     */
-    numErrors: number;
-    /**
-     * List of messages generated during compilation
-     */
-    messages: {
-        type: ComputeCompilationMessageType;
-        text: string;
-        line?: number;
-        column?: number;
-        length?: number;
-        offset?: number;
-    }[];
+	/**
+	 * Number of errors generated during compilation
+	 */
+	numErrors: number;
+	/**
+	 * List of messages generated during compilation
+	 */
+	messages: {
+		type: ComputeCompilationMessageType;
+		text: string;
+		line?: number;
+		column?: number;
+		length?: number;
+		offset?: number;
+	}[];
 }
 
 /** @internal */
 export const enum ComputeBindingType {
-    Texture = 0,
-    StorageTexture = 1,
-    UniformBuffer = 2,
-    StorageBuffer = 3,
-    TextureWithoutSampler = 4,
-    Sampler = 5,
-    ExternalTexture = 6,
-    DataBuffer = 7,
+	Texture = 0,
+	StorageTexture = 1,
+	UniformBuffer = 2,
+	StorageBuffer = 3,
+	TextureWithoutSampler = 4,
+	Sampler = 5,
+	ExternalTexture = 6,
+	DataBuffer = 7,
 }
 
 /** @internal */
 export type ComputeBindingList = { [key: string]: { type: ComputeBindingType; object: any; indexInGroupEntries?: number } };
 
 declare module "../../Engines/abstractEngine" {
-    export interface AbstractEngine {
-        /**
-         * Creates a new compute effect
-         * @param baseName Name of the effect
-         * @param options Options used to create the effect
-         * @returns The new compute effect
-         */
-        createComputeEffect(
-            baseName:
-                | string
-                | (IComputeShaderPath & {
-                      /**
-                       * @internal
-                       */
-                      computeToken?: string;
-                  }),
-            options: IComputeEffectCreationOptions
-        ): ComputeEffect;
+	export interface AbstractEngine {
+		/**
+		 * Creates a new compute effect
+		 * @param baseName Name of the effect
+		 * @param options Options used to create the effect
+		 * @returns The new compute effect
+		 */
+		createComputeEffect(
+			baseName:
+				| string
+				| (IComputeShaderPath & {
+						/**
+						 * @internal
+						 */
+						computeToken?: string;
+				  }),
+			options: IComputeEffectCreationOptions
+		): ComputeEffect;
 
-        /**
-         * Creates a new compute pipeline context
-         * @returns the new pipeline
-         */
-        createComputePipelineContext(): IComputePipelineContext;
+		/**
+		 * Creates a new compute pipeline context
+		 * @returns the new pipeline
+		 */
+		createComputePipelineContext(): IComputePipelineContext;
 
-        /**
-         * Creates a new compute context
-         * @returns the new context
-         */
-        createComputeContext(): IComputeContext | undefined;
+		/**
+		 * Creates a new compute context
+		 * @returns the new context
+		 */
+		createComputeContext(): IComputeContext | undefined;
 
-        /**
-         * Dispatches a compute shader
-         * @param effect The compute effect
-         * @param context The compute context
-         * @param bindings The list of resources to bind to the shader
-         * @param x The number of workgroups to execute on the X dimension
-         * @param y The number of workgroups to execute on the Y dimension
-         * @param z The number of workgroups to execute on the Z dimension
-         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
-         * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
-         */
-        computeDispatch(
-            effect: ComputeEffect,
-            context: IComputeContext,
-            bindings: ComputeBindingList,
-            x: number,
-            y?: number,
-            z?: number,
-            bindingsMapping?: ComputeBindingMapping,
-            gpuPerfCounter?: WebGPUPerfCounter
-        ): void;
+		/**
+		 * Dispatches a compute shader
+		 * @param effect The compute effect
+		 * @param context The compute context
+		 * @param bindings The list of resources to bind to the shader
+		 * @param x The number of workgroups to execute on the X dimension
+		 * @param y The number of workgroups to execute on the Y dimension
+		 * @param z The number of workgroups to execute on the Z dimension
+		 * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
+		 * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
+		 */
+		computeDispatch(
+			effect: ComputeEffect,
+			context: IComputeContext,
+			bindings: ComputeBindingList,
+			x: number,
+			y?: number,
+			z?: number,
+			bindingsMapping?: ComputeBindingMapping,
+			gpuPerfCounter?: WebGPUPerfCounter
+		): void;
 
-        /**
-         * Dispatches a compute shader
-         * @param effect The compute effect
-         * @param context The compute context
-         * @param bindings The list of resources to bind to the shader
-         * @param x The number of workgroups to execute on the X dimension
-         * @param y The number of workgroups to execute on the Y dimension
-         * @param z The number of workgroups to execute on the Z dimension
-         * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
-         * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
-         */
-        computeDispatchIndirect(
-            effect: ComputeEffect,
-            context: IComputeContext,
-            bindings: ComputeBindingList,
-            buffer: DataBuffer,
-            offset?: number,
-            bindingsMapping?: ComputeBindingMapping,
-            gpuPerfCounter?: WebGPUPerfCounter
-        ): void;
+		/**
+		 * Dispatches a compute shader
+		 * @param effect The compute effect
+		 * @param context The compute context
+		 * @param bindings The list of resources to bind to the shader
+		 * @param x The number of workgroups to execute on the X dimension
+		 * @param y The number of workgroups to execute on the Y dimension
+		 * @param z The number of workgroups to execute on the Z dimension
+		 * @param bindingsMapping list of bindings mapping (key is property name, value is binding location)
+		 * @param gpuPerfCounter GPU time computed for the compute shader will be assigned to this object
+		 */
+		computeDispatchIndirect(
+			effect: ComputeEffect,
+			context: IComputeContext,
+			bindings: ComputeBindingList,
+			buffer: DataBuffer,
+			offset?: number,
+			bindingsMapping?: ComputeBindingMapping,
+			gpuPerfCounter?: WebGPUPerfCounter
+		): void;
 
-        /**
-         * Gets a boolean indicating if all created compute effects are ready
-         * @returns true if all effects are ready
-         */
-        areAllComputeEffectsReady(): boolean;
+		/**
+		 * Gets a boolean indicating if all created compute effects are ready
+		 * @returns true if all effects are ready
+		 */
+		areAllComputeEffectsReady(): boolean;
 
-        /**
-         * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
-         */
-        releaseComputeEffects(): void;
+		/**
+		 * Forces the engine to release all cached compute effects. This means that next effect compilation will have to be done completely even if a similar effect was already compiled
+		 */
+		releaseComputeEffects(): void;
 
-        /** @internal */
-        _prepareComputePipelineContext(
-            pipelineContext: IComputePipelineContext,
-            computeSourceCode: string,
-            rawComputeSourceCode: string,
-            defines: Nullable<string>,
-            entryPoint: string
-        ): void;
+		/** @internal */
+		_prepareComputePipelineContext(
+			pipelineContext: IComputePipelineContext,
+			computeSourceCode: string,
+			rawComputeSourceCode: string,
+			defines: Nullable<string>,
+			entryPoint: string
+		): void;
 
-        /** @internal */
-        _rebuildComputeEffects(): void;
+		/** @internal */
+		_rebuildComputeEffects(): void;
 
-        /** @internal */
-        _executeWhenComputeStateIsCompiled(pipelineContext: IComputePipelineContext, action: (messages: Nullable<ComputeCompilationMessages>) => void): void;
+		/** @internal */
+		_executeWhenComputeStateIsCompiled(pipelineContext: IComputePipelineContext, action: (messages: Nullable<ComputeCompilationMessages>) => void): void;
 
-        /** @internal */
-        _releaseComputeEffect(effect: ComputeEffect): void;
+		/** @internal */
+		_releaseComputeEffect(effect: ComputeEffect): void;
 
-        /** @internal */
-        _deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
-    }
+		/** @internal */
+		_deleteComputePipelineContext(pipelineContext: IComputePipelineContext): void;
+	}
 }
 
 ThinEngine.prototype.createComputeEffect = function (baseName: IComputeShaderPath & { computeToken?: string }, options: IComputeEffectCreationOptions): ComputeEffect {
-    throw new Error("createComputeEffect: This engine does not support compute shaders!");
+	throw new Error("createComputeEffect: This engine does not support compute shaders!");
 };
 
 ThinEngine.prototype.createComputePipelineContext = function (): IComputePipelineContext {
-    throw new Error("createComputePipelineContext: This engine does not support compute shaders!");
+	throw new Error("createComputePipelineContext: This engine does not support compute shaders!");
 };
 
 ThinEngine.prototype.createComputeContext = function (): IComputeContext | undefined {
-    return undefined;
+	return undefined;
 };
 
 ThinEngine.prototype.computeDispatch = function (
-    effect: ComputeEffect,
-    context: IComputeContext,
-    bindings: ComputeBindingList,
-    x: number,
-    y?: number,
-    z?: number,
-    bindingsMapping?: ComputeBindingMapping
+	effect: ComputeEffect,
+	context: IComputeContext,
+	bindings: ComputeBindingList,
+	x: number,
+	y?: number,
+	z?: number,
+	bindingsMapping?: ComputeBindingMapping
 ): void {
-    throw new Error("computeDispatch: This engine does not support compute shaders!");
+	throw new Error("computeDispatch: This engine does not support compute shaders!");
 };
 ThinEngine.prototype.computeDispatchIndirect = function (
-    effect: ComputeEffect,
-    context: IComputeContext,
-    bindings: ComputeBindingList,
-    buffer: DataBuffer,
-    offset?: number,
-    bindingsMapping?: ComputeBindingMapping
+	effect: ComputeEffect,
+	context: IComputeContext,
+	bindings: ComputeBindingList,
+	buffer: DataBuffer,
+	offset?: number,
+	bindingsMapping?: ComputeBindingMapping
 ): void {
-    throw new Error("computeDispatchIndirect: This engine does not support compute shaders!");
+	throw new Error("computeDispatchIndirect: This engine does not support compute shaders!");
 };
 
 ThinEngine.prototype.areAllComputeEffectsReady = function (): boolean {
-    return true;
+	return true;
 };
 
 ThinEngine.prototype.releaseComputeEffects = function (): void {};
 
 ThinEngine.prototype._prepareComputePipelineContext = function (
-    pipelineContext: IComputePipelineContext,
-    computeSourceCode: string,
-    rawComputeSourceCode: string,
-    defines: Nullable<string>,
-    entryPoint: string
+	pipelineContext: IComputePipelineContext,
+	computeSourceCode: string,
+	rawComputeSourceCode: string,
+	defines: Nullable<string>,
+	entryPoint: string
 ): void {};
 
 ThinEngine.prototype._rebuildComputeEffects = function (): void {};
 
 AbstractEngine.prototype._executeWhenComputeStateIsCompiled = function (
-    pipelineContext: IComputePipelineContext,
-    action: (messages: Nullable<ComputeCompilationMessages>) => void
+	pipelineContext: IComputePipelineContext,
+	action: (messages: Nullable<ComputeCompilationMessages>) => void
 ): void {
-    action(null);
+	action(null);
 };
 
 ThinEngine.prototype._releaseComputeEffect = function (effect: ComputeEffect): void {};

@@ -9,26 +9,26 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
  * Properties of the physics mass properties grid component.
  */
 export interface IPhysicsMassPropertiesGridComponentProps {
-    /**
-     * Lock object
-     */
-    lockObject: LockObject;
-    /**
-     * Callback raised on the property changed event
-     */
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    /**
-     * Physics body to edit
-     */
-    body: PhysicsBody;
-    /**
-     * Global state
-     */
-    globalState: GlobalState;
-    /**
-     * Index of the instance to edit
-     */
-    instanceIndex?: number;
+	/**
+	 * Lock object
+	 */
+	lockObject: LockObject;
+	/**
+	 * Callback raised on the property changed event
+	 */
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	/**
+	 * Physics body to edit
+	 */
+	body: PhysicsBody;
+	/**
+	 * Global state
+	 */
+	globalState: GlobalState;
+	/**
+	 * Index of the instance to edit
+	 */
+	instanceIndex?: number;
 }
 
 /**
@@ -37,23 +37,23 @@ export interface IPhysicsMassPropertiesGridComponentProps {
  * @returns the component
  */
 export function PhysicsMassPropertiesGridComponent(props: IPhysicsMassPropertiesGridComponentProps) {
-    const massProperties = props.body.getMassProperties(props.instanceIndex);
+	const massProperties = props.body.getMassProperties(props.instanceIndex);
 
-    const changeMass = (value: number) => {
-        massProperties.mass = value;
-        props.body.setMassProperties(massProperties, props.instanceIndex);
-    };
+	const changeMass = (value: number) => {
+		massProperties.mass = value;
+		props.body.setMassProperties(massProperties, props.instanceIndex);
+	};
 
-    return (
-        <>
-            <FloatLineComponent
-                lockObject={props.lockObject}
-                label="Mass"
-                target={massProperties}
-                propertyName="mass"
-                onPropertyChangedObservable={props.onPropertyChangedObservable}
-                onChange={changeMass}
-            />
-        </>
-    );
+	return (
+		<>
+			<FloatLineComponent
+				lockObject={props.lockObject}
+				label="Mass"
+				target={massProperties}
+				propertyName="mass"
+				onPropertyChangedObservable={props.onPropertyChangedObservable}
+				onChange={changeMass}
+			/>
+		</>
+	);
 }

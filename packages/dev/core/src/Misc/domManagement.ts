@@ -4,7 +4,7 @@
  * @returns true if the window object exists
  */
 export function IsWindowObjectExist(): boolean {
-    return typeof window !== "undefined";
+	return typeof window !== "undefined";
 }
 
 /**
@@ -12,7 +12,7 @@ export function IsWindowObjectExist(): boolean {
  * @returns true if the navigator object exists
  */
 export function IsNavigatorAvailable(): boolean {
-    return typeof navigator !== "undefined";
+	return typeof navigator !== "undefined";
 }
 
 /**
@@ -20,7 +20,7 @@ export function IsNavigatorAvailable(): boolean {
  * @returns true if the document object exists
  */
 export function IsDocumentAvailable(): boolean {
-    return typeof document !== "undefined";
+	return typeof document !== "undefined";
 }
 
 /**
@@ -29,17 +29,17 @@ export function IsDocumentAvailable(): boolean {
  * @returns a string
  */
 export function GetDOMTextContent(element: HTMLElement): string {
-    let result = "";
-    let child = element.firstChild;
+	let result = "";
+	let child = element.firstChild;
 
-    while (child) {
-        if (child.nodeType === 3) {
-            result += child.textContent;
-        }
-        child = <any>child.nextSibling;
-    }
+	while (child) {
+		if (child.nodeType === 3) {
+			result += child.textContent;
+		}
+		child = <any>child.nextSibling;
+	}
 
-    return result;
+	return result;
 }
 
 /**
@@ -47,27 +47,27 @@ export function GetDOMTextContent(element: HTMLElement): string {
  * Babylon.js
  */
 export const DomManagement = {
-    /**
-     * Checks if the window object exists
-     * @returns true if the window object exists
-     */
-    IsWindowObjectExist,
+	/**
+	 * Checks if the window object exists
+	 * @returns true if the window object exists
+	 */
+	IsWindowObjectExist,
 
-    /**
-     * Checks if the navigator object exists
-     * @returns true if the navigator object exists
-     */
-    IsNavigatorAvailable,
+	/**
+	 * Checks if the navigator object exists
+	 * @returns true if the navigator object exists
+	 */
+	IsNavigatorAvailable,
 
-    /**
-     * Check if the document object exists
-     * @returns true if the document object exists
-     */
-    IsDocumentAvailable,
-    /**
-     * Extracts text content from a DOM element hierarchy
-     * @param element defines the root element
-     * @returns a string
-     */
-    GetDOMTextContent,
+	/**
+	 * Check if the document object exists
+	 * @returns true if the document object exists
+	 */
+	IsDocumentAvailable,
+	/**
+	 * Extracts text content from a DOM element hierarchy
+	 * @param element defines the root element
+	 * @returns a string
+	 */
+	GetDOMTextContent,
 };

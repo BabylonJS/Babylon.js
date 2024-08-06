@@ -14,45 +14,45 @@ import type { Nullable } from "core/types";
  */
 
 export const SceneRendererComponent: FC = () => {
-    const canvasRef = useRef<Nullable<HTMLCanvasElement>>(null);
-    const { setScene } = useContext(SceneContext);
+	const canvasRef = useRef<Nullable<HTMLCanvasElement>>(null);
+	const { setScene } = useContext(SceneContext);
 
-    useEffect(() => {
-        if (canvasRef.current) {
-            const engine = new Engine(canvasRef.current, true);
-            const scene = new Scene(engine);
-            const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 5, Vector3.Zero(), scene);
-            camera.attachControl(canvasRef.current, true);
-            new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
-            const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
-            sphere.position.y = 1;
-            MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
-            engine.runRenderLoop(() => {
-                if (scene) {
-                    scene.render();
-                }
-            });
-            const resizeListener = () => {
-                engine.resize();
-            };
-            window.addEventListener("resize", resizeListener);
-            setScene(scene);
+	useEffect(() => {
+		if (canvasRef.current) {
+			const engine = new Engine(canvasRef.current, true);
+			const scene = new Scene(engine);
+			const camera = new ArcRotateCamera("Camera", -Math.PI / 2, Math.PI / 2.5, 5, Vector3.Zero(), scene);
+			camera.attachControl(canvasRef.current, true);
+			new HemisphericLight("light1", new Vector3(1, 1, 0), scene);
+			const sphere = MeshBuilder.CreateSphere("sphere", { diameter: 2 }, scene);
+			sphere.position.y = 1;
+			MeshBuilder.CreateGround("ground", { width: 6, height: 6 }, scene);
+			engine.runRenderLoop(() => {
+				if (scene) {
+					scene.render();
+				}
+			});
+			const resizeListener = () => {
+				engine.resize();
+			};
+			window.addEventListener("resize", resizeListener);
+			setScene(scene);
 
-            return () => {
-                window.removeEventListener("resize", resizeListener);
-                engine.stopRenderLoop();
-                scene.dispose();
-                setScene(null);
-                engine.dispose();
-            };
-        } else {
-            return () => {};
-        }
-    }, [canvasRef]);
+			return () => {
+				window.removeEventListener("resize", resizeListener);
+				engine.stopRenderLoop();
+				scene.dispose();
+				setScene(null);
+				engine.dispose();
+			};
+		} else {
+			return () => {};
+		}
+	}, [canvasRef]);
 
-    return (
-        <div style={{ width: "100%", height: "100%" }}>
-            <canvas style={{ width: "100%", height: "100%" }} ref={canvasRef}></canvas>
-        </div>
-    );
+	return (
+		<div style={{ width: "100%", height: "100%" }}>
+			<canvas style={{ width: "100%", height: "100%" }} ref={canvasRef}></canvas>
+		</div>
+	);
 };

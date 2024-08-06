@@ -5,23 +5,23 @@ import { Color3LineComponent } from "shared-ui-components/lines/color3LineCompon
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IColor3PropertyTabComponentProps {
-    globalState: GlobalState;
-    inputBlock: InputBlock;
-    lockObject: LockObject;
+	globalState: GlobalState;
+	inputBlock: InputBlock;
+	lockObject: LockObject;
 }
 
 export class Color3PropertyTabComponent extends React.Component<IColor3PropertyTabComponentProps> {
-    override render() {
-        return (
-            <Color3LineComponent
-                lockObject={this.props.lockObject}
-                label="Value"
-                target={this.props.inputBlock}
-                propertyName="value"
-                onChange={() => {
-                    this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
-                }}
-            ></Color3LineComponent>
-        );
-    }
+	override render() {
+		return (
+			<Color3LineComponent
+				lockObject={this.props.lockObject}
+				label="Value"
+				target={this.props.inputBlock}
+				propertyName="value"
+				onChange={() => {
+					this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(this.props.inputBlock);
+				}}
+			></Color3LineComponent>
+		);
+	}
 }

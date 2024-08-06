@@ -13,26 +13,26 @@ import type { WebXRLayerWrapper } from "./webXRLayerWrapper";
  * An interface for objects that provide render target textures for XR rendering.
  */
 export interface IWebXRRenderTargetTextureProvider extends IDisposable {
-    /**
-     * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
-     * In the event of a failure, the supplied viewport is not updated.
-     * @param viewport the viewport to which the view will be rendered
-     * @param view the view for which to set the viewport
-     * @returns whether the operation was successful
-     */
-    trySetViewportForView(viewport: Viewport, view: XRView): boolean;
-    /**
-     * Gets the correct render target texture to be rendered this frame for this eye
-     * @param eye the eye for which to get the render target
-     * @returns the render target for the specified eye or null if not available
-     */
-    getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
-    /**
-     * Gets the correct render target texture to be rendered this frame for this view
-     * @param view the view for which to get the render target
-     * @returns the render target for the specified view or null if not available
-     */
-    getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+	/**
+	 * Attempts to set the framebuffer-size-normalized viewport to be rendered this frame for this view.
+	 * In the event of a failure, the supplied viewport is not updated.
+	 * @param viewport the viewport to which the view will be rendered
+	 * @param view the view for which to set the viewport
+	 * @returns whether the operation was successful
+	 */
+	trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+	/**
+	 * Gets the correct render target texture to be rendered this frame for this eye
+	 * @param eye the eye for which to get the render target
+	 * @returns the render target for the specified eye or null if not available
+	 */
+	getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+	/**
+	 * Gets the correct render target texture to be rendered this frame for this view
+	 * @param view the view for which to get the render target
+	 * @returns the render target for the specified view or null if not available
+	 */
+	getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
 }
 
 /**
@@ -40,91 +40,91 @@ export interface IWebXRRenderTargetTextureProvider extends IDisposable {
  * @internal
  */
 export abstract class WebXRLayerRenderTargetTextureProvider implements IWebXRRenderTargetTextureProvider {
-    public abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;
-    public abstract getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
-    public abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
+	public abstract trySetViewportForView(viewport: Viewport, view: XRView): boolean;
+	public abstract getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture>;
+	public abstract getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture>;
 
-    protected _renderTargetTextures = new Array<RenderTargetTexture>();
-    protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
+	protected _renderTargetTextures = new Array<RenderTargetTexture>();
+	protected _framebufferDimensions: Nullable<{ framebufferWidth: number; framebufferHeight: number }>;
 
-    private _engine: Engine;
+	private _engine: Engine;
 
-    constructor(
-        private readonly _scene: Scene,
-        public readonly layerWrapper: WebXRLayerWrapper
-    ) {
-        this._engine = _scene.getEngine() as Engine;
-    }
+	constructor(
+		private readonly _scene: Scene,
+		public readonly layerWrapper: WebXRLayerWrapper
+	) {
+		this._engine = _scene.getEngine() as Engine;
+	}
 
-    private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
-        const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
-        internalTexture.width = textureSize.width;
-        internalTexture.height = textureSize.height;
-        internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._engine._gl);
-        internalTexture.isReady = true;
-        return internalTexture;
-    }
+	private _createInternalTexture(textureSize: { width: number; height: number }, texture: WebGLTexture): InternalTexture {
+		const internalTexture = new InternalTexture(this._engine, InternalTextureSource.Unknown, true);
+		internalTexture.width = textureSize.width;
+		internalTexture.height = textureSize.height;
+		internalTexture._hardwareTexture = new WebGLHardwareTexture(texture, this._engine._gl);
+		internalTexture.isReady = true;
+		return internalTexture;
+	}
 
-    protected _createRenderTargetTexture(
-        width: number,
-        height: number,
-        framebuffer: Nullable<WebGLFramebuffer>,
-        colorTexture?: WebGLTexture,
-        depthStencilTexture?: WebGLTexture,
-        multiview?: boolean
-    ): RenderTargetTexture {
-        if (!this._engine) {
-            throw new Error("Engine is disposed");
-        }
+	protected _createRenderTargetTexture(
+		width: number,
+		height: number,
+		framebuffer: Nullable<WebGLFramebuffer>,
+		colorTexture?: WebGLTexture,
+		depthStencilTexture?: WebGLTexture,
+		multiview?: boolean
+	): RenderTargetTexture {
+		if (!this._engine) {
+			throw new Error("Engine is disposed");
+		}
 
-        const textureSize = { width, height };
+		const textureSize = { width, height };
 
-        // Create render target texture from the internal texture
-        const renderTargetTexture = multiview ? new MultiviewRenderTarget(this._scene, textureSize) : new RenderTargetTexture("XR renderTargetTexture", textureSize, this._scene);
-        const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
-        renderTargetWrapper._samples = renderTargetTexture.samples;
-        // Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers
-        if (framebuffer || !colorTexture) {
-            renderTargetWrapper._framebuffer = framebuffer;
-        }
+		// Create render target texture from the internal texture
+		const renderTargetTexture = multiview ? new MultiviewRenderTarget(this._scene, textureSize) : new RenderTargetTexture("XR renderTargetTexture", textureSize, this._scene);
+		const renderTargetWrapper = renderTargetTexture.renderTarget as WebGLRenderTargetWrapper;
+		renderTargetWrapper._samples = renderTargetTexture.samples;
+		// Set the framebuffer, make sure it works in all scenarios - emulator, no layers and layers
+		if (framebuffer || !colorTexture) {
+			renderTargetWrapper._framebuffer = framebuffer;
+		}
 
-        // Create internal texture
-        if (colorTexture) {
-            if (multiview) {
-                renderTargetWrapper._colorTextureArray = colorTexture;
-            } else {
-                const internalTexture = this._createInternalTexture(textureSize, colorTexture);
-                renderTargetWrapper.setTexture(internalTexture, 0);
-                renderTargetTexture._texture = internalTexture;
-            }
-        }
+		// Create internal texture
+		if (colorTexture) {
+			if (multiview) {
+				renderTargetWrapper._colorTextureArray = colorTexture;
+			} else {
+				const internalTexture = this._createInternalTexture(textureSize, colorTexture);
+				renderTargetWrapper.setTexture(internalTexture, 0);
+				renderTargetTexture._texture = internalTexture;
+			}
+		}
 
-        if (depthStencilTexture) {
-            if (multiview) {
-                renderTargetWrapper._depthStencilTextureArray = depthStencilTexture;
-            } else {
-                renderTargetWrapper._depthStencilTexture = this._createInternalTexture(textureSize, depthStencilTexture);
-            }
-        }
+		if (depthStencilTexture) {
+			if (multiview) {
+				renderTargetWrapper._depthStencilTextureArray = depthStencilTexture;
+			} else {
+				renderTargetWrapper._depthStencilTexture = this._createInternalTexture(textureSize, depthStencilTexture);
+			}
+		}
 
-        renderTargetTexture.disableRescaling();
+		renderTargetTexture.disableRescaling();
 
-        this._renderTargetTextures.push(renderTargetTexture);
+		this._renderTargetTextures.push(renderTargetTexture);
 
-        return renderTargetTexture;
-    }
+		return renderTargetTexture;
+	}
 
-    protected _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture) {
-        this._renderTargetTextures.splice(this._renderTargetTextures.indexOf(renderTargetTexture), 1);
-        renderTargetTexture.dispose();
-    }
+	protected _destroyRenderTargetTexture(renderTargetTexture: RenderTargetTexture) {
+		this._renderTargetTextures.splice(this._renderTargetTextures.indexOf(renderTargetTexture), 1);
+		renderTargetTexture.dispose();
+	}
 
-    public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number }> {
-        return this._framebufferDimensions;
-    }
+	public getFramebufferDimensions(): Nullable<{ framebufferWidth: number; framebufferHeight: number }> {
+		return this._framebufferDimensions;
+	}
 
-    public dispose() {
-        this._renderTargetTextures.forEach((rtt) => rtt.dispose());
-        this._renderTargetTextures.length = 0;
-    }
+	public dispose() {
+		this._renderTargetTextures.forEach((rtt) => rtt.dispose());
+		this._renderTargetTextures.length = 0;
+	}
 }

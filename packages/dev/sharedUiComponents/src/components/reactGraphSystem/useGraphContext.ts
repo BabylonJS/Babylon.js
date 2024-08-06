@@ -6,6 +6,6 @@ import { GraphContextManager } from "./GraphContextManager";
  * @returns
  */
 export const useGraphContext = () => {
-    const context = useContext(GraphContextManager);
-    return context;
+	const context = useContext(GraphContextManager);
+	return context;
 };

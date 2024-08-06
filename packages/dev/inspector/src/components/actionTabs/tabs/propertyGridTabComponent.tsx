@@ -108,603 +108,603 @@ import { EmptyPropertyGridComponent } from "./propertyGrids/emptyPropertyGridCom
 import { MetadataGridComponent } from "inspector/components/actionTabs/tabs/propertyGrids/metadata/metadataPropertyGridComponent";
 
 export class PropertyGridTabComponent extends PaneComponent {
-    private _timerIntervalId: number;
-    private _lockObject = new LockObject();
+	private _timerIntervalId: number;
+	private _lockObject = new LockObject();
 
-    constructor(props: IPaneComponentProps) {
-        super(props);
-    }
+	constructor(props: IPaneComponentProps) {
+		super(props);
+	}
 
-    timerRefresh() {
-        if (!this._lockObject.lock) {
-            this.forceUpdate();
-        }
-    }
+	timerRefresh() {
+		if (!this._lockObject.lock) {
+			this.forceUpdate();
+		}
+	}
 
-    override componentDidMount() {
-        this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
-    }
+	override componentDidMount() {
+		this._timerIntervalId = window.setInterval(() => this.timerRefresh(), 500);
+	}
 
-    override componentWillUnmount() {
-        window.clearInterval(this._timerIntervalId);
-    }
+	override componentWillUnmount() {
+		window.clearInterval(this._timerIntervalId);
+	}
 
-    renderContent() {
-        const entity = this.props.selectedEntity;
+	renderContent() {
+		const entity = this.props.selectedEntity;
 
-        if (!entity) {
-            return <div className="infoMessage">Please select an entity in the scene explorer.</div>;
-        }
+		if (!entity) {
+			return <div className="infoMessage">Please select an entity in the scene explorer.</div>;
+		}
 
-        if (entity.getClassName) {
-            const className = entity.getClassName();
+		if (entity.getClassName) {
+			const className = entity.getClassName();
 
-            if (className === "Scene") {
-                const scene = entity as Scene;
-                return (
-                    <ScenePropertyGridComponent
-                        scene={scene}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "Scene") {
+				const scene = entity as Scene;
+				return (
+					<ScenePropertyGridComponent
+						scene={scene}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Sound") {
-                const sound = entity as Sound;
-                return (
-                    <SoundPropertyGridComponent
-                        sound={sound}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "Sound") {
+				const sound = entity as Sound;
+				return (
+					<SoundPropertyGridComponent
+						sound={sound}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Sprite") {
-                const sprite = entity as Sprite;
-                return (
-                    <SpritePropertyGridComponent
-                        sprite={sprite}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "Sprite") {
+				const sprite = entity as Sprite;
+				return (
+					<SpritePropertyGridComponent
+						sprite={sprite}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "SpriteManager") {
-                const spriteManager = entity as SpriteManager;
-                return (
-                    <SpriteManagerPropertyGridComponent
-                        spriteManager={spriteManager}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "SpriteManager") {
+				const spriteManager = entity as SpriteManager;
+				return (
+					<SpriteManagerPropertyGridComponent
+						spriteManager={spriteManager}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Mesh") !== -1) {
-                const mesh = entity as Mesh;
-                if (mesh.getTotalVertices() > 0) {
-                    return (
-                        <div>
-                            <MeshPropertyGridComponent
-                                globalState={this.props.globalState}
-                                mesh={mesh}
-                                lockObject={this._lockObject}
-                                onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                            />
-                        </div>
-                    );
-                }
-            }
+			if (className.indexOf("Mesh") !== -1) {
+				const mesh = entity as Mesh;
+				if (mesh.getTotalVertices() > 0) {
+					return (
+						<div>
+							<MeshPropertyGridComponent
+								globalState={this.props.globalState}
+								mesh={mesh}
+								lockObject={this._lockObject}
+								onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+								onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+							/>
+						</div>
+					);
+				}
+			}
 
-            if (className.indexOf("ParticleSystem") !== -1) {
-                const particleSystem = entity as IParticleSystem;
-                return (
-                    <ParticleSystemPropertyGridComponent
-                        globalState={this.props.globalState}
-                        system={particleSystem}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("ParticleSystem") !== -1) {
+				const particleSystem = entity as IParticleSystem;
+				return (
+					<ParticleSystemPropertyGridComponent
+						globalState={this.props.globalState}
+						system={particleSystem}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (
-                className.indexOf("FreeCamera") !== -1 ||
-                className.indexOf("UniversalCamera") !== -1 ||
-                className.indexOf("WebXRCamera") !== -1 ||
-                className.indexOf("DeviceOrientationCamera") !== -1
-            ) {
-                const freeCamera = entity as FreeCamera;
-                return (
-                    <FreeCameraPropertyGridComponent
-                        globalState={this.props.globalState}
-                        camera={freeCamera}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (
+				className.indexOf("FreeCamera") !== -1 ||
+				className.indexOf("UniversalCamera") !== -1 ||
+				className.indexOf("WebXRCamera") !== -1 ||
+				className.indexOf("DeviceOrientationCamera") !== -1
+			) {
+				const freeCamera = entity as FreeCamera;
+				return (
+					<FreeCameraPropertyGridComponent
+						globalState={this.props.globalState}
+						camera={freeCamera}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("ArcRotateCamera") !== -1) {
-                const arcRotateCamera = entity as ArcRotateCamera;
-                return (
-                    <ArcRotateCameraPropertyGridComponent
-                        globalState={this.props.globalState}
-                        camera={arcRotateCamera}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("ArcRotateCamera") !== -1) {
+				const arcRotateCamera = entity as ArcRotateCamera;
+				return (
+					<ArcRotateCameraPropertyGridComponent
+						globalState={this.props.globalState}
+						camera={arcRotateCamera}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("FollowCamera") !== -1) {
-                const followCamera = entity as FollowCamera;
-                return (
-                    <FollowCameraPropertyGridComponent
-                        globalState={this.props.globalState}
-                        camera={followCamera}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("FollowCamera") !== -1) {
+				const followCamera = entity as FollowCamera;
+				return (
+					<FollowCameraPropertyGridComponent
+						globalState={this.props.globalState}
+						camera={followCamera}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "HemisphericLight") {
-                const hemisphericLight = entity as HemisphericLight;
-                return (
-                    <HemisphericLightPropertyGridComponent
-                        globalState={this.props.globalState}
-                        light={hemisphericLight}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "HemisphericLight") {
+				const hemisphericLight = entity as HemisphericLight;
+				return (
+					<HemisphericLightPropertyGridComponent
+						globalState={this.props.globalState}
+						light={hemisphericLight}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "PointLight") {
-                const pointLight = entity as PointLight;
-                return (
-                    <PointLightPropertyGridComponent
-                        globalState={this.props.globalState}
-                        light={pointLight}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "PointLight") {
+				const pointLight = entity as PointLight;
+				return (
+					<PointLightPropertyGridComponent
+						globalState={this.props.globalState}
+						light={pointLight}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "DirectionalLight") {
-                const pointLight = entity as DirectionalLight;
-                return (
-                    <DirectionalLightPropertyGridComponent
-                        globalState={this.props.globalState}
-                        light={pointLight}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "DirectionalLight") {
+				const pointLight = entity as DirectionalLight;
+				return (
+					<DirectionalLightPropertyGridComponent
+						globalState={this.props.globalState}
+						light={pointLight}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "SpotLight") {
-                const pointLight = entity as SpotLight;
-                return (
-                    <SpotLightPropertyGridComponent
-                        globalState={this.props.globalState}
-                        light={pointLight}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "SpotLight") {
+				const pointLight = entity as SpotLight;
+				return (
+					<SpotLightPropertyGridComponent
+						globalState={this.props.globalState}
+						light={pointLight}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
-                const transformNode = entity as TransformNode;
-                return (
-                    <TransformNodePropertyGridComponent
-                        transformNode={transformNode}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("TransformNode") !== -1 || className.indexOf("Mesh") !== -1) {
+				const transformNode = entity as TransformNode;
+				return (
+					<TransformNodePropertyGridComponent
+						transformNode={transformNode}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "MultiMaterial") {
-                const material = entity as MultiMaterial;
-                return (
-                    <MultiMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "MultiMaterial") {
+				const material = entity as MultiMaterial;
+				return (
+					<MultiMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "StandardMaterial") {
-                const material = entity as StandardMaterial;
-                return (
-                    <StandardMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "StandardMaterial") {
+				const material = entity as StandardMaterial;
+				return (
+					<StandardMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "NodeMaterial") {
-                const material = entity as NodeMaterial;
-                return (
-                    <NodeMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "NodeMaterial") {
+				const material = entity as NodeMaterial;
+				return (
+					<NodeMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "PBRMaterial") {
-                const material = entity as PBRMaterial;
-                return (
-                    <PBRMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "PBRMaterial") {
+				const material = entity as PBRMaterial;
+				return (
+					<PBRMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "PBRMetallicRoughnessMaterial") {
-                const material = entity as PBRMetallicRoughnessMaterial;
-                return (
-                    <PBRMetallicRoughnessMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "PBRMetallicRoughnessMaterial") {
+				const material = entity as PBRMetallicRoughnessMaterial;
+				return (
+					<PBRMetallicRoughnessMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "PBRSpecularGlossinessMaterial") {
-                const material = entity as PBRSpecularGlossinessMaterial;
-                return (
-                    <PBRSpecularGlossinessMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "PBRSpecularGlossinessMaterial") {
+				const material = entity as PBRSpecularGlossinessMaterial;
+				return (
+					<PBRSpecularGlossinessMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "BackgroundMaterial") {
-                const material = entity as BackgroundMaterial;
-                return (
-                    <BackgroundMaterialPropertyGridComponent
-                        globalState={this.props.globalState}
-                        material={material}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "BackgroundMaterial") {
+				const material = entity as BackgroundMaterial;
+				return (
+					<BackgroundMaterialPropertyGridComponent
+						globalState={this.props.globalState}
+						material={material}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "AnimationGroup") {
-                const animationGroup = entity as AnimationGroup;
-                return (
-                    <AnimationGroupGridComponent
-                        globalState={this.props.globalState}
-                        animationGroup={animationGroup}
-                        scene={this.props.scene}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "AnimationGroup") {
+				const animationGroup = entity as AnimationGroup;
+				return (
+					<AnimationGroupGridComponent
+						globalState={this.props.globalState}
+						animationGroup={animationGroup}
+						scene={this.props.scene}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "TargetedAnimation") {
-                const targetedAnimation = entity as TargetedAnimation;
-                return (
-                    <TargetedAnimationGridComponent
-                        globalState={this.props.globalState}
-                        targetedAnimation={targetedAnimation}
-                        scene={this.props.scene}
-                        lockObject={this._lockObject}
-                        onSelectionChangedObservable={this.props.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "TargetedAnimation") {
+				const targetedAnimation = entity as TargetedAnimation;
+				return (
+					<TargetedAnimationGridComponent
+						globalState={this.props.globalState}
+						targetedAnimation={targetedAnimation}
+						scene={this.props.scene}
+						lockObject={this._lockObject}
+						onSelectionChangedObservable={this.props.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Material") !== -1) {
-                const material = entity as Material;
-                return (
-                    <MaterialPropertyGridComponent
-                        material={material}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("Material") !== -1) {
+				const material = entity as Material;
+				return (
+					<MaterialPropertyGridComponent
+						material={material}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("DefaultRenderingPipeline") !== -1) {
-                const renderPipeline = entity as DefaultRenderingPipeline;
-                return (
-                    <DefaultRenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("DefaultRenderingPipeline") !== -1) {
+				const renderPipeline = entity as DefaultRenderingPipeline;
+				return (
+					<DefaultRenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("LensRenderingPipeline") !== -1) {
-                const renderPipeline = entity as LensRenderingPipeline;
-                return (
-                    <LensRenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("LensRenderingPipeline") !== -1) {
+				const renderPipeline = entity as LensRenderingPipeline;
+				return (
+					<LensRenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("SSAORenderingPipeline") !== -1) {
-                const renderPipeline = entity as SSAORenderingPipeline;
-                return (
-                    <SSAORenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("SSAORenderingPipeline") !== -1) {
+				const renderPipeline = entity as SSAORenderingPipeline;
+				return (
+					<SSAORenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
-                const renderPipeline = entity as SSAO2RenderingPipeline;
-                return (
-                    <SSAO2RenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("SSAO2RenderingPipeline") !== -1) {
+				const renderPipeline = entity as SSAO2RenderingPipeline;
+				return (
+					<SSAO2RenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("SSRRenderingPipeline") !== -1) {
-                const renderPipeline = entity as SSRRenderingPipeline;
-                return (
-                    <SSRRenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("SSRRenderingPipeline") !== -1) {
+				const renderPipeline = entity as SSRRenderingPipeline;
+				return (
+					<SSRRenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("RenderingPipeline") !== -1) {
-                const renderPipeline = entity as PostProcessRenderPipeline;
-                return (
-                    <RenderingPipelinePropertyGridComponent
-                        renderPipeline={renderPipeline}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("RenderingPipeline") !== -1) {
+				const renderPipeline = entity as PostProcessRenderPipeline;
+				return (
+					<RenderingPipelinePropertyGridComponent
+						renderPipeline={renderPipeline}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("PostProcess") !== -1) {
-                const postProcess = entity as PostProcess;
-                return (
-                    <PostProcessPropertyGridComponent
-                        postProcess={postProcess}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("PostProcess") !== -1) {
+				const postProcess = entity as PostProcess;
+				return (
+					<PostProcessPropertyGridComponent
+						postProcess={postProcess}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Layer") !== -1) {
-                const layer = entity as EffectLayer;
-                return (
-                    <LayerPropertyGridComponent
-                        layer={layer}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("Layer") !== -1) {
+				const layer = entity as EffectLayer;
+				return (
+					<LayerPropertyGridComponent
+						layer={layer}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Texture") !== -1) {
-                const texture = entity as Texture;
-                return (
-                    <TexturePropertyGridComponent
-                        texture={texture}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("Texture") !== -1) {
+				const texture = entity as Texture;
+				return (
+					<TexturePropertyGridComponent
+						texture={texture}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Skeleton") !== -1) {
-                const skeleton = entity as Skeleton;
-                return (
-                    <SkeletonPropertyGridComponent
-                        skeleton={skeleton}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("Skeleton") !== -1) {
+				const skeleton = entity as Skeleton;
+				return (
+					<SkeletonPropertyGridComponent
+						skeleton={skeleton}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className.indexOf("Bone") !== -1) {
-                const bone = entity as Bone;
-                return (
-                    <BonePropertyGridComponent
-                        bone={bone}
-                        globalState={this.props.globalState}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className.indexOf("Bone") !== -1) {
+				const bone = entity as Bone;
+				return (
+					<BonePropertyGridComponent
+						bone={bone}
+						globalState={this.props.globalState}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "TextBlock") {
-                const textBlock = entity as TextBlock;
-                return <TextBlockPropertyGridComponent textBlock={textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "TextBlock") {
+				const textBlock = entity as TextBlock;
+				return <TextBlockPropertyGridComponent textBlock={textBlock} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "InputText") {
-                const inputText = entity as InputText;
-                return <InputTextPropertyGridComponent inputText={inputText} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "InputText") {
+				const inputText = entity as InputText;
+				return <InputTextPropertyGridComponent inputText={inputText} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "ColorPicker") {
-                const colorPicker = entity as ColorPicker;
-                return (
-                    <ColorPickerPropertyGridComponent
-                        colorPicker={colorPicker}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "ColorPicker") {
+				const colorPicker = entity as ColorPicker;
+				return (
+					<ColorPickerPropertyGridComponent
+						colorPicker={colorPicker}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Image") {
-                const image = entity as Image;
-                return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Image") {
+				const image = entity as Image;
+				return <ImagePropertyGridComponent image={image} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "Slider") {
-                const slider = entity as Slider;
-                return <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Slider") {
+				const slider = entity as Slider;
+				return <SliderPropertyGridComponent slider={slider} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "ImageBasedSlider") {
-                const imageBasedSlider = entity as ImageBasedSlider;
-                return (
-                    <ImageBasedSliderPropertyGridComponent
-                        imageBasedSlider={imageBasedSlider}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "ImageBasedSlider") {
+				const imageBasedSlider = entity as ImageBasedSlider;
+				return (
+					<ImageBasedSliderPropertyGridComponent
+						imageBasedSlider={imageBasedSlider}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Rectangle") {
-                const rectangle = entity as Rectangle;
-                return <RectanglePropertyGridComponent rectangle={rectangle} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Rectangle") {
+				const rectangle = entity as Rectangle;
+				return <RectanglePropertyGridComponent rectangle={rectangle} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "StackPanel") {
-                const stackPanel = entity as StackPanel;
-                return (
-                    <StackPanelPropertyGridComponent stackPanel={stackPanel} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                );
-            }
+			if (className === "StackPanel") {
+				const stackPanel = entity as StackPanel;
+				return (
+					<StackPanelPropertyGridComponent stackPanel={stackPanel} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+				);
+			}
 
-            if (className === "Grid") {
-                const grid = entity as Grid;
-                return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Grid") {
+				const grid = entity as Grid;
+				return <GridPropertyGridComponent grid={grid} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "ScrollViewer") {
-                const scrollViewer = entity as ScrollViewer;
-                return (
-                    <ScrollViewerPropertyGridComponent
-                        scrollViewer={scrollViewer}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "ScrollViewer") {
+				const scrollViewer = entity as ScrollViewer;
+				return (
+					<ScrollViewerPropertyGridComponent
+						scrollViewer={scrollViewer}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Ellipse") {
-                const ellipse = entity as Ellipse;
-                return <EllipsePropertyGridComponent ellipse={ellipse} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Ellipse") {
+				const ellipse = entity as Ellipse;
+				return <EllipsePropertyGridComponent ellipse={ellipse} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "Checkbox") {
-                const checkbox = entity as Checkbox;
-                return <CheckboxPropertyGridComponent checkbox={checkbox} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Checkbox") {
+				const checkbox = entity as Checkbox;
+				return <CheckboxPropertyGridComponent checkbox={checkbox} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (className === "RadioButton") {
-                const radioButton = entity as RadioButton;
-                return (
-                    <RadioButtonPropertyGridComponent
-                        radioButtons={[radioButton]}
-                        lockObject={this._lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            }
+			if (className === "RadioButton") {
+				const radioButton = entity as RadioButton;
+				return (
+					<RadioButtonPropertyGridComponent
+						radioButtons={[radioButton]}
+						lockObject={this._lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			}
 
-            if (className === "Line") {
-                const line = entity as Line;
-                return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (className === "Line") {
+				const line = entity as Line;
+				return <LinePropertyGridComponent line={line} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            if (entity._host) {
-                const control = entity as Control;
-                return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-            }
+			if (entity._host) {
+				const control = entity as Control;
+				return <ControlPropertyGridComponent control={control} lockObject={this._lockObject} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+			}
 
-            return (
-                <EmptyPropertyGridComponent
-                    item={entity}
-                    lockObject={this._lockObject}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    globalState={this.props.globalState}
-                />
-            );
-        }
+			return (
+				<EmptyPropertyGridComponent
+					item={entity}
+					lockObject={this._lockObject}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					globalState={this.props.globalState}
+				/>
+			);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    override render() {
-        const entity = this.props.selectedEntity || {};
-        const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
-        return (
-            <div className="pane">
-                {this.renderContent()}
-                {entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
-            </div>
-        );
-    }
+	override render() {
+		const entity = this.props.selectedEntity || {};
+		const entityHasMetadataProp = Object.prototype.hasOwnProperty.call(entity, "metadata");
+		return (
+			<div className="pane">
+				{this.renderContent()}
+				{entityHasMetadataProp && <MetadataGridComponent globalState={this.props.globalState} entity={entity} />}
+			</div>
+		);
+	}
 }

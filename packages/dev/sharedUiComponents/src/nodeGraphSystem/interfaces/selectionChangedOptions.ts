@@ -7,7 +7,7 @@ import type { NodePort } from "../nodePort";
 import type { FramePortData } from "../types/framePortData";
 
 export interface ISelectionChangedOptions {
-    selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
-    forceKeepSelection?: boolean;
-    marqueeSelection?: boolean;
+	selection: Nullable<GraphNode | NodeLink | GraphFrame | NodePort | FramePortData>;
+	forceKeepSelection?: boolean;
+	marqueeSelection?: boolean;
 }

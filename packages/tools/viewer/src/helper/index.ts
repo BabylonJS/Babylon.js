@@ -10,10 +10,10 @@ export { expDm as deepmerge };
  * @returns true if the string is a URL
  */
 export function isUrl(urlToCheck: string): boolean {
-    if (urlToCheck.indexOf("http") === 0 || urlToCheck.indexOf("/") === 0 || urlToCheck.indexOf("./") === 0 || urlToCheck.indexOf("../") === 0) {
-        return true;
-    }
-    return false;
+	if (urlToCheck.indexOf("http") === 0 || urlToCheck.indexOf("/") === 0 || urlToCheck.indexOf("./") === 0 || urlToCheck.indexOf("../") === 0) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -22,9 +22,9 @@ export function isUrl(urlToCheck: string): boolean {
  * @returns the converted string
  */
 export function kebabToCamel(s: string) {
-    return s.replace(/(-\w)/g, function (m) {
-        return m[1].toUpperCase();
-    });
+	return s.replace(/(-\w)/g, function (m) {
+		return m[1].toUpperCase();
+	});
 }
 
 //https://gist.github.com/youssman/745578062609e8acac9f
@@ -34,11 +34,11 @@ export function kebabToCamel(s: string) {
  * @returns the converted string
  */
 export function camelToKebab(str: string) {
-    return !str
-        ? null
-        : str.replace(/([A-Z])/g, function (g) {
-              return "-" + g[0].toLowerCase();
-          });
+	return !str
+		? null
+		: str.replace(/([A-Z])/g, function (g) {
+				return "-" + g[0].toLowerCase();
+			});
 }
 
 /**
@@ -49,21 +49,21 @@ export function camelToKebab(str: string) {
  * @param config the configuration object that will extend the object
  */
 export function extendClassWithConfig(object: any, config: any) {
-    if (!config || typeof config !== "object") {
-        return;
-    }
-    Object.keys(config).forEach(function (key) {
-        if (key in object && typeof object[key] !== "function") {
-            // if (typeof object[key] === 'function') return;
-            // if it is an object, iterate internally until reaching basic types
-            // but null is an object so if its null and config[key] is not an object eg. number, the number should be set
-            if (typeof object[key] === "object" && (object[key] !== null || typeof config[key] === "object")) {
-                extendClassWithConfig(object[key], config[key]);
-            } else {
-                if (config[key] !== undefined) {
-                    object[key] = config[key];
-                }
-            }
-        }
-    });
+	if (!config || typeof config !== "object") {
+		return;
+	}
+	Object.keys(config).forEach(function (key) {
+		if (key in object && typeof object[key] !== "function") {
+			// if (typeof object[key] === 'function') return;
+			// if it is an object, iterate internally until reaching basic types
+			// but null is an object so if its null and config[key] is not an object eg. number, the number should be set
+			if (typeof object[key] === "object" && (object[key] !== null || typeof config[key] === "object")) {
+				extendClassWithConfig(object[key], config[key]);
+			} else {
+				if (config[key] !== undefined) {
+					object[key] = config[key];
+				}
+			}
+		}
+	});
 }

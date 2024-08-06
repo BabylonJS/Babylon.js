@@ -8,50 +8,50 @@ import { RegisterClass } from "../../../Misc/typeStore";
  * Block used to get negative version of a value (i.e. x * -1)
  */
 export class NegateBlock extends NodeMaterialBlock {
-    /**
-     * Creates a new NegateBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+	/**
+	 * Creates a new NegateBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+		this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+		this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-    }
+		this._outputs[0]._typeConnectionSource = this._inputs[0];
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "NegateBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "NegateBlock";
+	}
 
-    /**
-     * Gets the value input component
-     */
-    public get value(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the value input component
+	 */
+	public get value(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the output component
+	 */
+	public get output(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        const output = this._outputs[0];
+		const output = this._outputs[0];
 
-        state.compilationString += state._declareOutput(output) + ` = -1.0 * ${this.value.associatedVariableName};\n`;
+		state.compilationString += state._declareOutput(output) + ` = -1.0 * ${this.value.associatedVariableName};\n`;
 
-        return this;
-    }
+		return this;
+	}
 }
 
 RegisterClass("BABYLON.NegateBlock", NegateBlock);

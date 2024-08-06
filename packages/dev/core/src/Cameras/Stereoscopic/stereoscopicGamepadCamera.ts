@@ -6,7 +6,7 @@ import { Node } from "../../node";
 import { setStereoscopicRigMode } from "../RigModes/stereoscopicRigMode";
 
 Node.AddNodeConstructor("StereoscopicGamepadCamera", (name, scene, options) => {
-    return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
+	return () => new StereoscopicGamepadCamera(name, Vector3.Zero(), options.interaxial_distance, options.isStereoscopicSideBySide, scene);
 });
 
 /**
@@ -14,30 +14,30 @@ Node.AddNodeConstructor("StereoscopicGamepadCamera", (name, scene, options) => {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras
  */
 export class StereoscopicGamepadCamera extends GamepadCamera {
-    /**
-     * Creates a new StereoscopicGamepadCamera
-     * @param name defines camera name
-     * @param position defines initial position
-     * @param interaxialDistance defines distance between each color axis
-     * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
-     * @param scene defines the hosting scene
-     */
-    constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene) {
-        super(name, position, scene);
-        this.interaxialDistance = interaxialDistance;
-        this.isStereoscopicSideBySide = isStereoscopicSideBySide;
-        this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, {
-            interaxialDistance: interaxialDistance,
-        });
-    }
+	/**
+	 * Creates a new StereoscopicGamepadCamera
+	 * @param name defines camera name
+	 * @param position defines initial position
+	 * @param interaxialDistance defines distance between each color axis
+	 * @param isStereoscopicSideBySide defines is stereoscopic is done side by side or over under
+	 * @param scene defines the hosting scene
+	 */
+	constructor(name: string, position: Vector3, interaxialDistance: number, isStereoscopicSideBySide: boolean, scene?: Scene) {
+		super(name, position, scene);
+		this.interaxialDistance = interaxialDistance;
+		this.isStereoscopicSideBySide = isStereoscopicSideBySide;
+		this.setCameraRigMode(isStereoscopicSideBySide ? Camera.RIG_MODE_STEREOSCOPIC_SIDEBYSIDE_PARALLEL : Camera.RIG_MODE_STEREOSCOPIC_OVERUNDER, {
+			interaxialDistance: interaxialDistance,
+		});
+	}
 
-    /**
-     * Gets camera class name
-     * @returns StereoscopicGamepadCamera
-     */
-    public override getClassName(): string {
-        return "StereoscopicGamepadCamera";
-    }
+	/**
+	 * Gets camera class name
+	 * @returns StereoscopicGamepadCamera
+	 */
+	public override getClassName(): string {
+		return "StereoscopicGamepadCamera";
+	}
 
-    protected override _setRigMode = () => setStereoscopicRigMode(this);
+	protected override _setRigMode = () => setStereoscopicRigMode(this);
 }

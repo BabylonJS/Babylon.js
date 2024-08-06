@@ -17,24 +17,24 @@ export { TelemetryLoaderPlugin, ILoaderPlugin, MSFTLodLoaderPlugin, ApplyMateria
  * @returns the plugin
  */
 export function getLoaderPluginByName(name: string) {
-    if (!pluginCache[name]) {
-        switch (name) {
-            case "telemetry":
-                pluginCache[name] = new TelemetryLoaderPlugin();
-                break;
-            case "msftLod":
-                pluginCache[name] = new MSFTLodLoaderPlugin();
-                break;
-            case "applyMaterialConfig":
-                pluginCache[name] = new ApplyMaterialConfigPlugin();
-                break;
-            case "extendedMaterial":
-                pluginCache[name] = new ExtendedMaterialLoaderPlugin();
-                break;
-        }
-    }
+	if (!pluginCache[name]) {
+		switch (name) {
+			case "telemetry":
+				pluginCache[name] = new TelemetryLoaderPlugin();
+				break;
+			case "msftLod":
+				pluginCache[name] = new MSFTLodLoaderPlugin();
+				break;
+			case "applyMaterialConfig":
+				pluginCache[name] = new ApplyMaterialConfigPlugin();
+				break;
+			case "extendedMaterial":
+				pluginCache[name] = new ExtendedMaterialLoaderPlugin();
+				break;
+		}
+	}
 
-    return pluginCache[name];
+	return pluginCache[name];
 }
 
 /**
@@ -42,8 +42,8 @@ export function getLoaderPluginByName(name: string) {
  * @param plugin
  */
 export function addLoaderPlugin(name: string, plugin: ILoaderPlugin) {
-    if (pluginCache[name]) {
-        Tools.Warn("Overwriting plugin with the same name - " + name);
-    }
-    pluginCache[name] = plugin;
+	if (pluginCache[name]) {
+		Tools.Warn("Overwriting plugin with the same name - " + name);
+	}
+	pluginCache[name] = plugin;
 }

@@ -6,40 +6,40 @@ import "../scss/qrCode.scss";
 declare let $: any;
 
 interface IQRCodeComponentProps {
-    globalState: GlobalState;
+	globalState: GlobalState;
 }
 
 export class QRCodeComponent extends React.Component<IQRCodeComponentProps, { isVisible: boolean }> {
-    public constructor(props: IQRCodeComponentProps) {
-        super(props);
-        this.state = { isVisible: false };
+	public constructor(props: IQRCodeComponentProps) {
+		super(props);
+		this.state = { isVisible: false };
 
-        this.props.globalState.onQRCodeRequiredObservable.add((value) => {
-            this.setState({ isVisible: value });
-        });
-    }
+		this.props.globalState.onQRCodeRequiredObservable.add((value) => {
+			this.setState({ isVisible: value });
+		});
+	}
 
-    override componentDidUpdate() {
-        this._syncQRCOde();
-    }
+	override componentDidUpdate() {
+		this._syncQRCOde();
+	}
 
-    private _syncQRCOde() {
-        if (!this.state.isVisible) {
-            return;
-        }
+	private _syncQRCOde() {
+		if (!this.state.isVisible) {
+			return;
+		}
 
-        document.getElementById("qr-code-image")!.innerHTML = "";
-        $("#qr-code-image").qrcode({ text: "https://playground.babylonjs.com/frame.html" + location.hash });
-    }
+		document.getElementById("qr-code-image")!.innerHTML = "";
+		$("#qr-code-image").qrcode({ text: "https://playground.babylonjs.com/frame.html" + location.hash });
+	}
 
-    public override render() {
-        if (!this.state.isVisible) {
-            return null;
-        }
-        return (
-            <div className="qr-code" onClick={() => this.setState({ isVisible: false })}>
-                <div id="qr-code-image"></div>
-            </div>
-        );
-    }
+	public override render() {
+		if (!this.state.isVisible) {
+			return null;
+		}
+		return (
+			<div className="qr-code" onClick={() => this.setState({ isVisible: false })}>
+				<div id="qr-code-image"></div>
+			</div>
+		);
+	}
 }

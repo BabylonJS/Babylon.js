@@ -9,20 +9,20 @@ import type { Viewport } from "core/Maths/math.viewport";
  * @internal
  */
 export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
-    constructor(
-        public override readonly layer: XRProjectionLayer,
-        isMultiview: boolean,
-        xrGLBinding: XRWebGLBinding
-    ) {
-        super(
-            () => layer.textureWidth,
-            () => layer.textureHeight,
-            layer,
-            "XRProjectionLayer",
-            isMultiview,
-            (sessionManager) => new WebXRProjectionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this)
-        );
-    }
+	constructor(
+		public override readonly layer: XRProjectionLayer,
+		isMultiview: boolean,
+		xrGLBinding: XRWebGLBinding
+	) {
+		super(
+			() => layer.textureWidth,
+			() => layer.textureHeight,
+			layer,
+			"XRProjectionLayer",
+			isMultiview,
+			(sessionManager) => new WebXRProjectionLayerRenderTargetTextureProvider(sessionManager, xrGLBinding, this)
+		);
+	}
 }
 
 /**
@@ -30,47 +30,47 @@ export class WebXRProjectionLayerWrapper extends WebXRCompositionLayerWrapper {
  * @internal
  */
 class WebXRProjectionLayerRenderTargetTextureProvider extends WebXRCompositionLayerRenderTargetTextureProvider {
-    private readonly _projectionLayer: XRProjectionLayer;
+	private readonly _projectionLayer: XRProjectionLayer;
 
-    constructor(
-        _xrSessionManager: WebXRSessionManager,
-        _xrWebGLBinding: XRWebGLBinding,
-        public override readonly layerWrapper: WebXRProjectionLayerWrapper
-    ) {
-        super(_xrSessionManager, _xrWebGLBinding, layerWrapper);
-        this._projectionLayer = layerWrapper.layer;
-    }
+	constructor(
+		_xrSessionManager: WebXRSessionManager,
+		_xrWebGLBinding: XRWebGLBinding,
+		public override readonly layerWrapper: WebXRProjectionLayerWrapper
+	) {
+		super(_xrSessionManager, _xrWebGLBinding, layerWrapper);
+		this._projectionLayer = layerWrapper.layer;
+	}
 
-    private _getSubImageForView(view: XRView): XRWebGLSubImage {
-        return this._xrWebGLBinding.getViewSubImage(this._projectionLayer, view);
-    }
+	private _getSubImageForView(view: XRView): XRWebGLSubImage {
+		return this._xrWebGLBinding.getViewSubImage(this._projectionLayer, view);
+	}
 
-    public override getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
-        return this._getRenderTargetForSubImage(this._getSubImageForView(view), view.eye);
-    }
+	public override getRenderTargetTextureForView(view: XRView): Nullable<RenderTargetTexture> {
+		return this._getRenderTargetForSubImage(this._getSubImageForView(view), view.eye);
+	}
 
-    public override getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
-        const lastSubImage = this._lastSubImages.get(eye);
-        if (lastSubImage) {
-            return this._getRenderTargetForSubImage(lastSubImage, eye);
-        }
-        return null;
-    }
+	public override getRenderTargetTextureForEye(eye: XREye): Nullable<RenderTargetTexture> {
+		const lastSubImage = this._lastSubImages.get(eye);
+		if (lastSubImage) {
+			return this._getRenderTargetForSubImage(lastSubImage, eye);
+		}
+		return null;
+	}
 
-    public override trySetViewportForView(viewport: Viewport, view: XRView): boolean {
-        const subImage = this._lastSubImages.get(view.eye) || this._getSubImageForView(view);
-        if (subImage) {
-            this._setViewportForSubImage(viewport, subImage);
-            return true;
-        }
-        return false;
-    }
+	public override trySetViewportForView(viewport: Viewport, view: XRView): boolean {
+		const subImage = this._lastSubImages.get(view.eye) || this._getSubImageForView(view);
+		if (subImage) {
+			this._setViewportForSubImage(viewport, subImage);
+			return true;
+		}
+		return false;
+	}
 }
 
 export const defaultXRProjectionLayerInit: XRProjectionLayerInit = {
-    textureType: "texture",
-    colorFormat: 0x1908 /* WebGLRenderingContext.RGBA */,
-    depthFormat: 0x88f0 /* WebGLRenderingContext.DEPTH24_STENCIL8 */,
-    scaleFactor: 1.0,
-    clearOnAccess: false,
+	textureType: "texture",
+	colorFormat: 0x1908 /* WebGLRenderingContext.RGBA */,
+	depthFormat: 0x88f0 /* WebGLRenderingContext.DEPTH24_STENCIL8 */,
+	scaleFactor: 1.0,
+	clearOnAccess: false,
 };

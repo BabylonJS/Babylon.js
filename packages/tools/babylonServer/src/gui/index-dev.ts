@@ -9,8 +9,8 @@ import * as GUI from "../../../../dev/gui/src/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    (<any>globalObject).BABYLON.GUI = GUI;
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	(<any>globalObject).BABYLON.GUI = GUI;
 }
 
 export * from "../../../../dev/gui/src/index";

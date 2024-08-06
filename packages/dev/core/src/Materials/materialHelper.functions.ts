@@ -30,13 +30,13 @@ const _TmpMorphInfluencers = { NUM_MORPH_INFLUENCERS: 0 };
  * @param scene The scene we are willing to render with logarithmic scale for
  */
 export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
-    if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
-        const camera = scene.activeCamera as Camera;
-        if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
-            Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
-        }
-        effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
-    }
+	if (!defines || defines["LOGARITHMICDEPTH"] || (defines.indexOf && defines.indexOf("LOGARITHMICDEPTH") >= 0)) {
+		const camera = scene.activeCamera as Camera;
+		if (camera.mode === Constants.ORTHOGRAPHIC_CAMERA) {
+			Logger.Error("Logarithmic depth is not compatible with orthographic cameras!", 20);
+		}
+		effect.setFloat("logarithmicDepthConstant", 2.0 / (Math.log(camera.maxZ + 1.0) / Math.LN2));
+	}
 }
 
 /**
@@ -47,16 +47,16 @@ export function BindLogDepth(defines: any, effect: Effect, scene: Scene): void {
  * @param linearSpace Defines if the fog effect is applied in linear space
  */
 export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Effect, linearSpace = false): void {
-    if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Constants.FOGMODE_NONE) {
-        effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
-        // Convert fog color to linear space if used in a linear space computed shader.
-        if (linearSpace) {
-            scene.fogColor.toLinearSpaceToRef(_TempFogColor, scene.getEngine().useExactSrgbConversions);
-            effect.setColor3("vFogColor", _TempFogColor);
-        } else {
-            effect.setColor3("vFogColor", scene.fogColor);
-        }
-    }
+	if (effect && scene.fogEnabled && (!mesh || mesh.applyFog) && scene.fogMode !== Constants.FOGMODE_NONE) {
+		effect.setFloat4("vFogInfos", scene.fogMode, scene.fogStart, scene.fogEnd, scene.fogDensity);
+		// Convert fog color to linear space if used in a linear space computed shader.
+		if (linearSpace) {
+			scene.fogColor.toLinearSpaceToRef(_TempFogColor, scene.getEngine().useExactSrgbConversions);
+			effect.setColor3("vFogColor", _TempFogColor);
+		} else {
+			effect.setColor3("vFogColor", scene.fogColor);
+		}
+	}
 }
 
 /**
@@ -66,8 +66,8 @@ export function BindFogParameters(scene: Scene, mesh?: AbstractMesh, effect?: Ef
  * @param influencers The number of influencers
  */
 export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], mesh: AbstractMesh, influencers: number): void {
-    _TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
-    PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers);
+	_TmpMorphInfluencers.NUM_MORPH_INFLUENCERS = influencers;
+	PrepareAttributesForMorphTargets(attribs, mesh, _TmpMorphInfluencers);
 }
 
 /**
@@ -77,37 +77,37 @@ export function PrepareAttributesForMorphTargetsInfluencers(attribs: string[], m
  * @param defines The current Defines of the effect
  */
 export function PrepareAttributesForMorphTargets(attribs: string[], mesh: AbstractMesh, defines: any): void {
-    const influencers = defines["NUM_MORPH_INFLUENCERS"];
+	const influencers = defines["NUM_MORPH_INFLUENCERS"];
 
-    if (influencers > 0 && EngineStore.LastCreatedEngine) {
-        const maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
-        const manager = (mesh as Mesh).morphTargetManager;
-        if (manager?.isUsingTextureForTargets) {
-            return;
-        }
-        const normal = manager && manager.supportsNormals && defines["NORMAL"];
-        const tangent = manager && manager.supportsTangents && defines["TANGENT"];
-        const uv = manager && manager.supportsUVs && defines["UV1"];
-        for (let index = 0; index < influencers; index++) {
-            attribs.push(Constants.PositionKind + index);
+	if (influencers > 0 && EngineStore.LastCreatedEngine) {
+		const maxAttributesCount = EngineStore.LastCreatedEngine.getCaps().maxVertexAttribs;
+		const manager = (mesh as Mesh).morphTargetManager;
+		if (manager?.isUsingTextureForTargets) {
+			return;
+		}
+		const normal = manager && manager.supportsNormals && defines["NORMAL"];
+		const tangent = manager && manager.supportsTangents && defines["TANGENT"];
+		const uv = manager && manager.supportsUVs && defines["UV1"];
+		for (let index = 0; index < influencers; index++) {
+			attribs.push(Constants.PositionKind + index);
 
-            if (normal) {
-                attribs.push(Constants.NormalKind + index);
-            }
+			if (normal) {
+				attribs.push(Constants.NormalKind + index);
+			}
 
-            if (tangent) {
-                attribs.push(Constants.TangentKind + index);
-            }
+			if (tangent) {
+				attribs.push(Constants.TangentKind + index);
+			}
 
-            if (uv) {
-                attribs.push(Constants.UVKind + "_" + index);
-            }
+			if (uv) {
+				attribs.push(Constants.UVKind + "_" + index);
+			}
 
-            if (attribs.length > maxAttributesCount) {
-                Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
-            }
-        }
-    }
+			if (attribs.length > maxAttributesCount) {
+				Logger.Error("Cannot add more vertex attributes for mesh " + mesh.name);
+			}
+		}
+	}
 }
 
 /**
@@ -116,16 +116,16 @@ export function PrepareAttributesForMorphTargets(attribs: string[], mesh: Abstra
  * @param needsPreviousMatrices If the shader needs previous matrices
  */
 export function PushAttributesForInstances(attribs: string[], needsPreviousMatrices: boolean = false): void {
-    attribs.push("world0");
-    attribs.push("world1");
-    attribs.push("world2");
-    attribs.push("world3");
-    if (needsPreviousMatrices) {
-        attribs.push("previousWorld0");
-        attribs.push("previousWorld1");
-        attribs.push("previousWorld2");
-        attribs.push("previousWorld3");
-    }
+	attribs.push("world0");
+	attribs.push("world1");
+	attribs.push("world2");
+	attribs.push("world3");
+	if (needsPreviousMatrices) {
+		attribs.push("previousWorld0");
+		attribs.push("previousWorld1");
+		attribs.push("previousWorld2");
+		attribs.push("previousWorld3");
+	}
 }
 
 /**
@@ -134,12 +134,12 @@ export function PushAttributesForInstances(attribs: string[], needsPreviousMatri
  * @param effect The effect we are binding the data to
  */
 export function BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Effect): void {
-    const manager = (<Mesh>abstractMesh).morphTargetManager;
-    if (!abstractMesh || !manager) {
-        return;
-    }
+	const manager = (<Mesh>abstractMesh).morphTargetManager;
+	if (!abstractMesh || !manager) {
+		return;
+	}
 
-    effect.setFloatArray("morphTargetInfluences", manager.influences);
+	effect.setFloatArray("morphTargetInfluences", manager.influences);
 }
 
 /**
@@ -148,7 +148,7 @@ export function BindMorphTargetParameters(abstractMesh: AbstractMesh, effect: Ef
  * @param sceneUbo defines the uniform buffer storing scene data
  */
 export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer): void {
-    sceneUbo.bindToEffect(effect, "Scene");
+	sceneUbo.bindToEffect(effect, "Scene");
 }
 
 /**
@@ -159,14 +159,14 @@ export function BindSceneUniformBuffer(effect: Effect, sceneUbo: UniformBuffer):
  * @param key The channel key "diffuse", "specular"... used in the shader
  */
 export function PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, key: string): void {
-    defines._needUVs = true;
-    defines[key] = true;
-    if (texture.optimizeUVAllocation && texture.getTextureMatrix().isIdentityAs3x2()) {
-        defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
-        defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
-    } else {
-        defines[key + "DIRECTUV"] = 0;
-    }
+	defines._needUVs = true;
+	defines[key] = true;
+	if (texture.optimizeUVAllocation && texture.getTextureMatrix().isIdentityAs3x2()) {
+		defines[key + "DIRECTUV"] = texture.coordinatesIndex + 1;
+		defines["MAINUV" + (texture.coordinatesIndex + 1)] = true;
+	} else {
+		defines[key + "DIRECTUV"] = 0;
+	}
 }
 
 /**
@@ -176,9 +176,9 @@ export function PrepareDefinesForMergedUV(texture: BaseTexture, defines: any, ke
  * @param key The channel key "diffuse", "specular"... used in the shader
  */
 export function BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBuffer, key: string): void {
-    const matrix = texture.getTextureMatrix();
+	const matrix = texture.getTextureMatrix();
 
-    uniformBuffer.updateMatrix(key + "Matrix", matrix);
+	uniformBuffer.updateMatrix(key + "Matrix", matrix);
 }
 
 /**
@@ -188,18 +188,18 @@ export function BindTextureMatrix(texture: BaseTexture, uniformBuffer: UniformBu
  * @param defines The current Defines of the effect
  */
 export function PrepareAttributesForBakedVertexAnimation(attribs: string[], mesh: AbstractMesh, defines: any): void {
-    const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
+	const enabled = defines["BAKED_VERTEX_ANIMATION_TEXTURE"] && defines["INSTANCES"];
 
-    if (enabled) {
-        attribs.push("bakedVertexAnimationSettingsInstanced");
-    }
+	if (enabled) {
+		attribs.push("bakedVertexAnimationSettingsInstanced");
+	}
 }
 
 // Copies the bones transformation matrices into the target array and returns the target's reference
 function _CopyBonesTransformationMatrices(source: Float32Array, target: Float32Array): Float32Array {
-    target.set(source);
+	target.set(source);
 
-    return target;
+	return target;
 }
 
 /**
@@ -209,35 +209,35 @@ function _CopyBonesTransformationMatrices(source: Float32Array, target: Float32A
  * @param prePassConfiguration Configuration for the prepass, in case prepass is activated
  */
 export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePassConfiguration?: PrePassConfiguration): void {
-    if (!effect || !mesh) {
-        return;
-    }
-    if (mesh.computeBonesUsingShaders && effect._bonesComputationForcedToCPU) {
-        mesh.computeBonesUsingShaders = false;
-    }
+	if (!effect || !mesh) {
+		return;
+	}
+	if (mesh.computeBonesUsingShaders && effect._bonesComputationForcedToCPU) {
+		mesh.computeBonesUsingShaders = false;
+	}
 
-    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-        const skeleton = mesh.skeleton;
+	if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+		const skeleton = mesh.skeleton;
 
-        if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
-            const boneTexture = skeleton.getTransformMatrixTexture(mesh);
-            effect.setTexture("boneSampler", boneTexture);
-            effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
-        } else {
-            const matrices = skeleton.getTransformMatrices(mesh);
+		if (skeleton.isUsingTextureForMatrices && effect.getUniformIndex("boneTextureWidth") > -1) {
+			const boneTexture = skeleton.getTransformMatrixTexture(mesh);
+			effect.setTexture("boneSampler", boneTexture);
+			effect.setFloat("boneTextureWidth", 4.0 * (skeleton.bones.length + 1));
+		} else {
+			const matrices = skeleton.getTransformMatrices(mesh);
 
-            if (matrices) {
-                effect.setMatrices("mBones", matrices);
-                if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
-                    if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
-                        prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
-                    }
-                    effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
-                    _CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
-                }
-            }
-        }
-    }
+			if (matrices) {
+				effect.setMatrices("mBones", matrices);
+				if (prePassConfiguration && mesh.getScene().prePassRenderer && mesh.getScene().prePassRenderer!.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE)) {
+					if (!prePassConfiguration.previousBones[mesh.uniqueId]) {
+						prePassConfiguration.previousBones[mesh.uniqueId] = matrices.slice();
+					}
+					effect.setMatrices("mPreviousBones", prePassConfiguration.previousBones[mesh.uniqueId]);
+					_CopyBonesTransformationMatrices(matrices, prePassConfiguration.previousBones[mesh.uniqueId]);
+				}
+			}
+		}
+	}
 }
 
 /**
@@ -247,7 +247,7 @@ export function BindBonesParameters(mesh?: AbstractMesh, effect?: Effect, prePas
  * @param lightIndex The light index in the effect used to render
  */
 export function BindLightProperties(light: Light, effect: Effect, lightIndex: number): void {
-    light.transferToEffect(effect, lightIndex + "");
+	light.transferToEffect(effect, lightIndex + "");
 }
 
 /**
@@ -260,7 +260,7 @@ export function BindLightProperties(light: Light, effect: Effect, lightIndex: nu
  * @param receiveShadows Defines if the effect (mesh) we bind the light for receives shadows
  */
 export function BindLight(light: Light, lightIndex: number, scene: Scene, effect: Effect, useSpecular: boolean, receiveShadows = true): void {
-    light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
+	light._bindLight(lightIndex, scene, effect, useSpecular, receiveShadows);
 }
 
 /**
@@ -272,12 +272,12 @@ export function BindLight(light: Light, lightIndex: number, scene: Scene, effect
  * @param maxSimultaneousLights The maximum number of light that can be bound to the effect
  */
 export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, defines: any, maxSimultaneousLights = 4): void {
-    const len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
+	const len = Math.min(mesh.lightSources.length, maxSimultaneousLights);
 
-    for (let i = 0; i < len; i++) {
-        const light = mesh.lightSources[i];
-        BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
-    }
+	for (let i = 0; i < len; i++) {
+		const light = mesh.lightSources[i];
+		BindLight(light, i, scene, effect, typeof defines === "boolean" ? defines : defines["SPECULARTERM"], mesh.receiveShadows);
+	}
 }
 
 /**
@@ -288,16 +288,16 @@ export function BindLights(scene: Scene, mesh: AbstractMesh, effect: Effect, def
  * @param fallbacks The current effect fallback strategy
  */
 export function PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh, defines: any, fallbacks: EffectFallbacks): void {
-    if (defines["NUM_BONE_INFLUENCERS"] > 0) {
-        fallbacks.addCPUSkinningFallback(0, mesh);
+	if (defines["NUM_BONE_INFLUENCERS"] > 0) {
+		fallbacks.addCPUSkinningFallback(0, mesh);
 
-        attribs.push(Constants.MatricesIndicesKind);
-        attribs.push(Constants.MatricesWeightsKind);
-        if (defines["NUM_BONE_INFLUENCERS"] > 4) {
-            attribs.push(Constants.MatricesIndicesExtraKind);
-            attribs.push(Constants.MatricesWeightsExtraKind);
-        }
-    }
+		attribs.push(Constants.MatricesIndicesKind);
+		attribs.push(Constants.MatricesWeightsKind);
+		if (defines["NUM_BONE_INFLUENCERS"] > 4) {
+			attribs.push(Constants.MatricesIndicesExtraKind);
+			attribs.push(Constants.MatricesWeightsExtraKind);
+		}
+	}
 }
 
 /**
@@ -306,13 +306,13 @@ export function PrepareAttributesForBones(attribs: string[], mesh: AbstractMesh,
  * @param defines The current MaterialDefines of the effect
  */
 export function PrepareAttributesForInstances(attribs: string[], defines: MaterialDefines): void {
-    if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
-        PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
-    }
+	if (defines["INSTANCES"] || defines["THIN_INSTANCES"]) {
+		PushAttributesForInstances(attribs, !!defines["PREPASS_VELOCITY"]);
+	}
 
-    if (defines.INSTANCESCOLOR) {
-        attribs.push(Constants.ColorInstanceKind);
-    }
+	if (defines.INSTANCESCOLOR) {
+		attribs.push(Constants.ColorInstanceKind);
+	}
 }
 
 /**
@@ -324,44 +324,44 @@ export function PrepareAttributesForInstances(attribs: string[], defines: Materi
  * @returns The newly affected rank
  */
 export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbacks, maxSimultaneousLights = 4, rank = 0): number {
-    let lightFallbackRank = 0;
-    for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-        if (!defines["LIGHT" + lightIndex]) {
-            break;
-        }
+	let lightFallbackRank = 0;
+	for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+		if (!defines["LIGHT" + lightIndex]) {
+			break;
+		}
 
-        if (lightIndex > 0) {
-            lightFallbackRank = rank + lightIndex;
-            fallbacks.addFallback(lightFallbackRank, "LIGHT" + lightIndex);
-        }
+		if (lightIndex > 0) {
+			lightFallbackRank = rank + lightIndex;
+			fallbacks.addFallback(lightFallbackRank, "LIGHT" + lightIndex);
+		}
 
-        if (!defines["SHADOWS"]) {
-            if (defines["SHADOW" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOW" + lightIndex);
-            }
+		if (!defines["SHADOWS"]) {
+			if (defines["SHADOW" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOW" + lightIndex);
+			}
 
-            if (defines["SHADOWPCF" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
-            }
+			if (defines["SHADOWPCF" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOWPCF" + lightIndex);
+			}
 
-            if (defines["SHADOWPCSS" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOWPCSS" + lightIndex);
-            }
+			if (defines["SHADOWPCSS" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOWPCSS" + lightIndex);
+			}
 
-            if (defines["SHADOWPOISSON" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOWPOISSON" + lightIndex);
-            }
+			if (defines["SHADOWPOISSON" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOWPOISSON" + lightIndex);
+			}
 
-            if (defines["SHADOWESM" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
-            }
+			if (defines["SHADOWESM" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOWESM" + lightIndex);
+			}
 
-            if (defines["SHADOWCLOSEESM" + lightIndex]) {
-                fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
-            }
-        }
-    }
-    return lightFallbackRank++;
+			if (defines["SHADOWCLOSEESM" + lightIndex]) {
+				fallbacks.addFallback(rank, "SHADOWCLOSEESM" + lightIndex);
+			}
+		}
+	}
+	return lightFallbackRank++;
 }
 
 /**
@@ -371,7 +371,7 @@ export function HandleFallbacksForShadows(defines: any, fallbacks: EffectFallbac
  * @returns true if fog must be enabled
  */
 export function GetFogState(mesh: AbstractMesh, scene: Scene) {
-    return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
+	return scene.fogEnabled && mesh.applyFog && scene.fogMode !== Constants.FOGMODE_NONE;
 }
 
 /**
@@ -386,23 +386,23 @@ export function GetFogState(mesh: AbstractMesh, scene: Scene) {
  * @param applyDecalAfterDetail Defines if the decal is applied after or before the detail
  */
 export function PrepareDefinesForMisc(
-    mesh: AbstractMesh,
-    scene: Scene,
-    useLogarithmicDepth: boolean,
-    pointsCloud: boolean,
-    fogEnabled: boolean,
-    alphaTest: boolean,
-    defines: any,
-    applyDecalAfterDetail: boolean = false
+	mesh: AbstractMesh,
+	scene: Scene,
+	useLogarithmicDepth: boolean,
+	pointsCloud: boolean,
+	fogEnabled: boolean,
+	alphaTest: boolean,
+	defines: any,
+	applyDecalAfterDetail: boolean = false
 ): void {
-    if (defines._areMiscDirty) {
-        defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
-        defines["POINTSIZE"] = pointsCloud;
-        defines["FOG"] = fogEnabled && GetFogState(mesh, scene);
-        defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
-        defines["ALPHATEST"] = alphaTest;
-        defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
-    }
+	if (defines._areMiscDirty) {
+		defines["LOGARITHMICDEPTH"] = useLogarithmicDepth;
+		defines["POINTSIZE"] = pointsCloud;
+		defines["FOG"] = fogEnabled && GetFogState(mesh, scene);
+		defines["NONUNIFORMSCALING"] = mesh.nonUniformScaling;
+		defines["ALPHATEST"] = alphaTest;
+		defines["DECAL_AFTER_DETAIL"] = applyDecalAfterDetail;
+	}
 }
 
 /**
@@ -416,74 +416,74 @@ export function PrepareDefinesForMisc(
  * @returns true if normals will be required for the rest of the effect
  */
 export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, defines: any, specularSupported: boolean, maxSimultaneousLights = 4, disableLighting = false): boolean {
-    if (!defines._areLightsDirty) {
-        return defines._needNormals;
-    }
+	if (!defines._areLightsDirty) {
+		return defines._needNormals;
+	}
 
-    let lightIndex = 0;
-    const state = {
-        needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
-        needRebuild: false,
-        lightmapMode: false,
-        shadowEnabled: false,
-        specularEnabled: false,
-    };
+	let lightIndex = 0;
+	const state = {
+		needNormals: defines._needNormals, // prevents overriding previous reflection or other needs for normals
+		needRebuild: false,
+		lightmapMode: false,
+		shadowEnabled: false,
+		specularEnabled: false,
+	};
 
-    if (scene.lightsEnabled && !disableLighting) {
-        for (const light of mesh.lightSources) {
-            PrepareDefinesForLight(scene, mesh, light, lightIndex, defines, specularSupported, state);
+	if (scene.lightsEnabled && !disableLighting) {
+		for (const light of mesh.lightSources) {
+			PrepareDefinesForLight(scene, mesh, light, lightIndex, defines, specularSupported, state);
 
-            lightIndex++;
-            if (lightIndex === maxSimultaneousLights) {
-                break;
-            }
-        }
-    }
+			lightIndex++;
+			if (lightIndex === maxSimultaneousLights) {
+				break;
+			}
+		}
+	}
 
-    defines["SPECULARTERM"] = state.specularEnabled;
-    defines["SHADOWS"] = state.shadowEnabled;
+	defines["SPECULARTERM"] = state.specularEnabled;
+	defines["SHADOWS"] = state.shadowEnabled;
 
-    // Resetting all other lights if any
-    for (let index = lightIndex; index < maxSimultaneousLights; index++) {
-        if (defines["LIGHT" + index] !== undefined) {
-            defines["LIGHT" + index] = false;
-            defines["HEMILIGHT" + index] = false;
-            defines["POINTLIGHT" + index] = false;
-            defines["DIRLIGHT" + index] = false;
-            defines["SPOTLIGHT" + index] = false;
-            defines["SHADOW" + index] = false;
-            defines["SHADOWCSM" + index] = false;
-            defines["SHADOWCSMDEBUG" + index] = false;
-            defines["SHADOWCSMNUM_CASCADES" + index] = false;
-            defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
-            defines["SHADOWCSMNOBLEND" + index] = false;
-            defines["SHADOWCSM_RIGHTHANDED" + index] = false;
-            defines["SHADOWPCF" + index] = false;
-            defines["SHADOWPCSS" + index] = false;
-            defines["SHADOWPOISSON" + index] = false;
-            defines["SHADOWESM" + index] = false;
-            defines["SHADOWCLOSEESM" + index] = false;
-            defines["SHADOWCUBE" + index] = false;
-            defines["SHADOWLOWQUALITY" + index] = false;
-            defines["SHADOWMEDIUMQUALITY" + index] = false;
-        }
-    }
+	// Resetting all other lights if any
+	for (let index = lightIndex; index < maxSimultaneousLights; index++) {
+		if (defines["LIGHT" + index] !== undefined) {
+			defines["LIGHT" + index] = false;
+			defines["HEMILIGHT" + index] = false;
+			defines["POINTLIGHT" + index] = false;
+			defines["DIRLIGHT" + index] = false;
+			defines["SPOTLIGHT" + index] = false;
+			defines["SHADOW" + index] = false;
+			defines["SHADOWCSM" + index] = false;
+			defines["SHADOWCSMDEBUG" + index] = false;
+			defines["SHADOWCSMNUM_CASCADES" + index] = false;
+			defines["SHADOWCSMUSESHADOWMAXZ" + index] = false;
+			defines["SHADOWCSMNOBLEND" + index] = false;
+			defines["SHADOWCSM_RIGHTHANDED" + index] = false;
+			defines["SHADOWPCF" + index] = false;
+			defines["SHADOWPCSS" + index] = false;
+			defines["SHADOWPOISSON" + index] = false;
+			defines["SHADOWESM" + index] = false;
+			defines["SHADOWCLOSEESM" + index] = false;
+			defines["SHADOWCUBE" + index] = false;
+			defines["SHADOWLOWQUALITY" + index] = false;
+			defines["SHADOWMEDIUMQUALITY" + index] = false;
+		}
+	}
 
-    const caps = scene.getEngine().getCaps();
+	const caps = scene.getEngine().getCaps();
 
-    if (defines["SHADOWFLOAT"] === undefined) {
-        state.needRebuild = true;
-    }
+	if (defines["SHADOWFLOAT"] === undefined) {
+		state.needRebuild = true;
+	}
 
-    defines["SHADOWFLOAT"] =
-        state.shadowEnabled && ((caps.textureFloatRender && caps.textureFloatLinearFiltering) || (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
-    defines["LIGHTMAPEXCLUDED"] = state.lightmapMode;
+	defines["SHADOWFLOAT"] =
+		state.shadowEnabled && ((caps.textureFloatRender && caps.textureFloatLinearFiltering) || (caps.textureHalfFloatRender && caps.textureHalfFloatLinearFiltering));
+	defines["LIGHTMAPEXCLUDED"] = state.lightmapMode;
 
-    if (state.needRebuild) {
-        defines.rebuild();
-    }
+	if (state.needRebuild) {
+		defines.rebuild();
+	}
 
-    return state.needNormals;
+	return state.needNormals;
 }
 
 /**
@@ -502,95 +502,95 @@ export function PrepareDefinesForLights(scene: Scene, mesh: AbstractMesh, define
  * @param state.lightmapMode
  */
 export function PrepareDefinesForLight(
-    scene: Scene,
-    mesh: AbstractMesh,
-    light: Light,
-    lightIndex: number,
-    defines: any,
-    specularSupported: boolean,
-    state: {
-        needNormals: boolean;
-        needRebuild: boolean;
-        shadowEnabled: boolean;
-        specularEnabled: boolean;
-        lightmapMode: boolean;
-    }
+	scene: Scene,
+	mesh: AbstractMesh,
+	light: Light,
+	lightIndex: number,
+	defines: any,
+	specularSupported: boolean,
+	state: {
+		needNormals: boolean;
+		needRebuild: boolean;
+		shadowEnabled: boolean;
+		specularEnabled: boolean;
+		lightmapMode: boolean;
+	}
 ) {
-    state.needNormals = true;
+	state.needNormals = true;
 
-    if (defines["LIGHT" + lightIndex] === undefined) {
-        state.needRebuild = true;
-    }
+	if (defines["LIGHT" + lightIndex] === undefined) {
+		state.needRebuild = true;
+	}
 
-    defines["LIGHT" + lightIndex] = true;
+	defines["LIGHT" + lightIndex] = true;
 
-    defines["SPOTLIGHT" + lightIndex] = false;
-    defines["HEMILIGHT" + lightIndex] = false;
-    defines["POINTLIGHT" + lightIndex] = false;
-    defines["DIRLIGHT" + lightIndex] = false;
+	defines["SPOTLIGHT" + lightIndex] = false;
+	defines["HEMILIGHT" + lightIndex] = false;
+	defines["POINTLIGHT" + lightIndex] = false;
+	defines["DIRLIGHT" + lightIndex] = false;
 
-    light.prepareLightSpecificDefines(defines, lightIndex);
+	light.prepareLightSpecificDefines(defines, lightIndex);
 
-    // FallOff.
-    defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
-    defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
-    defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
+	// FallOff.
+	defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = false;
+	defines["LIGHT_FALLOFF_GLTF" + lightIndex] = false;
+	defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = false;
 
-    switch (light.falloffType) {
-        case LightConstants.FALLOFF_GLTF:
-            defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
-            break;
-        case LightConstants.FALLOFF_PHYSICAL:
-            defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
-            break;
-        case LightConstants.FALLOFF_STANDARD:
-            defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
-            break;
-    }
+	switch (light.falloffType) {
+		case LightConstants.FALLOFF_GLTF:
+			defines["LIGHT_FALLOFF_GLTF" + lightIndex] = true;
+			break;
+		case LightConstants.FALLOFF_PHYSICAL:
+			defines["LIGHT_FALLOFF_PHYSICAL" + lightIndex] = true;
+			break;
+		case LightConstants.FALLOFF_STANDARD:
+			defines["LIGHT_FALLOFF_STANDARD" + lightIndex] = true;
+			break;
+	}
 
-    // Specular
-    if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
-        state.specularEnabled = true;
-    }
+	// Specular
+	if (specularSupported && !light.specular.equalsFloats(0, 0, 0)) {
+		state.specularEnabled = true;
+	}
 
-    // Shadows
-    defines["SHADOW" + lightIndex] = false;
-    defines["SHADOWCSM" + lightIndex] = false;
-    defines["SHADOWCSMDEBUG" + lightIndex] = false;
-    defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
-    defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
-    defines["SHADOWCSMNOBLEND" + lightIndex] = false;
-    defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
-    defines["SHADOWPCF" + lightIndex] = false;
-    defines["SHADOWPCSS" + lightIndex] = false;
-    defines["SHADOWPOISSON" + lightIndex] = false;
-    defines["SHADOWESM" + lightIndex] = false;
-    defines["SHADOWCLOSEESM" + lightIndex] = false;
-    defines["SHADOWCUBE" + lightIndex] = false;
-    defines["SHADOWLOWQUALITY" + lightIndex] = false;
-    defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
+	// Shadows
+	defines["SHADOW" + lightIndex] = false;
+	defines["SHADOWCSM" + lightIndex] = false;
+	defines["SHADOWCSMDEBUG" + lightIndex] = false;
+	defines["SHADOWCSMNUM_CASCADES" + lightIndex] = false;
+	defines["SHADOWCSMUSESHADOWMAXZ" + lightIndex] = false;
+	defines["SHADOWCSMNOBLEND" + lightIndex] = false;
+	defines["SHADOWCSM_RIGHTHANDED" + lightIndex] = false;
+	defines["SHADOWPCF" + lightIndex] = false;
+	defines["SHADOWPCSS" + lightIndex] = false;
+	defines["SHADOWPOISSON" + lightIndex] = false;
+	defines["SHADOWESM" + lightIndex] = false;
+	defines["SHADOWCLOSEESM" + lightIndex] = false;
+	defines["SHADOWCUBE" + lightIndex] = false;
+	defines["SHADOWLOWQUALITY" + lightIndex] = false;
+	defines["SHADOWMEDIUMQUALITY" + lightIndex] = false;
 
-    if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
-        const shadowGenerator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
-        if (shadowGenerator) {
-            const shadowMap = shadowGenerator.getShadowMap();
-            if (shadowMap) {
-                if (shadowMap.renderList && shadowMap.renderList.length > 0) {
-                    state.shadowEnabled = true;
-                    shadowGenerator.prepareDefines(defines, lightIndex);
-                }
-            }
-        }
-    }
+	if (mesh && mesh.receiveShadows && scene.shadowsEnabled && light.shadowEnabled) {
+		const shadowGenerator = light.getShadowGenerator(scene.activeCamera) ?? light.getShadowGenerator();
+		if (shadowGenerator) {
+			const shadowMap = shadowGenerator.getShadowMap();
+			if (shadowMap) {
+				if (shadowMap.renderList && shadowMap.renderList.length > 0) {
+					state.shadowEnabled = true;
+					shadowGenerator.prepareDefines(defines, lightIndex);
+				}
+			}
+		}
+	}
 
-    if (light.lightmapMode != LightConstants.LIGHTMAP_DEFAULT) {
-        state.lightmapMode = true;
-        defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
-        defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == LightConstants.LIGHTMAP_SHADOWSONLY;
-    } else {
-        defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
-        defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
-    }
+	if (light.lightmapMode != LightConstants.LIGHTMAP_DEFAULT) {
+		state.lightmapMode = true;
+		defines["LIGHTMAPEXCLUDED" + lightIndex] = true;
+		defines["LIGHTMAPNOSPECULAR" + lightIndex] = light.lightmapMode == LightConstants.LIGHTMAP_SHADOWSONLY;
+	} else {
+		defines["LIGHTMAPEXCLUDED" + lightIndex] = false;
+		defines["LIGHTMAPNOSPECULAR" + lightIndex] = false;
+	}
 }
 
 /**
@@ -604,38 +604,38 @@ export function PrepareDefinesForLight(
  * @param useThinInstances defines if thin instances have to be turned on
  */
 export function PrepareDefinesForFrameBoundValues(
-    scene: Scene,
-    engine: AbstractEngine,
-    material: Material,
-    defines: any,
-    useInstances: boolean,
-    useClipPlane: Nullable<boolean> = null,
-    useThinInstances: boolean = false
+	scene: Scene,
+	engine: AbstractEngine,
+	material: Material,
+	defines: any,
+	useInstances: boolean,
+	useClipPlane: Nullable<boolean> = null,
+	useThinInstances: boolean = false
 ): void {
-    let changed = PrepareDefinesForCamera(scene, defines);
+	let changed = PrepareDefinesForCamera(scene, defines);
 
-    if (useClipPlane !== false) {
-        changed = prepareDefinesForClipPlanes(material, scene, defines);
-    }
+	if (useClipPlane !== false) {
+		changed = prepareDefinesForClipPlanes(material, scene, defines);
+	}
 
-    if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
-        defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
-        changed = true;
-    }
+	if (defines["DEPTHPREPASS"] !== !engine.getColorWrite()) {
+		defines["DEPTHPREPASS"] = !defines["DEPTHPREPASS"];
+		changed = true;
+	}
 
-    if (defines["INSTANCES"] !== useInstances) {
-        defines["INSTANCES"] = useInstances;
-        changed = true;
-    }
+	if (defines["INSTANCES"] !== useInstances) {
+		defines["INSTANCES"] = useInstances;
+		changed = true;
+	}
 
-    if (defines["THIN_INSTANCES"] !== useThinInstances) {
-        defines["THIN_INSTANCES"] = useThinInstances;
-        changed = true;
-    }
+	if (defines["THIN_INSTANCES"] !== useThinInstances) {
+		defines["THIN_INSTANCES"] = useThinInstances;
+		changed = true;
+	}
 
-    if (changed) {
-        defines.markAsUnprocessed();
-    }
+	if (changed) {
+		defines.markAsUnprocessed();
+	}
 }
 
 /**
@@ -644,30 +644,30 @@ export function PrepareDefinesForFrameBoundValues(
  * @param defines The defines to update
  */
 export function PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
-    if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
-        defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
+	if (mesh.useBones && mesh.computeBonesUsingShaders && mesh.skeleton) {
+		defines["NUM_BONE_INFLUENCERS"] = mesh.numBoneInfluencers;
 
-        const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
+		const materialSupportsBoneTexture = defines["BONETEXTURE"] !== undefined;
 
-        if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
-            defines["BONETEXTURE"] = true;
-        } else {
-            defines["BonesPerMesh"] = mesh.skeleton.bones.length + 1;
-            defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
+		if (mesh.skeleton.isUsingTextureForMatrices && materialSupportsBoneTexture) {
+			defines["BONETEXTURE"] = true;
+		} else {
+			defines["BonesPerMesh"] = mesh.skeleton.bones.length + 1;
+			defines["BONETEXTURE"] = materialSupportsBoneTexture ? false : undefined;
 
-            const prePassRenderer = mesh.getScene().prePassRenderer;
-            if (prePassRenderer && prePassRenderer.enabled) {
-                const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
-                defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
-            }
-        }
-    } else {
-        defines["NUM_BONE_INFLUENCERS"] = 0;
-        defines["BonesPerMesh"] = 0;
-        if (defines["BONETEXTURE"] !== undefined) {
-            defines["BONETEXTURE"] = false;
-        }
-    }
+			const prePassRenderer = mesh.getScene().prePassRenderer;
+			if (prePassRenderer && prePassRenderer.enabled) {
+				const nonExcluded = prePassRenderer.excludedSkinnedMesh.indexOf(mesh) === -1;
+				defines["BONES_VELOCITY_ENABLED"] = nonExcluded;
+			}
+		}
+	} else {
+		defines["NUM_BONE_INFLUENCERS"] = 0;
+		defines["BonesPerMesh"] = 0;
+		if (defines["BONETEXTURE"] !== undefined) {
+			defines["BONETEXTURE"] = false;
+		}
+	}
 }
 
 /**
@@ -676,22 +676,22 @@ export function PrepareDefinesForBones(mesh: AbstractMesh, defines: any) {
  * @param defines The defines to update
  */
 export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) {
-    const manager = (<Mesh>mesh).morphTargetManager;
-    if (manager) {
-        defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
-        defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
-        defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
-        defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
-        defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
+	const manager = (<Mesh>mesh).morphTargetManager;
+	if (manager) {
+		defines["MORPHTARGETS_UV"] = manager.supportsUVs && defines["UV1"];
+		defines["MORPHTARGETS_TANGENT"] = manager.supportsTangents && defines["TANGENT"];
+		defines["MORPHTARGETS_NORMAL"] = manager.supportsNormals && defines["NORMAL"];
+		defines["NUM_MORPH_INFLUENCERS"] = manager.numMaxInfluencers || manager.numInfluencers;
+		defines["MORPHTARGETS"] = defines["NUM_MORPH_INFLUENCERS"] > 0;
 
-        defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
-    } else {
-        defines["MORPHTARGETS_UV"] = false;
-        defines["MORPHTARGETS_TANGENT"] = false;
-        defines["MORPHTARGETS_NORMAL"] = false;
-        defines["MORPHTARGETS"] = false;
-        defines["NUM_MORPH_INFLUENCERS"] = 0;
-    }
+		defines["MORPHTARGETS_TEXTURE"] = manager.isUsingTextureForTargets;
+	} else {
+		defines["MORPHTARGETS_UV"] = false;
+		defines["MORPHTARGETS_TANGENT"] = false;
+		defines["MORPHTARGETS_NORMAL"] = false;
+		defines["MORPHTARGETS"] = false;
+		defines["NUM_MORPH_INFLUENCERS"] = 0;
+	}
 }
 
 /**
@@ -700,8 +700,8 @@ export function PrepareDefinesForMorphTargets(mesh: AbstractMesh, defines: any) 
  * @param defines The defines to update
  */
 export function PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, defines: any) {
-    const manager = (<Mesh>mesh).bakedVertexAnimationManager;
-    defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
+	const manager = (<Mesh>mesh).bakedVertexAnimationManager;
+	defines["BAKED_VERTEX_ANIMATION_TEXTURE"] = manager && manager.isEnabled ? true : false;
 }
 
 /**
@@ -716,54 +716,54 @@ export function PrepareDefinesForBakedVertexAnimation(mesh: AbstractMesh, define
  * @returns false if defines are considered not dirty and have not been checked
  */
 export function PrepareDefinesForAttributes(
-    mesh: AbstractMesh,
-    defines: any,
-    useVertexColor: boolean,
-    useBones: boolean,
-    useMorphTargets = false,
-    useVertexAlpha = true,
-    useBakedVertexAnimation = true
+	mesh: AbstractMesh,
+	defines: any,
+	useVertexColor: boolean,
+	useBones: boolean,
+	useMorphTargets = false,
+	useVertexAlpha = true,
+	useBakedVertexAnimation = true
 ): boolean {
-    if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
-        return false;
-    }
+	if (!defines._areAttributesDirty && defines._needNormals === defines._normals && defines._needUVs === defines._uvs) {
+		return false;
+	}
 
-    defines._normals = defines._needNormals;
-    defines._uvs = defines._needUVs;
+	defines._normals = defines._needNormals;
+	defines._uvs = defines._needUVs;
 
-    defines["NORMAL"] = defines._needNormals && mesh.isVerticesDataPresent(Constants.NormalKind);
+	defines["NORMAL"] = defines._needNormals && mesh.isVerticesDataPresent(Constants.NormalKind);
 
-    if (defines._needNormals && mesh.isVerticesDataPresent(Constants.TangentKind)) {
-        defines["TANGENT"] = true;
-    }
+	if (defines._needNormals && mesh.isVerticesDataPresent(Constants.TangentKind)) {
+		defines["TANGENT"] = true;
+	}
 
-    for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
-        defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
-    }
+	for (let i = 1; i <= Constants.MAX_SUPPORTED_UV_SETS; ++i) {
+		defines["UV" + i] = defines._needUVs ? mesh.isVerticesDataPresent(`uv${i === 1 ? "" : i}`) : false;
+	}
 
-    if (useVertexColor) {
-        const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(Constants.ColorKind);
-        defines["VERTEXCOLOR"] = hasVertexColors;
-        defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
-    }
+	if (useVertexColor) {
+		const hasVertexColors = mesh.useVertexColors && mesh.isVerticesDataPresent(Constants.ColorKind);
+		defines["VERTEXCOLOR"] = hasVertexColors;
+		defines["VERTEXALPHA"] = mesh.hasVertexAlpha && hasVertexColors && useVertexAlpha;
+	}
 
-    if (mesh.isVerticesDataPresent(Constants.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
-        defines["INSTANCESCOLOR"] = true;
-    }
+	if (mesh.isVerticesDataPresent(Constants.ColorInstanceKind) && (mesh.hasInstances || mesh.hasThinInstances)) {
+		defines["INSTANCESCOLOR"] = true;
+	}
 
-    if (useBones) {
-        PrepareDefinesForBones(mesh, defines);
-    }
+	if (useBones) {
+		PrepareDefinesForBones(mesh, defines);
+	}
 
-    if (useMorphTargets) {
-        PrepareDefinesForMorphTargets(mesh, defines);
-    }
+	if (useMorphTargets) {
+		PrepareDefinesForMorphTargets(mesh, defines);
+	}
 
-    if (useBakedVertexAnimation) {
-        PrepareDefinesForBakedVertexAnimation(mesh, defines);
-    }
+	if (useBakedVertexAnimation) {
+		PrepareDefinesForBakedVertexAnimation(mesh, defines);
+	}
 
-    return true;
+	return true;
 }
 
 /**
@@ -772,13 +772,13 @@ export function PrepareDefinesForAttributes(
  * @param defines The defines to update
  */
 export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
-    if (scene.activeCamera) {
-        const previousMultiview = defines.MULTIVIEW;
-        defines.MULTIVIEW = scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1;
-        if (defines.MULTIVIEW != previousMultiview) {
-            defines.markAsUnprocessed();
-        }
-    }
+	if (scene.activeCamera) {
+		const previousMultiview = defines.MULTIVIEW;
+		defines.MULTIVIEW = scene.activeCamera.outputRenderTarget !== null && scene.activeCamera.outputRenderTarget.getViewCount() > 1;
+		if (defines.MULTIVIEW != previousMultiview) {
+			defines.markAsUnprocessed();
+		}
+	}
 }
 
 /**
@@ -788,15 +788,15 @@ export function PrepareDefinesForMultiview(scene: Scene, defines: any) {
  * @param needAlphaBlending Determines if the material needs alpha blending
  */
 export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlending: boolean) {
-    const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
-    const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
+	const previousDefine = defines.ORDER_INDEPENDENT_TRANSPARENCY;
+	const previousDefine16Bits = defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS;
 
-    defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
-    defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS = !scene.getEngine().getCaps().textureFloatLinearFiltering;
+	defines.ORDER_INDEPENDENT_TRANSPARENCY = scene.useOrderIndependentTransparency && needAlphaBlending;
+	defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS = !scene.getEngine().getCaps().textureFloatLinearFiltering;
 
-    if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY || previousDefine16Bits !== defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS) {
-        defines.markAsUnprocessed();
-    }
+	if (previousDefine !== defines.ORDER_INDEPENDENT_TRANSPARENCY || previousDefine16Bits !== defines.ORDER_INDEPENDENT_TRANSPARENCY_16BITS) {
+		defines.markAsUnprocessed();
+	}
 }
 
 /**
@@ -806,75 +806,75 @@ export function PrepareDefinesForOIT(scene: Scene, defines: any, needAlphaBlendi
  * @param canRenderToMRT Indicates if this material renders to several textures in the prepass
  */
 export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderToMRT: boolean) {
-    const previousPrePass = defines.PREPASS;
+	const previousPrePass = defines.PREPASS;
 
-    if (!defines._arePrePassDirty) {
-        return;
-    }
+	if (!defines._arePrePassDirty) {
+		return;
+	}
 
-    const texturesList = [
-        {
-            type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
-            define: "PREPASS_POSITION",
-            index: "PREPASS_POSITION_INDEX",
-        },
-        {
-            type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
-            define: "PREPASS_VELOCITY",
-            index: "PREPASS_VELOCITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
-            define: "PREPASS_REFLECTIVITY",
-            index: "PREPASS_REFLECTIVITY_INDEX",
-        },
-        {
-            type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
-            define: "PREPASS_IRRADIANCE",
-            index: "PREPASS_IRRADIANCE_INDEX",
-        },
-        {
-            type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
-            define: "PREPASS_ALBEDO_SQRT",
-            index: "PREPASS_ALBEDO_SQRT_INDEX",
-        },
-        {
-            type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
-            define: "PREPASS_DEPTH",
-            index: "PREPASS_DEPTH_INDEX",
-        },
-        {
-            type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
-            define: "PREPASS_NORMAL",
-            index: "PREPASS_NORMAL_INDEX",
-        },
-    ];
+	const texturesList = [
+		{
+			type: Constants.PREPASS_POSITION_TEXTURE_TYPE,
+			define: "PREPASS_POSITION",
+			index: "PREPASS_POSITION_INDEX",
+		},
+		{
+			type: Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+			define: "PREPASS_VELOCITY",
+			index: "PREPASS_VELOCITY_INDEX",
+		},
+		{
+			type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
+			define: "PREPASS_REFLECTIVITY",
+			index: "PREPASS_REFLECTIVITY_INDEX",
+		},
+		{
+			type: Constants.PREPASS_IRRADIANCE_TEXTURE_TYPE,
+			define: "PREPASS_IRRADIANCE",
+			index: "PREPASS_IRRADIANCE_INDEX",
+		},
+		{
+			type: Constants.PREPASS_ALBEDO_SQRT_TEXTURE_TYPE,
+			define: "PREPASS_ALBEDO_SQRT",
+			index: "PREPASS_ALBEDO_SQRT_INDEX",
+		},
+		{
+			type: Constants.PREPASS_DEPTH_TEXTURE_TYPE,
+			define: "PREPASS_DEPTH",
+			index: "PREPASS_DEPTH_INDEX",
+		},
+		{
+			type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,
+			define: "PREPASS_NORMAL",
+			index: "PREPASS_NORMAL_INDEX",
+		},
+	];
 
-    if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
-        defines.PREPASS = true;
-        defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
-        defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
+	if (scene.prePassRenderer && scene.prePassRenderer.enabled && canRenderToMRT) {
+		defines.PREPASS = true;
+		defines.SCENE_MRT_COUNT = scene.prePassRenderer.mrtCount;
+		defines.PREPASS_NORMAL_WORLDSPACE = scene.prePassRenderer.generateNormalsInWorldSpace;
 
-        for (let i = 0; i < texturesList.length; i++) {
-            const index = scene.prePassRenderer.getIndex(texturesList[i].type);
-            if (index !== -1) {
-                defines[texturesList[i].define] = true;
-                defines[texturesList[i].index] = index;
-            } else {
-                defines[texturesList[i].define] = false;
-            }
-        }
-    } else {
-        defines.PREPASS = false;
-        for (let i = 0; i < texturesList.length; i++) {
-            defines[texturesList[i].define] = false;
-        }
-    }
+		for (let i = 0; i < texturesList.length; i++) {
+			const index = scene.prePassRenderer.getIndex(texturesList[i].type);
+			if (index !== -1) {
+				defines[texturesList[i].define] = true;
+				defines[texturesList[i].index] = index;
+			} else {
+				defines[texturesList[i].define] = false;
+			}
+		}
+	} else {
+		defines.PREPASS = false;
+		for (let i = 0; i < texturesList.length; i++) {
+			defines[texturesList[i].define] = false;
+		}
+	}
 
-    if (defines.PREPASS != previousPrePass) {
-        defines.markAsUnprocessed();
-        defines.markAsImageProcessingDirty();
-    }
+	if (defines.PREPASS != previousPrePass) {
+		defines.markAsUnprocessed();
+		defines.markAsImageProcessingDirty();
+	}
 }
 
 /**
@@ -884,22 +884,22 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
  * @returns true if the defines have been updated, else false
  */
 export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
-    let changed = false;
+	let changed = false;
 
-    if (scene.activeCamera) {
-        const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
-        const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
-        const isOrtho = scene.activeCamera.mode === Constants.ORTHOGRAPHIC_CAMERA ? 1 : 0;
-        const isPersp = scene.activeCamera.mode === Constants.PERSPECTIVE_CAMERA ? 1 : 0;
+	if (scene.activeCamera) {
+		const wasOrtho = defines["CAMERA_ORTHOGRAPHIC"] ? 1 : 0;
+		const wasPersp = defines["CAMERA_PERSPECTIVE"] ? 1 : 0;
+		const isOrtho = scene.activeCamera.mode === Constants.ORTHOGRAPHIC_CAMERA ? 1 : 0;
+		const isPersp = scene.activeCamera.mode === Constants.PERSPECTIVE_CAMERA ? 1 : 0;
 
-        if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
-            defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
-            defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
-            changed = true;
-        }
-    }
+		if (wasOrtho ^ isOrtho || wasPersp ^ isPersp) {
+			defines["CAMERA_ORTHOGRAPHIC"] = isOrtho === 1;
+			defines["CAMERA_PERSPECTIVE"] = isPersp === 1;
+			changed = true;
+		}
+	}
 
-    return changed;
+	return changed;
 }
 
 /**
@@ -912,49 +912,49 @@ export function PrepareDefinesForCamera(scene: Scene, defines: any): boolean {
  * @param updateOnlyBuffersList True to only update the uniformBuffersList array
  */
 export function PrepareUniformsAndSamplersForLight(
-    lightIndex: number,
-    uniformsList: string[],
-    samplersList: string[],
-    projectedLightTexture?: any,
-    uniformBuffersList: Nullable<string[]> = null,
-    updateOnlyBuffersList = false
+	lightIndex: number,
+	uniformsList: string[],
+	samplersList: string[],
+	projectedLightTexture?: any,
+	uniformBuffersList: Nullable<string[]> = null,
+	updateOnlyBuffersList = false
 ) {
-    if (uniformBuffersList) {
-        uniformBuffersList.push("Light" + lightIndex);
-    }
+	if (uniformBuffersList) {
+		uniformBuffersList.push("Light" + lightIndex);
+	}
 
-    if (updateOnlyBuffersList) {
-        return;
-    }
+	if (updateOnlyBuffersList) {
+		return;
+	}
 
-    uniformsList.push(
-        "vLightData" + lightIndex,
-        "vLightDiffuse" + lightIndex,
-        "vLightSpecular" + lightIndex,
-        "vLightDirection" + lightIndex,
-        "vLightFalloff" + lightIndex,
-        "vLightGround" + lightIndex,
-        "lightMatrix" + lightIndex,
-        "shadowsInfo" + lightIndex,
-        "depthValues" + lightIndex
-    );
+	uniformsList.push(
+		"vLightData" + lightIndex,
+		"vLightDiffuse" + lightIndex,
+		"vLightSpecular" + lightIndex,
+		"vLightDirection" + lightIndex,
+		"vLightFalloff" + lightIndex,
+		"vLightGround" + lightIndex,
+		"lightMatrix" + lightIndex,
+		"shadowsInfo" + lightIndex,
+		"depthValues" + lightIndex
+	);
 
-    samplersList.push("shadowTexture" + lightIndex);
-    samplersList.push("depthTexture" + lightIndex);
+	samplersList.push("shadowTexture" + lightIndex);
+	samplersList.push("depthTexture" + lightIndex);
 
-    uniformsList.push(
-        "viewFrustumZ" + lightIndex,
-        "cascadeBlendFactor" + lightIndex,
-        "lightSizeUVCorrection" + lightIndex,
-        "depthCorrection" + lightIndex,
-        "penumbraDarkness" + lightIndex,
-        "frustumLengths" + lightIndex
-    );
+	uniformsList.push(
+		"viewFrustumZ" + lightIndex,
+		"cascadeBlendFactor" + lightIndex,
+		"lightSizeUVCorrection" + lightIndex,
+		"depthCorrection" + lightIndex,
+		"penumbraDarkness" + lightIndex,
+		"frustumLengths" + lightIndex
+	);
 
-    if (projectedLightTexture) {
-        samplersList.push("projectionLightTexture" + lightIndex);
-        uniformsList.push("textureProjectionMatrix" + lightIndex);
-    }
+	if (projectedLightTexture) {
+		samplersList.push("projectionLightTexture" + lightIndex);
+		uniformsList.push("textureProjectionMatrix" + lightIndex);
+	}
 }
 
 /**
@@ -965,39 +965,39 @@ export function PrepareUniformsAndSamplersForLight(
  * @param maxSimultaneousLights The maximum number of simultaneous light allowed in the effect
  */
 export function PrepareUniformsAndSamplersList(uniformsListOrOptions: string[] | IEffectCreationOptions, samplersList?: string[], defines?: any, maxSimultaneousLights = 4): void {
-    let uniformsList: string[];
-    let uniformBuffersList: Nullable<string[]> = null;
+	let uniformsList: string[];
+	let uniformBuffersList: Nullable<string[]> = null;
 
-    if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
-        const options = <IEffectCreationOptions>uniformsListOrOptions;
-        uniformsList = options.uniformsNames;
-        uniformBuffersList = options.uniformBuffersNames;
-        samplersList = options.samplers;
-        defines = options.defines;
-        maxSimultaneousLights = options.maxSimultaneousLights || 0;
-    } else {
-        uniformsList = <string[]>uniformsListOrOptions;
-        if (!samplersList) {
-            samplersList = [];
-        }
-    }
+	if ((<IEffectCreationOptions>uniformsListOrOptions).uniformsNames) {
+		const options = <IEffectCreationOptions>uniformsListOrOptions;
+		uniformsList = options.uniformsNames;
+		uniformBuffersList = options.uniformBuffersNames;
+		samplersList = options.samplers;
+		defines = options.defines;
+		maxSimultaneousLights = options.maxSimultaneousLights || 0;
+	} else {
+		uniformsList = <string[]>uniformsListOrOptions;
+		if (!samplersList) {
+			samplersList = [];
+		}
+	}
 
-    for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
-        if (!defines["LIGHT" + lightIndex]) {
-            break;
-        }
-        PrepareUniformsAndSamplersForLight(lightIndex, uniformsList, samplersList, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffersList);
-    }
+	for (let lightIndex = 0; lightIndex < maxSimultaneousLights; lightIndex++) {
+		if (!defines["LIGHT" + lightIndex]) {
+			break;
+		}
+		PrepareUniformsAndSamplersForLight(lightIndex, uniformsList, samplersList, defines["PROJECTEDLIGHTTEXTURE" + lightIndex], uniformBuffersList);
+	}
 
-    if (defines["NUM_MORPH_INFLUENCERS"]) {
-        uniformsList.push("morphTargetInfluences");
-        uniformsList.push("morphTargetCount");
-    }
+	if (defines["NUM_MORPH_INFLUENCERS"]) {
+		uniformsList.push("morphTargetInfluences");
+		uniformsList.push("morphTargetCount");
+	}
 
-    if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
-        uniformsList.push("bakedVertexAnimationSettings");
-        uniformsList.push("bakedVertexAnimationTextureSizeInverted");
-        uniformsList.push("bakedVertexAnimationTime");
-        samplersList.push("bakedVertexAnimationTexture");
-    }
+	if (defines["BAKED_VERTEX_ANIMATION_TEXTURE"]) {
+		uniformsList.push("bakedVertexAnimationSettings");
+		uniformsList.push("bakedVertexAnimationTextureSizeInverted");
+		uniformsList.push("bakedVertexAnimationTime");
+		samplersList.push("bakedVertexAnimationTexture");
+	}
 }

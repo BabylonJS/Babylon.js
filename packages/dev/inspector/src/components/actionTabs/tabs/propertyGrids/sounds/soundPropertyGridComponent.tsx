@@ -15,34 +15,34 @@ import { SliderLineComponent } from "shared-ui-components/lines/sliderLineCompon
 import { CheckBoxLineComponent } from "shared-ui-components/lines/checkBoxLineComponent";
 
 interface ISoundPropertyGridComponentProps {
-    globalState: GlobalState;
-    sound: Sound;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	sound: Sound;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGridComponentProps> {
-    constructor(props: ISoundPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ISoundPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const sound = this.props.sound;
+	override render() {
+		const sound = this.props.sound;
 
-        return (
-            <>
-                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="Class" value={sound.getClassName()} />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Name"
-                        target={sound}
-                        propertyName="name"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextLineComponent label="Status" value={sound.isPaused ? "Paused" : sound.isPlaying ? "Playing" : "Stopped"} />
-                    {/* {
+		return (
+			<>
+				<LineContainerComponent title="GENERAL" selection={this.props.globalState}>
+					<TextLineComponent label="Class" value={sound.getClassName()} />
+					<TextInputLineComponent
+						lockObject={this.props.lockObject}
+						label="Name"
+						target={sound}
+						propertyName="name"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<TextLineComponent label="Status" value={sound.isPaused ? "Paused" : sound.isPlaying ? "Playing" : "Stopped"} />
+					{/* {
                         postProcess.width &&
                         <TextLineComponent label="Width" value={postProcess.width.toString()} />
                     }
@@ -62,44 +62,44 @@ export class SoundPropertyGridComponent extends React.Component<ISoundPropertyGr
                         postProcess.dispose();
                         this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
                     }} />                       */}
-                </LineContainerComponent>
-                <LineContainerComponent title="COMMANDS" selection={this.props.globalState}>
-                    {sound.isPlaying && (
-                        <ButtonLineComponent
-                            label="Pause"
-                            onClick={() => {
-                                sound.pause();
-                                this.forceUpdate();
-                            }}
-                        />
-                    )}
-                    {!sound.isPlaying && (
-                        <ButtonLineComponent
-                            label="Play"
-                            onClick={() => {
-                                sound.play();
-                                this.forceUpdate();
-                            }}
-                        />
-                    )}
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Volume"
-                        target={sound}
-                        directValue={sound.getVolume()}
-                        onChange={(value) => {
-                            sound.setVolume(value);
-                            this.forceUpdate();
-                        }}
-                        minimum={0}
-                        maximum={5}
-                        step={0.1}
-                        decimalCount={1}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <CheckBoxLineComponent label="Loop" target={sound} propertyName="loop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                </LineContainerComponent>
-            </>
-        );
-    }
+				</LineContainerComponent>
+				<LineContainerComponent title="COMMANDS" selection={this.props.globalState}>
+					{sound.isPlaying && (
+						<ButtonLineComponent
+							label="Pause"
+							onClick={() => {
+								sound.pause();
+								this.forceUpdate();
+							}}
+						/>
+					)}
+					{!sound.isPlaying && (
+						<ButtonLineComponent
+							label="Play"
+							onClick={() => {
+								sound.play();
+								this.forceUpdate();
+							}}
+						/>
+					)}
+					<SliderLineComponent
+						lockObject={this.props.lockObject}
+						label="Volume"
+						target={sound}
+						directValue={sound.getVolume()}
+						onChange={(value) => {
+							sound.setVolume(value);
+							this.forceUpdate();
+						}}
+						minimum={0}
+						maximum={5}
+						step={0.1}
+						decimalCount={1}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<CheckBoxLineComponent label="Loop" target={sound} propertyName="loop" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

@@ -11,60 +11,60 @@ import { Axis, Space } from "core/Maths/math.axis";
  * Class used to create a container panel deployed on the surface of a sphere
  */
 export class SpherePanel extends VolumeBasedPanel {
-    private _radius = 5.0;
+	private _radius = 5.0;
 
-    /**
-     * Gets or sets the radius of the sphere where to project controls (5 by default)
-     */
-    public get radius(): float {
-        return this._radius;
-    }
+	/**
+	 * Gets or sets the radius of the sphere where to project controls (5 by default)
+	 */
+	public get radius(): float {
+		return this._radius;
+	}
 
-    public set radius(value: float) {
-        if (this._radius === value) {
-            return;
-        }
+	public set radius(value: float) {
+		if (this._radius === value) {
+			return;
+		}
 
-        this._radius = value;
+		this._radius = value;
 
-        Tools.SetImmediate(() => {
-            this._arrangeChildren();
-        });
-    }
+		Tools.SetImmediate(() => {
+			this._arrangeChildren();
+		});
+	}
 
-    protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
-        const mesh = control.mesh;
+	protected _mapGridNode(control: Control3D, nodePosition: Vector3) {
+		const mesh = control.mesh;
 
-        if (!mesh) {
-            return;
-        }
+		if (!mesh) {
+			return;
+		}
 
-        const newPos = this._sphericalMapping(nodePosition);
-        control.position = newPos;
+		const newPos = this._sphericalMapping(nodePosition);
+		control.position = newPos;
 
-        switch (this.orientation) {
-            case Container3D.FACEORIGIN_ORIENTATION:
-                mesh.lookAt(new Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
-                break;
-            case Container3D.FACEORIGINREVERSED_ORIENTATION:
-                mesh.lookAt(new Vector3(-newPos.x, -newPos.y, -newPos.z));
-                break;
-            case Container3D.FACEFORWARD_ORIENTATION:
-                break;
-            case Container3D.FACEFORWARDREVERSED_ORIENTATION:
-                mesh.rotate(Axis.Y, Math.PI, Space.LOCAL);
-                break;
-        }
-    }
+		switch (this.orientation) {
+			case Container3D.FACEORIGIN_ORIENTATION:
+				mesh.lookAt(new Vector3(2 * newPos.x, 2 * newPos.y, 2 * newPos.z));
+				break;
+			case Container3D.FACEORIGINREVERSED_ORIENTATION:
+				mesh.lookAt(new Vector3(-newPos.x, -newPos.y, -newPos.z));
+				break;
+			case Container3D.FACEFORWARD_ORIENTATION:
+				break;
+			case Container3D.FACEFORWARDREVERSED_ORIENTATION:
+				mesh.rotate(Axis.Y, Math.PI, Space.LOCAL);
+				break;
+		}
+	}
 
-    private _sphericalMapping(source: Vector3) {
-        const newPos = new Vector3(0, 0, this._radius);
+	private _sphericalMapping(source: Vector3) {
+		const newPos = new Vector3(0, 0, this._radius);
 
-        const xAngle = source.y / this._radius;
-        const yAngle = -(source.x / this._radius);
+		const xAngle = source.y / this._radius;
+		const yAngle = -(source.x / this._radius);
 
-        Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, TmpVectors.Matrix[0]);
+		Matrix.RotationYawPitchRollToRef(yAngle, xAngle, 0, TmpVectors.Matrix[0]);
 
-        return Vector3.TransformNormal(newPos, TmpVectors.Matrix[0]);
-    }
+		return Vector3.TransformNormal(newPos, TmpVectors.Matrix[0]);
+	}
 }

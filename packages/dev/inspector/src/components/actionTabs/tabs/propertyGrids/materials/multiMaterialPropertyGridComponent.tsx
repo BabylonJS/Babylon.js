@@ -12,54 +12,54 @@ import type { Material } from "core/Materials/material";
 import type { MultiMaterial } from "core/Materials/multiMaterial";
 
 interface IMultiMaterialPropertyGridComponentProps {
-    globalState: GlobalState;
-    material: MultiMaterial;
-    lockObject: LockObject;
-    onSelectionChangedObservable?: Observable<any>;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	material: MultiMaterial;
+	lockObject: LockObject;
+	onSelectionChangedObservable?: Observable<any>;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class MultiMaterialPropertyGridComponent extends React.Component<IMultiMaterialPropertyGridComponentProps> {
-    constructor(props: IMultiMaterialPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IMultiMaterialPropertyGridComponentProps) {
+		super(props);
+	}
 
-    onMaterialLink(mat: Material) {
-        if (!this.props.onSelectionChangedObservable) {
-            return;
-        }
+	onMaterialLink(mat: Material) {
+		if (!this.props.onSelectionChangedObservable) {
+			return;
+		}
 
-        this.props.onSelectionChangedObservable.notifyObservers(mat);
-    }
+		this.props.onSelectionChangedObservable.notifyObservers(mat);
+	}
 
-    renderChildMaterial() {
-        const material = this.props.material;
+	renderChildMaterial() {
+		const material = this.props.material;
 
-        return (
-            <LineContainerComponent title="CHILDREN" selection={this.props.globalState}>
-                {material.subMaterials.map((mat, i) => {
-                    if (mat) {
-                        return <TextLineComponent key={"Material #" + i} label={"Material #" + i} value={mat.name} onLink={() => this.onMaterialLink(mat)} />;
-                    }
-                    return null;
-                })}
-            </LineContainerComponent>
-        );
-    }
+		return (
+			<LineContainerComponent title="CHILDREN" selection={this.props.globalState}>
+				{material.subMaterials.map((mat, i) => {
+					if (mat) {
+						return <TextLineComponent key={"Material #" + i} label={"Material #" + i} value={mat.name} onLink={() => this.onMaterialLink(mat)} />;
+					}
+					return null;
+				})}
+			</LineContainerComponent>
+		);
+	}
 
-    override render() {
-        const material = this.props.material;
+	override render() {
+		const material = this.props.material;
 
-        return (
-            <>
-                <CommonMaterialPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    material={material}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                {this.renderChildMaterial()}
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonMaterialPropertyGridComponent
+					globalState={this.props.globalState}
+					lockObject={this.props.lockObject}
+					material={material}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				{this.renderChildMaterial()}
+			</>
+		);
+	}
 }

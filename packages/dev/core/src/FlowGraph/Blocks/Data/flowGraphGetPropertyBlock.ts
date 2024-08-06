@@ -12,66 +12,66 @@ import type { IObjectAccessor } from "../../typeDefinitions";
  * @experimental
  */
 export interface IFlowGraphGetPropertyBlockConfiguration extends IFlowGraphBlockConfiguration {
-    /**
-     * The complete path to the property that will be set
-     */
-    path: string;
-    /**
-     * The path converter to use to convert the path to an object accessor.
-     */
-    pathConverter: IPathToObjectConverter<IObjectAccessor>;
+	/**
+	 * The complete path to the property that will be set
+	 */
+	path: string;
+	/**
+	 * The path converter to use to convert the path to an object accessor.
+	 */
+	pathConverter: IPathToObjectConverter<IObjectAccessor>;
 }
 
 /**
  * @experimental
  */
 export class FlowGraphGetPropertyBlock extends FlowGraphBlock {
-    /**
-     * Output connection: The value of the property.
-     */
-    public readonly value: FlowGraphDataConnection<any>;
-    /**
-     * The component with the templated inputs for the provided path.
-     */
-    public readonly templateComponent: FlowGraphPathConverterComponent;
+	/**
+	 * Output connection: The value of the property.
+	 */
+	public readonly value: FlowGraphDataConnection<any>;
+	/**
+	 * The component with the templated inputs for the provided path.
+	 */
+	public readonly templateComponent: FlowGraphPathConverterComponent;
 
-    public constructor(
-        /**
-         * the configuration of the block
-         */
-        public override config: IFlowGraphGetPropertyBlockConfiguration
-    ) {
-        super(config);
-        this.value = this.registerDataOutput("value", RichTypeAny);
-        this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
-    }
+	public constructor(
+		/**
+		 * the configuration of the block
+		 */
+		public override config: IFlowGraphGetPropertyBlockConfiguration
+	) {
+		super(config);
+		this.value = this.registerDataOutput("value", RichTypeAny);
+		this.templateComponent = new FlowGraphPathConverterComponent(config.path, this);
+	}
 
-    public override _updateOutputs(context: FlowGraphContext) {
-        const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
-        const value = accessorContainer.info.get(accessorContainer.object);
-        this.value.setValue(value, context);
-    }
+	public override _updateOutputs(context: FlowGraphContext) {
+		const accessorContainer = this.templateComponent.getAccessor(this.config.pathConverter, context);
+		const value = accessorContainer.info.get(accessorContainer.object);
+		this.value.setValue(value, context);
+	}
 
-    /**
-     * Gets the class name of this block
-     * @returns the class name
-     */
-    public override getClassName(): string {
-        return FlowGraphGetPropertyBlock.ClassName;
-    }
+	/**
+	 * Gets the class name of this block
+	 * @returns the class name
+	 */
+	public override getClassName(): string {
+		return FlowGraphGetPropertyBlock.ClassName;
+	}
 
-    /**
-     * Serializes this block
-     * @param serializationObject the object to serialize to
-     */
-    public override serialize(serializationObject: any = {}) {
-        super.serialize(serializationObject);
-        serializationObject.config.path = this.config.path;
-    }
+	/**
+	 * Serializes this block
+	 * @param serializationObject the object to serialize to
+	 */
+	public override serialize(serializationObject: any = {}) {
+		super.serialize(serializationObject);
+		serializationObject.config.path = this.config.path;
+	}
 
-    /**
-     * Class name of the block.
-     */
-    public static ClassName = "FGGetPropertyBlock";
+	/**
+	 * Class name of the block.
+	 */
+	public static ClassName = "FGGetPropertyBlock";
 }
 RegisterClass(FlowGraphGetPropertyBlock.ClassName, FlowGraphGetPropertyBlock);

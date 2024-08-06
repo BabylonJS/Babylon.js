@@ -7,14 +7,14 @@ import { viewerGlobals } from "./configuration/globals";
  * The init function will be removed automatically after the event was triggered.
  */
 export function initListeners() {
-    document.addEventListener("DOMContentLoaded", init);
-    function init() {
-        document.removeEventListener("DOMContentLoaded", init);
-        if (viewerGlobals.disableInit) {
-            return;
-        }
-        InitTags();
-    }
+	document.addEventListener("DOMContentLoaded", init);
+	function init() {
+		document.removeEventListener("DOMContentLoaded", init);
+		if (viewerGlobals.disableInit) {
+			return;
+		}
+		InitTags();
+	}
 }
 
 /**
@@ -23,15 +23,15 @@ export function initListeners() {
  * @param selector the selector to initialize the viewer on (default is 'babylon')
  */
 export function InitTags(selector: string = "babylon") {
-    const elements = document.querySelectorAll(selector);
-    for (let i = 0; i < elements.length; ++i) {
-        const element = elements.item(i);
+	const elements = document.querySelectorAll(selector);
+	for (let i = 0; i < elements.length; ++i) {
+		const element = elements.item(i);
 
-        // get the html configuration
-        const configMapper = mapperManager.getMapper("dom");
-        const config = configMapper.map(element);
+		// get the html configuration
+		const configMapper = mapperManager.getMapper("dom");
+		const config = configMapper.map(element);
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        new DefaultViewer(element, config);
-    }
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		new DefaultViewer(element, config);
+	}
 }

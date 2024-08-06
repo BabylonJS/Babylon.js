@@ -6,7 +6,7 @@ import type { ShaderProcessingContext } from "../Processors/shaderProcessingOpti
  * @internal
  */
 export class NativeShaderProcessingContext implements ShaderProcessingContext {
-    public vertexBufferKindToNumberOfComponents: { [kind: string]: number } = {};
-    public remappedAttributeNames: { [name: string]: string } = {};
-    public injectInVertexMain = "";
+	public vertexBufferKindToNumberOfComponents: { [kind: string]: number } = {};
+	public remappedAttributeNames: { [name: string]: string } = {};
+	public injectInVertexMain = "";
 }

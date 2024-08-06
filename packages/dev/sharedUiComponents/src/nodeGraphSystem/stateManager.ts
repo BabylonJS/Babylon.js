@@ -11,35 +11,35 @@ import type { ISelectionChangedOptions } from "./interfaces/selectionChangedOpti
 import type { NodePort } from "./nodePort";
 
 export class StateManager {
-    data: any;
-    hostDocument: Document;
-    lockObject: any;
-    modalIsDisplayed: boolean;
+	data: any;
+	hostDocument: Document;
+	lockObject: any;
+	modalIsDisplayed: boolean;
 
-    onSearchBoxRequiredObservable = new Observable<{ x: number; y: number }>();
-    onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
-    onFrameCreatedObservable = new Observable<GraphFrame>();
-    onUpdateRequiredObservable = new Observable<Nullable<any>>();
-    onGraphNodeRemovalObservable = new Observable<GraphNode>();
-    onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
-    onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
-    onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
-    onNewNodeCreatedObservable = new Observable<GraphNode>();
-    onRebuildRequiredObservable = new Observable<void>();
-    onErrorMessageDialogRequiredObservable = new Observable<string>();
-    onExposePortOnFrameObservable = new Observable<GraphNode>();
-    onGridSizeChanged = new Observable<void>();
-    onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
-    onHighlightNodeObservable = new Observable<{ data: any; active: boolean }>();
+	onSearchBoxRequiredObservable = new Observable<{ x: number; y: number }>();
+	onSelectionChangedObservable = new Observable<Nullable<ISelectionChangedOptions>>();
+	onFrameCreatedObservable = new Observable<GraphFrame>();
+	onUpdateRequiredObservable = new Observable<Nullable<any>>();
+	onGraphNodeRemovalObservable = new Observable<GraphNode>();
+	onSelectionBoxMoved = new Observable<ClientRect | DOMRect>();
+	onCandidateLinkMoved = new Observable<Nullable<Vector2>>();
+	onCandidatePortSelectedObservable = new Observable<Nullable<NodePort | FrameNodePort>>();
+	onNewNodeCreatedObservable = new Observable<GraphNode>();
+	onRebuildRequiredObservable = new Observable<void>();
+	onErrorMessageDialogRequiredObservable = new Observable<string>();
+	onExposePortOnFrameObservable = new Observable<GraphNode>();
+	onGridSizeChanged = new Observable<void>();
+	onNewBlockRequiredObservable = new Observable<{ type: string; targetX: number; targetY: number; needRepositioning?: boolean; smartAdd?: boolean }>();
+	onHighlightNodeObservable = new Observable<{ data: any; active: boolean }>();
 
-    exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
-    isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
-    isDebugConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
-    applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
+	exportData: (data: any, frame?: Nullable<GraphFrame>) => string;
+	isElbowConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
+	isDebugConnectionAllowed: (nodeA: FrameNodePort | NodePort, nodeB: FrameNodePort | NodePort) => boolean;
+	applyNodePortDesign: (data: IPortData, element: HTMLElement, img: HTMLImageElement, pip: HTMLDivElement) => void;
 
-    storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
+	storeEditorData: (serializationObject: any, frame?: Nullable<GraphFrame>) => void;
 
-    getEditorDataMap: () => { [key: number]: number };
+	getEditorDataMap: () => { [key: number]: number };
 
-    createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
+	createDefaultInputData: (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => Nullable<{ data: INodeData; name: string }>;
 }

@@ -7,31 +7,31 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 
 interface IControlPropertyGridComponentProps {
-    controls: Control[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    onFontsParsedObservable?: Observable<void>;
-    globalState?: GlobalState;
+	controls: Control[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	onFontsParsedObservable?: Observable<void>;
+	globalState?: GlobalState;
 }
 
 export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
-    constructor(props: IControlPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IControlPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const controls = this.props.controls;
+	override render() {
+		const controls = this.props.controls;
 
-        return (
-            <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
-                    controls={controls}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onFontsParsedObservable={this.props.onFontsParsedObservable}
-                    globalState={this.props.globalState}
-                />
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<CommonControlPropertyGridComponent
+					lockObject={this.props.lockObject}
+					controls={controls}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					onFontsParsedObservable={this.props.onFontsParsedObservable}
+					globalState={this.props.globalState}
+				/>
+			</div>
+		);
+	}
 }

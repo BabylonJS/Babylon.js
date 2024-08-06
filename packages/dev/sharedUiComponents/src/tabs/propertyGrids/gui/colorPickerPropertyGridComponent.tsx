@@ -8,32 +8,32 @@ import { Color3LineComponent } from "../../../lines/color3LineComponent";
 import type { LockObject } from "../lockObject";
 
 interface IColorPickerPropertyGridComponentProps {
-    colorPicker: ColorPicker;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	colorPicker: ColorPicker;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ColorPickerPropertyGridComponent extends React.Component<IColorPickerPropertyGridComponentProps> {
-    constructor(props: IColorPickerPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IColorPickerPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const colorPicker = this.props.colorPicker;
+	override render() {
+		const colorPicker = this.props.colorPicker;
 
-        return (
-            <>
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="COLORPICKER">
-                    <Color3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Color"
-                        target={colorPicker}
-                        propertyName="value"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={colorPicker} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+				<LineContainerComponent title="COLORPICKER">
+					<Color3LineComponent
+						lockObject={this.props.lockObject}
+						label="Color"
+						target={colorPicker}
+						propertyName="value"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

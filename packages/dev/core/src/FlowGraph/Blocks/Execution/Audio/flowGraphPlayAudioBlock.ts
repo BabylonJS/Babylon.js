@@ -11,27 +11,27 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * A block that plays an audio.
  */
 export class FlowGraphPlayAudioBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The audio to play.
-     */
-    public readonly audio: FlowGraphDataConnection<Sound>;
+	/**
+	 * Input connection: The audio to play.
+	 */
+	public readonly audio: FlowGraphDataConnection<Sound>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
+	constructor(config?: IFlowGraphBlockConfiguration) {
+		super(config);
 
-        this.audio = this.registerDataInput("audio", RichTypeAny);
-    }
+		this.audio = this.registerDataInput("audio", RichTypeAny);
+	}
 
-    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
-        const audioValue = this.audio.getValue(context);
-        if (audioValue instanceof Sound) {
-            audioValue.play();
-        }
-        this.out._activateSignal(context);
-    }
+	public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+		const audioValue = this.audio.getValue(context);
+		if (audioValue instanceof Sound) {
+			audioValue.play();
+		}
+		this.out._activateSignal(context);
+	}
 
-    public override getClassName(): string {
-        return "FGPlayAudioBlock";
-    }
+	public override getClassName(): string {
+		return "FGPlayAudioBlock";
+	}
 }
 RegisterClass("FGPlayAudioBlock", FlowGraphPlayAudioBlock);

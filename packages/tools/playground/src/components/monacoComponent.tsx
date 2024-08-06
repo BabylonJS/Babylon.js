@@ -5,36 +5,36 @@ import type { GlobalState } from "../globalState";
 import "../scss/monaco.scss";
 
 interface IMonacoComponentProps {
-    className: string;
-    refObject: React.RefObject<HTMLDivElement>;
-    globalState: GlobalState;
+	className: string;
+	refObject: React.RefObject<HTMLDivElement>;
+	globalState: GlobalState;
 }
 export class MonacoComponent extends React.Component<IMonacoComponentProps> {
-    private _monacoManager: MonacoManager;
+	private _monacoManager: MonacoManager;
 
-    public constructor(props: IMonacoComponentProps) {
-        super(props);
+	public constructor(props: IMonacoComponentProps) {
+		super(props);
 
-        this._monacoManager = new MonacoManager(this.props.globalState);
+		this._monacoManager = new MonacoManager(this.props.globalState);
 
-        this.props.globalState.onEditorFullcreenRequiredObservable.add(() => {
-            const editorDiv = this.props.refObject.current! as any;
-            if (editorDiv.requestFullscreen) {
-                editorDiv.requestFullscreen();
-            } else if (editorDiv.mozRequestFullScreen) {
-                editorDiv.mozRequestFullScreen();
-            } else if (editorDiv.webkitRequestFullscreen) {
-                editorDiv.webkitRequestFullscreen();
-            }
-        });
-    }
+		this.props.globalState.onEditorFullcreenRequiredObservable.add(() => {
+			const editorDiv = this.props.refObject.current! as any;
+			if (editorDiv.requestFullscreen) {
+				editorDiv.requestFullscreen();
+			} else if (editorDiv.mozRequestFullScreen) {
+				editorDiv.mozRequestFullScreen();
+			} else if (editorDiv.webkitRequestFullscreen) {
+				editorDiv.webkitRequestFullscreen();
+			}
+		});
+	}
 
-    override componentDidMount() {
-        const hostElement = this.props.refObject.current!;
-        this._monacoManager.setupMonacoAsync(hostElement, true);
-    }
+	override componentDidMount() {
+		const hostElement = this.props.refObject.current!;
+		this._monacoManager.setupMonacoAsync(hostElement, true);
+	}
 
-    public override render() {
-        return <div id="monacoHost" ref={this.props.refObject} className={this.props.className}></div>;
-    }
+	public override render() {
+		return <div id="monacoHost" ref={this.props.refObject} className={this.props.className}></div>;
+	}
 }

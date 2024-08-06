@@ -6,19 +6,19 @@ import { CommonControlPropertyGridComponent } from "../../../tabs/propertyGrids/
 import type { LockObject } from "../../../tabs/propertyGrids/lockObject";
 
 interface IControlPropertyGridComponentProps {
-    control: Control;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	control: Control;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ControlPropertyGridComponent extends React.Component<IControlPropertyGridComponentProps> {
-    constructor(props: IControlPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IControlPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const control = this.props.control;
+	override render() {
+		const control = this.props.control;
 
-        return <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
-    }
+		return <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={control} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />;
+	}
 }

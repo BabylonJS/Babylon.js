@@ -10,27 +10,27 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * Block that stops a running animation
  */
 export class FlowGraphStopAnimationBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The animation to stop.
-     */
-    public readonly animationToStop: FlowGraphDataConnection<Animatable>;
+	/**
+	 * Input connection: The animation to stop.
+	 */
+	public readonly animationToStop: FlowGraphDataConnection<Animatable>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
-        this.animationToStop = this.registerDataInput("animationToStop", RichTypeAny);
-    }
+	constructor(config?: IFlowGraphBlockConfiguration) {
+		super(config);
+		this.animationToStop = this.registerDataInput("animationToStop", RichTypeAny);
+	}
 
-    public _execute(context: FlowGraphContext): void {
-        const animationToStopValue = this.animationToStop.getValue(context);
-        animationToStopValue.stop();
-        this.out._activateSignal(context);
-    }
+	public _execute(context: FlowGraphContext): void {
+		const animationToStopValue = this.animationToStop.getValue(context);
+		animationToStopValue.stop();
+		this.out._activateSignal(context);
+	}
 
-    /**
-     * @returns class name of the block.
-     */
-    public override getClassName(): string {
-        return "FGStopAnimationBlock";
-    }
+	/**
+	 * @returns class name of the block.
+	 */
+	public override getClassName(): string {
+		return "FGStopAnimationBlock";
+	}
 }
 RegisterClass("FGStopAnimationBlock", FlowGraphStopAnimationBlock);

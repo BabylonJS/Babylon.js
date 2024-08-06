@@ -12,85 +12,85 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Block used to clamp a float
  */
 export class ClampBlock extends NodeMaterialBlock {
-    /** Gets or sets the minimum range */
-    @editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
-    public minimum = 0.0;
-    /** Gets or sets the maximum range */
-    @editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
-    public maximum = 1.0;
+	/** Gets or sets the minimum range */
+	@editableInPropertyPage("Minimum", PropertyTypeForEdition.Float)
+	public minimum = 0.0;
+	/** Gets or sets the maximum range */
+	@editableInPropertyPage("Maximum", PropertyTypeForEdition.Float)
+	public maximum = 1.0;
 
-    /**
-     * Creates a new ClampBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Neutral);
+	/**
+	 * Creates a new ClampBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Neutral);
 
-        this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
+		this.registerInput("value", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+		this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.BasedOnInput);
 
-        this._outputs[0]._typeConnectionSource = this._inputs[0];
-    }
+		this._outputs[0]._typeConnectionSource = this._inputs[0];
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "ClampBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "ClampBlock";
+	}
 
-    /**
-     * Gets the value input component
-     */
-    public get value(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the value input component
+	 */
+	public get value(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the output component
+	 */
+	public get output(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        const output = this._outputs[0];
+		const output = this._outputs[0];
 
-        const cast = state.shaderLanguage === ShaderLanguage.WGSL ? state._getShaderType(this.value.type) : "";
+		const cast = state.shaderLanguage === ShaderLanguage.WGSL ? state._getShaderType(this.value.type) : "";
 
-        state.compilationString +=
-            state._declareOutput(output) +
-            ` = clamp(${this.value.associatedVariableName}, ${cast}(${this._writeFloat(this.minimum)}), ${cast}(${this._writeFloat(this.maximum)}));\n`;
+		state.compilationString +=
+			state._declareOutput(output) +
+			` = clamp(${this.value.associatedVariableName}, ${cast}(${this._writeFloat(this.minimum)}), ${cast}(${this._writeFloat(this.maximum)}));\n`;
 
-        return this;
-    }
+		return this;
+	}
 
-    protected override _dumpPropertiesCode() {
-        let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\n`;
+	protected override _dumpPropertiesCode() {
+		let codeString = super._dumpPropertiesCode() + `${this._codeVariableName}.minimum = ${this.minimum};\n`;
 
-        codeString += `${this._codeVariableName}.maximum = ${this.maximum};\n`;
+		codeString += `${this._codeVariableName}.maximum = ${this.maximum};\n`;
 
-        return codeString;
-    }
+		return codeString;
+	}
 
-    public override serialize(): any {
-        const serializationObject = super.serialize();
+	public override serialize(): any {
+		const serializationObject = super.serialize();
 
-        serializationObject.minimum = this.minimum;
-        serializationObject.maximum = this.maximum;
+		serializationObject.minimum = this.minimum;
+		serializationObject.maximum = this.maximum;
 
-        return serializationObject;
-    }
+		return serializationObject;
+	}
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        super._deserialize(serializationObject, scene, rootUrl);
+	public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+		super._deserialize(serializationObject, scene, rootUrl);
 
-        this.minimum = serializationObject.minimum;
-        this.maximum = serializationObject.maximum;
-    }
+		this.minimum = serializationObject.minimum;
+		this.maximum = serializationObject.maximum;
+	}
 }
 
 RegisterClass("BABYLON.ClampBlock", ClampBlock);

@@ -7,9 +7,9 @@ import * as MatLib from "materials/lava/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    for (const key in MatLib) {
-        (<any>globalObject).BABYLON[key] = (<any>MatLib)[key];
-    }
+	for (const key in MatLib) {
+		(<any>globalObject).BABYLON[key] = (<any>MatLib)[key];
+	}
 }
 
 export * from "materials/lava/index";

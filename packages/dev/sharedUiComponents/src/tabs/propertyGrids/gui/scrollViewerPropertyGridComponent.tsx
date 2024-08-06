@@ -9,73 +9,73 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { TextInputLineComponent } from "../../../lines/textInputLineComponent";
 
 interface IScrollViewerPropertyGridComponentProps {
-    scrollViewer: ScrollViewer;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	scrollViewer: ScrollViewer;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
-    constructor(props: IScrollViewerPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IScrollViewerPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const scrollViewer = this.props.scrollViewer;
+	override render() {
+		const scrollViewer = this.props.scrollViewer;
 
-        return (
-            <>
-                <CommonControlPropertyGridComponent
-                    lockObject={this.props.lockObject}
-                    control={scrollViewer}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="RECTANGLE">
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Thickness"
-                        target={scrollViewer}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Corner radius"
-                        target={scrollViewer}
-                        propertyName="cornerRadius"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-                <LineContainerComponent title="SCROLLVIEWER">
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Bar size"
-                        target={scrollViewer}
-                        propertyName="barSize"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Bar color"
-                        target={scrollViewer}
-                        propertyName="barColor"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Bar background"
-                        target={scrollViewer}
-                        propertyName="barBackground"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Wheel precision"
-                        target={scrollViewer}
-                        propertyName="wheelPrecision"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonControlPropertyGridComponent
+					lockObject={this.props.lockObject}
+					control={scrollViewer}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="RECTANGLE">
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Thickness"
+						target={scrollViewer}
+						propertyName="thickness"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Corner radius"
+						target={scrollViewer}
+						propertyName="cornerRadius"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+				<LineContainerComponent title="SCROLLVIEWER">
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Bar size"
+						target={scrollViewer}
+						propertyName="barSize"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<TextInputLineComponent
+						lockObject={this.props.lockObject}
+						label="Bar color"
+						target={scrollViewer}
+						propertyName="barColor"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<TextInputLineComponent
+						lockObject={this.props.lockObject}
+						label="Bar background"
+						target={scrollViewer}
+						propertyName="barBackground"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Wheel precision"
+						target={scrollViewer}
+						propertyName="wheelPrecision"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

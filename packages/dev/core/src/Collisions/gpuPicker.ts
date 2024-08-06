@@ -17,14 +17,14 @@ import "../Shaders/picking.vertex";
  * Class used to store the result of a GPU picking operation
  */
 export interface IGPUPickingInfo {
-    /**
-     * Picked mesh
-     */
-    mesh: AbstractMesh;
-    /**
-     * Picked thin instance index
-     */
-    thinInstanceIndex?: number;
+	/**
+	 * Picked mesh
+	 */
+	mesh: AbstractMesh;
+	/**
+	 * Picked thin instance index
+	 */
+	thinInstanceIndex?: number;
 }
 
 /**
@@ -32,364 +32,364 @@ export interface IGPUPickingInfo {
  * Please note that GPUPIcker cannot pick instances, only meshes
  */
 export class GPUPicker {
-    private _pickingTexure: Nullable<RenderTargetTexture> = null;
-    private _idMap: Array<number> = [];
-    private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
-    private _idColors: Array<Color3> = [];
-    private _cachedScene: Nullable<Scene>;
-    private _defaultRenderMaterial: Nullable<ShaderMaterial>;
-    private _pickableMeshes: Array<AbstractMesh>;
-    private _meshMaterialMap: Map<AbstractMesh, ShaderMaterial> = new Map();
-    private _readbuffer: Uint8Array;
-    private _meshRenderingCount: number = 0;
-    private readonly _attributeName = "instanceMeshID";
+	private _pickingTexure: Nullable<RenderTargetTexture> = null;
+	private _idMap: Array<number> = [];
+	private _thinIdMap: Array<{ meshId: number; thinId: number }> = [];
+	private _idColors: Array<Color3> = [];
+	private _cachedScene: Nullable<Scene>;
+	private _defaultRenderMaterial: Nullable<ShaderMaterial>;
+	private _pickableMeshes: Array<AbstractMesh>;
+	private _meshMaterialMap: Map<AbstractMesh, ShaderMaterial> = new Map();
+	private _readbuffer: Uint8Array;
+	private _meshRenderingCount: number = 0;
+	private readonly _attributeName = "instanceMeshID";
 
-    private _createRenderTarget(scene: Scene, width: number, height: number) {
-        if (this._pickingTexure) {
-            this._pickingTexure.dispose();
-        }
-        this._pickingTexure = new RenderTargetTexture(
-            "pickingTexure",
-            { width: width, height: height },
-            scene,
-            false,
-            undefined,
-            Constants.TEXTURETYPE_UNSIGNED_INT,
-            false,
-            Constants.TEXTURE_NEAREST_NEAREST
-        );
-    }
+	private _createRenderTarget(scene: Scene, width: number, height: number) {
+		if (this._pickingTexure) {
+			this._pickingTexure.dispose();
+		}
+		this._pickingTexure = new RenderTargetTexture(
+			"pickingTexure",
+			{ width: width, height: height },
+			scene,
+			false,
+			undefined,
+			Constants.TEXTURETYPE_UNSIGNED_INT,
+			false,
+			Constants.TEXTURE_NEAREST_NEAREST
+		);
+	}
 
-    private _createColorMaterial(scene: Scene) {
-        if (this._defaultRenderMaterial) {
-            this._defaultRenderMaterial.dispose();
-        }
+	private _createColorMaterial(scene: Scene) {
+		if (this._defaultRenderMaterial) {
+			this._defaultRenderMaterial.dispose();
+		}
 
-        const defines: string[] = [];
-        const options = {
-            attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
-            uniforms: ["world", "viewProjection", "meshID"],
-            needAlphaBlending: false,
-            defines: defines,
-            useClipPlane: null,
-        };
+		const defines: string[] = [];
+		const options = {
+			attributes: [VertexBuffer.PositionKind, this._attributeName, "bakedVertexAnimationSettingsInstanced"],
+			uniforms: ["world", "viewProjection", "meshID"],
+			needAlphaBlending: false,
+			defines: defines,
+			useClipPlane: null,
+		};
 
-        this._defaultRenderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
+		this._defaultRenderMaterial = new ShaderMaterial("pickingShader", scene, "picking", options, false);
 
-        this._defaultRenderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
-    }
+		this._defaultRenderMaterial.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+	}
 
-    private _materialBindCallback(mesh: AbstractMesh | undefined) {
-        if (!mesh) {
-            return;
-        }
+	private _materialBindCallback(mesh: AbstractMesh | undefined) {
+		if (!mesh) {
+			return;
+		}
 
-        const material = this._meshMaterialMap.get(mesh)!;
-        const effect = material.getEffect()!;
+		const material = this._meshMaterialMap.get(mesh)!;
+		const effect = material.getEffect()!;
 
-        if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
-            effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
-        }
+		if (!mesh.hasInstances && !mesh.isAnInstance && !mesh.hasThinInstances) {
+			effect.setColor4("meshID", this._idColors[mesh.uniqueId], 1);
+		}
 
-        this._meshRenderingCount++;
-    }
+		this._meshRenderingCount++;
+	}
 
-    private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
-        const colorData = new Float32Array(4 * (instanceCount + 1));
+	private _generateColorData(instanceCount: number, id: number, index: number, r: number, g: number, b: number, onInstance: (i: number, id: number) => void) {
+		const colorData = new Float32Array(4 * (instanceCount + 1));
 
-        colorData[0] = r / 255.0;
-        colorData[1] = g / 255.0;
-        colorData[2] = b / 255.0;
-        colorData[3] = 1.0;
-        for (let i = 0; i < instanceCount; i++) {
-            const r = (id & 0xff0000) >> 16;
-            const g = (id & 0x00ff00) >> 8;
-            const b = (id & 0x0000ff) >> 0;
-            onInstance(i, id);
+		colorData[0] = r / 255.0;
+		colorData[1] = g / 255.0;
+		colorData[2] = b / 255.0;
+		colorData[3] = 1.0;
+		for (let i = 0; i < instanceCount; i++) {
+			const r = (id & 0xff0000) >> 16;
+			const g = (id & 0x00ff00) >> 8;
+			const b = (id & 0x0000ff) >> 0;
+			onInstance(i, id);
 
-            colorData[(i + 1) * 4] = r / 255.0;
-            colorData[(i + 1) * 4 + 1] = g / 255.0;
-            colorData[(i + 1) * 4 + 2] = b / 255.0;
-            colorData[(i + 1) * 4 + 3] = 1.0;
-            id++;
-        }
+			colorData[(i + 1) * 4] = r / 255.0;
+			colorData[(i + 1) * 4 + 1] = g / 255.0;
+			colorData[(i + 1) * 4 + 2] = b / 255.0;
+			colorData[(i + 1) * 4 + 3] = 1.0;
+			id++;
+		}
 
-        return colorData;
-    }
+		return colorData;
+	}
 
-    private _generateThinInstanceColorData(instanceCount: number, id: number, onInstance: (i: number, id: number) => void) {
-        const colorData = new Float32Array(4 * instanceCount);
+	private _generateThinInstanceColorData(instanceCount: number, id: number, onInstance: (i: number, id: number) => void) {
+		const colorData = new Float32Array(4 * instanceCount);
 
-        for (let i = 0; i < instanceCount; i++) {
-            const r = (id & 0xff0000) >> 16;
-            const g = (id & 0x00ff00) >> 8;
-            const b = (id & 0x0000ff) >> 0;
-            onInstance(i, id);
+		for (let i = 0; i < instanceCount; i++) {
+			const r = (id & 0xff0000) >> 16;
+			const g = (id & 0x00ff00) >> 8;
+			const b = (id & 0x0000ff) >> 0;
+			onInstance(i, id);
 
-            colorData[i * 4] = r / 255.0;
-            colorData[i * 4 + 1] = g / 255.0;
-            colorData[i * 4 + 2] = b / 255.0;
-            colorData[i * 4 + 3] = 1.0;
-            id++;
-        }
+			colorData[i * 4] = r / 255.0;
+			colorData[i * 4 + 1] = g / 255.0;
+			colorData[i * 4 + 2] = b / 255.0;
+			colorData[i * 4 + 3] = 1.0;
+			id++;
+		}
 
-        return colorData;
-    }
+		return colorData;
+	}
 
-    /**
-     * Set the list of meshes to pick from
-     * Set that value to null to clear the list (and avoid leaks)
-     * The module will read and delete from the array provided by reference. Disposing the module or setting the value to null will clear the array.
-     * @param list defines the list of meshes to pick from
-     */
-    public setPickingList(list: Nullable<Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }>>) {
-        if (this._pickableMeshes) {
-            // Cleanup
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                if (mesh.hasInstances) {
-                    (mesh as Mesh).removeVerticesData(this._attributeName);
-                }
-                if (mesh.hasThinInstances) {
-                    (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, null);
-                }
-                if (this._pickingTexure) {
-                    this._pickingTexure.setMaterialForRendering(mesh, undefined);
-                }
+	/**
+	 * Set the list of meshes to pick from
+	 * Set that value to null to clear the list (and avoid leaks)
+	 * The module will read and delete from the array provided by reference. Disposing the module or setting the value to null will clear the array.
+	 * @param list defines the list of meshes to pick from
+	 */
+	public setPickingList(list: Nullable<Array<AbstractMesh | { mesh: AbstractMesh; material: ShaderMaterial }>>) {
+		if (this._pickableMeshes) {
+			// Cleanup
+			for (let index = 0; index < this._pickableMeshes.length; index++) {
+				const mesh = this._pickableMeshes[index];
+				if (mesh.hasInstances) {
+					(mesh as Mesh).removeVerticesData(this._attributeName);
+				}
+				if (mesh.hasThinInstances) {
+					(mesh as Mesh).thinInstanceSetBuffer(this._attributeName, null);
+				}
+				if (this._pickingTexure) {
+					this._pickingTexure.setMaterialForRendering(mesh, undefined);
+				}
 
-                const material = this._meshMaterialMap.get(mesh)!;
-                if (material !== this._defaultRenderMaterial) {
-                    material.onBindObservable.removeCallback(this._materialBindCallback);
-                }
-            }
-            this._pickableMeshes.length = 0;
-            this._meshMaterialMap.clear();
-            this._idMap.length = 0;
-            this._thinIdMap.length = 0;
-            this._idColors.length = 0;
-            if (this._pickingTexure) {
-                this._pickingTexure.renderList = [];
-            }
-        }
-        if (!list || list.length === 0) {
-            return;
-        }
+				const material = this._meshMaterialMap.get(mesh)!;
+				if (material !== this._defaultRenderMaterial) {
+					material.onBindObservable.removeCallback(this._materialBindCallback);
+				}
+			}
+			this._pickableMeshes.length = 0;
+			this._meshMaterialMap.clear();
+			this._idMap.length = 0;
+			this._thinIdMap.length = 0;
+			this._idColors.length = 0;
+			if (this._pickingTexure) {
+				this._pickingTexure.renderList = [];
+			}
+		}
+		if (!list || list.length === 0) {
+			return;
+		}
 
-        // Prepare target
-        const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
-        const engine = scene.getEngine();
-        const rttSizeW = engine.getRenderWidth();
-        const rttSizeH = engine.getRenderHeight();
-        if (!this._pickingTexure) {
-            this._createRenderTarget(scene, rttSizeW, rttSizeH);
-        } else {
-            const size = this._pickingTexure.getSize();
+		// Prepare target
+		const scene = ("mesh" in list[0] ? list[0].mesh : list[0]).getScene();
+		const engine = scene.getEngine();
+		const rttSizeW = engine.getRenderWidth();
+		const rttSizeH = engine.getRenderHeight();
+		if (!this._pickingTexure) {
+			this._createRenderTarget(scene, rttSizeW, rttSizeH);
+		} else {
+			const size = this._pickingTexure.getSize();
 
-            if (size.width !== rttSizeW || size.height !== rttSizeH || this._cachedScene !== scene) {
-                this._createRenderTarget(scene, rttSizeW, rttSizeH);
-            }
-        }
+			if (size.width !== rttSizeW || size.height !== rttSizeH || this._cachedScene !== scene) {
+				this._createRenderTarget(scene, rttSizeW, rttSizeH);
+			}
+		}
 
-        if (!this._cachedScene || this._cachedScene !== scene) {
-            this._createColorMaterial(scene);
-        }
+		if (!this._cachedScene || this._cachedScene !== scene) {
+			this._createColorMaterial(scene);
+		}
 
-        for (let i = 0; i < list.length; i++) {
-            const item = list[i];
-            if ("mesh" in item) {
-                this._meshMaterialMap.set(item.mesh, item.material);
-                list[i] = item.mesh;
-            } else {
-                this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
-            }
-        }
-        this._pickableMeshes = list as Array<AbstractMesh>;
+		for (let i = 0; i < list.length; i++) {
+			const item = list[i];
+			if ("mesh" in item) {
+				this._meshMaterialMap.set(item.mesh, item.material);
+				list[i] = item.mesh;
+			} else {
+				this._meshMaterialMap.set(item, this._defaultRenderMaterial!);
+			}
+		}
+		this._pickableMeshes = list as Array<AbstractMesh>;
 
-        this._cachedScene = scene;
-        this._pickingTexure!.renderList = [];
+		this._cachedScene = scene;
+		this._pickingTexure!.renderList = [];
 
-        // We will affect colors and create vertex color buffers
-        let id = 1;
-        for (let index = 0; index < this._pickableMeshes.length; index++) {
-            const mesh = this._pickableMeshes[index];
-            const material = this._meshMaterialMap.get(mesh)!;
+		// We will affect colors and create vertex color buffers
+		let id = 1;
+		for (let index = 0; index < this._pickableMeshes.length; index++) {
+			const mesh = this._pickableMeshes[index];
+			const material = this._meshMaterialMap.get(mesh)!;
 
-            if (material !== this._defaultRenderMaterial) {
-                material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
-            }
-            this._pickingTexure!.setMaterialForRendering(mesh, material);
-            this._pickingTexure!.renderList.push(mesh);
+			if (material !== this._defaultRenderMaterial) {
+				material.onBindObservable.add(this._materialBindCallback, undefined, undefined, this);
+			}
+			this._pickingTexure!.setMaterialForRendering(mesh, material);
+			this._pickingTexure!.renderList.push(mesh);
 
-            if (mesh.isAnInstance) {
-                continue; // This will be handled by the source mesh
-            }
+			if (mesh.isAnInstance) {
+				continue; // This will be handled by the source mesh
+			}
 
-            const r = (id & 0xff0000) >> 16;
-            const g = (id & 0x00ff00) >> 8;
-            const b = (id & 0x0000ff) >> 0;
+			const r = (id & 0xff0000) >> 16;
+			const g = (id & 0x00ff00) >> 8;
+			const b = (id & 0x0000ff) >> 0;
 
-            if (mesh.hasThinInstances) {
-                const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
-                    this._thinIdMap[id] = { meshId: index, thinId: i };
-                });
-                id += (mesh as Mesh).thinInstanceCount;
-                (mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
-            } else {
-                this._idMap[id] = index;
-                id++;
+			if (mesh.hasThinInstances) {
+				const colorData = this._generateThinInstanceColorData((mesh as Mesh).thinInstanceCount, id, (i, id) => {
+					this._thinIdMap[id] = { meshId: index, thinId: i };
+				});
+				id += (mesh as Mesh).thinInstanceCount;
+				(mesh as Mesh).thinInstanceSetBuffer(this._attributeName, colorData, 4);
+			} else {
+				this._idMap[id] = index;
+				id++;
 
-                if (mesh.hasInstances) {
-                    const instances = (mesh as Mesh).instances;
-                    const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
-                        const instance = instances[i];
-                        this._idMap[id] = this._pickableMeshes.indexOf(instance);
-                    });
-                    id += instances.length;
-                    const engine = mesh.getEngine();
+				if (mesh.hasInstances) {
+					const instances = (mesh as Mesh).instances;
+					const colorData = this._generateColorData(instances.length, id, index, r, g, b, (i, id) => {
+						const instance = instances[i];
+						this._idMap[id] = this._pickableMeshes.indexOf(instance);
+					});
+					id += instances.length;
+					const engine = mesh.getEngine();
 
-                    const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
-                    (mesh as Mesh).setVerticesBuffer(buffer, true);
-                } else {
-                    this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
-                }
-            }
-        }
-    }
+					const buffer = new VertexBuffer(engine, colorData, this._attributeName, false, false, 4, true);
+					(mesh as Mesh).setVerticesBuffer(buffer, true);
+				} else {
+					this._idColors[mesh.uniqueId] = Color3.FromInts(r, g, b);
+				}
+			}
+		}
+	}
 
-    /**
-     * Execute a picking operation
-     * @param x defines the X coordinates where to run the pick
-     * @param y defines the Y coordinates where to run the pick
-     * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
-     * @returns A promise with the picking results
-     */
-    public pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<IGPUPickingInfo>> {
-        if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
-            return Promise.resolve(null);
-        }
+	/**
+	 * Execute a picking operation
+	 * @param x defines the X coordinates where to run the pick
+	 * @param y defines the Y coordinates where to run the pick
+	 * @param disposeWhenDone defines a boolean indicating we do not want to keep resources alive (false by default)
+	 * @returns A promise with the picking results
+	 */
+	public pickAsync(x: number, y: number, disposeWhenDone = false): Promise<Nullable<IGPUPickingInfo>> {
+		if (!this._pickableMeshes || this._pickableMeshes.length === 0) {
+			return Promise.resolve(null);
+		}
 
-        const scene = this._cachedScene!;
-        const engine = scene.getEngine();
-        const rttSizeW = engine.getRenderWidth();
-        const rttSizeH = engine.getRenderHeight();
-        const devicePixelRatio = 1 / engine._hardwareScalingLevel;
+		const scene = this._cachedScene!;
+		const engine = scene.getEngine();
+		const rttSizeW = engine.getRenderWidth();
+		const rttSizeH = engine.getRenderHeight();
+		const devicePixelRatio = 1 / engine._hardwareScalingLevel;
 
-        if (!this._readbuffer) {
-            this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4); // Because of block alignment in WebGPU
-        }
+		if (!this._readbuffer) {
+			this._readbuffer = new Uint8Array(engine.isWebGPU ? 256 : 4); // Because of block alignment in WebGPU
+		}
 
-        // Do we need to rebuild the RTT?
-        const size = this._pickingTexure!.getSize();
+		// Do we need to rebuild the RTT?
+		const size = this._pickingTexure!.getSize();
 
-        if (size.width !== rttSizeW || size.height !== rttSizeH) {
-            this._createRenderTarget(scene, rttSizeW, rttSizeH);
+		if (size.width !== rttSizeW || size.height !== rttSizeH) {
+			this._createRenderTarget(scene, rttSizeW, rttSizeH);
 
-            this._pickingTexure!.renderList = [];
-            for (let index = 0; index < this._pickableMeshes.length; index++) {
-                const mesh = this._pickableMeshes[index];
-                this._pickingTexure!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
-                this._pickingTexure!.renderList.push(mesh);
-            }
-        }
+			this._pickingTexure!.renderList = [];
+			for (let index = 0; index < this._pickableMeshes.length; index++) {
+				const mesh = this._pickableMeshes[index];
+				this._pickingTexure!.setMaterialForRendering(mesh, this._meshMaterialMap.get(mesh)!);
+				this._pickingTexure!.renderList.push(mesh);
+			}
+		}
 
-        this._meshRenderingCount = 0;
-        // Ensure ints and adapt to screen resolution
-        x = (devicePixelRatio * x) >> 0;
-        y = (devicePixelRatio * y) >> 0;
+		this._meshRenderingCount = 0;
+		// Ensure ints and adapt to screen resolution
+		x = (devicePixelRatio * x) >> 0;
+		y = (devicePixelRatio * y) >> 0;
 
-        if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
-            return Promise.resolve(null);
-        }
+		if (x < 0 || y < 0 || x >= rttSizeW || y >= rttSizeH) {
+			return Promise.resolve(null);
+		}
 
-        // Invert Y
-        y = rttSizeH - y;
+		// Invert Y
+		y = rttSizeH - y;
 
-        this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
+		this._pickingTexure!.clearColor = new Color4(0, 0, 0, 0);
 
-        scene.customRenderTargets.push(this._pickingTexure!);
-        this._pickingTexure!.onBeforeRender = () => {
-            // Enable scissor
-            if ((engine as WebGPUEngine | Engine).enableScissor) {
-                (engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
-            }
-        };
+		scene.customRenderTargets.push(this._pickingTexure!);
+		this._pickingTexure!.onBeforeRender = () => {
+			// Enable scissor
+			if ((engine as WebGPUEngine | Engine).enableScissor) {
+				(engine as WebGPUEngine | Engine).enableScissor(x, y, 1, 1);
+			}
+		};
 
-        return new Promise((resolve, reject) => {
-            this._pickingTexure!.onAfterRender = async () => {
-                // Disable scissor
-                if ((engine as WebGPUEngine | Engine).disableScissor) {
-                    (engine as WebGPUEngine | Engine).disableScissor();
-                }
+		return new Promise((resolve, reject) => {
+			this._pickingTexure!.onAfterRender = async () => {
+				// Disable scissor
+				if ((engine as WebGPUEngine | Engine).disableScissor) {
+					(engine as WebGPUEngine | Engine).disableScissor();
+				}
 
-                if (!this._pickingTexure) {
-                    reject();
-                }
+				if (!this._pickingTexure) {
+					reject();
+				}
 
-                let pickedMesh: Nullable<AbstractMesh> = null;
-                let thinInstanceIndex: number | undefined = undefined;
-                const wasSuccessfull = this._meshRenderingCount > 0;
+				let pickedMesh: Nullable<AbstractMesh> = null;
+				let thinInstanceIndex: number | undefined = undefined;
+				const wasSuccessfull = this._meshRenderingCount > 0;
 
-                if (wasSuccessfull) {
-                    // Remove from the active RTTs
-                    const index = scene.customRenderTargets.indexOf(this._pickingTexure!);
-                    if (index > -1) {
-                        scene.customRenderTargets.splice(index, 1);
-                    }
+				if (wasSuccessfull) {
+					// Remove from the active RTTs
+					const index = scene.customRenderTargets.indexOf(this._pickingTexure!);
+					if (index > -1) {
+						scene.customRenderTargets.splice(index, 1);
+					}
 
-                    // Do the actual picking
-                    if (await this._readTexturePixelsAsync(x, y)) {
-                        const r = this._readbuffer[0];
-                        const g = this._readbuffer[1];
-                        const b = this._readbuffer[2];
-                        const colorId = (r << 16) + (g << 8) + b;
+					// Do the actual picking
+					if (await this._readTexturePixelsAsync(x, y)) {
+						const r = this._readbuffer[0];
+						const g = this._readbuffer[1];
+						const b = this._readbuffer[2];
+						const colorId = (r << 16) + (g << 8) + b;
 
-                        // Thin?
-                        if (this._thinIdMap[colorId]) {
-                            pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
-                            thinInstanceIndex = this._thinIdMap[colorId].thinId;
-                        } else {
-                            pickedMesh = this._pickableMeshes[this._idMap[colorId]];
-                        }
-                    }
-                }
+						// Thin?
+						if (this._thinIdMap[colorId]) {
+							pickedMesh = this._pickableMeshes[this._thinIdMap[colorId].meshId];
+							thinInstanceIndex = this._thinIdMap[colorId].thinId;
+						} else {
+							pickedMesh = this._pickableMeshes[this._idMap[colorId]];
+						}
+					}
+				}
 
-                // Clean-up
-                if (!wasSuccessfull) {
-                    this._meshRenderingCount = 0;
-                    return; // We need to wait for the shaders to be ready
-                } else {
-                    if (disposeWhenDone) {
-                        this.dispose();
-                    }
-                    if (pickedMesh) {
-                        resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
-                    } else {
-                        resolve(null);
-                    }
-                }
-            };
-        });
-    }
+				// Clean-up
+				if (!wasSuccessfull) {
+					this._meshRenderingCount = 0;
+					return; // We need to wait for the shaders to be ready
+				} else {
+					if (disposeWhenDone) {
+						this.dispose();
+					}
+					if (pickedMesh) {
+						resolve({ mesh: pickedMesh, thinInstanceIndex: thinInstanceIndex });
+					} else {
+						resolve(null);
+					}
+				}
+			};
+		});
+	}
 
-    private async _readTexturePixelsAsync(x: number, y: number) {
-        if (!this._cachedScene || !this._pickingTexure?._texture) {
-            return false;
-        }
-        const engine = this._cachedScene.getEngine();
-        await engine._readTexturePixels(this._pickingTexure._texture, 1, 1, -1, 0, this._readbuffer, true, true, x, y);
+	private async _readTexturePixelsAsync(x: number, y: number) {
+		if (!this._cachedScene || !this._pickingTexure?._texture) {
+			return false;
+		}
+		const engine = this._cachedScene.getEngine();
+		await engine._readTexturePixels(this._pickingTexure._texture, 1, 1, -1, 0, this._readbuffer, true, true, x, y);
 
-        return true;
-    }
+		return true;
+	}
 
-    /** Release the resources */
-    public dispose() {
-        this.setPickingList(null);
-        this._cachedScene = null;
+	/** Release the resources */
+	public dispose() {
+		this.setPickingList(null);
+		this._cachedScene = null;
 
-        // Cleaning up
-        this._pickingTexure?.dispose();
-        this._pickingTexure = null;
-        this._defaultRenderMaterial?.dispose();
-        this._defaultRenderMaterial = null;
-    }
+		// Cleaning up
+		this._pickingTexure?.dispose();
+		this._pickingTexure = null;
+		this._defaultRenderMaterial?.dispose();
+		this._defaultRenderMaterial = null;
+	}
 }

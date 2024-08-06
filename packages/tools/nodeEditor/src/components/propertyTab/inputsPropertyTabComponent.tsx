@@ -16,136 +16,136 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 interface IInputsPropertyTabComponentProps {
-    globalState: GlobalState;
-    inputs: InputBlock[];
-    lockObject: LockObject;
+	globalState: GlobalState;
+	inputs: InputBlock[];
+	lockObject: LockObject;
 }
 
 export class InputsPropertyTabComponent extends React.Component<IInputsPropertyTabComponentProps> {
-    constructor(props: IInputsPropertyTabComponentProps) {
-        super(props);
-    }
+	constructor(props: IInputsPropertyTabComponentProps) {
+		super(props);
+	}
 
-    processInputBlockUpdate(ib: InputBlock) {
-        this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
+	processInputBlockUpdate(ib: InputBlock) {
+		this.props.globalState.stateManager.onUpdateRequiredObservable.notifyObservers(ib);
 
-        if (ib.isConstant) {
-            this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
-        }
-    }
+		if (ib.isConstant) {
+			this.props.globalState.stateManager.onRebuildRequiredObservable.notifyObservers();
+		}
+	}
 
-    renderInputBlock(block: InputBlock) {
-        switch (block.type) {
-            case NodeMaterialBlockConnectionPointTypes.Float: {
-                const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
-                return (
-                    <div key={block.uniqueId}>
-                        {block.isBoolean && (
-                            <CheckBoxLineComponent
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                onValueChanged={() => {
-                                    this.processInputBlockUpdate(block);
-                                }}
-                            />
-                        )}
-                        {!block.isBoolean && cantDisplaySlider && (
-                            <FloatLineComponent
-                                lockObject={this.props.lockObject}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                onChange={() => this.processInputBlockUpdate(block)}
-                            />
-                        )}
-                        {!block.isBoolean && !cantDisplaySlider && (
-                            <SliderLineComponent
-                                lockObject={this.props.lockObject}
-                                key={block.uniqueId}
-                                label={block.name}
-                                target={block}
-                                propertyName="value"
-                                step={(block.max - block.min) / 100.0}
-                                minimum={block.min}
-                                maximum={block.max}
-                                onChange={() => this.processInputBlockUpdate(block)}
-                            />
-                        )}
-                    </div>
-                );
-            }
-            case NodeMaterialBlockConnectionPointTypes.Color3:
-                return (
-                    <Color3LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
-            case NodeMaterialBlockConnectionPointTypes.Color4:
-                return (
-                    <Color4LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
-            case NodeMaterialBlockConnectionPointTypes.Vector2:
-                return (
-                    <Vector2LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
-            case NodeMaterialBlockConnectionPointTypes.Vector3:
-                return (
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
-            case NodeMaterialBlockConnectionPointTypes.Vector4:
-                return (
-                    <Vector4LineComponent
-                        lockObject={this.props.lockObject}
-                        key={block.uniqueId}
-                        label={block.name}
-                        target={block}
-                        propertyName="value"
-                        onChange={() => this.processInputBlockUpdate(block)}
-                    />
-                );
-        }
-        return null;
-    }
+	renderInputBlock(block: InputBlock) {
+		switch (block.type) {
+			case NodeMaterialBlockConnectionPointTypes.Float: {
+				const cantDisplaySlider = isNaN(block.min) || isNaN(block.max) || block.min === block.max;
+				return (
+					<div key={block.uniqueId}>
+						{block.isBoolean && (
+							<CheckBoxLineComponent
+								key={block.uniqueId}
+								label={block.name}
+								target={block}
+								propertyName="value"
+								onValueChanged={() => {
+									this.processInputBlockUpdate(block);
+								}}
+							/>
+						)}
+						{!block.isBoolean && cantDisplaySlider && (
+							<FloatLineComponent
+								lockObject={this.props.lockObject}
+								key={block.uniqueId}
+								label={block.name}
+								target={block}
+								propertyName="value"
+								onChange={() => this.processInputBlockUpdate(block)}
+							/>
+						)}
+						{!block.isBoolean && !cantDisplaySlider && (
+							<SliderLineComponent
+								lockObject={this.props.lockObject}
+								key={block.uniqueId}
+								label={block.name}
+								target={block}
+								propertyName="value"
+								step={(block.max - block.min) / 100.0}
+								minimum={block.min}
+								maximum={block.max}
+								onChange={() => this.processInputBlockUpdate(block)}
+							/>
+						)}
+					</div>
+				);
+			}
+			case NodeMaterialBlockConnectionPointTypes.Color3:
+				return (
+					<Color3LineComponent
+						lockObject={this.props.lockObject}
+						key={block.uniqueId}
+						label={block.name}
+						target={block}
+						propertyName="value"
+						onChange={() => this.processInputBlockUpdate(block)}
+					/>
+				);
+			case NodeMaterialBlockConnectionPointTypes.Color4:
+				return (
+					<Color4LineComponent
+						lockObject={this.props.lockObject}
+						key={block.uniqueId}
+						label={block.name}
+						target={block}
+						propertyName="value"
+						onChange={() => this.processInputBlockUpdate(block)}
+					/>
+				);
+			case NodeMaterialBlockConnectionPointTypes.Vector2:
+				return (
+					<Vector2LineComponent
+						lockObject={this.props.lockObject}
+						key={block.uniqueId}
+						label={block.name}
+						target={block}
+						propertyName="value"
+						onChange={() => this.processInputBlockUpdate(block)}
+					/>
+				);
+			case NodeMaterialBlockConnectionPointTypes.Vector3:
+				return (
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						key={block.uniqueId}
+						label={block.name}
+						target={block}
+						propertyName="value"
+						onChange={() => this.processInputBlockUpdate(block)}
+					/>
+				);
+			case NodeMaterialBlockConnectionPointTypes.Vector4:
+				return (
+					<Vector4LineComponent
+						lockObject={this.props.lockObject}
+						key={block.uniqueId}
+						label={block.name}
+						target={block}
+						propertyName="value"
+						onChange={() => this.processInputBlockUpdate(block)}
+					/>
+				);
+		}
+		return null;
+	}
 
-    override render() {
-        return (
-            <LineContainerComponent title="INPUTS">
-                {this.props.inputs.map((ib) => {
-                    if (!ib.isUniform || ib.isSystemValue || !ib.name) {
-                        return null;
-                    }
-                    return this.renderInputBlock(ib);
-                })}
-            </LineContainerComponent>
-        );
-    }
+	override render() {
+		return (
+			<LineContainerComponent title="INPUTS">
+				{this.props.inputs.map((ib) => {
+					if (!ib.isUniform || ib.isSystemValue || !ib.name) {
+						return null;
+					}
+					return this.renderInputBlock(ib);
+				})}
+			</LineContainerComponent>
+		);
+	}
 }

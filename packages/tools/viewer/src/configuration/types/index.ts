@@ -17,38 +17,38 @@ import { deepmerge } from "../../helper/index";
  * @returns the configuration object
  */
 const getConfigurationType = function (types: string): ViewerConfiguration {
-    let config: ViewerConfiguration = {};
-    const typesSeparated = types.split(",");
-    typesSeparated.forEach((type) => {
-        switch (type.trim()) {
-            case "environmentMap":
-                config = deepmerge(config, environmentMapConfiguration);
-                break;
-            case "shadowDirectionalLight":
-                config = deepmerge(config, shadowDirectionalLightConfiguration);
-                break;
-            case "shadowSpotLight":
-                config = deepmerge(config, shadowSpotlLightConfiguration);
-                break;
-            case "default":
-                config = deepmerge(config, defaultConfiguration);
-                break;
-            case "minimal":
-                config = deepmerge(config, minimalConfiguration);
-                break;
-            case "none":
-                break;
-            case "extended":
-            default:
-                config = deepmerge(config, extendedConfiguration);
-                break;
-        }
+	let config: ViewerConfiguration = {};
+	const typesSeparated = types.split(",");
+	typesSeparated.forEach((type) => {
+		switch (type.trim()) {
+			case "environmentMap":
+				config = deepmerge(config, environmentMapConfiguration);
+				break;
+			case "shadowDirectionalLight":
+				config = deepmerge(config, shadowDirectionalLightConfiguration);
+				break;
+			case "shadowSpotLight":
+				config = deepmerge(config, shadowSpotlLightConfiguration);
+				break;
+			case "default":
+				config = deepmerge(config, defaultConfiguration);
+				break;
+			case "minimal":
+				config = deepmerge(config, minimalConfiguration);
+				break;
+			case "none":
+				break;
+			case "extended":
+			default:
+				config = deepmerge(config, extendedConfiguration);
+				break;
+		}
 
-        if (config.extends) {
-            config = deepmerge(config, getConfigurationType(config.extends));
-        }
-    });
-    return config;
+		if (config.extends) {
+			config = deepmerge(config, getConfigurationType(config.extends));
+		}
+	});
+	return config;
 };
 
 export { getConfigurationType, defaultConfiguration, minimalConfiguration };

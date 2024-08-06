@@ -9,45 +9,45 @@ import { FloatLineComponent } from "../../../lines/floatLineComponent";
 import { CheckBoxLineComponent } from "../../../lines/checkBoxLineComponent";
 
 interface IRectanglePropertyGridComponentProps {
-    rectangle: Rectangle;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	rectangle: Rectangle;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class RectanglePropertyGridComponent extends React.Component<IRectanglePropertyGridComponentProps> {
-    constructor(props: IRectanglePropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IRectanglePropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const rectangle = this.props.rectangle;
+	override render() {
+		const rectangle = this.props.rectangle;
 
-        return (
-            <>
-                <CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                <LineContainerComponent title="RECTANGLE">
-                    <CheckBoxLineComponent
-                        label="Clip children"
-                        target={rectangle}
-                        propertyName="clipChildren"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Thickness"
-                        target={rectangle}
-                        propertyName="thickness"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Corner radius"
-                        target={rectangle}
-                        propertyName="cornerRadius"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonControlPropertyGridComponent lockObject={this.props.lockObject} control={rectangle} onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+				<LineContainerComponent title="RECTANGLE">
+					<CheckBoxLineComponent
+						label="Clip children"
+						target={rectangle}
+						propertyName="clipChildren"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Thickness"
+						target={rectangle}
+						propertyName="thickness"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Corner radius"
+						target={rectangle}
+						propertyName="cornerRadius"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

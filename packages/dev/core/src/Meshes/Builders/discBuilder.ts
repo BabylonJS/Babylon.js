@@ -18,62 +18,62 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function CreateDiscVertexData(options: {
-    radius?: number;
-    tessellation?: number;
-    arc?: number;
-    sideOrientation?: number;
-    frontUVs?: Vector4;
-    backUVs?: Vector4;
+	radius?: number;
+	tessellation?: number;
+	arc?: number;
+	sideOrientation?: number;
+	frontUVs?: Vector4;
+	backUVs?: Vector4;
 }): VertexData {
-    const positions: number[] = [];
-    const indices: number[] = [];
-    const normals: number[] = [];
-    const uvs: number[] = [];
+	const positions: number[] = [];
+	const indices: number[] = [];
+	const normals: number[] = [];
+	const uvs: number[] = [];
 
-    const radius = options.radius || 0.5;
-    const tessellation = options.tessellation || 64;
-    const arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
-    const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+	const radius = options.radius || 0.5;
+	const tessellation = options.tessellation || 64;
+	const arc: number = options.arc && (options.arc <= 0 || options.arc > 1) ? 1.0 : options.arc || 1.0;
+	const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    // positions and uvs
-    positions.push(0, 0, 0); // disc center first
-    uvs.push(0.5, 0.5);
+	// positions and uvs
+	positions.push(0, 0, 0); // disc center first
+	uvs.push(0.5, 0.5);
 
-    const theta = Math.PI * 2 * arc;
-    const step = arc === 1 ? theta / tessellation : theta / (tessellation - 1);
-    let a = 0;
-    for (let t = 0; t < tessellation; t++) {
-        const x = Math.cos(a);
-        const y = Math.sin(a);
-        const u = (x + 1) / 2;
-        const v = (1 - y) / 2;
-        positions.push(radius * x, radius * y, 0);
-        uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
-        a += step;
-    }
-    if (arc === 1) {
-        positions.push(positions[3], positions[4], positions[5]); // close the circle
-        uvs.push(uvs[2], CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - uvs[3] : uvs[3]);
-    }
+	const theta = Math.PI * 2 * arc;
+	const step = arc === 1 ? theta / tessellation : theta / (tessellation - 1);
+	let a = 0;
+	for (let t = 0; t < tessellation; t++) {
+		const x = Math.cos(a);
+		const y = Math.sin(a);
+		const u = (x + 1) / 2;
+		const v = (1 - y) / 2;
+		positions.push(radius * x, radius * y, 0);
+		uvs.push(u, CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - v : v);
+		a += step;
+	}
+	if (arc === 1) {
+		positions.push(positions[3], positions[4], positions[5]); // close the circle
+		uvs.push(uvs[2], CompatibilityOptions.UseOpenGLOrientationForUV ? 1 - uvs[3] : uvs[3]);
+	}
 
-    //indices
-    const vertexNb = positions.length / 3;
-    for (let i = 1; i < vertexNb - 1; i++) {
-        indices.push(i + 1, 0, i);
-    }
+	//indices
+	const vertexNb = positions.length / 3;
+	for (let i = 1; i < vertexNb - 1; i++) {
+		indices.push(i + 1, 0, i);
+	}
 
-    // result
-    VertexData.ComputeNormals(positions, indices, normals);
-    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+	// result
+	VertexData.ComputeNormals(positions, indices, normals);
+	VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    const vertexData = new VertexData();
+	const vertexData = new VertexData();
 
-    vertexData.indices = indices;
-    vertexData.positions = positions;
-    vertexData.normals = normals;
-    vertexData.uvs = uvs;
+	vertexData.indices = indices;
+	vertexData.positions = positions;
+	vertexData.normals = normals;
+	vertexData.uvs = uvs;
 
-    return vertexData;
+	return vertexData;
 }
 
 /**
@@ -91,39 +91,39 @@ export function CreateDiscVertexData(options: {
  * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#disc-or-regular-polygon
  */
 export function CreateDisc(
-    name: string,
-    options: { radius?: number; tessellation?: number; arc?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {},
-    scene: Nullable<Scene> = null
+	name: string,
+	options: { radius?: number; tessellation?: number; arc?: number; updatable?: boolean; sideOrientation?: number; frontUVs?: Vector4; backUVs?: Vector4 } = {},
+	scene: Nullable<Scene> = null
 ): Mesh {
-    const disc = new Mesh(name, scene);
+	const disc = new Mesh(name, scene);
 
-    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    disc._originalBuilderSideOrientation = options.sideOrientation;
+	options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+	disc._originalBuilderSideOrientation = options.sideOrientation;
 
-    const vertexData = CreateDiscVertexData(options);
+	const vertexData = CreateDiscVertexData(options);
 
-    vertexData.applyToMesh(disc, options.updatable);
+	vertexData.applyToMesh(disc, options.updatable);
 
-    return disc;
+	return disc;
 }
 /**
  * Class containing static functions to help procedurally build meshes
  * @deprecated please use CreateDisc directly
  */
 export const DiscBuilder = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CreateDisc,
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	CreateDisc,
 };
 
 VertexData.CreateDisc = CreateDiscVertexData;
 
 Mesh.CreateDisc = (name: string, radius: number, tessellation: number, scene: Nullable<Scene> = null, updatable?: boolean, sideOrientation?: number): Mesh => {
-    const options = {
-        radius,
-        tessellation,
-        sideOrientation,
-        updatable,
-    };
+	const options = {
+		radius,
+		tessellation,
+		sideOrientation,
+		updatable,
+	};
 
-    return CreateDisc(name, options, scene);
+	return CreateDisc(name, options, scene);
 };

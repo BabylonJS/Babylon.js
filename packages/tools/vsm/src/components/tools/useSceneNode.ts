@@ -8,8 +8,8 @@ import { useContext } from "react";
 import { SceneContext } from "../../context/SceneContext";
 
 export function useSceneNode(nodeName: string): Nullable<AbstractMesh> | undefined {
-    const { scene } = useContext(SceneContext);
+	const { scene } = useContext(SceneContext);
 
-    const mesh = scene?.getMeshByName(nodeName);
-    return mesh;
+	const mesh = scene?.getMeshByName(nodeName);
+	return mesh;
 }

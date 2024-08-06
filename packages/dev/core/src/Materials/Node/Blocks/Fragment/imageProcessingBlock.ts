@@ -17,210 +17,210 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * Block used to add image processing support to fragment shader
  */
 export class ImageProcessingBlock extends NodeMaterialBlock {
-    /**
-     * Create a new ImageProcessingBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+	/**
+	 * Create a new ImageProcessingBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Fragment);
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.AutoDetect);
-        this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
-        this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
+		this.registerInput("color", NodeMaterialBlockConnectionPointTypes.AutoDetect);
+		this.registerOutput("output", NodeMaterialBlockConnectionPointTypes.Color4);
+		this.registerOutput("rgb", NodeMaterialBlockConnectionPointTypes.Color3);
 
-        this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Color3 |
-                NodeMaterialBlockConnectionPointTypes.Color4 |
-                NodeMaterialBlockConnectionPointTypes.Vector3 |
-                NodeMaterialBlockConnectionPointTypes.Vector4
-        );
-    }
+		this._inputs[0].addExcludedConnectionPointFromAllowedTypes(
+			NodeMaterialBlockConnectionPointTypes.Color3 |
+				NodeMaterialBlockConnectionPointTypes.Color4 |
+				NodeMaterialBlockConnectionPointTypes.Vector3 |
+				NodeMaterialBlockConnectionPointTypes.Vector4
+		);
+	}
 
-    /**
-     * Defines if the input should be converted to linear space (default: true)
-     */
-    @editableInPropertyPage("Convert input to linear space", PropertyTypeForEdition.Boolean, "ADVANCED")
-    public convertInputToLinearSpace: boolean = true;
+	/**
+	 * Defines if the input should be converted to linear space (default: true)
+	 */
+	@editableInPropertyPage("Convert input to linear space", PropertyTypeForEdition.Boolean, "ADVANCED")
+	public convertInputToLinearSpace: boolean = true;
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "ImageProcessingBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "ImageProcessingBlock";
+	}
 
-    /**
-     * Gets the color input component
-     */
-    public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the color input component
+	 */
+	public get color(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the output component
-     */
-    public get output(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the output component
+	 */
+	public get output(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    /**
-     * Gets the rgb component
-     */
-    public get rgb(): NodeMaterialConnectionPoint {
-        return this._outputs[1];
-    }
+	/**
+	 * Gets the rgb component
+	 */
+	public get rgb(): NodeMaterialConnectionPoint {
+		return this._outputs[1];
+	}
 
-    /**
-     * Initialize the block and prepare the context for build
-     * @param state defines the state that will be used for the build
-     */
-    public override initialize(state: NodeMaterialBuildState) {
-        state._excludeVariableName("exposureLinear");
-        state._excludeVariableName("contrast");
-        state._excludeVariableName("vInverseScreenSize");
-        state._excludeVariableName("vignetteSettings1");
-        state._excludeVariableName("vignetteSettings2");
-        state._excludeVariableName("vCameraColorCurveNegative");
-        state._excludeVariableName("vCameraColorCurveNeutral");
-        state._excludeVariableName("vCameraColorCurvePositive");
-        state._excludeVariableName("txColorTransform");
-        state._excludeVariableName("colorTransformSettings");
-        state._excludeVariableName("ditherIntensity");
-        this._initShaderSourceAsync(state.shaderLanguage);
-    }
+	/**
+	 * Initialize the block and prepare the context for build
+	 * @param state defines the state that will be used for the build
+	 */
+	public override initialize(state: NodeMaterialBuildState) {
+		state._excludeVariableName("exposureLinear");
+		state._excludeVariableName("contrast");
+		state._excludeVariableName("vInverseScreenSize");
+		state._excludeVariableName("vignetteSettings1");
+		state._excludeVariableName("vignetteSettings2");
+		state._excludeVariableName("vCameraColorCurveNegative");
+		state._excludeVariableName("vCameraColorCurveNeutral");
+		state._excludeVariableName("vCameraColorCurvePositive");
+		state._excludeVariableName("txColorTransform");
+		state._excludeVariableName("colorTransformSettings");
+		state._excludeVariableName("ditherIntensity");
+		this._initShaderSourceAsync(state.shaderLanguage);
+	}
 
-    private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
-        this._codeIsReady = false;
+	private async _initShaderSourceAsync(shaderLanguage: ShaderLanguage) {
+		this._codeIsReady = false;
 
-        if (shaderLanguage === ShaderLanguage.WGSL) {
-            await Promise.all([
-                import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
-                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
-                import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
-            ]);
-        } else {
-            await Promise.all([
-                import("../../../../Shaders/ShadersInclude/helperFunctions"),
-                import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
-                import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
-            ]);
-        }
+		if (shaderLanguage === ShaderLanguage.WGSL) {
+			await Promise.all([
+				import("../../../../ShadersWGSL/ShadersInclude/helperFunctions"),
+				import("../../../../ShadersWGSL/ShadersInclude/imageProcessingDeclaration"),
+				import("../../../../ShadersWGSL/ShadersInclude/imageProcessingFunctions"),
+			]);
+		} else {
+			await Promise.all([
+				import("../../../../Shaders/ShadersInclude/helperFunctions"),
+				import("../../../../Shaders/ShadersInclude/imageProcessingDeclaration"),
+				import("../../../../Shaders/ShadersInclude/imageProcessingFunctions"),
+			]);
+		}
 
-        this._codeIsReady = true;
-        this.onCodeIsReadyObservable.notifyObservers(this);
-    }
+		this._codeIsReady = true;
+		this.onCodeIsReadyObservable.notifyObservers(this);
+	}
 
-    public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
-            if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
-                return false;
-            }
-        }
-        return true;
-    }
+	public override isReady(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+		if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
+			if (!nodeMaterial.imageProcessingConfiguration.isReady()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
-        if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
-            nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
-        }
-    }
+	public override prepareDefines(mesh: AbstractMesh, nodeMaterial: NodeMaterial, defines: NodeMaterialDefines) {
+		if (defines._areImageProcessingDirty && nodeMaterial.imageProcessingConfiguration) {
+			nodeMaterial.imageProcessingConfiguration.prepareDefines(defines);
+		}
+	}
 
-    public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
-        if (!mesh) {
-            return;
-        }
+	public override bind(effect: Effect, nodeMaterial: NodeMaterial, mesh?: Mesh) {
+		if (!mesh) {
+			return;
+		}
 
-        if (!nodeMaterial.imageProcessingConfiguration) {
-            return;
-        }
+		if (!nodeMaterial.imageProcessingConfiguration) {
+			return;
+		}
 
-        nodeMaterial.imageProcessingConfiguration.bind(effect);
-    }
+		nodeMaterial.imageProcessingConfiguration.bind(effect);
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        // Register for defines
-        state.sharedData.blocksWithDefines.push(this);
+		// Register for defines
+		state.sharedData.blocksWithDefines.push(this);
 
-        // Register for blocking
-        state.sharedData.blockingBlocks.push(this);
+		// Register for blocking
+		state.sharedData.blockingBlocks.push(this);
 
-        // Register for binding
-        state.sharedData.bindableBlocks.push(this);
+		// Register for binding
+		state.sharedData.bindableBlocks.push(this);
 
-        // Uniforms
-        state.uniforms.push("exposureLinear");
-        state.uniforms.push("contrast");
-        state.uniforms.push("vInverseScreenSize");
-        state.uniforms.push("vignetteSettings1");
-        state.uniforms.push("vignetteSettings2");
-        state.uniforms.push("vCameraColorCurveNegative");
-        state.uniforms.push("vCameraColorCurveNeutral");
-        state.uniforms.push("vCameraColorCurvePositive");
-        state.uniforms.push("txColorTransform");
-        state.uniforms.push("colorTransformSettings");
-        state.uniforms.push("ditherIntensity");
+		// Uniforms
+		state.uniforms.push("exposureLinear");
+		state.uniforms.push("contrast");
+		state.uniforms.push("vInverseScreenSize");
+		state.uniforms.push("vignetteSettings1");
+		state.uniforms.push("vignetteSettings2");
+		state.uniforms.push("vCameraColorCurveNegative");
+		state.uniforms.push("vCameraColorCurveNeutral");
+		state.uniforms.push("vCameraColorCurvePositive");
+		state.uniforms.push("txColorTransform");
+		state.uniforms.push("colorTransformSettings");
+		state.uniforms.push("ditherIntensity");
 
-        // Emit code
-        const color = this.color;
-        const output = this._outputs[0];
-        const comments = `//${this.name}`;
-        const overrideText = state.shaderLanguage === ShaderLanguage.WGSL ? "Vec3" : "";
+		// Emit code
+		const color = this.color;
+		const output = this._outputs[0];
+		const comments = `//${this.name}`;
+		const overrideText = state.shaderLanguage === ShaderLanguage.WGSL ? "Vec3" : "";
 
-        state._emitFunctionFromInclude("helperFunctions", comments);
-        state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
-        state._emitFunctionFromInclude("imageProcessingFunctions", comments);
+		state._emitFunctionFromInclude("helperFunctions", comments);
+		state._emitFunctionFromInclude("imageProcessingDeclaration", comments);
+		state._emitFunctionFromInclude("imageProcessingFunctions", comments);
 
-        if (color.connectedPoint?.isConnected) {
-            if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
-                state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
-            } else {
-                state.compilationString += `${state._declareOutput(output)} = vec4${state.fSuffix}(${color.associatedVariableName}, 1.0);\n`;
-            }
-            state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
-            if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
-            }
-            state.compilationString += `#else\n`;
-            state.compilationString += `#ifdef IMAGEPROCESSING\n`;
-            if (this.convertInputToLinearSpace) {
-                state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
-            }
-            state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
-            state.compilationString += `#endif\n`;
-            state.compilationString += `#endif\n`;
+		if (color.connectedPoint?.isConnected) {
+			if (color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Color4 || color.connectedPoint!.type === NodeMaterialBlockConnectionPointTypes.Vector4) {
+				state.compilationString += `${state._declareOutput(output)} = ${color.associatedVariableName};\n`;
+			} else {
+				state.compilationString += `${state._declareOutput(output)} = vec4${state.fSuffix}(${color.associatedVariableName}, 1.0);\n`;
+			}
+			state.compilationString += `#ifdef IMAGEPROCESSINGPOSTPROCESS\n`;
+			if (this.convertInputToLinearSpace) {
+				state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+			}
+			state.compilationString += `#else\n`;
+			state.compilationString += `#ifdef IMAGEPROCESSING\n`;
+			if (this.convertInputToLinearSpace) {
+				state.compilationString += `${output.associatedVariableName} = vec4${state.fSuffix}(toLinearSpace${overrideText}(${color.associatedVariableName}.rgb), ${color.associatedVariableName}.a);\n`;
+			}
+			state.compilationString += `${output.associatedVariableName} = applyImageProcessing(${output.associatedVariableName});\n`;
+			state.compilationString += `#endif\n`;
+			state.compilationString += `#endif\n`;
 
-            if (this.rgb.hasEndpoints) {
-                state.compilationString += state._declareOutput(this.rgb) + ` = ${this.output.associatedVariableName}.xyz;\n`;
-            }
-        }
+			if (this.rgb.hasEndpoints) {
+				state.compilationString += state._declareOutput(this.rgb) + ` = ${this.output.associatedVariableName}.xyz;\n`;
+			}
+		}
 
-        return this;
-    }
+		return this;
+	}
 
-    protected override _dumpPropertiesCode() {
-        let codeString = super._dumpPropertiesCode();
+	protected override _dumpPropertiesCode() {
+		let codeString = super._dumpPropertiesCode();
 
-        codeString += `${this._codeVariableName}.convertInputToLinearSpace = ${this.convertInputToLinearSpace};\n`;
+		codeString += `${this._codeVariableName}.convertInputToLinearSpace = ${this.convertInputToLinearSpace};\n`;
 
-        return codeString;
-    }
+		return codeString;
+	}
 
-    public override serialize(): any {
-        const serializationObject = super.serialize();
+	public override serialize(): any {
+		const serializationObject = super.serialize();
 
-        serializationObject.convertInputToLinearSpace = this.convertInputToLinearSpace;
+		serializationObject.convertInputToLinearSpace = this.convertInputToLinearSpace;
 
-        return serializationObject;
-    }
+		return serializationObject;
+	}
 
-    public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
-        super._deserialize(serializationObject, scene, rootUrl);
+	public override _deserialize(serializationObject: any, scene: Scene, rootUrl: string) {
+		super._deserialize(serializationObject, scene, rootUrl);
 
-        this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
-    }
+		this.convertInputToLinearSpace = serializationObject.convertInputToLinearSpace ?? true;
+	}
 }
 
 RegisterClass("BABYLON.ImageProcessingBlock", ImageProcessingBlock);

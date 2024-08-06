@@ -14,9 +14,9 @@ const NOT = "NotBlock";
  * @experimental
  */
 export class FlowGraphLogicAndBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration) {
-        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right, `${PREFIX}${AND}`, config);
-    }
+	constructor(config: IFlowGraphBlockConfiguration) {
+		super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left && right, `${PREFIX}${AND}`, config);
+	}
 }
 RegisterClass(`${PREFIX}${AND}`, FlowGraphLogicAndBlock);
 
@@ -25,9 +25,9 @@ RegisterClass(`${PREFIX}${AND}`, FlowGraphLogicAndBlock);
  * @experimental
  */
 export class FlowGraphLogicOrBlock extends FlowGraphBinaryOperationBlock<boolean, boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration) {
-        super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right, `${PREFIX}${OR}`, config);
-    }
+	constructor(config: IFlowGraphBlockConfiguration) {
+		super(RichTypeBoolean, RichTypeBoolean, RichTypeBoolean, (left, right) => left || right, `${PREFIX}${OR}`, config);
+	}
 }
 RegisterClass(`${PREFIX}${OR}`, FlowGraphLogicOrBlock);
 
@@ -36,8 +36,8 @@ RegisterClass(`${PREFIX}${OR}`, FlowGraphLogicOrBlock);
  * @experimental
  */
 export class FlowGraphLogicNotBlock extends FlowGraphUnaryOperationBlock<boolean, boolean> {
-    constructor(config: IFlowGraphBlockConfiguration) {
-        super(RichTypeBoolean, RichTypeBoolean, (value) => !value, `${PREFIX}${NOT}`, config);
-    }
+	constructor(config: IFlowGraphBlockConfiguration) {
+		super(RichTypeBoolean, RichTypeBoolean, (value) => !value, `${PREFIX}${NOT}`, config);
+	}
 }
 RegisterClass(`${PREFIX}${NOT}`, FlowGraphLogicNotBlock);

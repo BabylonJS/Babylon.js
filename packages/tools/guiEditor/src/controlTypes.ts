@@ -18,76 +18,76 @@ import scrollbarIcon from "./imgs/scrollbarIcon.svg";
 import radioButtonIcon from "./imgs/radioButtonIcon.svg";
 
 export const ControlTypes = [
-    {
-        className: "Rectangle",
-        icon: rectangleIcon,
-    },
-    {
-        className: "Ellipse",
-        icon: ellipseIcon,
-    },
-    {
-        className: "StackPanel",
-        icon: stackPanelIcon,
-    },
-    {
-        className: "Grid",
-        icon: gridIcon,
-    },
-    {
-        className: "ScrollViewer",
-        icon: scrollbarIcon,
-    },
-    {
-        className: "Line",
-        icon: lineIcon,
-    },
-    {
-        className: "TextBlock",
-        icon: textBoxIcon,
-    },
-    {
-        className: "InputText",
-        icon: inputFieldIcon,
-    },
-    {
-        className: "InputPassword",
-        icon: passwordFieldIcon,
-    },
-    {
-        className: "Image",
-        icon: imageIcon,
-    },
-    {
-        className: "DisplayGrid",
-        icon: displaygridIcon,
-    },
-    {
-        className: "Button",
-        icon: buttonIcon,
-    },
-    {
-        className: "Checkbox",
-        icon: checkboxIcon,
-    },
-    {
-        className: "RadioButton",
-        icon: radioButtonIcon,
-    },
-    {
-        className: "Slider",
-        icon: sliderIcon,
-    },
-    {
-        className: "ImageBasedSlider",
-        icon: imageBasedSliderIcon,
-    },
-    {
-        className: "VirtualKeyboard",
-        icon: keyboardIcon,
-    },
-    {
-        className: "ColorPicker",
-        icon: colorPickerIcon,
-    },
+	{
+		className: "Rectangle",
+		icon: rectangleIcon,
+	},
+	{
+		className: "Ellipse",
+		icon: ellipseIcon,
+	},
+	{
+		className: "StackPanel",
+		icon: stackPanelIcon,
+	},
+	{
+		className: "Grid",
+		icon: gridIcon,
+	},
+	{
+		className: "ScrollViewer",
+		icon: scrollbarIcon,
+	},
+	{
+		className: "Line",
+		icon: lineIcon,
+	},
+	{
+		className: "TextBlock",
+		icon: textBoxIcon,
+	},
+	{
+		className: "InputText",
+		icon: inputFieldIcon,
+	},
+	{
+		className: "InputPassword",
+		icon: passwordFieldIcon,
+	},
+	{
+		className: "Image",
+		icon: imageIcon,
+	},
+	{
+		className: "DisplayGrid",
+		icon: displaygridIcon,
+	},
+	{
+		className: "Button",
+		icon: buttonIcon,
+	},
+	{
+		className: "Checkbox",
+		icon: checkboxIcon,
+	},
+	{
+		className: "RadioButton",
+		icon: radioButtonIcon,
+	},
+	{
+		className: "Slider",
+		icon: sliderIcon,
+	},
+	{
+		className: "ImageBasedSlider",
+		icon: imageBasedSliderIcon,
+	},
+	{
+		className: "VirtualKeyboard",
+		icon: keyboardIcon,
+	},
+	{
+		className: "ColorPicker",
+		icon: colorPickerIcon,
+	},
 ];

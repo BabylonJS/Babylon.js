@@ -6,29 +6,29 @@ import type { Nullable, Tuple } from "../types";
  * Class containing a set of static utilities functions for arrays.
  */
 export class ArrayTools {
-    /**
-     * Returns an array of the given size filled with elements built from the given constructor and the parameters.
-     * @param size the number of element to construct and put in the array.
-     * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
-     * @returns a new array filled with new objects.
-     */
-    public static BuildArray<T>(size: number, itemBuilder: () => T): Array<T> {
-        const a: T[] = [];
-        for (let i = 0; i < size; ++i) {
-            a.push(itemBuilder());
-        }
-        return a;
-    }
+	/**
+	 * Returns an array of the given size filled with elements built from the given constructor and the parameters.
+	 * @param size the number of element to construct and put in the array.
+	 * @param itemBuilder a callback responsible for creating new instance of item. Called once per array entry.
+	 * @returns a new array filled with new objects.
+	 */
+	public static BuildArray<T>(size: number, itemBuilder: () => T): Array<T> {
+		const a: T[] = [];
+		for (let i = 0; i < size; ++i) {
+			a.push(itemBuilder());
+		}
+		return a;
+	}
 
-    /**
-     * Returns a tuple of the given size filled with elements built from the given constructor and the parameters.
-     * @param size he number of element to construct and put in the tuple.
-     * @param itemBuilder a callback responsible for creating new instance of item. Called once per tuple entry.
-     * @returns a new tuple filled with new objects.
-     */
-    public static BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): Tuple<T, N> {
-        return ArrayTools.BuildArray(size, itemBuilder) as any;
-    }
+	/**
+	 * Returns a tuple of the given size filled with elements built from the given constructor and the parameters.
+	 * @param size he number of element to construct and put in the tuple.
+	 * @param itemBuilder a callback responsible for creating new instance of item. Called once per tuple entry.
+	 * @returns a new tuple filled with new objects.
+	 */
+	public static BuildTuple<T, N extends number>(size: N, itemBuilder: () => T): Tuple<T, N> {
+		return ArrayTools.BuildArray(size, itemBuilder) as any;
+	}
 }
 
 /**
@@ -45,54 +45,54 @@ export type _ObserveCallback = (functionName: string, previousLength: number) =>
  * @returns A function to call to stop observing
  */
 function _observeArrayfunction(object: { [key: string]: any }, functionName: string, callback: _ObserveCallback): Nullable<() => void> {
-    // Finds the function to observe
-    const oldFunction = object[functionName];
-    if (typeof oldFunction !== "function") {
-        return null;
-    }
+	// Finds the function to observe
+	const oldFunction = object[functionName];
+	if (typeof oldFunction !== "function") {
+		return null;
+	}
 
-    // Creates a new function that calls the callback and the old function
-    const newFunction = function () {
-        const previousLength = object.length;
-        const returnValue = newFunction.previous.apply(object, arguments);
-        callback(functionName, previousLength);
-        return returnValue;
-    } as any;
+	// Creates a new function that calls the callback and the old function
+	const newFunction = function () {
+		const previousLength = object.length;
+		const returnValue = newFunction.previous.apply(object, arguments);
+		callback(functionName, previousLength);
+		return returnValue;
+	} as any;
 
-    // Doublishly links the new function and the old function
-    oldFunction.next = newFunction;
-    newFunction.previous = oldFunction;
+	// Doublishly links the new function and the old function
+	oldFunction.next = newFunction;
+	newFunction.previous = oldFunction;
 
-    // Replaces the old function with the new function
-    object[functionName] = newFunction;
+	// Replaces the old function with the new function
+	object[functionName] = newFunction;
 
-    // Returns a function to disable the hook
-    return () => {
-        // Only unhook if the function is still hooked
-        const previous = newFunction.previous;
-        if (!previous) {
-            return;
-        }
+	// Returns a function to disable the hook
+	return () => {
+		// Only unhook if the function is still hooked
+		const previous = newFunction.previous;
+		if (!previous) {
+			return;
+		}
 
-        // Finds the ref to the next function in the chain
-        const next = newFunction.next;
+		// Finds the ref to the next function in the chain
+		const next = newFunction.next;
 
-        // If in the middle of the chain, link the previous and next functions
-        if (next) {
-            previous.next = next;
-            next.previous = previous;
-        }
-        // If at the end of the chain, remove the reference to the previous function
-        // and restore the previous function
-        else {
-            previous.next = undefined;
-            object[functionName] = previous;
-        }
+		// If in the middle of the chain, link the previous and next functions
+		if (next) {
+			previous.next = next;
+			next.previous = previous;
+		}
+		// If at the end of the chain, remove the reference to the previous function
+		// and restore the previous function
+		else {
+			previous.next = undefined;
+			object[functionName] = previous;
+		}
 
-        // Lose reference to the previous and next functions
-        newFunction.next = undefined;
-        newFunction.previous = undefined;
-    };
+		// Lose reference to the previous and next functions
+		newFunction.next = undefined;
+		newFunction.previous = undefined;
+	};
 }
 
 /**
@@ -109,15 +109,15 @@ const observedArrayFunctions = ["push", "splice", "pop", "shift", "unshift"];
  * @internal
  */
 export function _ObserveArray<T>(array: T[], callback: _ObserveCallback) {
-    // Observes all the required array functions and stores the unhook functions
-    const unObserveFunctions = observedArrayFunctions.map((name) => {
-        return _observeArrayfunction(array, name, callback);
-    });
+	// Observes all the required array functions and stores the unhook functions
+	const unObserveFunctions = observedArrayFunctions.map((name) => {
+		return _observeArrayfunction(array, name, callback);
+	});
 
-    // Returns a function that unhook all the observed functions
-    return () => {
-        unObserveFunctions.forEach((unObserveFunction) => {
-            unObserveFunction?.();
-        });
-    };
+	// Returns a function that unhook all the observed functions
+	return () => {
+		unObserveFunctions.forEach((unObserveFunction) => {
+			unObserveFunction?.();
+		});
+	};
 }

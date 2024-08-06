@@ -9,30 +9,30 @@ import * as GLTF2 from "loaders/glTF/2.0/index";
  */
 const globalObject = typeof global !== "undefined" ? global : typeof window !== "undefined" ? window : undefined;
 if (typeof globalObject !== "undefined") {
-    (<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
-    const BABYLON = (<any>globalObject).BABYLON;
-    BABYLON.GLTF2 = BABYLON.GLTF2 || {};
-    BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
-    BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
+	(<any>globalObject).BABYLON = (<any>globalObject).BABYLON || {};
+	const BABYLON = (<any>globalObject).BABYLON;
+	BABYLON.GLTF2 = BABYLON.GLTF2 || {};
+	BABYLON.GLTF2.Loader = BABYLON.GLTF2.Loader || {};
+	BABYLON.GLTF2.Loader.Extensions = BABYLON.GLTF2.Loader.Extensions || {};
 
-    const keys = [];
-    for (const key in Extensions) {
-        BABYLON.GLTF2.Loader.Extensions[key] = (<any>Extensions)[key];
-        keys.push(key);
-    }
-    for (const key in Interfaces) {
-        BABYLON.GLTF2.Loader[key] = (<any>Interfaces)[key];
-        keys.push(key);
-    }
+	const keys = [];
+	for (const key in Extensions) {
+		BABYLON.GLTF2.Loader.Extensions[key] = (<any>Extensions)[key];
+		keys.push(key);
+	}
+	for (const key in Interfaces) {
+		BABYLON.GLTF2.Loader[key] = (<any>Interfaces)[key];
+		keys.push(key);
+	}
 
-    for (const key in GLTF2) {
-        // Prevent Reassignment.
-        if (keys.indexOf(key) > -1) {
-            continue;
-        }
+	for (const key in GLTF2) {
+		// Prevent Reassignment.
+		if (keys.indexOf(key) > -1) {
+			continue;
+		}
 
-        BABYLON.GLTF2[key] = (<any>GLTF2)[key];
-    }
+		BABYLON.GLTF2[key] = (<any>GLTF2)[key];
+	}
 }
 
 export { GLTF2 };

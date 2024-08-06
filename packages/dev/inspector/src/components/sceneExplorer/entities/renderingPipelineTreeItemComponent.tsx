@@ -7,22 +7,22 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IRenderPipelineItemComponenttProps {
-    renderPipeline: PostProcessRenderPipeline;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	renderPipeline: PostProcessRenderPipeline;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class RenderingPipelineItemComponent extends React.Component<IRenderPipelineItemComponenttProps> {
-    constructor(props: IRenderPipelineItemComponenttProps) {
-        super(props);
-    }
+	constructor(props: IRenderPipelineItemComponenttProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <div className="postProcessTools">
-                <TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="orangered" />
-                {<ExtensionsComponent target={this.props.renderPipeline} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+	override render() {
+		return (
+			<div className="postProcessTools">
+				<TreeItemLabelComponent label={this.props.renderPipeline.name} onClick={() => this.props.onClick()} icon={faMagic} color="orangered" />
+				{<ExtensionsComponent target={this.props.renderPipeline} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

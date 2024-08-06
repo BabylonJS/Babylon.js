@@ -19,164 +19,164 @@ import "./actionTabs.scss";
 const ResizableCasted = Resizable as any as React.ComponentClass<any>;
 
 interface IActionTabsComponentProps {
-    scene?: Scene;
-    noCommands?: boolean;
-    noHeader?: boolean;
-    noExpand?: boolean;
-    noClose?: boolean;
-    popupMode?: boolean;
-    onPopup?: () => void;
-    onClose?: () => void;
-    globalState?: GlobalState;
-    initialTab?: DebugLayerTab;
+	scene?: Scene;
+	noCommands?: boolean;
+	noHeader?: boolean;
+	noExpand?: boolean;
+	noClose?: boolean;
+	popupMode?: boolean;
+	onPopup?: () => void;
+	onClose?: () => void;
+	globalState?: GlobalState;
+	initialTab?: DebugLayerTab;
 }
 
 export class ActionTabsComponent extends React.Component<IActionTabsComponentProps, { selectedEntity: any; selectedIndex: number }> {
-    private _onSelectionChangeObserver: Nullable<Observer<any>>;
-    private _onTabChangedObserver: Nullable<Observer<any>>;
-    private _once = true;
+	private _onSelectionChangeObserver: Nullable<Observer<any>>;
+	private _onTabChangedObserver: Nullable<Observer<any>>;
+	private _once = true;
 
-    constructor(props: IActionTabsComponentProps) {
-        super(props);
+	constructor(props: IActionTabsComponentProps) {
+		super(props);
 
-        let initialIndex = props.initialTab === undefined ? DebugLayerTab.Properties : props.initialTab;
+		let initialIndex = props.initialTab === undefined ? DebugLayerTab.Properties : props.initialTab;
 
-        if (this.props.globalState) {
-            const validationResults = this.props.globalState.validationResults;
-            if (validationResults) {
-                if (validationResults.issues.numErrors || validationResults.issues.numWarnings) {
-                    initialIndex = DebugLayerTab.Tools;
-                }
-            }
-        }
+		if (this.props.globalState) {
+			const validationResults = this.props.globalState.validationResults;
+			if (validationResults) {
+				if (validationResults.issues.numErrors || validationResults.issues.numWarnings) {
+					initialIndex = DebugLayerTab.Tools;
+				}
+			}
+		}
 
-        this.state = { selectedEntity: null, selectedIndex: initialIndex };
-    }
+		this.state = { selectedEntity: null, selectedIndex: initialIndex };
+	}
 
-    override componentDidMount() {
-        if (this.props.globalState) {
-            this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
-                this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.Properties });
-            });
+	override componentDidMount() {
+		if (this.props.globalState) {
+			this._onSelectionChangeObserver = this.props.globalState.onSelectionChangedObservable.add((entity) => {
+				this.setState({ selectedEntity: entity, selectedIndex: DebugLayerTab.Properties });
+			});
 
-            this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add((index) => {
-                this.setState({ selectedIndex: index });
-            });
-        }
-    }
+			this._onTabChangedObserver = this.props.globalState.onTabChangedObservable.add((index) => {
+				this.setState({ selectedIndex: index });
+			});
+		}
+	}
 
-    override componentWillUnmount() {
-        if (this.props.globalState) {
-            if (this._onSelectionChangeObserver) {
-                this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
-            }
+	override componentWillUnmount() {
+		if (this.props.globalState) {
+			if (this._onSelectionChangeObserver) {
+				this.props.globalState.onSelectionChangedObservable.remove(this._onSelectionChangeObserver);
+			}
 
-            if (this._onTabChangedObserver) {
-                this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
-            }
-        }
-    }
+			if (this._onTabChangedObserver) {
+				this.props.globalState.onTabChangedObservable.remove(this._onTabChangedObserver);
+			}
+		}
+	}
 
-    changeSelectedTab(index: number) {
-        if (this.props.globalState) {
-            this.props.globalState.onTabChangedObservable.notifyObservers(index);
-        }
-    }
+	changeSelectedTab(index: number) {
+		if (this.props.globalState) {
+			this.props.globalState.onTabChangedObservable.notifyObservers(index);
+		}
+	}
 
-    renderContent() {
-        if (this.props.globalState && this.props.scene) {
-            return (
-                <TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
-                    <PropertyGridTabComponent
-                        title="Properties"
-                        icon={faFileAlt}
-                        scene={this.props.scene}
-                        selectedEntity={this.state.selectedEntity}
-                        globalState={this.props.globalState}
-                        onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
-                        onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
-                    />
-                    <DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} globalState={this.props.globalState} />
-                    <StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} globalState={this.props.globalState} />
-                    <ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
-                    <SettingsTabComponent title="Settings" icon={faCog} scene={this.props.scene} globalState={this.props.globalState} />
-                </TabsComponent>
-            );
-        } else {
-            return null;
-        }
-    }
+	renderContent() {
+		if (this.props.globalState && this.props.scene) {
+			return (
+				<TabsComponent selectedIndex={this.state.selectedIndex} onSelectedIndexChange={(value) => this.changeSelectedTab(value)}>
+					<PropertyGridTabComponent
+						title="Properties"
+						icon={faFileAlt}
+						scene={this.props.scene}
+						selectedEntity={this.state.selectedEntity}
+						globalState={this.props.globalState}
+						onSelectionChangedObservable={this.props.globalState.onSelectionChangedObservable}
+						onPropertyChangedObservable={this.props.globalState.onPropertyChangedObservable}
+					/>
+					<DebugTabComponent title="Debug" icon={faBug} scene={this.props.scene} globalState={this.props.globalState} />
+					<StatisticsTabComponent title="Statistics" icon={faChartBar} scene={this.props.scene} globalState={this.props.globalState} />
+					<ToolsTabComponent title="Tools" icon={faWrench} scene={this.props.scene} globalState={this.props.globalState} />
+					<SettingsTabComponent title="Settings" icon={faCog} scene={this.props.scene} globalState={this.props.globalState} />
+				</TabsComponent>
+			);
+		} else {
+			return null;
+		}
+	}
 
-    onClose() {
-        if (!this.props.onClose) {
-            return;
-        }
-        this.props.onClose();
-    }
+	onClose() {
+		if (!this.props.onClose) {
+			return;
+		}
+		this.props.onClose();
+	}
 
-    onPopup() {
-        if (!this.props.onPopup) {
-            return;
-        }
-        this.props.onPopup();
-    }
+	onPopup() {
+		if (!this.props.onPopup) {
+			return;
+		}
+		this.props.onPopup();
+	}
 
-    override render() {
-        if (this.props.popupMode) {
-            return (
-                <div id="actionTabs">
-                    {!this.props.noHeader && (
-                        <HeaderComponent
-                            title="INSPECTOR"
-                            handleBack={true}
-                            noClose={this.props.noClose}
-                            noExpand={this.props.noExpand}
-                            noCommands={this.props.noCommands}
-                            onClose={() => this.onClose()}
-                            onPopup={() => this.onPopup()}
-                            onSelectionChangedObservable={this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined}
-                        />
-                    )}
-                    {this.renderContent()}
-                </div>
-            );
-        }
+	override render() {
+		if (this.props.popupMode) {
+			return (
+				<div id="actionTabs">
+					{!this.props.noHeader && (
+						<HeaderComponent
+							title="INSPECTOR"
+							handleBack={true}
+							noClose={this.props.noClose}
+							noExpand={this.props.noExpand}
+							noCommands={this.props.noCommands}
+							onClose={() => this.onClose()}
+							onPopup={() => this.onPopup()}
+							onSelectionChangedObservable={this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined}
+						/>
+					)}
+					{this.renderContent()}
+				</div>
+			);
+		}
 
-        if (this._once) {
-            this._once = false;
-            // A bit hacky but no other way to force the initial width to 300px and not auto
-            setTimeout(() => {
-                const element = document.getElementById("actionTabs");
-                if (!element) {
-                    return;
-                }
-                element.style.width = "200px";
-            }, 150);
-        }
+		if (this._once) {
+			this._once = false;
+			// A bit hacky but no other way to force the initial width to 300px and not auto
+			setTimeout(() => {
+				const element = document.getElementById("actionTabs");
+				if (!element) {
+					return;
+				}
+				element.style.width = "200px";
+			}, 150);
+		}
 
-        return (
-            <ResizableCasted
-                id="actionTabs"
-                minWidth={300}
-                maxWidth={600}
-                size={{ height: "100%" }}
-                minHeight="100%"
-                enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
-            >
-                {!this.props.noHeader && (
-                    <HeaderComponent
-                        title="INSPECTOR"
-                        handleBack={true}
-                        noClose={this.props.noClose}
-                        noExpand={this.props.noExpand}
-                        noCommands={this.props.noCommands}
-                        onClose={() => this.onClose()}
-                        onPopup={() => this.onPopup()}
-                        onSelectionChangedObservable={this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined}
-                    />
-                )}
-                {this.renderContent()}
-            </ResizableCasted>
-        );
-    }
+		return (
+			<ResizableCasted
+				id="actionTabs"
+				minWidth={300}
+				maxWidth={600}
+				size={{ height: "100%" }}
+				minHeight="100%"
+				enable={{ top: false, right: false, bottom: false, left: true, topRight: false, bottomRight: false, bottomLeft: false, topLeft: false }}
+			>
+				{!this.props.noHeader && (
+					<HeaderComponent
+						title="INSPECTOR"
+						handleBack={true}
+						noClose={this.props.noClose}
+						noExpand={this.props.noExpand}
+						noCommands={this.props.noCommands}
+						onClose={() => this.onClose()}
+						onPopup={() => this.onPopup()}
+						onSelectionChangedObservable={this.props.globalState ? this.props.globalState.onSelectionChangedObservable : undefined}
+					/>
+				)}
+				{this.renderContent()}
+			</ResizableCasted>
+		);
+	}
 }

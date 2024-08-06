@@ -12,82 +12,82 @@ import type { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBl
 import type { NodeGeometryBlock } from "core/Meshes/Node/nodeGeometryBlock";
 
 export interface IFramePropertyTabComponentProps {
-    globalState: GlobalState;
-    frame: GraphFrame;
+	globalState: GlobalState;
+	frame: GraphFrame;
 }
 
 export class FramePropertyTabComponent extends React.Component<IFramePropertyTabComponentProps> {
-    private _onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
+	private _onFrameExpandStateChangedObserver: Nullable<Observer<GraphFrame>>;
 
-    constructor(props: IFramePropertyTabComponentProps) {
-        super(props);
-    }
+	constructor(props: IFramePropertyTabComponentProps) {
+		super(props);
+	}
 
-    override componentDidMount() {
-        this._onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
-    }
+	override componentDidMount() {
+		this._onFrameExpandStateChangedObserver = this.props.frame.onExpandStateChanged.add(() => this.forceUpdate());
+	}
 
-    override componentWillUnmount() {
-        if (this._onFrameExpandStateChangedObserver) {
-            this.props.frame.onExpandStateChanged.remove(this._onFrameExpandStateChangedObserver);
-            this._onFrameExpandStateChangedObserver = null;
-        }
-    }
+	override componentWillUnmount() {
+		if (this._onFrameExpandStateChangedObserver) {
+			this.props.frame.onExpandStateChanged.remove(this._onFrameExpandStateChangedObserver);
+			this._onFrameExpandStateChangedObserver = null;
+		}
+	}
 
-    override render() {
-        let configurableInputBlocks: GeometryInputBlock[] = [];
-        this.props.frame.nodes.forEach((node) => {
-            const block = node.content.data as NodeGeometryBlock;
-            if (block.isInput && block.visibleOnFrame) {
-                configurableInputBlocks.push(block as GeometryInputBlock);
-            }
-        });
+	override render() {
+		let configurableInputBlocks: GeometryInputBlock[] = [];
+		this.props.frame.nodes.forEach((node) => {
+			const block = node.content.data as NodeGeometryBlock;
+			if (block.isInput && block.visibleOnFrame) {
+				configurableInputBlocks.push(block as GeometryInputBlock);
+			}
+		});
 
-        configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
-            return a.name.localeCompare(b.name);
-        });
+		configurableInputBlocks = configurableInputBlocks.sort((a, b) => {
+			return a.name.localeCompare(b.name);
+		});
 
-        return (
-            <div id="propertyTab">
-                <div id="header">
-                    <img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
-                    <div id="title">NODE MATERIAL EDITOR</div>
-                </div>
-                <div>
-                    <LineContainerComponent title="GENERAL">
-                        <TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
-                        <Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
-                        <TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
-                        {!this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Collapse"
-                                onClick={() => {
-                                    this.props.frame!.isCollapsed = true;
-                                }}
-                            />
-                        )}
-                        {this.props.frame.isCollapsed && (
-                            <ButtonLineComponent
-                                label="Expand"
-                                onClick={() => {
-                                    this.props.frame!.isCollapsed = false;
-                                }}
-                            />
-                        )}
-                        <ButtonLineComponent
-                            label="Export"
-                            onClick={() => {
-                                this.props.frame!.export();
-                            }}
-                        />
-                    </LineContainerComponent>
-                    <InputsPropertyTabComponent
-                        lockObject={this.props.globalState.lockObject}
-                        globalState={this.props.globalState}
-                        inputs={configurableInputBlocks}
-                    ></InputsPropertyTabComponent>
-                </div>
-            </div>
-        );
-    }
+		return (
+			<div id="propertyTab">
+				<div id="header">
+					<img id="logo" src="https://www.babylonjs.com/Assets/logo-babylonjs-social-twitter.png" />
+					<div id="title">NODE MATERIAL EDITOR</div>
+				</div>
+				<div>
+					<LineContainerComponent title="GENERAL">
+						<TextInputLineComponent label="Name" propertyName="name" lockObject={this.props.globalState.lockObject} target={this.props.frame} />
+						<Color3LineComponent lockObject={this.props.globalState.lockObject} label="Color" target={this.props.frame} propertyName="color"></Color3LineComponent>
+						<TextInputLineComponent lockObject={this.props.globalState.lockObject} label="Comments" propertyName="comments" target={this.props.frame} />
+						{!this.props.frame.isCollapsed && (
+							<ButtonLineComponent
+								label="Collapse"
+								onClick={() => {
+									this.props.frame!.isCollapsed = true;
+								}}
+							/>
+						)}
+						{this.props.frame.isCollapsed && (
+							<ButtonLineComponent
+								label="Expand"
+								onClick={() => {
+									this.props.frame!.isCollapsed = false;
+								}}
+							/>
+						)}
+						<ButtonLineComponent
+							label="Export"
+							onClick={() => {
+								this.props.frame!.export();
+							}}
+						/>
+					</LineContainerComponent>
+					<InputsPropertyTabComponent
+						lockObject={this.props.globalState.lockObject}
+						globalState={this.props.globalState}
+						inputs={configurableInputBlocks}
+					></InputsPropertyTabComponent>
+				</div>
+			</div>
+		);
+	}
 }

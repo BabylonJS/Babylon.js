@@ -12,65 +12,65 @@ const NAME = "KHR_materials_dispersion";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_dispersion implements IGLTFExporterExtensionV2 {
-    /** Name of this extension */
-    public readonly name = NAME;
+	/** Name of this extension */
+	public readonly name = NAME;
 
-    /** Defines whether this extension is enabled */
-    public enabled = true;
+	/** Defines whether this extension is enabled */
+	public enabled = true;
 
-    /** Defines whether this extension is required */
-    public required = false;
+	/** Defines whether this extension is required */
+	public required = false;
 
-    private _wasUsed = false;
+	private _wasUsed = false;
 
-    /** Constructor */
-    constructor() {}
+	/** Constructor */
+	constructor() {}
 
-    /** Dispose */
-    public dispose() {}
+	/** Dispose */
+	public dispose() {}
 
-    /** @internal */
-    public get wasUsed() {
-        return this._wasUsed;
-    }
+	/** @internal */
+	public get wasUsed() {
+		return this._wasUsed;
+	}
 
-    private _isExtensionEnabled(mat: PBRMaterial): boolean {
-        // This extension must not be used on a material that also uses KHR_materials_unlit
-        if (mat.unlit) {
-            return false;
-        }
-        const subs = mat.subSurface;
-        // this extension requires refraction to be enabled.
-        if (!subs.isRefractionEnabled && !subs.isDispersionEnabled) {
-            return false;
-        }
-        return true;
-    }
+	private _isExtensionEnabled(mat: PBRMaterial): boolean {
+		// This extension must not be used on a material that also uses KHR_materials_unlit
+		if (mat.unlit) {
+			return false;
+		}
+		const subs = mat.subSurface;
+		// this extension requires refraction to be enabled.
+		if (!subs.isRefractionEnabled && !subs.isDispersionEnabled) {
+			return false;
+		}
+		return true;
+	}
 
-    /**
-     * After exporting a material
-     * @param context GLTF context of the material
-     * @param node exported GLTF node
-     * @param babylonMaterial corresponding babylon material
-     * @returns promise, resolves with the material
-     */
-    public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve) => {
-            if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
-                this._wasUsed = true;
+	/**
+	 * After exporting a material
+	 * @param context GLTF context of the material
+	 * @param node exported GLTF node
+	 * @param babylonMaterial corresponding babylon material
+	 * @returns promise, resolves with the material
+	 */
+	public postExportMaterialAsync?(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+		return new Promise((resolve) => {
+			if (babylonMaterial instanceof PBRMaterial && this._isExtensionEnabled(babylonMaterial)) {
+				this._wasUsed = true;
 
-                const subs = babylonMaterial.subSurface;
-                const dispersion = subs.dispersion;
+				const subs = babylonMaterial.subSurface;
+				const dispersion = subs.dispersion;
 
-                const dispersionInfo: IKHRMaterialsDispersion = {
-                    dispersion: dispersion,
-                };
-                node.extensions = node.extensions || {};
-                node.extensions[NAME] = dispersionInfo;
-            }
-            resolve(node);
-        });
-    }
+				const dispersionInfo: IKHRMaterialsDispersion = {
+					dispersion: dispersion,
+				};
+				node.extensions = node.extensions || {};
+				node.extensions[NAME] = dispersionInfo;
+			}
+			resolve(node);
+		});
+	}
 }
 
 _Exporter.RegisterExtension(NAME, () => new KHR_materials_dispersion());

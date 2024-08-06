@@ -6,7 +6,7 @@ import { ExternalTexture } from "../../Materials/Textures/externalTexture";
  * @internal
  **/
 export class WebGPUExternalTexture extends ExternalTexture {
-    public constructor(video: HTMLVideoElement) {
-        super(video);
-    }
+	public constructor(video: HTMLVideoElement) {
+		super(video);
+	}
 }

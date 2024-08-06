@@ -6,20 +6,20 @@ import { ContentDisplay3D } from "./contentDisplay3D";
  * Class used as a root to all buttons
  */
 export class AbstractButton3D extends ContentDisplay3D {
-    /**
-     * Creates a new button
-     * @param name defines the control name
-     */
-    constructor(name?: string) {
-        super(name);
-    }
+	/**
+	 * Creates a new button
+	 * @param name defines the control name
+	 */
+	constructor(name?: string) {
+		super(name);
+	}
 
-    protected override _getTypeName(): string {
-        return "AbstractButton3D";
-    }
+	protected override _getTypeName(): string {
+		return "AbstractButton3D";
+	}
 
-    // Mesh association
-    protected override _createNode(scene: Scene): TransformNode {
-        return new TransformNode("button" + this.name, scene);
-    }
+	// Mesh association
+	protected override _createNode(scene: Scene): TransformNode {
+		return new TransformNode("button" + this.name, scene);
+	}
 }

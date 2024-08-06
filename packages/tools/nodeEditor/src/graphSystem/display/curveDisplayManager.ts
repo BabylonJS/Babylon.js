@@ -6,26 +6,26 @@ import { CurveBlockTypes } from "core/Materials/Node/Blocks/curveBlock";
 import styles from "./curveDisplayManager.modules.scss";
 
 export class CurveDisplayManager implements IDisplayManager {
-    public getHeaderClass() {
-        return "";
-    }
+	public getHeaderClass() {
+		return "";
+	}
 
-    public shouldDisplayPortLabels(): boolean {
-        return false;
-    }
+	public shouldDisplayPortLabels(): boolean {
+		return false;
+	}
 
-    public getHeaderText(nodeData: INodeData): string {
-        return (nodeData.data as NodeMaterialBlock).name;
-    }
+	public getHeaderText(nodeData: INodeData): string {
+		return (nodeData.data as NodeMaterialBlock).name;
+	}
 
-    public getBackgroundColor(): string {
-        return "#405C86";
-    }
+	public getBackgroundColor(): string {
+		return "#405C86";
+	}
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        const curveBlock = nodeData.data as CurveBlock;
+	public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+		const curveBlock = nodeData.data as CurveBlock;
 
-        contentArea.classList.add(styles["curve-block"]);
-        contentArea.innerHTML = CurveBlockTypes[curveBlock.type];
-    }
+		contentArea.classList.add(styles["curve-block"]);
+		contentArea.innerHTML = CurveBlockTypes[curveBlock.type];
+	}
 }

@@ -9,66 +9,66 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * Block used for the particle ramp gradient section
  */
 export class ParticleRampGradientBlock extends NodeMaterialBlock {
-    /**
-     * Create a new ParticleRampGradientBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment);
+	/**
+	 * Create a new ParticleRampGradientBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Fragment);
 
-        this._isUnique = true;
+		this._isUnique = true;
 
-        this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
+		this.registerInput("color", NodeMaterialBlockConnectionPointTypes.Color4, false, NodeMaterialBlockTargets.Fragment);
 
-        this.registerOutput("rampColor", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
-    }
+		this.registerOutput("rampColor", NodeMaterialBlockConnectionPointTypes.Color4, NodeMaterialBlockTargets.Fragment);
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "ParticleRampGradientBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "ParticleRampGradientBlock";
+	}
 
-    /**
-     * Gets the color input component
-     */
-    public get color(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the color input component
+	 */
+	public get color(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the rampColor output component
-     */
-    public get rampColor(): NodeMaterialConnectionPoint {
-        return this._outputs[0];
-    }
+	/**
+	 * Gets the rampColor output component
+	 */
+	public get rampColor(): NodeMaterialConnectionPoint {
+		return this._outputs[0];
+	}
 
-    /**
-     * Initialize the block and prepare the context for build
-     * @param state defines the state that will be used for the build
-     */
-    public override initialize(state: NodeMaterialBuildState) {
-        state._excludeVariableName("remapRanges");
-        state._excludeVariableName("rampSampler");
-        state._excludeVariableName("baseColor");
-        state._excludeVariableName("alpha");
-        state._excludeVariableName("remappedColorIndex");
-        state._excludeVariableName("rampColor");
-    }
+	/**
+	 * Initialize the block and prepare the context for build
+	 * @param state defines the state that will be used for the build
+	 */
+	public override initialize(state: NodeMaterialBuildState) {
+		state._excludeVariableName("remapRanges");
+		state._excludeVariableName("rampSampler");
+		state._excludeVariableName("baseColor");
+		state._excludeVariableName("alpha");
+		state._excludeVariableName("remappedColorIndex");
+		state._excludeVariableName("rampColor");
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        if (state.target === NodeMaterialBlockTargets.Vertex) {
-            return;
-        }
+		if (state.target === NodeMaterialBlockTargets.Vertex) {
+			return;
+		}
 
-        state._emit2DSampler("rampSampler", "RAMPGRADIENT");
-        state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
+		state._emit2DSampler("rampSampler", "RAMPGRADIENT");
+		state._emitVaryingFromString("remapRanges", NodeMaterialBlockConnectionPointTypes.Vector4, "RAMPGRADIENT");
 
-        state.compilationString += `
+		state.compilationString += `
             #ifdef RAMPGRADIENT
                 ${state._declareLocalVar("baseColor", NodeMaterialBlockConnectionPointTypes.Vector4)} = ${this.color.associatedVariableName};
                 ${state._declareLocalVar("alpha", NodeMaterialBlockConnectionPointTypes.Float)} = ${this.color.associatedVariableName}.a;
@@ -84,8 +84,8 @@ export class ParticleRampGradientBlock extends NodeMaterialBlock {
             #endif
         `;
 
-        return this;
-    }
+		return this;
+	}
 }
 
 RegisterClass("BABYLON.ParticleRampGradientBlock", ParticleRampGradientBlock);

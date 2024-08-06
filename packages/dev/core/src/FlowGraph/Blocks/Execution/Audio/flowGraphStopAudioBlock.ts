@@ -11,26 +11,26 @@ import { RegisterClass } from "../../../../Misc/typeStore";
  * @experimental
  */
 export class FlowGraphStopAudioBlock extends FlowGraphExecutionBlockWithOutSignal {
-    /**
-     * Input connection: The audio to stop.
-     */
-    public readonly audio: FlowGraphDataConnection<Sound>;
+	/**
+	 * Input connection: The audio to stop.
+	 */
+	public readonly audio: FlowGraphDataConnection<Sound>;
 
-    constructor(config?: IFlowGraphBlockConfiguration) {
-        super(config);
+	constructor(config?: IFlowGraphBlockConfiguration) {
+		super(config);
 
-        this.audio = this.registerDataInput("audio", RichTypeAny);
-    }
+		this.audio = this.registerDataInput("audio", RichTypeAny);
+	}
 
-    public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
-        const audioValue = this.audio.getValue(context);
-        if (audioValue instanceof Sound) {
-            audioValue.stop();
-        }
-    }
+	public _execute(context: FlowGraphContext, _callingSignal: FlowGraphSignalConnection): void {
+		const audioValue = this.audio.getValue(context);
+		if (audioValue instanceof Sound) {
+			audioValue.stop();
+		}
+	}
 
-    public override getClassName(): string {
-        return "FGStopAudioBlock";
-    }
+	public override getClassName(): string {
+		return "FGStopAudioBlock";
+	}
 }
 RegisterClass("FGStopAudioBlock", FlowGraphStopAudioBlock);

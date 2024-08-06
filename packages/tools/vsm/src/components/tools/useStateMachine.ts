@@ -3,15 +3,15 @@ import type { StateMachine } from "../../stateMachine/StateMachine";
 import { StateMachineContext } from "../../context/StateMachineContext";
 
 export const useStateMachine = () => {
-    const { stateMachineWrapper, setStateMachineWrapper } = useContext(StateMachineContext);
+	const { stateMachineWrapper, setStateMachineWrapper } = useContext(StateMachineContext);
 
-    if (!stateMachineWrapper || !setStateMachineWrapper) {
-        return {};
-    }
+	if (!stateMachineWrapper || !setStateMachineWrapper) {
+		return {};
+	}
 
-    const setStateMachine = (stateMachine: StateMachine) => {
-        setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
-    };
+	const setStateMachine = (stateMachine: StateMachine) => {
+		setStateMachineWrapper({ stateMachine, lastUpdate: Date.now() });
+	};
 
-    return { stateMachine: stateMachineWrapper.stateMachine, setStateMachine, lastUpdate: stateMachineWrapper.lastUpdate };
+	return { stateMachine: stateMachineWrapper.stateMachine, setStateMachine, lastUpdate: stateMachineWrapper.lastUpdate };
 };

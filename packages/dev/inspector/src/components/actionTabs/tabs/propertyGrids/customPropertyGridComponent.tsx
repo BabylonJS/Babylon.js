@@ -20,163 +20,163 @@ import { FileButtonLine } from "shared-ui-components/lines/fileButtonLineCompone
 import { Logger } from "core/Misc/logger";
 
 interface ICustomPropertyGridComponentProps {
-    globalState: GlobalState;
-    target: any;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	target: any;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CustomPropertyGridComponent extends React.Component<ICustomPropertyGridComponentProps, { mode: number }> {
-    constructor(props: ICustomPropertyGridComponentProps) {
-        super(props);
-        this.state = { mode: 0 };
-    }
+	constructor(props: ICustomPropertyGridComponentProps) {
+		super(props);
+		this.state = { mode: 0 };
+	}
 
-    renderInspectable(inspectable: IInspectable) {
-        switch (inspectable.type) {
-            case InspectableType.Checkbox:
-                return (
-                    <CheckBoxLineComponent
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Slider:
-                return (
-                    <SliderLineComponent
-                        lockObject={this.props.lockObject}
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        step={inspectable.step !== undefined ? inspectable.step : 0.1}
-                        minimum={inspectable.min !== undefined ? inspectable.min : 0}
-                        maximum={inspectable.max !== undefined ? inspectable.max : 1}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Vector2:
-                return (
-                    <Vector2LineComponent
-                        lockObject={this.props.lockObject}
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Vector3:
-                return (
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Quaternion:
-                return (
-                    <QuaternionLineComponent
-                        lockObject={this.props.lockObject}
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Color3:
-                return (
-                    <Color3LineComponent
-                        lockObject={this.props.lockObject}
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.String:
-                return (
-                    <TextInputLineComponent
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        lockObject={this.props.lockObject}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                );
-            case InspectableType.Button:
-                return (
-                    <ButtonLineComponent
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        onClick={
-                            inspectable.callback ||
-                            function () {
-                                Logger.Warn("no call back function added");
-                            }
-                        }
-                    />
-                );
-            case InspectableType.Options:
-                return (
-                    <OptionsLine
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        target={this.props.target}
-                        propertyName={inspectable.propertyName}
-                        options={inspectable.options || []}
-                        onSelect={
-                            inspectable.callback ||
-                            function (value) {
-                                Logger.Warn(`Option ${value} is selected`);
-                            }
-                        }
-                    />
-                );
-            case InspectableType.Tab:
-                return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
-            case InspectableType.FileButton:
-                return (
-                    <FileButtonLine
-                        key={inspectable.label}
-                        label={inspectable.label}
-                        onClick={
-                            inspectable.fileCallback ||
-                            function () {
-                                Logger.Warn("no file call back function added");
-                            }
-                        }
-                        accept={inspectable.accept || "*"}
-                    />
-                );
-        }
+	renderInspectable(inspectable: IInspectable) {
+		switch (inspectable.type) {
+			case InspectableType.Checkbox:
+				return (
+					<CheckBoxLineComponent
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Slider:
+				return (
+					<SliderLineComponent
+						lockObject={this.props.lockObject}
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						step={inspectable.step !== undefined ? inspectable.step : 0.1}
+						minimum={inspectable.min !== undefined ? inspectable.min : 0}
+						maximum={inspectable.max !== undefined ? inspectable.max : 1}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Vector2:
+				return (
+					<Vector2LineComponent
+						lockObject={this.props.lockObject}
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Vector3:
+				return (
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Quaternion:
+				return (
+					<QuaternionLineComponent
+						lockObject={this.props.lockObject}
+						useEuler={this.props.globalState.onlyUseEulers}
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Color3:
+				return (
+					<Color3LineComponent
+						lockObject={this.props.lockObject}
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.String:
+				return (
+					<TextInputLineComponent
+						key={inspectable.label}
+						label={inspectable.label}
+						lockObject={this.props.lockObject}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				);
+			case InspectableType.Button:
+				return (
+					<ButtonLineComponent
+						key={inspectable.label}
+						label={inspectable.label}
+						onClick={
+							inspectable.callback ||
+							function () {
+								Logger.Warn("no call back function added");
+							}
+						}
+					/>
+				);
+			case InspectableType.Options:
+				return (
+					<OptionsLine
+						key={inspectable.label}
+						label={inspectable.label}
+						target={this.props.target}
+						propertyName={inspectable.propertyName}
+						options={inspectable.options || []}
+						onSelect={
+							inspectable.callback ||
+							function (value) {
+								Logger.Warn(`Option ${value} is selected`);
+							}
+						}
+					/>
+				);
+			case InspectableType.Tab:
+				return <TextLineComponent key={inspectable.label} label={inspectable.label} value={" "} />;
+			case InspectableType.FileButton:
+				return (
+					<FileButtonLine
+						key={inspectable.label}
+						label={inspectable.label}
+						onClick={
+							inspectable.fileCallback ||
+							function () {
+								Logger.Warn("no file call back function added");
+							}
+						}
+						accept={inspectable.accept || "*"}
+					/>
+				);
+		}
 
-        return null;
-    }
+		return null;
+	}
 
-    override render() {
-        const inspectables: IInspectable[] = this.props.target.inspectableCustomProperties;
+	override render() {
+		const inspectables: IInspectable[] = this.props.target.inspectableCustomProperties;
 
-        if (!inspectables || inspectables.length === 0) {
-            return null;
-        }
+		if (!inspectables || inspectables.length === 0) {
+			return null;
+		}
 
-        return (
-            <LineContainerComponent title="CUSTOM" selection={this.props.globalState}>
-                {inspectables.map((inspectable) => {
-                    return this.renderInspectable(inspectable);
-                })}
-            </LineContainerComponent>
-        );
-    }
+		return (
+			<LineContainerComponent title="CUSTOM" selection={this.props.globalState}>
+				{inspectables.map((inspectable) => {
+					return this.renderInspectable(inspectable);
+				})}
+			</LineContainerComponent>
+		);
+	}
 }

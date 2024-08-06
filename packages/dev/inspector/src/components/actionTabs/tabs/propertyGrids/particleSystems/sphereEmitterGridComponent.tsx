@@ -9,49 +9,49 @@ import { FloatLineComponent } from "shared-ui-components/lines/floatLineComponen
 import { SliderLineComponent } from "shared-ui-components/lines/sliderLineComponent";
 
 interface ISphereEmitterGridComponentProps {
-    globalState: GlobalState;
-    emitter: SphereParticleEmitter;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	emitter: SphereParticleEmitter;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class SphereEmitterGridComponent extends React.Component<ISphereEmitterGridComponentProps> {
-    constructor(props: ISphereEmitterGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ISphereEmitterGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const emitter = this.props.emitter;
-        return (
-            <>
-                <FloatLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Radius"
-                    target={emitter}
-                    propertyName="radius"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <SliderLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Radius range"
-                    target={emitter}
-                    propertyName="radiusRange"
-                    minimum={0}
-                    maximum={1}
-                    step={0.01}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <SliderLineComponent
-                    lockObject={this.props.lockObject}
-                    label="Direction randomizer"
-                    target={emitter}
-                    propertyName="directionRandomizer"
-                    minimum={0}
-                    maximum={1}
-                    step={0.01}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </>
-        );
-    }
+	override render() {
+		const emitter = this.props.emitter;
+		return (
+			<>
+				<FloatLineComponent
+					lockObject={this.props.lockObject}
+					label="Radius"
+					target={emitter}
+					propertyName="radius"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<SliderLineComponent
+					lockObject={this.props.lockObject}
+					label="Radius range"
+					target={emitter}
+					propertyName="radiusRange"
+					minimum={0}
+					maximum={1}
+					step={0.01}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<SliderLineComponent
+					lockObject={this.props.lockObject}
+					label="Direction randomizer"
+					target={emitter}
+					propertyName="directionRandomizer"
+					minimum={0}
+					maximum={1}
+					step={0.01}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+			</>
+		);
+	}
 }

@@ -12,10 +12,10 @@ import { ConeDirectedParticleEmitter, ConeParticleEmitter } from "./EmitterTypes
  * @returns the emitter
  */
 export function CreatePointEmitter(direction1: Vector3, direction2: Vector3): PointParticleEmitter {
-    const particleEmitter = new PointParticleEmitter();
-    particleEmitter.direction1 = direction1;
-    particleEmitter.direction2 = direction2;
-    return particleEmitter;
+	const particleEmitter = new PointParticleEmitter();
+	particleEmitter.direction1 = direction1;
+	particleEmitter.direction2 = direction2;
+	return particleEmitter;
 }
 
 /**
@@ -25,7 +25,7 @@ export function CreatePointEmitter(direction1: Vector3, direction2: Vector3): Po
  * @returns the emitter
  */
 export function CreateHemisphericEmitter(radius = 1, radiusRange = 1): HemisphericParticleEmitter {
-    return new HemisphericParticleEmitter(radius, radiusRange);
+	return new HemisphericParticleEmitter(radius, radiusRange);
 }
 
 /**
@@ -35,7 +35,7 @@ export function CreateHemisphericEmitter(radius = 1, radiusRange = 1): Hemispher
  * @returns the emitter
  */
 export function CreateSphereEmitter(radius = 1, radiusRange = 1): SphereParticleEmitter {
-    return new SphereParticleEmitter(radius, radiusRange);
+	return new SphereParticleEmitter(radius, radiusRange);
 }
 
 /**
@@ -46,7 +46,7 @@ export function CreateSphereEmitter(radius = 1, radiusRange = 1): SphereParticle
  * @returns the emitter
  */
 export function CreateDirectedSphereEmitter(radius = 1, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): SphereDirectedParticleEmitter {
-    return new SphereDirectedParticleEmitter(radius, direction1, direction2);
+	return new SphereDirectedParticleEmitter(radius, direction1, direction2);
 }
 
 /**
@@ -58,7 +58,7 @@ export function CreateDirectedSphereEmitter(radius = 1, direction1 = new Vector3
  * @returns the emitter
  */
 export function CreateCylinderEmitter(radius = 1, height = 1, radiusRange = 1, directionRandomizer = 0): CylinderParticleEmitter {
-    return new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
+	return new CylinderParticleEmitter(radius, height, radiusRange, directionRandomizer);
 }
 
 /**
@@ -71,13 +71,13 @@ export function CreateCylinderEmitter(radius = 1, height = 1, radiusRange = 1, d
  * @returns the emitter
  */
 export function CreateDirectedCylinderEmitter(
-    radius = 1,
-    height = 1,
-    radiusRange = 1,
-    direction1 = new Vector3(0, 1.0, 0),
-    direction2 = new Vector3(0, 1.0, 0)
+	radius = 1,
+	height = 1,
+	radiusRange = 1,
+	direction1 = new Vector3(0, 1.0, 0),
+	direction2 = new Vector3(0, 1.0, 0)
 ): CylinderDirectedParticleEmitter {
-    return new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
+	return new CylinderDirectedParticleEmitter(radius, height, radiusRange, direction1, direction2);
 }
 
 /**
@@ -87,9 +87,9 @@ export function CreateDirectedCylinderEmitter(
  * @returns the emitter
  */
 export function CreateConeEmitter(radius = 1, angle = Math.PI / 4): ConeParticleEmitter {
-    return new ConeParticleEmitter(radius, angle);
+	return new ConeParticleEmitter(radius, angle);
 }
 
 export function CreateDirectedConeEmitter(radius = 1, angle = Math.PI / 4, direction1 = new Vector3(0, 1.0, 0), direction2 = new Vector3(0, 1.0, 0)): ConeDirectedParticleEmitter {
-    return new ConeDirectedParticleEmitter(radius, angle, direction1, direction2);
+	return new ConeDirectedParticleEmitter(radius, angle, direction1, direction2);
 }

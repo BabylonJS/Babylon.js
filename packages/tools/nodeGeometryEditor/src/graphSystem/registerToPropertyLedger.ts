@@ -8,11 +8,11 @@ import { TeleportOutPropertyTabComponent } from "./properties/teleportOutNodePro
 import { TexturePropertyTabComponent } from "./properties/textureNodePropertyComponent";
 
 export const RegisterToPropertyTabManagers = () => {
-    PropertyLedger.DefaultControl = GenericPropertyComponent;
-    PropertyLedger.RegisteredControls["GeometryInputBlock"] = InputPropertyTabComponent;
-    PropertyLedger.RegisteredControls["MeshBlock"] = MeshPropertyTabComponent;
-    PropertyLedger.RegisteredControls["GeometryOutputBlock"] = OutputPropertyTabComponent;
-    PropertyLedger.RegisteredControls["DebugBlock"] = DebugPropertyTabComponent;
-    PropertyLedger.RegisteredControls["TeleportOutBlock"] = TeleportOutPropertyTabComponent;
-    PropertyLedger.RegisteredControls["GeometryTextureBlock"] = TexturePropertyTabComponent;
+	PropertyLedger.DefaultControl = GenericPropertyComponent;
+	PropertyLedger.RegisteredControls["GeometryInputBlock"] = InputPropertyTabComponent;
+	PropertyLedger.RegisteredControls["MeshBlock"] = MeshPropertyTabComponent;
+	PropertyLedger.RegisteredControls["GeometryOutputBlock"] = OutputPropertyTabComponent;
+	PropertyLedger.RegisteredControls["DebugBlock"] = DebugPropertyTabComponent;
+	PropertyLedger.RegisteredControls["TeleportOutBlock"] = TeleportOutPropertyTabComponent;
+	PropertyLedger.RegisteredControls["GeometryTextureBlock"] = TexturePropertyTabComponent;
 };

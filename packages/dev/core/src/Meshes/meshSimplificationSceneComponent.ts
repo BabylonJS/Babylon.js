@@ -6,70 +6,70 @@ import type { ISceneComponent } from "../sceneComponent";
 import { SceneComponentConstants } from "../sceneComponent";
 
 declare module "../scene" {
-    export interface Scene {
-        /** @internal (Backing field) */
-        _simplificationQueue: SimplificationQueue;
+	export interface Scene {
+		/** @internal (Backing field) */
+		_simplificationQueue: SimplificationQueue;
 
-        /**
-         * Gets or sets the simplification queue attached to the scene
-         * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
-         */
-        simplificationQueue: SimplificationQueue;
-    }
+		/**
+		 * Gets or sets the simplification queue attached to the scene
+		 * @see https://doc.babylonjs.com/features/featuresDeepDive/mesh/simplifyingMeshes
+		 */
+		simplificationQueue: SimplificationQueue;
+	}
 }
 Object.defineProperty(Scene.prototype, "simplificationQueue", {
-    get: function (this: Scene) {
-        if (!this._simplificationQueue) {
-            this._simplificationQueue = new SimplificationQueue();
-            let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
-            if (!component) {
-                component = new SimplicationQueueSceneComponent(this);
-                this._addComponent(component);
-            }
-        }
-        return this._simplificationQueue;
-    },
-    set: function (this: Scene, value: SimplificationQueue) {
-        this._simplificationQueue = value;
-    },
-    enumerable: true,
-    configurable: true,
+	get: function (this: Scene) {
+		if (!this._simplificationQueue) {
+			this._simplificationQueue = new SimplificationQueue();
+			let component = this._getComponent(SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE) as SimplicationQueueSceneComponent;
+			if (!component) {
+				component = new SimplicationQueueSceneComponent(this);
+				this._addComponent(component);
+			}
+		}
+		return this._simplificationQueue;
+	},
+	set: function (this: Scene, value: SimplificationQueue) {
+		this._simplificationQueue = value;
+	},
+	enumerable: true,
+	configurable: true,
 });
 
 declare module "../Meshes/mesh" {
-    export interface Mesh {
-        /**
-         * Simplify the mesh according to the given array of settings.
-         * Function will return immediately and will simplify async
-         * @param settings a collection of simplification settings
-         * @param parallelProcessing should all levels calculate parallel or one after the other
-         * @param simplificationType the type of simplification to run
-         * @param successCallback optional success callback to be called after the simplification finished processing all settings
-         * @returns the current mesh
-         */
-        simplify(
-            settings: Array<ISimplificationSettings>,
-            parallelProcessing?: boolean,
-            simplificationType?: SimplificationType,
-            successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
-        ): Mesh;
-    }
+	export interface Mesh {
+		/**
+		 * Simplify the mesh according to the given array of settings.
+		 * Function will return immediately and will simplify async
+		 * @param settings a collection of simplification settings
+		 * @param parallelProcessing should all levels calculate parallel or one after the other
+		 * @param simplificationType the type of simplification to run
+		 * @param successCallback optional success callback to be called after the simplification finished processing all settings
+		 * @returns the current mesh
+		 */
+		simplify(
+			settings: Array<ISimplificationSettings>,
+			parallelProcessing?: boolean,
+			simplificationType?: SimplificationType,
+			successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
+		): Mesh;
+	}
 }
 
 Mesh.prototype.simplify = function (
-    settings: Array<ISimplificationSettings>,
-    parallelProcessing: boolean = true,
-    simplificationType: SimplificationType = SimplificationType.QUADRATIC,
-    successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
+	settings: Array<ISimplificationSettings>,
+	parallelProcessing: boolean = true,
+	simplificationType: SimplificationType = SimplificationType.QUADRATIC,
+	successCallback?: (mesh?: Mesh, submeshIndex?: number) => void
 ): Mesh {
-    this.getScene().simplificationQueue.addTask({
-        settings: settings,
-        parallelProcessing: parallelProcessing,
-        mesh: this,
-        simplificationType: simplificationType,
-        successCallback: successCallback,
-    });
-    return this;
+	this.getScene().simplificationQueue.addTask({
+		settings: settings,
+		parallelProcessing: parallelProcessing,
+		mesh: this,
+		simplificationType: simplificationType,
+		successCallback: successCallback,
+	});
+	return this;
 };
 
 /**
@@ -77,49 +77,49 @@ Mesh.prototype.simplify = function (
  * created in a scene
  */
 export class SimplicationQueueSceneComponent implements ISceneComponent {
-    /**
-     * The component name helpfull to identify the component in the list of scene components.
-     */
-    public readonly name = SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE;
+	/**
+	 * The component name helpfull to identify the component in the list of scene components.
+	 */
+	public readonly name = SceneComponentConstants.NAME_SIMPLIFICATIONQUEUE;
 
-    /**
-     * The scene the component belongs to.
-     */
-    public scene: Scene;
+	/**
+	 * The scene the component belongs to.
+	 */
+	public scene: Scene;
 
-    /**
-     * Creates a new instance of the component for the given scene
-     * @param scene Defines the scene to register the component in
-     */
-    constructor(scene: Scene) {
-        this.scene = scene;
-    }
+	/**
+	 * Creates a new instance of the component for the given scene
+	 * @param scene Defines the scene to register the component in
+	 */
+	constructor(scene: Scene) {
+		this.scene = scene;
+	}
 
-    /**
-     * Registers the component in a given scene
-     */
-    public register(): void {
-        this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE, this, this._beforeCameraUpdate);
-    }
+	/**
+	 * Registers the component in a given scene
+	 */
+	public register(): void {
+		this.scene._beforeCameraUpdateStage.registerStep(SceneComponentConstants.STEP_BEFORECAMERAUPDATE_SIMPLIFICATIONQUEUE, this, this._beforeCameraUpdate);
+	}
 
-    /**
-     * Rebuilds the elements related to this component in case of
-     * context lost for instance.
-     */
-    public rebuild(): void {
-        // Nothing to do for this component
-    }
+	/**
+	 * Rebuilds the elements related to this component in case of
+	 * context lost for instance.
+	 */
+	public rebuild(): void {
+		// Nothing to do for this component
+	}
 
-    /**
-     * Disposes the component and the associated resources
-     */
-    public dispose(): void {
-        // Nothing to do for this component
-    }
+	/**
+	 * Disposes the component and the associated resources
+	 */
+	public dispose(): void {
+		// Nothing to do for this component
+	}
 
-    private _beforeCameraUpdate(): void {
-        if (this.scene._simplificationQueue && !this.scene._simplificationQueue.running) {
-            this.scene._simplificationQueue.executeNext();
-        }
-    }
+	private _beforeCameraUpdate(): void {
+		if (this.scene._simplificationQueue && !this.scene._simplificationQueue.running) {
+			this.scene._simplificationQueue.executeNext();
+		}
+	}
 }

@@ -12,88 +12,88 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 
 interface ISpotLightPropertyGridComponentProps {
-    globalState: GlobalState;
-    light: SpotLight;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	light: SpotLight;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class SpotLightPropertyGridComponent extends React.Component<ISpotLightPropertyGridComponentProps> {
-    constructor(props: ISpotLightPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ISpotLightPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const light = this.props.light;
+	override render() {
+		const light = this.props.light;
 
-        return (
-            <>
-                <CommonLightPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    light={light}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="SETUP" selection={this.props.globalState}>
-                    <Color3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Diffuse"
-                        target={light}
-                        propertyName="diffuse"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Color3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Specular"
-                        target={light}
-                        propertyName="specular"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Position"
-                        target={light}
-                        propertyName="position"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Direction"
-                        target={light}
-                        propertyName="direction"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        label="Angle"
-                        target={light}
-                        propertyName="angle"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        label="Inner angle"
-                        target={light}
-                        propertyName="innerAngle"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Exponent"
-                        target={light}
-                        propertyName="exponent"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-                <CommonShadowLightPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    light={light}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonLightPropertyGridComponent
+					globalState={this.props.globalState}
+					lockObject={this.props.lockObject}
+					light={light}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="SETUP" selection={this.props.globalState}>
+					<Color3LineComponent
+						lockObject={this.props.lockObject}
+						label="Diffuse"
+						target={light}
+						propertyName="diffuse"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Color3LineComponent
+						lockObject={this.props.lockObject}
+						label="Specular"
+						target={light}
+						propertyName="specular"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Position"
+						target={light}
+						propertyName="position"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Direction"
+						target={light}
+						propertyName="direction"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						useEuler={this.props.globalState.onlyUseEulers}
+						label="Angle"
+						target={light}
+						propertyName="angle"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						useEuler={this.props.globalState.onlyUseEulers}
+						label="Inner angle"
+						target={light}
+						propertyName="innerAngle"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Exponent"
+						target={light}
+						propertyName="exponent"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+				<CommonShadowLightPropertyGridComponent
+					globalState={this.props.globalState}
+					lockObject={this.props.lockObject}
+					light={light}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+			</>
+		);
+	}
 }

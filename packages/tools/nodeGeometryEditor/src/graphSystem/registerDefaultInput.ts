@@ -8,24 +8,24 @@ import { NodeGeometryBlockConnectionPointTypes } from "core/Meshes/Node/Enums/no
 import { GeometryInputBlock } from "core/Meshes/Node/Blocks/geometryInputBlock";
 
 export const RegisterDefaultInput = (stateManager: StateManager) => {
-    stateManager.createDefaultInputData = (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => {
-        const point = portData.data as NodeGeometryConnectionPoint;
-        const pointName = "output";
+	stateManager.createDefaultInputData = (rootData: any, portData: IPortData, nodeContainer: INodeContainer) => {
+		const point = portData.data as NodeGeometryConnectionPoint;
+		const pointName = "output";
 
-        if (point.type === NodeGeometryBlockConnectionPointTypes.AutoDetect) {
-            return null;
-        }
-        const emittedBlock = new GeometryInputBlock(NodeGeometryBlockConnectionPointTypes[point.type], point.type);
+		if (point.type === NodeGeometryBlockConnectionPointTypes.AutoDetect) {
+			return null;
+		}
+		const emittedBlock = new GeometryInputBlock(NodeGeometryBlockConnectionPointTypes[point.type], point.type);
 
-        const nodeGeometry = (rootData as GlobalState).nodeGeometry;
-        nodeGeometry.attachedBlocks.push(emittedBlock);
-        if (!emittedBlock.isInput) {
-            emittedBlock.autoConfigure();
-        }
+		const nodeGeometry = (rootData as GlobalState).nodeGeometry;
+		nodeGeometry.attachedBlocks.push(emittedBlock);
+		if (!emittedBlock.isInput) {
+			emittedBlock.autoConfigure();
+		}
 
-        return {
-            data: new BlockNodeData(emittedBlock, nodeContainer),
-            name: pointName,
-        };
-    };
+		return {
+			data: new BlockNodeData(emittedBlock, nodeContainer),
+			name: pointName,
+		};
+	};
 };

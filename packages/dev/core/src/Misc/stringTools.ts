@@ -8,7 +8,7 @@
  * @deprecated Please use native string function instead
  */
 export const EndsWith = (str: string, suffix: string): boolean => {
-    return str.endsWith(suffix);
+	return str.endsWith(suffix);
 };
 
 /**
@@ -19,10 +19,10 @@ export const EndsWith = (str: string, suffix: string): boolean => {
  * @deprecated Please use native string function instead
  */
 export const StartsWith = (str: string, suffix: string): boolean => {
-    if (!str) {
-        return false;
-    }
-    return str.startsWith(suffix);
+	if (!str) {
+		return false;
+	}
+	return str.startsWith(suffix);
 };
 
 /**
@@ -31,16 +31,16 @@ export const StartsWith = (str: string, suffix: string): boolean => {
  * @returns The decoded string
  */
 export const Decode = (buffer: Uint8Array | Uint16Array): string => {
-    if (typeof TextDecoder !== "undefined") {
-        return new TextDecoder().decode(buffer);
-    }
+	if (typeof TextDecoder !== "undefined") {
+		return new TextDecoder().decode(buffer);
+	}
 
-    let result = "";
-    for (let i = 0; i < buffer.byteLength; i++) {
-        result += String.fromCharCode(buffer[i]);
-    }
+	let result = "";
+	for (let i = 0; i < buffer.byteLength; i++) {
+		result += String.fromCharCode(buffer[i]);
+	}
 
-    return result;
+	return result;
 };
 
 /**
@@ -49,31 +49,31 @@ export const Decode = (buffer: Uint8Array | Uint16Array): string => {
  * @returns the encoded string
  */
 export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView): string => {
-    const keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-    let output = "";
-    let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
-    let i = 0;
-    const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
+	const keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	let output = "";
+	let chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+	let i = 0;
+	const bytes = ArrayBuffer.isView(buffer) ? new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength) : new Uint8Array(buffer);
 
-    while (i < bytes.length) {
-        chr1 = bytes[i++];
-        chr2 = i < bytes.length ? bytes[i++] : Number.NaN;
-        chr3 = i < bytes.length ? bytes[i++] : Number.NaN;
+	while (i < bytes.length) {
+		chr1 = bytes[i++];
+		chr2 = i < bytes.length ? bytes[i++] : Number.NaN;
+		chr3 = i < bytes.length ? bytes[i++] : Number.NaN;
 
-        enc1 = chr1 >> 2;
-        enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
-        enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
-        enc4 = chr3 & 63;
+		enc1 = chr1 >> 2;
+		enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+		enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+		enc4 = chr3 & 63;
 
-        if (isNaN(chr2)) {
-            enc3 = enc4 = 64;
-        } else if (isNaN(chr3)) {
-            enc4 = 64;
-        }
-        output += keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
-    }
+		if (isNaN(chr2)) {
+			enc3 = enc4 = 64;
+		} else if (isNaN(chr3)) {
+			enc4 = 64;
+		}
+		output += keyStr.charAt(enc1) + keyStr.charAt(enc2) + keyStr.charAt(enc3) + keyStr.charAt(enc4);
+	}
 
-    return output;
+	return output;
 };
 
 /**
@@ -82,7 +82,7 @@ export const EncodeArrayBufferToBase64 = (buffer: ArrayBuffer | ArrayBufferView)
  * @returns Decoded ASCII string
  */
 export const DecodeBase64ToString = (base64Data: string): string => {
-    return atob(base64Data);
+	return atob(base64Data);
 };
 
 /**
@@ -91,15 +91,15 @@ export const DecodeBase64ToString = (base64Data: string): string => {
  * @returns ArrayBuffer of byte data
  */
 export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
-    const decodedString = DecodeBase64ToString(base64Data);
-    const bufferLength = decodedString.length;
-    const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
+	const decodedString = DecodeBase64ToString(base64Data);
+	const bufferLength = decodedString.length;
+	const bufferView = new Uint8Array(new ArrayBuffer(bufferLength));
 
-    for (let i = 0; i < bufferLength; i++) {
-        bufferView[i] = decodedString.charCodeAt(i);
-    }
+	for (let i = 0; i < bufferLength; i++) {
+		bufferView[i] = decodedString.charCodeAt(i);
+	}
 
-    return bufferView.buffer;
+	return bufferView.buffer;
 };
 
 /**
@@ -109,21 +109,21 @@ export const DecodeBase64ToBinary = (base64Data: string): ArrayBuffer => {
  * @returns the padded string
  */
 export const PadNumber = (num: number, length: number): string => {
-    let str = String(num);
-    while (str.length < length) {
-        str = "0" + str;
-    }
-    return str;
+	let str = String(num);
+	while (str.length < length) {
+		str = "0" + str;
+	}
+	return str;
 };
 /**
  * Helper to manipulate strings
  */
 export const StringTools = {
-    EndsWith,
-    StartsWith,
-    Decode,
-    EncodeArrayBufferToBase64,
-    DecodeBase64ToString,
-    DecodeBase64ToBinary,
-    PadNumber,
+	EndsWith,
+	StartsWith,
+	Decode,
+	EncodeArrayBufferToBase64,
+	DecodeBase64ToString,
+	DecodeBase64ToBinary,
+	PadNumber,
 };

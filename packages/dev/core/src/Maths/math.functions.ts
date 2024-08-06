@@ -5,30 +5,30 @@ import { nativeOverride } from "../Misc/decorators";
 
 // This helper class is only here so we can apply the nativeOverride decorator to functions.
 class MathHelpers {
-    @nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
-        for (let index = indexStart; index < indexStart + indexCount; index++) {
-            const offset = indices[index] * 3;
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-    }
+	@nativeOverride.filter((...[positions, indices]: Parameters<typeof MathHelpers.extractMinAndMaxIndexed>) => !Array.isArray(positions) && !Array.isArray(indices))
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public static extractMinAndMaxIndexed(positions: FloatArray, indices: IndicesArray, indexStart: number, indexCount: number, minimum: Vector3, maximum: Vector3): void {
+		for (let index = indexStart; index < indexStart + indexCount; index++) {
+			const offset = indices[index] * 3;
+			const x = positions[offset];
+			const y = positions[offset + 1];
+			const z = positions[offset + 2];
+			minimum.minimizeInPlaceFromFloats(x, y, z);
+			maximum.maximizeInPlaceFromFloats(x, y, z);
+		}
+	}
 
-    @nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
-        for (let index = start, offset = start * stride; index < start + count; index++, offset += stride) {
-            const x = positions[offset];
-            const y = positions[offset + 1];
-            const z = positions[offset + 2];
-            minimum.minimizeInPlaceFromFloats(x, y, z);
-            maximum.maximizeInPlaceFromFloats(x, y, z);
-        }
-    }
+	@nativeOverride.filter((...[positions]: Parameters<typeof MathHelpers.extractMinAndMax>) => !Array.isArray(positions))
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	public static extractMinAndMax(positions: FloatArray, start: number, count: number, stride: number, minimum: Vector3, maximum: Vector3): void {
+		for (let index = start, offset = start * stride; index < start + count; index++, offset += stride) {
+			const x = positions[offset];
+			const y = positions[offset + 1];
+			const z = positions[offset + 2];
+			minimum.minimizeInPlaceFromFloats(x, y, z);
+			maximum.maximizeInPlaceFromFloats(x, y, z);
+		}
+	}
 }
 
 /**
@@ -41,30 +41,30 @@ class MathHelpers {
  * @returns minimum and maximum values
  */
 export function extractMinAndMaxIndexed(
-    positions: FloatArray,
-    indices: IndicesArray,
-    indexStart: number,
-    indexCount: number,
-    bias: Nullable<Vector2> = null
+	positions: FloatArray,
+	indices: IndicesArray,
+	indexStart: number,
+	indexCount: number,
+	bias: Nullable<Vector2> = null
 ): { minimum: Vector3; maximum: Vector3 } {
-    const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+	const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+	const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    MathHelpers.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
+	MathHelpers.extractMinAndMaxIndexed(positions, indices, indexStart, indexCount, minimum, maximum);
 
-    if (bias) {
-        minimum.x -= minimum.x * bias.x + bias.y;
-        minimum.y -= minimum.y * bias.x + bias.y;
-        minimum.z -= minimum.z * bias.x + bias.y;
-        maximum.x += maximum.x * bias.x + bias.y;
-        maximum.y += maximum.y * bias.x + bias.y;
-        maximum.z += maximum.z * bias.x + bias.y;
-    }
+	if (bias) {
+		minimum.x -= minimum.x * bias.x + bias.y;
+		minimum.y -= minimum.y * bias.x + bias.y;
+		minimum.z -= minimum.z * bias.x + bias.y;
+		maximum.x += maximum.x * bias.x + bias.y;
+		maximum.y += maximum.y * bias.x + bias.y;
+		maximum.z += maximum.z * bias.x + bias.y;
+	}
 
-    return {
-        minimum: minimum,
-        maximum: maximum,
-    };
+	return {
+		minimum: minimum,
+		maximum: maximum,
+	};
 }
 
 /**
@@ -77,26 +77,26 @@ export function extractMinAndMaxIndexed(
  * @returns minimum and maximum values
  */
 export function extractMinAndMax(positions: FloatArray, start: number, count: number, bias: Nullable<Vector2> = null, stride?: number): { minimum: Vector3; maximum: Vector3 } {
-    const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
-    const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
+	const minimum = new Vector3(Number.MAX_VALUE, Number.MAX_VALUE, Number.MAX_VALUE);
+	const maximum = new Vector3(-Number.MAX_VALUE, -Number.MAX_VALUE, -Number.MAX_VALUE);
 
-    if (!stride) {
-        stride = 3;
-    }
+	if (!stride) {
+		stride = 3;
+	}
 
-    MathHelpers.extractMinAndMax(positions, start, count, stride, minimum, maximum);
+	MathHelpers.extractMinAndMax(positions, start, count, stride, minimum, maximum);
 
-    if (bias) {
-        minimum.x -= minimum.x * bias.x + bias.y;
-        minimum.y -= minimum.y * bias.x + bias.y;
-        minimum.z -= minimum.z * bias.x + bias.y;
-        maximum.x += maximum.x * bias.x + bias.y;
-        maximum.y += maximum.y * bias.x + bias.y;
-        maximum.z += maximum.z * bias.x + bias.y;
-    }
+	if (bias) {
+		minimum.x -= minimum.x * bias.x + bias.y;
+		minimum.y -= minimum.y * bias.x + bias.y;
+		minimum.z -= minimum.z * bias.x + bias.y;
+		maximum.x += maximum.x * bias.x + bias.y;
+		maximum.y += maximum.y * bias.x + bias.y;
+		maximum.z += maximum.z * bias.x + bias.y;
+	}
 
-    return {
-        minimum: minimum,
-        maximum: maximum,
-    };
+	return {
+		minimum: minimum,
+		maximum: maximum,
+	};
 }

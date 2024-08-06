@@ -13,46 +13,46 @@ const NAME = "EXT_texture_avif";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class EXT_texture_avif implements IGLTFLoaderExtension {
-    /** The name of this extension. */
-    public readonly name = NAME;
+	/** The name of this extension. */
+	public readonly name = NAME;
 
-    /** Defines whether this extension is enabled. */
-    public enabled: boolean;
+	/** Defines whether this extension is enabled. */
+	public enabled: boolean;
 
-    private _loader: GLTFLoader;
+	private _loader: GLTFLoader;
 
-    /**
-     * @internal
-     */
-    constructor(loader: GLTFLoader) {
-        this._loader = loader;
-        this.enabled = loader.isExtensionUsed(NAME);
-    }
+	/**
+	 * @internal
+	 */
+	constructor(loader: GLTFLoader) {
+		this._loader = loader;
+		this.enabled = loader.isExtensionUsed(NAME);
+	}
 
-    /** @internal */
-    public dispose() {
-        (this._loader as any) = null;
-    }
+	/** @internal */
+	public dispose() {
+		(this._loader as any) = null;
+	}
 
-    /**
-     * @internal
-     */
-    public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
-        return GLTFLoader.LoadExtensionAsync<IEXTTextureAVIF, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
-            const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler);
-            const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
-            return this._loader._createTextureAsync(
-                context,
-                sampler,
-                image,
-                (babylonTexture) => {
-                    assign(babylonTexture);
-                },
-                undefined,
-                !texture._textureInfo.nonColorData
-            );
-        });
-    }
+	/**
+	 * @internal
+	 */
+	public _loadTextureAsync(context: string, texture: ITexture, assign: (babylonTexture: BaseTexture) => void): Nullable<Promise<BaseTexture>> {
+		return GLTFLoader.LoadExtensionAsync<IEXTTextureAVIF, BaseTexture>(context, texture, this.name, (extensionContext, extension) => {
+			const sampler = texture.sampler == undefined ? GLTFLoader.DefaultSampler : ArrayItem.Get(`${context}/sampler`, this._loader.gltf.samplers, texture.sampler);
+			const image = ArrayItem.Get(`${extensionContext}/source`, this._loader.gltf.images, extension.source);
+			return this._loader._createTextureAsync(
+				context,
+				sampler,
+				image,
+				(babylonTexture) => {
+					assign(babylonTexture);
+				},
+				undefined,
+				!texture._textureInfo.nonColorData
+			);
+		});
+	}
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new EXT_texture_avif(loader));

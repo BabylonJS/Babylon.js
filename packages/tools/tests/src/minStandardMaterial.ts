@@ -37,5 +37,5 @@ sphere.position.y = 2;
 CreateGround("ground1", { width: 6, height: 6, subdivisions: 2 }, scene);
 
 engine.runRenderLoop(() => {
-    scene.render();
+	scene.render();
 });

@@ -13,44 +13,44 @@ const NAME = "KHR_interactivity";
  * Loader extension for KHR_interactivity
  */
 export class KHR_interactivity implements IGLTFLoaderExtension {
-    /**
-     * The name of this extension.
-     */
-    public readonly name = NAME;
-    /**
-     * Defines whether this extension is enabled.
-     */
-    public enabled: boolean;
+	/**
+	 * The name of this extension.
+	 */
+	public readonly name = NAME;
+	/**
+	 * Defines whether this extension is enabled.
+	 */
+	public enabled: boolean;
 
-    private _pathConverter?: InteractivityPathToObjectConverter;
+	private _pathConverter?: InteractivityPathToObjectConverter;
 
-    /**
-     * @internal
-     * @param _loader
-     */
-    constructor(private _loader: GLTFLoader) {
-        this.enabled = this._loader.isExtensionUsed(NAME);
-        this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
-    }
+	/**
+	 * @internal
+	 * @param _loader
+	 */
+	constructor(private _loader: GLTFLoader) {
+		this.enabled = this._loader.isExtensionUsed(NAME);
+		this._pathConverter = new InteractivityPathToObjectConverter(this._loader.gltf);
+	}
 
-    public dispose() {
-        (this._loader as any) = null;
-        delete this._pathConverter;
-    }
+	public dispose() {
+		(this._loader as any) = null;
+		delete this._pathConverter;
+	}
 
-    public onReady(): void {
-        if (!this._loader.babylonScene || !this._pathConverter) {
-            return;
-        }
-        const scene = this._loader.babylonScene;
-        const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
+	public onReady(): void {
+		if (!this._loader.babylonScene || !this._pathConverter) {
+			return;
+		}
+		const scene = this._loader.babylonScene;
+		const interactivityDefinition = this._loader.gltf.extensions?.KHR_interactivity as IKHRInteractivity;
 
-        const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
-        const coordinator = new FlowGraphCoordinator({ scene });
-        FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
+		const json = convertGLTFToSerializedFlowGraph(interactivityDefinition);
+		const coordinator = new FlowGraphCoordinator({ scene });
+		FlowGraph.Parse(json, { coordinator, pathConverter: this._pathConverter });
 
-        coordinator.start();
-    }
+		coordinator.start();
+	}
 }
 
 GLTFLoader.RegisterExtension(NAME, (loader) => new KHR_interactivity(loader));

@@ -14,62 +14,62 @@ import { AnimationGridComponent } from "../animations/animationPropertyGridCompo
 import { ParentPropertyGridComponent } from "../parentPropertyGridComponent";
 
 interface ICommonLightPropertyGridComponentProps {
-    globalState: GlobalState;
-    light: Light;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	light: Light;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class CommonLightPropertyGridComponent extends React.Component<ICommonLightPropertyGridComponentProps> {
-    constructor(props: ICommonLightPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ICommonLightPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const light = this.props.light;
+	override render() {
+		const light = this.props.light;
 
-        return (
-            <div>
-                <CustomPropertyGridComponent
-                    globalState={this.props.globalState}
-                    target={light}
-                    lockObject={this.props.lockObject}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="GENERAL" selection={this.props.globalState}>
-                    <TextLineComponent label="ID" value={light.id} />
-                    <TextInputLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Name"
-                        target={light}
-                        propertyName="name"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
-                    <TextLineComponent label="Class" value={light.getClassName()} />
-                    <ParentPropertyGridComponent
-                        globalState={this.props.globalState}
-                        node={light}
-                        lockObject={this.props.lockObject}
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Intensity"
-                        target={light}
-                        propertyName="intensity"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <ButtonLineComponent
-                        label="Dispose"
-                        onClick={() => {
-                            light.dispose();
-                            this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
-                        }}
-                    />
-                </LineContainerComponent>
-                <AnimationGridComponent globalState={this.props.globalState} animatable={light} scene={light.getScene()} lockObject={this.props.lockObject} />
-            </div>
-        );
-    }
+		return (
+			<div>
+				<CustomPropertyGridComponent
+					globalState={this.props.globalState}
+					target={light}
+					lockObject={this.props.lockObject}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="GENERAL" selection={this.props.globalState}>
+					<TextLineComponent label="ID" value={light.id} />
+					<TextInputLineComponent
+						lockObject={this.props.lockObject}
+						label="Name"
+						target={light}
+						propertyName="name"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<TextLineComponent label="Unique ID" value={light.uniqueId.toString()} />
+					<TextLineComponent label="Class" value={light.getClassName()} />
+					<ParentPropertyGridComponent
+						globalState={this.props.globalState}
+						node={light}
+						lockObject={this.props.lockObject}
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Intensity"
+						target={light}
+						propertyName="intensity"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<ButtonLineComponent
+						label="Dispose"
+						onClick={() => {
+							light.dispose();
+							this.props.globalState.onSelectionChangedObservable.notifyObservers(null);
+						}}
+					/>
+				</LineContainerComponent>
+				<AnimationGridComponent globalState={this.props.globalState} animatable={light} scene={light.getScene()} lockObject={this.props.lockObject} />
+			</div>
+		);
+	}
 }

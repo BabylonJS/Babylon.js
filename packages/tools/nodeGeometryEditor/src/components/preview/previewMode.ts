@@ -1,7 +1,7 @@
 export enum PreviewMode {
-    Normal,
-    MatCap,
-    Wireframe,
-    VertexColor,
-    Textured,
+	Normal,
+	MatCap,
+	Wireframe,
+	VertexColor,
+	Textured,
 }

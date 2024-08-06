@@ -8,20 +8,20 @@ const addJS = (to: string, forceAppend?: boolean | string): string => (forceAppe
 
 // This function was adjusted for generated/src process
 const getPathForComputed = (computedPath: string, sourceFilename: string) => {
-    let p = computedPath;
-    const generatedIndex = sourceFilename.indexOf("src");
-    const srcIndex = sourceFilename.indexOf("src");
-    if (generatedIndex !== -1) {
-        p = sourceFilename.substring(0, generatedIndex) + "src/" + p;
-    } else if (srcIndex !== -1) {
-        p = p.substring(0, srcIndex) + "src/" + p;
-    }
-    return p;
+	let p = computedPath;
+	const generatedIndex = sourceFilename.indexOf("src");
+	const srcIndex = sourceFilename.indexOf("src");
+	if (generatedIndex !== -1) {
+		p = sourceFilename.substring(0, generatedIndex) + "src/" + p;
+	} else if (srcIndex !== -1) {
+		p = p.substring(0, srcIndex) + "src/" + p;
+	}
+	return p;
 };
 const getRelativePath = (computedPath: string, sourceFilename: string) => {
-    let p = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);
-    p = p[0] === "." ? p : "./" + p;
-    return p;
+	let p = path.relative(path.dirname(sourceFilename), computedPath).split(path.sep).join(path.posix.sep);
+	p = p[0] === "." ? p : "./" + p;
+	return p;
 };
 /**
  * Transform the source location to the right location according to build type.
@@ -33,47 +33,47 @@ const getRelativePath = (computedPath: string, sourceFilename: string) => {
  * @returns the new location
  */
 export const transformPackageLocation = (location: string, options: ITransformerOptions, sourceFilename?: string) => {
-    const directoryParts = location.split("/");
-    const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
-    if (basePackage === "tslib" && sourceFilename && options.buildType === "es6") {
-        let computedPath = "./tslib.es6.js";
-        const result = getPathForComputed(computedPath, sourceFilename);
-        if (options.basePackage === "@babylonjs/core") {
-            storeTsLib();
-            computedPath = getRelativePath(result, sourceFilename);
-        } else {
-            computedPath = "@babylonjs/core/tslib.es6";
-        }
-        return addJS(computedPath, options.appendJS);
-    }
-    if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
-        return;
-    }
+	const directoryParts = location.split("/");
+	const basePackage = directoryParts[0] === "@" ? `${directoryParts.shift()}/${directoryParts.shift()}` : directoryParts.shift();
+	if (basePackage === "tslib" && sourceFilename && options.buildType === "es6") {
+		let computedPath = "./tslib.es6.js";
+		const result = getPathForComputed(computedPath, sourceFilename);
+		if (options.basePackage === "@babylonjs/core") {
+			storeTsLib();
+			computedPath = getRelativePath(result, sourceFilename);
+		} else {
+			computedPath = "@babylonjs/core/tslib.es6";
+		}
+		return addJS(computedPath, options.appendJS);
+	}
+	if (!basePackage || !isValidDevPackageName(basePackage, true) || declarationsOnlyPackages.indexOf(basePackage) !== -1) {
+		return;
+	}
 
-    // local file?
-    if (basePackage.startsWith(".")) {
-        return addJS(location, options.appendJS);
-    }
+	// local file?
+	if (basePackage.startsWith(".")) {
+		return addJS(location, options.appendJS);
+	}
 
-    const returnPackageVariable: PublicPackageVariable = getDevPackagesByBuildType(options.buildType)[basePackage];
-    const returnPackage = getPublicPackageName(returnPackageVariable);
-    // not found? probably an external library. return the same location
-    if (!returnPackage) {
-        return location;
-    }
-    if (returnPackage === options.basePackage) {
-        if (options.keepDev) {
-            return location;
-        }
-        let computedPath = "./" + directoryParts.join("/");
-        if (sourceFilename) {
-            const result = getPathForComputed(computedPath, sourceFilename);
-            computedPath = getRelativePath(result, sourceFilename);
-        }
-        return addJS(computedPath, options.appendJS);
-    } else {
-        return addJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
-    }
+	const returnPackageVariable: PublicPackageVariable = getDevPackagesByBuildType(options.buildType)[basePackage];
+	const returnPackage = getPublicPackageName(returnPackageVariable);
+	// not found? probably an external library. return the same location
+	if (!returnPackage) {
+		return location;
+	}
+	if (returnPackage === options.basePackage) {
+		if (options.keepDev) {
+			return location;
+		}
+		let computedPath = "./" + directoryParts.join("/");
+		if (sourceFilename) {
+			const result = getPathForComputed(computedPath, sourceFilename);
+			computedPath = getRelativePath(result, sourceFilename);
+		}
+		return addJS(computedPath, options.appendJS);
+	} else {
+		return addJS(options.packageOnly ? returnPackage : `${returnPackage}/${directoryParts.join("/")}`, options.appendJS);
+	}
 };
 
 type TransformerNode = ts.Bundle | ts.SourceFile;
@@ -82,114 +82,114 @@ type TransformerNode = ts.Bundle | ts.SourceFile;
  * Options to pass for the transform function
  */
 interface ITransformerOptions {
-    /**
-     * can be lts, esm, umd and es6
-     */
-    buildType: BuildType;
-    /**
-     * the current package being processed. Whether abstract (core, gui) or concrete (@babylonjs/core, babylonjs and so on)
-     */
-    basePackage: string;
-    /**
-     * do not return full path but only the package
-     */
-    packageOnly: boolean;
-    /**
-     * Should we append ".js" to the end of the import
-     * can either be a boolean or the actual extension to add (like ".mjs")
-     */
-    appendJS?: boolean | string;
+	/**
+	 * can be lts, esm, umd and es6
+	 */
+	buildType: BuildType;
+	/**
+	 * the current package being processed. Whether abstract (core, gui) or concrete (@babylonjs/core, babylonjs and so on)
+	 */
+	basePackage: string;
+	/**
+	 * do not return full path but only the package
+	 */
+	packageOnly: boolean;
+	/**
+	 * Should we append ".js" to the end of the import
+	 * can either be a boolean or the actual extension to add (like ".mjs")
+	 */
+	appendJS?: boolean | string;
 
-    keepDev?: boolean;
+	keepDev?: boolean;
 }
 
 // inspired by https://github.com/OniVe/ts-transform-paths
 
 export default function transformer(_program: ts.Program, options: ITransformerOptions) {
-    function optionsFactory<T extends TransformerNode>(context: ts.TransformationContext): ts.Transformer<T> {
-        return transformerFactory(context, options);
-    }
+	function optionsFactory<T extends TransformerNode>(context: ts.TransformationContext): ts.Transformer<T> {
+		return transformerFactory(context, options);
+	}
 
-    return optionsFactory;
+	return optionsFactory;
 }
 
 function chainBundle<T extends ts.SourceFile | ts.Bundle>(transformSourceFile: (x: ts.SourceFile) => ts.SourceFile): (x: T) => T {
-    function transformBundle(node: ts.Bundle) {
-        return ts.factory.createBundle(node.sourceFiles.map(transformSourceFile), node.prepends);
-    }
+	function transformBundle(node: ts.Bundle) {
+		return ts.factory.createBundle(node.sourceFiles.map(transformSourceFile), node.prepends);
+	}
 
-    return function transformSourceFileOrBundle(node: T) {
-        return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node as ts.Bundle) as T);
-    };
+	return function transformSourceFileOrBundle(node: T) {
+		return ts.isSourceFile(node) ? (transformSourceFile(node) as T) : (transformBundle(node as ts.Bundle) as T);
+	};
 }
 
 function isImportCall(node: ts.Node): node is ts.CallExpression {
-    return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
+	return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword;
 }
 
 function transformerFactory<T extends TransformerNode>(context: ts.TransformationContext, options: ITransformerOptions): ts.Transformer<T> {
-    // const aliasResolver = new AliasResolver(context.getCompilerOptions());
-    function transformSourceFile(sourceFile: ts.SourceFile) {
-        function getResolvedPathNode(node: ts.StringLiteral) {
-            const resolvedPath = transformPackageLocation(/*sourceFile.fileName*/ node.text, options, sourceFile.fileName);
-            return resolvedPath && resolvedPath !== node.text ? ts.factory.createStringLiteral(resolvedPath) : null;
-        }
+	// const aliasResolver = new AliasResolver(context.getCompilerOptions());
+	function transformSourceFile(sourceFile: ts.SourceFile) {
+		function getResolvedPathNode(node: ts.StringLiteral) {
+			const resolvedPath = transformPackageLocation(/*sourceFile.fileName*/ node.text, options, sourceFile.fileName);
+			return resolvedPath && resolvedPath !== node.text ? ts.factory.createStringLiteral(resolvedPath) : null;
+		}
 
-        function pathReplacer(node: ts.Node): ts.Node {
-            if (ts.isStringLiteral(node)) {
-                return getResolvedPathNode(node) || node;
-            }
-            return ts.visitEachChild(node, pathReplacer, context);
-        }
+		function pathReplacer(node: ts.Node): ts.Node {
+			if (ts.isStringLiteral(node)) {
+				return getResolvedPathNode(node) || node;
+			}
+			return ts.visitEachChild(node, pathReplacer, context);
+		}
 
-        function visitor(node: ts.Node): ts.Node {
-            /**
-             * e.g.
-             * - const x = require('path');
-             * - const x = import('path');
-             */
-            if (isImportCall(node)) {
-                return ts.visitEachChild(node, pathReplacer, context);
-            }
+		function visitor(node: ts.Node): ts.Node {
+			/**
+			 * e.g.
+			 * - const x = require('path');
+			 * - const x = import('path');
+			 */
+			if (isImportCall(node)) {
+				return ts.visitEachChild(node, pathReplacer, context);
+			}
 
-            /**
-             * e.g.
-             * - type Foo = import('path').Foo;
-             */
-            if (ts.isImportTypeNode(node)) {
-                return ts.visitEachChild(node, pathReplacer, context);
-            }
+			/**
+			 * e.g.
+			 * - type Foo = import('path').Foo;
+			 */
+			if (ts.isImportTypeNode(node)) {
+				return ts.visitEachChild(node, pathReplacer, context);
+			}
 
-            /**
-             * e.g.
-             * - import * as x from 'path';
-             * - import { x } from 'path';
-             */
-            if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
-                return ts.visitEachChild(node, pathReplacer, context);
-            }
-            /**
-             * e.g.
-             * - export { x } from 'path';
-             */
-            if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
-                return ts.visitEachChild(node, pathReplacer, context);
-            }
+			/**
+			 * e.g.
+			 * - import * as x from 'path';
+			 * - import { x } from 'path';
+			 */
+			if (ts.isImportDeclaration(node) && ts.isStringLiteral(node.moduleSpecifier)) {
+				return ts.visitEachChild(node, pathReplacer, context);
+			}
+			/**
+			 * e.g.
+			 * - export { x } from 'path';
+			 */
+			if (ts.isExportDeclaration(node) && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
+				return ts.visitEachChild(node, pathReplacer, context);
+			}
 
-            return ts.visitEachChild(node, visitor, context);
-        }
+			return ts.visitEachChild(node, visitor, context);
+		}
 
-        return ts.visitEachChild(sourceFile, visitor, context);
-    }
+		return ts.visitEachChild(sourceFile, visitor, context);
+	}
 
-    return chainBundle(transformSourceFile);
+	return chainBundle(transformSourceFile);
 }
 
 export const storeTsLib = () => {
-    const tsLibPath = path.resolve(path.resolve(".", "tslib.es6.js"));
-    if (!fs.existsSync(tsLibPath)) {
-        fs.writeFileSync(tsLibPath, tslibContent);
-    }
+	const tsLibPath = path.resolve(path.resolve(".", "tslib.es6.js"));
+	if (!fs.existsSync(tsLibPath)) {
+		fs.writeFileSync(tsLibPath, tslibContent);
+	}
 };
 
 // tslib 2.4.0

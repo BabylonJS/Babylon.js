@@ -24,73 +24,73 @@ import thumbCircleIcon from "shared-ui-components/imgs/thumbCircleIcon.svg";
 import { IconComponent } from "shared-ui-components/lines/iconComponent";
 
 interface ISliderPropertyGridComponentProps {
-    sliders: (Slider | ImageBasedSlider)[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	sliders: (Slider | ImageBasedSlider)[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class SliderPropertyGridComponent extends React.Component<ISliderPropertyGridComponentProps> {
-    constructor(props: ISliderPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: ISliderPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const { sliders, onPropertyChangedObservable } = this.props;
-        const proxy = makeTargetsProxy(sliders, onPropertyChangedObservable);
+	override render() {
+		const { sliders, onPropertyChangedObservable } = this.props;
+		const proxy = makeTargetsProxy(sliders, onPropertyChangedObservable);
 
-        return (
-            <div className="pane">
-                <hr />
-                <TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
-                {sliders.every((slider) => slider.typeName === "Slider") && (
-                    <div className="ge-divider">
-                        <IconComponent icon={colorIcon} label="Border Color" />
-                        <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="borderColor" />
-                    </div>
-                )}
-                <div className="ge-divider">
-                    <IconComponent icon={verticalSliderIcon} label="Vertical" />
-                    <CheckBoxLineComponent label="VERTICAL" target={proxy} propertyName="isVertical" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={barOffsetIcon} label="Bar Offset" />
-                    <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barOffset" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={sliderValueMinimumIcon} label="Minimum Value" />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="minimum" arrows={true} />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={sliderValueMaximumIcon} label="Maximum Value" />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="maximum" arrows={true} />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={sliderValueIcon} label="Initial Value" />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="value" arrows={true} />
-                </div>
-                <hr />
-                <TextLineComponent label="THUMB" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <IconComponent icon={showThumbIcon} label="Display Thumb" />
-                    <CheckBoxLineComponent label="DISPLAY THUMB" target={proxy} propertyName="displayThumb" onValueChanged={() => this.forceUpdate()} />
-                </div>
-                {proxy.displayThumb && (
-                    <>
-                        <div className="ge-divider">
-                            <IconComponent icon={thumbCircleIcon} label="Thumb Circular" />
-                            <CheckBoxLineComponent label="CIRCULAR" target={proxy} propertyName="isThumbCircle" />
-                        </div>
-                        <div className="ge-divider">
-                            <IconComponent icon={clampSliderValueIcon} label="Thumb Clamped to Edges" />
-                            <CheckBoxLineComponent label="CLAMPED" target={proxy} propertyName="isThumbClamped" />
-                        </div>
-                        <div className="ge-divider double">
-                            <IconComponent icon={widthIcon} label="Width" />
-                            <TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="thumbWidth" />
-                        </div>
-                    </>
-                )}
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<hr />
+				<TextLineComponent label="SLIDER" value=" " color="grey"></TextLineComponent>
+				{sliders.every((slider) => slider.typeName === "Slider") && (
+					<div className="ge-divider">
+						<IconComponent icon={colorIcon} label="Border Color" />
+						<ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="borderColor" />
+					</div>
+				)}
+				<div className="ge-divider">
+					<IconComponent icon={verticalSliderIcon} label="Vertical" />
+					<CheckBoxLineComponent label="VERTICAL" target={proxy} propertyName="isVertical" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={barOffsetIcon} label="Bar Offset" />
+					<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="barOffset" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={sliderValueMinimumIcon} label="Minimum Value" />
+					<FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="minimum" arrows={true} />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={sliderValueMaximumIcon} label="Maximum Value" />
+					<FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="maximum" arrows={true} />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={sliderValueIcon} label="Initial Value" />
+					<FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="value" arrows={true} />
+				</div>
+				<hr />
+				<TextLineComponent label="THUMB" value=" " color="grey"></TextLineComponent>
+				<div className="ge-divider">
+					<IconComponent icon={showThumbIcon} label="Display Thumb" />
+					<CheckBoxLineComponent label="DISPLAY THUMB" target={proxy} propertyName="displayThumb" onValueChanged={() => this.forceUpdate()} />
+				</div>
+				{proxy.displayThumb && (
+					<>
+						<div className="ge-divider">
+							<IconComponent icon={thumbCircleIcon} label="Thumb Circular" />
+							<CheckBoxLineComponent label="CIRCULAR" target={proxy} propertyName="isThumbCircle" />
+						</div>
+						<div className="ge-divider">
+							<IconComponent icon={clampSliderValueIcon} label="Thumb Clamped to Edges" />
+							<CheckBoxLineComponent label="CLAMPED" target={proxy} propertyName="isThumbClamped" />
+						</div>
+						<div className="ge-divider double">
+							<IconComponent icon={widthIcon} label="Width" />
+							<TextInputLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="thumbWidth" />
+						</div>
+					</>
+				)}
+			</div>
+		);
+	}
 }

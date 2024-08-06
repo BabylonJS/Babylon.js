@@ -10,5 +10,5 @@ export interface IGraphContainerProps {}
  * @returns
  */
 export const GraphContainer: FC<IGraphContainerProps> = (props) => {
-    return <div className={style.container}>{props.children}</div>;
+	return <div className={style.container}>{props.children}</div>;
 };

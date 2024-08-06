@@ -16,25 +16,25 @@ export interface IFlexibleGridContainerProps {}
  * @returns GridContainer element
  */
 export const FlexibleGridContainer: FC<IFlexibleGridContainerProps> = () => {
-    const context = useContext(LayoutContext);
-    const { layout } = context;
-    const columns =
-        layout && layout.columns
-            ? layout.columns.map((column: any, columnIdx: number) => {
-                  return (
-                      <FlexibleColumn key={column.id} width={column.width}>
-                          {column.rows.map((row: any, rowIdx: number) => {
-                              return (
-                                  <div style={{ height: row.height }} key={row.id}>
-                                      <FlexibleDropZone rowNumber={rowIdx} columnNumber={columnIdx}>
-                                          <FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} rowIndex={rowIdx} columnIndex={columnIdx} />
-                                      </FlexibleDropZone>
-                                  </div>
-                              );
-                          })}
-                      </FlexibleColumn>
-                  );
-              })
-            : [];
-    return <div className={style.flexibleGrid}>{columns}</div>;
+	const context = useContext(LayoutContext);
+	const { layout } = context;
+	const columns =
+		layout && layout.columns
+			? layout.columns.map((column: any, columnIdx: number) => {
+					return (
+						<FlexibleColumn key={column.id} width={column.width}>
+							{column.rows.map((row: any, rowIdx: number) => {
+								return (
+									<div style={{ height: row.height }} key={row.id}>
+										<FlexibleDropZone rowNumber={rowIdx} columnNumber={columnIdx}>
+											<FlexibleTabsContainer tabs={row.tabs} selectedTab={row.selectedTab} rowIndex={rowIdx} columnIndex={columnIdx} />
+										</FlexibleDropZone>
+									</div>
+								);
+							})}
+						</FlexibleColumn>
+					);
+				})
+			: [];
+	return <div className={style.flexibleGrid}>{columns}</div>;
 };

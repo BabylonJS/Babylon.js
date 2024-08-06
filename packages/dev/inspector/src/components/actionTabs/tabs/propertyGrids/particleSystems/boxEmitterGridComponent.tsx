@@ -8,50 +8,50 @@ import { Vector3LineComponent } from "shared-ui-components/lines/vector3LineComp
 import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObject";
 
 interface IBoxEmitterGridComponentProps {
-    globalState: GlobalState;
-    emitter: BoxParticleEmitter;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    lockObject: LockObject;
+	globalState: GlobalState;
+	emitter: BoxParticleEmitter;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	lockObject: LockObject;
 }
 
 export class BoxEmitterGridComponent extends React.Component<IBoxEmitterGridComponentProps> {
-    constructor(props: IBoxEmitterGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IBoxEmitterGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const emitter = this.props.emitter;
-        return (
-            <>
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Direction 1"
-                    target={emitter}
-                    propertyName="direction1"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Direction 2"
-                    target={emitter}
-                    propertyName="direction2"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Min emit box"
-                    target={emitter}
-                    propertyName="minEmitBox"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <Vector3LineComponent
-                    lockObject={this.props.lockObject}
-                    label="Max emit box"
-                    target={emitter}
-                    propertyName="maxEmitBox"
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-            </>
-        );
-    }
+	override render() {
+		const emitter = this.props.emitter;
+		return (
+			<>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Direction 1"
+					target={emitter}
+					propertyName="direction1"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Direction 2"
+					target={emitter}
+					propertyName="direction2"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Min emit box"
+					target={emitter}
+					propertyName="minEmitBox"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<Vector3LineComponent
+					lockObject={this.props.lockObject}
+					label="Max emit box"
+					target={emitter}
+					propertyName="maxEmitBox"
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+			</>
+		);
+	}
 }

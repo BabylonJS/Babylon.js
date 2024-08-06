@@ -1,5 +1,5 @@
 export const enum CameraBehavior {
-    AUTOROTATION,
-    BOUNCING,
-    FRAMING,
+	AUTOROTATION,
+	BOUNCING,
+	FRAMING,
 }

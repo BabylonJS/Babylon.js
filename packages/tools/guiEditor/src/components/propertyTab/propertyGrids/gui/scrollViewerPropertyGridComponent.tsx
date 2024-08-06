@@ -20,85 +20,85 @@ import { UnitButton } from "shared-ui-components/lines/unitButton";
 import type { GlobalState } from "../../../../globalState";
 
 interface IScrollViewerPropertyGridComponentProps {
-    scrollViewers: ScrollViewer[];
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
-    onFontsParsedObservable?: Observable<void>;
-    globalState?: GlobalState;
+	scrollViewers: ScrollViewer[];
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	onFontsParsedObservable?: Observable<void>;
+	globalState?: GlobalState;
 }
 
 export class ScrollViewerPropertyGridComponent extends React.Component<IScrollViewerPropertyGridComponentProps> {
-    constructor(props: IScrollViewerPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IScrollViewerPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const { scrollViewers, onPropertyChangedObservable, lockObject } = this.props;
-        const proxy = makeTargetsProxy(scrollViewers, onPropertyChangedObservable);
+	override render() {
+		const { scrollViewers, onPropertyChangedObservable, lockObject } = this.props;
+		const proxy = makeTargetsProxy(scrollViewers, onPropertyChangedObservable);
 
-        return (
-            <div className="pane">
-                <CommonControlPropertyGridComponent
-                    lockObject={lockObject}
-                    controls={scrollViewers}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    onFontsParsedObservable={this.props.onFontsParsedObservable}
-                    globalState={this.props.globalState}
-                />
-                <hr />
-                <TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
-                <div className="ge-divider">
-                    <IconComponent icon={scrollViewerPrecisionIcon} label={"Wheel Precision"} />
-                    <FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="wheelPrecision" arrows={true} min={0} digits={2} />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={widthIcon} label={"Bar Size"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="barSize"
-                        unit={<UnitButton unit="PX" locked />}
-                        arrows
-                        min={0}
-                        digits={2}
-                    />
-                </div>
-                <div className="e-divider">
-                    <IconComponent icon={colorIcon} label="Bar Color" />
-                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barColor" />
-                </div>
-                <div className="ge-divider">
-                    <IconComponent icon={fillColorIcon} label="Bar Background Color" />
-                    <ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barBackground" />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label=""
-                        target={proxy}
-                        propertyName="thickness"
-                        unit={<UnitButton unit="PX" locked />}
-                        arrows={true}
-                        min={0}
-                        digits={2}
-                    />
-                </div>
-                <div className="ge-divider double">
-                    <IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
-                    <FloatLineComponent
-                        lockObject={lockObject}
-                        label=""
-                        target={makeTargetsProxy(scrollViewers, onPropertyChangedObservable)}
-                        propertyName="cornerRadius"
-                        unit={<UnitButton unit="PX" locked />}
-                        arrows={true}
-                        min={0}
-                        digits={2}
-                    />
-                </div>
-            </div>
-        );
-    }
+		return (
+			<div className="pane">
+				<CommonControlPropertyGridComponent
+					lockObject={lockObject}
+					controls={scrollViewers}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					onFontsParsedObservable={this.props.onFontsParsedObservable}
+					globalState={this.props.globalState}
+				/>
+				<hr />
+				<TextLineComponent label="SCROLLVIEWER" value=" " color="grey"></TextLineComponent>
+				<div className="ge-divider">
+					<IconComponent icon={scrollViewerPrecisionIcon} label={"Wheel Precision"} />
+					<FloatLineComponent lockObject={this.props.lockObject} label="" target={proxy} propertyName="wheelPrecision" arrows={true} min={0} digits={2} />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={widthIcon} label={"Bar Size"} />
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label=""
+						target={proxy}
+						propertyName="barSize"
+						unit={<UnitButton unit="PX" locked />}
+						arrows
+						min={0}
+						digits={2}
+					/>
+				</div>
+				<div className="e-divider">
+					<IconComponent icon={colorIcon} label="Bar Color" />
+					<ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barColor" />
+				</div>
+				<div className="ge-divider">
+					<IconComponent icon={fillColorIcon} label="Bar Background Color" />
+					<ColorLine lockObject={this.props.lockObject} label="" target={proxy} propertyName="barBackground" />
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={strokeWeightIcon} label={"Stroke Weight"} />
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label=""
+						target={proxy}
+						propertyName="thickness"
+						unit={<UnitButton unit="PX" locked />}
+						arrows={true}
+						min={0}
+						digits={2}
+					/>
+				</div>
+				<div className="ge-divider double">
+					<IconComponent icon={cornerRadiusIcon} label={"Corner Radius"} />
+					<FloatLineComponent
+						lockObject={lockObject}
+						label=""
+						target={makeTargetsProxy(scrollViewers, onPropertyChangedObservable)}
+						propertyName="cornerRadius"
+						unit={<UnitButton unit="PX" locked />}
+						arrows={true}
+						min={0}
+						digits={2}
+					/>
+				</div>
+			</div>
+		);
+	}
 }

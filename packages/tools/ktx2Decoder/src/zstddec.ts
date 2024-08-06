@@ -6,12 +6,12 @@ import { Transcoder } from "./transcoder";
  * From https://github.com/donmccurdy/zstddec by Don McCurdy
  */
 interface DecoderExports {
-    memory: Uint8Array;
+	memory: Uint8Array;
 
-    ZSTD_findDecompressedSize: (compressedPtr: number, compressedSize: number) => number;
-    ZSTD_decompress: (uncompressedPtr: number, uncompressedSize: number, compressedPtr: number, compressedSize: number) => number;
-    malloc: (ptr: number) => number;
-    free: (ptr: number) => void;
+	ZSTD_findDecompressedSize: (compressedPtr: number, compressedSize: number) => number;
+	ZSTD_decompress: (uncompressedPtr: number, uncompressedSize: number, compressedPtr: number, compressedSize: number) => number;
+	malloc: (ptr: number) => number;
+	free: (ptr: number) => void;
 }
 
 let init: Promise<void>;
@@ -19,73 +19,73 @@ let instance: { exports: DecoderExports };
 let heap: Uint8Array;
 
 const IMPORT_OBJECT = {
-    env: {
-        emscripten_notify_memory_growth: function (): void {
-            heap = new Uint8Array(instance.exports.memory.buffer);
-        },
-    },
+	env: {
+		emscripten_notify_memory_growth: function (): void {
+			heap = new Uint8Array(instance.exports.memory.buffer);
+		},
+	},
 };
 
 /**
  * ZSTD (Zstandard) decoder.
  */
 export class ZSTDDecoder {
-    public static WasmModuleURL = "https://cdn.babylonjs.com/zstddec.wasm";
+	public static WasmModuleURL = "https://cdn.babylonjs.com/zstddec.wasm";
 
-    init(): Promise<void> {
-        if (init) {
-            return init;
-        }
+	init(): Promise<void> {
+		if (init) {
+			return init;
+		}
 
-        if (typeof fetch !== "undefined") {
-            // Web.
+		if (typeof fetch !== "undefined") {
+			// Web.
 
-            init = fetch(Transcoder.GetWasmUrl(ZSTDDecoder.WasmModuleURL))
-                .then((response) => {
-                    if (response.ok) {
-                        return response.arrayBuffer();
-                    }
-                    throw new Error(`Could not fetch the wasm component for the Zstandard decompression lib: ${response.status} - ${response.statusText}`);
-                })
-                .then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
-                .then(this._init);
-        } else {
-            // Node.js.
+			init = fetch(Transcoder.GetWasmUrl(ZSTDDecoder.WasmModuleURL))
+				.then((response) => {
+					if (response.ok) {
+						return response.arrayBuffer();
+					}
+					throw new Error(`Could not fetch the wasm component for the Zstandard decompression lib: ${response.status} - ${response.statusText}`);
+				})
+				.then((arrayBuffer) => WebAssembly.instantiate(arrayBuffer, IMPORT_OBJECT))
+				.then(this._init);
+		} else {
+			// Node.js.
 
-            init = WebAssembly.instantiateStreaming(fetch(ZSTDDecoder.WasmModuleURL), IMPORT_OBJECT).then(this._init);
-        }
+			init = WebAssembly.instantiateStreaming(fetch(ZSTDDecoder.WasmModuleURL), IMPORT_OBJECT).then(this._init);
+		}
 
-        return init;
-    }
+		return init;
+	}
 
-    _init(result: WebAssembly.WebAssemblyInstantiatedSource): void {
-        instance = result.instance as unknown as { exports: DecoderExports };
+	_init(result: WebAssembly.WebAssemblyInstantiatedSource): void {
+		instance = result.instance as unknown as { exports: DecoderExports };
 
-        IMPORT_OBJECT.env.emscripten_notify_memory_growth(); // initialize heap.
-    }
+		IMPORT_OBJECT.env.emscripten_notify_memory_growth(); // initialize heap.
+	}
 
-    decode(array: Uint8Array, uncompressedSize = 0): Uint8Array {
-        if (!instance) {
-            throw new Error(`ZSTDDecoder: Await .init() before decoding.`);
-        }
+	decode(array: Uint8Array, uncompressedSize = 0): Uint8Array {
+		if (!instance) {
+			throw new Error(`ZSTDDecoder: Await .init() before decoding.`);
+		}
 
-        // Write compressed data into WASM memory.
-        const compressedSize = array.byteLength;
-        const compressedPtr = instance.exports.malloc(compressedSize);
-        heap.set(array, compressedPtr);
+		// Write compressed data into WASM memory.
+		const compressedSize = array.byteLength;
+		const compressedPtr = instance.exports.malloc(compressedSize);
+		heap.set(array, compressedPtr);
 
-        // Decompress into WASM memory.
-        uncompressedSize = uncompressedSize || Number(instance.exports.ZSTD_findDecompressedSize(compressedPtr, compressedSize));
-        const uncompressedPtr = instance.exports.malloc(uncompressedSize);
-        const actualSize = instance.exports.ZSTD_decompress(uncompressedPtr, uncompressedSize, compressedPtr, compressedSize);
+		// Decompress into WASM memory.
+		uncompressedSize = uncompressedSize || Number(instance.exports.ZSTD_findDecompressedSize(compressedPtr, compressedSize));
+		const uncompressedPtr = instance.exports.malloc(uncompressedSize);
+		const actualSize = instance.exports.ZSTD_decompress(uncompressedPtr, uncompressedSize, compressedPtr, compressedSize);
 
-        // Read decompressed data and free WASM memory.
-        const dec = heap.slice(uncompressedPtr, uncompressedPtr + actualSize);
-        instance.exports.free(compressedPtr);
-        instance.exports.free(uncompressedPtr);
+		// Read decompressed data and free WASM memory.
+		const dec = heap.slice(uncompressedPtr, uncompressedPtr + actualSize);
+		instance.exports.free(compressedPtr);
+		instance.exports.free(uncompressedPtr);
 
-        return dec;
-    }
+		return dec;
+	}
 }
 
 /**

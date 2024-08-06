@@ -9,15 +9,15 @@ declare let MeshoptDecoder: any;
  * Configuration for meshoptimizer compression
  */
 export interface IMeshoptCompressionConfiguration {
-    /**
-     * Configuration for the decoder.
-     */
-    decoder: {
-        /**
-         * The url to the meshopt decoder library.
-         */
-        url: string;
-    };
+	/**
+	 * Configuration for the decoder.
+	 */
+	decoder: {
+		/**
+		 * The url to the meshopt decoder library.
+		 */
+		url: string;
+	};
 }
 
 /**
@@ -43,70 +43,70 @@ export interface IMeshoptCompressionConfiguration {
  * ```
  */
 export class MeshoptCompression implements IDisposable {
-    private _decoderModulePromise?: Promise<any>;
+	private _decoderModulePromise?: Promise<any>;
 
-    /**
-     * The configuration. Defaults to the following:
-     * ```javascript
-     * decoder: {
-     *   url: "https://cdn.babylonjs.com/meshopt_decoder.js"
-     * }
-     * ```
-     */
-    public static Configuration: IMeshoptCompressionConfiguration = {
-        decoder: {
-            url: `${Tools._DefaultCdnUrl}/meshopt_decoder.js`,
-        },
-    };
+	/**
+	 * The configuration. Defaults to the following:
+	 * ```javascript
+	 * decoder: {
+	 *   url: "https://cdn.babylonjs.com/meshopt_decoder.js"
+	 * }
+	 * ```
+	 */
+	public static Configuration: IMeshoptCompressionConfiguration = {
+		decoder: {
+			url: `${Tools._DefaultCdnUrl}/meshopt_decoder.js`,
+		},
+	};
 
-    private static _Default: Nullable<MeshoptCompression> = null;
+	private static _Default: Nullable<MeshoptCompression> = null;
 
-    /**
-     * Default instance for the meshoptimizer object.
-     */
-    public static get Default(): MeshoptCompression {
-        if (!MeshoptCompression._Default) {
-            MeshoptCompression._Default = new MeshoptCompression();
-        }
+	/**
+	 * Default instance for the meshoptimizer object.
+	 */
+	public static get Default(): MeshoptCompression {
+		if (!MeshoptCompression._Default) {
+			MeshoptCompression._Default = new MeshoptCompression();
+		}
 
-        return MeshoptCompression._Default;
-    }
+		return MeshoptCompression._Default;
+	}
 
-    /**
-     * Constructor
-     */
-    constructor() {
-        const decoder = MeshoptCompression.Configuration.decoder;
+	/**
+	 * Constructor
+	 */
+	constructor() {
+		const decoder = MeshoptCompression.Configuration.decoder;
 
-        this._decoderModulePromise = Tools.LoadBabylonScriptAsync(decoder.url).then(() => {
-            // Wait for WebAssembly compilation before resolving promise
-            return MeshoptDecoder.ready;
-        });
-    }
+		this._decoderModulePromise = Tools.LoadBabylonScriptAsync(decoder.url).then(() => {
+			// Wait for WebAssembly compilation before resolving promise
+			return MeshoptDecoder.ready;
+		});
+	}
 
-    /**
-     * Stop all async operations and release resources.
-     */
-    public dispose(): void {
-        delete this._decoderModulePromise;
-    }
+	/**
+	 * Stop all async operations and release resources.
+	 */
+	public dispose(): void {
+		delete this._decoderModulePromise;
+	}
 
-    /**
-     * Decode meshopt data.
-     * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
-     * @param source The input data.
-     * @param count The number of elements.
-     * @param stride The stride in bytes.
-     * @param mode The compression mode.
-     * @param filter The compression filter.
-     * @returns a Promise<Uint8Array> that resolves to the decoded data
-     */
-    public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
-        return this._decoderModulePromise!.then(async () => {
-            MeshoptDecoder.useWorkers(1);
-            const result = await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
-            MeshoptDecoder.useWorkers(0);
-            return result;
-        });
-    }
+	/**
+	 * Decode meshopt data.
+	 * @see https://github.com/zeux/meshoptimizer/tree/master/js#decoder
+	 * @param source The input data.
+	 * @param count The number of elements.
+	 * @param stride The stride in bytes.
+	 * @param mode The compression mode.
+	 * @param filter The compression filter.
+	 * @returns a Promise<Uint8Array> that resolves to the decoded data
+	 */
+	public decodeGltfBufferAsync(source: Uint8Array, count: number, stride: number, mode: "ATTRIBUTES" | "TRIANGLES" | "INDICES", filter?: string): Promise<Uint8Array> {
+		return this._decoderModulePromise!.then(async () => {
+			MeshoptDecoder.useWorkers(1);
+			const result = await MeshoptDecoder.decodeGltfBufferAsync(count, stride, source, mode, filter);
+			MeshoptDecoder.useWorkers(0);
+			return result;
+		});
+	}
 }

@@ -12,76 +12,76 @@ const NAME = "KHR_materials_sheen";
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export class KHR_materials_sheen implements IGLTFExporterExtensionV2 {
-    /** Name of this extension */
-    public readonly name = NAME;
+	/** Name of this extension */
+	public readonly name = NAME;
 
-    /** Defines whether this extension is enabled */
-    public enabled = true;
+	/** Defines whether this extension is enabled */
+	public enabled = true;
 
-    /** Defines whether this extension is required */
-    public required = false;
+	/** Defines whether this extension is required */
+	public required = false;
 
-    private _wasUsed = false;
+	private _wasUsed = false;
 
-    private _exporter: _Exporter;
+	private _exporter: _Exporter;
 
-    constructor(exporter: _Exporter) {
-        this._exporter = exporter;
-    }
+	constructor(exporter: _Exporter) {
+		this._exporter = exporter;
+	}
 
-    public dispose() {}
+	public dispose() {}
 
-    /** @internal */
-    public get wasUsed() {
-        return this._wasUsed;
-    }
+	/** @internal */
+	public get wasUsed() {
+		return this._wasUsed;
+	}
 
-    public postExportMaterialAdditionalTextures(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
-        if (babylonMaterial instanceof PBRMaterial) {
-            if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
-                return [babylonMaterial.sheen.texture];
-            }
-        }
+	public postExportMaterialAdditionalTextures(context: string, node: IMaterial, babylonMaterial: Material): BaseTexture[] {
+		if (babylonMaterial instanceof PBRMaterial) {
+			if (babylonMaterial.sheen.isEnabled && babylonMaterial.sheen.texture) {
+				return [babylonMaterial.sheen.texture];
+			}
+		}
 
-        return [];
-    }
+		return [];
+	}
 
-    public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
-        return new Promise((resolve) => {
-            if (babylonMaterial instanceof PBRMaterial) {
-                if (!babylonMaterial.sheen.isEnabled) {
-                    resolve(node);
-                    return;
-                }
+	public postExportMaterialAsync(context: string, node: IMaterial, babylonMaterial: Material): Promise<IMaterial> {
+		return new Promise((resolve) => {
+			if (babylonMaterial instanceof PBRMaterial) {
+				if (!babylonMaterial.sheen.isEnabled) {
+					resolve(node);
+					return;
+				}
 
-                this._wasUsed = true;
+				this._wasUsed = true;
 
-                if (node.extensions == null) {
-                    node.extensions = {};
-                }
-                const sheenInfo: IKHRMaterialsSheen = {
-                    sheenColorFactor: babylonMaterial.sheen.color.asArray(),
-                    sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0,
-                    hasTextures: () => {
-                        return sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null;
-                    },
-                };
+				if (node.extensions == null) {
+					node.extensions = {};
+				}
+				const sheenInfo: IKHRMaterialsSheen = {
+					sheenColorFactor: babylonMaterial.sheen.color.asArray(),
+					sheenRoughnessFactor: babylonMaterial.sheen.roughness ?? 0,
+					hasTextures: () => {
+						return sheenInfo.sheenColorTexture !== null || sheenInfo.sheenRoughnessTexture !== null;
+					},
+				};
 
-                if (babylonMaterial.sheen.texture) {
-                    sheenInfo.sheenColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
-                }
+				if (babylonMaterial.sheen.texture) {
+					sheenInfo.sheenColorTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
+				}
 
-                if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.textureRoughness) ?? undefined;
-                } else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
-                    sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
-                }
+				if (babylonMaterial.sheen.textureRoughness && !babylonMaterial.sheen.useRoughnessFromMainTexture) {
+					sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.textureRoughness) ?? undefined;
+				} else if (babylonMaterial.sheen.texture && babylonMaterial.sheen.useRoughnessFromMainTexture) {
+					sheenInfo.sheenRoughnessTexture = this._exporter._glTFMaterialExporter._getTextureInfo(babylonMaterial.sheen.texture) ?? undefined;
+				}
 
-                node.extensions[NAME] = sheenInfo;
-            }
-            resolve(node);
-        });
-    }
+				node.extensions[NAME] = sheenInfo;
+			}
+			resolve(node);
+		});
+	}
 }
 
 _Exporter.RegisterExtension(NAME, (exporter) => new KHR_materials_sheen(exporter));

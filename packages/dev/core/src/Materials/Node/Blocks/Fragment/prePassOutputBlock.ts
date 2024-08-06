@@ -11,151 +11,151 @@ import { ShaderLanguage } from "core/Materials/shaderLanguage";
  * #WW65SN#9
  */
 export class PrePassOutputBlock extends NodeMaterialBlock {
-    /**
-     * Create a new PrePassOutputBlock
-     * @param name defines the block name
-     */
-    public constructor(name: string) {
-        super(name, NodeMaterialBlockTargets.Fragment, true);
+	/**
+	 * Create a new PrePassOutputBlock
+	 * @param name defines the block name
+	 */
+	public constructor(name: string) {
+		super(name, NodeMaterialBlockTargets.Fragment, true);
 
-        this.registerInput("viewDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
-        this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
-        this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+		this.registerInput("viewDepth", NodeMaterialBlockConnectionPointTypes.Float, true);
+		this.registerInput("worldPosition", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+		this.registerInput("viewNormal", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
+		this.registerInput("reflectivity", NodeMaterialBlockConnectionPointTypes.AutoDetect, true);
 
-        this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
-        this.inputs[3].addExcludedConnectionPointFromAllowedTypes(
-            NodeMaterialBlockConnectionPointTypes.Vector3 |
-                NodeMaterialBlockConnectionPointTypes.Vector4 |
-                NodeMaterialBlockConnectionPointTypes.Color3 |
-                NodeMaterialBlockConnectionPointTypes.Color4
-        );
-    }
+		this.inputs[1].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+		this.inputs[2].addExcludedConnectionPointFromAllowedTypes(NodeMaterialBlockConnectionPointTypes.Vector3 | NodeMaterialBlockConnectionPointTypes.Vector4);
+		this.inputs[3].addExcludedConnectionPointFromAllowedTypes(
+			NodeMaterialBlockConnectionPointTypes.Vector3 |
+				NodeMaterialBlockConnectionPointTypes.Vector4 |
+				NodeMaterialBlockConnectionPointTypes.Color3 |
+				NodeMaterialBlockConnectionPointTypes.Color4
+		);
+	}
 
-    /**
-     * Gets the current class name
-     * @returns the class name
-     */
-    public override getClassName() {
-        return "PrePassOutputBlock";
-    }
+	/**
+	 * Gets the current class name
+	 * @returns the class name
+	 */
+	public override getClassName() {
+		return "PrePassOutputBlock";
+	}
 
-    /**
-     * Gets the view depth component
-     */
-    public get viewDepth(): NodeMaterialConnectionPoint {
-        return this._inputs[0];
-    }
+	/**
+	 * Gets the view depth component
+	 */
+	public get viewDepth(): NodeMaterialConnectionPoint {
+		return this._inputs[0];
+	}
 
-    /**
-     * Gets the world position component
-     */
-    public get worldPosition(): NodeMaterialConnectionPoint {
-        return this._inputs[1];
-    }
+	/**
+	 * Gets the world position component
+	 */
+	public get worldPosition(): NodeMaterialConnectionPoint {
+		return this._inputs[1];
+	}
 
-    /**
-     * Gets the view normal component
-     */
-    public get viewNormal(): NodeMaterialConnectionPoint {
-        return this._inputs[2];
-    }
+	/**
+	 * Gets the view normal component
+	 */
+	public get viewNormal(): NodeMaterialConnectionPoint {
+		return this._inputs[2];
+	}
 
-    /**
-     * Gets the reflectivity component
-     */
-    public get reflectivity(): NodeMaterialConnectionPoint {
-        return this._inputs[3];
-    }
+	/**
+	 * Gets the reflectivity component
+	 */
+	public get reflectivity(): NodeMaterialConnectionPoint {
+		return this._inputs[3];
+	}
 
-    private _getFragData(isWebGPU: boolean, index: number) {
-        return isWebGPU ? `fragmentOutputs.fragData${index}` : `gl_FragData[${index}]`;
-    }
+	private _getFragData(isWebGPU: boolean, index: number) {
+		return isWebGPU ? `fragmentOutputs.fragData${index}` : `gl_FragData[${index}]`;
+	}
 
-    protected override _buildBlock(state: NodeMaterialBuildState) {
-        super._buildBlock(state);
+	protected override _buildBlock(state: NodeMaterialBuildState) {
+		super._buildBlock(state);
 
-        const worldPosition = this.worldPosition;
-        const viewNormal = this.viewNormal;
-        const viewDepth = this.viewDepth;
-        const reflectivity = this.reflectivity;
+		const worldPosition = this.worldPosition;
+		const viewNormal = this.viewNormal;
+		const viewDepth = this.viewDepth;
+		const reflectivity = this.reflectivity;
 
-        state.sharedData.blocksWithDefines.push(this);
+		state.sharedData.blocksWithDefines.push(this);
 
-        const comments = `//${this.name}`;
-        const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
-        const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
-        state._emitFunctionFromInclude("helperFunctions", comments);
+		const comments = `//${this.name}`;
+		const vec4 = state._getShaderType(NodeMaterialBlockConnectionPointTypes.Vector4);
+		const isWebGPU = state.shaderLanguage === ShaderLanguage.WGSL;
+		state._emitFunctionFromInclude("helperFunctions", comments);
 
-        state.compilationString += `#if defined(PREPASS)\r\n`;
-        state.compilationString += isWebGPU ? `var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;\r\n` : `vec4 fragData[SCENE_MRT_COUNT];\r\n`;
+		state.compilationString += `#if defined(PREPASS)\r\n`;
+		state.compilationString += isWebGPU ? `var fragData: array<vec4<f32>, SCENE_MRT_COUNT>;\r\n` : `vec4 fragData[SCENE_MRT_COUNT];\r\n`;
 
-        state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
-        if (viewDepth.connectedPoint) {
-            state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(${viewDepth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
-        } else {
-            // We have to write something on the viewDepth output or it will raise a gl error
-            state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
-        if (worldPosition.connectedPoint) {
-            state.compilationString += `fragData[PREPASS_POSITION_INDEX] = ${vec4}(${worldPosition.associatedVariableName}.rgb, ${
-                worldPosition.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? worldPosition.associatedVariableName + ".a" : "1.0"
-            });\r\n`;
-        } else {
-            // We have to write something on the position output or it will raise a gl error
-            state.compilationString += ` fragData[PREPASS_POSITION_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
-        if (viewNormal.connectedPoint) {
-            state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(${viewNormal.associatedVariableName}.rgb, ${
-                viewNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? viewNormal.associatedVariableName + ".a" : "1.0"
-            });\r\n`;
-        } else {
-            // We have to write something on the normal output or it will raise a gl error
-            state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;
-        if (reflectivity.connectedPoint) {
-            state.compilationString += ` fragData[PREPASS_REFLECTIVITY_INDEX] = ${vec4}(${reflectivity.associatedVariableName}.rgb, ${
-                reflectivity.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? reflectivity.associatedVariableName + ".a" : "1.0"
-            });\r\n`;
-        } else {
-            // We have to write something on the reflectivity output or it will raise a gl error
-            state.compilationString += ` fragData[PREPASS_REFLECTIVITY_INDEX] = ${vec4}(0.0, 0.0, 0.0, 1.0);\r\n`;
-        }
-        state.compilationString += `#endif\r\n`;
+		state.compilationString += `#ifdef PREPASS_DEPTH\r\n`;
+		if (viewDepth.connectedPoint) {
+			state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(${viewDepth.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+		} else {
+			// We have to write something on the viewDepth output or it will raise a gl error
+			state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
+		}
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
+		if (worldPosition.connectedPoint) {
+			state.compilationString += `fragData[PREPASS_POSITION_INDEX] = ${vec4}(${worldPosition.associatedVariableName}.rgb, ${
+				worldPosition.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? worldPosition.associatedVariableName + ".a" : "1.0"
+			});\r\n`;
+		} else {
+			// We have to write something on the position output or it will raise a gl error
+			state.compilationString += ` fragData[PREPASS_POSITION_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
+		}
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#ifdef PREPASS_NORMAL\r\n`;
+		if (viewNormal.connectedPoint) {
+			state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(${viewNormal.associatedVariableName}.rgb, ${
+				viewNormal.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? viewNormal.associatedVariableName + ".a" : "1.0"
+			});\r\n`;
+		} else {
+			// We have to write something on the normal output or it will raise a gl error
+			state.compilationString += ` fragData[PREPASS_NORMAL_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
+		}
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#ifdef PREPASS_REFLECTIVITY\r\n`;
+		if (reflectivity.connectedPoint) {
+			state.compilationString += ` fragData[PREPASS_REFLECTIVITY_INDEX] = ${vec4}(${reflectivity.associatedVariableName}.rgb, ${
+				reflectivity.connectedPoint.type === NodeMaterialBlockConnectionPointTypes.Vector4 ? reflectivity.associatedVariableName + ".a" : "1.0"
+			});\r\n`;
+		} else {
+			// We have to write something on the reflectivity output or it will raise a gl error
+			state.compilationString += ` fragData[PREPASS_REFLECTIVITY_INDEX] = ${vec4}(0.0, 0.0, 0.0, 1.0);\r\n`;
+		}
+		state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#if SCENE_MRT_COUNT > 1\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 1)} = fragData[1];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 2\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 2)} = fragData[2];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 3\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 3)} = fragData[3];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 4\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 4)} = fragData[4];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 5\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 5)} = fragData[5];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 6\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 6)} = fragData[6];\r\n`;
-        state.compilationString += `#endif\r\n`;
-        state.compilationString += `#if SCENE_MRT_COUNT > 7\r\n`;
-        state.compilationString += `${this._getFragData(isWebGPU, 7)} = fragData[7];\r\n`;
-        state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 1\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 1)} = fragData[1];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 2\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 2)} = fragData[2];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 3\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 3)} = fragData[3];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 4\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 4)} = fragData[4];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 5\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 5)} = fragData[5];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 6\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 6)} = fragData[6];\r\n`;
+		state.compilationString += `#endif\r\n`;
+		state.compilationString += `#if SCENE_MRT_COUNT > 7\r\n`;
+		state.compilationString += `${this._getFragData(isWebGPU, 7)} = fragData[7];\r\n`;
+		state.compilationString += `#endif\r\n`;
 
-        state.compilationString += `#endif\r\n`;
+		state.compilationString += `#endif\r\n`;
 
-        return this;
-    }
+		return this;
+	}
 }
 
 RegisterClass("BABYLON.PrePassOutputBlock", PrePassOutputBlock);

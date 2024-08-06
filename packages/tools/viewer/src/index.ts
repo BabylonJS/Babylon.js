@@ -38,9 +38,9 @@ const disableInit: boolean = viewerGlobals.disableInit;
  * Dispose all viewers currently registered
  */
 function disposeAll() {
-    viewerManager.dispose();
-    mapperManager.dispose();
-    telemetryManager.dispose();
+	viewerManager.dispose();
+	mapperManager.dispose();
+	telemetryManager.dispose();
 }
 
 const Version = viewerGlobals.version;
@@ -49,25 +49,25 @@ Logger.Log("Babylon.js viewer (v" + Version + ")");
 
 // public API for initialization
 export {
-    BABYLON,
-    Version,
-    InitTags,
-    DefaultViewer,
-    AbstractViewer,
-    viewerGlobals,
-    telemetryManager,
-    disableInit,
-    viewerManager,
-    mapperManager,
-    disposeAll,
-    ModelLoader,
-    ViewerModel,
-    AnimationPlayMode,
-    AnimationState,
-    ModelState,
-    ILoaderPlugin,
-    AbstractViewerNavbarButton,
-    registerCustomOptimizer,
+	BABYLON,
+	Version,
+	InitTags,
+	DefaultViewer,
+	AbstractViewer,
+	viewerGlobals,
+	telemetryManager,
+	disableInit,
+	viewerManager,
+	mapperManager,
+	disposeAll,
+	ModelLoader,
+	ViewerModel,
+	AnimationPlayMode,
+	AnimationState,
+	ModelState,
+	ILoaderPlugin,
+	AbstractViewerNavbarButton,
+	registerCustomOptimizer,
 };
 // eslint-disable-next-line import/no-internal-modules
 export { GLTF2 } from "loaders/glTF/index";

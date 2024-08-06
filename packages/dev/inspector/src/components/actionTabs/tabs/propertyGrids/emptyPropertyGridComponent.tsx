@@ -8,25 +8,25 @@ import type { GlobalState } from "../../../globalState";
 import { CustomPropertyGridComponent } from "./customPropertyGridComponent";
 
 interface IEmptyPropertyGridComponentProps {
-    globalState: GlobalState;
-    item: { inspectableCustomProperties: any };
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	item: { inspectableCustomProperties: any };
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class EmptyPropertyGridComponent extends React.Component<IEmptyPropertyGridComponentProps> {
-    constructor(props: IEmptyPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IEmptyPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <CustomPropertyGridComponent
-                globalState={this.props.globalState}
-                lockObject={this.props.lockObject}
-                target={this.props.item}
-                onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-            />
-        );
-    }
+	override render() {
+		return (
+			<CustomPropertyGridComponent
+				globalState={this.props.globalState}
+				lockObject={this.props.lockObject}
+				target={this.props.item}
+				onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+			/>
+		);
+	}
 }

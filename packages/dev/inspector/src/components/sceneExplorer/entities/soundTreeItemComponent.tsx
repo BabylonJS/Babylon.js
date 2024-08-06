@@ -6,24 +6,24 @@ import * as React from "react";
 import type { Sound } from "core/Audio/sound";
 
 interface ISoundTreeItemComponentProps {
-    sound: Sound;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	sound: Sound;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class SoundTreeItemComponent extends React.Component<ISoundTreeItemComponentProps> {
-    constructor(props: ISoundTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: ISoundTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const sound = this.props.sound;
+	override render() {
+		const sound = this.props.sound;
 
-        return (
-            <div className="soundTools">
-                <TreeItemLabelComponent label={sound.name} onClick={() => this.props.onClick()} icon={faMusic} color="teal" />
-                {<ExtensionsComponent target={sound} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+		return (
+			<div className="soundTools">
+				<TreeItemLabelComponent label={sound.name} onClick={() => this.props.onClick()} icon={faMusic} color="teal" />
+				{<ExtensionsComponent target={sound} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

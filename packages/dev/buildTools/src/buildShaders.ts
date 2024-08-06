@@ -32,12 +32,12 @@ ShaderStore.##SHADERSTORE_PLACEHOLDER##[name] = shader;
  * @returns the shader name
  */
 function getShaderName(filename: string) {
-    const parts = filename.split(".");
-    if (parts[1] !== "fx") {
-        return parts[0] + (parts[1] === "fragment" ? "Pixel" : parts[1] === "compute" ? "Compute" : "Vertex") + "Shader";
-    } else {
-        return parts[0];
-    }
+	const parts = filename.split(".");
+	if (parts[1] !== "fx") {
+		return parts[0] + (parts[1] === "fragment" ? "Pixel" : parts[1] === "compute" ? "Compute" : "Vertex") + "Shader";
+	} else {
+		return parts[0];
+	}
 }
 
 /**
@@ -46,34 +46,34 @@ function getShaderName(filename: string) {
  * @returns the includes
  */
 function getIncludes(sourceCode: string) {
-    const regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
-    let match = regex.exec(sourceCode);
+	const regex = /#include<(.+)>(\((.*)\))*(\[(.*)\])*/g;
+	let match = regex.exec(sourceCode);
 
-    const includes = new Set();
+	const includes = new Set();
 
-    while (match != null) {
-        let includeFile = match[1];
+	while (match != null) {
+		let includeFile = match[1];
 
-        // Uniform declaration
-        if (includeFile.indexOf("__decl__") !== -1) {
-            includeFile = includeFile.replace(/__decl__/, "");
+		// Uniform declaration
+		if (includeFile.indexOf("__decl__") !== -1) {
+			includeFile = includeFile.replace(/__decl__/, "");
 
-            // Add non UBO import
-            const noUBOFile = includeFile + "Declaration";
-            includes.add(noUBOFile);
+			// Add non UBO import
+			const noUBOFile = includeFile + "Declaration";
+			includes.add(noUBOFile);
 
-            includeFile = includeFile.replace(/Vertex/, "Ubo");
-            includeFile = includeFile.replace(/Fragment/, "Ubo");
-            const uBOFile = includeFile + "Declaration";
-            includes.add(uBOFile);
-        } else {
-            includes.add(includeFile);
-        }
+			includeFile = includeFile.replace(/Vertex/, "Ubo");
+			includeFile = includeFile.replace(/Fragment/, "Ubo");
+			const uBOFile = includeFile + "Declaration";
+			includes.add(uBOFile);
+		} else {
+			includes.add(includeFile);
+		}
 
-        match = regex.exec(sourceCode);
-    }
+		match = regex.exec(sourceCode);
+	}
 
-    return includes;
+	return includes;
 }
 
 /**
@@ -83,96 +83,96 @@ function getIncludes(sourceCode: string) {
  * @param isCore
  */
 export function buildShader(filePath: string, basePackageName: string = "core", isCore?: boolean | string) {
-    const isVerbose = checkArgs("--verbose", true);
-    isVerbose && console.log("Generating shaders for " + filePath);
-    const content = fs.readFileSync(filePath, "utf8");
-    const filename = path.basename(filePath);
-    const normalized = path.normalize(filePath);
-    const directory = path.dirname(normalized);
-    const isWGSL = directory.indexOf("ShadersWGSL") > -1;
-    const tsFilename = filename.replace(".fx", ".ts").replace(".wgsl", ".ts");
-    const shaderName = getShaderName(filename);
-    const appendDirName = isWGSL ? "WGSL" : "";
-    let fxData = content.toString();
+	const isVerbose = checkArgs("--verbose", true);
+	isVerbose && console.log("Generating shaders for " + filePath);
+	const content = fs.readFileSync(filePath, "utf8");
+	const filename = path.basename(filePath);
+	const normalized = path.normalize(filePath);
+	const directory = path.dirname(normalized);
+	const isWGSL = directory.indexOf("ShadersWGSL") > -1;
+	const tsFilename = filename.replace(".fx", ".ts").replace(".wgsl", ".ts");
+	const shaderName = getShaderName(filename);
+	const appendDirName = isWGSL ? "WGSL" : "";
+	let fxData = content.toString();
 
-    if (checkArgs("--global", true)) {
-        isCore = filePath.includes(path.sep + "core" + path.sep) || filePath.includes("/core/");
-    }
+	if (checkArgs("--global", true)) {
+		isCore = filePath.includes(path.sep + "core" + path.sep) || filePath.includes("/core/");
+	}
 
-    // Remove Trailing whitespace...
-    fxData = fxData
-        .replace(/^\uFEFF/, "")
-        .replace(/\r\n/g, "\n")
-        .replace(/(\/\/)+.*$/gm, "")
-        .replace(/\t+/gm, " ")
-        .replace(/^\s+/gm, "")
-        // eslint-disable-next-line no-useless-escape
-        .replace(/ ([\*\/\=\+\-\>\<]+) /g, "$1")
-        .replace(/,[ ]/g, ",")
-        .replace(/ {1,}/g, " ")
-        // .replace(/;\s*/g, ";")
-        .replace(/^#(.*)/gm, "#$1\n")
-        .replace(/\{\n([^#])/g, "{$1")
-        .replace(/\n\}/g, "}")
-        .replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "")
-        .replace(/;\n([^#])/g, ";$1");
+	// Remove Trailing whitespace...
+	fxData = fxData
+		.replace(/^\uFEFF/, "")
+		.replace(/\r\n/g, "\n")
+		.replace(/(\/\/)+.*$/gm, "")
+		.replace(/\t+/gm, " ")
+		.replace(/^\s+/gm, "")
+		// eslint-disable-next-line no-useless-escape
+		.replace(/ ([\*\/\=\+\-\>\<]+) /g, "$1")
+		.replace(/,[ ]/g, ",")
+		.replace(/ {1,}/g, " ")
+		// .replace(/;\s*/g, ";")
+		.replace(/^#(.*)/gm, "#$1\n")
+		.replace(/\{\n([^#])/g, "{$1")
+		.replace(/\n\}/g, "}")
+		.replace(/^(?:[\t ]*(?:\r?\n|\r))+/gm, "")
+		.replace(/;\n([^#])/g, ";$1");
 
-    // Generate imports for includes.
-    let includeText = "";
-    const includes = getIncludes(fxData);
-    includes.forEach((entry) => {
-        if (isCore) {
-            includeText =
-                includeText +
-                `import "./ShadersInclude/${entry}";
+	// Generate imports for includes.
+	let includeText = "";
+	const includes = getIncludes(fxData);
+	includes.forEach((entry) => {
+		if (isCore) {
+			includeText =
+				includeText +
+				`import "./ShadersInclude/${entry}";
 `;
-        } else {
-            includeText =
-                includeText +
-                `import "${basePackageName}/Shaders/ShadersInclude/${entry}";
+		} else {
+			includeText =
+				includeText +
+				`import "${basePackageName}/Shaders/ShadersInclude/${entry}";
 `;
-        }
-    });
+		}
+	});
 
-    // Chose shader store.
-    const isInclude = directory.indexOf("ShadersInclude") > -1;
-    const shaderStore = isInclude ? `IncludesShadersStore${appendDirName}` : `ShadersStore${appendDirName}`;
-    let shaderStoreLocation;
-    if (isCore) {
-        if (isInclude) {
-            shaderStoreLocation = "../../Engines/shaderStore";
-            includeText = includeText.replace(/ShadersInclude\//g, "");
-        } else {
-            shaderStoreLocation = "../Engines/shaderStore";
-        }
-    } else {
-        shaderStoreLocation = basePackageName + "/Engines/shaderStore";
-    }
+	// Chose shader store.
+	const isInclude = directory.indexOf("ShadersInclude") > -1;
+	const shaderStore = isInclude ? `IncludesShadersStore${appendDirName}` : `ShadersStore${appendDirName}`;
+	let shaderStoreLocation;
+	if (isCore) {
+		if (isInclude) {
+			shaderStoreLocation = "../../Engines/shaderStore";
+			includeText = includeText.replace(/ShadersInclude\//g, "");
+		} else {
+			shaderStoreLocation = "../Engines/shaderStore";
+		}
+	} else {
+		shaderStoreLocation = basePackageName + "/Engines/shaderStore";
+	}
 
-    // Fill template in.
-    let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
-    tsContent = tsContent
-        .replace("##INCLUDES_PLACEHOLDER##", includeText)
-        .replace("##NAME_PLACEHOLDER##", shaderName)
-        .replace("##SHADER_PLACEHOLDER##", fxData)
-        .replace("##SHADERSTORE_PLACEHOLDER##", shaderStore)
-        .replace(
-            "##EXPORT_PLACEHOLDER##",
-            `/** @internal */
+	// Fill template in.
+	let tsContent = tsShaderTemplate.replace("##SHADERSTORELOCATION_PLACEHOLDER##", shaderStoreLocation);
+	tsContent = tsContent
+		.replace("##INCLUDES_PLACEHOLDER##", includeText)
+		.replace("##NAME_PLACEHOLDER##", shaderName)
+		.replace("##SHADER_PLACEHOLDER##", fxData)
+		.replace("##SHADERSTORE_PLACEHOLDER##", shaderStore)
+		.replace(
+			"##EXPORT_PLACEHOLDER##",
+			`/** @internal */
 export const ${shaderName + (isWGSL ? "WGSL" : "")} = { name, shader };`
-        );
+		);
 
-    // Go to disk.
-    const tsShaderFilename = path.join(directory, tsFilename);
-    checkDirectorySync(path.dirname(tsShaderFilename));
-    // check hash
-    if (fs.existsSync(tsShaderFilename)) {
-        const hash = getHashOfFile(tsShaderFilename);
-        const newHash = getHashOfContent(tsContent);
-        if (hash === newHash) {
-            return;
-        }
-    }
-    fs.writeFileSync(tsShaderFilename, tsContent);
-    isVerbose && console.log("Generated " + tsShaderFilename);
+	// Go to disk.
+	const tsShaderFilename = path.join(directory, tsFilename);
+	checkDirectorySync(path.dirname(tsShaderFilename));
+	// check hash
+	if (fs.existsSync(tsShaderFilename)) {
+		const hash = getHashOfFile(tsShaderFilename);
+		const newHash = getHashOfContent(tsContent);
+		if (hash === newHash) {
+			return;
+		}
+	}
+	fs.writeFileSync(tsShaderFilename, tsContent);
+	isVerbose && console.log("Generated " + tsShaderFilename);
 }

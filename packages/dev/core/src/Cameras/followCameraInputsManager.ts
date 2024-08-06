@@ -11,47 +11,47 @@ import { FollowCameraPointersInput } from "./Inputs/followCameraPointersInput";
  * @see https://doc.babylonjs.com/features/featuresDeepDive/cameras/customizingCameraInputs
  */
 export class FollowCameraInputsManager extends CameraInputsManager<FollowCamera> {
-    /**
-     * Instantiates a new FollowCameraInputsManager.
-     * @param camera Defines the camera the inputs belong to
-     */
-    constructor(camera: FollowCamera) {
-        super(camera);
-    }
+	/**
+	 * Instantiates a new FollowCameraInputsManager.
+	 * @param camera Defines the camera the inputs belong to
+	 */
+	constructor(camera: FollowCamera) {
+		super(camera);
+	}
 
-    /**
-     * Add keyboard input support to the input manager.
-     * @returns the current input manager
-     */
-    public addKeyboard(): FollowCameraInputsManager {
-        this.add(new FollowCameraKeyboardMoveInput());
-        return this;
-    }
+	/**
+	 * Add keyboard input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addKeyboard(): FollowCameraInputsManager {
+		this.add(new FollowCameraKeyboardMoveInput());
+		return this;
+	}
 
-    /**
-     * Add mouse wheel input support to the input manager.
-     * @returns the current input manager
-     */
-    public addMouseWheel(): FollowCameraInputsManager {
-        this.add(new FollowCameraMouseWheelInput());
-        return this;
-    }
+	/**
+	 * Add mouse wheel input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addMouseWheel(): FollowCameraInputsManager {
+		this.add(new FollowCameraMouseWheelInput());
+		return this;
+	}
 
-    /**
-     * Add pointers input support to the input manager.
-     * @returns the current input manager
-     */
-    public addPointers(): FollowCameraInputsManager {
-        this.add(new FollowCameraPointersInput());
-        return this;
-    }
+	/**
+	 * Add pointers input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addPointers(): FollowCameraInputsManager {
+		this.add(new FollowCameraPointersInput());
+		return this;
+	}
 
-    /**
-     * Add orientation input support to the input manager.
-     * @returns the current input manager
-     */
-    public addVRDeviceOrientation(): FollowCameraInputsManager {
-        Logger.Warn("DeviceOrientation support not yet implemented for FollowCamera.");
-        return this;
-    }
+	/**
+	 * Add orientation input support to the input manager.
+	 * @returns the current input manager
+	 */
+	public addVRDeviceOrientation(): FollowCameraInputsManager {
+		Logger.Warn("DeviceOrientation support not yet implemented for FollowCamera.");
+		return this;
+	}
 }

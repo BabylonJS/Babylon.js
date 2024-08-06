@@ -10,13 +10,13 @@ import "../../Shaders/color.vertex";
  * @since 5.0.0
  */
 export class OcclusionMaterial extends ShaderMaterial {
-    constructor(name: string, scene: Scene) {
-        super(name, scene, "color", {
-            attributes: ["position"],
-            uniforms: ["world", "viewProjection", "color"],
-        });
-        this.disableColorWrite = true;
-        this.forceDepthWrite = true;
-        this.setColor4("color", new Color4(0, 0, 0, 1));
-    }
+	constructor(name: string, scene: Scene) {
+		super(name, scene, "color", {
+			attributes: ["position"],
+			uniforms: ["world", "viewProjection", "color"],
+		});
+		this.disableColorWrite = true;
+		this.forceDepthWrite = true;
+		this.setColor4("color", new Color4(0, 0, 0, 1));
+	}
 }

@@ -7,5 +7,5 @@ import type { Effect } from "./effect";
  * @returns if the entity is a DrawWrapper
  */
 export function IsWrapper(effect: Effect | DrawWrapper): effect is DrawWrapper {
-    return (effect as Effect).getPipelineContext === undefined;
+	return (effect as Effect).getPipelineContext === undefined;
 }

@@ -8,31 +8,31 @@ import type { IObjectAccessor } from "core/FlowGraph/typeDefinitions";
  * Class to convert an interactivity pointer path to a smart object
  */
 export class InteractivityPathToObjectConverter extends GLTFPathToObjectConverter<IObjectAccessor> {
-    public constructor(gltf: IGLTF) {
-        super(gltf, gltfTree);
-    }
+	public constructor(gltf: IGLTF) {
+		super(gltf, gltfTree);
+	}
 }
 
 const nodesTree = {
-    __array__: {
-        __target__: true,
-        translation: {
-            type: "Vector3",
-            get: (node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                return babylonObject.position;
-            },
-            set: (value: any, node: INode) => {
-                const babylonObject = node._babylonTransformNode as TransformNode;
-                babylonObject.position = value;
-            },
-            getObject(node: INode) {
-                return node._babylonTransformNode;
-            },
-        },
-    },
+	__array__: {
+		__target__: true,
+		translation: {
+			type: "Vector3",
+			get: (node: INode) => {
+				const babylonObject = node._babylonTransformNode as TransformNode;
+				return babylonObject.position;
+			},
+			set: (value: any, node: INode) => {
+				const babylonObject = node._babylonTransformNode as TransformNode;
+				babylonObject.position = value;
+			},
+			getObject(node: INode) {
+				return node._babylonTransformNode;
+			},
+		},
+	},
 };
 
 const gltfTree = {
-    nodes: nodesTree,
+	nodes: nodesTree,
 };

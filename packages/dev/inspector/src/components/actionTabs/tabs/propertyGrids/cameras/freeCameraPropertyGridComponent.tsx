@@ -11,93 +11,93 @@ import type { LockObject } from "shared-ui-components/tabs/propertyGrids/lockObj
 import type { GlobalState } from "../../../../globalState";
 
 interface IFreeCameraPropertyGridComponentProps {
-    globalState: GlobalState;
-    camera: FreeCamera;
-    lockObject: LockObject;
-    onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
+	globalState: GlobalState;
+	camera: FreeCamera;
+	lockObject: LockObject;
+	onPropertyChangedObservable?: Observable<PropertyChangedEvent>;
 }
 
 export class FreeCameraPropertyGridComponent extends React.Component<IFreeCameraPropertyGridComponentProps> {
-    constructor(props: IFreeCameraPropertyGridComponentProps) {
-        super(props);
-    }
+	constructor(props: IFreeCameraPropertyGridComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        const camera = this.props.camera;
+	override render() {
+		const camera = this.props.camera;
 
-        return (
-            <>
-                <CommonCameraPropertyGridComponent
-                    globalState={this.props.globalState}
-                    lockObject={this.props.lockObject}
-                    camera={camera}
-                    onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                />
-                <LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Target"
-                        target={camera}
-                        propertyName="target"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Position"
-                        target={camera}
-                        propertyName="position"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Rotation"
-                        noSlider={true}
-                        useEuler={this.props.globalState.onlyUseEulers}
-                        target={camera}
-                        propertyName="rotation"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-                <LineContainerComponent title="CONTROLS" closed={true} selection={this.props.globalState}>
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Angular sensitivity"
-                        target={camera}
-                        propertyName="angularSensibility"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <FloatLineComponent
-                        lockObject={this.props.lockObject}
-                        label="Speed"
-                        target={camera}
-                        propertyName="speed"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-                <LineContainerComponent title="COLLISIONS" closed={true} selection={this.props.globalState}>
-                    <CheckBoxLineComponent
-                        label="Check collisions"
-                        target={camera}
-                        propertyName="checkCollisions"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applyGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Ellipsoid"
-                        target={camera}
-                        propertyName="ellipsoid"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                    <Vector3LineComponent
-                        lockObject={this.props.lockObject}
-                        label="Ellipsoid offset"
-                        target={camera}
-                        propertyName="ellipsoidOffset"
-                        onPropertyChangedObservable={this.props.onPropertyChangedObservable}
-                    />
-                </LineContainerComponent>
-            </>
-        );
-    }
+		return (
+			<>
+				<CommonCameraPropertyGridComponent
+					globalState={this.props.globalState}
+					lockObject={this.props.lockObject}
+					camera={camera}
+					onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+				/>
+				<LineContainerComponent title="TRANSFORMS" selection={this.props.globalState}>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Target"
+						target={camera}
+						propertyName="target"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Position"
+						target={camera}
+						propertyName="position"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Rotation"
+						noSlider={true}
+						useEuler={this.props.globalState.onlyUseEulers}
+						target={camera}
+						propertyName="rotation"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+				<LineContainerComponent title="CONTROLS" closed={true} selection={this.props.globalState}>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Angular sensitivity"
+						target={camera}
+						propertyName="angularSensibility"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<FloatLineComponent
+						lockObject={this.props.lockObject}
+						label="Speed"
+						target={camera}
+						propertyName="speed"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+				<LineContainerComponent title="COLLISIONS" closed={true} selection={this.props.globalState}>
+					<CheckBoxLineComponent
+						label="Check collisions"
+						target={camera}
+						propertyName="checkCollisions"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<CheckBoxLineComponent label="Apply gravity" target={camera} propertyName="applyGravity" onPropertyChangedObservable={this.props.onPropertyChangedObservable} />
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Ellipsoid"
+						target={camera}
+						propertyName="ellipsoid"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+					<Vector3LineComponent
+						lockObject={this.props.lockObject}
+						label="Ellipsoid offset"
+						target={camera}
+						propertyName="ellipsoidOffset"
+						onPropertyChangedObservable={this.props.onPropertyChangedObservable}
+					/>
+				</LineContainerComponent>
+			</>
+		);
+	}
 }

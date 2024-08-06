@@ -7,22 +7,22 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface ITextureTreeItemComponentProps {
-    texture: Texture;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	texture: Texture;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class TextureTreeItemComponent extends React.Component<ITextureTreeItemComponentProps> {
-    constructor(props: ITextureTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: ITextureTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <div className="textureTools">
-                <TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
-                <ExtensionsComponent target={this.props.texture} extensibilityGroups={this.props.extensibilityGroups} />
-            </div>
-        );
-    }
+	override render() {
+		return (
+			<div className="textureTools">
+				<TreeItemLabelComponent label={this.props.texture.name} onClick={() => this.props.onClick()} icon={faImage} color="mediumpurple" />
+				<ExtensionsComponent target={this.props.texture} extensibilityGroups={this.props.extensibilityGroups} />
+			</div>
+		);
+	}
 }

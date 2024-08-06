@@ -5,26 +5,26 @@ import type { INodeData } from "shared-ui-components/nodeGraphSystem/interfaces/
 import styles from "./clampDisplayManager.modules.scss";
 
 export class ClampDisplayManager implements IDisplayManager {
-    public getHeaderClass() {
-        return "";
-    }
+	public getHeaderClass() {
+		return "";
+	}
 
-    public shouldDisplayPortLabels(): boolean {
-        return false;
-    }
+	public shouldDisplayPortLabels(): boolean {
+		return false;
+	}
 
-    public getHeaderText(nodeData: INodeData): string {
-        return (nodeData.data as NodeMaterialBlock).name;
-    }
+	public getHeaderText(nodeData: INodeData): string {
+		return (nodeData.data as NodeMaterialBlock).name;
+	}
 
-    public getBackgroundColor(): string {
-        return "#4086BB";
-    }
+	public getBackgroundColor(): string {
+		return "#4086BB";
+	}
 
-    public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
-        const clampBlock = nodeData.data as ClampBlock;
+	public updatePreviewContent(nodeData: INodeData, contentArea: HTMLDivElement): void {
+		const clampBlock = nodeData.data as ClampBlock;
 
-        contentArea.classList.add(styles.clampBlock);
-        contentArea.innerHTML = `[${clampBlock.minimum}, ${clampBlock.maximum}]`;
-    }
+		contentArea.classList.add(styles.clampBlock);
+		contentArea.innerHTML = `[${clampBlock.minimum}, ${clampBlock.maximum}]`;
+	}
 }

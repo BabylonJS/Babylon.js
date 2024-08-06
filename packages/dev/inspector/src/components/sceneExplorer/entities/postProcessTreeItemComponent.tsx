@@ -7,22 +7,22 @@ import { ExtensionsComponent } from "../extensionsComponent";
 import * as React from "react";
 
 interface IPostProcessItemComponentProps {
-    postProcess: PostProcess;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	postProcess: PostProcess;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class PostProcessItemComponent extends React.Component<IPostProcessItemComponentProps> {
-    constructor(props: IPostProcessItemComponentProps) {
-        super(props);
-    }
+	constructor(props: IPostProcessItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <div className="postProcessTools">
-                <TreeItemLabelComponent label={this.props.postProcess.name} onClick={() => this.props.onClick()} icon={faMagic} color="red" />
-                {<ExtensionsComponent target={this.props.postProcess} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+	override render() {
+		return (
+			<div className="postProcessTools">
+				<TreeItemLabelComponent label={this.props.postProcess.name} onClick={() => this.props.onClick()} icon={faMagic} color="red" />
+				{<ExtensionsComponent target={this.props.postProcess} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

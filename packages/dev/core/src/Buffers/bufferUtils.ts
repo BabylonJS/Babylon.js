@@ -14,46 +14,46 @@ import { Logger } from "../Misc/logger";
  * @param output the output float array
  */
 export function CopyFloatData(
-    input: DataArray,
-    size: number,
-    type: number,
-    byteOffset: number,
-    byteStride: number,
-    normalized: boolean,
-    totalVertices: number,
-    output: Float32Array
+	input: DataArray,
+	size: number,
+	type: number,
+	byteOffset: number,
+	byteStride: number,
+	normalized: boolean,
+	totalVertices: number,
+	output: Float32Array
 ): void {
-    const tightlyPackedByteStride = size * VertexBuffer.GetTypeByteLength(type);
-    const count = totalVertices * size;
+	const tightlyPackedByteStride = size * VertexBuffer.GetTypeByteLength(type);
+	const count = totalVertices * size;
 
-    if (output.length !== count) {
-        throw new Error("Output length is not valid");
-    }
+	if (output.length !== count) {
+		throw new Error("Output length is not valid");
+	}
 
-    if (type !== VertexBuffer.FLOAT || byteStride !== tightlyPackedByteStride) {
-        VertexBuffer.ForEach(input, byteOffset, byteStride, size, type, count, normalized, (value, index) => (output[index] = value));
-        return;
-    }
+	if (type !== VertexBuffer.FLOAT || byteStride !== tightlyPackedByteStride) {
+		VertexBuffer.ForEach(input, byteOffset, byteStride, size, type, count, normalized, (value, index) => (output[index] = value));
+		return;
+	}
 
-    if (input instanceof Array) {
-        const offset = byteOffset / 4;
-        output.set(input, offset);
-    } else if (input instanceof ArrayBuffer) {
-        const floatData = new Float32Array(input, byteOffset, count);
-        output.set(floatData);
-    } else {
-        const offset = input.byteOffset + byteOffset;
+	if (input instanceof Array) {
+		const offset = byteOffset / 4;
+		output.set(input, offset);
+	} else if (input instanceof ArrayBuffer) {
+		const floatData = new Float32Array(input, byteOffset, count);
+		output.set(floatData);
+	} else {
+		const offset = input.byteOffset + byteOffset;
 
-        // Protect against bad data
-        const remainder = offset % 4;
-        if (remainder) {
-            Logger.Warn("CopyFloatData: copied misaligned data.");
-            // If not aligned, copy the data to aligned buffer
-            output.set(new Float32Array(input.buffer.slice(offset, offset + count * 4)));
-            return;
-        }
+		// Protect against bad data
+		const remainder = offset % 4;
+		if (remainder) {
+			Logger.Warn("CopyFloatData: copied misaligned data.");
+			// If not aligned, copy the data to aligned buffer
+			output.set(new Float32Array(input.buffer.slice(offset, offset + count * 4)));
+			return;
+		}
 
-        const floatData = new Float32Array(input.buffer, offset, count);
-        output.set(floatData);
-    }
+		const floatData = new Float32Array(input.buffer, offset, count);
+		output.set(floatData);
+	}
 }

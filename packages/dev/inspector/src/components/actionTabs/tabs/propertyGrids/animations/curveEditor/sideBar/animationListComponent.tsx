@@ -8,73 +8,73 @@ import type { Animation } from "core/Animations/animation";
 import type { TargetedAnimation } from "core/Animations/animationGroup";
 
 interface IAnimationListComponentProps {
-    globalState: GlobalState;
-    context: Context;
+	globalState: GlobalState;
+	context: Context;
 }
 
 interface IAnimationListComponentState {
-    isVisible: boolean;
+	isVisible: boolean;
 }
 
 export class AnimationListComponent extends React.Component<IAnimationListComponentProps, IAnimationListComponentState> {
-    private _onEditAnimationRequiredObserver: Nullable<Observer<Animation>>;
-    private _onEditAnimationUIClosedObserver: Nullable<Observer<void>>;
-    private _onDeleteAnimationObserver: Nullable<Observer<Animation>>;
+	private _onEditAnimationRequiredObserver: Nullable<Observer<Animation>>;
+	private _onEditAnimationUIClosedObserver: Nullable<Observer<void>>;
+	private _onDeleteAnimationObserver: Nullable<Observer<Animation>>;
 
-    constructor(props: IAnimationListComponentProps) {
-        super(props);
+	constructor(props: IAnimationListComponentProps) {
+		super(props);
 
-        this.state = { isVisible: true };
+		this.state = { isVisible: true };
 
-        this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add(() => {
-            this.setState({
-                isVisible: false,
-            });
-        });
+		this._onEditAnimationRequiredObserver = this.props.context.onEditAnimationRequired.add(() => {
+			this.setState({
+				isVisible: false,
+			});
+		});
 
-        this._onEditAnimationUIClosedObserver = this.props.context.onEditAnimationUIClosed.add(() => {
-            this.setState({
-                isVisible: true,
-            });
-        });
+		this._onEditAnimationUIClosedObserver = this.props.context.onEditAnimationUIClosed.add(() => {
+			this.setState({
+				isVisible: true,
+			});
+		});
 
-        this._onDeleteAnimationObserver = this.props.context.onDeleteAnimation.add(() => {
-            this.forceUpdate();
-        });
-    }
+		this._onDeleteAnimationObserver = this.props.context.onDeleteAnimation.add(() => {
+			this.forceUpdate();
+		});
+	}
 
-    override componentWillUnmount() {
-        if (this._onEditAnimationRequiredObserver) {
-            this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
-        }
+	override componentWillUnmount() {
+		if (this._onEditAnimationRequiredObserver) {
+			this.props.context.onEditAnimationRequired.remove(this._onEditAnimationRequiredObserver);
+		}
 
-        if (this._onEditAnimationUIClosedObserver) {
-            this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
-        }
+		if (this._onEditAnimationUIClosedObserver) {
+			this.props.context.onEditAnimationUIClosed.remove(this._onEditAnimationUIClosedObserver);
+		}
 
-        if (this._onDeleteAnimationObserver) {
-            this.props.context.onDeleteAnimation.remove(this._onDeleteAnimationObserver);
-        }
-    }
+		if (this._onDeleteAnimationObserver) {
+			this.props.context.onDeleteAnimation.remove(this._onDeleteAnimationObserver);
+		}
+	}
 
-    public override render() {
-        if (!this.state.isVisible) {
-            return null;
-        }
+	public override render() {
+		if (!this.state.isVisible) {
+			return null;
+		}
 
-        return (
-            <div id="animation-list">
-                {this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
-                    return (
-                        <AnimationEntryComponent
-                            key={i}
-                            globalState={this.props.globalState}
-                            context={this.props.context}
-                            animation={this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation)}
-                        />
-                    );
-                })}
-            </div>
-        );
-    }
+		return (
+			<div id="animation-list">
+				{this.props.context.animations?.map((a: Animation | TargetedAnimation, i: number) => {
+					return (
+						<AnimationEntryComponent
+							key={i}
+							globalState={this.props.globalState}
+							context={this.props.context}
+							animation={this.props.context.useTargetAnimations ? (a as TargetedAnimation).animation : (a as Animation)}
+						/>
+					);
+				})}
+			</div>
+		);
+	}
 }

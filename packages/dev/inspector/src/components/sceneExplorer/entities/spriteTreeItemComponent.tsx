@@ -7,22 +7,22 @@ import * as React from "react";
 import type { Sprite } from "core/Sprites/sprite";
 
 interface ISpriteTreeItemComponentProps {
-    sprite: Sprite;
-    extensibilityGroups?: IExplorerExtensibilityGroup[];
-    onClick: () => void;
+	sprite: Sprite;
+	extensibilityGroups?: IExplorerExtensibilityGroup[];
+	onClick: () => void;
 }
 
 export class SpriteTreeItemComponent extends React.Component<ISpriteTreeItemComponentProps> {
-    constructor(props: ISpriteTreeItemComponentProps) {
-        super(props);
-    }
+	constructor(props: ISpriteTreeItemComponentProps) {
+		super(props);
+	}
 
-    override render() {
-        return (
-            <div className="spriteTools">
-                <TreeItemLabelComponent label={this.props.sprite.name || "No name"} onClick={() => this.props.onClick()} icon={faGhost} color="blanchedalmond" />
-                {<ExtensionsComponent target={this.props.sprite} extensibilityGroups={this.props.extensibilityGroups} />}
-            </div>
-        );
-    }
+	override render() {
+		return (
+			<div className="spriteTools">
+				<TreeItemLabelComponent label={this.props.sprite.name || "No name"} onClick={() => this.props.onClick()} icon={faGhost} color="blanchedalmond" />
+				{<ExtensionsComponent target={this.props.sprite} extensibilityGroups={this.props.extensibilityGroups} />}
+			</div>
+		);
+	}
 }

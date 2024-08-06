@@ -30,107 +30,107 @@ import { CompatibilityOptions } from "../../Compat/compatibilityOptions";
  * @returns the VertexData of the Torus Knot
  */
 export function CreateTorusKnotVertexData(options: {
-    radius?: number;
-    tube?: number;
-    radialSegments?: number;
-    tubularSegments?: number;
-    p?: number;
-    q?: number;
-    sideOrientation?: number;
-    frontUVs?: Vector4;
-    backUVs?: Vector4;
+	radius?: number;
+	tube?: number;
+	radialSegments?: number;
+	tubularSegments?: number;
+	p?: number;
+	q?: number;
+	sideOrientation?: number;
+	frontUVs?: Vector4;
+	backUVs?: Vector4;
 }): VertexData {
-    const indices: number[] = [];
-    const positions: number[] = [];
-    const normals: number[] = [];
-    const uvs: number[] = [];
+	const indices: number[] = [];
+	const positions: number[] = [];
+	const normals: number[] = [];
+	const uvs: number[] = [];
 
-    const radius = options.radius || 2;
-    const tube = options.tube || 0.5;
-    const radialSegments = options.radialSegments || 32;
-    const tubularSegments = options.tubularSegments || 32;
-    const p = options.p || 2;
-    const q = options.q || 3;
-    const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
+	const radius = options.radius || 2;
+	const tube = options.tube || 0.5;
+	const radialSegments = options.radialSegments || 32;
+	const tubularSegments = options.tubularSegments || 32;
+	const p = options.p || 2;
+	const q = options.q || 3;
+	const sideOrientation = options.sideOrientation === 0 ? 0 : options.sideOrientation || VertexData.DEFAULTSIDE;
 
-    // Helper
-    const getPos = (angle: number) => {
-        const cu = Math.cos(angle);
-        const su = Math.sin(angle);
-        const quOverP = (q / p) * angle;
-        const cs = Math.cos(quOverP);
+	// Helper
+	const getPos = (angle: number) => {
+		const cu = Math.cos(angle);
+		const su = Math.sin(angle);
+		const quOverP = (q / p) * angle;
+		const cs = Math.cos(quOverP);
 
-        const tx = radius * (2 + cs) * 0.5 * cu;
-        const ty = radius * (2 + cs) * su * 0.5;
-        const tz = radius * Math.sin(quOverP) * 0.5;
+		const tx = radius * (2 + cs) * 0.5 * cu;
+		const ty = radius * (2 + cs) * su * 0.5;
+		const tz = radius * Math.sin(quOverP) * 0.5;
 
-        return new Vector3(tx, ty, tz);
-    };
+		return new Vector3(tx, ty, tz);
+	};
 
-    // Vertices
-    let i: number;
-    let j: number;
-    for (i = 0; i <= radialSegments; i++) {
-        const modI = i % radialSegments;
-        const u = (modI / radialSegments) * 2 * p * Math.PI;
-        const p1 = getPos(u);
-        const p2 = getPos(u + 0.01);
-        const tang = p2.subtract(p1);
-        let n = p2.add(p1);
+	// Vertices
+	let i: number;
+	let j: number;
+	for (i = 0; i <= radialSegments; i++) {
+		const modI = i % radialSegments;
+		const u = (modI / radialSegments) * 2 * p * Math.PI;
+		const p1 = getPos(u);
+		const p2 = getPos(u + 0.01);
+		const tang = p2.subtract(p1);
+		let n = p2.add(p1);
 
-        const bitan = Vector3.Cross(tang, n);
-        n = Vector3.Cross(bitan, tang);
+		const bitan = Vector3.Cross(tang, n);
+		n = Vector3.Cross(bitan, tang);
 
-        bitan.normalize();
-        n.normalize();
+		bitan.normalize();
+		n.normalize();
 
-        for (j = 0; j < tubularSegments; j++) {
-            const modJ = j % tubularSegments;
-            const v = (modJ / tubularSegments) * 2 * Math.PI;
-            const cx = -tube * Math.cos(v);
-            const cy = tube * Math.sin(v);
+		for (j = 0; j < tubularSegments; j++) {
+			const modJ = j % tubularSegments;
+			const v = (modJ / tubularSegments) * 2 * Math.PI;
+			const cx = -tube * Math.cos(v);
+			const cy = tube * Math.sin(v);
 
-            positions.push(p1.x + cx * n.x + cy * bitan.x);
-            positions.push(p1.y + cx * n.y + cy * bitan.y);
-            positions.push(p1.z + cx * n.z + cy * bitan.z);
+			positions.push(p1.x + cx * n.x + cy * bitan.x);
+			positions.push(p1.y + cx * n.y + cy * bitan.y);
+			positions.push(p1.z + cx * n.z + cy * bitan.z);
 
-            uvs.push(i / radialSegments);
-            uvs.push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - j / tubularSegments : j / tubularSegments);
-        }
-    }
+			uvs.push(i / radialSegments);
+			uvs.push(CompatibilityOptions.UseOpenGLOrientationForUV ? 1.0 - j / tubularSegments : j / tubularSegments);
+		}
+	}
 
-    for (i = 0; i < radialSegments; i++) {
-        for (j = 0; j < tubularSegments; j++) {
-            const jNext = (j + 1) % tubularSegments;
-            const a = i * tubularSegments + j;
-            const b = (i + 1) * tubularSegments + j;
-            const c = (i + 1) * tubularSegments + jNext;
-            const d = i * tubularSegments + jNext;
+	for (i = 0; i < radialSegments; i++) {
+		for (j = 0; j < tubularSegments; j++) {
+			const jNext = (j + 1) % tubularSegments;
+			const a = i * tubularSegments + j;
+			const b = (i + 1) * tubularSegments + j;
+			const c = (i + 1) * tubularSegments + jNext;
+			const d = i * tubularSegments + jNext;
 
-            indices.push(d);
-            indices.push(b);
-            indices.push(a);
-            indices.push(d);
-            indices.push(c);
-            indices.push(b);
-        }
-    }
+			indices.push(d);
+			indices.push(b);
+			indices.push(a);
+			indices.push(d);
+			indices.push(c);
+			indices.push(b);
+		}
+	}
 
-    // Normals
-    VertexData.ComputeNormals(positions, indices, normals);
+	// Normals
+	VertexData.ComputeNormals(positions, indices, normals);
 
-    // Sides
-    VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
+	// Sides
+	VertexData._ComputeSides(sideOrientation, positions, indices, normals, uvs, options.frontUVs, options.backUVs);
 
-    // Result
-    const vertexData = new VertexData();
+	// Result
+	const vertexData = new VertexData();
 
-    vertexData.indices = indices;
-    vertexData.positions = positions;
-    vertexData.normals = normals;
-    vertexData.uvs = uvs;
+	vertexData.indices = indices;
+	vertexData.positions = positions;
+	vertexData.normals = normals;
+	vertexData.uvs = uvs;
 
-    return vertexData;
+	return vertexData;
 }
 
 /**
@@ -159,65 +159,65 @@ export function CreateTorusKnotVertexData(options: {
  * @see  https://doc.babylonjs.com/features/featuresDeepDive/mesh/creation/set#torus-knot
  */
 export function CreateTorusKnot(
-    name: string,
-    options: {
-        radius?: number;
-        tube?: number;
-        radialSegments?: number;
-        tubularSegments?: number;
-        p?: number;
-        q?: number;
-        updatable?: boolean;
-        sideOrientation?: number;
-        frontUVs?: Vector4;
-        backUVs?: Vector4;
-    } = {},
-    scene?: Scene
+	name: string,
+	options: {
+		radius?: number;
+		tube?: number;
+		radialSegments?: number;
+		tubularSegments?: number;
+		p?: number;
+		q?: number;
+		updatable?: boolean;
+		sideOrientation?: number;
+		frontUVs?: Vector4;
+		backUVs?: Vector4;
+	} = {},
+	scene?: Scene
 ): Mesh {
-    const torusKnot = new Mesh(name, scene);
+	const torusKnot = new Mesh(name, scene);
 
-    options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
-    torusKnot._originalBuilderSideOrientation = options.sideOrientation;
+	options.sideOrientation = Mesh._GetDefaultSideOrientation(options.sideOrientation);
+	torusKnot._originalBuilderSideOrientation = options.sideOrientation;
 
-    const vertexData = CreateTorusKnotVertexData(options);
+	const vertexData = CreateTorusKnotVertexData(options);
 
-    vertexData.applyToMesh(torusKnot, options.updatable);
+	vertexData.applyToMesh(torusKnot, options.updatable);
 
-    return torusKnot;
+	return torusKnot;
 }
 /**
  * Class containing static functions to help procedurally build meshes
  * @deprecated use CreateTorusKnot instead
  */
 export const TorusKnotBuilder = {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    CreateTorusKnot,
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	CreateTorusKnot,
 };
 
 VertexData.CreateTorusKnot = CreateTorusKnotVertexData;
 
 Mesh.CreateTorusKnot = (
-    name: string,
-    radius: number,
-    tube: number,
-    radialSegments: number,
-    tubularSegments: number,
-    p: number,
-    q: number,
-    scene?: Scene,
-    updatable?: boolean,
-    sideOrientation?: number
+	name: string,
+	radius: number,
+	tube: number,
+	radialSegments: number,
+	tubularSegments: number,
+	p: number,
+	q: number,
+	scene?: Scene,
+	updatable?: boolean,
+	sideOrientation?: number
 ): Mesh => {
-    const options = {
-        radius,
-        tube,
-        radialSegments,
-        tubularSegments,
-        p,
-        q,
-        sideOrientation,
-        updatable,
-    };
+	const options = {
+		radius,
+		tube,
+		radialSegments,
+		tubularSegments,
+		p,
+		q,
+		sideOrientation,
+		updatable,
+	};
 
-    return CreateTorusKnot(name, options, scene);
+	return CreateTorusKnot(name, options, scene);
 };

@@ -7,28 +7,28 @@ import type { IImageProcessingConfigurationDefines } from "./imageProcessingConf
  * @param defines the list of defines currently in use
  */
 export function PrepareUniformsForImageProcessing(uniforms: string[], defines: IImageProcessingConfigurationDefines): void {
-    if (defines.EXPOSURE) {
-        uniforms.push("exposureLinear");
-    }
-    if (defines.CONTRAST) {
-        uniforms.push("contrast");
-    }
-    if (defines.COLORGRADING) {
-        uniforms.push("colorTransformSettings");
-    }
-    if (defines.VIGNETTE || defines.DITHER) {
-        uniforms.push("vInverseScreenSize");
-    }
-    if (defines.VIGNETTE) {
-        uniforms.push("vignetteSettings1");
-        uniforms.push("vignetteSettings2");
-    }
-    if (defines.COLORCURVES) {
-        PrepareUniformsForColorCurves(uniforms);
-    }
-    if (defines.DITHER) {
-        uniforms.push("ditherIntensity");
-    }
+	if (defines.EXPOSURE) {
+		uniforms.push("exposureLinear");
+	}
+	if (defines.CONTRAST) {
+		uniforms.push("contrast");
+	}
+	if (defines.COLORGRADING) {
+		uniforms.push("colorTransformSettings");
+	}
+	if (defines.VIGNETTE || defines.DITHER) {
+		uniforms.push("vInverseScreenSize");
+	}
+	if (defines.VIGNETTE) {
+		uniforms.push("vignetteSettings1");
+		uniforms.push("vignetteSettings2");
+	}
+	if (defines.COLORCURVES) {
+		PrepareUniformsForColorCurves(uniforms);
+	}
+	if (defines.DITHER) {
+		uniforms.push("ditherIntensity");
+	}
 }
 
 /**
@@ -37,7 +37,7 @@ export function PrepareUniformsForImageProcessing(uniforms: string[], defines: I
  * @param defines the list of defines currently in use
  */
 export function PrepareSamplersForImageProcessing(samplersList: string[], defines: IImageProcessingConfigurationDefines): void {
-    if (defines.COLORGRADING) {
-        samplersList.push("txColorTransform");
-    }
+	if (defines.COLORGRADING) {
+		samplersList.push("txColorTransform");
+	}
 }
