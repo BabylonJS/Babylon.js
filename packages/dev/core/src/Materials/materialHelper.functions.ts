@@ -849,9 +849,9 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_DEPTH_INDEX",
         },
         {
-            type: Constants.PREPASS_CLIPSPACE_DEPTH_TEXTURE_TYPE,
-            define: "PREPASS_CLIPSPACE_DEPTH",
-            index: "PREPASS_CLIPSPACE_DEPTH_INDEX",
+            type: Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
+            define: "PREPASS_NDC_DEPTH",
+            index: "PREPASS_NDC_DEPTH_INDEX",
         },
         {
             type: Constants.PREPASS_NORMAL_TEXTURE_TYPE,

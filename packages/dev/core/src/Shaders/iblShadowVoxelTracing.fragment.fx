@@ -692,7 +692,7 @@ void main(void) {
     vec4 L;
     {
       vec2 r = plasticSequence(frameId * nbDirs + i);
-      r = fract(r + 2.0 * abs(noise.xy - 0.5));
+      r = fract(r + vec2(2.0) * abs(noise.xy - vec2(0.5)));
       vec2 T;
       T.x = textureLod(icdfxSampler, vec2(r.x, 0.0), 0.0).x;
       T.y = textureLod(icdfySampler, vec2(T.x, r.y), 0.0).x;
