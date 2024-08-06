@@ -45,8 +45,7 @@ declare module "core/Loading/sceneLoader" {
         /**
          * Defines options for the glTF loader.
          */
-        // NOTE: This is a mapped type of all the options of all the plugins to make it just look like a consolidated plain object in intellisense for the user.
-        [PLUGIN_GLTF]?: Partial<{ [Option in keyof GLTFLoaderOptions]: GLTFLoaderOptions[Option] }>;
+        [PLUGIN_GLTF]?: Partial<GLTFLoaderOptions>;
     }
 }
 
@@ -197,7 +196,7 @@ type DefaultExtensionOptions<BaseExtensionOptions> = {
 
 class GLTFLoaderOptions {
     // eslint-disable-next-line babylonjs/available
-    constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
+    public constructor(options?: Partial<Readonly<GLTFLoaderOptions>>) {
         if (options) {
             for (const key in this) {
                 const typedKey = key as keyof GLTFLoaderOptions;
@@ -322,7 +321,7 @@ class GLTFLoaderOptions {
     /**
      * Defines options for glTF extensions.
      */
-    extensionOptions: {
+    public extensionOptions: {
         // NOTE: This type is doing two things:
         // 1. Adding an implicit 'enabled' property to the options for each extension.
         // 2. Creating a mapped type of all the options of all the extensions to make it just look like a consolidated plain object in intellisense for the user.

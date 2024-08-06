@@ -783,7 +783,7 @@ export class SceneLoader {
         } else if (sceneSource.startsWith("data:")) {
             url = sceneSource;
             name = "";
-        } else if (rootUrl !== "") {
+        } else if (rootUrl) {
             const filename = sceneSource;
             if (filename.substr(0, 1) === "/") {
                 Tools.Error("Wrong sceneFilename parameter");
