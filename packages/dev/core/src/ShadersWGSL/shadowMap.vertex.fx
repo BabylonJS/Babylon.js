@@ -1,0 +1,99 @@
+// Attribute
+attribute position: vec3f;
+
+#ifdef NORMAL
+    attribute normal: vec3f;
+#endif
+
+#include<bonesDeclaration>
+#include<bakedVertexAnimationDeclaration>
+
+#include<morphTargetsVertexGlobalDeclaration>
+#include<morphTargetsVertexDeclaration>[0..maxSimultaneousMorphTargets]
+
+// Uniforms
+// #include<instancesDeclaration>
+#ifdef INSTANCES
+	attribute world0: vec4f;
+	attribute world1: vec4f;
+	attribute world2: vec4f;
+	attribute world3: vec4f;
+#endif
+
+#include<helperFunctions>
+
+#include<sceneUboDeclaration>
+#include<meshUboDeclaration>
+
+#ifdef ALPHATEXTURE
+varying vUV: vec2f;
+uniform diffuseMatrix: mat4x4f;
+#ifdef UV1
+attribute uv: vec2f;
+#endif
+#ifdef UV2
+attribute uv2: vec2f;
+#endif
+#endif
+
+#include<shadowMapVertexExtraDeclaration>
+
+#include<clipPlaneVertexDeclaration>
+
+
+#define CUSTOM_VERTEX_DEFINITIONS
+
+@vertex
+fn main(input : VertexInputs) -> FragmentInputs {
+
+var positionUpdated: vec3f = position;
+#ifdef UV1
+    var uvUpdated: vec2f = uv;
+#endif
+#ifdef NORMAL
+	var normalUpdated: vec3f = normal;
+#endif
+
+#include<morphTargetsVertexGlobal>
+#include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+
+#include<instancesVertex>
+#include<bonesVertex>
+#include<bakedVertexAnimation>
+
+var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
+
+#ifdef NORMAL
+    var normWorldSM: mat3x3f =  mat3x3f(finalWorld);
+
+    #if defined(INSTANCES) && defined(THIN_INSTANCES)
+        var vNormalW: vec3f = normalUpdated /  vec3f(dot(normWorldSM[0], normWorldSM[0]), dot(normWorldSM[1], normWorldSM[1]), dot(normWorldSM[2], normWorldSM[2]));
+        vNormalW = normalize(normWorldSM * vNormalW);
+    #else
+        #ifdef NONUNIFORMSCALING
+            normWorldSM = transposeMat3(inverseMat3(normWorldSM));
+        #endif
+
+        var vNormalW: vec3f = normalize(normWorldSM * normalUpdated);
+    #endif
+#endif
+
+#include<shadowMapVertexNormalBias>
+
+// Projection.
+vertexOutputs.position = viewProjection * worldPos;
+
+#include<shadowMapVertexMetric>
+
+#ifdef ALPHATEXTURE
+    #ifdef UV1
+        vUV =  vec2f(diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+    #endif
+    #ifdef UV2
+        vUV =  vec2f(diffuseMatrix *  vec4f(uv2, 1.0, 0.0));
+    #endif
+#endif
+
+#include<clipPlaneVertex>
+
+}

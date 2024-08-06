@@ -258,7 +258,7 @@ export class StandardMaterialDefines extends MaterialDefines implements IImagePr
  */
 export class StandardMaterial extends PushMaterial {
     /**
-     * Force all the PBR materials to compile to glsl even on WebGPU engines.
+     * Force all the standard materials to compile to glsl even on WebGPU engines.
      * False by default. This is mostly meant for backward compatibility.
      */
     public static ForceGLSL = false;
