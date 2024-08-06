@@ -22,7 +22,7 @@ import { RuntimeError, ErrorCodes } from "../Misc/error";
 import type { ISpriteManager } from "../Sprites/spriteManager";
 import { RandomGUID } from "../Misc/guid";
 import { Engine } from "../Engines/engine";
-import type { AbstractEngine } from "../Engines/abstractEngine";
+import { AbstractEngine } from "../Engines/abstractEngine";
 
 /**
  * Type used for the success callback of ImportMesh
@@ -437,52 +437,27 @@ export interface ImportMeshOptions extends SceneLoaderOptions {
      * An array of mesh names, a single mesh name, or empty string for all meshes that filter what meshes are imported
      */
     meshNames?: string | readonly string[] | null | undefined;
-
-    /**
-     * The instance of BABYLON.Scene to append to
-     */
-    scene?: Scene;
 }
 
 /**
  * Defines options for LoadAsync.
  */
-export interface LoadOptions extends SceneLoaderOptions {
-    /**
-     * The instance of BABYLON.Engine to use to create the scene
-     */
-    engine?: AbstractEngine;
-}
+export interface LoadOptions extends SceneLoaderOptions {}
 
 /**
  * Defines options for AppendAsync.
  */
-export interface AppendOptions extends SceneLoaderOptions {
-    /**
-     * The instance of BABYLON.Scene to append to
-     */
-    scene?: Scene;
-}
+export interface AppendOptions extends SceneLoaderOptions {}
 
 /**
  * Defines options for LoadAssetContainerAsync.
  */
-export interface LoadAssetContainerOptions extends SceneLoaderOptions {
-    /**
-     * The instance of BABYLON.Scene to append to
-     */
-    scene?: Scene;
-}
+export interface LoadAssetContainerOptions extends SceneLoaderOptions {}
 
 /**
  * Defines options for ImportAnimationsAsync.
  */
 export interface ImportAnimationsOptions extends SceneLoaderOptions {
-    /**
-     * The instance of BABYLON.Scene to append to
-     */
-    scene?: Scene;
-
     /**
      * When true, animations are cleaned before importing new ones. Animations are appended otherwise
      */
@@ -1021,10 +996,11 @@ export class SceneLoader {
     /**
      * Import meshes into a scene
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene the instance of BABYLON.Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded list of imported meshes, particle systems, skeletons, and animation groups
      */
-    public static ImportMeshAsync(source: SceneSource, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult>;
+    public static ImportMeshAsync(source: SceneSource, scene: Scene, options?: ImportMeshOptions): Promise<ISceneLoaderAsyncResult>;
 
     /**
      * Import meshes into a scene
@@ -1058,7 +1034,7 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: SceneSource, options?: ImportMeshOptions]
+            | [source: SceneSource, scene: Scene, options?: ImportMeshOptions]
     ): Promise<ISceneLoaderAsyncResult> {
         let meshNames: string | readonly string[] | null | undefined;
         let rootUrl: string;
@@ -1071,17 +1047,17 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: ImportMeshOptions] => {
-            // If there is only a single argument, then it must be the options overload.
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, ImportMeshOptions?] => {
             // If the second argument is an object, then it must be the options overload.
-            return maybeOptionsArgs.length === 1 || typeof maybeOptionsArgs[1] === "object";
+            return typeof maybeOptionsArgs[1] === "object";
         };
 
         if (isOptionsArgs(args)) {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
+            scene = args[1];
             // Options determine the rest of the arguments
-            ({ meshNames, rootUrl = "", scene, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
+            ({ meshNames, rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
             [meshNames, rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
@@ -1163,10 +1139,11 @@ export class SceneLoader {
     /**
      * Load a scene
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param engine is the instance of BABYLON.Engine to use to create the scene
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded scene
      */
-    public static LoadAsync(source: SceneSource, options?: LoadOptions): Promise<Scene>;
+    public static LoadAsync(source: SceneSource, engine: AbstractEngine, options?: LoadOptions): Promise<Scene>;
 
     /**
      * Load a scene
@@ -1197,7 +1174,7 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: SceneSource, options?: LoadOptions]
+            | [source: SceneSource, engine: AbstractEngine, options?: LoadOptions]
     ): Promise<Scene> {
         let rootUrl: string;
         let sceneFilename: SceneSource | undefined;
@@ -1209,21 +1186,17 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: LoadOptions] => {
-            // If the first argument is not a string, then it must be the options overload.
-            // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBuffer, then it must be the options overload.
-            return (
-                !(typeof maybeOptionsArgs[0] === "string") ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
-            );
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, AbstractEngine, LoadOptions?] => {
+            // If the second argument is an engine, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof AbstractEngine;
         };
 
         if (isOptionsArgs(args)) {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
+            engine = args[1];
             // Options determine the rest of the arguments
-            ({ rootUrl = "", engine, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
             [rootUrl, sceneFilename, engine, onProgress, pluginExtension, name] = args;
@@ -1382,10 +1355,11 @@ export class SceneLoader {
     /**
      * Append a scene
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of BABYLON.Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The given scene
      */
-    public static AppendAsync(source: SceneSource, options?: LoadAssetContainerOptions): Promise<Scene>;
+    public static AppendAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<Scene>;
 
     /**
      * Append a scene
@@ -1416,7 +1390,7 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: SceneSource, options?: AppendOptions]
+            | [source: SceneSource, scene: Scene, options?: AppendOptions]
     ): Promise<Scene> {
         let rootUrl: string;
         let sceneFilename: SceneSource | undefined;
@@ -1428,22 +1402,17 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: AppendOptions] => {
-            // If the first argument is a File or an ArrayBufferView, then it must be the options overload.
-            // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File, then it must be the options overload.
-            return (
-                maybeOptionsArgs[0] instanceof File ||
-                ArrayBuffer.isView(args[0]) ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File))
-            );
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, AppendOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
         };
 
         if (isOptionsArgs(args)) {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
+            scene = args[1];
             // Options determine the rest of the arguments
-            ({ rootUrl = "", scene, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
             [rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
@@ -1597,10 +1566,11 @@ export class SceneLoader {
     /**
      * Load a scene into an asset container
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of Scene to append to
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded asset container
      */
-    public static LoadAssetContainerAsync(source: SceneSource, options?: LoadAssetContainerOptions): Promise<AssetContainer>;
+    public static LoadAssetContainerAsync(source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions): Promise<AssetContainer>;
 
     /**
      * Load a scene into an asset container
@@ -1633,7 +1603,7 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: SceneSource, options?: LoadAssetContainerOptions]
+            | [source: SceneSource, scene: Scene, options?: LoadAssetContainerOptions]
     ): Promise<AssetContainer> {
         let rootUrl: string;
         let sceneFilename: SceneSource | undefined;
@@ -1645,21 +1615,17 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: LoadAssetContainerOptions] => {
-            // If the first argument is not a string, then it must be the options overload.
-            // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
-            return (
-                !(typeof maybeOptionsArgs[0] === "string") ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
-            );
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, LoadAssetContainerOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
         };
 
         if (isOptionsArgs(args)) {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
+            scene = args[1];
             // Options determine the rest of the arguments
-            ({ rootUrl = "", scene, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
+            ({ rootUrl = "", onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
             [rootUrl, sceneFilename, scene, onProgress, pluginExtension, name] = args;
@@ -1807,10 +1773,11 @@ export class SceneLoader {
     /**
      * Import animations from a file into a scene
      * @param source a string that defines the name of the scene file, or starts with "data:" following by the stringified version of the scene, or a File object, or an ArrayBufferView
+     * @param scene is the instance of BABYLON.Scene to append to (default: last created scene)
      * @param options an object that configures aspects of how the scene is loaded
      * @returns The loaded asset container
      */
-    public static ImportAnimationsAsync(source: SceneSource, options?: ImportAnimationsOptions): Promise<Scene>;
+    public static ImportAnimationsAsync(source: SceneSource, scene: Scene, options?: ImportAnimationsOptions): Promise<Scene>;
 
     /**
      * Import animations from a file into a scene
@@ -1856,7 +1823,7 @@ export class SceneLoader {
                   pluginExtension?: Nullable<string>,
                   name?: string,
               ]
-            | [source: SceneSource, options?: ImportAnimationsOptions]
+            | [source: SceneSource, scene: Scene, options?: ImportAnimationsOptions]
     ): Promise<Scene> {
         let rootUrl: string;
         let sceneFilename: SceneSource | undefined;
@@ -1871,21 +1838,17 @@ export class SceneLoader {
 
         // This is a user-defined type guard: https://www.typescriptlang.org/docs/handbook/advanced-types.html#user-defined-type-guards
         // This is the most type safe way to distinguish between the two possible argument arrays.
-        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [source: SceneSource, options?: ImportAnimationsOptions] => {
-            // If the first argument is not a string, then it must be the options overload.
-            // If there is only a single string argument, then we should use the legacy overload for back compat.
-            // If there are more than one arguments, and the second argument is a object but not a File or an ArrayBufferView, then it must be the options overload.
-            return (
-                !(typeof maybeOptionsArgs[0] === "string") ||
-                (maybeOptionsArgs.length > 1 && typeof maybeOptionsArgs[1] === "object" && !(maybeOptionsArgs[1] instanceof File) && !ArrayBuffer.isView(maybeOptionsArgs[1]))
-            );
+        const isOptionsArgs = (maybeOptionsArgs: typeof args): maybeOptionsArgs is [SceneSource, Scene, ImportAnimationsOptions?] => {
+            // If the second argument is a Scene, then it must be the options overload.
+            return maybeOptionsArgs[1] instanceof Scene;
         };
 
         if (isOptionsArgs(args)) {
             // Source is mapped to sceneFileName
             sceneFilename = args[0];
+            scene = args[1];
             // Options determine the rest of the arguments
-            ({ rootUrl = "", scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = args[1] ?? {});
+            ({ rootUrl = "", overwriteAnimations, animationGroupLoadingMode, targetConverter, onProgress, pluginExtension, name, pluginOptions } = args[2] ?? {});
         } else {
             // For the legacy signature, we just directly map each argument
             [rootUrl, sceneFilename, scene, overwriteAnimations, animationGroupLoadingMode, targetConverter, , onProgress, , pluginExtension, name] = args;
