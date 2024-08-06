@@ -452,36 +452,40 @@ color.rgb = max(color.rgb, 0.);
         gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
     #endif
 
-    #ifdef PREPASS_CLIPSPACE_DEPTH
-      gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
-    #endif
+#ifdef PREPASS_NDC_DEPTH
+        gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(
+            gl_FragCoord.z, 0.0, 0.0, writeGeometryInfo); // Clip-space depth
+#endif
 
-    #ifdef PREPASS_NORMAL
-        #ifdef PREPASS_NORMAL_WORLDSPACE
-            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
-        #else
-            gl_FragData[PREPASS_NORMAL_INDEX] = vec4(normalize((view * vec4(normalW, 0.0)).rgb), writeGeometryInfo); // Normal
-        #endif
-    #endif
+#ifdef PREPASS_NORMAL
+#ifdef PREPASS_NORMAL_WORLDSPACE
+        gl_FragData[PREPASS_NORMAL_INDEX] =
+            vec4(normalW, writeGeometryInfo); // Normal
+#else
+        gl_FragData[PREPASS_NORMAL_INDEX] =
+            vec4(normalize((view * vec4(normalW, 0.0)).rgb),
+                 writeGeometryInfo); // Normal
+#endif
+#endif
 
-	#ifdef PREPASS_WORLD_NORMAL
+#ifdef PREPASS_WORLD_NORMAL
         gl_FragData[PREPASS_WORLD_NORMAL_INDEX] = vec4(normalW, writeGeometryInfo); // Normal
-    #endif
+#endif
 
-    #ifdef PREPASS_ALBEDO_SQRT
+#ifdef PREPASS_ALBEDO_SQRT
         gl_FragData[PREPASS_ALBEDO_SQRT_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); // We can't split albedo on std material
-    #endif
-    #ifdef PREPASS_REFLECTIVITY
-		#if defined(SPECULARTERM)
-			#if defined(SPECULAR)
+#endif
+#ifdef PREPASS_REFLECTIVITY
+#if defined(SPECULARTERM)
+#if defined(SPECULAR)
 				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularMapColor)) * writeGeometryInfo; // no specularity if no visibility
-			#else
+#else
 				gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(toLinearSpace(specularColor), 1.0) * writeGeometryInfo;
-			#endif
-		#else
+#endif
+#else
 			gl_FragData[PREPASS_REFLECTIVITY_INDEX] = vec4(0.0, 0.0, 0.0, 1.0) * writeGeometryInfo;
-		#endif
-    #endif
+#endif
+#endif
 #endif
 
 #if !defined(PREPASS) || defined(WEBGL2)

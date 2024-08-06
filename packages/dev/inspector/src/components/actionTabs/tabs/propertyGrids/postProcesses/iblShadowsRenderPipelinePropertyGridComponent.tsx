@@ -72,7 +72,7 @@ export class IblShadowsRenderPipelinePropertyGridComponent extends React.Compone
                     />
                     <SliderLineComponent
                         lockObject={this.props.lockObject}
-                        label="Sharpness"
+                        label="Resolution"
                         minimum={4}
                         maximum={8}
                         step={1}

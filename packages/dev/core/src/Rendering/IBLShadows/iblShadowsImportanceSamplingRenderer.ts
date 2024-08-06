@@ -92,8 +92,8 @@ export class _IblShadowsImportanceSamplingRenderer {
     private _createTextures() {
         const size: TextureSize = this._iblSource ? this._iblSource.getSize() : { width: 1, height: 1 };
         if (!this._iblSource) {
-            this._iblSource = RawTexture.CreateRGBTexture(
-                new Uint8Array([255, 0, 0]),
+            this._iblSource = RawTexture.CreateRGBATexture(
+                new Uint8Array([255, 0, 0, 0]),
                 1,
                 1,
                 this._scene,
@@ -102,7 +102,6 @@ export class _IblShadowsImportanceSamplingRenderer {
                 Constants.TEXTURE_NEAREST_SAMPLINGMODE,
                 Constants.TEXTURETYPE_UNSIGNED_BYTE
             );
-            // (this._iblSource as RawTexture).isBlocking = true;
             this._iblSource.name = "Placeholder IBL Source";
         }
 

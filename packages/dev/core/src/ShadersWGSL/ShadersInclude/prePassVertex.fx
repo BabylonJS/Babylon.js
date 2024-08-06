@@ -2,6 +2,10 @@
     vertexOutputs.vViewPos = (scene.view * worldPos).rgb;
 #endif
 
+#ifdef PREPASS_LOCAL_POSITION
+    vertexOutputs.vPosition = positionUpdated.xyz;
+#endif
+
 #if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED)
     vertexOutputs.vCurrentPosition = scene.viewProjection * worldPos;
 

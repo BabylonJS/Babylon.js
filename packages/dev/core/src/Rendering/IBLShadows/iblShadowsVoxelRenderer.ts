@@ -103,7 +103,7 @@ export class _IblShadowsVoxelRenderer {
     }
 
     public set voxelResolutionExp(resolutionExp: number) {
-        if (this._voxelResolutionExp === resolutionExp) {
+        if (this._voxelResolutionExp === resolutionExp && this._voxelGridZaxis) {
             return;
         }
         this._voxelResolutionExp = Math.round(Math.min(Math.max(resolutionExp, 4), 9));
@@ -208,7 +208,6 @@ export class _IblShadowsVoxelRenderer {
     constructor(scene: Scene, iblShadowsRenderPipeline: IblShadowsRenderPipeline, resolutionExp: number = 6, triPlanarVoxelization: boolean = true) {
         this._scene = scene;
         this._engine = scene.getEngine() as Engine;
-        this.voxelResolutionExp = resolutionExp;
         this._triPlanarVoxelization = triPlanarVoxelization;
         this._renderPipeline = iblShadowsRenderPipeline;
         if (!this._engine.getCaps().drawBuffersExtension) {
@@ -229,7 +228,7 @@ export class _IblShadowsVoxelRenderer {
             samplerNames: ["textureSampler"],
         });
 
-        this._createTextures();
+        this.voxelResolutionExp = resolutionExp;
     }
 
     private _generateMipMaps() {
@@ -390,11 +389,11 @@ export class _IblShadowsVoxelRenderer {
             this._voxelMrtsZaxis[i].dispose(true);
         }
         if (this._triPlanarVoxelization) {
-            this._voxelGridXaxis.dispose();
-            this._voxelGridYaxis.dispose();
-            this._voxelGridRT.dispose();
+            this._voxelGridXaxis?.dispose();
+            this._voxelGridYaxis?.dispose();
+            this._voxelGridRT?.dispose();
         }
-        this._voxelGridZaxis.dispose();
+        this._voxelGridZaxis?.dispose();
         this._mipArray.forEach((mip) => {
             mip.dispose();
         });

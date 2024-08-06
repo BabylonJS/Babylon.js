@@ -80,7 +80,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
     }
 
     /**
-     * Gets the world normal component
+     * Gets the position in local space component
      */
     public get localPosition(): NodeMaterialConnectionPoint {
         return this._inputs[5];
@@ -89,7 +89,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
     /**
      * Gets the linear depth component
      */
-    public get viewDepthClipSpace(): NodeMaterialConnectionPoint {
+    public get viewDepthNDC(): NodeMaterialConnectionPoint {
         return this._inputs[6];
     }
 
@@ -106,7 +106,7 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
         const worldNormal = this.worldNormal;
         const viewDepth = this.viewDepth;
         const reflectivity = this.reflectivity;
-        const viewDepthClipSpace = this.viewDepthClipSpace;
+        const viewDepthNDC = this.viewDepthNDC;
 
         state.sharedData.blocksWithDefines.push(this);
 
@@ -126,12 +126,12 @@ export class PrePassOutputBlock extends NodeMaterialBlock {
             state.compilationString += ` fragData[PREPASS_DEPTH_INDEX] = ${vec4}(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
-        state.compilationString += `#ifdef PREPASS_CLIPSPACE_DEPTH\r\n`;
-        if (viewDepthClipSpace.connectedPoint) {
-            state.compilationString += ` gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(${viewDepthClipSpace.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
+        state.compilationString += `#ifdef PREPASS_NDC_DEPTH\r\n`;
+        if (viewDepthNDC.connectedPoint) {
+            state.compilationString += ` gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(${viewDepthNDC.associatedVariableName}, 0.0, 0.0, 1.0);\r\n`;
         } else {
             // We have to write something on the viewDepth output or it will raise a gl error
-            state.compilationString += ` gl_FragData[PREPASS_CLIPSPACE_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
+            state.compilationString += ` gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(0.0, 0.0, 0.0, 0.0);\r\n`;
         }
         state.compilationString += `#endif\r\n`;
         state.compilationString += `#ifdef PREPASS_POSITION\r\n`;
