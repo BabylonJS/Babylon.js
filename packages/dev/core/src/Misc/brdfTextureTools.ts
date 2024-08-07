@@ -45,7 +45,7 @@ export const GetEnvironmentBRDFTexture = (scene: Scene): BaseTexture => {
 
         scene.useDelayedTextureLoading = useDelayedTextureLoading;
 
-        // RGBDTextureTools.ExpandRGBDTexture(texture);
+        RGBDTextureTools.ExpandRGBDTexture(texture);
 
         const observer = scene.getEngine().onContextRestoredObservable.add(() => {
             texture.isRGBD = true;
