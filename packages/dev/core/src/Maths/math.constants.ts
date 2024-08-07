@@ -23,5 +23,4 @@ export const PHI = (1 + Math.sqrt(5)) / 2;
  * @ignorenaming
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const Epsilon = 0.001;
-export { Epsilon };
+export const Epsilon = 0.001;
