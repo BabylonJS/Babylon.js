@@ -245,6 +245,9 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
         const materialToUse: string[] = [];
         const babylonMeshesArray: Array<Mesh> = []; //The mesh for babylon
 
+        // Sanitize data
+        data = data.replace(/#.*$/gm, "").trim();
+
         // Main function
         const solidParser = new SolidParser(materialToUse, babylonMeshesArray, this._loadingOptions);
 
