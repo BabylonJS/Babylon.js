@@ -8,28 +8,32 @@ import type { Camera } from "../Cameras/camera";
 import { Texture } from "../Materials/Textures/texture";
 import type { Scene } from "../scene";
 import type { AbstractEngine } from "../Engines/abstractEngine";
-import type { IFrameGraphTask } from "../FrameGraph/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
-import type { Observer } from "../Misc/observable";
-import type { Effect } from "../Materials/effect";
-import type { InternalTexture } from "../Materials/Textures/internalTexture";
-import type { Nullable } from "../types";
-import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { Observable } from "core/Misc/observable";
 
 /**
  * Interface for the bloom effect build data
  */
-export interface IBloomEffectFrameGraphBuildData {
+export interface IFrameGraphBloomEffectInputData extends IFrameGraphInputData {
     /**
      * The source texture for the bloom effect
      */
-    sourceTexture: InternalTexture;
+    sourceTexturePath: FrameGraphTaskTexture;
+    destinationTexturePath: FrameGraphTaskTexture;
+    outputTextureName: string;
 }
 
 /**
  * The bloom effect spreads bright areas of an image to simulate artifacts seen in cameras
  */
 export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphTask {
+    public name = "Bloom";
+
+    public onBeforeTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+
+    public onAfterTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+
     /**
      * @internal Internal
      */
@@ -45,13 +49,6 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
     private _merge: BloomMergePostProcess;
 
     private _pipelineTextureType: number;
-    private _downscaleObserver: Nullable<Observer<Effect>> = null;
-    private _blurXObserver: Nullable<Observer<Effect>> = null;
-    private _blurYObserver: Nullable<Observer<Effect>> = null;
-    private _mergeObserver: Nullable<Observer<Effect>> = null;
-    private _downscaleOutput: RenderTargetWrapper;
-    private _blurXOutput: RenderTargetWrapper;
-    private _blurYOutput: RenderTargetWrapper;
 
     /**
      * The luminance threshold to find bright areas of the image to bloom.
@@ -168,72 +165,63 @@ export class BloomEffect extends PostProcessRenderEffect implements IFrameGraphT
         this._effects.push(this._merge);
     }
 
-    public addToFrameGraph(builder: FrameGraph, buildData: IBloomEffectFrameGraphBuildData) {
-        const sourceTexture = buildData.sourceTexture;
-
-        this._downscale.onApplyObservable.remove(this._downscaleObserver);
-        this._downscaleObserver = this._downscale.onApplyObservable.add((effect) => {
-            effect._bindTexture("textureSampler", sourceTexture);
-        });
-
-        const textureSize = { width: Math.floor(sourceTexture.width * this._bloomScale), height: Math.floor(sourceTexture.height * this._bloomScale) };
-
-        this._downscale.width = textureSize.width;
-        this._downscale.height = textureSize.height;
-        this._blurX.width = textureSize.width;
-        this._blurX.height = textureSize.height;
-        this._blurY.width = textureSize.width;
-        this._blurY.height = textureSize.height;
+    public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomEffectInputData) {
+        const sourceTextureDescription = frameGraph.getTextureDescriptionFromTask(inputData.sourceTexturePath);
 
         const textureCreationOptions = {
-            createMipMaps: false,
-            generateMipMaps: false,
-            type: this._pipelineTextureType,
-            samplingMode: Texture.BILINEAR_SAMPLINGMODE,
-            format: sourceTexture.format,
-            samples: 1,
-            useSRGBBuffer: false,
-            label: "Bloom Downscale",
+            size: { width: Math.floor(sourceTextureDescription.size.width * this._bloomScale), height: Math.floor(sourceTextureDescription.size.height * this._bloomScale) },
+            options: {
+                createMipMaps: false,
+                generateMipMaps: false,
+                type: this._pipelineTextureType,
+                samplingMode: Texture.BILINEAR_SAMPLINGMODE,
+                format: sourceTextureDescription.options.format,
+                samples: 1,
+                useSRGBBuffer: false,
+                label: "",
+            },
+            sizeIsPercentage: false,
         };
-        this._downscaleOutput = builder.createRenderTargetTexture(textureCreationOptions.label, textureSize, textureCreationOptions);
 
-        textureCreationOptions.label = "Bloom Blur X";
-        this._blurXOutput = builder.createRenderTargetTexture(textureCreationOptions.label, textureSize, textureCreationOptions);
+        // We need to set the texture size so that texel size is calculated correctly
+        this._blurX.width = textureCreationOptions.size.width;
+        this._blurX.height = textureCreationOptions.size.height;
+        this._blurY.width = textureCreationOptions.size.width;
+        this._blurY.height = textureCreationOptions.size.height;
 
-        this._blurX.onApplyObservable.remove(this._blurXObserver);
-        this._blurXObserver = this._blurX.onApplyObservable.add((effect) => {
-            effect._bindTexture("textureSampler", this._downscaleOutput.texture);
+        textureCreationOptions.options.label = "Bloom Downscale";
+        frameGraph.createRenderTargetTexture("bloom_downscale", textureCreationOptions);
+
+        this._downscale.addToFrameGraph(frameGraph, {
+            sourceTexturePath: inputData.sourceTexturePath,
+            destinationTexturePath: [this.name, "bloom_downscale"],
+            outputTextureName: "output",
         });
 
-        textureCreationOptions.label = "Bloom Blur Y";
-        this._blurYOutput = builder.createRenderTargetTexture(textureCreationOptions.label, textureSize, textureCreationOptions);
+        textureCreationOptions.options.label = "Bloom Blur X";
+        frameGraph.createRenderTargetTexture("bloom_blurX", textureCreationOptions);
 
-        this._blurY.onApplyObservable.remove(this._blurYObserver);
-        this._blurYObserver = this._blurY.onApplyObservable.add((effect) => {
-            effect._bindTexture("textureSampler", this._blurXOutput.texture);
+        this._blurX.addToFrameGraph(frameGraph, {
+            sourceTexturePath: ["highlights", "output"],
+            destinationTexturePath: [this.name, "bloom_blurX"],
+            outputTextureName: "output",
         });
 
-        this._merge.onApplyObservable.remove(this._mergeObserver);
-        this._mergeObserver = this._merge.onApplyObservable.add((effect) => {
-            effect._bindTexture("textureSampler", sourceTexture);
-            effect._bindTexture("bloomBlur", this._blurYOutput.texture);
+        textureCreationOptions.options.label = "Bloom Blur Y";
+        frameGraph.createRenderTargetTexture("bloom_blurY", textureCreationOptions);
+
+        this._blurY.addToFrameGraph(frameGraph, {
+            sourceTexturePath: ["horizontal blur", "output"],
+            destinationTexturePath: [this.name, "bloom_blurY"],
+            outputTextureName: "output",
         });
-    }
 
-    public executeFrameGraphTask(builder: FrameGraph) {
-        const finalRenderTarget = builder.currentRenderTarget;
-
-        builder.bindRenderTarget(this._downscaleOutput);
-        this._downscale.executeFrameGraphTask(builder);
-
-        builder.bindRenderTarget(this._blurXOutput);
-        this._blurX.executeFrameGraphTask(builder);
-
-        builder.bindRenderTarget(this._blurYOutput);
-        this._blurY.executeFrameGraphTask(builder);
-
-        builder.bindRenderTarget(finalRenderTarget);
-        this._merge.executeFrameGraphTask(builder);
+        this._merge.addToFrameGraph(frameGraph, {
+            sourceTexturePath: inputData.sourceTexturePath,
+            sourceBlurTexturePath: ["vertical blur", "output"],
+            destinationTexturePath: inputData.destinationTexturePath,
+            outputTextureName: inputData.outputTextureName,
+        });
     }
 
     /**

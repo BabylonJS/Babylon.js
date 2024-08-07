@@ -271,9 +271,7 @@ export class NodeRenderGraph {
         state.removeFalseBlocks = removeFalseBlocks;
         state.frameGraph = this._frameGraph;
 
-        this._frameGraph._startBuild();
         this.outputBlock.build(state);
-        this._frameGraph._endBuild();
 
         this._buildId = NodeRenderGraph._BuildIdGenerator++;
 
@@ -311,7 +309,7 @@ export class NodeRenderGraph {
      * Execute the graph (the graph must have been built before!)
      */
     public execute() {
-        this._frameGraph._execute();
+        this._frameGraph.execute();
     }
 
     private _initializeBlock(node: NodeRenderGraphBlock, removeFalseBlocks: boolean) {
@@ -648,7 +646,7 @@ export class NodeRenderGraph {
             block.dispose();
         }
 
-        this._frameGraph._dispose();
+        this._frameGraph.dispose();
         this._frameGraph = undefined as any;
 
         this._engine.onResizeObservable.remove(this._resizeObserver);

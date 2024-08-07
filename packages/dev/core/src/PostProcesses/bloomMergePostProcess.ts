@@ -1,4 +1,4 @@
-import type { PostProcessOptions } from "./postProcess";
+import type { IFrameGraphPostProcessInputData, PostProcessOptions } from "./postProcess";
 import { PostProcess } from "./postProcess";
 import type { Nullable } from "../types";
 import type { AbstractEngine } from "../Engines/abstractEngine";
@@ -9,6 +9,12 @@ import { Constants } from "../Engines/constants";
 import "../Shaders/bloomMerge.fragment";
 import { RegisterClass } from "../Misc/typeStore";
 import { serialize } from "../Misc/decorators";
+import type { FrameGraph } from "core/FrameGraph/frameGraph";
+import type { FrameGraphTaskTexture } from "core/FrameGraph/Tasks/IFrameGraphTask";
+
+export interface IFrameGraphBloomMergeInputData extends IFrameGraphPostProcessInputData {
+    sourceBlurTexturePath: FrameGraphTaskTexture;
+}
 
 /**
  * The BloomMergePostProcess merges blurred images with the original based on the values of the circle of confusion.
@@ -44,7 +50,6 @@ export class BloomMergePostProcess extends PostProcess {
         name: string,
         originalFromInput: PostProcess,
         blurred: PostProcess,
-        /** Weight of the bloom to be added to the original input. */
         weight: number,
         options: number | PostProcessOptions,
         camera: Nullable<Camera>,
@@ -66,6 +71,28 @@ export class BloomMergePostProcess extends PostProcess {
         if (!blockCompilation) {
             this.updateEffect();
         }
+    }
+
+    public override addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphBloomMergeInputData): void {
+        const sourceTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceTexturePath);
+        const sourceBlurTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceBlurTexturePath);
+        const destinationTextureHandle = frameGraph.getTextureHandleFromTask(inputData.destinationTexturePath);
+
+        const pass = frameGraph.addRenderPass(this.name);
+
+        frameGraph.registerTextureHandleForTask(this, inputData.outputTextureName, destinationTextureHandle);
+
+        this.onApplyObservable.clear();
+
+        pass.setRenderTarget(destinationTextureHandle);
+        pass.setExecuteFunc((context) => {
+            context.applyFullScreenEffect(this._drawWrapper, () => {
+                this._bind();
+                this._drawWrapper.effect!._bindTexture("textureSampler", context.getTextureFromHandle(sourceTextureHandle)?.texture!);
+                this._drawWrapper.effect!._bindTexture("bloomBlur", context.getTextureFromHandle(sourceBlurTextureHandle)?.texture!);
+                this._drawWrapper.effect!.setFloat("bloomWeight", this.weight);
+            });
+        });
     }
 }
 

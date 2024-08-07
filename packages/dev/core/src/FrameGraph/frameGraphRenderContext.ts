@@ -1,0 +1,124 @@
+import type { Nullable } from "../types";
+import type { AbstractEngine } from "../Engines/abstractEngine";
+import type { RenderTargetWrapper } from "../Engines/renderTargetWrapper";
+import { Constants } from "../Engines/constants";
+import { EffectRenderer } from "../Materials/effectRenderer";
+import type { DrawWrapper } from "../Materials/drawWrapper";
+import { CopyTextureToTexture } from "../Misc/copyTextureToTexture";
+import type { InternalTexture } from "../Materials/Textures/internalTexture";
+import type { ThinTexture } from "../Materials/Textures/thinTexture";
+import type { IColor4Like } from "core/Maths/math.like";
+import type { FrameGraph } from "./frameGraph";
+import { FrameGraphContext } from "./frameGraphContext";
+import type { TextureHandle } from "./textureHandle";
+import { backbufferColorTextureHandle } from "./textureHandle";
+
+export class FrameGraphRenderContext extends FrameGraphContext {
+    private _effectRenderer: EffectRenderer;
+    private _currentRenderTargetHandle: TextureHandle;
+    private _renderTargetIsBound = true;
+    private _copyTexture: CopyTextureToTexture; // todo: remove
+
+    constructor(
+        private _engine: AbstractEngine,
+        private _frameGraph: FrameGraph
+    ) {
+        super();
+        this._effectRenderer = new EffectRenderer(this._engine);
+        this._copyTexture = new CopyTextureToTexture(this._engine);
+        this._currentRenderTargetHandle = backbufferColorTextureHandle;
+    }
+
+    public getTextureFromHandle(handle: TextureHandle): Nullable<RenderTargetWrapper> {
+        return this._frameGraph._textures[handle]!.texture;
+    }
+
+    /**
+     * Binds a render target texture so that upcoming draw calls will render to it
+     * Note: it is a lazy operation, so the render target will only be bound when needed. This way, it is possible to call
+     *   this method several times with different render targets without incurring the cost of binding if no draw calls are made
+     * @param renderTargetHandle The render target texture to bind
+     */
+    public bindRenderTarget(renderTargetHandle: TextureHandle = backbufferColorTextureHandle) {
+        if (renderTargetHandle === this._currentRenderTargetHandle) {
+            return;
+        }
+        this._currentRenderTargetHandle = renderTargetHandle;
+        this._renderTargetIsBound = false;
+    }
+
+    /**
+     * Clears the current render buffer or the current render target (if any is set up)
+     * @param color defines the color to use
+     * @param backBuffer defines if the back buffer must be cleared
+     * @param depth defines if the depth buffer must be cleared
+     * @param stencil defines if the stencil buffer must be cleared
+     */
+    public clear(color: Nullable<IColor4Like>, backBuffer: boolean, depth: boolean, stencil?: boolean): void {
+        this._bindRenderTarget();
+        this._engine.clear(color, backBuffer, depth, stencil);
+    }
+
+    /**
+     * Applies a fullscreen effect to the current render target
+     * @param drawWrapper The draw wrapper containing the effect to apply
+     * @param customBindings The custom bindings to use when applying the effect
+     * @returns True if the effect was applied, otherwise false (effect not ready)
+     */
+    public applyFullScreenEffect(drawWrapper: DrawWrapper, customBindings?: () => void) {
+        if (!drawWrapper.effect?.isReady()) {
+            return false;
+        }
+
+        this._bindRenderTarget();
+
+        this._effectRenderer.saveStates();
+        this._effectRenderer.setViewport();
+
+        this._engine.enableEffect(drawWrapper);
+        this._engine.setState(false);
+        this._engine.setDepthBuffer(false);
+        this._engine.setDepthWrite(false);
+
+        this._effectRenderer.bindBuffers(drawWrapper.effect);
+        customBindings?.();
+        this._effectRenderer.draw();
+        this._effectRenderer.restoreStates();
+        this._engine.setAlphaMode(Constants.ALPHA_DISABLE);
+
+        return true;
+    }
+
+    /**
+     * Copies a texture to the current render target
+     * @param sourceTexture The source texture to copy from
+     */
+    public copyTexture(sourceTexture: InternalTexture | ThinTexture) {
+        this._bindRenderTarget();
+        this._copyTexture.copy(sourceTexture, this._currentRenderTargetHandle ? this.getTextureFromHandle(this._currentRenderTargetHandle) : null);
+    }
+
+    private _bindRenderTarget() {
+        if (this._renderTargetIsBound) {
+            return;
+        }
+
+        const renderTarget = this.getTextureFromHandle(this._currentRenderTargetHandle);
+
+        if (!renderTarget) {
+            this._engine.restoreDefaultFramebuffer();
+        } else {
+            this._engine.bindFramebuffer(renderTarget);
+        }
+
+        this._renderTargetIsBound = true;
+    }
+
+    /**
+     * @internal
+     */
+    public _dispose() {
+        this._effectRenderer.dispose();
+        this._copyTexture.dispose();
+    }
+}

@@ -57,7 +57,8 @@ export class NodeRenderGraphOutputBlock extends NodeRenderGraphBlock {
         }
 
         state.frameGraph.addExecuteFunction(() => {
-            state.frameGraph.copyTextureToTexture(internalTexture, null);
+            state.frameGraph.bindRenderTarget(null);
+            state.frameGraph.copyTexture(internalTexture);
         });
     }
 

@@ -28,7 +28,7 @@ import type { PrePassRenderer } from "../Rendering/prePassRenderer";
 import type { PrePassEffectConfiguration } from "../Rendering/prePassEffectConfiguration";
 import { AbstractEngine } from "../Engines/abstractEngine";
 import { GetExponentOfTwo } from "../Misc/tools.functions";
-import type { IFrameGraphTask } from "../FrameGraph/IFrameGraphTask";
+import type { FrameGraphTaskTexture, IFrameGraphInputData, IFrameGraphTask } from "../FrameGraph/Tasks/IFrameGraphTask";
 import type { FrameGraph } from "../FrameGraph/frameGraph";
 
 declare module "../Engines/abstractEngine" {
@@ -67,6 +67,12 @@ AbstractEngine.prototype.setTextureFromPostProcess = function (channel: number, 
 AbstractEngine.prototype.setTextureFromPostProcessOutput = function (channel: number, postProcess: Nullable<PostProcess>, name: string): void {
     this._bindTexture(channel, postProcess?._outputTexture?.texture ?? null, name);
 };
+
+export interface IFrameGraphPostProcessInputData extends IFrameGraphInputData {
+    sourceTexturePath: FrameGraphTaskTexture;
+    destinationTexturePath: FrameGraphTaskTexture;
+    outputTextureName: string;
+}
 
 declare module "../Materials/effect" {
     export interface Effect {
@@ -221,6 +227,10 @@ export class PostProcess implements IFrameGraphTask {
     public _parentContainer: Nullable<AbstractScene> = null;
 
     private static _CustomShaderCodeProcessing: { [postProcessName: string]: PostProcessCustomShaderCodeProcessing } = {};
+
+    public onBeforeTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
+
+    public onAfterTaskAddedToFrameGraphObservable = new Observable<FrameGraph>();
 
     /**
      * Registers a shader code processing with a post process name.
@@ -403,7 +413,7 @@ export class PostProcess implements IFrameGraphTask {
      * @internal
      */
     public _currentRenderTextureInd = 0;
-    private _drawWrapper: DrawWrapper;
+    protected _drawWrapper: DrawWrapper;
     private _samplers: string[];
     private _fragmentUrl: string;
     private _vertexUrl: string;
@@ -1051,24 +1061,24 @@ export class PostProcess implements IFrameGraphTask {
         return this._drawWrapper.effect?.isReady() ?? false;
     }
 
-    private _bind() {
+    protected _bind() {
         // Alpha
         this._engine.setAlphaMode(this.alphaMode);
         if (this.alphaConstants) {
             this.getEngine().setAlphaConstants(this.alphaConstants.r, this.alphaConstants.g, this.alphaConstants.b, this.alphaConstants.a);
         }
 
-        // Bind the output texture of the preivous post process as the input to this post process.
-        let source: RenderTargetWrapper;
-        if (this._shareOutputWithPostProcess) {
-            source = this._shareOutputWithPostProcess.inputTexture;
-        } else if (this._forcedOutputTexture) {
-            source = this._forcedOutputTexture;
-        } else {
-            source = this.inputTexture;
-        }
-
         if (!this.externalTextureSamplerBinding) {
+            // Bind the output texture of the previous post process as the input to this post process.
+            let source: RenderTargetWrapper;
+            if (this._shareOutputWithPostProcess) {
+                source = this._shareOutputWithPostProcess.inputTexture;
+            } else if (this._forcedOutputTexture) {
+                source = this._forcedOutputTexture;
+            } else {
+                source = this.inputTexture;
+            }
+
             this._drawWrapper.effect!._bindTexture("textureSampler", source?.texture);
         }
 
@@ -1100,10 +1110,19 @@ export class PostProcess implements IFrameGraphTask {
         return this._drawWrapper.effect;
     }
 
-    public addToFrameGraph(_builder: FrameGraph, _buildData?: unknown): void {}
+    public addToFrameGraph(frameGraph: FrameGraph, inputData: IFrameGraphPostProcessInputData): void {
+        const sourceTextureHandle = frameGraph.getTextureHandleFromTask(inputData.sourceTexturePath);
+        const destinationTextureHandle = frameGraph.getTextureHandleFromTask(inputData.destinationTexturePath);
 
-    public executeFrameGraphTask(frameGraphBuilder: FrameGraph) {
-        frameGraphBuilder.applyFullScreenEffect(this._drawWrapper, () => this._bind());
+        const pass = frameGraph.addRenderPass(this.name);
+
+        frameGraph.registerTextureHandleForTask(this, inputData.outputTextureName, destinationTextureHandle);
+
+        pass.setRenderTarget(destinationTextureHandle);
+        pass.setExecuteFunc((context) => {
+            this.inputTexture = context.getTextureFromHandle(sourceTextureHandle)!;
+            context.applyFullScreenEffect(this._drawWrapper, () => this._bind());
+        });
     }
 
     private _disposeTextures() {
