@@ -829,6 +829,11 @@ export function PrepareDefinesForPrePass(scene: Scene, defines: any, canRenderTo
             index: "PREPASS_VELOCITY_INDEX",
         },
         {
+            type: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
+            define: "PREPASS_VELOCITY_LINEAR",
+            index: "PREPASS_VELOCITY_LINEAR_INDEX",
+        },
+        {
             type: Constants.PREPASS_REFLECTIVITY_TEXTURE_TYPE,
             define: "PREPASS_REFLECTIVITY",
             index: "PREPASS_REFLECTIVITY_INDEX",

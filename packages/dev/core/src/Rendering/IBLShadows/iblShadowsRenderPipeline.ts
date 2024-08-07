@@ -1,13 +1,13 @@
 import { Constants } from "../../Engines/constants";
 import { EngineStore } from "../../Engines/engineStore";
 import type { AbstractMesh } from "../../Meshes/abstractMesh";
-import { Matrix, Vector3, Quaternion } from "../../Maths/math.vector";
+import { Matrix, Vector3, Vector4, Quaternion } from "../../Maths/math.vector";
 import { Mesh } from "../../Meshes/mesh";
 import type { Scene } from "../../scene";
 import type { BaseTexture } from "../../Materials/Textures/baseTexture";
 import { Texture } from "../../Materials/Textures/texture";
 import type { PrePassEffectConfiguration } from "../prePassEffectConfiguration";
-import type { PrePassRenderer } from "../prePassRenderer";
+import { PrePassRenderer } from "../prePassRenderer";
 import { Logger } from "../../Misc/logger";
 import { _IblShadowsVoxelRenderer } from "./iblShadowsVoxelRenderer";
 import { _IblShadowsVoxelTracingPass } from "./iblShadowsVoxelTracingPass";
@@ -88,8 +88,8 @@ class IblShadowsPrepassConfiguration implements PrePassEffectConfiguration {
         Constants.PREPASS_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
         Constants.PREPASS_WORLD_NORMAL_TEXTURE_TYPE,
-        Constants.PREPASS_NORMAL_TEXTURE_TYPE, // TODO - don't need this for IBL shadows
-        Constants.PREPASS_VELOCITY_TEXTURE_TYPE,
+        // Constants.PREPASS_NORMAL_TEXTURE_TYPE, // TODO - don't need this for IBL shadows
+        Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
         // Local positions used for shadow accumulation pass
         Constants.PREPASS_POSITION_TEXTURE_TYPE,
         Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE,
@@ -219,6 +219,27 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
      */
     public getIcdfxTexture(): Texture {
         return this._importanceSamplingRenderer!.getIcdfxTexture();
+    }
+
+    private _gbufferDebugPass: PostProcess;
+    private _gbufferDebugEnabled: boolean = false;
+    private _gBufferDebugSizeParams: Vector4 = new Vector4(0.0, 0.0, 0.0, 0.0);
+
+    public get gbufferDebugEnabled(): boolean {
+        return this._gbufferDebugEnabled;
+    }
+
+    public set gbufferDebugEnabled(enabled: boolean) {
+        if (enabled && !this.allowDebugPasses) {
+            Logger.Warn("Can't enable G-Buffer debug view without setting allowDebugPasses to true.");
+            return;
+        }
+        this._gbufferDebugEnabled = enabled;
+        if (enabled) {
+            this._enableEffect(this._gbufferDebugPass.name, this.cameras);
+        } else {
+            this._disableEffect(this._gbufferDebugPass.name, this.cameras);
+        }
     }
 
     /**
@@ -616,6 +637,43 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
         }
     }
 
+    private _getGBufferDebugPass(): PostProcess {
+        if (this._gbufferDebugPass) {
+            return this._gbufferDebugPass;
+        }
+        const textureNames: string[] = this._prePassEffectConfiguration.texturesRequired.map((type) => PrePassRenderer.TextureFormats[type].name.toString());
+
+        const options: PostProcessOptions = {
+            width: this.scene.getEngine().getRenderWidth(),
+            height: this.scene.getEngine().getRenderHeight(),
+            samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
+            engine: this.scene.getEngine(),
+            textureType: Constants.TEXTURETYPE_UNSIGNED_INT,
+            textureFormat: Constants.TEXTUREFORMAT_RGBA,
+            uniforms: ["sizeParams"],
+            samplers: textureNames,
+            reusable: false,
+        };
+        this._gbufferDebugPass = new PostProcess("iblShadowGBufferDebug", "iblShadowGBufferDebug", options);
+        this._gbufferDebugPass.autoClear = false;
+        this._gbufferDebugPass.onApply = (effect) => {
+            this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
+                const prePassRenderer = this.scene.prePassRenderer;
+                if (!prePassRenderer) {
+                    Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
+                    return;
+                }
+                const index = prePassRenderer.getIndex(type);
+                if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
+            });
+            effect.setVector4("sizeParams", this._gBufferDebugSizeParams);
+            if (this.scene.activeCamera) {
+                effect.setFloat("maxDepth", this.scene.activeCamera.maxZ);
+            }
+        };
+        return this._gbufferDebugPass;
+    }
+
     private _createDebugPasses() {
         this._debugPasses = [
             this._importanceSamplingRenderer.getDebugPassPP(),
@@ -623,6 +681,7 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
             this._voxelTracingPass.getDebugPassPP(),
             this._spatialBlurPass.getDebugPassPP(),
             this._accumulationPass.getDebugPassPP(),
+            this._getGBufferDebugPass(),
         ];
         for (let i = 0; i < this._debugPasses.length; i++) {
             this.addEffect(
@@ -664,47 +723,32 @@ export class IblShadowsRenderPipeline extends PostProcessRenderPipeline {
 
     private _updateDebugPasses() {
         let count = 0;
-        // if (this._gbufferDebugEnabled) count++;
+        if (this._gbufferDebugEnabled) count++;
         if (this.importanceSamplingDebugEnabled) count++;
         if (this.voxelDebugEnabled) count++;
         if (this.voxelTracingDebugEnabled) count++;
         if (this.spatialBlurPassDebugEnabled) count++;
         if (this.accumulationPassDebugEnabled) count++;
 
-        // count = 4;
         const rows = Math.ceil(Math.sqrt(count));
         const cols = Math.ceil(count / rows);
         const width = 1.0 / cols;
         const height = 1.0 / rows;
         let x = 0;
         let y = 0;
-        // if (this.gbufferDebugEnabled) {
-        //     const prePassRenderer = this._scene!.prePassRenderer;
-        //     if (!prePassRenderer) {
-        //         Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
-        //         return;
-        //     }
-
-        //     const xOffset = x;
-        //     const yOffset = y;
-        //     this._debugPass.onApply = (effect) => {
-        //         this._prePassEffectConfiguration.texturesRequired.forEach((type) => {
-        //             const index = prePassRenderer.getIndex(type);
-        //             if (index >= 0) effect.setTexture(PrePassRenderer.TextureFormats[type].name, prePassRenderer.getRenderTarget().textures[index]);
-        //         });
-        //         effect.setFloat4("sizeParams", xOffset, yOffset, cols, rows);
-        //         if (this._scene.activeCamera) {
-        //             effect.setFloat("maxDepth", this._scene.activeCamera.maxZ);
-        //         }
-        //     };
-        //     x -= width;
-        //     if (x <= -1) {
-        //         x = 0;
-        //         y -= height;
-        //     }
-        // } else {
-        //     this._debugPass?.dispose();
-        // }
+        if (this.gbufferDebugEnabled) {
+            const prePassRenderer = this.scene!.prePassRenderer;
+            if (!prePassRenderer) {
+                Logger.Error("Can't enable G-Buffer debug rendering since prepassRenderer doesn't exist.");
+                return;
+            }
+            this._gBufferDebugSizeParams.set(x, y, cols, rows);
+            x -= width;
+            if (x <= -1) {
+                x = 0;
+                y -= height;
+            }
+        }
 
         if (this.importanceSamplingDebugEnabled) {
             this._importanceSamplingRenderer.setDebugDisplayParams(x, y, cols, rows);

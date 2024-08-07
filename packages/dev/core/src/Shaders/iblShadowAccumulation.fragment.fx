@@ -28,17 +28,6 @@ void main(void) {
     return;
   }
   vec2 velocityColor = texelFetch(motionSampler, currentPixel, 0).xy;
-  // Since the velocity is stored as 8-bit RGB, the neutral value isn't actually
-  // 0.5. It's 127/255 = 0.49803921568.
-  velocityColor.rg =
-      velocityColor.rg * 2.0 + vec2(0.00392156862745) - vec2(1.0);
-  if (abs(velocityColor.r) < 0.01) {
-    velocityColor.r = 0.0;
-  }
-  if (abs(velocityColor.g) < 0.01) {
-    velocityColor.g = 0.0;
-  }
-
   vec2 prevCoord = vUV + velocityColor;
   vec3 PrevLP = textureLod(prevLocalPositionSampler, prevCoord, 0.0).xyz;
   vec2 PrevShadows = textureLod(oldAccumulationSampler, prevCoord, 0.0).xy;

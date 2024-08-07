@@ -184,9 +184,15 @@ export class PrePassRenderer {
         },
         {
             purpose: Constants.PREPASS_NDC_DEPTH_TEXTURE_TYPE,
-            type: Constants.TEXTURETYPE_FLOAT,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
             format: Constants.TEXTUREFORMAT_R,
-            name: "prePass_ClipSpaceDepth",
+            name: "prePass_NdcDepth",
+        },
+        {
+            purpose: Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
+            format: Constants.TEXTUREFORMAT_RGBA,
+            name: "prePass_VelocityLinear",
         },
     ];
 
@@ -846,7 +852,7 @@ export class PrePassRenderer {
                 this.mrtCount++;
             }
 
-            if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE) {
+            if (type === Constants.PREPASS_VELOCITY_TEXTURE_TYPE || type === Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE) {
                 this._scene.needsPreviousWorldMatrices = true;
             }
         }

@@ -5,7 +5,7 @@ varying vPosition : vec3f;
 #ifdef PREPASS_DEPTH
     varying vViewPos: vec3f;
 #endif
-#ifdef PREPASS_VELOCITY
+#if defined(PREPASS_VELOCITY) || defined(PREPASS_VELOCITY_LINEAR)
     varying vCurrentPosition: vec4f;
     varying vPreviousPosition: vec4f;
 #endif
