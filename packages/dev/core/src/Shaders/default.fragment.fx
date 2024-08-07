@@ -434,23 +434,33 @@ color.rgb = max(color.rgb, 0.);
     gl_FragData[PREPASS_POSITION_INDEX] = vec4(vPositionW, writeGeometryInfo);
     #endif
 
-    #ifdef PREPASS_VELOCITY
+#if defined(PREPASS_VELOCITY)
     vec2 a = (vCurrentPosition.xy / vCurrentPosition.w) * 0.5 + 0.5;
     vec2 b = (vPreviousPosition.xy / vPreviousPosition.w) * 0.5 + 0.5;
 
     vec2 velocity = abs(a - b);
-    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) * sign(a - b) * 0.5 + 0.5;
+    velocity = vec2(pow(velocity.x, 1.0 / 3.0), pow(velocity.y, 1.0 / 3.0)) *
+                   sign(a - b) * 0.5 +
+               0.5;
+    gl_FragData[PREPASS_VELOCITY_INDEX] =
+        vec4(velocity, 0.0, writeGeometryInfo);
+#elif defined(PREPASS_VELOCITY_LINEAR)
+    vec2 velocity = vec2(0.5) * ((vPreviousPosition.xy / vPreviousPosition.w) -
+                                 (vCurrentPosition.xy / vCurrentPosition.w));
+    gl_FragData[PREPASS_VELOCITY_LINEAR_INDEX] =
+        vec4(velocity, 0.0, writeGeometryInfo);
+#endif
 
-    gl_FragData[PREPASS_VELOCITY_INDEX] = vec4(velocity, 0.0, writeGeometryInfo);
-    #endif
+#ifdef PREPASS_IRRADIANCE
+    gl_FragData[PREPASS_IRRADIANCE_INDEX] =
+        vec4(0.0, 0.0, 0.0,
+             writeGeometryInfo); //  We can't split irradiance on std material
+#endif
 
-    #ifdef PREPASS_IRRADIANCE
-        gl_FragData[PREPASS_IRRADIANCE_INDEX] = vec4(0.0, 0.0, 0.0, writeGeometryInfo); //  We can't split irradiance on std material
-    #endif
-
-    #ifdef PREPASS_DEPTH
-        gl_FragData[PREPASS_DEPTH_INDEX] = vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
-    #endif
+#ifdef PREPASS_DEPTH
+    gl_FragData[PREPASS_DEPTH_INDEX] =
+        vec4(vViewPos.z, 0.0, 0.0, writeGeometryInfo); // Linear depth
+#endif
 
 #ifdef PREPASS_NDC_DEPTH
         gl_FragData[PREPASS_NDC_DEPTH_INDEX] = vec4(

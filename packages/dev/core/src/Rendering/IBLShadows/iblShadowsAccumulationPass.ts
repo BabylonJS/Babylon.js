@@ -156,7 +156,7 @@ export class _IblShadowsAccumulationPass {
             generateDepthBuffer: false,
             generateMipMaps: false,
             format: Constants.TEXTUREFORMAT_RGBA,
-            type: Constants.TEXTURETYPE_FLOAT,
+            type: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
         };
 
@@ -170,7 +170,7 @@ export class _IblShadowsAccumulationPass {
             width: this._engine.getRenderWidth(),
             height: this._engine.getRenderHeight(),
             textureFormat: Constants.TEXTUREFORMAT_RGBA,
-            textureType: Constants.TEXTURETYPE_FLOAT,
+            textureType: Constants.TEXTURETYPE_HALF_FLOAT,
             samplingMode: Constants.TEXTURE_NEAREST_SAMPLINGMODE,
             engine: this._engine,
             reusable: false,
@@ -216,7 +216,7 @@ export class _IblShadowsAccumulationPass {
             // prePassRenderer.getRenderTarget().skipInitialClear = true;
             const localPositionIndex = prePassRenderer.getIndex(Constants.PREPASS_LOCAL_POSITION_TEXTURE_TYPE);
             if (localPositionIndex >= 0) effect.setTexture("localPositionSampler", prePassRenderer.getRenderTarget().textures[localPositionIndex]);
-            const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_TEXTURE_TYPE);
+            const velocityIndex = prePassRenderer.getIndex(Constants.PREPASS_VELOCITY_LINEAR_TEXTURE_TYPE);
             if (velocityIndex >= 0) effect.setTexture("motionSampler", prePassRenderer.getRenderTarget().textures[velocityIndex]);
         }
 

@@ -6,7 +6,8 @@
     vertexOutputs.vPosition = positionUpdated.xyz;
 #endif
 
-#if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED)
+#if defined(PREPASS_VELOCITY) && defined(BONES_VELOCITY_ENABLED) ||        \
+        defined(PREPASS_VELOCITY_LINEAR)
     vertexOutputs.vCurrentPosition = scene.viewProjection * worldPos;
 
 #if NUM_BONE_INFLUENCERS > 0
