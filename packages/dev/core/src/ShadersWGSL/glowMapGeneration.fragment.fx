@@ -3,20 +3,20 @@
 #endif
 
 #ifdef DIFFUSE
-varying var vUVDiffuse: vec2f;
+varying vUVDiffuse: vec2f;
 var diffuseSamplerSampler: sampler;
 var diffuseSampler: texture_2d<f32>;
 #endif
 
 #ifdef OPACITY
-varying var vUVOpacity: vec2f;
+varying vUVOpacity: vec2f;
 var opacitySamplerSampler: sampler;
 var opacitySampler: texture_2d<f32>;
 uniform var opacityIntensity: f32;
 #endif
 
 #ifdef EMISSIVE
-varying var vUVEmissive: vec2f;
+varying vUVEmissive: vec2f;
 var emissiveSamplerSampler: sampler;
 var emissiveSampler: texture_2d<f32>;
 #endif

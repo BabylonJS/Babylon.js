@@ -73,28 +73,28 @@ var worldPos: vec4f = finalWorld *  vec4f(positionUpdated, 1.0);
 
 #ifdef DIFFUSE
 	#ifdef DIFFUSEUV1
-		vertexOutputs.vUVDiffuse =  vec2f(uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+		vertexOutputs.vUVDiffuse =  (uniforms.diffuseMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 	#endif
 	#ifdef DIFFUSEUV2
-		vertexOutputs.vUVDiffuse =  vec2f(uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0));
+		vertexOutputs.vUVDiffuse =  (uniforms.diffuseMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 	#endif
 #endif
 
 #ifdef OPACITY
 	#ifdef OPACITYUV1
-		vertexOutputs.vUVOpacity =  vec2f(uniforms.opacityMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+		vertexOutputs.vUVOpacity =  (uniforms.opacityMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 	#endif
 	#ifdef OPACITYUV2
-		vertexOutputs.vUVOpacity =  vec2f(uniforms.opacityMatrix *  vec4f(input.uv2, 1.0, 0.0));
+		vertexOutputs.vUVOpacity =  (uniforms.opacityMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 	#endif
 #endif
 
 #ifdef EMISSIVE
 	#ifdef EMISSIVEUV1
-		vertexOutputs.vUVEmissive =  vec2f(uniforms.emissiveMatrix *  vec4f(uvUpdated, 1.0, 0.0));
+		vertexOutputs.vUVEmissive =  (uniforms.emissiveMatrix *  vec4f(uvUpdated, 1.0, 0.0)).xy;
 	#endif
 	#ifdef EMISSIVEUV2
-		vertexOutputs.vUVEmissive =  vec2f(uniforms.emissiveMatrix *  vec4f(input.uv2, 1.0, 0.0));
+		vertexOutputs.vUVEmissive =  (uniforms.emissiveMatrix *  vec4f(input.uv2, 1.0, 0.0)).xy;
 	#endif
 #endif
 
