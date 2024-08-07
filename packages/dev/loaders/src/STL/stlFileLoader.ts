@@ -9,6 +9,18 @@ import { SceneLoader } from "core/Loading/sceneLoader";
 import { AssetContainer } from "core/assetContainer";
 import type { Scene } from "core/scene";
 
+const PLUGIN_STL = "stl";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the stl loader.
+         */
+        [PLUGIN_STL]?: {};
+    }
+}
+
 /**
  * STL file type loader.
  * This is a babylon scene loader plugin.
@@ -27,16 +39,16 @@ export class STLFileLoader implements ISceneLoaderPlugin {
     /**
      * Defines the name of the plugin.
      */
-    public name = "stl";
+    public readonly name = PLUGIN_STL;
 
     /**
      * Defines the extensions the stl loader is able to load.
      * force data to come in as an ArrayBuffer
      * we'll convert to string if it looks like it's an ASCII .stl
      */
-    public extensions: ISceneLoaderPluginExtensions = {
+    public readonly extensions = {
         ".stl": { isBinary: true },
-    };
+    } as const satisfies ISceneLoaderPluginExtensions;
 
     /**
      * Defines if Y and Z axes are swapped or not when loading an STL file.

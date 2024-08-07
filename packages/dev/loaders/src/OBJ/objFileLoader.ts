@@ -13,6 +13,19 @@ import { SolidParser } from "./solidParser";
 import type { Mesh } from "core/Meshes/mesh";
 import { StandardMaterial } from "core/Materials/standardMaterial";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
+const PLUGIN_OBJ = "obj";
+
+declare module "core/Loading/sceneLoader" {
+    // eslint-disable-next-line jsdoc/require-jsdoc
+    export interface SceneLoaderPluginOptions {
+        /**
+         * Defines options for the obj loader.
+         */
+        [PLUGIN_OBJ]?: {};
+    }
+}
+
 /**
  * OBJ file type loader.
  * This is a babylon scene loader plugin.
@@ -74,11 +87,11 @@ export class OBJFileLoader implements ISceneLoaderPluginAsync, ISceneLoaderPlugi
     /**
      * Defines the name of the plugin.
      */
-    public name = "obj";
+    public readonly name = PLUGIN_OBJ;
     /**
      * Defines the extension the plugin is able to load.
      */
-    public extensions = ".obj";
+    public readonly extensions = ".obj";
 
     private _assetContainer: Nullable<AssetContainer> = null;
 
