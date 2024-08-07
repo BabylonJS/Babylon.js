@@ -60,7 +60,7 @@
 		output = ACESOutputMat * output;
 
 		// Clamp to [0, 1]
-		output = saturate(output);
+		output = saturateVec3(output);
 
 		return output;
 	}
