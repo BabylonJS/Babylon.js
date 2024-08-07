@@ -181,7 +181,9 @@ export class SolidParser {
             //Each element is a Vector3(x,y,z)
             this._wrappedPositionForBabylon.push(positionVectorFromOBJ);
             //Push the uvs for Babylon
-            //Each element is a Vector3(u,v)
+            //Each element is a Vector2(u,v)
+            //If the UVs are missing, set (u,v)=(0,0)
+            textureVectorFromOBJ = textureVectorFromOBJ ?? new Vector2(0, 0);
             this._wrappedUvsForBabylon.push(textureVectorFromOBJ);
             //Push the normals for Babylon
             //Each element is a Vector3(x,y,z)
@@ -224,6 +226,8 @@ export class SolidParser {
                 this._wrappedNormalsForBabylon[l].y,
                 this._wrappedNormalsForBabylon[l].z
             );
+            debugger;
+
             this._unwrappedUVForBabylon.push(this._wrappedUvsForBabylon[l].x, this._wrappedUvsForBabylon[l].y); //z is an optional value not supported by BABYLON
             if (this._loadingOptions.importVertexColors) {
                 //Push the r, g, b, a values of each element in the unwrapped array
@@ -750,7 +754,6 @@ export class SolidParser {
                 Logger.Log("Unhandled expression at line : " + line);
             }
         }
-
         // At the end of the file, add the last mesh into the meshesFromObj array
         if (this._hasMeshes) {
             // Set the data for the last mesh
