@@ -437,7 +437,7 @@ export class Texture extends BaseTexture {
 
         this._gammaSpace = gammaSpace;
         this._noMipmap = noMipmap;
-        this._invertY = invertY === undefined ? (useOpenGLOrientationForUV ? false : true) : invertY;
+        this._invertY = invertY === undefined ? !useOpenGLOrientationForUV : invertY;
         this._initialSamplingMode = samplingMode;
         this._buffer = buffer;
         this._deleteBuffer = deleteBuffer;
