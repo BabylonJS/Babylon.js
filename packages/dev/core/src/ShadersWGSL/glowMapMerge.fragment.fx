@@ -22,7 +22,7 @@ fn main(input: FragmentInputs) -> FragmentOutputs {
 
     #ifdef EMISSIVE
         baseColor += textureSample(textureSampler2, textureSampler2Sampler, input.vUV);
-        baseColor *= offset;
+        baseColor *= uniforms.offset;
     #else
         baseColor = vec4f(baseColor.rgb, abs(uniforms.offset - baseColor.a));
 
