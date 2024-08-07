@@ -23,7 +23,7 @@ export interface HDRInfo {
 
 /* This groups tools to convert HDR texture to native colors array. */
 
-function _Ldexp(mantissa: number, exponent: number): number {
+function ldexp(mantissa: number, exponent: number): number {
     if (exponent > 1023) {
         return mantissa * Math.pow(2, 1023) * Math.pow(2, exponent - 1023);
     }
@@ -35,10 +35,10 @@ function _Ldexp(mantissa: number, exponent: number): number {
     return mantissa * Math.pow(2, exponent);
 }
 
-function _Rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
+function rgbe2float(float32array: Float32Array, red: number, green: number, blue: number, exponent: number, index: number) {
     if (exponent > 0) {
         /*nonzero pixel*/
-        exponent = _Ldexp(1.0, exponent - (128 + 8));
+        exponent = ldexp(1.0, exponent - (128 + 8));
 
         float32array[index + 0] = red * exponent;
         float32array[index + 1] = green * exponent;
@@ -50,7 +50,7 @@ function _Rgbe2float(float32array: Float32Array, red: number, green: number, blu
     }
 }
 
-function _ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
+function readStringLine(uint8array: Uint8Array, startIndex: number): string {
     let line = "";
     let character = "";
 
@@ -76,11 +76,11 @@ function _ReadStringLine(uint8array: Uint8Array, startIndex: number): string {
  * @returns The header information.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
+export function readRGBEHeader(uint8array: Uint8Array): HDRInfo {
     let height: number = 0;
     let width: number = 0;
 
-    let line = _ReadStringLine(uint8array, 0);
+    let line = readStringLine(uint8array, 0);
     if (line[0] != "#" || line[1] != "?") {
         // eslint-disable-next-line no-throw-literal
         throw "Bad HDR Format.";
@@ -92,7 +92,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
 
     do {
         lineIndex += line.length + 1;
-        line = _ReadStringLine(uint8array, lineIndex);
+        line = readStringLine(uint8array, lineIndex);
 
         if (line == "FORMAT=32-bit_rle_rgbe") {
             findFormat = true;
@@ -107,7 +107,7 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
     }
 
     lineIndex += line.length + 1;
-    line = _ReadStringLine(uint8array, lineIndex);
+    line = readStringLine(uint8array, lineIndex);
 
     const sizeRegexp = /^-Y (.*) \+X (.*)$/g;
     const match = sizeRegexp.exec(line);
@@ -146,10 +146,10 @@ export function RGBE_ReadHeader(uint8array: Uint8Array): HDRInfo {
  * @param supersample enable supersampling the cubemap (default: false)
  * @returns The Cube Map information.
  */
-export function GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
+export function getCubeMapTextureData(buffer: ArrayBuffer, size: number, supersample = false): CubeMapInfo {
     const uint8array = new Uint8Array(buffer);
-    const hdrInfo = RGBE_ReadHeader(uint8array);
-    const data = RGBE_ReadPixels(uint8array, hdrInfo);
+    const hdrInfo = readRGBEHeader(uint8array);
+    const data = readRGBEPixels(uint8array, hdrInfo);
 
     const cubeMapData = PanoramaToCubeMapTools.ConvertPanoramaToCubemap(data, hdrInfo.width, hdrInfo.height, size, supersample);
 
@@ -168,11 +168,11 @@ export function GetCubeMapTextureData(buffer: ArrayBuffer, size: number, supersa
  * @returns The pixels data in RGB right to left up to down order.
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function RGBE_ReadPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
-    return _RGBEReadPixelsRLE(uint8array, hdrInfo);
+export function readRGBEPixels(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+    return readRGBEPixelsRLE(uint8array, hdrInfo);
 }
 
-function _RGBEReadPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+function readRGBEPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     let num_scanlines = hdrInfo.height;
     const scanline_width = hdrInfo.width;
 
@@ -197,7 +197,7 @@ function _RGBEReadPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Ar
         d = uint8array[dataIndex++];
 
         if (a != 2 || b != 2 || c & 0x80 || hdrInfo.width < 8 || hdrInfo.width > 32767) {
-            return _RGBEReadPixelsNOTRLE(uint8array, hdrInfo);
+            return readRGBEPixelsNotRLE(uint8array, hdrInfo);
         }
 
         if (((c << 8) | d) != scanline_width) {
@@ -251,7 +251,7 @@ function _RGBEReadPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Ar
             c = scanLineArray[i + 2 * scanline_width];
             d = scanLineArray[i + 3 * scanline_width];
 
-            _Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+            rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
         }
 
         num_scanlines--;
@@ -260,7 +260,7 @@ function _RGBEReadPixelsRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Ar
     return resultArray;
 }
 
-function _RGBEReadPixelsNOTRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
+function readRGBEPixelsNotRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float32Array {
     // this file is not run length encoded
     // read values sequentially
 
@@ -282,7 +282,7 @@ function _RGBEReadPixelsNOTRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float3
             c = uint8array[dataIndex++];
             d = uint8array[dataIndex++];
 
-            _Rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
+            rgbe2float(resultArray, a, b, c, d, (hdrInfo.height - num_scanlines) * scanline_width * 3 + i * 3);
         }
 
         num_scanlines--;
@@ -291,11 +291,14 @@ function _RGBEReadPixelsNOTRLE(uint8array: Uint8Array, hdrInfo: HDRInfo): Float3
     return resultArray;
 }
 
+/**
+ * @deprecated Use functions separately
+ */
 export const HDRTools = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    RGBE_ReadHeader,
+    RGBE_ReadHeader: readRGBEHeader,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    GetCubeMapTextureData,
+    GetCubeMapTextureData: getCubeMapTextureData,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    RGBE_ReadPixels,
+    RGBE_ReadPixels: readRGBEPixels,
 };

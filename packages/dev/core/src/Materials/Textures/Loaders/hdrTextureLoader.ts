@@ -1,4 +1,4 @@
-import { HDRTools } from "../../../Misc/HighDynamicRange/hdr";
+import { readRGBEHeader, readRGBEPixels } from "../../../Misc/HighDynamicRange/hdr";
 import { Engine } from "../../../Engines/engine";
 import type { InternalTexture } from "../../../Materials/Textures/internalTexture";
 import type { IInternalTextureLoader } from "../../../Materials/Textures/internalTextureLoader";
@@ -44,8 +44,8 @@ export class _HDRTextureLoader implements IInternalTextureLoader {
         callback: (width: number, height: number, loadMipmap: boolean, isCompressed: boolean, done: () => void) => void
     ): void {
         const uint8array = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-        const hdrInfo = HDRTools.RGBE_ReadHeader(uint8array);
-        const pixelsDataRGB32 = HDRTools.RGBE_ReadPixels(uint8array, hdrInfo);
+        const hdrInfo = readRGBEHeader(uint8array);
+        const pixelsDataRGB32 = readRGBEPixels(uint8array, hdrInfo);
 
         const pixels = hdrInfo.width * hdrInfo.height;
         const pixelsDataRGBA32 = new Float32Array(pixels * 4);
