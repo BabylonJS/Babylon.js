@@ -17,14 +17,14 @@ export class Scalar {
      * @param epsilon (default = 1.401298E-45)
      * @returns true if the absolute difference between a and b is lower than epsilon (default = 1.401298E-45)
      */
-    public static WithinEpsilon: (a: number, b: number, epsilon?: number) => boolean = functions.WithinEpsilon;
+    public static WithinEpsilon: (a: number, b: number, epsilon?: number) => boolean = functions.withinEpsilon;
 
     /**
      * Returns a string : the upper case translation of the number i to hexadecimal.
      * @param i number
      * @returns the upper case translation of the number i to hexadecimal.
      */
-    public static ToHex: (i: number) => string = functions.ToHex;
+    public static ToHex: (i: number) => string = functions.toHex;
 
     /**
      * Returns -1 if value is negative and +1 is value is positive.
@@ -42,7 +42,7 @@ export class Scalar {
      * @param max the max value to clamp to (default: 1)
      * @returns the clamped value
      */
-    public static Clamp: (value: number, min?: number, max?: number) => number = functions.Clamp;
+    public static Clamp: (value: number, min?: number, max?: number) => number = functions.clamp;
 
     /**
      * the log2 of value.
@@ -148,7 +148,7 @@ export class Scalar {
      * @param amount amount to lerp between
      * @returns the lerped value
      */
-    public static Lerp: (start: number, end: number, amount: number) => number = functions.Lerp;
+    public static Lerp: (start: number, end: number, amount: number) => number = functions.lerp;
 
     /**
      * Same as Lerp but makes sure the values interpolate correctly when they wrap around 360 degrees.
@@ -198,7 +198,7 @@ export class Scalar {
      * @param max max value of random
      * @returns random value
      */
-    public static RandomRange: (min: number, max: number) => number = functions.RandomRange;
+    public static RandomRange: (min: number, max: number) => number = functions.randomRange;
 
     /**
      * This function returns percentage of a number in a given range.
@@ -228,7 +228,7 @@ export class Scalar {
      * @param angle The angle to normalize in radian.
      * @returns The converted angle.
      */
-    public static NormalizeRadians: (angle: number) => number = functions.NormalizeRadians;
+    public static NormalizeRadians: (angle: number) => number = functions.normalizeRadians;
 
     /**
      * Returns the highest common factor of two integers.

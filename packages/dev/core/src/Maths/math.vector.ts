@@ -10,7 +10,7 @@ import { EngineStore } from "../Engines/engineStore";
 import type { TransformNode } from "../Meshes/transformNode";
 import type { Dimension, Tensor, TensorLike, TensorStatic } from "./tensor";
 import type { IVector2Like, IVector3Like, IVector4Like, IQuaternionLike, IMatrixLike, IPlaneLike } from "./math.like";
-import { Clamp, Lerp, NormalizeRadians, RandomRange, WithinEpsilon } from "./math.scalar.functions";
+import { clamp, lerp, normalizeRadians, randomRange, withinEpsilon } from "./math.scalar.functions";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const _ExtractAsInt = (value: number) => {
@@ -571,7 +571,7 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns true if the given vector coordinates are close to the current ones by a distance of epsilon.
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<IVector2Like>, epsilon: number = Epsilon): boolean {
-        return otherVector && WithinEpsilon(this.x, otherVector.x, epsilon) && WithinEpsilon(this.y, otherVector.y, epsilon);
+        return otherVector && withinEpsilon(this.x, otherVector.x, epsilon) && withinEpsilon(this.y, otherVector.y, epsilon);
     }
 
     /**
@@ -753,7 +753,7 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns a Vector2 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector2 {
-        return new Vector2(RandomRange(min, max), RandomRange(min, max));
+        return new Vector2(randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -764,7 +764,7 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns the ref with random values between min and max
      */
     public static RandomToRef<T extends Vector2>(min: number = 0, max: number = 1, ref: T): T {
-        return ref.copyFromFloats(RandomRange(min, max), RandomRange(min, max));
+        return ref.copyFromFloats(randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -859,8 +859,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns the reference
      */
     public static ClampToRef<T extends Vector2>(value: DeepImmutable<IVector2Like>, min: DeepImmutable<IVector2Like>, max: DeepImmutable<IVector2Like>, ref: T): T {
-        ref.x = Clamp(value.x, min.x, max.x);
-        ref.y = Clamp(value.y, min.y, max.y);
+        ref.x = clamp(value.x, min.x, max.x);
+        ref.y = clamp(value.y, min.y, max.y);
         return ref;
     }
 
@@ -875,8 +875,8 @@ export class Vector2 implements Vector<Tuple<number, 2>, IVector2Like>, IVector2
      * @returns a new Vector2
      */
     public static Clamp(value: DeepImmutable<IVector2Like>, min: DeepImmutable<IVector2Like>, max: DeepImmutable<IVector2Like>): Vector2 {
-        const x = Clamp(value.x, min.x, max.x);
-        const y = Clamp(value.y, min.y, max.y);
+        const x = clamp(value.x, min.x, max.x);
+        const y = clamp(value.y, min.y, max.y);
         return new Vector2(x, y);
     }
 
@@ -1660,7 +1660,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @returns true if both vectors are distant less than epsilon
      */
     public equalsWithEpsilon(otherVector: DeepImmutable<Vector3>, epsilon: number = Epsilon): boolean {
-        return otherVector && WithinEpsilon(this._x, otherVector._x, epsilon) && WithinEpsilon(this._y, otherVector._y, epsilon) && WithinEpsilon(this._z, otherVector._z, epsilon);
+        return otherVector && withinEpsilon(this._x, otherVector._x, epsilon) && withinEpsilon(this._y, otherVector._y, epsilon) && withinEpsilon(this._z, otherVector._z, epsilon);
     }
 
     /**
@@ -1828,16 +1828,16 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
     public isNonUniformWithinEpsilon(epsilon: number) {
         const absX = Math.abs(this._x);
         const absY = Math.abs(this._y);
-        if (!WithinEpsilon(absX, absY, epsilon)) {
+        if (!withinEpsilon(absX, absY, epsilon)) {
             return true;
         }
 
         const absZ = Math.abs(this._z);
-        if (!WithinEpsilon(absX, absZ, epsilon)) {
+        if (!withinEpsilon(absX, absZ, epsilon)) {
             return true;
         }
 
-        if (!WithinEpsilon(absY, absZ, epsilon)) {
+        if (!withinEpsilon(absY, absZ, epsilon)) {
             return true;
         }
 
@@ -2129,7 +2129,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         const v1: Vector3 = vector1.normalizeToRef(MathTmp.Vector3[2]);
         let dot: number = Vector3.Dot(v0, v1);
         // Vectors are normalized so dot will be in [-1, 1] (aside precision issues enough to break the result which explains the below clamp)
-        dot = Clamp(dot, -1, 1);
+        dot = clamp(dot, -1, 1);
 
         const angle = Math.acos(dot);
         const n = MathTmp.Vector3[3];
@@ -2168,7 +2168,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
 
         const angle = Math.atan2(Vector3.Dot(v1, right), Vector3.Dot(v1, forward));
 
-        return NormalizeRadians(angle);
+        return normalizeRadians(angle);
     }
 
     /**
@@ -2214,7 +2214,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @returns The slerped vector
      */
     public static SlerpToRef<T extends Vector3 = Vector3>(vector0: Vector3, vector1: Vector3, slerp: number, result: T): T {
-        slerp = Clamp(slerp, 0, 1);
+        slerp = clamp(slerp, 0, 1);
         const vector0Dir = MathTmp.Vector3[0];
         const vector1Dir = MathTmp.Vector3[1];
 
@@ -2245,7 +2245,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         vector0Dir.scaleInPlace(scale0);
         vector1Dir.scaleInPlace(scale1);
         result.copyFrom(vector0Dir).addInPlace(vector1Dir);
-        result.scaleInPlace(Lerp(vector0Length, vector1Length, slerp));
+        result.scaleInPlace(lerp(vector0Length, vector1Length, slerp));
         return result;
     }
 
@@ -2471,7 +2471,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @returns a Vector3 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector3 {
-        return new Vector3(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
+        return new Vector3(randomRange(min, max), randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -2482,7 +2482,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
      * @returns the ref with random values between min and max
      */
     public static RandomToRef<T extends Vector3>(min: number = 0, max: number = 1, ref: T): T {
-        return ref.copyFromFloats(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
+        return ref.copyFromFloats(randomRange(min, max), randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -2958,7 +2958,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         Vector3.TransformCoordinatesToRef(source, matrix, result);
         const m = matrix.m;
         const num = source._x * m[3] + source._y * m[7] + source._z * m[11] + m[15];
-        if (WithinEpsilon(num, 1.0)) {
+        if (withinEpsilon(num, 1.0)) {
             result.scaleInPlace(1.0 / num);
         }
         return result;
@@ -3282,7 +3282,7 @@ export class Vector3 implements Vector<Tuple<number, 3>, Vector3>, IVector3Like 
         l = edge.length();
         edge.normalizeFromLength(l);
         let t = Vector3.Dot(tmp, edge) / Math.max(l, Epsilon);
-        t = Clamp(t, 0, 1);
+        t = clamp(t, 0, 1);
         triProj.copyFrom(e0).addInPlace(edge.scaleInPlace(t * l));
         ref.copyFrom(triProj);
 
@@ -3674,10 +3674,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
     public equalsWithEpsilon(otherVector: DeepImmutable<IVector4Like>, epsilon: number = Epsilon): boolean {
         return (
             otherVector &&
-            WithinEpsilon(this.x, otherVector.x, epsilon) &&
-            WithinEpsilon(this.y, otherVector.y, epsilon) &&
-            WithinEpsilon(this.z, otherVector.z, epsilon) &&
-            WithinEpsilon(this.w, otherVector.w, epsilon)
+            withinEpsilon(this.x, otherVector.x, epsilon) &&
+            withinEpsilon(this.y, otherVector.y, epsilon) &&
+            withinEpsilon(this.z, otherVector.z, epsilon) &&
+            withinEpsilon(this.w, otherVector.w, epsilon)
         );
     }
 
@@ -4098,7 +4098,7 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns a Vector4 with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Vector4 {
-        return new Vector4(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
+        return new Vector4(randomRange(min, max), randomRange(min, max), randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -4109,10 +4109,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns the ref with random values between min and max
      */
     public static RandomToRef<T extends IVector4Like>(min: number = 0, max: number = 1, ref: T): T {
-        ref.x = RandomRange(min, max);
-        ref.y = RandomRange(min, max);
-        ref.z = RandomRange(min, max);
-        ref.w = RandomRange(min, max);
+        ref.x = randomRange(min, max);
+        ref.y = randomRange(min, max);
+        ref.z = randomRange(min, max);
+        ref.w = randomRange(min, max);
         return ref;
     }
 
@@ -4140,10 +4140,10 @@ export class Vector4 implements Vector<Tuple<number, 4>, IVector4Like>, IVector4
      * @returns result input
      */
     public static ClampToRef<T extends IVector4Like>(value: DeepImmutable<IVector4Like>, min: DeepImmutable<IVector4Like>, max: DeepImmutable<IVector4Like>, result: T): T {
-        result.x = Clamp(value.x, min.x, max.x);
-        result.y = Clamp(value.y, min.y, max.y);
-        result.z = Clamp(value.z, min.z, max.z);
-        result.w = Clamp(value.w, min.w, max.w);
+        result.x = clamp(value.x, min.x, max.x);
+        result.y = clamp(value.y, min.y, max.y);
+        result.z = clamp(value.z, min.z, max.z);
+        result.w = clamp(value.w, min.w, max.w);
         return result;
     }
 
@@ -4552,10 +4552,10 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
     public equalsWithEpsilon(otherQuaternion: DeepImmutable<Quaternion>, epsilon: number = Epsilon): boolean {
         return (
             otherQuaternion &&
-            WithinEpsilon(this._x, otherQuaternion._x, epsilon) &&
-            WithinEpsilon(this._y, otherQuaternion._y, epsilon) &&
-            WithinEpsilon(this._z, otherQuaternion._z, epsilon) &&
-            WithinEpsilon(this._w, otherQuaternion._w, epsilon)
+            withinEpsilon(this._x, otherQuaternion._x, epsilon) &&
+            withinEpsilon(this._y, otherQuaternion._y, epsilon) &&
+            withinEpsilon(this._z, otherQuaternion._z, epsilon) &&
+            withinEpsilon(this._w, otherQuaternion._w, epsilon)
         );
     }
 
@@ -5280,7 +5280,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      */
     public static SmoothToRef<T extends Quaternion>(source: Quaternion, goal: Quaternion, deltaTime: number, lerpTime: number, result: T): T {
         let slerp = lerpTime === 0 ? 1 : deltaTime / lerpTime;
-        slerp = Clamp(slerp, 0, 1);
+        slerp = clamp(slerp, 0, 1);
 
         Quaternion.SlerpToRef(source, goal, slerp, result);
         return result;
@@ -5843,7 +5843,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns result input
      */
     public static ClampToRef<T extends Quaternion>(value: DeepImmutable<Quaternion>, min: DeepImmutable<Quaternion>, max: DeepImmutable<Quaternion>, result: T): T {
-        return result.copyFromFloats(Clamp(value.x, min.x, max.x), Clamp(value.y, min.y, max.y), Clamp(value.z, min.z, max.z), Clamp(value.w, min.w, max.w));
+        return result.copyFromFloats(clamp(value.x, min.x, max.x), clamp(value.y, min.y, max.y), clamp(value.z, min.z, max.z), clamp(value.w, min.w, max.w));
     }
 
     /**
@@ -5853,7 +5853,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns a Quaternion with random values between min and max
      */
     public static Random(min: number = 0, max: number = 1): Quaternion {
-        return new Quaternion(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
+        return new Quaternion(randomRange(min, max), randomRange(min, max), randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -5864,7 +5864,7 @@ export class Quaternion implements Tensor<Tuple<number, 4>, Quaternion>, IQuater
      * @returns the ref with random values between min and max
      */
     public static RandomToRef<T extends Quaternion>(min: number = 0, max: number = 1, ref: T): T {
-        return ref.copyFromFloats(RandomRange(min, max), RandomRange(min, max), RandomRange(min, max), RandomRange(min, max));
+        return ref.copyFromFloats(randomRange(min, max), randomRange(min, max), randomRange(min, max), randomRange(min, max));
     }
 
     /**
@@ -6880,7 +6880,7 @@ export class Matrix implements Tensor<Tuple<Tuple<number, 4>, 4>, Matrix>, IMatr
         const m = this._m,
             otherM = other.m;
         for (let i = 0; i < 16; i++) {
-            if (!WithinEpsilon(m[i], otherM[i], epsilon)) {
+            if (!withinEpsilon(m[i], otherM[i], epsilon)) {
                 return false;
             }
         }

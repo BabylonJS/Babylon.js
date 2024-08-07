@@ -3,8 +3,7 @@ import { RegisterClass } from "../Misc/typeStore";
 import type { DeepImmutable, FloatArray, Tuple } from "../types";
 import { Epsilon, ToGammaSpace, ToLinearSpace } from "./math.constants";
 import type { IColor3Like, IColor4Like } from "./math.like";
-import { Scalar } from "./math.scalar";
-import { Clamp, ToHex } from "./math.scalar.functions";
+import { clamp, toHex, withinEpsilon } from "./math.scalar.functions";
 import type { Tensor } from "./tensor";
 
 function colorChannelToLinearSpace(color: number): number {
@@ -328,7 +327,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns true if both colors are distant less than epsilon
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor3Like>, epsilon: number = Epsilon): boolean {
-        return Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) && Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) && Scalar.WithinEpsilon(this.b, otherColor.b, epsilon);
+        return withinEpsilon(this.r, otherColor.r, epsilon) && withinEpsilon(this.g, otherColor.g, epsilon) && withinEpsilon(this.b, otherColor.b, epsilon);
     }
 
     /**
@@ -410,9 +409,9 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
      * @returns the result Color3
      */
     public clampToRef<T extends IColor3Like>(min: number = 0, max: number = 1, result: T): T {
-        result.r = Clamp(this.r, min, max);
-        result.g = Clamp(this.g, min, max);
-        result.b = Clamp(this.b, min, max);
+        result.r = clamp(this.r, min, max);
+        result.g = clamp(this.g, min, max);
+        result.b = clamp(this.b, min, max);
         return result;
     }
 
@@ -587,7 +586,7 @@ export class Color3 implements Tensor<Tuple<number, 3>, IColor3Like>, IColor3Lik
         const intR = Math.round(this.r * 255);
         const intG = Math.round(this.g * 255);
         const intB = Math.round(this.b * 255);
-        return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
+        return "#" + toHex(intR) + toHex(intG) + toHex(intB);
     }
 
     /**
@@ -1259,10 +1258,10 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      * @returns the result Color4
      */
     public clampToRef<T extends IColor4Like>(min: number = 0, max: number = 1, result: T): T {
-        result.r = Clamp(this.r, min, max);
-        result.g = Clamp(this.g, min, max);
-        result.b = Clamp(this.b, min, max);
-        result.a = Clamp(this.a, min, max);
+        result.r = clamp(this.r, min, max);
+        result.g = clamp(this.g, min, max);
+        result.b = clamp(this.b, min, max);
+        result.a = clamp(this.a, min, max);
         return result;
     }
 
@@ -1459,10 +1458,10 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
      */
     public equalsWithEpsilon(otherColor: DeepImmutable<IColor4Like>, epsilon: number = Epsilon): boolean {
         return (
-            Scalar.WithinEpsilon(this.r, otherColor.r, epsilon) &&
-            Scalar.WithinEpsilon(this.g, otherColor.g, epsilon) &&
-            Scalar.WithinEpsilon(this.b, otherColor.b, epsilon) &&
-            Scalar.WithinEpsilon(this.a, otherColor.a, epsilon)
+            withinEpsilon(this.r, otherColor.r, epsilon) &&
+            withinEpsilon(this.g, otherColor.g, epsilon) &&
+            withinEpsilon(this.b, otherColor.b, epsilon) &&
+            withinEpsilon(this.a, otherColor.a, epsilon)
         );
     }
 
@@ -1577,11 +1576,11 @@ export class Color4 implements Tensor<Tuple<number, 4>, IColor4Like>, IColor4Lik
         const intB = Math.round(this.b * 255);
 
         if (returnAsColor3) {
-            return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB);
+            return "#" + toHex(intR) + toHex(intG) + toHex(intB);
         }
 
         const intA = Math.round(this.a * 255);
-        return "#" + ToHex(intR) + ToHex(intG) + ToHex(intB) + ToHex(intA);
+        return "#" + toHex(intR) + toHex(intG) + toHex(intB) + toHex(intA);
     }
 
     /**

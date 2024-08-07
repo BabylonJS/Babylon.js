@@ -1,5 +1,4 @@
 import type { Nullable } from "core/types";
-import { Scalar } from "core/Maths/math.scalar";
 import { SphericalHarmonics, SphericalPolynomial } from "core/Maths/sphericalPolynomial";
 import { Quaternion, Matrix } from "core/Maths/math.vector";
 import type { BaseTexture } from "core/Materials/Textures/baseTexture";
